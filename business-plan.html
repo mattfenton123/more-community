@@ -1,0 +1,1806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>More Community — Business Plan 2026</title>
+<meta name="description" content="More Community Business Plan 2026. Community infrastructure for real-life connection.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Syne:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================
+   MORE COMMUNITY — BUSINESS PLAN
+   Clean, printable, premium document design
+   ============================================ */
+
+:root {
+  --teal-700: #0d6660;
+  --teal-600: #0f766e;
+  --teal-500: #14b8a6;
+  --teal-400: #2dd4bf;
+  --teal-300: #5eead4;
+  --amber-500: #f59e0b;
+  --amber-400: #fbbf24;
+  --amber-300: #fcd34d;
+  --slate-950: #020617;
+  --slate-900: #0f172a;
+  --slate-800: #1e293b;
+  --slate-700: #334155;
+  --slate-600: #475569;
+  --slate-500: #64748b;
+  --slate-400: #94a3b8;
+  --slate-300: #cbd5e1;
+  --slate-200: #e2e8f0;
+  --slate-100: #f1f5f9;
+  --slate-50: #f8fafc;
+  --white: #ffffff;
+  --font-body: 'Plus Jakarta Sans', sans-serif;
+  --font-heading: 'Syne', sans-serif;
+  --font-display: 'Instrument Serif', serif;
+  --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--slate-950);
+  color: var(--white);
+  line-height: 1.6;
+}
+
+img { max-width: 100%; display: block; }
+
+/* ── PRINT STYLES ── */
+@media print {
+  @page { margin: 0; }
+  html, body { 
+    background: #020617 !important; 
+    -webkit-print-color-adjust: exact !important; 
+    print-color-adjust: exact !important; 
+    height: auto !important; 
+    padding: 60px 48px !important;
+  }
+  .no-print { display: none !important; }
+  .page { max-width: 100%; padding: 0 !important; }
+  .page-break { page-break-before: always; }
+  .doc-section { 
+    border-color: #e2e8f0 !important; 
+    break-before: page;
+    page-break-before: always;
+    padding: 0 !important;
+  }
+  .doc-section#overview {
+    break-before: auto;
+    page-break-before: auto;
+  }
+  .cover { break-after: page; page-break-after: always; }
+  .toc { break-after: page; page-break-after: always; }
+  img { max-height: 400px; object-fit: cover; }
+  .roadmap-item { padding-bottom: 1rem !important; }
+  .exp-path { margin: 1.5rem 0 !important; }
+  .doc-p { font-size: 1rem !important; margin-bottom: 1rem !important; line-height: 1.5 !important; }
+  .pull-quote { margin: 1rem 0 !important; font-size: 1.2rem !important; padding: 0.5rem 0 0.5rem 1rem !important; }
+  .doc-list li { margin-bottom: 0.5rem !important; }
+  .rev-table td { padding: 0.5rem 1rem !important; }
+  .callout { padding: 1.2rem !important; }
+  
+  h1, h2, h3, h4, h5, .doc-h1, .doc-h2, .doc-h3, .section-label {
+    break-after: avoid !important;
+    page-break-after: avoid !important;
+  }
+  p, li, .stat-row, .stat-card, .rev-table, tr, .feature-grid, .feature-pill, .comp-grid, .comp-card, .roadmap-item, .pull-quote, .callout {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+}
+
+/* ── NAV ── */
+.bp-nav {
+  position: fixed; top: 0; left: 0; right: 0;
+  z-index: 100;
+  background: rgba(2,6,23,0.92);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  padding: 0.9rem 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+@media print { .bp-nav { display: none !important; } }
+.bp-nav-brand {
+  display: flex; align-items: center; gap: 10px;
+  font-family: var(--font-heading);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--white);
+  text-decoration: none;
+}
+.bp-nav-brand img { height: 36px; width: auto; object-fit: contain; }
+.bp-nav-links {
+  display: flex; gap: 0.25rem;
+  list-style: none;
+}
+.bp-nav-links a {
+  font-family: var(--font-heading);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--slate-400);
+  text-decoration: none;
+  padding: 0.4rem 0.85rem;
+  border-radius: 100px;
+  letter-spacing: 0.02em;
+  transition: all 0.2s;
+}
+.bp-nav-links a:hover { color: var(--white); background: rgba(255,255,255,0.06); }
+.bp-nav-print {
+  font-family: var(--font-heading);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--teal-400);
+  text-decoration: none;
+  padding: 0.4rem 1rem;
+  border: 1px solid rgba(45,212,191,0.3);
+  border-radius: 100px;
+  cursor: pointer;
+  background: none;
+  transition: all 0.2s;
+}
+.bp-nav-print:hover { background: rgba(45,212,191,0.08); }
+
+/* ── COVER ── */
+body { padding-top: 0; }
+.cover {
+  min-height: 100vh;
+  background: var(--slate-950);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  /* Push content below the fixed nav */
+  padding-top: 56px;
+}
+.cover-bg {
+  display: none;
+}
+.cover-overlay {
+  display: none;
+}
+.cover-content {
+  position: relative; z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: calc(100vh - 56px);
+  padding: 5rem 8rem;
+  max-width: 1000px;
+}
+.cover-logo { height: 58px; width: auto; align-self: flex-start; object-fit: contain; margin-bottom: 3rem; filter: brightness(1.2); }
+.cover-label {
+  font-family: var(--font-heading);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--teal-400);
+  margin-bottom: 1.5rem;
+  display: flex; align-items: center; gap: 10px;
+}
+.cover-label::before {
+  content: '';
+  width: 28px; height: 2px;
+  background: linear-gradient(90deg, var(--teal-400), var(--amber-400));
+}
+.cover-title {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: clamp(3rem, 6vw, 5rem);
+  line-height: 1.1;
+  color: var(--white);
+  margin-bottom: 1rem;
+}
+.cover-tagline {
+  font-family: var(--font-heading);
+  font-size: clamp(1rem, 2vw, 1.3rem);
+  font-weight: 400;
+  color: var(--slate-400);
+  margin-bottom: 3rem;
+}
+.cover-divider {
+  width: 60px; height: 1px;
+  background: linear-gradient(90deg, var(--teal-400), transparent);
+  margin-bottom: 2.5rem;
+}
+.cover-meta {
+  display: flex; gap: 3rem;
+}
+.cover-meta-item {
+  display: flex; flex-direction: column; gap: 0.2rem;
+}
+.cover-meta-label {
+  font-family: var(--font-heading);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--slate-600);
+}
+.cover-meta-value {
+  font-family: var(--font-heading);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--slate-300);
+}
+.cover-confidential {
+  position: absolute;
+  bottom: 2.5rem; right: 3rem;
+  font-family: var(--font-heading);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--slate-700);
+}
+
+/* ── DOCUMENT LAYOUT ── */
+.doc-wrap {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 4rem 2.5rem 8rem;
+  /* No extra top padding — cover handles the nav clearance */
+}
+
+/* ── RESPONSIVE GRIDS ── */
+@media (max-width: 800px) {
+  .two-col, .two-col-wide { grid-template-columns: 1fr; gap: 1.5rem; }
+  .feature-grid { grid-template-columns: 1fr 1fr; }
+  .comp-grid { grid-template-columns: 1fr; }
+  .stat-row { grid-template-columns: 1fr; }
+  .cover-content { padding: 5rem 2rem; }
+  .cover-meta { flex-wrap: wrap; gap: 1.5rem; }
+  .doc-wrap { padding: 3rem 1.5rem 6rem; }
+}
+
+/* ── SECTION BLOCKS ── */
+.doc-section {
+  padding: 4rem 0;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.doc-section:last-child { border-bottom: none; }
+
+.section-label {
+  font-family: var(--font-heading);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--teal-400);
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 1.5rem;
+}
+.section-label::before {
+  content: '';
+  width: 20px; height: 2px;
+  background: linear-gradient(90deg, var(--teal-400), var(--amber-400));
+}
+.section-num {
+  color: var(--slate-700);
+  margin-right: 0.25rem;
+}
+
+.doc-h1 {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: clamp(2.2rem, 4vw, 3.2rem);
+  line-height: 1.15;
+  color: var(--white);
+  margin-bottom: 1.75rem;
+}
+.doc-h2 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(1.5rem, 2.5vw, 2rem);
+  color: var(--white);
+  letter-spacing: -0.02em;
+  margin-bottom: 1.25rem;
+}
+.doc-h3 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--white);
+  letter-spacing: 0.01em;
+  margin-bottom: 0.6rem;
+}
+.doc-p {
+  font-size: 1rem;
+  line-height: 1.9;
+  color: var(--slate-300);
+  font-weight: 300;
+  margin-bottom: 1.25rem;
+}
+.doc-p:last-child { margin-bottom: 0; }
+.doc-p strong { color: var(--white); font-weight: 600; }
+.doc-p em { color: var(--teal-300); font-style: italic; }
+
+.pull-quote {
+  border-left: 3px solid var(--teal-400);
+  padding: 0.75rem 0 0.75rem 1.75rem;
+  margin: 2rem 0;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1.3rem;
+  color: var(--teal-300);
+  line-height: 1.5;
+}
+
+/* ── TWO COLUMN ── */
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  margin-top: 2rem;
+}
+.two-col-wide {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 3rem;
+  margin-top: 2rem;
+}
+
+/* ── CALLOUT BOXES ── */
+.callout {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 14px;
+  padding: 1.75rem;
+}
+.callout-teal {
+  background: rgba(45,212,191,0.06);
+  border-color: rgba(45,212,191,0.15);
+}
+.callout-amber {
+  background: rgba(251,191,36,0.05);
+  border-color: rgba(251,191,36,0.15);
+}
+.callout-label {
+  font-family: var(--font-heading);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--teal-400);
+  margin-bottom: 0.75rem;
+}
+.callout-amber .callout-label { color: var(--amber-400); }
+
+/* ── BULLET LISTS ── */
+.doc-list {
+  list-style: none;
+  margin: 1.25rem 0;
+}
+.doc-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  font-size: 0.95rem;
+  line-height: 1.75;
+  color: var(--slate-300);
+  font-weight: 300;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.doc-list li:last-child { border-bottom: none; }
+.doc-list li::before {
+  content: '>>';
+  color: var(--teal-400);
+  font-family: var(--font-heading);
+  font-weight: 800;
+  letter-spacing: -1px;
+  font-size: 0.8rem;
+  flex-shrink: 0;
+  margin-top: 0.35rem;
+}
+.doc-list li strong { color: var(--white); font-weight: 600; }
+
+/* ── STAT ROW ── */
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin: 2rem 0;
+}
+.stat-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+}
+.stat-num {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 2.2rem;
+  letter-spacing: -0.04em;
+  background: linear-gradient(135deg, var(--teal-400), var(--amber-400));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+  margin-bottom: 0.4rem;
+}
+.stat-label {
+  font-family: var(--font-heading);
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--slate-500);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  line-height: 1.4;
+}
+
+/* ── REVENUE TABLE ── */
+.rev-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+}
+.rev-table th {
+  font-family: var(--font-heading);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--slate-500);
+  text-align: left;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.rev-table td {
+  font-size: 0.88rem;
+  color: var(--slate-300);
+  font-weight: 300;
+  padding: 1rem;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  vertical-align: top;
+  line-height: 1.6;
+}
+.rev-table td:first-child {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  color: var(--white);
+  font-size: 0.85rem;
+}
+.rev-table tr:last-child td { border-bottom: none; }
+.rev-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+/* ── ROADMAP TIMELINE ── */
+.roadmap {
+  margin: 2rem 0;
+  position: relative;
+}
+.roadmap::before {
+  content: '';
+  position: absolute;
+  left: 24px; top: 0; bottom: 0;
+  width: 2px;
+  background: linear-gradient(180deg, var(--teal-500), var(--amber-400));
+  opacity: 0.3;
+}
+.roadmap-item {
+  display: flex;
+  gap: 1.5rem;
+  padding: 0 0 2.5rem 0;
+  position: relative;
+}
+.roadmap-item:last-child { padding-bottom: 0; }
+.roadmap-dot {
+  width: 50px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 2px;
+}
+.roadmap-dot-inner {
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--slate-900);
+  border: 2px solid var(--teal-400);
+  z-index: 1;
+}
+.roadmap-item.current .roadmap-dot-inner {
+  background: var(--teal-400);
+  box-shadow: 0 0 12px rgba(45,212,191,0.4);
+}
+.roadmap-item.next .roadmap-dot-inner {
+  border-color: var(--amber-400);
+}
+.roadmap-body { flex: 1; }
+.roadmap-period {
+  font-family: var(--font-heading);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--teal-400);
+  margin-bottom: 0.4rem;
+}
+.roadmap-item.next .roadmap-period { color: var(--amber-400); }
+.roadmap-title {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--white);
+  margin-bottom: 0.5rem;
+}
+.roadmap-desc {
+  font-size: 0.9rem;
+  color: var(--slate-400);
+  line-height: 1.7;
+  font-weight: 300;
+}
+
+.stat-num { font-family: var(--font-display); font-size: 3rem; color: var(--teal-400); line-height: 1.1; margin-bottom: 0.5rem; }
+.stat-label { font-size: 0.9rem; color: var(--slate-400); font-weight: 500; }
+
+.rev-table { width: 100%; border-collapse: collapse; margin-top: 2rem; font-family: var(--font-body); font-size: 0.95rem; }
+.rev-table th { text-align: left; padding: 1rem; border-bottom: 2px solid var(--slate-700); color: var(--white); font-family: var(--font-heading); font-weight: 700; }
+.rev-table td { padding: 1rem; border-bottom: 1px solid var(--slate-800); color: var(--slate-300); vertical-align: top; }
+@media print {
+  .rev-table th { color: #0f766e; border-bottom-color: #cbd5e1; padding: 0.5rem 1rem !important; }
+  .rev-table td { color: #334155; border-bottom-color: #e2e8f0; padding: 0.5rem 1rem !important; }
+}
+
+@media (max-width: 800px) {
+
+/* ── EXPANSION PATH ── */
+.exp-path {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin: 2rem 0;
+  flex-wrap: wrap;
+}
+.exp-node {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+.exp-town {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px;
+  padding: 0.75rem 1.25rem;
+  font-family: var(--font-heading);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--slate-300);
+  transition: all 0.3s;
+}
+.exp-town.active {
+  background: rgba(45,212,191,0.1);
+  border-color: rgba(45,212,191,0.3);
+  color: var(--teal-300);
+}
+.exp-arrow {
+  font-size: 1rem;
+  color: var(--slate-600);
+  padding: 0 0.75rem;
+}
+
+/* ── PRODUCT FEATURE GRID ── */
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  margin: 1.5rem 0;
+}
+.feature-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.7rem 1rem;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 10px;
+  font-family: var(--font-heading);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--slate-300);
+  transition: all 0.3s;
+}
+.feature-pill:hover {
+  background: rgba(45,212,191,0.06);
+  border-color: rgba(45,212,191,0.2);
+  color: var(--teal-300);
+}
+.feature-pill-icon { font-size: 1rem; flex-shrink: 0; }
+
+/* ── COMPETITOR TABLE ── */
+.comp-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+.comp-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 12px;
+  padding: 1.25rem;
+}
+.comp-name {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--white);
+  margin-bottom: 0.3rem;
+}
+.comp-type {
+  font-family: var(--font-heading);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--slate-600);
+  margin-bottom: 0.75rem;
+}
+.comp-gap {
+  font-size: 0.8rem;
+  color: var(--slate-400);
+  line-height: 1.6;
+  font-weight: 300;
+}
+.comp-win {
+  margin-top: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: rgba(45,212,191,0.06);
+  border-radius: 6px;
+  font-size: 0.75rem;
+  color: var(--teal-300);
+  font-weight: 500;
+}
+
+/* ── FUNDING TABLE ── */
+.fund-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+}
+.fund-table th {
+  font-family: var(--font-heading);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--slate-500);
+  text-align: left;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.fund-table td {
+  font-size: 0.85rem;
+  color: var(--slate-300);
+  font-weight: 300;
+  padding: 0.9rem 1rem;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  vertical-align: middle;
+}
+.fund-table td:first-child {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  color: var(--white);
+}
+.fund-table td.amount {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  color: var(--teal-400);
+}
+.fund-table tr.current td { background: rgba(45,212,191,0.04); }
+.fund-table tr:last-child td { border-bottom: none; }
+
+/* ── TOC ── */
+.toc {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 16px;
+  padding: 2rem 2.5rem;
+  margin: 3rem 0;
+}
+.toc-title {
+  font-family: var(--font-heading);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--slate-500);
+  margin-bottom: 1.5rem;
+}
+.toc-list { list-style: none; }
+.toc-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.toc-list li:last-child { border-bottom: none; }
+.toc-list a {
+  font-family: var(--font-heading);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--slate-300);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.toc-list a:hover { color: var(--teal-400); }
+.toc-num {
+  font-family: var(--font-heading);
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--slate-700);
+}
+
+/* ── GRADIENT TEXT ── */
+.gradient-text {
+  background: linear-gradient(135deg, var(--teal-400), var(--amber-400));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── PAGE HEADER ── */
+.page-header {
+  padding: 6rem 8rem 2rem;
+  background: var(--slate-900);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="bp-nav no-print">
+  <a href="index.html" class="bp-nav-brand">
+    <img src="images/logo.png" alt="More Community">
+    Business Plan
+  </a>
+  <ul class="bp-nav-links">
+    <li><a href="#overview">Overview</a></li>
+    <li><a href="#problem">Problem</a></li>
+    <li><a href="#product">Product</a></li>
+    <li><a href="#model">Model</a></li>
+    <li><a href="#financials">Financials</a></li>
+    <li><a href="#traction">Traction</a></li>
+    <li><a href="#expansion">Expansion</a></li>
+    <li><a href="#ask">Investment</a></li>
+  </ul>
+  <button class="bp-nav-print" onclick="window.print()">⬇ Download / Print</button>
+</nav>
+
+<!-- ===== COVER ===== -->
+<div class="cover">
+  <div class="cover-bg">
+    <img src="images/tunbridge-wells.png" alt="">
+  </div>
+  <div class="cover-overlay"></div>
+  <div class="cover-content">
+    <img src="images/logo.png" alt="More Community" class="cover-logo">
+    <div class="cover-label">Business Plan &amp; Investment Overview</div>
+    <h1 class="cover-title">Community infrastructure<br>for real-life connection.</h1>
+    <p class="cover-tagline">Helping people find their people — one town at a time.</p>
+    <div class="cover-divider"></div>
+    <div class="cover-meta">
+      <div class="cover-meta-item">
+        <span class="cover-meta-label">Year</span>
+        <span class="cover-meta-value">2026</span>
+      </div>
+      <div class="cover-meta-item">
+        <span class="cover-meta-label">Stage</span>
+        <span class="cover-meta-value">Seed Round</span>
+      </div>
+      <div class="cover-meta-item">
+        <span class="cover-meta-label">Raising</span>
+        <span class="cover-meta-value">£150k – £250k</span>
+      </div>
+      <div class="cover-meta-item">
+        <span class="cover-meta-label">Website</span>
+        <span class="cover-meta-value">morecommunity.co.uk</span>
+      </div>
+    </div>
+  </div>
+  <div class="cover-confidential">Confidential · © More Community 2026</div>
+</div>
+
+<!-- ===== DOCUMENT BODY ===== -->
+<div class="doc-wrap">
+
+  <!-- TABLE OF CONTENTS -->
+  <div class="toc">
+    <div class="toc-title">Contents</div>
+    <ul class="toc-list">
+      <li><a href="#overview">01 — Executive Summary</a><span class="toc-num">01</span></li>
+      <li><a href="#founder">02 — Founder Story</a><span class="toc-num">02</span></li>
+      <li><a href="#problem">03 — The Problem</a><span class="toc-num">03</span></li>
+      <li><a href="#opportunity">04 — The Opportunity</a><span class="toc-num">04</span></li>
+      <li><a href="#product">05 — The Product</a><span class="toc-num">05</span></li>
+      <li><a href="#whynow">06 — Why Now</a><span class="toc-num">06</span></li>
+      <li><a href="#whywin">07 — Why We Win</a><span class="toc-num">07</span></li>
+      <li><a href="#traction">08 — Traction</a><span class="toc-num">08</span></li>
+      <li><a href="#model">09 — Business Model</a><span class="toc-num">09</span></li>
+      <li><a href="#financials">10 — Financial Projections</a><span class="toc-num">10</span></li>
+      <li><a href="#competitors">11 — Competitive Landscape</a><span class="toc-num">11</span></li>
+      <li><a href="#expansion">12 — Expansion Strategy</a><span class="toc-num">12</span></li>
+      <li><a href="#ask">13 — Investment Ask</a><span class="toc-num">13</span></li>
+    </ul>
+  </div>
+
+  <!-- ===== 01 EXECUTIVE SUMMARY ===== -->
+  <div class="doc-section" id="overview">
+    <div class="section-label"><span class="section-num">01</span>Executive Summary</div>
+    <h2 class="doc-h1">More Community</h2>
+    <p class="doc-p">More Community is a community infrastructure platform that helps people build, run and discover real-life communities. We exist to solve a problem that is both deeply personal and structurally significant: the people who run the grassroots communities that hold towns together are overwhelmed, under-supported and relying on a patchwork of disconnected tools.</p>
+    <p class="doc-p">We are building a single platform — free for community founders — that combines discovery, event management, membership, communication and analytics in one place. At the same time, we give people looking for connection a trusted directory of local groups, events and experiences.</p>
+
+    <div class="pull-quote">
+      "We are not a software company trying to understand community. We are community builders."
+    </div>
+
+    <div class="stat-row">
+      <div class="stat-card">
+        <div class="stat-num">9M+</div>
+        <div class="stat-label">Lonely Adults in the UK</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">£2.5B</div>
+        <div class="stat-label">Annual Cost of Loneliness to the UK</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">£150k–250k</div>
+        <div class="stat-label">Current Seed Round</div>
+      </div>
+    </div>
+
+    <img src="images/charity.png" alt="Community Overview" style="width: 100%; height: 200px; object-fit: cover; border-radius: 16px; margin: 1.5rem 0; border: 1px solid rgba(255,255,255,0.06);">
+
+    <p class="doc-p">We are raising <strong>£150,000–£250,000</strong> in seed funding to accelerate product development, launch a mobile app and expand our community network beyond Tunbridge Wells into Kent and the South East.</p>
+  </div>
+
+  <!-- ===== 02 FOUNDER STORY ===== -->
+  <div class="doc-section" id="founder">
+    <div class="section-label"><span class="section-num">02</span>Founder Story</div>
+    <h2 class="doc-h1">The greatest transformation of my life came through community.</h2>
+
+    <p class="doc-p" style="font-size: 1.1rem;">For years I chased achievement through business, endurance sport and personal goals. I competed in Ironman triathlons, completed 12 Months 4 Charity challenges, and pushed myself through burnout again and again — mistaking relentless forward motion for progress. The most meaningful transformation didn't come from crossing a finish line. It came through recovery, honest conversations, men's groups, counselling skills training and the simple, powerful act of walking alongside others.</p>
+    
+    <div class="pull-quote" style="margin: 1.5rem 0; font-size: 1.3rem;">
+      "Achievement changed my circumstances. Community changed my life."
+    </div>
+
+    <p class="doc-p" style="font-size: 1.1rem; margin-bottom: 2rem;">I trained as a Mental Health First Aider, studied counselling skills and began facilitating men's groups and community walks. Through that process I discovered something that no achievement had ever given me: a deep sense of belonging. More Community was born from that realisation. Not as a tech product looking for a problem — but as a lived experience that revealed a structural gap. When I began building More Community in Tunbridge Wells, the tools problem became impossible to ignore.</p>
+
+    <h3 style="font-family: var(--font-heading); font-size: 0.9rem; letter-spacing: 2px; text-transform: uppercase; color: var(--teal-400); margin-top: 1.5rem; margin-bottom: 1rem; text-align: center;">The Founder's Journey</h3>
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem;">
+      <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 1rem; border-radius: 12px; border-top: 3px solid var(--amber-400);">
+        <div style="font-family: var(--font-heading); font-size: 0.85rem; color: var(--white); font-weight: 700; margin-bottom: 0.4rem;">12 Months 4 Charity</div>
+        <div style="font-size: 0.75rem; color: var(--slate-400); line-height: 1.4;">Endurance fundraising, community for a cause</div>
+      </div>
+      <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 1rem; border-radius: 12px; border-top: 3px solid var(--amber-400);">
+        <div style="font-family: var(--font-heading); font-size: 0.85rem; color: var(--white); font-weight: 700; margin-bottom: 0.4rem;">Ironman</div>
+        <div style="font-size: 0.75rem; color: var(--slate-400); line-height: 1.4;">Peak performance, but isolated achievement</div>
+      </div>
+      <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 1rem; border-radius: 12px; border-top: 3px solid var(--teal-400);">
+        <div style="font-family: var(--font-heading); font-size: 0.85rem; color: var(--white); font-weight: 700; margin-bottom: 0.4rem;">Recovery</div>
+        <div style="font-size: 0.75rem; color: var(--slate-400); line-height: 1.4;">Where the real transformation began</div>
+      </div>
+      <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 1rem; border-radius: 12px; border-top: 3px solid var(--teal-400);">
+        <div style="font-family: var(--font-heading); font-size: 0.85rem; color: var(--white); font-weight: 700; margin-bottom: 0.4rem;">Mental Health First Aid</div>
+        <div style="font-size: 0.75rem; color: var(--slate-400); line-height: 1.4;">Trained as a qualified practitioner</div>
+      </div>
+      <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 1rem; border-radius: 12px; border-top: 3px solid var(--teal-400);">
+        <div style="font-family: var(--font-heading); font-size: 0.85rem; color: var(--white); font-weight: 700; margin-bottom: 0.4rem;">Counselling Skills</div>
+        <div style="font-size: 0.75rem; color: var(--slate-400); line-height: 1.4;">Trained in listening and human connection</div>
+      </div>
+      <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 1rem; border-radius: 12px; border-top: 3px solid var(--teal-400);">
+        <div style="font-family: var(--font-heading); font-size: 0.85rem; color: var(--white); font-weight: 700; margin-bottom: 0.4rem;">Men's Groups</div>
+        <div style="font-size: 0.75rem; color: var(--slate-400); line-height: 1.4;">Creating space for honest, vulnerable conversation</div>
+      </div>
+      <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 1rem; border-radius: 12px; border-top: 3px solid var(--teal-400);">
+        <div style="font-family: var(--font-heading); font-size: 0.85rem; color: var(--white); font-weight: 700; margin-bottom: 0.4rem;">Community Walks</div>
+        <div style="font-size: 0.75rem; color: var(--slate-400); line-height: 1.4;">Mindful Miles: the power of simple togetherness</div>
+      </div>
+      <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 1rem; border-radius: 12px; border-top: 3px solid var(--amber-400);">
+        <div style="font-family: var(--font-heading); font-size: 0.85rem; color: var(--white); font-weight: 700; margin-bottom: 0.4rem;">More Community</div>
+        <div style="font-size: 0.75rem; color: var(--slate-400); line-height: 1.4;">Platform vision validated through lived delivery</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 03 THE PROBLEM ===== -->
+  <div class="doc-section" id="problem">
+    <div class="section-label"><span class="section-num">03</span>The Problem</div>
+    <h2 class="doc-h1">Three interconnected problems. One platform.</h2>
+
+    <div class="two-col">
+      <div>
+        <div class="callout" style="height:100%;">
+          <div class="callout-label">Problem 1: The Founder's Burden</div>
+          <h3 class="doc-h3" style="margin-bottom:1rem;">Building More Community exposed a bigger problem.</h3>
+          <p class="doc-p" style="font-size:0.9rem;">To run a single community, I needed WhatsApp, Facebook, Instagram, a website, forms, email, analytics, event tools, membership systems and challenge tracking. No single platform existed for community founders.</p>
+          <ul class="doc-list" style="margin-top:1rem;">
+            <li>WhatsApp &amp; Facebook for communication</li>
+            <li>Instagram for promotion</li>
+            <li>Eventbrite for events</li>
+            <li>Google Forms for RSVPs</li>
+            <li>Mailchimp for updates</li>
+            <li>Google Analytics for data</li>
+            <li>Custom website for credibility</li>
+          </ul>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:1rem;">
+        <img src="images/arts.png" alt="The Problem" style="width: 100%; height: 120px; object-fit: cover; border-radius: 14px; border: 1px solid rgba(255,255,255,0.06);">
+        <div class="callout callout-teal">
+          <div class="callout-label">Problem 2: The Invisible Leaders</div>
+          <h3 class="doc-h3" style="margin-bottom:0.75rem;">Community leaders are the hidden infrastructure of society.</h3>
+          <p class="doc-p" style="font-size:0.9rem;">Every town has walking groups, running clubs, volunteering projects, faith groups, parent groups and entrepreneur communities. The people running them are overwhelmed, under-supported and relying on disconnected tools.</p>
+        </div>
+        <div class="callout callout-amber">
+          <div class="callout-label">Problem 3: The Discovery Gap</div>
+          <h3 class="doc-h3" style="margin-bottom:0.75rem;">Communities exist everywhere. Finding them is difficult.</h3>
+          <p class="doc-p" style="font-size:0.9rem;">People looking for connection rely on Facebook, Google, word of mouth or luck. Incredible groups already exist in every town — they are simply fragmented and hard to discover.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 04 THE OPPORTUNITY ===== -->
+  <div class="doc-section" id="opportunity">
+    <div class="section-label"><span class="section-num">04</span>The Opportunity</div>
+    <h2 class="doc-h1">One platform for founders and seekers.</h2>
+    <p class="doc-p">More Community sits at the intersection of two unmet needs: community founders need better tools, and people seeking connection need a better way to find their people. We serve both from a single, integrated platform.</p>
+
+    <div class="two-col">
+      <div class="callout callout-teal">
+        <div class="callout-label">For Community Founders</div>
+        <p class="doc-p" style="font-size:0.9rem;">Everything they need to build, grow and sustain a community — in one free platform. Replace the patchwork of tools with a single, purpose-built ecosystem.</p>
+      </div>
+      <div class="callout callout-teal">
+        <div class="callout-label">For People Seeking Connection</div>
+        <p class="doc-p" style="font-size:0.9rem;">A trusted local directory of communities, events and real-world experiences. Discover walking groups, running clubs, faith groups and more — all in one place, searchable by town.</p>
+      </div>
+    </div>
+
+    <img src="images/adventure.png" alt="The Opportunity" style="width: 100%; height: 180px; object-fit: cover; border-radius: 16px; margin-top: 1.5rem; border: 1px solid rgba(255,255,255,0.06);">
+
+    <div class="stat-row" style="margin-top:1.5rem;">
+      <div class="stat-card">
+        <div class="stat-num">£2.5B</div>
+        <div class="stat-label">Annual Loneliness Cost (UK)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">70%</div>
+        <div class="stat-label">Gen Z Prefer Experiences Over Possessions</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">∞</div>
+        <div class="stat-label">Communities Waiting to Grow</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 05 THE PRODUCT ===== -->
+  <div class="doc-section" id="product">
+    <div class="section-label"><span class="section-num">05</span>The Product</div>
+    <h2 class="doc-h1">Everything a community founder needs in one ecosystem.</h2>
+    <p class="doc-p">More Community is built around two interconnected experiences: a powerful set of tools for community founders, and a discovery platform for people seeking connection. The platform is free for leaders — always.</p>
+
+    <div class="feature-grid">
+      <div class="feature-pill"><span class="feature-pill-icon">🗂️</span>Discovery Directory</div>
+      <div class="feature-pill"><span class="feature-pill-icon">📅</span>Event Management</div>
+      <div class="feature-pill"><span class="feature-pill-icon">✅</span>RSVP Tracking</div>
+      <div class="feature-pill"><span class="feature-pill-icon">💬</span>Built-in Chat</div>
+      <div class="feature-pill"><span class="feature-pill-icon">📊</span>Leader Dashboard</div>
+      <div class="feature-pill"><span class="feature-pill-icon">🤝</span>Co-Leadership</div>
+      <div class="feature-pill"><span class="feature-pill-icon">👤</span>Member Profiles</div>
+      <div class="feature-pill"><span class="feature-pill-icon">📸</span>Photo Galleries</div>
+      <div class="feature-pill"><span class="feature-pill-icon">🌐</span>Community Microsites</div>
+      <div class="feature-pill"><span class="feature-pill-icon">📣</span>Broadcasts</div>
+      <div class="feature-pill"><span class="feature-pill-icon">🔔</span>Notifications</div>
+      <div class="feature-pill"><span class="feature-pill-icon">🎯</span>Experiences Marketplace</div>
+      <div class="feature-pill"><span class="feature-pill-icon">📱</span>Mobile App (Upcoming)</div>
+    </div>
+
+    <div class="callout callout-teal" style="margin-top:2rem;">
+      <div class="callout-label">Design Principle</div>
+      <p class="doc-p" style="font-size:0.9rem;margin:0;">We replace a fragmented stack of 8–10 external tools with a single, purpose-built platform. For community founders, this means less admin, more community. For members, it means a simpler, more connected experience.</p>
+    </div>
+  </div>
+
+  <div class="doc-section" id="roadmap">
+    <div class="section-label"><span class="section-num">05b</span>Roadmap</div>
+    <h2 class="doc-h1">Product Roadmap &amp; Mobile Strategy</h2>
+    <p class="doc-p" style="font-size:0.9rem;">Our web-first approach is deliberate: community leaders manage complex tasks (event creation, analytics, CRM) from a desktop dashboard, while members primarily interact via mobile web. Seed funding accelerates the development of our native mobile apps, transitioning members from web to app while retaining the powerful web dashboard for leaders.</p>
+    
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1.5rem;">
+      <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 1rem; border-radius: 12px; border-top: 3px solid var(--teal-400);">
+        <div style="font-family: var(--font-heading); font-size: 0.85rem; color: var(--white); font-weight: 700; margin-bottom: 0.4rem;">Q4 2026: Foundation</div>
+        <ul style="font-size: 0.75rem; color: var(--slate-400); line-height: 1.4; padding-left: 1rem; margin: 0;">
+          <li>Experiences Marketplace MVP</li>
+          <li>Advanced CRM for Pro Leaders</li>
+          <li>API foundation for mobile</li>
+        </ul>
+      </div>
+      <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 1rem; border-radius: 12px; border-top: 3px solid var(--amber-400);">
+        <div style="font-family: var(--font-heading); font-size: 0.85rem; color: var(--white); font-weight: 700; margin-bottom: 0.4rem;">Q1 2027: Mobile App</div>
+        <ul style="font-size: 0.75rem; color: var(--slate-400); line-height: 1.4; padding-left: 1rem; margin: 0;">
+          <li>iOS Beta App Launch</li>
+          <li>Push notifications &amp; live chat</li>
+          <li>One-tap RSVP &amp; QR check-in</li>
+        </ul>
+      </div>
+      <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 1rem; border-radius: 12px; border-top: 3px solid var(--amber-400);">
+        <div style="font-family: var(--font-heading); font-size: 0.85rem; color: var(--white); font-weight: 700; margin-bottom: 0.4rem;">Q2 2027: Ecosystem</div>
+        <ul style="font-size: 0.75rem; color: var(--slate-400); line-height: 1.4; padding-left: 1rem; margin: 0;">
+          <li>Android App Launch</li>
+          <li>NHS Social Prescribing API</li>
+          <li>Council Dashboard (Data V1)</li>
+        </ul>
+      </div>
+    </div>
+    
+    <img src="images/wellness.png" alt="The Product" style="width: 100%; height: 200px; object-fit: cover; border-radius: 16px; margin-top: 1.5rem; border: 1px solid rgba(255,255,255,0.06);">
+  </div>
+
+  <!-- ===== 06 WHY NOW ===== -->
+  <div class="doc-section" id="whynow">
+    <div class="section-label"><span class="section-num">06</span>Why Now</div>
+    <h2 class="doc-h1">The world needs more real-life connection.</h2>
+    <p class="doc-p">The timing for More Community is driven by four converging macro trends:</p>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin: 2rem 0;">
+      <div class="callout callout-teal" style="margin: 0;">
+        <div class="callout-label" style="font-size: 1.1rem; margin-bottom: 0.5rem; color: var(--teal-300);">🏥 Public Health Crisis</div>
+        <p class="doc-p" style="font-size: 0.9rem; margin: 0;">9 million UK adults report feeling lonely, costing the economy £2.5 billion annually. The structural solution is local community infrastructure.</p>
+      </div>
+      <div class="callout callout-amber" style="margin: 0;">
+        <div class="callout-label" style="font-size: 1.1rem; margin-bottom: 0.5rem; color: var(--amber-400);">📉 Legacy Platforms in Decline</div>
+        <p class="doc-p" style="font-size: 0.9rem; margin: 0;">Under-35s are leaving Facebook Groups. More Community is the trusted evolution — purpose-built for local discovery and designed for all ages.</p>
+      </div>
+      <div class="callout callout-amber" style="margin: 0;">
+        <div class="callout-label" style="font-size: 1.1rem; margin-bottom: 0.5rem; color: var(--amber-400);">🏃 Real-World Demand</div>
+        <p class="doc-p" style="font-size: 0.9rem; margin: 0;">After years of digital saturation, people are actively seeking in-person events, local groups and shared physical experiences.</p>
+      </div>
+      <div class="callout callout-teal" style="margin: 0;">
+        <div class="callout-label" style="font-size: 1.1rem; margin-bottom: 0.5rem; color: var(--teal-300);">🏛️ Public Sector Need</div>
+        <p class="doc-p" style="font-size: 0.9rem; margin: 0;">Councils and the NHS need vetted, scalable platforms to support social prescribing, wellbeing programmes and community cohesion.</p>
+      </div>
+    </div>
+
+    <img src="images/running.png" alt="Why Now" style="width: 100%; height: 200px; object-fit: cover; border-radius: 16px; margin-top: 1.5rem; border: 1px solid rgba(255,255,255,0.06);">
+  </div>
+
+  <!-- ===== 07 WHY WE WIN ===== -->
+  <div class="doc-section" id="whywin">
+    <div class="section-label"><span class="section-num">07</span>Why We Win</div>
+    <h2 class="doc-h1">Built from lived experience. Not market research.</h2>
+    <p class="doc-p">Our competitive advantage is not technical — it is human. More Community is built by someone who has lived the problem, built real communities, trained in wellbeing and experienced the transformation that genuine connection creates.</p>
+
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin: 2rem 0;">
+      <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 1rem; border-radius: 12px; border-top: 3px solid var(--teal-400);">
+        <div style="font-family: var(--font-heading); font-size: 0.85rem; color: var(--white); font-weight: 700; margin-bottom: 0.4rem;">Founder Credibility</div>
+        <div style="font-size: 0.75rem; color: var(--slate-400); line-height: 1.4;">MHFA, counselling skills, community walk leader, facilitator</div>
+      </div>
+      <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 1rem; border-radius: 12px; border-top: 3px solid var(--teal-400);">
+        <div style="font-family: var(--font-heading); font-size: 0.85rem; color: var(--white); font-weight: 700; margin-bottom: 0.4rem;">Real-World Validation</div>
+        <div style="font-size: 0.75rem; color: var(--slate-400); line-height: 1.4;">Platform built alongside active community delivery</div>
+      </div>
+      <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 1rem; border-radius: 12px; border-top: 3px solid var(--amber-400);">
+        <div style="font-family: var(--font-heading); font-size: 0.85rem; color: var(--white); font-weight: 700; margin-bottom: 0.4rem;">Free For Leaders</div>
+        <div style="font-size: 0.75rem; color: var(--slate-400); line-height: 1.4;">We grow by serving, not charging; driving trust and adoption</div>
+      </div>
+      <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 1rem; border-radius: 12px; border-top: 3px solid var(--amber-400);">
+        <div style="font-family: var(--font-heading); font-size: 0.85rem; color: var(--white); font-weight: 700; margin-bottom: 0.4rem;">Local-First Strategy</div>
+        <div style="font-size: 0.75rem; color: var(--slate-400); line-height: 1.4;">Deep density in one town beats shallow presence in a hundred</div>
+      </div>
+      <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 1rem; border-radius: 12px; border-top: 3px solid var(--teal-400);">
+        <div style="font-family: var(--font-heading); font-size: 0.85rem; color: var(--white); font-weight: 700; margin-bottom: 0.4rem;">Founder Empathy</div>
+        <div style="font-size: 0.75rem; color: var(--slate-400); line-height: 1.4;">We understand the admin burden because we lived it</div>
+      </div>
+      <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 1rem; border-radius: 12px; border-top: 3px solid var(--teal-400);">
+        <div style="font-family: var(--font-heading); font-size: 0.85rem; color: var(--white); font-weight: 700; margin-bottom: 0.4rem;">Wellbeing-First</div>
+        <div style="font-size: 0.75rem; color: var(--slate-400); line-height: 1.4;">We sit naturally within NHS social prescribing frameworks</div>
+      </div>
+      <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 1rem; border-radius: 12px; border-top: 3px solid var(--amber-400);">
+        <div style="font-family: var(--font-heading); font-size: 0.85rem; color: var(--white); font-weight: 700; margin-bottom: 0.4rem;">Mission Alignment</div>
+        <div style="font-size: 0.75rem; color: var(--slate-400); line-height: 1.4;">This is not a pivot opportunity — it is the entire vision</div>
+      </div>
+      <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 1rem; border-radius: 12px; border-top: 3px solid var(--amber-400);">
+        <div style="font-family: var(--font-heading); font-size: 0.85rem; color: var(--white); font-weight: 700; margin-bottom: 0.4rem;">Ecosystem Model</div>
+        <div style="font-size: 0.75rem; color: var(--slate-400); line-height: 1.4;">We monetise the network around leaders, not the leaders</div>
+      </div>
+    </div>
+    
+    <img src="images/faith.png" alt="Why We Win" style="width: 100%; height: 200px; object-fit: cover; border-radius: 14px; border: 1px solid rgba(255,255,255,0.06);">
+  </div>
+
+  <!-- ===== 08 TRACTION ===== -->
+  <div class="doc-section" id="traction">
+    <div class="section-label"><span class="section-num">08</span>Traction</div>
+    <h2 class="doc-h1">More than an idea.</h2>
+    <p class="doc-p">More Community is a working operation, not a concept. We have built communities, run events, mapped ecosystems and validated our platform through real-world delivery in Tunbridge Wells and East Sussex.</p>
+
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin: 2rem 0;">
+      <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 1rem; border-radius: 12px; border-top: 3px solid var(--amber-400);">
+        <div style="font-family: var(--font-heading); font-size: 0.85rem; color: var(--white); font-weight: 700; margin-bottom: 0.4rem;">More Community</div>
+        <div style="font-size: 0.75rem; color: var(--slate-400); line-height: 1.4;">Established in East Sussex and Tunbridge Wells with an active local footprint</div>
+      </div>
+      <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 1rem; border-radius: 12px; border-top: 3px solid var(--amber-400);">
+        <div style="font-family: var(--font-heading); font-size: 0.85rem; color: var(--white); font-weight: 700; margin-bottom: 0.4rem;">Community Walks</div>
+        <div style="font-size: 0.75rem; color: var(--slate-400); line-height: 1.4;">Regular Mindful Miles sessions running with real members</div>
+      </div>
+      <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 1rem; border-radius: 12px; border-top: 3px solid var(--teal-400);">
+        <div style="font-family: var(--font-heading); font-size: 0.85rem; color: var(--white); font-weight: 700; margin-bottom: 0.4rem;">Wellbeing Initiatives</div>
+        <div style="font-size: 0.75rem; color: var(--slate-400); line-height: 1.4;">Measurable impact delivered within the local community</div>
+      </div>
+      <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 1rem; border-radius: 12px; border-top: 3px solid var(--teal-400);">
+        <div style="font-family: var(--font-heading); font-size: 0.85rem; color: var(--white); font-weight: 700; margin-bottom: 0.4rem;">A-Z Challenge</div>
+        <div style="font-size: 0.75rem; color: var(--slate-400); line-height: 1.4;">A scalable, replicable community engagement model</div>
+      </div>
+      <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 1rem; border-radius: 12px; border-top: 3px solid var(--teal-400);">
+        <div style="font-family: var(--font-heading); font-size: 0.85rem; color: var(--white); font-weight: 700; margin-bottom: 0.4rem;">Local Partnerships</div>
+        <div style="font-size: 0.75rem; color: var(--slate-400); line-height: 1.4;">Businesses, organisations and local networks aligning with our mission</div>
+      </div>
+      <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 1rem; border-radius: 12px; border-top: 3px solid var(--teal-400);">
+        <div style="font-family: var(--font-heading); font-size: 0.85rem; color: var(--white); font-weight: 700; margin-bottom: 0.4rem;">Ecosystem Mapped</div>
+        <div style="font-size: 0.75rem; color: var(--slate-400); line-height: 1.4;">Comprehensive local community directory in progress in TW</div>
+      </div>
+      <div style="grid-column: span 2; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 1rem; border-radius: 12px; border-top: 3px solid var(--amber-400);">
+        <div style="font-family: var(--font-heading); font-size: 0.85rem; color: var(--white); font-weight: 700; margin-bottom: 0.4rem;">Platform Live</div>
+        <div style="font-size: 0.75rem; color: var(--slate-400); line-height: 1.4;">Web platform operational with discovery, events and leader tools</div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="callout callout-teal" style="margin-bottom: 0; height: 100%;">
+        <div class="callout-label">Validated Through Delivery</div>
+        <p class="doc-p" style="font-size:0.9rem;margin-bottom:1rem;">We have not just built a product — we have built communities. Every feature on the platform was informed by real operational experience running groups, organising events and supporting community leaders.</p>
+        <p class="doc-p" style="font-size:0.9rem;margin:0;color:var(--teal-300);font-style:italic;">"We know what community founders need because we are community founders."</p>
+      </div>
+      <img src="images/entrepreneurs.png" alt="Traction" style="width: 100%; height: 100%; min-height: 180px; object-fit: cover; border-radius: 14px; border: 1px solid rgba(255,255,255,0.06);">
+    </div>
+  </div>
+
+  <!-- ===== 09 BUSINESS MODEL ===== -->
+  <div class="doc-section" id="model">
+    <div class="section-label"><span class="section-num">09</span>Business Model</div>
+    <h2 class="doc-h1">Free for leaders. Always.</h2>
+    <p class="doc-p">Our core principle is non-negotiable: community founders never pay to use More Community. This is not a freemium strategy with a paywall behind it — it is a structural commitment that drives trust, adoption and network effects.</p>
+
+    <div class="pull-quote">
+      "We monetise the ecosystem, not the leader."
+    </div>
+
+    <p class="doc-p">Revenue is generated through the value created around active communities — not by taxing the people who create that value. By combining hyper-local sponsorship, an experiences marketplace, premium SaaS tools and B2G enterprise contracts (NHS Social Prescribing), the model supports venture-scale economics targeting £14M+ ARR within 5 years — profitable from Year 2.</p>
+
+    <table class="rev-table">
+      <thead>
+        <tr>
+          <th>Revenue Stream</th>
+          <th>Unit Value</th>
+          <th>Description</th>
+          <th>Timeline</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Local Sponsorship</td>
+          <td style="white-space:nowrap">£13k/town</td>
+          <td>Local businesses sponsor communities via tiered packages: 1× Headline Sponsor (£5,000/yr), 2× Community Supporter (£2,500/yr each), 3× Event Partner (£1,000/yr each) = £13,000 per town. Priced well below the average UK SME marketing budget of £38,000 (Statista 2025).</td>
+          <td>Year 1–5</td>
+        </tr>
+        <tr>
+          <td>NHS &amp; Council Contracts</td>
+          <td style="white-space:nowrap">£50k/contract</td>
+          <td>The NHS Long Term Plan mandates social prescribing across all 42 Integrated Care Systems (ICSs). More Community provides the digital infrastructure for these programmes — connecting link workers to community activities. High-margin, sticky B2G revenue with multi-year renewal rates.</td>
+          <td>Year 2–5</td>
+        </tr>
+        <tr>
+          <td>Strategic Partnerships</td>
+          <td style="white-space:nowrap">£60k/partner</td>
+          <td>Partnerships with health, wellbeing, leisure and lifestyle brands who want access to engaged, active community members at a regional and national scale.</td>
+          <td>Year 2–5</td>
+        </tr>
+        <tr>
+          <td>Premium Leader Tools</td>
+          <td style="white-space:nowrap">£49/mo</td>
+          <td>Advanced CRM, engagement scoring, export tools, priority event promotion, custom branding, multi-admin and A/B testing on events. ~25% adoption rate across towns, yielding ~£800 ARR per town.</td>
+          <td>Year 1–5</td>
+        </tr>
+        <tr>
+          <td>Ticketing &amp; Events</td>
+          <td style="white-space:nowrap">£2k/town</td>
+          <td>Platform fees on paid community events and experiences. Free event ticketing with integrated CRM — leaders keep attendees, not just ticket sales.</td>
+          <td>Year 1–5</td>
+        </tr>
+        <tr>
+          <td>Council Performance Dashboard</td>
+          <td style="white-space:nowrap">£5k/town</td>
+          <td>Real-time community health and engagement dashboard for local authorities. Replaces expensive, static community audit reports with live, anonymised data. High-margin recurring revenue that grows with the network without incremental sales effort.</td>
+          <td>Year 3–5</td>
+        </tr>
+        <tr>
+          <td>Experiences Marketplace</td>
+          <td style="white-space:nowrap">£3k/town</td>
+          <td>Community leaders curate and promote day experiences (skydiving, retreats, away days, theatre, wellness) to their groups. More Community earns a 10–15% base commission; leaders choose their own markup on top. Year 1 focuses on single-day experiences; Year 2 expands to multi-day packages. Comparable to Viator/GetYourGuide but driven by trusted community leaders rather than anonymous reviews.</td>
+          <td>Year 1–5</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3 class="doc-h3" style="margin-top: 2rem;">Experiences Marketplace</h3>
+    <p class="doc-p" style="font-size:0.9rem;">The Experiences Marketplace is a commission-based revenue stream that leverages the trust community leaders have with their members. Leaders browse a curated catalogue of local and national experiences — skydiving, spa retreats, theatre tickets, wine tastings, coasteering, pottery workshops — and promote them directly to their community. More Community earns a 10–15% base commission (industry standard for experience aggregators), while leaders set their own markup (typically 5–20%), creating a direct earning opportunity that incentivises promotion.</p>
+    <p class="doc-p" style="font-size:0.9rem;">Year 1 focuses on single-day experiences, priced at an average of £50–£120 per person. From Year 2, multi-day packages (weekend retreats, adventure trips) are introduced, significantly increasing average transaction value. At scale, this stream generates approximately £3,000 per town per year, contributing £1.5M by Year 5 across 500 towns.</p>
+    <div class="callout callout-teal" style="margin-top: 1rem;">
+      <div class="callout-label">Why This Works</div>
+      <p class="doc-p" style="font-size:0.85rem;margin:0;">Community leaders are trusted curators. When a yoga leader recommends a wellness retreat or an adventure group promotes coasteering, members convert at significantly higher rates than anonymous marketplace listings. The leader’s endorsement is the marketing — More Community provides the infrastructure.</p>
+    </div>
+    <table class="rev-table">
+      <thead>
+        <tr>
+          <th>Tier</th>
+          <th>Price</th>
+          <th>Inclusions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Headline Sponsor</td>
+          <td style="color:var(--amber-400);font-weight:700;white-space:nowrap">£5,000/yr</td>
+          <td>Logo on all events, featured in-app placement, microsite branding, community newsletter sponsor, event naming rights</td>
+        </tr>
+        <tr>
+          <td>Community Supporter</td>
+          <td style="color:var(--teal-400);font-weight:600;white-space:nowrap">£2,500/yr</td>
+          <td>In-app logo, event page presence, local directory listing, quarterly impact report</td>
+        </tr>
+        <tr>
+          <td>Event Partner</td>
+          <td style="white-space:nowrap">£1,000/yr</td>
+          <td>Sponsored event badge, event page logo, attendee reach data</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout callout-teal" style="margin-top: 1.5rem;">
+      <div class="callout-label">Blended Sponsorship = £13k per Town</div>
+      <p class="doc-p" style="font-size:0.9rem;margin:0;">A typical town achieves: 1× Headline (£5k) + 2× Supporter (£5k) + 3× Event Partner (£3k) = <strong>£13,000/year</strong>. This is well within the average UK SME marketing budget of £38k/year (Statista 2025) and delivers measurable local reach that social media advertising cannot replicate.</p>
+    </div>
+
+    <h3 class="doc-h3" style="margin-top: 2rem;">Platform Pricing</h3>
+    <table class="rev-table">
+      <thead>
+        <tr>
+          <th>Tier</th>
+          <th>Price</th>
+          <th>Audience</th>
+          <th>Features</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Free (Core)</td>
+          <td style="color:var(--teal-400);font-weight:700">£0 forever</td>
+          <td>All community leaders</td>
+          <td>Community creation, events, chat, member management, QR check-in, flyer generator, basic analytics, microsite</td>
+        </tr>
+        <tr>
+          <td>Pro Leader</td>
+          <td style="color:var(--amber-400);font-weight:700">£49/mo</td>
+          <td>Power users, large groups</td>
+          <td>Advanced CRM, engagement scoring, export tools, priority event promotion, custom branding, multi-admin, A/B testing on events</td>
+        </tr>
+        <tr>
+          <td>Enterprise</td>
+          <td style="font-weight:600">Custom</td>
+          <td>NHS, councils, charities</td>
+          <td>Social prescribing integration, reporting dashboards, API access, council dashboard, dedicated account manager, SLA</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ===== 10 FINANCIAL PROJECTIONS ===== -->
+  <div class="doc-section" id="financials">
+    <div class="section-label"><span class="section-num">10</span>Financial Projections</div>
+    <h2 class="doc-h1">Profitable from <span class="gradient-text">Year 2.</span></h2>
+    <p class="doc-p">The business is designed for capital efficiency. Community leaders do the activation work — More Community provides the tools, sponsors fund the ecosystem. Year 1 is an investment year, covered by seed funding. Year 2 crosses break-even. By Year 3 the business generates £1.47M EBITDA at 67% margin.</p>
+
+    <h3 class="doc-h3" style="margin-top: 2rem;">5-Year Revenue Model</h3>
+    <table class="rev-table">
+      <thead>
+        <tr>
+          <th>Revenue Stream</th>
+          <th>Unit Value</th>
+          <th>Yr 1</th>
+          <th>Yr 2</th>
+          <th>Yr 3</th>
+          <th>Yr 5</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Local Sponsorship</td>
+          <td>£13k/town</td>
+          <td>£39k</td><td>£195k</td><td>£1.04M</td><td>£6.5M</td>
+        </tr>
+        <tr>
+          <td>NHS/Council Contracts</td>
+          <td>£50k/contract</td>
+          <td>£0</td><td>£50k</td><td>£200k</td><td>£1.5M</td>
+        </tr>
+        <tr>
+          <td>Strategic Partnerships</td>
+          <td>£60k/partner</td>
+          <td>£0</td><td>£60k</td><td>£180k</td><td>£900k</td>
+        </tr>
+        <tr>
+          <td>Premium Leader Tools</td>
+          <td>£800/town</td>
+          <td>£2.4k</td><td>£12k</td><td>£64k</td><td>£400k</td>
+        </tr>
+        <tr>
+          <td>Ticketing &amp; Events</td>
+          <td>£2k/town</td>
+          <td>£6k</td><td>£30k</td><td>£160k</td><td>£1M</td>
+        </tr>
+        <tr>
+          <td>Council Performance Dashboard</td>
+          <td>£5k/town</td>
+          <td>£0</td><td>£0</td><td>£400k</td><td>£2.5M</td>
+        </tr>
+        <tr>
+          <td>Experiences Marketplace</td>
+          <td>£3k/town</td>
+          <td>£1.5k</td><td>£15k</td><td>£160k</td><td>£1.5M</td>
+        </tr>
+        <tr style="border-top:2px solid rgba(45,212,191,0.3)">
+          <td style="font-size:0.95rem"><strong>Total Revenue</strong></td>
+          <td></td>
+          <td><strong>£49k</strong></td><td><strong>£362k</strong></td><td><strong>£2.2M</strong></td><td style="color:var(--amber-400);font-size:1rem"><strong>£14.3M</strong></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3 class="doc-h3" style="margin-top: 2.5rem;">5-Year Profit &amp; Loss</h3>
+    <table class="rev-table">
+      <thead>
+        <tr>
+          <th></th>
+          <th>Year 1</th><th>Year 2</th><th>Year 3</th><th>Year 4</th><th>Year 5</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td colspan="6" style="color:var(--white);font-weight:700;padding-top:20px;border-bottom:none">REVENUE</td></tr>
+        <tr><td>Local Sponsorships</td><td>£39,000</td><td>£195,000</td><td>£1,040,000</td><td>£2,600,000</td><td>£6,500,000</td></tr>
+        <tr><td>NHS/Council Contracts</td><td>£0</td><td>£50,000</td><td>£200,000</td><td>£600,000</td><td>£1,500,000</td></tr>
+        <tr><td>Strategic Partnerships</td><td>£0</td><td>£60,000</td><td>£180,000</td><td>£480,000</td><td>£900,000</td></tr>
+        <tr><td>Premium Leader Tools</td><td>£2,400</td><td>£12,000</td><td>£64,000</td><td>£160,000</td><td>£400,000</td></tr>
+        <tr><td>Ticketing &amp; Events</td><td>£6,000</td><td>£30,000</td><td>£160,000</td><td>£400,000</td><td>£1,000,000</td></tr>
+        <tr><td>Council Performance Dashboard</td><td>£0</td><td>£0</td><td>£400,000</td><td>£1,000,000</td><td>£2,500,000</td></tr>
+        <tr><td>Experiences Marketplace</td><td>£1,500</td><td>£15,000</td><td>£160,000</td><td>£500,000</td><td>£1,500,000</td></tr>
+        <tr style="background:rgba(45,212,191,0.04)"><td style="font-weight:700">Total Revenue</td><td style="font-weight:700">£48,900</td><td style="font-weight:700">£362,000</td><td style="font-weight:700">£2,204,000</td><td style="font-weight:700">£5,740,000</td><td style="font-weight:700">£14,300,000</td></tr>
+        <tr><td colspan="6" style="color:var(--white);font-weight:700;padding-top:24px;border-bottom:none">COSTS</td></tr>
+        <tr><td>Total Payroll</td><td>£136,000</td><td>£249,000</td><td>£630,000</td><td>£1,249,000</td><td>£2,620,000</td></tr>
+        <tr><td>Marketing &amp; Local Activation</td><td>£4,500</td><td>£15,000</td><td>£64,000</td><td>£120,000</td><td>£250,000</td></tr>
+        <tr><td>Infrastructure &amp; Hosting</td><td>£600</td><td>£3,000</td><td>£16,000</td><td>£40,000</td><td>£100,000</td></tr>
+        <tr><td>Legal, Ops &amp; Office</td><td>£15,000</td><td>£25,000</td><td>£40,000</td><td>£80,000</td><td>£150,000</td></tr>
+        <tr style="background:rgba(45,212,191,0.04)"><td style="font-weight:700">Total Costs</td><td style="font-weight:700">£156,100</td><td style="font-weight:700">£332,000</td><td style="font-weight:700">£730,000</td><td style="font-weight:700">£1,509,000</td><td style="font-weight:700">£3,200,000</td></tr>
+        <tr style="border-top:2px solid rgba(45,212,191,0.3)"><td style="font-size:0.95rem;font-weight:700">EBITDA</td><td style="color:var(--rose-400,#fb7185)">-£107k</td><td style="color:var(--teal-400);font-weight:700">+£30k</td><td style="color:var(--teal-400);font-weight:700">+£1.47M</td><td style="color:var(--teal-400);font-weight:700">+£4.23M</td><td style="color:var(--teal-400);font-weight:700;font-size:1rem">+£11.1M</td></tr>
+        <tr><td style="color:var(--slate-500)">EBITDA Margin</td><td style="color:var(--rose-400,#fb7185)">-219%</td><td style="color:var(--teal-400)">8%</td><td style="color:var(--teal-400)">67%</td><td style="color:var(--teal-400)">74%</td><td style="color:var(--teal-400)">78%</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout callout-teal" style="margin-top: 1.5rem;">
+      <div class="callout-label">Path to Profitability</div>
+      <p class="doc-p" style="font-size:0.9rem;margin:0;">Year 1 is an investment year (£107k burn, covered by seed). Year 2 crosses break-even at 15 towns — validating unit economics before aggressive scaling. By Year 3 the business generates £1.47M EBITDA at 67% margin. The model's capital efficiency comes from community leaders doing the activation work — More Community provides the tools, sponsors fund the ecosystem.</p>
+    </div>
+
+    <h3 class="doc-h3" style="margin-top: 2.5rem;">Unit Economics (Per Town)</h3>
+    <table class="rev-table">
+      <thead>
+        <tr>
+          <th>Metric</th>
+          <th>Year 2 (15 towns)</th>
+          <th>Year 3 (80 towns)</th>
+          <th>Year 5 (500 towns)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Revenue per Town</td><td>£23,133</td><td>£25,550</td><td>£28,600</td></tr>
+        <tr><td>Direct Cost per Town</td><td>~£3,200</td><td>~£1,800</td><td>~£1,200</td></tr>
+        <tr style="background:rgba(45,212,191,0.04)"><td style="font-weight:700">Gross Margin per Town</td><td style="font-weight:700">£19,933 (86%)</td><td style="font-weight:700">£23,750 (93%)</td><td style="font-weight:700">£27,400 (96%)</td></tr>
+        <tr><td>Community Activation Cost</td><td>~£1,500</td><td>~£800</td><td>~£500</td></tr>
+        <tr><td>Estimated LTV (5yr)</td><td colspan="3" style="text-align:center;color:var(--teal-400);font-weight:700;font-size:1rem">~£120,000</td></tr>
+        <tr><td>CAC (Customer Acquisition)</td><td colspan="3" style="text-align:center;color:var(--amber-400);font-weight:600">~£2,500</td></tr>
+        <tr style="border-top:2px solid rgba(45,212,191,0.3)"><td style="font-weight:700">LTV:CAC Ratio</td><td colspan="3" style="text-align:center;font-size:1.2rem"><span class="gradient-text" style="font-weight:800">48:1</span></td></tr>
+      </tbody>
+    </table>
+
+    <div class="pull-quote" style="margin-top: 1.5rem;">
+      "Once a town is live and active, the economics are extraordinary — 96% gross margin with £28.6k revenue per town per year."
+    </div>
+
+    <h3 class="doc-h3" style="margin-top: 2.5rem;">Retention &amp; Churn Model</h3>
+    <table class="rev-table">
+      <thead>
+        <tr>
+          <th>Metric</th>
+          <th>Assumption</th>
+          <th>Rationale</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Community Leader Churn</td><td>15% / yr</td><td>Some leaders naturally step down; communities often transition to new leaders rather than closing.</td></tr>
+        <tr><td>Net Town Churn</td><td>5% / yr</td><td>Most towns self-sustain once reaching 10+ active communities. To achieve 500 active towns in Year 5, the model requires launching ~525 towns.</td></tr>
+        <tr><td>Sponsor Churn</td><td>20% / yr</td><td>SMEs review budgets annually, creating natural turnover.</td></tr>
+        <tr><td>Sponsor Replacement</td><td>80%</td><td>High demand for local, targeted community sponsorship fills vacated spots.</td></tr>
+        <tr style="background:rgba(45,212,191,0.04)"><td style="font-weight:700">Net Sponsor Churn</td><td style="font-weight:700">4% / yr</td><td>The blended impact of turnover and replacement.</td></tr>
+        <tr><td>NHS Contract Renewal</td><td>90% / yr</td><td>In line with enterprise SaaS benchmarks for embedded public sector infrastructure.</td></tr>
+      </tbody>
+    </table>
+
+    <h3 class="doc-h3" style="margin-top: 2.5rem;">Headcount Model</h3>
+    <table class="rev-table">
+      <thead>
+        <tr>
+          <th>Role</th>
+          <th>Yr 1</th><th>Yr 2</th><th>Yr 3</th><th>Yr 4</th><th>Yr 5</th><th>Avg Salary</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Founders / Execs</td><td>1</td><td>1</td><td>2</td><td>3</td><td>5</td><td>£60k</td></tr>
+        <tr><td>Community Managers</td><td>0.5</td><td>2</td><td>5</td><td>12</td><td>30</td><td>£32k</td></tr>
+        <tr><td>Sales / Enterprise</td><td>0</td><td>1</td><td>2</td><td>5</td><td>12</td><td>£45k</td></tr>
+        <tr><td>Developers / Tech</td><td>1</td><td>2</td><td>4</td><td>8</td><td>15</td><td>£60k</td></tr>
+        <tr style="background:rgba(45,212,191,0.04)"><td style="font-weight:700">Total FTEs</td><td style="font-weight:700">2.5</td><td style="font-weight:700">6</td><td style="font-weight:700">13</td><td style="font-weight:700">28</td><td style="font-weight:700">62</td><td></td></tr>
+        <tr style="border-top:2px solid rgba(45,212,191,0.3)"><td style="font-weight:700">Payroll Cost</td><td style="font-weight:700">£136k</td><td style="font-weight:700">£249k</td><td style="font-weight:700">£630k</td><td style="font-weight:700">£1.25M</td><td style="font-weight:700">£2.62M</td><td></td></tr>
+      </tbody>
+    </table>
+
+    <h3 class="doc-h3" style="margin-top: 2.5rem;">Market Size</h3>
+    <p class="doc-p">Community infrastructure is an emerging category with significant structural tailwinds.</p>
+
+    <div style="display:flex;flex-direction:column;align-items:center;gap:0.75rem;margin:2rem 0;">
+      <div style="width:100%;display:flex;align-items:center;justify-content:center;border-radius:14px;padding:1.25rem 2.5rem;font-family:var(--font-heading);font-weight:700;background:rgba(45,212,191,0.04);border:1px solid rgba(45,212,191,0.12);color:var(--teal-300);font-size:1.1rem;">£4.2B <span style="font-size:0.55rem;font-weight:600;text-transform:uppercase;letter-spacing:2px;color:var(--slate-500);display:block;margin-top:4px;">TAM — Global Community Platform Market (2026)</span></div>
+      <div style="width:75%;display:flex;align-items:center;justify-content:center;border-radius:14px;padding:1.25rem 2.5rem;font-family:var(--font-heading);font-weight:700;background:rgba(251,191,36,0.04);border:1px solid rgba(251,191,36,0.12);color:var(--amber-300);font-size:1rem;">£680M <span style="font-size:0.55rem;font-weight:600;text-transform:uppercase;letter-spacing:2px;color:var(--slate-500);display:block;margin-top:4px;">SAM — UK Local Community &amp; Social Prescribing</span></div>
+      <div style="width:50%;display:flex;align-items:center;justify-content:center;border-radius:14px;padding:1.25rem 2.5rem;font-family:var(--font-heading);font-weight:700;background:rgba(45,212,191,0.08);border:1px solid rgba(45,212,191,0.2);color:var(--teal-400);font-size:0.95rem;">£14.3M <span style="font-size:0.55rem;font-weight:600;text-transform:uppercase;letter-spacing:2px;color:var(--slate-500);display:block;margin-top:4px;">SOM — 500 UK Towns &times; Revenue Target</span></div>
+    </div>
+
+    <div class="two-col" style="margin-top:1.5rem;">
+      <div>
+        <h3 class="doc-h3">TAM — £4.2B</h3>
+        <p class="doc-p" style="font-size:0.9rem;">The global community platform market is projected at $5.3B (£4.2B) in 2026, growing at 13.7% CAGR (Grand View Research). This includes enterprise community platforms, event management and social prescribing infrastructure across developed markets.</p>
+        <h3 class="doc-h3">SAM — £680M</h3>
+        <p class="doc-p" style="font-size:0.9rem;">Our serviceable market is the UK local community infrastructure segment: ~1,800 towns with 10,000+ population, 42 NHS ICSs requiring social prescribing platforms, ~5.5M small businesses spending on local marketing, and the emerging council data insights market.</p>
+      </div>
+      <div>
+        <h3 class="doc-h3">SOM — £14.3M</h3>
+        <p class="doc-p" style="font-size:0.9rem;">Our initial achievable market is 500 towns within 5 years, each generating ~£28.6k blended revenue from sponsorship, ticketing, SaaS, data and experiences. At 500 towns this represents £14.3M revenue — roughly 30% of SOM, with significant room for pricing uplift and new revenue streams.</p>
+        <div class="callout callout-teal" style="margin-top:1rem;">
+          <div class="callout-label">Why This Market Is Defensible</div>
+          <p class="doc-p" style="font-size:0.85rem;margin:0;">Community infrastructure has a powerful network effect: each active community in a town attracts more members, which attracts more communities, which attracts more sponsors. Once a town is "live" with 10+ communities, switching costs become very high — creating a natural geographic monopoly.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 11 COMPETITIVE LANDSCAPE ===== -->
+  <div class="doc-section" id="competitors">
+    <div class="section-label"><span class="section-num">11</span>Competitive Landscape</div>
+    <h2 class="doc-h1">No platform does what we do.</h2>
+    <p class="doc-p">The competitive landscape is fragmented. Existing platforms address individual elements of the problem — community building, event management, social networking — but none combine founder tools, member discovery and local community infrastructure in a single, free platform.</p>
+
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 2rem 0;">
+      <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 1rem; border-radius: 12px; border-top: 3px solid var(--amber-400);">
+        <div style="font-family: var(--font-heading); font-size: 0.9rem; color: var(--white); font-weight: 700; margin-bottom: 0.2rem;">Facebook Groups</div>
+        <div style="font-size: 0.65rem; color: var(--teal-400); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.6rem;">Discovery &amp; Communication</div>
+        <div style="font-size: 0.75rem; color: var(--slate-400); line-height: 1.4; margin-bottom: 0.6rem;">Declining among under-35s, cluttered UX, no dedicated community founder tools, no analytics, no event ticketing.</div>
+        <div style="font-size: 0.75rem; color: var(--amber-400); font-weight: 500; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 0.6rem;">Edge: purpose-built for founders, clean UX, free tools</div>
+      </div>
+      <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 1rem; border-radius: 12px; border-top: 3px solid var(--teal-400);">
+        <div style="font-family: var(--font-heading); font-size: 0.9rem; color: var(--white); font-weight: 700; margin-bottom: 0.2rem;">Meetup</div>
+        <div style="font-size: 0.65rem; color: var(--teal-400); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.6rem;">Event Discovery</div>
+        <div style="font-size: 0.75rem; color: var(--slate-400); line-height: 1.4; margin-bottom: 0.6rem;">Charged organisers, transactional model, weak community building tools, no ongoing member management.</div>
+        <div style="font-size: 0.75rem; color: var(--amber-400); font-weight: 500; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 0.6rem;">Edge: free for leaders always, community-first not event-first</div>
+      </div>
+      <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 1rem; border-radius: 12px; border-top: 3px solid var(--amber-400);">
+        <div style="font-family: var(--font-heading); font-size: 0.9rem; color: var(--white); font-weight: 700; margin-bottom: 0.2rem;">Mighty Networks</div>
+        <div style="font-size: 0.65rem; color: var(--teal-400); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.6rem;">Community Platform</div>
+        <div style="font-size: 0.75rem; color: var(--slate-400); line-height: 1.4; margin-bottom: 0.6rem;">Subscription-based (charges leaders), designed for online communities, not local real-world groups. No local discovery.</div>
+        <div style="font-size: 0.75rem; color: var(--amber-400); font-weight: 500; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 0.6rem;">Edge: local-first, free, built for in-person connection</div>
+      </div>
+      <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 1rem; border-radius: 12px; border-top: 3px solid var(--teal-400);">
+        <div style="font-family: var(--font-heading); font-size: 0.9rem; color: var(--white); font-weight: 700; margin-bottom: 0.2rem;">Discord</div>
+        <div style="font-size: 0.65rem; color: var(--teal-400); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.6rem;">Community Communication</div>
+        <div style="font-size: 0.75rem; color: var(--slate-400); line-height: 1.4; margin-bottom: 0.6rem;">Overwhelming for non-tech users, no local discovery, no event management, not purpose-built for real-world communities.</div>
+        <div style="font-size: 0.75rem; color: var(--amber-400); font-weight: 500; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 0.6rem;">Edge: simple UX, local discovery, integrated event &amp; member tools</div>
+      </div>
+      <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 1rem; border-radius: 12px; border-top: 3px solid var(--amber-400);">
+        <div style="font-family: var(--font-heading); font-size: 0.9rem; color: var(--white); font-weight: 700; margin-bottom: 0.2rem;">Eventbrite</div>
+        <div style="font-size: 0.65rem; color: var(--teal-400); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.6rem;">Event Management</div>
+        <div style="font-size: 0.75rem; color: var(--slate-400); line-height: 1.4; margin-bottom: 0.6rem;">Transactional, no community layer, charges organisers per ticket, no ongoing member relationships.</div>
+        <div style="font-size: 0.75rem; color: var(--amber-400); font-weight: 500; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 0.6rem;">Edge: community layer, ongoing relationships, free</div>
+      </div>
+      <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 1rem; border-radius: 12px; border-top: 3px solid var(--teal-400);">
+        <div style="font-family: var(--font-heading); font-size: 0.9rem; color: var(--white); font-weight: 700; margin-bottom: 0.2rem;">WhatsApp / Instagram</div>
+        <div style="font-size: 0.65rem; color: var(--teal-400); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.6rem;">Communication &amp; Social</div>
+        <div style="font-size: 0.75rem; color: var(--slate-400); line-height: 1.4; margin-bottom: 0.6rem;">No discovery, no event tools, no member management, no analytics. Used by communities out of necessity, not design.</div>
+        <div style="font-size: 0.75rem; color: var(--amber-400); font-weight: 500; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 0.6rem;">Edge: we replace the need for both with purpose-built tools</div>
+      </div>
+    </div>
+
+    <div class="callout callout-teal" style="margin-top:2rem;">
+      <div class="callout-label">Our Unique Position</div>
+      <p class="doc-p" style="font-size:0.9rem;margin:0;">More Community is the only platform that simultaneously: (1) gives community founders a complete, free operational toolkit, (2) provides people seeking connection a trusted local discovery directory, and (3) is explicitly designed for real-life, in-person communities — not online groups.</p>
+    </div>
+  </div>
+
+  <!-- ===== 12 EXPANSION ===== -->
+  <div class="doc-section" id="expansion">
+    <div class="section-label"><span class="section-num">12</span>Expansion Strategy</div>
+    <h2 class="doc-h1">Deep before wide.</h2>
+    <p class="doc-p">We build density town by town. One thriving town with active communities, real leaders and genuine local connection is more valuable — commercially and socially — than shallow presence in a hundred empty locations. This is our foundational strategic principle.</p>
+
+    <div class="pull-quote">
+      "We build density town by town. One thriving community is worth more than a hundred empty directories."
+    </div>
+
+    <div class="exp-path">
+      <div class="exp-node">
+        <div class="exp-town active">Tunbridge Wells</div>
+        <span class="exp-arrow">→</span>
+      </div>
+      <div class="exp-node">
+        <div class="exp-town">Kent</div>
+        <span class="exp-arrow">→</span>
+      </div>
+      <div class="exp-node">
+        <div class="exp-town">South East</div>
+        <span class="exp-arrow">→</span>
+      </div>
+      <div class="exp-node">
+        <div class="exp-town">United Kingdom</div>
+      </div>
+    </div>
+
+    <div class="roadmap">
+      <div class="roadmap-item current">
+        <div class="roadmap-dot"><div class="roadmap-dot-inner"></div></div>
+        <div class="roadmap-body">
+          <div class="roadmap-period">Now — 2026 · Phase 1</div>
+          <div class="roadmap-title">Tunbridge Wells: Prove the Model</div>
+          <p class="roadmap-desc">Map the full community ecosystem. Onboard active local leaders. Deliver community walks, wellbeing programmes and the A-Z Challenge. Build density, local partnerships and platform validation. Use seed funding to accelerate product and grow the local network.</p>
+        </div>
+      </div>
+      <div class="roadmap-item next">
+        <div class="roadmap-dot"><div class="roadmap-dot-inner"></div></div>
+        <div class="roadmap-body">
+          <div class="roadmap-period">2026–2027 · Phase 2</div>
+          <div class="roadmap-title">Kent Expansion: Replicate the Playbook</div>
+          <p class="roadmap-desc">Roll out to adjacent Kent towns — Sevenoaks, Maidstone, Canterbury — using the established Tunbridge Wells model. Launch mobile app. Develop first council and NHS partnerships. Build regional sponsorship programme.</p>
+        </div>
+      </div>
+      <div class="roadmap-item next">
+        <div class="roadmap-dot"><div class="roadmap-dot-inner"></div></div>
+        <div class="roadmap-body">
+          <div class="roadmap-period">2027–2028 · Phase 3</div>
+          <div class="roadmap-title">South East: Regional Platform</div>
+          <p class="roadmap-desc">Expand across the South East. Build regional partnerships with NHS trusts, local authorities and anchor brands. Establish More Community as the trusted infrastructure for community-led wellbeing and local connection in the region.</p>
+        </div>
+      </div>
+      <div class="roadmap-item next">
+        <div class="roadmap-dot"><div class="roadmap-dot-inner"></div></div>
+        <div class="roadmap-body">
+          <div class="roadmap-period">2028–2030 · Phase 4 &amp; 5</div>
+          <div class="roadmap-title">National Scale: 500 Towns &amp; Enterprise</div>
+          <p class="roadmap-desc">Town-by-town expansion accelerating to 500+ towns across the UK. With a proven, high-density network, we deploy B2G enterprise licenses to NHS Integrated Care Systems (ICSs) and local authorities, becoming the default digital infrastructure for UK social prescribing.</p>
+        </div>
+      </div>
+      </div>
+    </div>
+
+    <h3 class="doc-h3" style="margin-top: 3rem;">The Town Launch Playbook</h3>
+    <p class="doc-p" style="font-size:0.9rem;">To achieve our target of 500 towns, we have developed a repeatable, 12-week town launch playbook. In Years 1–3, launches are driven by our regional Community Managers (high-touch). In Years 4–5, we transition to a hybrid model where existing leaders drive organic expansion into adjacent towns via our "Community Accelerator" programme.</p>
+    
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin-top: 1.5rem;">
+      <div class="callout callout-teal" style="margin: 0; height: 100%;">
+        <div class="callout-label">Phase 1: Seed (Weeks 1-2)</div>
+        <ul class="doc-list" style="margin-top: 0.5rem; font-size: 0.85rem;">
+          <li>Identify 3-5 existing community leaders in the town</li>
+          <li>Personal outreach and platform onboarding by Community Manager</li>
+          <li>Map existing communities (Facebook Groups, council listings)</li>
+        </ul>
+      </div>
+      <div class="callout callout-teal" style="margin: 0; height: 100%;">
+        <div class="callout-label">Phase 2: Activate (Weeks 3-6)</div>
+        <ul class="doc-list" style="margin-top: 0.5rem; font-size: 0.85rem;">
+          <li>Leaders create community profiles, list first events</li>
+          <li>More Community runs 1 flagship event (e.g., community walk)</li>
+          <li>Local press and social media launch campaign</li>
+        </ul>
+      </div>
+      <div class="callout callout-amber" style="margin: 0; height: 100%;">
+        <div class="callout-label">Phase 3: Monetise (Weeks 6-12)</div>
+        <ul class="doc-list" style="margin-top: 0.5rem; font-size: 0.85rem;">
+          <li>Approach local businesses for tiered sponsorship</li>
+          <li>Connect with council wellbeing/social prescribing team</li>
+          <li>Target: 10+ active communities, 3+ signed sponsors</li>
+        </ul>
+      </div>
+      <div class="callout callout-amber" style="margin: 0; height: 100%;">
+        <div class="callout-label">Phase 4: Self-Sustain (Month 4+)</div>
+        <ul class="doc-list" style="margin-top: 0.5rem; font-size: 0.85rem;">
+          <li>Leaders run operations autonomously</li>
+          <li>Community Manager shifts to light-touch, regional support</li>
+          <li>Sponsor renewals handled by regional sales team</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 13 TEAM & ADVISORS ===== -->
+  <div class="doc-section" id="team">
+    <div class="section-label"><span class="section-num">13</span>Team &amp; Advisors</div>
+    <h2 class="doc-h1">Building the foundation.</h2>
+    <p class="doc-p">More Community is led by a founding team with deep domain expertise in mental health, community facilitation, and product engineering. We are building the foundational leadership required to scale a nationwide platform.</p>
+    
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin-top: 1.5rem;">
+      <div class="callout callout-teal" style="margin: 0;">
+        <div class="callout-label">Alex Cole</div>
+        <h3 class="doc-h3" style="margin-bottom: 0.5rem;">Founder &amp; CPO</h3>
+        <p class="doc-p" style="font-size: 0.85rem; margin: 0;">Qualified Mental Health First Aider, counselling skills practitioner, and active community facilitator. Brings the lived experience and operational playbook required to build real-world communities.</p>
+      </div>
+      <div class="callout callout-amber" style="margin: 0;">
+        <div class="callout-label">Matt Fenton</div>
+        <h3 class="doc-h3" style="margin-bottom: 0.5rem;">Technical Lead</h3>
+        <p class="doc-p" style="font-size: 0.85rem; margin: 0;">Leading the platform architecture, mobile app development, and data infrastructure. Seed funding will further expand the core engineering team.</p>
+      </div>
+    </div>
+    
+    <div class="callout callout-teal" style="margin-top: 1.5rem;">
+      <div class="callout-label">Advisory Board Formation</div>
+      <p class="doc-p" style="font-size: 0.85rem; margin: 0;">We are actively building an advisory board with expertise in <strong>B2G Enterprise Sales</strong> (specifically NHS procurement) and <strong>Marketplace Scaling</strong>. We are seeking seed investors who can provide more than capital by taking an active advisory role in these critical domains.</p>
+    </div>
+  </div>
+
+  <!-- ===== 14 INVESTMENT ASK ===== -->
+  <div class="doc-section" id="ask">
+    <div class="section-label"><span class="section-num">14</span>Investment Ask</div>
+    <h2 class="doc-h1">Raising <span class="gradient-text">£150k – £250k</span></h2>
+    <p class="doc-p">We are seeking seed investment from people who believe that connection is one of the defining challenges of our time — and who want to back a founder who has lived this problem, built real solutions, and is positioned to scale them.</p>
+    <p class="doc-p">We are looking for <strong>investors, advisors and strategic partners</strong>. We value networks, expertise and relationships as much as capital.</p>
+
+    <table class="fund-table rev-table">
+      <thead>
+        <tr>
+          <th>Use of Funds</th>
+          <th>Description</th>
+          <th>Priority</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Product Development</td>
+          <td>Platform features, infrastructure, performance and security improvements</td>
+          <td>High</td>
+        </tr>
+        <tr>
+          <td>Mobile App</td>
+          <td>Native iOS &amp; Android app — the primary channel for community engagement</td>
+          <td>High</td>
+        </tr>
+        <tr>
+          <td>Community Growth</td>
+          <td>Onboarding community leaders, expanding the Tunbridge Wells ecosystem and preparing Kent rollout</td>
+          <td>High</td>
+        </tr>
+        <tr>
+          <td>Marketing &amp; Brand</td>
+          <td>Brand building, content, partnerships and community leader acquisition</td>
+          <td>Medium</td>
+        </tr>
+        <tr>
+          <td>Operational Support</td>
+          <td>Core team, legal, compliance and administrative foundation</td>
+          <td>Medium</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="two-col" style="margin-top:1rem;">
+      <div class="callout callout-teal">
+        <div class="callout-label">What We Offer Investors</div>
+        <ul class="doc-list">
+          <li>Equity stake in a mission-driven community infrastructure platform</li>
+          <li>Access to a founder with deep community, wellbeing and enterprise experience</li>
+          <li>Early position in a market with structural tailwinds (NHS, councils, social prescribing)</li>
+          <li>Meaningful impact — this is a business that genuinely improves lives</li>
+        </ul>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:1.5rem;">
+        <div class="callout callout-amber" style="margin: 0;">
+          <div class="callout-label">What We Ask of Investors</div>
+          <ul class="doc-list">
+            <li>Belief in the mission — connection is one of the defining challenges of our time</li>
+            <li>Strategic value beyond capital — networks, expertise, introductions</li>
+            <li>Patience — we build density, not vanity metrics</li>
+            <li>Alignment with our values — free for leaders, community-first, always</li>
+          </ul>
+        </div>
+        <img src="images/walking.png" alt="The Ask" class="no-print" style="width: 100%; height: 200px; object-fit: cover; border-radius: 14px; border: 1px solid rgba(255,255,255,0.06);">
+      </div>
+    </div>
+
+    </div>
+  </div>
+
+  <!-- ===== 14 GET IN TOUCH ===== -->
+  <div class="doc-section" id="contact" style="display: flex; flex-direction: column; align-items: center; padding-top: 8rem !important; padding-bottom: 4rem !important;">
+    
+    <div class="pull-quote" style="margin-bottom: 4rem; text-align: center; font-size: 2rem;">
+      "Find your people. Experience more. Together."
+    </div>
+
+    <div class="callout" style="text-align:center; padding: 4rem; max-width: 600px; width: 100%; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.02);">
+      <div style="font-family:var(--font-heading);font-size:0.8rem;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:var(--teal-400);margin-bottom:1rem;">Get in Touch</div>
+      <div style="font-family:var(--font-display);font-style:italic;font-size:2.5rem;color:var(--white);margin-bottom:1rem;">alex@morecommunity.co.uk</div>
+      <div style="font-family:var(--font-heading);font-size:1rem;color:var(--slate-300);">Community infrastructure for real-life connection.</div>
+    </div>
+
+    <div style="text-align:center;margin-top:6rem;padding-top:2rem;border-top:1px solid rgba(255,255,255,0.06); width: 100%;">
+      <div style="font-family:var(--font-heading);font-size:0.7rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--slate-600);">
+        Confidential · © More Community 2026 · morecommunity.co.uk
+      </div>
+    </div>
+  </div>
+
+</div><!-- /doc-wrap -->
+
+<script>
+// Smooth scroll for TOC links
+document.querySelectorAll('a[href^="#"]').forEach(link => {
+  link.addEventListener('click', e => {
+    e.preventDefault();
+    const target = document.querySelector(link.getAttribute('href'));
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+});
+
+// Scroll reveal
+const revealEls = document.querySelectorAll('.doc-section');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.style.opacity = '1';
+      entry.target.style.transform = 'translateY(0)';
+    }
+  });
+}, { threshold: 0.05 });
+
+revealEls.forEach(el => {
+  el.style.opacity = '0';
+  el.style.transform = 'translateY(20px)';
+  el.style.transition = 'opacity 0.7s ease, transform 0.7s ease';
+  observer.observe(el);
+});
+</script>
+</body>
+</html>

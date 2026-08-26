@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discover Communities | more</title>
+    <meta name="description" content="Find your community in Tunbridge Wells. Walking groups, running clubs, entrepreneurs, wellness, volunteering, arts, faith and more Browse, join, or start your own.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css?v=8">
+    <link rel="stylesheet" href="pages.css">
+</head>
+<body class="yentw-theme">
+
+    <div class="menu-overlay" id="menuOverlay"></div>
+    <nav id="navbar" class="navbar scrolled">
+        <div class="nav-container">
+            <a href="index.html" class="nav-brand">
+                <img src="images/logo.png" alt="more community">
+            </a>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="discover.html" class="active">Discover</a></li>
+                <li><a href="leaders.html">For Leaders</a></li>
+                <li><a href="about.html">Our Story</a></li>
+                <li><a href="tunbridge-wells.html">Tunbridge Wells</a></li>
+                <li class="nav-dropdown">
+                    <a href="#" id="venturesDropdownToggle">Ventures ▾</a>
+                    <div class="nav-dropdown-menu">
+                        <a href="yentw.html">YENTW</a>
+                        <a href="accelerator.html">Accelerator</a>
+                        <a href="hackathons.html">Hackathons</a>
+                        <a href="sponsorship.html">Sponsorship</a>
+                    </div>
+                </li>
+                <li><a href="index.html#join" class="btn-nav">Join the Movement</a></li>
+            </ul>
+            <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <section class="page-hero" style="padding-top: 8rem;">
+        <div class="container">
+            <p class="eyebrow">Community Directory</p>
+            <h1 class="editorial-title" style="font-size: clamp(2.5rem, 5vw, 4rem);">Find your <em>people.</em></h1>
+            <p style="color: var(--slate-400); font-size: 1.1rem; max-width: 550px; margin-bottom: 2rem;">Browse communities by interest, location, or passion. Join one that speaks to you — or start your own.</p>
+            
+            <!-- Search & Filter -->
+            <div class="directory-search">
+                <div class="search-bar">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    <input type="text" placeholder="Search communities, activities, or interests..." id="searchInput">
+                </div>
+                <div class="filter-pills" id="filterPills">
+                    <button class="filter-pill active" data-filter="all">All</button>
+                    <button class="filter-pill" data-filter="walking">🚶 Walking</button>
+                    <button class="filter-pill" data-filter="running">🏃 Running</button>
+                    <button class="filter-pill" data-filter="wellness">🧘 Wellness</button>
+                    <button class="filter-pill" data-filter="business">💼 Business</button>
+                    <button class="filter-pill" data-filter="adventure">⛰️ Adventure</button>
+                    <button class="filter-pill" data-filter="volunteering">🤝 Volunteering</button>
+                    <button class="filter-pill" data-filter="faith">🕊️ Faith</button>
+                    <button class="filter-pill" data-filter="arts">🎨 Arts</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Community Grid -->
+    <section class="section" style="padding-top: 2rem;">
+        <div class="container">
+            <div class="community-grid" id="communityGrid">
+
+                <!-- Walking -->
+                <div class="community-card" data-category="walking">
+                    <div class="card-image"><img src="images/walking.png" alt="more Mindful Miles"></div>
+                    <div class="card-body">
+                        <span class="card-category">🚶 Walking</span>
+                        <h3 class="card-name">more Mindful Miles</h3>
+                        <p class="card-desc">Weekly walk and talk sessions in the TW countryside. No pace, no pressure — just good company and fresh air.</p>
+                        <div class="card-meta">
+                            <span>📍 Tunbridge Wells</span>
+                            <span>👥 85 members</span>
+                        </div>
+                        <div class="card-next-event">
+                            <span class="next-label">Next event</span>
+                            <span class="next-date">Saturday, 10:00am — Dunorlan Park</span>
+                        </div>
+                        <a href="portal/" class="btn btn-primary btn-sm">Join Community</a>
+                    </div>
+                </div>
+
+                <div class="community-card" data-category="walking">
+                    <div class="card-image"><img src="images/walking.png" alt="TW Ramblers"></div>
+                    <div class="card-body">
+                        <span class="card-category">🚶 Walking</span>
+                        <h3 class="card-name">TW Ramblers</h3>
+                        <p class="card-desc">Longer countryside walks exploring Kent and Sussex. 8-12 mile routes with pub lunch stops.</p>
+                        <div class="card-meta">
+                            <span>📍 Tunbridge Wells</span>
+                            <span>👥 120 members</span>
+                        </div>
+                        <div class="card-next-event">
+                            <span class="next-label">Next event</span>
+                            <span class="next-date">Sunday, 9:00am — High Rocks</span>
+                        </div>
+                        <a href="mindful-miles.html" class="btn btn-outline btn-sm">View Details</a>
+                    </div>
+                </div>
+
+                <!-- Running -->
+                <div class="community-card" data-category="running">
+                    <div class="card-image"><img src="images/running.png" alt="more A-Z Challenge"></div>
+                    <div class="card-body">
+                        <span class="card-category">🏃 Running</span>
+                        <h3 class="card-name">more A-Z Challenge</h3>
+                        <p class="card-desc">Our signature running challenge. Complete routes from A to Z across the borough. All abilities welcome.</p>
+                        <div class="card-meta">
+                            <span>📍 Tunbridge Wells</span>
+                            <span>👥 150 members</span>
+                        </div>
+                        <div class="card-next-event">
+                            <span class="next-label">Next event</span>
+                            <span class="next-date">Wednesday, 6:30pm — The Common</span>
+                        </div>
+                        <a href="portal/" class="btn btn-primary btn-sm">Join Community</a>
+                    </div>
+                </div>
+
+                <div class="community-card" data-category="running">
+                    <div class="card-image"><img src="images/running.png" alt="TW Parkrun"></div>
+                    <div class="card-body">
+                        <span class="card-category">🏃 Running</span>
+                        <h3 class="card-name">TW Parkrun</h3>
+                        <p class="card-desc">Free, weekly, timed 5km run at Dunorlan Park. Walk, jog, or run. Volunteers always needed.</p>
+                        <div class="card-meta">
+                            <span>📍 Dunorlan Park</span>
+                            <span>👥 500+ members</span>
+                        </div>
+                        <div class="card-next-event">
+                            <span class="next-label">Next event</span>
+                            <span class="next-date">Saturday, 9:00am — Dunorlan Park</span>
+                        </div>
+                        <a href="tw-ramblers.html" class="btn btn-outline btn-sm">View Details</a>
+                    </div>
+                </div>
+
+                <!-- Business -->
+                <div class="community-card" data-category="business">
+                    <div class="card-image"><img src="images/entrepreneurs.png" alt="YENTW"></div>
+                    <div class="card-body">
+                        <span class="card-category">💼 Business</span>
+                        <h3 class="card-name">YENTW</h3>
+                        <p class="card-desc">Young Entrepreneurs Network Tunbridge Wells. Mentorship, pitch events, and a community of ambitious builders.</p>
+                        <div class="card-meta">
+                            <span>📍 Tunbridge Wells</span>
+                            <span>👥 200 members</span>
+                        </div>
+                        <div class="card-next-event">
+                            <span class="next-label">Next event</span>
+                            <span class="next-date">Thursday, 7:00pm — The Pantiles</span>
+                        </div>
+                        <a href="yentw.html" class="btn btn-primary btn-sm">Join Community</a>
+                    </div>
+                </div>
+
+                <!-- Wellness -->
+                <div class="community-card" data-category="wellness">
+                    <div class="card-image"><img src="images/wellness.png" alt="TW Yoga Collective"></div>
+                    <div class="card-body">
+                        <span class="card-category">🧘 Wellness</span>
+                        <h3 class="card-name">TW Yoga Collective</h3>
+                        <p class="card-desc">Outdoor and indoor yoga sessions for all levels. Breathwork, meditation, and community connection.</p>
+                        <div class="card-meta">
+                            <span>📍 Calverley Grounds</span>
+                            <span>👥 65 members</span>
+                        </div>
+                        <div class="card-next-event">
+                            <span class="next-label">Next event</span>
+                            <span class="next-date">Tuesday, 7:00am — Calverley Grounds</span>
+                        </div>
+                        <a href="portal/" class="btn btn-outline btn-sm">View Details</a>
+                    </div>
+                </div>
+
+                <!-- Adventure -->
+                <div class="community-card" data-category="adventure">
+                    <div class="card-image"><img src="images/adventure.png" alt="Kent Adventures"></div>
+                    <div class="card-body">
+                        <span class="card-category">⛰️ Adventure</span>
+                        <h3 class="card-name">Kent Adventures</h3>
+                        <p class="card-desc">Kayaking, climbing, wild camping, and weekend expeditions across the South East. Get outside your comfort zone.</p>
+                        <div class="card-meta">
+                            <span>📍 Kent & Sussex</span>
+                            <span>👥 90 members</span>
+                        </div>
+                        <div class="card-next-event">
+                            <span class="next-label">Next event</span>
+                            <span class="next-date">Saturday, 8:00am — Bewl Water</span>
+                        </div>
+                        <a href="a-z-challenge.html" class="btn btn-outline btn-sm">View Details</a>
+                    </div>
+                </div>
+
+                <!-- Volunteering -->
+                <div class="community-card" data-category="volunteering">
+                    <div class="card-image"><img src="images/charity.png" alt="TW Good Neighbours"></div>
+                    <div class="card-body">
+                        <span class="card-category">🤝 Volunteering</span>
+                        <h3 class="card-name">TW Good Neighbours</h3>
+                        <p class="card-desc">Community clean-ups, tree planting, food bank support, and local charity projects. Small actions, big impact.</p>
+                        <div class="card-meta">
+                            <span>📍 Tunbridge Wells</span>
+                            <span>👥 110 members</span>
+                        </div>
+                        <div class="card-next-event">
+                            <span class="next-label">Next event</span>
+                            <span class="next-date">Sunday, 10:00am — Town Centre</span>
+                        </div>
+                        <a href="portal/" class="btn btn-outline btn-sm">View Details</a>
+                    </div>
+                </div>
+
+                <!-- Faith -->
+                <div class="community-card" data-category="faith">
+                    <div class="card-image"><img src="images/faith.png" alt="TW Interfaith Community"></div>
+                    <div class="card-body">
+                        <span class="card-category">🕊️ Faith</span>
+                        <h3 class="card-name">TW Interfaith Network</h3>
+                        <p class="card-desc">A community bringing together people of all faiths and none. Shared meals, dialogue, and community service.</p>
+                        <div class="card-meta">
+                            <span>📍 Tunbridge Wells</span>
+                            <span>👥 45 members</span>
+                        </div>
+                        <div class="card-next-event">
+                            <span class="next-label">Next event</span>
+                            <span class="next-date">Friday, 6:30pm — Community Centre</span>
+                        </div>
+                        <a href="tw-parkrun.html" class="btn btn-outline btn-sm">View Details</a>
+                    </div>
+                </div>
+
+                <!-- Arts -->
+                <div class="community-card" data-category="arts">
+                    <div class="card-image"><img src="images/arts.png" alt="TW Creative Collective"></div>
+                    <div class="card-body">
+                        <span class="card-category">🎨 Arts</span>
+                        <h3 class="card-name">TW Creative Collective</h3>
+                        <p class="card-desc">Painters, sketchers, photographers, and makers. Weekly outdoor art sessions and monthly exhibitions.</p>
+                        <div class="card-meta">
+                            <span>📍 Tunbridge Wells</span>
+                            <span>👥 55 members</span>
+                        </div>
+                        <div class="card-next-event">
+                            <span class="next-label">Next event</span>
+                            <span class="next-date">Saturday, 2:00pm — The Pantiles</span>
+                        </div>
+                        <a href="portal/" class="btn btn-outline btn-sm">View Details</a>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Start Your Own CTA -->
+            <div class="start-community-cta scroll-reveal">
+                <div class="start-cta-content">
+                    <h3>Don't see your community?</h3>
+                    <p>If you're already running a group — or want to start one — we'll give you everything you need. For free.</p>
+                </div>
+                <div class="start-cta-actions">
+                    <a href="leaders.html" class="btn btn-primary">Start a Community</a>
+                    <a href="leaders.html#claim" class="btn btn-ghost">Claim Your Listing</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-bottom-bar">
+                <p>&copy; 2026 more community</p>
+                <p class="footer-motto">do more >> experience more >> achieve more >></p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js?v=22"></script>
+    <script>
+        // Filter functionality
+        const filterPills = document.querySelectorAll('.filter-pill');
+        const cards = document.querySelectorAll('.community-card');
+        const searchInput = document.getElementById('searchInput');
+
+        filterPills.forEach(pill => {
+            pill.addEventListener('click', () => {
+                filterPills.forEach(p => p.classList.remove('active'));
+                pill.classList.add('active');
+                const filter = pill.dataset.filter;
+                cards.forEach(card => {
+                    if (filter === 'all' || card.dataset.category === filter) {
+                        card.style.display = '';
+                        card.style.animation = 'fadeUp 0.4s forwards';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
+        });
+
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                const q = e.target.value.toLowerCase();
+                cards.forEach(card => {
+                    const text = card.textContent.toLowerCase();
+                    card.style.display = text.includes(q) ? '' : 'none';
+                });
+            });
+        }
+    </script>
+</body>
+</html>

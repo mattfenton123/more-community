@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>More Community — Local Sponsorship</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Syne:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --teal-700:#0d6660;--teal-600:#0f766e;--teal-500:#14b8a6;--teal-400:#2dd4bf;--teal-300:#5eead4;
+  --amber-500:#f59e0b;--amber-400:#fbbf24;--amber-300:#fcd34d;
+  --slate-950:#020617;--slate-900:#0f172a;--slate-800:#1e293b;--slate-700:#334155;
+  --slate-600:#475569;--slate-500:#64748b;--slate-400:#94a3b8;--slate-300:#cbd5e1;
+  --slate-200:#e2e8f0;--slate-100:#f1f5f9;--white:#ffffff;
+  --font-heading:'Syne',sans-serif;
+  --font-body:'Plus Jakarta Sans',sans-serif;
+  --font-display:'Instrument Serif',serif;
+}
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { -webkit-font-smoothing: antialiased; }
+body {
+  font-family: var(--font-body);
+  background: var(--slate-950);
+  color: var(--slate-300);
+  line-height: 1.7;
+  font-weight: 300;
+}
+.page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 60px 48px;
+}
+@media print {
+  html, body { background: #020617 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; height: auto !important; }
+  .page { max-width: 100%; padding: 0 !important; }
+  
+  h1, h2, h3, h4, h5 {
+    break-after: avoid !important;
+    page-break-after: avoid !important;
+  }
+  p, li, .grid-2, .tier-card, .hero-image {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+.header-logo {
+  height: 48px;
+  margin-bottom: 24px;
+}
+h1 {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 2.8rem;
+  line-height: 1.1;
+  color: var(--white);
+  margin-bottom: 16px;
+}
+.grad {
+  background: linear-gradient(135deg, var(--teal-400), var(--amber-400));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+p { margin-bottom: 20px; font-size: 0.95rem; }
+.hero-image {
+  width: 100%;
+  height: 250px;
+  object-fit: cover;
+  border-radius: 16px;
+  margin-bottom: 40px;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 40px;
+}
+.tier-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+}
+.tier-card.headline {
+  border-top: 4px solid var(--amber-400);
+}
+.tier-card.support {
+  border-top: 4px solid var(--teal-400);
+}
+.tier-title {
+  font-family: var(--font-heading);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--white);
+  margin-bottom: 8px;
+}
+.tier-price {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 2rem;
+  color: var(--amber-300);
+  margin-bottom: 20px;
+}
+.tier-card.support .tier-price {
+  color: var(--teal-300);
+}
+.tier-list {
+  list-style: none;
+  margin-top: auto;
+}
+.tier-list li {
+  position: relative;
+  padding-left: 24px;
+  margin-bottom: 12px;
+  font-size: 0.85rem;
+}
+.tier-list li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: var(--teal-400);
+  font-weight: 700;
+}
+.tier-card.headline .tier-list li::before {
+  color: var(--amber-400);
+}
+.callout {
+  background: rgba(20,184,166,0.05);
+  border-left: 4px solid var(--teal-500);
+  padding: 24px;
+  border-radius: 0 8px 8px 0;
+  margin-bottom: 40px;
+}
+.callout-title {
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--white);
+  margin-bottom: 8px;
+}
+.footer {
+  text-align: center;
+  padding-top: 40px;
+  border-top: 1px dashed rgba(255,255,255,0.1);
+  font-size: 0.85rem;
+  color: var(--slate-400);
+}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <img src="images/logo.png" alt="More Community" class="header-logo">
+    <h1>Champion real-life <span class="grad">connection.</span></h1>
+    <p style="color: var(--slate-400); max-width: 600px; margin: 0 auto;">Partner with More Community to fund the local infrastructure that brings people together in Tunbridge Wells. Build brand trust by directly supporting the wellbeing of your town.</p>
+  </div>
+
+  <img src="images/wellness.png" alt="Community Wellness" class="hero-image">
+
+  <div class="callout">
+    <div class="callout-title">Why Sponsor Local Communities?</div>
+    <p style="margin: 0; font-size: 0.9rem;">Modern local advertising is broken. SMEs pour thousands into digital ads that get scrolled past. By sponsoring the More Community network, you embed your brand directly into the spaces where locals are actively gathering, exercising, and connecting. It is highly targeted, deeply trusted, and actively funds the community leaders making it happen.</p>
+  </div>
+
+  <div class="grid-2">
+    <div class="tier-card headline">
+      <div class="tier-title">Headline Sponsor</div>
+      <div class="tier-price">£5,000 / year</div>
+      <p style="font-size: 0.85rem; color: var(--slate-400); min-height: 60px;">The premier partnership package. Exclusive category representation across the entire town network.</p>
+      <ul class="tier-list">
+        <li><strong>Category Exclusivity:</strong> Only one sponsor per industry (e.g. one estate agent, one legal firm).</li>
+        <li><strong>Persistent Branding:</strong> Prominent logo placement on the town's main discovery portal.</li>
+        <li><strong>Event Integration:</strong> "Brought to you by" branding on flagship local events and community walks.</li>
+        <li><strong>In-App Visibility:</strong> Featured placement in the mobile app and weekly newsletters to all local members.</li>
+      </ul>
+    </div>
+    
+    <div class="tier-card support">
+      <div class="tier-title">Community Supporter</div>
+      <div class="tier-price">£2,500 / year</div>
+      <p style="font-size: 0.85rem; color: var(--slate-400); min-height: 60px;">A high-visibility package designed for local businesses wanting to show their ongoing commitment to community health.</p>
+      <ul class="tier-list">
+        <li><strong>Category Limit:</strong> Maximum of two sponsors per industry category.</li>
+        <li><strong>Digital Presence:</strong> Supporter logo placement on the town's discovery portal.</li>
+        <li><strong>Event Support:</strong> Brand acknowledgement at major community-led events.</li>
+        <li><strong>Newsletter Mentions:</strong> Monthly brand inclusion in the local community round-up email.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="footer">
+    <p style="margin-bottom: 4px; font-weight: 500; color: var(--white);">Ready to support your town?</p>
+    <p style="margin: 0;">Contact Alex Cole: alex@morecommunity.co.uk</p>
+  </div>
+</div>
+</body>
+</html>

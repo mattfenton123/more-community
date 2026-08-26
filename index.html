@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>more | The Power of Real-Life Connection</title>
+    <meta name="description" content="more is a movement celebrating the power of connecting in person. Find local groups, join real-life meetups, and experience the joy of shared passions. Free for community leaders. Starting in Tunbridge Wells.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400..800&family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css?v=86">
+    <link rel="stylesheet" href="pages.css?v=3">
+</head>
+<body>
+
+    <div class="menu-overlay" id="menuOverlay"></div>
+
+    <!-- Navigation -->
+    <nav id="navbar" class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="nav-brand">
+                <img src="images/logo.png" alt="more community">
+            </a>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="discover.html">Discover</a></li>
+                <li><a href="leaders.html">For Leaders</a></li>
+                <li><a href="about.html">Our Story</a></li>
+                <li><a href="tunbridge-wells.html">Tunbridge Wells</a></li>
+                <li class="nav-dropdown">
+                    <a href="#" id="venturesDropdownToggle">Ventures ▾</a>
+                    <div class="nav-dropdown-menu">
+                        <a href="yentw.html">YENTW</a>
+                        <a href="accelerator.html">Accelerator</a>
+                        <a href="hackathons.html">Hackathons</a>
+                        <a href="sponsorship.html">Sponsorship</a>
+                    </div>
+                </li>
+                <li><a href="https://more-community-app.vercel.app/" class="btn-nav">Open the App</a></li>
+            </ul>
+            <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- ====== HERO ====== -->
+    <header class="page-hero-immersive" id="home" style="background-image: url('images/hero.png');">
+        <div class="container" style="padding-bottom: 2rem;">
+            <h1 class="microsite-title reveal-text" style="font-size: clamp(3rem, 6vw, 5.5rem); line-height: 1.4; padding-bottom: 0.5em; overflow: visible;">
+                Find your people.<br>
+                <em>Experience more</em> <span style="color: var(--teal-400); font-family: var(--font-heading); font-weight: 700;">Together.</span>
+            </h1>
+            <p class="microsite-desc reveal-text delay-1">
+                Tired of searching Facebook groups and random flyers? We've built the ultimate directory for your town. Find your people, join local groups, and experience more together.
+            </p>
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap;" class="reveal-text delay-2">
+                <a href="https://more-community-app.vercel.app/" class="btn" style="background: var(--teal-500); color: white; border: none; box-shadow: 0 0 20px rgba(20,184,166,0.3);">Open the App</a>
+                <a href="leaders.html" class="btn btn-outline">Run a Community?</a>
+            </div>
+        </div>
+        <div class="hero-scroll-hint" style="z-index: 10;">
+            <span>Scroll</span>
+            <div class="scroll-line"></div>
+        </div>
+    </header>
+
+    <!-- ====== MANIFESTO STRIP ====== -->
+    <section class="manifesto">
+        <div class="manifesto-track">
+            <span>do more >> experience more >> achieve more >> connect more >> give more >> be more >></span>
+            <span>do more >> experience more >> achieve more >> connect more >> give more >> be more >></span>
+            <span>do more >> experience more >> achieve more >> connect more >> give more >> be more >></span>
+            <span>do more >> experience more >> achieve more >> connect more >> give more >> be more >></span>
+        </div>
+    </section>
+
+    <!-- ====== IMPACT STATS ====== -->
+    <section class="section stats-section">
+        <div class="container">
+            <div class="stats-grid scroll-reveal">
+                <div class="stat-card">
+                    <span class="stat-number" data-count="85">0</span>
+                    <span class="stat-suffix">%</span>
+                    <p class="stat-label">report better wellbeing<br>when part of a local group</p>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-card">
+                    <span class="stat-number">NHS</span>
+                    <span class="stat-suffix"></span>
+                    <p class="stat-label">Supporting Social Prescribing<br>initiatives across the UK</p>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-card">
+                    <span class="stat-number">£1</span>
+                    <span class="stat-suffix">= £16</span>
+                    <p class="stat-label">social return on every<br>pound invested in community</p>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-card">
+                    <span class="stat-number stat-number-text">TW</span>
+                    <span class="stat-suffix">first</span>
+                    <p class="stat-label">Launching in<br>Tunbridge Wells</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ====== DISCOVER / PHOTO MOSAIC ====== -->
+    <section id="discover" class="section discover-section">
+        <div class="container">
+            <div class="discover-header scroll-reveal">
+                <p class="eyebrow">The Discovery Directory</p>
+                <h2 class="editorial-title">Whatever you're into,<br><em>find it here.</em></h2>
+            </div>
+        </div>
+        <div class="mosaic scroll-reveal">
+            <a href="discover.html" class="mosaic-item mosaic-tall">
+                <img src="images/walking.png" alt="Community walks in the English countryside">
+                <div class="mosaic-label">
+                    <span class="mosaic-tag"><img src="images/logo.png" alt="more" class="mosaic-logo"> <span class="mosaic-tag-word tag-walks">walks.</span></span>
+                    <span class="mosaic-desc">Walk, talk, breathe.</span>
+                </div>
+            </a>
+            <a href="discover.html" class="mosaic-item">
+                <img src="images/running.png" alt="Community running challenges">
+                <div class="mosaic-label">
+                    <span class="mosaic-tag"><img src="images/logo.png" alt="more" class="mosaic-logo"> <span class="mosaic-tag-word tag-challenges">challenges.</span></span>
+                    <span class="mosaic-desc">Push your limits together.</span>
+                </div>
+            </a>
+            <a href="discover.html" class="mosaic-item">
+                <img src="images/wellness.png" alt="Mental wellness and meditation">
+                <div class="mosaic-label">
+                    <span class="mosaic-tag"><img src="images/logo.png" alt="more" class="mosaic-logo"> <span class="mosaic-tag-word tag-clarity">clarity.</span></span>
+                    <span class="mosaic-desc">Mind, body, purpose.</span>
+                </div>
+            </a>
+            <a href="discover.html" class="mosaic-item mosaic-tall">
+                <img src="images/entrepreneurs.png" alt="Young entrepreneurs collaborating">
+                <div class="mosaic-label">
+                    <span class="mosaic-tag"><img src="images/logo.png" alt="more" class="mosaic-logo"> <span class="mosaic-tag-word tag-ambition">ambition.</span></span>
+                    <span class="mosaic-desc">Build something that matters.</span>
+                </div>
+            </a>
+            <a href="discover.html" class="mosaic-item">
+                <img src="images/adventure.png" alt="Adventure and kayaking together">
+                <div class="mosaic-label">
+                    <span class="mosaic-tag"><img src="images/logo.png" alt="more" class="mosaic-logo"> <span class="mosaic-tag-word tag-adventure">adventure.</span></span>
+                    <span class="mosaic-desc">Explore the unknown.</span>
+                </div>
+            </a>
+            <a href="discover.html" class="mosaic-item">
+                <img src="images/charity.png" alt="Community volunteering">
+                <div class="mosaic-label">
+                    <span class="mosaic-tag"><img src="images/logo.png" alt="more" class="mosaic-logo"> <span class="mosaic-tag-word tag-impact">impact.</span></span>
+                    <span class="mosaic-desc">Give back, grow forward.</span>
+                </div>
+            </a>
+            <a href="discover.html" class="mosaic-item">
+                <img src="images/faith.png" alt="Faith and community gathering">
+                <div class="mosaic-label">
+                    <span class="mosaic-tag"><img src="images/logo.png" alt="more" class="mosaic-logo"> <span class="mosaic-tag-word tag-togetherness">togetherness.</span></span>
+                    <span class="mosaic-desc">Break bread, build bonds.</span>
+                </div>
+            </a>
+            <a href="discover.html" class="mosaic-item">
+                <img src="images/arts.png" alt="Arts and creative community">
+                <div class="mosaic-label">
+                    <span class="mosaic-tag"><img src="images/logo.png" alt="more" class="mosaic-logo"> <span class="mosaic-tag-word tag-creativity">creativity.</span></span>
+                    <span class="mosaic-desc">Create, express, connect.</span>
+                </div>
+            </a>
+        </div>
+        <div class="container" style="text-align:center; margin-top: 2.5rem;">
+            <a href="discover.html" class="btn btn-outline">Explore All Communities →</a>
+        </div>
+    </section>
+
+    <!-- ====== VISION ====== -->
+    <section class="section vision-section">
+        <div class="container">
+            <div class="vision-layout scroll-reveal">
+                <div class="vision-left">
+                    <p class="eyebrow">Our Mission</p>
+                    <h2 class="editorial-title">Life is better when<br>we <em>share it.</em></h2>
+                </div>
+                <div class="vision-right">
+                    <p>Every town in the UK is full of incredible people, vibrant energy, and shared passions. From early-morning run clubs to weekend arts collectives, the magic happens when we step away from our screens and come together in person.</p>
+                    <p>We are a movement dedicated to celebrating and amplifying these real-life connections. We empower local leaders by removing all barriers to organizing, making their groups findable, welcoming, and thriving. <strong>Free for community champions. Always.</strong></p>
+                    <blockquote class="pull-quote">
+                        "We aren't building a platform. We're championing the joy of gathering together."
+                    </blockquote>
+                    <p>We provide the foundation for discovery, gatherings, and shared purpose—proving that real-life, face-to-face connection makes us happier, healthier, and more inspired.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ====== FOR LEADERS TEASER ====== -->
+    <section class="section leaders-teaser-section">
+        <div class="container">
+            <div class="leaders-teaser scroll-reveal">
+                <div class="leaders-teaser-content">
+                    <p class="eyebrow">For Community Leaders</p>
+                    <h2 class="editorial-title">Run a community?<br><em>We built this for you.</em></h2>
+                    <p class="leaders-desc">Running a community shouldn't mean juggling WhatsApp, Facebook Groups, Google Forms, and spreadsheets. <strong>10 tools, zero integration, one exhausted founder.</strong> more gives you everything you need to run your group — all in one place, completely free.</p>
+                    <div class="leaders-features">
+                        <div class="leader-feature">
+                            <span class="leader-feature-icon">📍</span>
+                            <div>
+                                <strong>Get Discovered</strong>
+                                <span>Listed in the community directory. Searchable by interest, location, and activity.</span>
+                            </div>
+                        </div>
+                        <div class="leader-feature">
+                            <span class="leader-feature-icon">📅</span>
+                            <div>
+                                <strong>Manage Events</strong>
+                                <span>Create recurring events. Track RSVPs. Send automatic reminders.</span>
+                            </div>
+                        </div>
+                        <div class="leader-feature">
+                            <span class="leader-feature-icon">💬</span>
+                            <div>
+                                <strong>Chat & Connect</strong>
+                                <span>Built-in group chat. No more juggling WhatsApp groups and Facebook messages.</span>
+                            </div>
+                        </div>
+                        <div class="leader-feature">
+                            <span class="leader-feature-icon">📊</span>
+                            <div>
+                                <strong>Track Your Impact</strong>
+                                <span>See attendance trends, member growth, and engagement — all in one dashboard.</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="leaders-ctas">
+                        <a href="/portal/" class="btn btn-primary" style="padding: 1.25rem 2.5rem; font-size: 1.125rem;">Enter Platform</a>
+                        <a href="leaders.html#claim" class="text-link">Claim your community →</a>
+                    </div>
+                </div>
+                <div class="leaders-teaser-image">
+                    <img src="images/leaders.png" alt="Community leader speaking to a group">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ====== FOUNDER'S STORY ====== -->
+    <section id="story" class="section story-section">
+        <div class="container">
+            <div class="story-editorial scroll-reveal">
+                <div class="story-photo-col">
+                    <div class="story-photo-frame">
+                        <img src="https://morecommunity.co.uk/wp-content/uploads/2026/04/IMG_2142-768x1024.jpeg" alt="Founder">
+                    </div>
+                    <div class="story-photo-caption">
+                        <span class="caption-name">The Founder</span>
+                        <span class="caption-role">From burnout to belonging</span>
+                    </div>
+                </div>
+                <div class="story-text-col">
+                    <p class="eyebrow">My Story</p>
+                    <h2 class="editorial-title"><em>Everything changed</em> when I stopped running from myself.</h2>
+                    <p>For years, I was trying to fit in rather than understand who I really was. I hid behind achievement, alcohol, unhealthy patterns, and the noise of a life that looked functional on the outside but felt disconnected underneath.</p>
+                    <p>Through challenge, community, and honest self-reflection, I found clarity, purpose, and a completely different way of living.</p>
+                    <p class="story-closing"><strong>more community</strong> was built from that journey — to help others step outside their comfort zones and realise they are capable of far more than they think.</p>
+                    <a href="about.html" class="text-link">Read the full story →</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ====== THE MORE PILLARS ====== -->
+    <section id="community" class="section pillars-section">
+        <div class="container">
+            <div class="pillars-header scroll-reveal">
+                <p class="eyebrow">Discover Your Scene</p>
+                <h2 class="editorial-title">Independent communities<br><em>hosted on more</em></h2>
+                <p class="pillars-intro">From run clubs to arts collectives, explore hundreds of groups running on our platform.</p>
+            </div>
+            <div class="pillars-editorial">
+                <div class="pillar-row scroll-reveal">
+                    <div class="pillar-image"><img src="images/walking.png" alt="Community Walks"></div>
+                    <div class="pillar-text">
+                        <span class="pillar-number">01</span>
+                        <h3>Walking Groups</h3>
+                        <p>Find local walk and talk sessions near you. Safe spaces to connect, share experiences, and enjoy the outdoors with people who understand. No pace, no pressure — just presence.</p>
+                        <a href="discover.html" class="text-link">Join a walk →</a>
+                    </div>
+                </div>
+                <div class="pillar-row pillar-row-reverse scroll-reveal">
+                    <div class="pillar-image"><img src="images/running.png" alt="Challenges"></div>
+                    <div class="pillar-text">
+                        <span class="pillar-number">02</span>
+                        <h3>Run Clubs & Challenges</h3>
+                        <p>Discover independent run clubs and community challenges to push your limits. From beginner-friendly jogs to ambitious tracker challenges — inspired by the Parkrun spirit.</p>
+                        <a href="discover.html" class="text-link">See challenges →</a>
+                    </div>
+                </div>
+                <div class="pillar-row scroll-reveal">
+                    <div class="pillar-image"><img src="images/wellness.png" alt="Mental Fitness"></div>
+                    <div class="pillar-text">
+                        <span class="pillar-number">03</span>
+                        <h3>Wellness & Mental Fitness</h3>
+                        <p>Find meditation groups, men's circles, and wellness collectives focusing on mental resilience and emotional wellbeing. Because the strongest community starts with a strong mind.</p>
+                        <a href="discover.html" class="text-link">Learn more →</a>
+                    </div>
+                </div>
+                <div class="pillar-row pillar-row-reverse scroll-reveal">
+                    <div class="pillar-image"><img src="images/entrepreneurs.png" alt="Entrepreneurship"></div>
+                    <div class="pillar-text">
+                        <span class="pillar-number">04</span>
+                        <h3>Professional Networks & YENTW</h3>
+                        <p>Connect with local builders, founders, and creatives. Home to the Young Entrepreneurs Network Tunbridge Wells (YENTW), offering mentorship, hackathons, and accelerator programmes.</p>
+                        <a href="yentw.html" class="text-link">Explore YENTW →</a>
+                    </div>
+                </div>
+                <div class="pillar-row scroll-reveal">
+                    <div class="pillar-image"><img src="images/adventure.png" alt="Events & Meetups"></div>
+                    <div class="pillar-text">
+                        <span class="pillar-number">05</span>
+                        <h3>Local Events & Meetups</h3>
+                        <p>Search a centralized calendar of real-world events designed to bring people together. No more scrolling through Facebook—find what's happening this weekend in your town.</p>
+                        <a href="discover.html" class="text-link">Upcoming events →</a>
+                    </div>
+                </div>
+                <div class="pillar-row pillar-row-reverse scroll-reveal">
+                    <div class="pillar-image"><img src="images/charity.png" alt="Community Projects"></div>
+                    <div class="pillar-text">
+                        <span class="pillar-number">06</span>
+                        <h3>Charity & Community Projects</h3>
+                        <p>Discover volunteering opportunities, local charity initiatives, and purpose-driven projects. Give back to your town and connect with people who want to make a real difference.</p>
+                        <a href="discover.html" class="text-link">See projects →</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ====== LAUNCHING IN TW ====== -->
+    <section class="section tw-section">
+        <div class="tw-bg-wrap">
+            <img src="images/tunbridge-wells.png" alt="The Pantiles, Tunbridge Wells" class="tw-bg-img">
+        </div>
+        <div class="tw-overlay"></div>
+        <div class="container" style="position: relative; z-index: 2;">
+            <div class="tw-content scroll-reveal">
+                <p class="eyebrow">Launching First</p>
+                <h2 class="editorial-title">Starting where<br><em>it matters.</em></h2>
+                <p class="tw-desc">Tunbridge Wells is home to over 20 active community groups — walking clubs, running crews, entrepreneur networks, faith groups, volunteer teams, and more We're starting here because community starts local.</p>
+                <div class="tw-highlights">
+                    <div class="tw-highlight-item">
+                        <span class="tw-number">20+</span>
+                        <span class="tw-hl-label">Active communities<br>ready to join</span>
+                    </div>
+                    <div class="tw-highlight-item">
+                        <span class="tw-number">1st</span>
+                        <span class="tw-hl-label">Launch event at<br>The Pantiles</span>
+                    </div>
+                    <div class="tw-highlight-item">
+                        <span class="tw-number">Free</span>
+                        <span class="tw-hl-label">For every community<br>leader. Always.</span>
+                    </div>
+                </div>
+                <a href="tunbridge-wells.html" class="btn btn-white">Explore Tunbridge Wells →</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ====== APP TEASER ====== -->
+    <section id="app" class="section app-teaser-section">
+        <div class="container">
+            <div class="app-teaser-layout scroll-reveal">
+                <div class="app-teaser-content">
+                    <p class="eyebrow">The App</p>
+                    <h2 class="editorial-title">Your community.<br><em>In your pocket.</em></h2>
+                    <p>We're building the more app — one place to find communities, chat with members, create events, and connect with the right people.</p>
+                    <ul class="app-feature-highlights">
+                        <li><strong>Discover</strong> communities by interest, location, or passion</li>
+                        <li><strong>Connect</strong> in real-time chat with your people</li>
+                        <li><strong>Create</strong> meetups, events, and challenges</li>
+                        <li><strong>Lead</strong> your own community and grow your network</li>
+                        <li><strong>Match</strong> with people for initiatives and projects</li>
+                    </ul>
+                    <div class="email-signup">
+                        <input type="email" placeholder="Your email for early access" id="emailInput">
+                        <button class="btn btn-primary" id="notifyBtn">Get Early Access</button>
+                    </div>
+                </div>
+                <div class="app-teaser-visual">
+                    <a href="/portal/" class="phone-mockup-link">
+                        <div class="phone-mockup">
+                            <div class="phone-notch"></div>
+                            <div class="phone-screen">
+                                <img src="images/logo.png" alt="more" class="phone-brand-logo">
+                                <span class="phone-tagline-text">community hub</span>
+                                <span class="phone-coming-soon">tap to preview</span>
+                            </div>
+                        </div>
+                        <p class="phone-cta-label">See the app preview →</p>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ====== FINAL CTA ====== -->
+    <section id="join" class="section cta-final">
+        <div class="cta-final-bg">
+            <img src="images/hero.png" alt="">
+        </div>
+        <div class="cta-final-overlay"></div>
+        <div class="cta-final-content scroll-reveal">
+            <img src="images/logo.png" alt="more" class="cta-logo">
+            <h2>Ready for<br><em>more</em>?</h2>
+            <p>Whether you want to join a walk, tackle a challenge, build a business, or simply connect with people who get it — there is more waiting for you.</p>
+            <div class="cta-final-actions">
+                <a href="https://more-community-app.vercel.app/" class="btn btn-white">Open the App</a>
+                <a href="leaders.html" class="btn btn-ghost">Run a Community?</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ====== FOOTER ====== -->
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-top">
+                <div class="footer-brand-col">
+                    <img src="images/logo.png" alt="more" class="footer-logo">
+                    <p>The movement for real-life connection. Bringing people, purpose, and place together — because life is meant to be shared.</p>
+                    <div class="footer-social">
+                        <a href="https://www.facebook.com/profile.php?id=61582628436300" target="_blank" aria-label="Facebook">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.5 2 2 6.5 2 12c0 5 3.7 9.1 8.4 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.4 2.9h-2.3v7C18.3 21.1 22 17 22 12c0-5.5-4.5-10-10-10z"/></svg>
+                        </a>
+                        <a href="https://www.instagram.com/morecommunitywellness/" target="_blank" aria-label="Instagram">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+                        </a>
+                    </div>
+                </div>
+                <div class="footer-nav-col">
+                    <h4>Movement</h4>
+                    <a href="discover.html">Discover Communities</a>
+                    <a href="leaders.html">For Leaders</a>
+                    <a href="/portal/">App Preview</a>
+                    <a href="tunbridge-wells.html">Tunbridge Wells</a>
+                </div>
+                <div class="footer-nav-col">
+                    <h4>Ventures</h4>
+                    <a href="yentw.html">YENTW</a>
+                    <a href="accelerator.html">Accelerator</a>
+                    <a href="hackathons.html">Hackathons</a>
+                    <a href="sponsorship.html">Sponsorship</a>
+                </div>
+                <div class="footer-nav-col">
+                    <h4>Company</h4>
+                    <a href="about.html">Our Story</a>
+                    <a href="#">Privacy</a>
+                    <a href="#">Terms</a>
+                    <a href="#">Contact</a>
+                </div>
+            </div>
+            <div class="footer-bottom-bar">
+                <p>&copy; 2026 more community</p>
+                <p class="footer-motto">do more >> experience more >> achieve more >></p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js?v=22"></script>
+</body>
+</html>
