@@ -13,6 +13,8 @@ import DigitalTicket from '../../src/components/DigitalTicket';
 import QRScanner from '../../src/components/QRScanner';
 import CommunityOnboardingFlow from '../../src/views/CommunityOnboardingFlow';
 import EventFlyerGenerator from '../../src/components/EventFlyerGenerator';
+import dynamic from 'next/dynamic';
+const LocationPicker = dynamic(() => import('../../src/components/LocationPicker'), { ssr: false });
 
 // ─── Stat Card Component ──────────────────────────────────
 const StatCard = ({ value, label, color, icon: Icon, accent }) => (
@@ -537,7 +539,7 @@ export default function LeaderDashboard() {
           </div>
           <div className="form-group">
             <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><MapPin size={14} color="#3b82f6" /> Location <span style={{ color: 'var(--rose-400)', fontSize: '0.7rem' }}>*</span></label>
-            <input className="form-input" placeholder="e.g. The Common, Tunbridge Wells" value={eventForm.location} onChange={e => setEventForm({...eventForm, location: e.target.value})} style={{ padding: '14px 16px' }} />
+            <LocationPicker locationName={eventForm.location} setLocationName={(loc) => setEventForm({...eventForm, location: loc})} />
           </div>
         </>
       )}
