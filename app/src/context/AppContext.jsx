@@ -115,7 +115,7 @@ export function AppProvider({ children }) {
       setIsLoading(true);
 
       // Batch 1: All independent queries run in parallel
-      const [usersRes, commsRes, chanRes, evRes, rsvpRes, memRes, ] =
+      const [usersRes, commsRes, chanRes, evRes, rsvpRes, memRes] =
         await Promise.all([
           supabase.from('users').select('*'),
           supabase.from('communities').select('*'),
@@ -123,8 +123,6 @@ export function AppProvider({ children }) {
           supabase.from('events').select('*'),
           supabase.from('event_rsvps').select('*'),
           supabase.from('community_memberships').select('*'),
-          supabase.from('messages').select('*').order('created_at', { ascending: false }).limit(500),
-          supabase.from('feed_posts').select('*').order('created_at', { ascending: false }).limit(100),
         ]);
 
       // Process results
@@ -179,21 +177,7 @@ export function AppProvider({ children }) {
         setCommunityMemberships(memMap);
       }
 
-      if (msgRes.data) {
-        setMessages(msgRes.data.reverse().map(msg => ({
-          id: msg.id,
-          communityId: msg.community_id,
-          channel: msg.channel,
-          authorId: msg.author_id,
-          text: msg.text,
-          image: msg.image,
-          timestamp: msg.timestamp
-        })));
-      }
 
-      if (!feedRes.error && feedRes.data) {
-        
-      }
 
       // Batch 2: Auth-dependent queries (run in parallel with each other)
       if (authUser?.id) {
