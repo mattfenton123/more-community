@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { AppProvider, useAppContext } from '../src/context/AppContext';
-import { useChat } from '../src/context/ChatContext';
+import { useChat, ChatProvider } from '../src/context/ChatContext';
 import { FeedProvider } from '../src/context/FeedContext';
 import { AuthProvider, useAuth } from '../src/context/AuthContext';
 import { ToastProvider } from '../src/components/Toast';
