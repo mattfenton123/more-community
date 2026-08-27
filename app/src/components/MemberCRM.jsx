@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { TrendingUp, TrendingDown, UserCheck, AlertTriangle, Send, Search, Megaphone, Star, Zap, Clock } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
+import { useChat } from '../context/ChatContext';
 import { useToast } from '../components/Toast';
 
 function getEngagementScore(member, events, eventRsvps, messages, communityId) {
@@ -32,7 +33,8 @@ function getEngagementStatus(score) {
 }
 
 export default function MemberCRM({ communityId }) {
-  const { users, communityMemberships, events, eventRsvps, messages, broadcastNotification } = useAppContext();
+  const { users, communityMemberships, events, eventRsvps, broadcastNotification } = useAppContext();
+    const { messages } = useChat();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [broadcastText, setBroadcastText] = useState('');

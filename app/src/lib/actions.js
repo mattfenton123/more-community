@@ -2,17 +2,29 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-// Instantiate Supabase client using Service Role Key (bypasses RLS)
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://nkyithbhufwgwnbxvqqu.supabase.co';
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+// Lazily instantiate Supabase client to prevent Server Component render crashes if env vars are missing
+let supabaseAdmin = null;
 
-const supabaseAdmin = createClient(supabaseUrl, supabaseKey, {
-  auth: { autoRefreshToken: false, persistSession: false }
-});
+function getSupabaseAdmin() {
+  if (!supabaseAdmin) {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://nkyithbhufwgwnbxvqqu.supabase.co';
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    
+    if (!supabaseKey) {
+      throw new Error("SUPABASE_SERVICE_ROLE_KEY or ANON_KEY is required to run server actions.");
+    }
+    
+    supabaseAdmin = createClient(supabaseUrl, supabaseKey, {
+      auth: { autoRefreshToken: false, persistSession: false }
+    });
+  }
+  return supabaseAdmin;
+}
 
 async function verifyUser(token, expectedUserId) {
   if (!token) throw new Error("Missing authentication token");
-  const { data: { user }, error } = await supabaseAdmin.auth.getUser(token);
+  const adminClient = getSupabaseAdmin();
+  const { data: { user }, error } = await adminClient.auth.getUser(token);
   if (error || !user) throw new Error("Invalid or expired token");
   if (expectedUserId && user.id !== expectedUserId) throw new Error("Unauthorized: User ID mismatch");
   return user;
@@ -22,7 +34,8 @@ export async function sendMessageAction(messageData, token) {
   if (!messageData.authorId) throw new Error("Unauthorized");
   await verifyUser(token, messageData.authorId);
   
-  const { data, error } = await supabaseAdmin.from('messages').insert({
+  const adminClient = getSupabaseAdmin();
+  const { data, error } = await adminClient.from('messages').insert({
     community_id: messageData.communityId,
     channel_id: messageData.channel,
     author_id: messageData.authorId,
@@ -38,7 +51,8 @@ export async function createCommunityAction(communityData, token) {
   if (!communityData.name) throw new Error("Missing community data");
   if (communityData.creatorId) await verifyUser(token, communityData.creatorId);
 
-  const { data, error } = await supabaseAdmin.from('communities').insert({
+  const adminClient = getSupabaseAdmin();
+  const { data, error } = await adminClient.from('communities').insert({
     id: communityData.id,
     name: communityData.name,
     description: communityData.description,
@@ -52,7 +66,7 @@ export async function createCommunityAction(communityData, token) {
 
   // Automatically make the creator a leader
   if (communityData.creatorId) {
-    await supabaseAdmin.from('community_memberships').insert({
+    await adminClient.from('community_memberships').insert({
       community_id: data.id,
       user_id: communityData.creatorId,
       role: 'Leader'
@@ -66,7 +80,8 @@ export async function joinCommunityAction(userId, communityId, token) {
   if (!userId || !communityId) throw new Error("Missing data");
   await verifyUser(token, userId);
 
-  const { data, error } = await supabaseAdmin.from('community_memberships').insert({
+  const adminClient = getSupabaseAdmin();
+  const { data, error } = await adminClient.from('community_memberships').insert({
     user_id: userId,
     community_id: communityId,
     role: 'Member'
@@ -80,7 +95,8 @@ export async function createEventAction(eventData, token) {
   // In a real app we'd verify the user is a leader of the community, but for demo:
   await verifyUser(token);
 
-  const { data, error } = await supabaseAdmin.from('events').insert({
+  const adminClient = getSupabaseAdmin();
+  const { data, error } = await adminClient.from('events').insert({
     ...(eventData.id && { id: eventData.id }),
     community_id: eventData.communityId,
     title: eventData.title,
@@ -102,7 +118,8 @@ export async function leaveCommunityAction(userId, communityId, token) {
   if (!userId || !communityId) throw new Error("Missing data");
   await verifyUser(token, userId);
 
-  const { error } = await supabaseAdmin.from('community_memberships')
+  const adminClient = getSupabaseAdmin();
+  const { error } = await adminClient.from('community_memberships')
     .delete()
     .match({ user_id: userId, community_id: communityId });
 
@@ -114,13 +131,14 @@ export async function rsvpToEventAction(userId, eventId, status, ticketType, tok
   if (!userId || !eventId) throw new Error("Missing data");
   await verifyUser(token, userId);
 
+  const adminClient = getSupabaseAdmin();
   if (status === 'not_going') {
-    const { error } = await supabaseAdmin.from('event_rsvps')
+    const { error } = await adminClient.from('event_rsvps')
       .delete()
       .match({ user_id: userId, event_id: eventId });
     if (error) throw new Error(error.message);
   } else {
-    const { error } = await supabaseAdmin.from('event_rsvps').upsert([{
+    const { error } = await adminClient.from('event_rsvps').upsert([{
       user_id: userId,
       event_id: eventId,
       status: status,

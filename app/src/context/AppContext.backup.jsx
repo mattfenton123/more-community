@@ -115,7 +115,7 @@ export function AppProvider({ children }) {
       setIsLoading(true);
 
       // Batch 1: All independent queries run in parallel
-      const [usersRes, commsRes, chanRes, evRes, rsvpRes, memRes, ] =
+      const [usersRes, commsRes, chanRes, evRes, rsvpRes, memRes, msgRes, feedRes] =
         await Promise.all([
           supabase.from('users').select('*'),
           supabase.from('communities').select('*'),
@@ -192,12 +192,21 @@ export function AppProvider({ children }) {
       }
 
       if (!feedRes.error && feedRes.data) {
-        
+        setFeedPosts(feedRes.data.map(post => ({
+          id: post.id,
+          communityId: post.community_id,
+          authorId: post.author_id,
+          text: post.text,
+          media: post.media,
+          likes: post.likes,
+          comments: post.comments,
+          timestamp: post.created_at
+        })));
       }
 
       // Batch 2: Auth-dependent queries (run in parallel with each other)
       if (authUser?.id) {
-        const [notifRes, readRes] = await Promise.all([
+        const [notifRes, dmRes, readRes] = await Promise.all([
           supabase
             .from('notifications')
             .select('*')
@@ -216,6 +225,18 @@ export function AppProvider({ children }) {
 
         if (!notifRes.error && notifRes.data) {
           setNotifications(notifRes.data);
+        }
+
+        if (!dmRes.error && dmRes.data) {
+          setDirectMessages(dmRes.data.map(dm => ({
+            id: dm.id,
+            senderId: dm.sender_id,
+            receiverId: dm.receiver_id,
+            text: dm.text,
+            image: dm.image,
+            created_at: dm.created_at,
+            timestamp: new Date(dm.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          })));
         }
 
         if (!readRes.error && readRes.data) {

@@ -6,6 +6,7 @@ import AppHeader from './components/AppHeader';
 import HomeFeed from './views/HomeFeed';
 import PageTransition from './components/PageTransition';
 import { useAppContext } from './context/AppContext';
+import { useChat } from './context/ChatContext';
 
 // Lazy-loaded routes — only downloaded when navigated to
 const Discover = React.lazy(() => import('./views/Discover'));
@@ -32,7 +33,8 @@ function RouteFallback() {
 function TabBar() {
   const location = useLocation();
   const currentPath = location.pathname;
-  const { user, notifications, messages, directMessages, chatReadReceipts, communities, channels } = useAppContext();
+  const { user, notifications, communities, channels } = useAppContext();
+    const { messages, directMessages, chatReadReceipts } = useChat();
   const unreadCount = notifications ? notifications.filter(n => !n.is_read).length : 0;
   
   let unreadChatCount = 0;

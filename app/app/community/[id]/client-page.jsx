@@ -1,12 +1,12 @@
 "use client";
 import { useState } from 'react';
-import { ChevronLeft, Share2, Users, Calendar, Settings, ChevronDown, ChevronUp, Image as ImageIcon, ExternalLink, Camera, Mail, Activity, Sparkles, MapPin, Clock, Star, MessageCircle, Heart, BadgeCheck } from 'lucide-react';
+import { ChevronLeft, Share2, Users, Calendar, Settings, ChevronDown, ChevronUp, Image as ImageIcon, ExternalLink, Camera, Mail, Activity, Sparkles, MapPin, Clock, Star, MessageCircle, Heart, BadgeCheck, Globe } from 'lucide-react';
 import { useRouter as useNavigate, useParams } from 'next/navigation';
-import { useAppContext } from '../context/AppContext';
-import { useFeed } from '../context/FeedContext';
-import { useToast } from '../components/Toast';
-import PhotoGallery from '../components/PhotoGallery';
-import MemberDirectory from '../components/MemberDirectory';
+import { useAppContext } from '../../../src/context/AppContext';
+import { useFeed } from '../../../src/context/FeedContext';
+import { useToast } from '../../../src/components/Toast';
+import PhotoGallery from '../../../src/components/PhotoGallery';
+import MemberDirectory from '../../../src/components/MemberDirectory';
 
 // Category-specific gallery photos (generated unique images)
 const IMG = '/portal/images/communities';
@@ -69,7 +69,7 @@ function getGalleryType(tags) {
 export default function CommunityProfile() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { communities, user, joinCommunity, leaveCommunity, events, isLoading, users, communityMemberships, eventRsvps, uploadImage } = useAppContext();
+  const { communities, user, joinCommunity, leaveCommunity, events, isLoading, users, communityMemberships, eventRsvps, uploadImage, experiences } = useAppContext();
     const { feedPosts, createFeedPost, likeFeedPost } = useFeed();
   const { toast } = useToast();
   const [showRules, setShowRules] = useState(false);
@@ -83,7 +83,7 @@ export default function CommunityProfile() {
   if (!community && !isLoading) {
     return (
       <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'var(--slate-950)' }}>
-        <img src={`/images/logo.webp`} alt="more." style={{ height: '24px', opacity: 0.5, marginBottom: '24px', cursor: 'pointer' }} onClick={() => navigate.back()} />
+        <img src="/images/logo.webp" alt="more." style={{ height: '24px', opacity: 0.5, marginBottom: '24px', cursor: 'pointer' }} onClick={() => navigate.back()} />
         <h2 style={{ color: 'white', fontFamily: 'var(--font-heading)' }}>Community not found</h2>
         <button onClick={() => navigate.back()} className="btn btn-outline" style={{ marginTop: '16px' }}>Go Home</button>
       </div>
@@ -148,9 +148,10 @@ export default function CommunityProfile() {
   };
 
   return (
-    <div className="view-profile" style={{ background: 'var(--slate-950)', minHeight: '100vh', paddingBottom: '80px' }}>
-      
-      {/* ===== HERO SECTION ===== */}
+    <div className="view-profile" style={{ background: 'var(--slate-950)', minHeight: '100vh', paddingBottom: '80px', width: '100%' }}>
+      <div className="microsite-container">
+        
+        {/* ===== HERO SECTION ===== */}
       <div style={{ 
         height: '380px', 
         background: community.image ? `url(${community.image})` : `linear-gradient(135deg, var(--teal-500), var(--slate-900))`, 
@@ -422,6 +423,36 @@ export default function CommunityProfile() {
               </div>
             )}
 
+
+            {/* Promoted Experiences (Marketplace) */}
+            {experiences && experiences.filter(exp => exp.promotedBy === community.id).length > 0 && (
+              <div style={{ marginBottom: '32px' }}>
+                <h3 style={{ fontSize: '1.1rem', fontFamily: 'var(--font-heading)', color: 'white', margin: '0 0 12px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Globe size={18} color="var(--teal-400)" /> Trips & Retreats
+                </h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {experiences.filter(exp => exp.promotedBy === community.id).map(exp => {
+                    const finalPrice = exp.basePrice + Math.round(exp.basePrice * ((exp.leaderMarkup || 0) / 100));
+                    return (
+                      <div key={exp.id} onClick={() => navigate.back()} className="interactive-press" style={{ display: 'flex', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px', overflow: 'hidden', cursor: 'pointer' }}>
+                        <div style={{ width: '100px', flexShrink: 0 }}>
+                          <img src={exp.image} alt={exp.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        </div>
+                        <div style={{ padding: '12px', flex: 1 }}>
+                          <div style={{ fontSize: '0.7rem', color: 'var(--teal-400)', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px' }}>{exp.category}</div>
+                          <div style={{ fontWeight: 600, color: 'white', fontSize: '0.95rem', marginBottom: '4px' }}>{exp.title}</div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '8px' }}>
+                            <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)' }}><Clock size={12} style={{ display: 'inline', verticalAlign: '-2px' }} /> {exp.duration}</div>
+                            <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'white' }}>£{finalPrice}</div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             {/* Reviews */}
             <div style={{ marginBottom: '32px' }}>
               <h3 style={{ fontSize: '1.1rem', fontFamily: 'var(--font-heading)', color: 'white', margin: '0 0 16px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -584,6 +615,7 @@ export default function CommunityProfile() {
           <MemberDirectory communityId={communityId} />
         )}
 
+      </div>
       </div>
     </div>
   );

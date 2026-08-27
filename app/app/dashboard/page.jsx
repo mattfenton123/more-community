@@ -4,6 +4,7 @@ import { Users, Calendar, MessageCircle, TrendingUp, Search, Plus, MapPin, Image
 import AppHeader from '../../src/components/AppHeader';
 import { useRouter } from 'next/navigation';
 import { useAppContext } from '../../src/context/AppContext';
+import { useChat } from '../../src/context/ChatContext';
 import { useToast } from '../../src/components/Toast';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip as RechartsTooltip, CartesianGrid } from 'recharts';
 import SocialHub from '../../src/components/SocialHub';
@@ -71,12 +72,8 @@ function getEngagementScore(member, events, eventRsvps, messages, communityId) {
 
 // ─── Component ──────────────────────────────────────────────────
 export default function LeaderDashboard() {
-  const { 
-    user, communities, events, updateCommunity, users, communityMemberships, 
-    createEvent, updateEvent, cancelEvent, uploadImage, eventRsvps, messages,
-    whatsappSettings, setWhatsappSettings, promoteMember, removeMember, 
-    checkInMember, broadcastNotification, experiences
-  } = useAppContext();
+  const { user, communities, events, updateCommunity, users, communityMemberships, createEvent, updateEvent, cancelEvent, uploadImage, eventRsvps, whatsappSettings, setWhatsappSettings, promoteMember, removeMember, checkInMember, broadcastNotification, experiences } = useAppContext();
+    const { messages } = useChat();
   const { toast } = useToast();
   const router = useRouter();
   

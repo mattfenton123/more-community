@@ -3,6 +3,7 @@ import { useState, useMemo } from 'react';
 import { Compass, Users, MapPin, Search, Calendar, ChevronRight, X, List, Map as MapIcon, Sparkles, BadgeCheck, TrendingUp, Activity, Zap } from 'lucide-react';
 import { useRouter as useNavigate } from 'next/navigation';
 import { useAppContext } from '../context/AppContext';
+import { useChat } from '../context/ChatContext';
 import { FALLBACK_IMAGES } from '../lib/constants';
 import { SkeletonList, SkeletonCard } from '../components/SkeletonCard';
 import { useToast } from '../components/Toast';
@@ -15,7 +16,8 @@ export default function Discover() {
   const [viewMode, setViewMode] = useState('list'); // 'list' or 'map'
   const [sortBy, setSortBy] = useState('trending');
   const pills = ['All', 'For You', '🔥 Trending', '🚶 Walking', '🏃 Running', '🧘 Wellness', '⛰️ Adventure', '🤝 Volunteering', '🎨 Creative', '💼 Business'];
-  const { communities, user, users, communityMemberships, joinCommunity, isLoading, events, messages } = useAppContext();
+  const { communities, user, users, communityMemberships, joinCommunity, isLoading, events } = useAppContext();
+    const { messages } = useChat();
   const { toast } = useToast();
   const navigate = useNavigate();
 

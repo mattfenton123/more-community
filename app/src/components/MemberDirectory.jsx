@@ -3,11 +3,13 @@ import { useState, useMemo } from 'react';
 import { Search, Users, Crown, MessageCircle, ChevronRight, Trophy, Flame } from 'lucide-react';
 import { useRouter as useNavigate } from 'next/navigation';
 import { useAppContext } from '../context/AppContext';
+import { useChat } from '../context/ChatContext';
 import { BadgeRow, useGamification } from './Gamification';
 
 function MemberRow({ member, communityId }) {
   const navigate = useNavigate();
-  const { users, messages, eventRsvps, events } = useAppContext();
+  const { users, eventRsvps, events } = useAppContext();
+    const { messages } = useChat();
   const user = users.find(u => u.id === member.userId);
   if (!user) return null;
 

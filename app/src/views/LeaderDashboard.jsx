@@ -3,6 +3,7 @@ import { useState, useRef, useMemo } from 'react';
 import { Users, Calendar, MessageCircle, TrendingUp, Search, Plus, MapPin, Image as ImageIcon, CreditCard, ChevronRight, Download, Activity, Globe, Heart, Crown, Info, X, Map, Zap, Mail, Trash2, UserCheck, Ban, ChevronDown, ChevronUp, Settings, Megaphone, QrCode, BarChart3, Ticket, ScanLine, UserPlus, DollarSign, Clock, Edit3, Check, Eye, EyeOff, Shield } from 'lucide-react';
 import AppHeader from '../components/AppHeader';
 import { useAppContext } from '../context/AppContext';
+import { useChat } from '../context/ChatContext';
 import { useToast } from '../components/Toast';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip as RechartsTooltip, CartesianGrid } from 'recharts';
 import SocialHub from '../components/SocialHub';
@@ -70,12 +71,8 @@ function getEngagementScore(member, events, eventRsvps, messages, communityId) {
 
 // ─── Component ──────────────────────────────────────────────────
 export default function LeaderDashboard() {
-  const { 
-    user, communities, events, updateCommunity, users, communityMemberships, 
-    createEvent, updateEvent, cancelEvent, uploadImage, eventRsvps, messages,
-    whatsappSettings, setWhatsappSettings, promoteMember, removeMember, 
-    checkInMember, broadcastNotification
-  } = useAppContext();
+  const { user, communities, events, updateCommunity, users, communityMemberships, createEvent, updateEvent, cancelEvent, uploadImage, eventRsvps, whatsappSettings, setWhatsappSettings, promoteMember, removeMember, checkInMember, broadcastNotification } = useAppContext();
+    const { messages } = useChat();
   const { toast } = useToast();
   
   // ─── State ──────────────────────────────────────────────────

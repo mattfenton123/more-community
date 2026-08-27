@@ -5,6 +5,7 @@ import AppHeader from '../../src/components/AppHeader';
 import { useRouter as useNavigate } from 'next/navigation';
 import { useAuth } from '../../src/context/AuthContext';
 import { useAppContext } from '../../src/context/AppContext';
+import { useChat } from '../../src/context/ChatContext';
 import { useToast } from '../../src/components/Toast';
 
 export default function SettingsScreen() {

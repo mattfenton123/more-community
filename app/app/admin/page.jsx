@@ -6,6 +6,8 @@ import { Shield, Activity, Users, Map, CheckCircle, XCircle, Search, BadgeCheck,
   BarChart3, UserCheck, Zap, Star, Globe, Lock, Mail, Clock, AlertTriangle,
   ChevronRight, ScanLine, Ticket } from 'lucide-react';
 import { useAppContext } from '../../src/context/AppContext';
+import { useFeed } from '../../src/context/FeedContext';
+import { useChat } from '../../src/context/ChatContext';
 import { useToast } from '../../src/components/Toast';
 import { useRouter as useNavigate } from 'next/navigation';
 
@@ -65,11 +67,9 @@ function getEngagementScore(member, events, eventRsvps, messages, communityId) {
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
-  const { 
-    user, communities, users, events, messages, communityMemberships, eventRsvps, 
-    adminVerifyCommunity, feedPosts, notifications, broadcastNotification,
-    toggleUserRole, updateCommunity
-  } = useAppContext();
+  const { user, communities, users, events, communityMemberships, eventRsvps, adminVerifyCommunity, notifications, broadcastNotification, toggleUserRole, updateCommunity } = useAppContext();
+    const { feedPosts } = useFeed();
+    const { messages } = useChat();
   const { toast } = useToast();
 
   const [activeTab, setActiveTab] = useState('overview');
