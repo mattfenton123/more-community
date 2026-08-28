@@ -114,6 +114,7 @@ function MainLayout({ children }) {
   const { user, isLoading: appLoading } = useAppContext();
   const { authUser, isLoading: authLoading } = useAuth();
   const isDashboard = currentPath?.startsWith('/dashboard') || currentPath?.startsWith('/council-dashboard') || currentPath?.startsWith('/admin');
+  const hideTabBar = isDashboard || currentPath === '/login' || currentPath === '/onboarding';
   const isDesktopFriendly = isDashboard || currentPath?.startsWith('/community/');
 
   useEffect(() => {
@@ -142,7 +143,7 @@ function MainLayout({ children }) {
 
         {children}
             </div>
-      {!isDashboard && <TabBar />}
+      {!hideTabBar && <TabBar />}
           </FeedProvider>
     </ChatProvider>
     </div>
