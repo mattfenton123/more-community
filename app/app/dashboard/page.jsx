@@ -109,6 +109,7 @@ export default function LeaderDashboard() {
   const [discoveryResults, setDiscoveryResults] = useState(null);
   const [aiPrompt, setAiPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [showWelcomeGuide, setShowWelcomeGuide] = useState(true);
 
   const fileInputRef = useRef(null);
 
