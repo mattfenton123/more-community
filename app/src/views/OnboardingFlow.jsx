@@ -103,8 +103,10 @@ export default function OnboardingFlow({ onComplete }) {
 
       toast.success('Welcome!', 'Your profile has been created');
       
-      if (wantsToLead) {
+      if (wantsToLead === true) {
         window.location.href = '/dashboard';
+      } else if (wantsToLead === 'cohost') {
+        window.location.href = '/notifications';
       } else {
         onComplete();
       }
@@ -404,7 +406,7 @@ export default function OnboardingFlow({ onComplete }) {
       {/* Progress bar */}
       <div style={{ padding: '20px 24px 0' }}>
         <div style={{ display: 'flex', gap: '6px' }}>
-          {[0, 1, 2, 3, 4, 5].map(i => (
+          {[0, 1, 2, 3, 4, 5, 6].map(i => (
             <div key={i} style={{ flex: 1, height: '3px', borderRadius: '99px', background: i <= step ? 'var(--teal-500)' : 'rgba(255,255,255,0.08)', transition: 'background 0.3s ease' }} />
           ))}
         </div>

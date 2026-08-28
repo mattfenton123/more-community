@@ -73,7 +73,7 @@ export default function LocationPicker({ locationName, setLocationName }) {
           className="form-input" 
           placeholder="Type a place (e.g. The Common)" 
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          onChange={(e) => { setSearchQuery(e.target.value); setLocationName(e.target.value); }}
           onKeyDown={(e) => { if(e.key === 'Enter') handleSearch(e); }}
           style={{ padding: '14px 16px', flex: 1 }} 
         />

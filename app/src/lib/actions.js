@@ -107,7 +107,8 @@ export async function createEventAction(eventData, token) {
     image: eventData.image,
     attendees: eventData.attendees || 0,
     status: eventData.status || 'published',
-    max_capacity: eventData.maxCapacity || null
+    max_capacity: eventData.maxCapacity || null,
+    ticket_price: eventData.ticket_price || 0
   }).select().single();
 
   if (error) throw new Error(error.message);
