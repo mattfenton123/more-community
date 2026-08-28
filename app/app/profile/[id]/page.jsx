@@ -94,7 +94,7 @@ export default function UserProfile() {
           </button>
           <div style={{ display: 'flex', gap: '8px' }}>
             {!isOwnProfile && (
-              <button className="interactive-press" onClick={() => navigate.push(`/chat`)} style={{ height: '40px', padding: '0 16px', borderRadius: '20px', background: 'var(--teal-500)', border: 'none', color: 'white', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 600 }}>
+              <button className="interactive-press" onClick={() => navigate.push(`/chat/dm/${targetId}`)} style={{ height: '40px', padding: '0 16px', borderRadius: '20px', background: 'var(--teal-500)', border: 'none', color: 'white', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 600 }}>
                 <MessageCircle size={18} /> Message
               </button>
             )}

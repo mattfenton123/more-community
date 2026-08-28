@@ -147,7 +147,7 @@ export default function Chat() {
                 return (
                   <div 
                     key={`dm-${i}`} 
-                    onClick={() => navigate.back()}
+                    onClick={() => navigate.push('/chat')}
                     className="stagger-item interactive-press"
                     style={{ display: 'flex', gap: '16px', padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.05)', cursor: 'pointer', transition: 'background 0.2s', position: 'relative' }}
                     onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
@@ -180,7 +180,7 @@ export default function Chat() {
               return (
                 <div 
                   key={`comm-${i}`} 
-                  onClick={() => navigate.back()}
+                  onClick={() => navigate.push('/chat')}
                   className="stagger-item interactive-press"
                   style={{ display: 'flex', gap: '16px', padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.05)', cursor: 'pointer', transition: 'background 0.2s', position: 'relative' }}
                   onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
@@ -264,7 +264,7 @@ export default function Chat() {
                       key={u.id}
                       onClick={() => {
                         setShowNewChatModal(false);
-                        navigate.back();
+                        navigate.push(`/chat/dm/${u.id}`);
                       }}
                       className="stagger-item interactive-press"
                       style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', cursor: 'pointer' }}
@@ -323,7 +323,7 @@ export default function Chat() {
         title={isDirectMessage ? targetUser?.name : community?.name}
         subtitle={isDirectMessage ? 'Direct Message' : `#${channelId}`}
         showBack={true}
-        onBack={() => navigate.back()}
+        onBack={() => navigate.push('/chat')}
       />
 
       {/* WhatsApp Banners */}
@@ -385,8 +385,8 @@ export default function Chat() {
                   <div className="stagger-item" style={{ alignSelf: isMe ? 'flex-end' : 'flex-start', maxWidth: '85%', marginTop: isConsecutive ? '4px' : '16px' }}>
                     {!isMe && !isConsecutive && (
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px', marginLeft: '4px' }}>
-                        <img onClick={() => navigate.back()} src={authorObj.avatar} alt={authorObj.name} style={{ width: '20px', height: '20px', borderRadius: '50%', objectFit: 'cover', cursor: 'pointer' }} />
-                        <div onClick={() => navigate.back()} style={{ fontSize: '0.75rem', color: isLeader ? 'var(--teal-400)' : 'var(--slate-400)', fontWeight: isLeader ? 600 : 400, cursor: 'pointer' }}>
+                        <img onClick={() => navigate.push(`/profile/${msg.authorId || msg.senderId}`)} src={authorObj.avatar} alt={authorObj.name} style={{ width: '20px', height: '20px', borderRadius: '50%', objectFit: 'cover', cursor: 'pointer' }} />
+                        <div onClick={() => navigate.push(`/profile/${msg.authorId || msg.senderId}`)} style={{ fontSize: '0.75rem', color: isLeader ? 'var(--teal-400)' : 'var(--slate-400)', fontWeight: isLeader ? 600 : 400, cursor: 'pointer' }}>
                           {authorObj.name} {isLeader && '👑'}
                         </div>
                       </div>

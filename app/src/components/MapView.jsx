@@ -106,7 +106,7 @@ export default function MapView({ communities, onSelect }) {
         const btn = document.getElementById(`map-view-${comm.id}`);
         if (btn) {
           btn.addEventListener('click', () => {
-            navigate.back();
+            navigate.push(`/community/${c.id}`);
           });
         }
       });

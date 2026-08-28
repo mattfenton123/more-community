@@ -602,10 +602,10 @@ export default function AdminDashboard() {
 
                           {/* Actions */}
                           <div style={{ display: 'flex', gap: '6px' }}>
-                            <button onClick={(e) => { e.stopPropagation(); navigate.back(); }} className="btn btn-outline interactive-press" style={{ flex: 1, padding: '8px', borderRadius: '8px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                            <button onClick={(e) => { e.stopPropagation(); navigate.push('/'); }} className="btn btn-outline interactive-press" style={{ flex: 1, padding: '8px', borderRadius: '8px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
                               <Eye size={12} /> View Profile
                             </button>
-                            <button onClick={(e) => { e.stopPropagation(); navigate.back(); }} className="btn btn-primary interactive-press" style={{ flex: 1, padding: '8px', borderRadius: '8px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', background: 'var(--teal-500)', border: 'none' }}>
+                            <button onClick={(e) => { e.stopPropagation(); navigate.push('/'); }} className="btn btn-primary interactive-press" style={{ flex: 1, padding: '8px', borderRadius: '8px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', background: 'var(--teal-500)', border: 'none' }}>
                               <MessageCircle size={12} /> Message
                             </button>
                             {!u.isAdmin && (
