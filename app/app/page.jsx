@@ -156,7 +156,7 @@ export default function HomeFeed() {
               Discover Communities
             </button>
             <div style={{ marginTop: '12px' }}>
-              <button onClick={() => router.push('/discover')} className="btn btn-outline interactive-press" style={{ fontSize: '0.9rem' }}>
+              <button onClick={() => router.push('/dashboard')} className="btn btn-outline interactive-press" style={{ fontSize: '0.9rem' }}>
                 🚀 Start a Community
               </button>
             </div>

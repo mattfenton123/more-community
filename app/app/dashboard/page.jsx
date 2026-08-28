@@ -640,6 +640,7 @@ export default function LeaderDashboard() {
               { id: 'overview', icon: Activity, label: 'Overview' },
               { id: 'events', icon: Calendar, label: 'Events' },
               { id: 'monetisation', icon: DollarSign, label: 'Monetisation' },
+              { id: 'experiences', icon: Globe, label: 'Experiences' },
               { id: 'social hub', icon: Heart, label: 'Social Hub' },
               { id: 'crm', icon: BarChart3, label: 'CRM' },
               { id: 'members', icon: Users, label: 'Members' },
@@ -682,7 +683,7 @@ export default function LeaderDashboard() {
           {/* Tab Navigation (Mobile) */}
           <div className="mobile-only" style={{ padding: '0 20px', marginBottom: '24px' }}>
             <div style={{ display: 'flex', gap: '4px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', padding: '4px', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-              {['overview', 'events', 'monetisation', 'social hub', 'crm', 'members', 'settings'].map(tab => (
+              {['overview', 'events', 'monetisation', 'experiences', 'social hub', 'crm', 'members', 'settings'].map(tab => (
                 <button 
                   key={tab} onClick={() => setActiveTab(tab)}
                   style={{

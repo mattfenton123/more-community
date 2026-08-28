@@ -316,7 +316,7 @@ export default function CommunityOnboardingFlow({ onComplete }) {
         toast.success('Community Created!', 'You are ready to go.');
       }
 
-      onComplete();
+      window.location.href = `/community/${newCommunityId}`;
     } catch (err) {
       console.error(err);
       toast.error('Could not create community', err.message || 'Please try again.');

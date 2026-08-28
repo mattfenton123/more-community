@@ -151,7 +151,7 @@ export default function Discover() {
                 <MapIcon size={18} />
               </button>
             </div>
-            <button onClick={() => navigate.back()} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 }}>
+            <button onClick={() => navigate.push('/profile')} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 }}>
               <img src={user?.avatar || 'https://i.pravatar.cc/150'} alt="Profile" style={{ width: '36px', height: '36px', borderRadius: '50%', border: '2px solid var(--slate-700)', objectFit: 'cover' }} />
             </button>
           </>

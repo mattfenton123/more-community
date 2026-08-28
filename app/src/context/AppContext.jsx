@@ -692,6 +692,7 @@ export function AppProvider({ children }) {
         description: eventData.description || '',
         date: eventData.date,
         time: eventData.time,
+      ticket_price: eventData.ticketPrice || 0,
         location: eventData.location,
         image: eventData.image,
         attendees: 0,
