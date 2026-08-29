@@ -384,7 +384,7 @@ export default function LeaderDashboard() {
       const result = await res.json();
       
       if (result.status === 'success') {
-        if (result.isTestMode) toast('Using Test Mode (API Keys missing)', { icon: '⚠️' });
+        if (result.isTestMode) toast.info('Using Test Mode (API Keys missing)');
         setDiscoveryResults(result.data);
       } else {
         toast.error('API Error: ' + result.message);
@@ -1118,12 +1118,12 @@ export default function LeaderDashboard() {
                           <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '16px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
                               <span style={{ fontSize: '0.85rem', color: 'var(--slate-300)' }}>Your Markup:</span>
-                              <select onChange={(e) => { exp.leaderMarkup = parseInt(e.target.value); toast(`Markup set to +\${e.target.value}%`, "success"); }}
+                              <select onChange={(e) => { exp.leaderMarkup = parseInt(e.target.value); toast.success(`Markup set to +${e.target.value}%`); }}
                                 style={{ background: 'var(--slate-800)', color: 'white', border: '1px solid var(--slate-700)', padding: '4px 8px', borderRadius: '6px', fontSize: '0.85rem' }}>
                                 <option value="0">0%</option><option value="10">+10%</option><option value="15">+15%</option><option value="20">+20%</option><option value="30">+30%</option>
                               </select>
                             </div>
-                            <button onClick={() => { exp.promotedBy = community?.id; toast(`\${exp.title} added!`, "success"); setActiveTab('overview'); setTimeout(() => setActiveTab('experiences'), 10); }}
+                            <button onClick={() => { exp.promotedBy = community?.id; toast.success(`${exp.title} added!`); setActiveTab('overview'); setTimeout(() => setActiveTab('experiences'), 10); }}
                               className="btn btn-primary" style={{ width: '100%', padding: '10px', fontSize: '0.9rem' }}>Promote to Community</button>
                           </div>
                         ) : (
@@ -1132,7 +1132,7 @@ export default function LeaderDashboard() {
                               <span style={{ fontSize: '0.85rem', color: 'var(--teal-300)' }}>Selling: <strong>£{finalPrice}</strong></span>
                               <span style={{ fontSize: '0.85rem', color: 'var(--teal-300)' }}>Profit: <strong>£{finalPrice - exp.basePrice}</strong></span>
                             </div>
-                            <button onClick={() => { exp.promotedBy = null; toast(`\${exp.title} removed.`, "info"); setActiveTab('overview'); setTimeout(() => setActiveTab('experiences'), 10); }}
+                            <button onClick={() => { exp.promotedBy = null; toast.info(`${exp.title} removed.`); setActiveTab('overview'); setTimeout(() => setActiveTab('experiences'), 10); }}
                               className="btn btn-outline" style={{ width: '100%', padding: '10px', fontSize: '0.9rem' }}>Remove</button>
                           </div>
                         )}
