@@ -165,7 +165,7 @@ export default function RootLayout({ children }) {
         <meta property="og:description" content="Find local groups, join real-life meetups, and experience the joy of shared passions." />
         <meta property="og:image" content="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=1200&q=80" />
         <meta name="theme-color" content="#020617" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
         <link rel="icon" href="https://fav.farm/✨" />
       </head>
       <body>

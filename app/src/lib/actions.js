@@ -318,3 +318,12 @@ export async function sendDirectMessageAction(senderId, receiverId, text, image,
   if (error) throw new Error(error.message);
   return data;
 }
+
+export async function createFeedPostAction(communityId, authorId, content, mediaUrl, token) {
+  await verifyUser(token, authorId);
+  const { data, error } = await supabaseAdmin.from('feed_posts').insert([{
+    community_id: communityId, author_id: authorId, content, media_url: mediaUrl, likes: 0
+  }]).select().single();
+  if (error) throw new Error(error.message);
+  return data;
+}

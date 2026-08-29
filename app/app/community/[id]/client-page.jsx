@@ -216,8 +216,8 @@ export default function CommunityProfile() {
               <>
                 <button 
                   className={`btn ${isMember ? 'btn-outline' : 'btn-primary'} interactive-press`} 
-                  style={{ width: '100%', padding: '16px', fontSize: '1.05rem', fontWeight: 700, borderRadius: '14px', boxShadow: isMember ? 'none' : '0 8px 24px rgba(20,184,166,0.3)' }}
-                  onClick={handleJoinLeave}
+                  style={{ width: '100%', padding: '16px', fontSize: '1.05rem', fontWeight: 700, borderRadius: '14px', boxShadow: isMember ? 'none' : '0 8px 24px rgba(20,184,166,0.3)', cursor: isMember ? 'default' : 'pointer' }}
+                  onClick={isMember ? undefined : handleJoinLeave}
                 >
                   {isMember ? '✓ You\'re a Member' : isPaid ? `Join — £${subPrice}/month` : 'Join this Community — it\'s free'}
                 </button>

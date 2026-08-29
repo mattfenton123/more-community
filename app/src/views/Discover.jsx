@@ -270,7 +270,9 @@ export default function Discover() {
                     background: 'linear-gradient(135deg, rgba(45,212,191,0.1), rgba(251,191,36,0.08))',
                     border: '1px solid rgba(45,212,191,0.15)', borderRadius: '14px',
                     cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '1rem',
-                    transition: 'all 0.3s'
+                    transition: 'all 0.3s',
+                    position: 'relative',
+                    zIndex: 10
                   }}
                 >
                   <div style={{ fontSize: '1.6rem' }}>🎯</div>

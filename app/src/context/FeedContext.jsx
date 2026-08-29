@@ -3,6 +3,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { useAuth } from './AuthContext';
 import { useAppContext } from './AppContext';
+import { createFeedPostAction } from '../lib/actions';
 
 const FeedContext = createContext({});
 
@@ -72,16 +73,11 @@ export function FeedProvider({ children }) {
   const createFeedPost = async (communityId, text, media = null) => {
     if (!user.id) return;
     try {
+      const sessionResponse = await supabase.auth.getSession();
+      const token = sessionResponse.data.session?.access_token;
       let mediaUrl = media;
-      const { data, error } = await supabase.from('feed_posts').insert([{
-        community_id: communityId,
-        author_id: user.id,
-        content: text,
-        media_url: mediaUrl,
-        likes: 0
-      }]).select().single();
       
-      if (error) throw error;
+      const data = await createFeedPostAction(communityId, user.id, text, mediaUrl, token);
       
       const newPost = {
         id: data.id,
