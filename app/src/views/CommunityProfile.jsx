@@ -108,7 +108,6 @@ export default function CommunityProfile() {
   const galleryType = getGalleryType(community.tags);
   const galleryPhotos = GALLERY_PHOTOS[galleryType];
   const nextEvent = upcomingEvents[0] || communityEvents[0];
-  const nextEvent = upcomingEvents[0] || communityEvents[0];
 
   const handleShare = async () => {
     const shareData = { title: community.name, text: community.description, url: window.location.href };
@@ -142,8 +141,10 @@ export default function CommunityProfile() {
 
   const handleJoinLeave = async () => {
     if (isMember) {
-      await leaveCommunity(community.id);
-      toast.info('Left community', `You've left ${community.name}`);
+      if (window.confirm(`Are you sure you want to leave ${community.name}?`)) {
+        await leaveCommunity(community.id);
+        toast.info('Left community', `You've left ${community.name}`);
+      }
     } else {
       await joinCommunity(community.id);
       toast.success('Welcome!', `You're now a member of ${community.name}`);
