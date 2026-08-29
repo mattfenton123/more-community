@@ -262,7 +262,7 @@ export default function Discover() {
               {/* Experiences Marketplace Banner */}
               {activePill === 'All' && (
                 <div
-                  onClick={() => navigate.back()}
+                  onClick={() => navigate.push('/experiences')}
                   className="interactive-press"
                   style={{
                     margin: '0 20px 16px', padding: '1.1rem 1.25rem',
