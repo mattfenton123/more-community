@@ -2,11 +2,13 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { useAuth } from './AuthContext';
+import { useAppContext } from './AppContext';
 
 const FeedContext = createContext({});
 
-export function FeedProvider({ children, user }) {
+export function FeedProvider({ children }) {
   const { authUser } = useAuth();
+  const { user } = useAppContext();
   const [feedPosts, setFeedPosts] = useState([]);
   const [isFeedLoading, setIsFeedLoading] = useState(true);
 

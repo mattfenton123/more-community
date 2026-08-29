@@ -6,6 +6,8 @@ import { AppProvider } from './context/AppContext.jsx'
 import { ToastProvider } from './components/Toast.jsx'
 import { AuthProvider } from './context/AuthContext.jsx'
 import AuthGate from './components/AuthGate.jsx'
+import { FeedProvider } from './context/FeedContext.jsx'
+import { ChatProvider } from './context/ChatContext.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -13,7 +15,11 @@ createRoot(document.getElementById('root')).render(
       <AuthGate>
         <AppProvider>
           <ToastProvider>
-            <App />
+            <FeedProvider>
+              <ChatProvider>
+                <App />
+              </ChatProvider>
+            </FeedProvider>
           </ToastProvider>
         </AppProvider>
       </AuthGate>

@@ -2,11 +2,13 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { useAuth } from './AuthContext';
+import { useAppContext } from './AppContext';
 
 const ChatContext = createContext({});
 
-export function ChatProvider({ children, user }) {
+export function ChatProvider({ children }) {
   const { authUser } = useAuth();
+  const { user } = useAppContext();
   const [messages, setMessages] = useState([]);
   const [directMessages, setDirectMessages] = useState([]);
   const [chatReadReceipts, setChatReadReceipts] = useState([]);
