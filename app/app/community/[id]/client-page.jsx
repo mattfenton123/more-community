@@ -71,7 +71,7 @@ function getGalleryType(tags) {
 export default function CommunityProfile() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user, communities, events, communityMemberships, users, eventRsvps, uploadImage, joinCommunity, leaveCommunity } = useAppContext();
+  const { user, communities, events, communityMemberships, users, eventRsvps, uploadImage, joinCommunity, leaveCommunity, experiences } = useAppContext();
   const { feedPosts, createFeedPost, likeFeedPost, deleteFeedPost } = useFeed();
   const { toast } = useToast();
   const [showRules, setShowRules] = useState(false);
