@@ -27,6 +27,7 @@ export async function sendMessageAction(messageData, token) {
     channel: messageData.channel,
     author_id: messageData.authorId,
     text: messageData.text,
+    timestamp: new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),
     image: messageData.image || null
   }).select().single();
   
