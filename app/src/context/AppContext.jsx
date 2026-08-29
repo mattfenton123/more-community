@@ -394,6 +394,20 @@ export function AppProvider({ children }) {
 
     try {
       await joinCommunityAction(user.id, communityId, session?.access_token);
+      
+      // Notify community leaders
+      const leaders = (communityMemberships[communityId] || []).filter(m => m.role === 'Leader');
+      const targetComm = communities.find(c => c.id === communityId);
+      if (leaders.length > 0 && targetComm) {
+        const notifs = leaders.map(l => ({
+          user_id: l.userId,
+          title: 'New Member',
+          body: `${user.name} has joined ${targetComm.name}!`,
+          type: 'alert',
+          link: `/community/${communityId}`
+        }));
+        await broadcastNotificationAction(notifs, session?.access_token).catch(e => console.error("Failed to notify leader", e));
+      }
     } catch (err) {
       console.error(err);
       // Revert on failure

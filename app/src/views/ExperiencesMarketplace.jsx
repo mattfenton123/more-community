@@ -41,7 +41,11 @@ export default function ExperiencesMarketplace() {
   };
 
   const handlePromote = async () => {
-    if (!user.leaderOf) {
+    const leaderCommunityId = Object.keys(communityMemberships).find(cId => 
+      communityMemberships[cId].some(m => m.userId === user?.id && m.role === 'Leader')
+    );
+
+    if (!leaderCommunityId) {
       toast.error('Permission Denied', 'You must be a community leader to promote experiences.');
       return;
     }
@@ -54,7 +58,7 @@ export default function ExperiencesMarketplace() {
         time: '10:00 AM',
         location: selectedExp.location,
         image: selectedExp.image,
-        communityId: user.leaderOf,
+        communityId: leaderCommunityId,
         status: 'published',
         maxCapacity: selectedExp.spotsLeft || 20,
         ticketPrice: Math.round(selectedExp.basePrice * (1 + selectedExp.leaderMarkup / 100))
