@@ -543,25 +543,23 @@ export async function toggleFeedPostLikeAction(postId, userId, token) {
   await verifyUser(token, userId);
   
   const { data: existing } = await supabaseAdmin
-    .from('message_reactions')
-    .select('id')
-    .eq('message_id', postId)
+    .from('feed_post_likes')
+    .select('post_id')
+    .eq('post_id', postId)
     .eq('user_id', userId)
-    .eq('reaction', 'like')
     .single();
 
   if (existing) {
-    await supabaseAdmin.from('message_reactions').delete().eq('id', existing.id);
+    await supabaseAdmin.from('feed_post_likes').delete().eq('post_id', postId).eq('user_id', userId);
     const { data: post } = await supabaseAdmin.from('feed_posts').select('likes').eq('id', postId).single();
     if (post) {
       await supabaseAdmin.from('feed_posts').update({ likes: Math.max(0, (post.likes || 1) - 1) }).eq('id', postId);
     }
     return { liked: false };
   } else {
-    await supabaseAdmin.from('message_reactions').insert({
-      message_id: postId,
-      user_id: userId,
-      reaction: 'like'
+    await supabaseAdmin.from('feed_post_likes').insert({
+      post_id: postId,
+      user_id: userId
     });
     const { data: post } = await supabaseAdmin.from('feed_posts').select('likes').eq('id', postId).single();
     if (post) {
@@ -574,14 +572,10 @@ export async function toggleFeedPostLikeAction(postId, userId, token) {
 export async function createFeedPostCommentAction(postId, communityId, authorId, text, mediaUrl = null, token) {
   await verifyUser(token, authorId);
   
-  const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  const { data, error } = await supabaseAdmin.from('messages').insert([{
-    community_id: 'feed_comments_' + communityId,
-    channel: postId,
+  const { data, error } = await supabaseAdmin.from('feed_post_comments').insert([{
+    post_id: postId,
     author_id: authorId,
-    text: text,
-    media_url: mediaUrl,
-    timestamp: timestamp
+    text: text
   }]).select().single();
   
   if (error) throw new Error(error.message);
@@ -685,20 +679,18 @@ export async function reportMemberAction(reportedUserId, communityId, reason, to
 
 export async function getUserLikesAction(postIds, userId, token) {
   await verifyUser(token, userId);
-  const { data, error } = await supabaseAdmin.from('message_reactions')
-    .select('message_id')
+  const { data, error } = await supabaseAdmin.from('feed_post_likes')
+    .select('post_id')
     .eq('user_id', userId)
-    .in('message_id', postIds)
-    .eq('reaction', 'like');
+    .in('post_id', postIds);
   if (error) throw new Error(error.message);
   return data;
 }
 
 export async function getCommentsAction(postId, token) {
-  // optionally verify user token if required
-  const { data, error } = await supabaseAdmin.from('messages')
+  const { data, error } = await supabaseAdmin.from('feed_post_comments')
     .select('*')
-    .eq('channel', postId)
+    .eq('post_id', postId)
     .order('created_at', { ascending: true });
   if (error) throw new Error(error.message);
   return data;
