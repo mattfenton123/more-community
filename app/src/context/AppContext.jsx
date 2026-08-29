@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { supabase } from '../lib/supabaseClient';
 import { useAuth } from './AuthContext';
 import { initialExperiences } from '../lib/constants';
-import { createEventAction, joinCommunityAction, leaveCommunityAction, rsvpToEventAction, createCommunityAction, uploadImageAction } from '../lib/actions';
+import { createEventAction, joinCommunityAction, leaveCommunityAction, rsvpToEventAction, createCommunityAction, uploadImageAction, updateEventAction, updateCommunityAction, createChannelAction, markNotificationReadAction, updateUserAction, adminVerifyCommunityAction } from '../lib/actions';
 
 const AppContext = createContext();
 
@@ -729,7 +729,7 @@ export function AppProvider({ children }) {
   const markNotificationRead = async (id) => {
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
     try {
-      await supabase.from('notifications').update({ is_read: true }).eq('id', id);
+      await markNotificationReadAction(id, session?.access_token);
     } catch (err) { console.error(err); }
   };
 
@@ -738,18 +738,7 @@ export function AppProvider({ children }) {
     setEvents(prev => prev.map(e => e.id === eventId ? { ...e, ...updates } : e));
     
     try {
-      const dbUpdates = {};
-      if (updates.title !== undefined) dbUpdates.title = updates.title;
-      if (updates.description !== undefined) dbUpdates.description = updates.description;
-      if (updates.date !== undefined) dbUpdates.date = updates.date;
-      if (updates.time !== undefined) dbUpdates.time = updates.time;
-      if (updates.location !== undefined) dbUpdates.location = updates.location;
-      if (updates.image !== undefined) dbUpdates.image = updates.image;
-      if (updates.status !== undefined) dbUpdates.status = updates.status;
-      if (updates.maxCapacity !== undefined) dbUpdates.max_capacity = updates.maxCapacity;
-      
-      const { error } = await supabase.from('events').update(dbUpdates).eq('id', eventId);
-      if (error) throw error;
+      await updateEventAction(eventId, updates, session?.access_token);
     } catch (err) {
       console.error(err);
       setEvents(prevEvents);
@@ -820,13 +809,7 @@ export function AppProvider({ children }) {
     setChannels(prev => [...prev, newChannel]);
 
     try {
-      const { error } = await supabase.from('channels').insert([{
-        id: newId,
-        community_id: communityId,
-        name: channelName,
-        type: 'text'
-      }]);
-      if (error) throw error;
+      await createChannelAction({ id: newId, communityId, name: channelName, type: 'text' }, session?.access_token);
     } catch (err) {
       console.error(err);
       setChannels(prev => prev.filter(c => c.id !== newId));
@@ -856,11 +839,9 @@ export function AppProvider({ children }) {
     });
     
     try {
-      // Update the user in the users table
-      const { error } = await supabase.from('users').update(updates).eq('id', userId);
-      if (error) throw error;
+      await updateUserAction(userId, updates, session?.access_token);
     } catch (err) {
-      console.error('Supabase users table update failed (ignoring for prototype):', err);
+      console.error('User update failed (ignoring for prototype):', err);
     }
   };
 
@@ -869,18 +850,7 @@ export function AppProvider({ children }) {
     setCommunities(prev => prev.map(c => c.id === communityId ? { ...c, ...updates } : c));
     
     try {
-      // Build DB update object — only include defined fields
-      const dbUpdates = {};
-      if (updates.name !== undefined) dbUpdates.name = updates.name;
-      if (updates.description !== undefined) dbUpdates.description = updates.description;
-      if (updates.image !== undefined) dbUpdates.cover_image = updates.image;
-      if (updates.tags !== undefined) dbUpdates.tags = updates.tags;
-      if (updates.subscription_price !== undefined) dbUpdates.subscription_price = updates.subscription_price;
-      if (updates.visibility !== undefined) dbUpdates.visibility = updates.visibility;
-      if (updates.require_approval !== undefined) dbUpdates.require_approval = updates.require_approval;
-
-      const { error } = await supabase.from('communities').update(dbUpdates).eq('id', communityId);
-      if (error) throw error;
+      await updateCommunityAction(communityId, updates, session?.access_token);
     } catch (err) {
       console.error(err);
       // Revert optimistic update

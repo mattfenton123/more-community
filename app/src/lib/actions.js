@@ -199,3 +199,76 @@ export async function uploadImageAction(formData, token) {
     
   return publicData.publicUrl;
 }
+
+export async function updateEventAction(eventId, updates, token) {
+  await verifyUser(token);
+  
+  const dbUpdates = {};
+  if (updates.title !== undefined) dbUpdates.title = updates.title;
+  if (updates.description !== undefined) dbUpdates.description = updates.description;
+  if (updates.date !== undefined) dbUpdates.date = updates.date;
+  if (updates.time !== undefined) dbUpdates.time = updates.time;
+  if (updates.location !== undefined) dbUpdates.location = updates.location;
+  if (updates.image !== undefined) dbUpdates.image = updates.image;
+  if (updates.status !== undefined) dbUpdates.status = updates.status;
+  if (updates.maxCapacity !== undefined) dbUpdates.max_capacity = updates.maxCapacity;
+  
+  const { data, error } = await supabaseAdmin.from('events').update(dbUpdates).eq('id', eventId).select().single();
+  if (error) throw new Error(error.message);
+  return data;
+}
+
+export async function updateCommunityAction(communityId, updates, token) {
+  await verifyUser(token);
+  
+  const dbUpdates = {};
+  if (updates.name !== undefined) dbUpdates.name = updates.name;
+  if (updates.description !== undefined) dbUpdates.description = updates.description;
+  if (updates.image !== undefined) dbUpdates.cover_image = updates.image;
+  if (updates.tags !== undefined) dbUpdates.tags = updates.tags;
+  if (updates.subscription_price !== undefined) dbUpdates.subscription_price = updates.subscription_price;
+  if (updates.visibility !== undefined) dbUpdates.visibility = updates.visibility;
+  if (updates.require_approval !== undefined) dbUpdates.require_approval = updates.require_approval;
+  
+  const { data, error } = await supabaseAdmin.from('communities').update(dbUpdates).eq('id', communityId).select().single();
+  if (error) throw new Error(error.message);
+  return data;
+}
+
+export async function createChannelAction(channelData, token) {
+  await verifyUser(token);
+  
+  const { data, error } = await supabaseAdmin.from('channels').insert({
+    id: channelData.id,
+    community_id: channelData.communityId,
+    name: channelData.name,
+    type: channelData.type || 'text'
+  }).select().single();
+  
+  if (error) throw new Error(error.message);
+  return data;
+}
+
+export async function markNotificationReadAction(notificationId, token) {
+  await verifyUser(token);
+  
+  const { error } = await supabaseAdmin.from('notifications').update({ is_read: true }).eq('id', notificationId);
+  if (error) throw new Error(error.message);
+  return true;
+}
+
+export async function updateUserAction(userId, updates, token) {
+  await verifyUser(token, userId);
+  
+  const { error } = await supabaseAdmin.from('users').update(updates).eq('id', userId);
+  if (error) throw new Error(error.message);
+  return true;
+}
+
+export async function adminVerifyCommunityAction(communityId, verified, token) {
+  await verifyUser(token);
+  
+  const { error } = await supabaseAdmin.from('communities').update({ verified }).eq('id', communityId);
+  if (error) throw new Error(error.message);
+  return true;
+}
