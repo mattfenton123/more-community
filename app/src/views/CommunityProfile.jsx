@@ -149,22 +149,13 @@ export default function CommunityProfile() {
   return (
     <div className="view-profile" style={{ background: 'var(--slate-950)', minHeight: '100vh', paddingBottom: '80px' }}>
       
-      {/* ===== HERO SECTION ===== */}
-      <div style={{ 
-        height: '380px', 
-        background: community.image ? `url(${community.image})` : `linear-gradient(135deg, var(--teal-500), var(--slate-900))`, 
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        position: 'relative' 
-      }}>
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(15,23,42,1) 100%)' }}></div>
-        
-        {/* Nav */}
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, padding: '20px', display: 'flex', justifyContent: 'space-between', zIndex: 10 }}>
+      {/* Nav */}
+      <div style={{ position: 'sticky', top: 0, zIndex: 50, height: 0, overflow: 'visible' }}>
+        <div style={{ padding: '20px', display: 'flex', justifyContent: 'space-between' }}>
           <button className="interactive-press" style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.2)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }} onClick={() => navigate.back()}>
             <ChevronLeft />
           </button>
-          <div style={{ display: 'flex', alignItems: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(15,23,42,0.3)', padding: '4px 12px', borderRadius: '99px', backdropFilter: 'blur(10px)' }}>
             <span style={{ fontFamily: 'var(--font-heading)', color: 'white', fontSize: '1.2rem', fontWeight: 800 }}>more.</span>
           </div>
           <div style={{ display: 'flex', gap: '8px' }}>
@@ -178,6 +169,19 @@ export default function CommunityProfile() {
             )}
           </div>
         </div>
+      </div>
+
+      {/* ===== HERO SECTION ===== */}
+      <div style={{ 
+        height: '380px', 
+        background: community.image ? `url(${community.image})` : `linear-gradient(135deg, var(--teal-500), var(--slate-900))`, 
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        position: 'relative' 
+      }}>
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(15,23,42,1) 100%)' }}></div>
+        
+
 
         {/* Hero Content */}
         <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '24px 20px', zIndex: 10 }}>
