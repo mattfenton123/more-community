@@ -3,6 +3,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { supabase } from '../lib/supabaseClient';
 import { useAuth } from './AuthContext';
 import { initialExperiences } from '../lib/constants';
+import imageCompression from 'browser-image-compression';
 import { createEventAction, joinCommunityAction, leaveCommunityAction, rsvpToEventAction, createCommunityAction, uploadImageAction, updateEventAction, updateCommunityAction, createChannelAction, markNotificationReadAction, updateUserAction, adminVerifyCommunityAction } from '../lib/actions';
 
 const AppContext = createContext();
@@ -818,8 +819,25 @@ export function AppProvider({ children }) {
 
   const uploadImage = async (file) => {
     try {
+      // Compress the image before uploading
+      const options = {
+        maxSizeMB: 0.8,
+        maxWidthOrHeight: 1200,
+        useWebWorker: true,
+      };
+      
+      let compressedFile = file;
+      if (file.type.startsWith('image/')) {
+        try {
+          compressedFile = await imageCompression(file, options);
+          console.log(`Compressed image from ${file.size / 1024}KB to ${compressedFile.size / 1024}KB`);
+        } catch (error) {
+          console.error("Compression failed, using original file", error);
+        }
+      }
+
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append('file', compressedFile);
       formData.append('userId', user.id);
       
       const publicUrl = await uploadImageAction(formData, session?.access_token);
