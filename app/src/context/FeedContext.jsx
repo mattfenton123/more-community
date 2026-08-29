@@ -25,7 +25,7 @@ export function FeedProvider({ children }) {
         if (user?.id && data?.length) {
           const postIds = data.map(p => p.id);
           try {
-            const { session } = await supabase.auth.getSession();
+            const { data: { session } } = await supabase.auth.getSession();
             const likesData = await getUserLikesAction(postIds, user.id, session?.access_token);
             if (likesData) userLikes = likesData.map(l => l.post_id);
           } catch (e) {

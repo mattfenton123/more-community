@@ -4,7 +4,7 @@ import { Search, Users, Crown, MessageCircle, ChevronRight, Trophy, Flame } from
 import { useRouter as useNavigate } from 'next/navigation';
 import { useAppContext } from '../context/AppContext';
 import { useChat } from '../context/ChatContext';
-import { BadgeRow, useGamification } from './Gamification';
+import { BadgeRow, useGamification, CommunityLeaderboard } from './Gamification';
 
 function MemberRow({ member, communityId }) {
   const navigate = useNavigate();
@@ -44,6 +44,7 @@ export default function MemberDirectory({ communityId, onClose }) {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('all');
+  const [view, setView] = useState('directory'); // 'directory' | 'leaderboard'
 
   const community = communities.find(c => c.id === communityId);
   const members = communityMemberships[communityId] || [];
@@ -66,13 +67,18 @@ export default function MemberDirectory({ communityId, onClose }) {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <Users size={18} color="var(--teal-400)" />
-          <h3 style={{ margin: 0, color: 'white', fontSize: '1rem', fontFamily: 'var(--font-heading)' }}>Members ({members.length})</h3>
+          <h3 style={{ margin: 0, color: 'white', fontSize: '1rem', fontFamily: 'var(--font-heading)' }}>{view === 'directory' ? `Members (${members.length})` : 'Leaderboard'}</h3>
         </div>
-        <button onClick={() => alert('Leaderboard coming soon')} className="interactive-press"
-          style={{ background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.2)', borderRadius: '8px', padding: '5px 10px', color: '#f59e0b', fontSize: '0.7rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
-          <Trophy size={12} /> Leaderboard
+        <button onClick={() => setView(view === 'directory' ? 'leaderboard' : 'directory')} className="interactive-press"
+          style={{ background: view === 'leaderboard' ? 'rgba(255,255,255,0.1)' : 'rgba(245,158,11,0.1)', border: view === 'leaderboard' ? '1px solid rgba(255,255,255,0.2)' : '1px solid rgba(245,158,11,0.2)', borderRadius: '8px', padding: '5px 10px', color: view === 'leaderboard' ? 'white' : '#f59e0b', fontSize: '0.7rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
+          {view === 'directory' ? <><Trophy size={12} /> Leaderboard</> : <><Users size={12} /> Directory</>}
         </button>
       </div>
+
+      {view === 'leaderboard' ? (
+        <CommunityLeaderboard communityId={communityId} />
+      ) : (
+        <>
 
       {/* Search */}
       <div style={{ position: 'relative', marginBottom: '10px' }}>
@@ -100,6 +106,7 @@ export default function MemberDirectory({ communityId, onClose }) {
         ))}
         {filteredMembers.length === 0 && <div style={{ textAlign: 'center', padding: '24px', color: 'var(--slate-500)', fontSize: '0.85rem' }}>No members found.</div>}
       </div>
+      </>)}
     </div>
   );
 }

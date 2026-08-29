@@ -19,59 +19,54 @@ const BADGES = [
   { id: 'leader', name: 'Leader', description: 'Lead a community', icon: Crown, color: '#f59e0b', check: (s) => s.isLeader },
 ];
 
+// ─── Pure Calculation Function ────────────────────────────────
+export function calculateUserGamification(targetId, { communityMemberships, events, eventRsvps, communities, messages }) {
+  if (!targetId) return { badges: [], earnedBadges: [], lockedBadges: [], xp: 0, level: 1, xpInLevel: 0, xpForNext: 500, streak: 0, stats: {} };
+
+  let communitiesJoined = 0;
+  let hasVolunteering = false;
+  Object.entries(communityMemberships).forEach(([cId, mems]) => {
+    if (mems.some(m => m.userId === targetId)) {
+      communitiesJoined++;
+      const comm = communities.find(c => c.id === cId);
+      if (comm?.category?.includes('Volunteer') || comm?.tags?.some(t => t.toLowerCase().includes('volunteer'))) {
+        hasVolunteering = true;
+      }
+    }
+  });
+
+  let eventsAttended = 0;
+  Object.values(eventRsvps).forEach(rsvps => {
+    if (rsvps.some(r => r.userId === targetId && r.status === 'going')) eventsAttended++;
+  });
+
+  const messagesSent = messages.filter(m => m.authorId === targetId).length;
+  const weeklyStreak = Math.min(Math.floor((messagesSent + eventsAttended) / 3), 12);
+
+  let isLeader = false;
+  Object.values(communityMemberships).forEach(mems => {
+    if (mems.some(m => m.userId === targetId && m.role === 'Leader')) isLeader = true;
+  });
+
+  const stats = { communitiesJoined, eventsAttended, messagesSent, weeklyStreak, hasVolunteering, isLeader };
+  const earnedBadges = BADGES.filter(b => b.check(stats));
+  const lockedBadges = BADGES.filter(b => !b.check(stats));
+
+  const xp = communitiesJoined * 50 + eventsAttended * 100 + messagesSent * 10 + weeklyStreak * 75 + earnedBadges.length * 200;
+  const level = Math.max(1, Math.floor(xp / 500) + 1);
+  const xpInLevel = xp % 500;
+  const xpForNext = 500;
+
+  return { badges: BADGES, earnedBadges, lockedBadges, xp, level, xpInLevel, xpForNext, streak: weeklyStreak, stats };
+}
+
 // ─── Calculate user stats for badge checking ────────────────
 export function useGamification(userId) {
   const { communityMemberships, events, eventRsvps, communities, user } = useAppContext();
-    const { messages } = useChat();
+  const { messages } = useChat();
 
   return useMemo(() => {
-    const targetId = userId || user?.id;
-    if (!targetId) return { badges: [], earnedBadges: [], lockedBadges: [], xp: 0, level: 1, xpInLevel: 0, xpForNext: 500, streak: 0, stats: {} };
-
-    // Communities joined
-    let communitiesJoined = 0;
-    let hasVolunteering = false;
-    Object.entries(communityMemberships).forEach(([cId, mems]) => {
-      if (mems.some(m => m.userId === targetId)) {
-        communitiesJoined++;
-        const comm = communities.find(c => c.id === cId);
-        if (comm?.category?.includes('Volunteer') || comm?.tags?.some(t => t.toLowerCase().includes('volunteer'))) {
-          hasVolunteering = true;
-        }
-      }
-    });
-
-    // Events attended (RSVP'd going)
-    let eventsAttended = 0;
-    Object.values(eventRsvps).forEach(rsvps => {
-      if (rsvps.some(r => r.userId === targetId && r.status === 'going')) eventsAttended++;
-    });
-
-    // Messages sent
-    const messagesSent = messages.filter(m => m.authorId === targetId).length;
-
-    // Weekly streak (simulate from message/RSVP activity)
-    const weeklyStreak = Math.min(Math.floor((messagesSent + eventsAttended) / 3), 12);
-
-    // Is leader
-    let isLeader = false;
-    Object.values(communityMemberships).forEach(mems => {
-      if (mems.some(m => m.userId === targetId && m.role === 'Leader')) isLeader = true;
-    });
-
-    const stats = { communitiesJoined, eventsAttended, messagesSent, weeklyStreak, hasVolunteering, isLeader };
-
-    // Check badges
-    const earnedBadges = BADGES.filter(b => b.check(stats));
-    const lockedBadges = BADGES.filter(b => !b.check(stats));
-
-    // XP calculation
-    const xp = communitiesJoined * 50 + eventsAttended * 100 + messagesSent * 10 + weeklyStreak * 75 + earnedBadges.length * 200;
-    const level = Math.max(1, Math.floor(xp / 500) + 1);
-    const xpInLevel = xp % 500;
-    const xpForNext = 500;
-
-    return { badges: BADGES, earnedBadges, lockedBadges, xp, level, xpInLevel, xpForNext, streak: weeklyStreak, stats };
+    return calculateUserGamification(userId || user?.id, { communityMemberships, events, eventRsvps, communities, messages });
   }, [userId, user, communityMemberships, events, eventRsvps, messages, communities]);
 }
 
@@ -191,6 +186,65 @@ export default function GamificationPanel({ userId }) {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// ─── Community Leaderboard Component ────────────────────────
+export function CommunityLeaderboard({ communityId }) {
+  const { communityMemberships, users, events, eventRsvps, communities } = useAppContext();
+  const { messages } = useChat();
+
+  const leaderboard = useMemo(() => {
+    const mems = communityMemberships[communityId] || [];
+    const contextData = { communityMemberships, events, eventRsvps, communities, messages };
+
+    const membersWithScores = mems.map(m => {
+      const user = users.find(u => u.id === m.userId);
+      const gamification = calculateUserGamification(m.userId, contextData);
+      return {
+        user,
+        role: m.role,
+        xp: gamification.xp,
+        level: gamification.level,
+        badges: gamification.earnedBadges
+      };
+    });
+
+    return membersWithScores.sort((a, b) => b.xp - a.xp).slice(0, 10); // Top 10
+  }, [communityId, communityMemberships, users, events, eventRsvps, communities, messages]);
+
+  if (leaderboard.length === 0) return null;
+
+  return (
+    <div style={{ background: 'var(--slate-800)', borderRadius: '16px', overflow: 'hidden', border: '1px solid var(--slate-700)', marginBottom: '24px' }}>
+      <div style={{ padding: '16px', borderBottom: '1px solid var(--slate-700)', display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(255,255,255,0.02)' }}>
+        <Trophy size={20} color="var(--teal-400)" />
+        <h3 style={{ margin: 0, color: 'white', fontFamily: 'var(--font-heading)', fontSize: '1.1rem' }}>Top Members</h3>
+      </div>
+      <div>
+        {leaderboard.map((m, i) => (
+          <div key={m.user?.id || i} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '16px', borderBottom: i < leaderboard.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none', background: i < 3 ? 'rgba(20,184,166,0.03)' : 'transparent' }}>
+            <div style={{ width: '28px', fontWeight: 700, color: i === 0 ? '#f59e0b' : i === 1 ? '#a1a1aa' : i === 2 ? '#b45309' : 'var(--slate-500)', fontSize: i < 3 ? '1.1rem' : '0.9rem', textAlign: 'center' }}>
+              #{i + 1}
+            </div>
+            <img src={m.user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(m.user?.name || 'U')}&background=14b8a6&color=fff`} alt="" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', border: i < 3 ? '2px solid var(--teal-500)' : 'none' }} />
+            <div style={{ flex: 1 }}>
+              <div style={{ fontWeight: 600, color: 'white' }}>{m.user?.name || 'Unknown User'}</div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--teal-300)' }}>Level {m.level} • {m.xp} XP</div>
+            </div>
+            {m.badges.length > 0 && (
+              <div style={{ display: 'flex', gap: '4px' }}>
+                {m.badges.slice(0, 3).map(b => (
+                  <div key={b.id} title={b.name} style={{ width: '24px', height: '24px', borderRadius: '6px', background: `${b.color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <b.icon size={12} color={b.color} />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
