@@ -609,17 +609,38 @@ export default function LeaderDashboard() {
           {/* ══════════════════════════════════════════════════════ */}
           {activeTab === 'overview' && (
             <>
-              {/* Stats Grid 2×3 */}
-              <div style={{ padding: '0 20px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '24px' }}>
-                <StatCard value={stats.totalMembers || 0} label="Total Members" icon={Users} color="white" />
-                <StatCard value={stats.activeMembers || 0} label="Active Members" icon={Activity} color="#22c55e" accent="#22c55e" />
-                <StatCard value={`£${stats.totalRevenue || 0}`} label="Total Revenue" icon={DollarSign} color="#f59e0b" accent="#f59e0b" />
-                <StatCard value={stats.eventsThisMonth || 0} label="Events This Month" icon={Calendar} color="var(--teal-400)" />
-                <StatCard value={`${stats.checkinRate || 0}%`} label="Check-in Rate" icon={ScanLine} color="#3b82f6" accent="#3b82f6" />
-                <StatCard 
-                  value={stats.daysToNext !== null ? (stats.daysToNext === 0 ? 'Today!' : `${stats.daysToNext}d`) : '—'} 
-                  label="Next Event" icon={Zap} color="#a78bfa" accent="#a78bfa" 
-                />
+              {/* Swipeable Stats Carousel */}
+              <div style={{ 
+                display: 'flex', gap: '16px', padding: '0 20px', marginBottom: '16px',
+                overflowX: 'auto', scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch',
+                scrollbarWidth: 'none', msOverflowStyle: 'none'
+              }}>
+                <style dangerouslySetInnerHTML={{__html: `::-webkit-scrollbar { display: none; }`}} />
+                
+                {/* Slide 1 */}
+                <div style={{ scrollSnapAlign: 'start', flex: '0 0 90%', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                  <StatCard value={stats.totalMembers || 0} label="Total Members" icon={Users} color="white" />
+                  <StatCard value={stats.activeMembers || 0} label="Active Members" icon={Activity} color="#22c55e" accent="#22c55e" />
+                  <StatCard value={`£${stats.totalRevenue || 0}`} label="Total Revenue" icon={DollarSign} color="#f59e0b" accent="#f59e0b" />
+                  <StatCard value={stats.eventsThisMonth || 0} label="Events This Month" icon={Calendar} color="var(--teal-400)" />
+                </div>
+
+                {/* Slide 2 */}
+                <div style={{ scrollSnapAlign: 'start', flex: '0 0 90%', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                  <StatCard value={`${stats.checkinRate || 0}%`} label="Check-in Rate" icon={ScanLine} color="#3b82f6" accent="#3b82f6" />
+                  <StatCard 
+                    value={stats.daysToNext !== null ? (stats.daysToNext === 0 ? 'Today!' : `${stats.daysToNext}d`) : '—'} 
+                    label="Next Event" icon={Zap} color="#a78bfa" accent="#a78bfa" 
+                  />
+                  <StatCard value={memberList.filter(m => m.role === 'Leader').length || 1} label="Co-Leaders" icon={Crown} color="#ec4899" accent="#ec4899" />
+                  <StatCard value={`£${stats.monthRevenue || 0}`} label="Revenue (30d)" icon={TrendingUp} color="#14b8a6" accent="#14b8a6" />
+                </div>
+              </div>
+
+              {/* Pagination Dots */}
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '6px', marginBottom: '24px' }}>
+                <div style={{ width: '16px', height: '4px', borderRadius: '2px', background: 'var(--teal-500)' }}></div>
+                <div style={{ width: '4px', height: '4px', borderRadius: '50%', background: 'rgba(255,255,255,0.2)' }}></div>
               </div>
 
               {/* Member Growth Chart */}

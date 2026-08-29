@@ -17,7 +17,7 @@ export const initialExperiences = [
     provider: 'SkyHigh Adventures',
     duration: '1 day',
     location: 'Headcorn Aerodrome, Kent',
-    image: '/portal/images/communities/parkrun.webp',
+    image: '/images/communities/parkrun.webp',
     rating: 4.9,
     spotsLeft: 6
   },
@@ -32,7 +32,7 @@ export const initialExperiences = [
     provider: 'The Pantiles Spa',
     duration: '1 day',
     location: 'Tunbridge Wells',
-    image: '/portal/images/communities/gallery-running-1.webp',
+    image: '/images/communities/gallery-running-1.webp',
     rating: 4.8,
     spotsLeft: 12
   },
@@ -47,7 +47,7 @@ export const initialExperiences = [
     provider: 'More Experiences',
     duration: '1 evening',
     location: 'London West End',
-    image: '/portal/images/communities/parkrun.webp',
+    image: '/images/communities/parkrun.webp',
     rating: 4.9,
     spotsLeft: 8
   },
@@ -62,7 +62,7 @@ export const initialExperiences = [
     provider: 'Chapel Down Vineyard',
     duration: '1 afternoon',
     location: 'Tenterden, Kent',
-    image: '/portal/images/communities/gallery-running-1.webp',
+    image: '/images/communities/gallery-running-1.webp',
     rating: 4.7,
     spotsLeft: 15
   },
@@ -77,7 +77,7 @@ export const initialExperiences = [
     provider: 'Buzz Active',
     duration: '1 day',
     location: 'Eastbourne, East Sussex',
-    image: '/portal/images/communities/parkrun.webp',
+    image: '/images/communities/parkrun.webp',
     rating: 4.6,
     spotsLeft: 10
   },
@@ -92,7 +92,7 @@ export const initialExperiences = [
     provider: 'TW Clay Studio',
     duration: '1 day',
     location: 'Tunbridge Wells',
-    image: '/portal/images/communities/gallery-running-1.webp',
+    image: '/images/communities/gallery-running-1.webp',
     rating: 4.8,
     spotsLeft: 4
   }
