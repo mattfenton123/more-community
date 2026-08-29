@@ -25,6 +25,7 @@ export default function UserProfile() {
   const [isUploading, setIsUploading] = useState(false);
   const [activeTab, setActiveTab] = useState('badges');
   const fileInputRef = useRef(null);
+  const bannerInputRef = useRef(null);
 
   if (!profileUser) {
     return <div style={{ padding: '40px', color: 'white', textAlign: 'center' }}>User not found.</div>;
@@ -55,6 +56,20 @@ export default function UserProfile() {
     } catch (err) { toast.error('Upload failed'); }
     finally { setIsUploading(false); }
   };
+  const handleBannerChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setIsUploading(true);
+    try {
+      const publicUrl = await uploadImage(file, 'banners');
+      await updateUser(targetId, { banner: publicUrl });
+      toast.success('Banner updated!');
+    } catch (err) { 
+      console.error(err);
+      toast.error('Upload failed', 'Ensure there is a "banner" column in your users table.'); 
+    }
+    finally { setIsUploading(false); }
+  };
   const handleSave = async () => {
     try {
       await updateUser(targetId, { name: editForm.name, bio: editForm.bio });
@@ -65,8 +80,9 @@ export default function UserProfile() {
 
   return (
     <div className="view-profile" style={{ paddingBottom: '80px', overflowY: 'auto', height: '100%', background: 'var(--slate-950)' }}>
+      <input type="file" ref={bannerInputRef} onChange={handleBannerChange} accept="image/*" style={{ display: 'none' }} />
       {/* Hero Banner */}
-      <div style={{ height: '180px', background: `url(${FALLBACK_IMAGES.general})`, backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative' }}>
+      <div style={{ height: '180px', background: `url(${profileUser.banner || FALLBACK_IMAGES.general})`, backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative' }}>
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.1), var(--slate-950))' }}></div>
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, padding: '20px', display: 'flex', justifyContent: 'space-between', zIndex: 10 }}>
           <button className="interactive-press" onClick={() => navigate.back()} style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(10px)', border: 'none', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
@@ -100,6 +116,15 @@ export default function UserProfile() {
             )}
           </div>
         </div>
+        {isOwnProfile && isEditing && (
+          <div 
+            onClick={() => bannerInputRef.current?.click()}
+            className="interactive-press"
+            style={{ position: 'absolute', top: '70px', right: '20px', zIndex: 20, cursor: 'pointer', background: 'rgba(0,0,0,0.5)', padding: '10px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          >
+            <Camera size={20} color="white" />
+          </div>
+        )}
       </div>
 
       <div style={{ padding: '0 20px', marginTop: '-60px', position: 'relative', zIndex: 10 }}>
