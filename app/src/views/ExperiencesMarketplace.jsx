@@ -11,6 +11,7 @@ export default function ExperiencesMarketplace() {
   const [selectedExp, setSelectedExp] = useState(null);
   const [isPromoting, setIsPromoting] = useState(false);
   const pills = ['All', '⛰️ Adventure', '🧘 Wellness', '🎭 Culture', '🍷 Food & Drink', '🎨 Creative'];
+  const [promoteCommunityId, setPromoteCommunityId] = useState(null);
   const { experiences, communities, user, createEvent } = useAppContext();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -41,9 +42,7 @@ export default function ExperiencesMarketplace() {
   };
 
   const handlePromote = async () => {
-    const leaderCommunityId = Object.keys(communityMemberships).find(cId => 
-      communityMemberships[cId].some(m => m.userId === user?.id && m.role === 'Leader')
-    );
+    const leaderCommunityId = promoteCommunityId || user?.ledCommunities?.[0];
 
     if (!leaderCommunityId) {
       toast.error('Permission Denied', 'You must be a community leader to promote experiences.');
@@ -308,26 +307,52 @@ export default function ExperiencesMarketplace() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Users size={16} /> Provider: {selectedExp.provider}</div>
             </div>
             
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', padding: '16px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px' }}>
-              <div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>Member Price</div>
-                <div style={{ fontSize: '1.2rem', fontWeight: 700, color: 'white' }}>£{getTotalPrice(selectedExp)}</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '24px', padding: '16px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px' }}>
+              
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.85rem' }}>
+                <div style={{ color: 'var(--slate-400)' }}>Base Cost (to Provider)</div>
+                <div style={{ color: 'white', fontWeight: 600 }}>£{selectedExp.basePrice}</div>
               </div>
-              <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: '0.75rem', color: 'var(--teal-400)' }}>Your Commission</div>
-                <div style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--teal-300)' }}>{selectedExp.leaderMarkup}%</div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.85rem' }}>
+                <div style={{ color: 'var(--teal-400)' }}>Your Profit ({selectedExp.leaderMarkup}% markup)</div>
+                <div style={{ color: 'var(--teal-300)', fontWeight: 600 }}>+£{Math.round(selectedExp.basePrice * (selectedExp.leaderMarkup / 100))}</div>
               </div>
+
+              <div style={{ height: '1px', background: 'rgba(255,255,255,0.1)', margin: '4px 0' }} />
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ fontSize: '0.9rem', color: 'white', fontWeight: 600 }}>Total Member Price</div>
+                <div style={{ fontSize: '1.2rem', fontWeight: 800, color: 'white' }}>£{getTotalPrice(selectedExp)}</div>
+              </div>
+
             </div>
+            
+            {user?.ledCommunities?.length > 1 && (
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--slate-400)', marginBottom: '4px' }}>Promote to Community:</label>
+                <select 
+                  value={promoteCommunityId || user.ledCommunities[0]} 
+                  onChange={e => setPromoteCommunityId(e.target.value)}
+                  style={{ width: '100%', padding: '12px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'white' }}
+                >
+                  {user.ledCommunities.map(id => {
+                    const c = communities.find(comm => comm.id === id);
+                    return <option key={id} value={id}>{c?.name || id}</option>;
+                  })}
+                </select>
+              </div>
+            )}
             
             <button 
               onClick={handlePromote} 
-              disabled={isPromoting || !user.leaderOf}
+              disabled={isPromoting || !user?.ledCommunities?.length}
               className="btn btn-primary interactive-press" 
-              style={{ width: '100%', padding: '16px', borderRadius: '12px', fontSize: '1rem', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', opacity: (!user.leaderOf || isPromoting) ? 0.5 : 1 }}
+              style={{ width: '100%', padding: '16px', borderRadius: '12px', fontSize: '1rem', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', opacity: (!user?.ledCommunities?.length || isPromoting) ? 0.5 : 1 }}
             >
               {isPromoting ? 'Promoting...' : <><Sparkles size={18} /> Promote to Community</>}
             </button>
-            {!user.leaderOf && (
+            {!(user?.ledCommunities?.length > 0) && (
               <p style={{ textAlign: 'center', fontSize: '0.75rem', color: 'var(--rose-400)', marginTop: '12px' }}>
                 You must be a community leader to promote experiences.
               </p>

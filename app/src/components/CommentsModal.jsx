@@ -76,7 +76,7 @@ export default function CommentsModal({ isOpen, onClose, post }) {
       top: 0, left: 0, right: 0, bottom: 0,
       background: 'rgba(0,0,0,0.8)',
       backdropFilter: 'blur(10px)',
-      zIndex: 1000,
+      zIndex: 2000,
       display: 'flex',
       alignItems: 'flex-end',
       justifyContent: 'center',

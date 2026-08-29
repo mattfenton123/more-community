@@ -1,6 +1,6 @@
 "use client";
 import { useState, useRef } from 'react';
-import { ChevronLeft, Share2, Users, Calendar, Settings, ChevronDown, ChevronUp, Image as ImageIcon, ExternalLink, Camera, Mail, Activity, Sparkles, MapPin, Clock, Star, MessageCircle, Heart, BadgeCheck, Globe, Trash2, Flag } from 'lucide-react';
+import { ChevronLeft, Share2, Users, Calendar, Settings, ChevronDown, ChevronUp, Image as ImageIcon, ExternalLink, Camera, Mail, Activity, Sparkles, MapPin, Clock, Star, MessageCircle, Heart, BadgeCheck, Globe, Trash2, Flag, Search } from 'lucide-react';
 import { useRouter as useNavigate, useParams } from 'next/navigation';
 import { useAppContext } from '../../../src/context/AppContext';
 import { useFeed } from '../../../src/context/FeedContext';
@@ -91,7 +91,7 @@ export default function CommunityProfile() {
   }
 
   const isMember = user.joinedCommunities.includes(communityId);
-  const isLeader = user.leaderOf === communityId;
+  const isLeader = user.ledCommunities?.includes(communityId);
   const communityEvents = events.filter(e => e.communityId === communityId);
   const upcomingEvents = communityEvents.filter(e => {
     try { return new Date(e.date) >= new Date(); } catch { return true; }
@@ -264,7 +264,7 @@ export default function CommunityProfile() {
             <div style={{ fontSize: '0.75rem', color: 'var(--teal-400)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Organised by</div>
             <div style={{ fontWeight: 700, color: 'white', fontSize: '1rem' }}>{leaderUser?.name || 'Community Team'}</div>
           </div>
-          <button onClick={() => leaderUser && navigate.push('/discover')} className="btn btn-outline interactive-press" style={{ padding: '8px 14px', borderRadius: '10px', fontSize: '0.8rem', display: 'flex', gap: '4px', alignItems: 'center' }}>
+          <button onClick={() => leaderUser && navigate.push(`/chat/dm/${leaderUser.id}`)} className="btn btn-outline interactive-press" style={{ padding: '8px 14px', borderRadius: '10px', fontSize: '0.8rem', display: 'flex', gap: '4px', alignItems: 'center' }}>
             <MessageCircle size={14} /> Message
           </button>
         </div>
@@ -273,7 +273,7 @@ export default function CommunityProfile() {
       {/* ===== TAB NAVIGATION ===== */}
       <div style={{ padding: '0 20px', marginBottom: '24px' }}>
         <div style={{ display: 'flex', gap: '4px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', padding: '4px', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-          {['feed', 'about', 'events', 'photos', 'members'].map(tab => (
+          {['feed', 'suggestions', 'about', 'events', 'photos', 'members'].map(tab => (
             <button 
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -334,7 +334,15 @@ export default function CommunityProfile() {
                     <div style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
                       <img src={author?.avatar || 'https://i.pravatar.cc/40'} alt={author?.name} style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
                       <div style={{ flex: 1 }}>
-                        <div style={{ fontWeight: 600, color: 'white', fontSize: '0.95rem' }}>{author?.name || 'Community Leader'}</div>
+                        <div style={{ fontWeight: 600, color: 'white', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          {author?.name || 'Community Leader'}
+                          {post.text?.includes('💡 **SUGGESTION:**') && (
+                            <span style={{ fontSize: '0.65rem', background: 'rgba(234,179,8,0.2)', color: 'var(--yellow-400)', padding: '2px 6px', borderRadius: '6px', fontWeight: 700, textTransform: 'uppercase' }}>Idea</span>
+                          )}
+                          {community.leader_id === author?.id && (
+                            <span style={{ fontSize: '0.65rem', background: 'var(--teal-500)', color: 'white', padding: '2px 6px', borderRadius: '6px', fontWeight: 700, textTransform: 'uppercase' }}>Leader</span>
+                          )}
+                        </div>
                         <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>
                           {new Date(post.createdAt || post.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                         </div>
@@ -380,6 +388,77 @@ export default function CommunityProfile() {
                 </div>
               )}
             </div>
+          </>
+        )}
+
+        {/* ===== SUGGESTIONS TAB ===== */}
+        {activeTab === 'suggestions' && (
+          <>
+            <div style={{ marginBottom: '24px' }}>
+              <h3 style={{ fontSize: '1.2rem', fontFamily: 'var(--font-heading)', color: 'white', margin: '0 0 8px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Sparkles size={18} color="var(--yellow-400)" /> Drawing Board
+              </h3>
+              <p style={{ color: 'var(--slate-400)', fontSize: '0.9rem', lineHeight: 1.5, marginBottom: '16px' }}>
+                Got an idea for an event or trip? Post it here! If it gets enough support, the leader can turn it into an official event.
+              </p>
+              
+              <div style={{ display: 'flex', gap: '12px', marginBottom: '24px' }}>
+                <button 
+                  onClick={() => {
+                    setNewPostText('💡 **SUGGESTION:** ');
+                    setActiveTab('feed');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }} 
+                  className="btn btn-primary interactive-press" 
+                  style={{ flex: 1, padding: '12px', borderRadius: '12px', display: 'flex', justifyContent: 'center', gap: '8px', fontSize: '0.95rem' }}
+                >
+                  <MessageCircle size={16} /> Post Public Suggestion
+                </button>
+                <button 
+                  onClick={() => leaderUser && navigate.push(`/chat/dm/${leaderUser.id}`)}
+                  className="btn btn-outline interactive-press" 
+                  style={{ flex: 1, padding: '12px', borderRadius: '12px', display: 'flex', justifyContent: 'center', gap: '8px', fontSize: '0.95rem', borderColor: 'rgba(255,255,255,0.1)' }}
+                >
+                  <Search size={16} /> Suggest to Leader Privately
+                </button>
+              </div>
+            </div>
+
+            <h4 style={{ fontSize: '1rem', color: 'white', marginBottom: '16px' }}>Recent Suggestions</h4>
+            {communityFeed.filter(p => p.text?.includes('💡 **SUGGESTION:**')).length === 0 ? (
+              <div style={{ padding: '32px', textAlign: 'center', background: 'rgba(255,255,255,0.02)', borderRadius: '16px' }}>
+                <p style={{ color: 'var(--slate-400)' }}>No suggestions yet. Be the first!</p>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {communityFeed.filter(p => p.text?.includes('💡 **SUGGESTION:**')).map(post => {
+                  const author = users.find(u => u.id === post.authorId);
+                  return (
+                    <div key={post.id} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '16px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+                        <img src={author?.avatar || 'https://i.pravatar.cc/150'} alt="" style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }} />
+                        <div>
+                          <div style={{ fontWeight: 600, color: 'white', fontSize: '0.9rem' }}>{author?.name}</div>
+                          <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>{post.timestamp}</div>
+                        </div>
+                      </div>
+                      <p style={{ color: 'var(--slate-200)', fontSize: '0.95rem', lineHeight: 1.5, margin: '0 0 12px 0' }}>{post.text.replace('💡 **SUGGESTION:**', '').trim()}</p>
+                      {post.mediaUrl && <img src={post.mediaUrl} alt="Attached media" style={{ width: '100%', borderRadius: '12px', marginBottom: '12px', maxHeight: '200px', objectFit: 'cover' }} />}
+                      <div style={{ display: 'flex', gap: '16px' }}>
+                        <button onClick={() => likeFeedPost(post.id)} className="interactive-press" style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '6px', color: (post.likes || []).includes(user.id) ? 'var(--teal-400)' : 'var(--slate-400)', cursor: 'pointer', fontSize: '0.85rem' }}>
+                          <Heart size={16} fill={(post.likes || []).includes(user.id) ? 'var(--teal-400)' : 'none'} />
+                          {post.likes?.length || 0}
+                        </button>
+                        <button onClick={() => { setSelectedPostForComments(post); }} className="interactive-press" style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--slate-400)', cursor: 'pointer', fontSize: '0.85rem' }}>
+                          <MessageCircle size={16} />
+                          {post.comments?.length || 0}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </>
         )}
 

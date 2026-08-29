@@ -1,11 +1,12 @@
 "use client";
 import { useState, useEffect } from 'react';
-import { Calendar as CalIcon, MapPin, Search, X, CheckCircle2, CreditCard, Check, Ticket, Users, QrCode } from 'lucide-react';
+import { Calendar as CalIcon, MapPin, Search, X, CheckCircle2, CreditCard, Check, Ticket, Users, QrCode, Image as ImageIcon } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { SkeletonList, SkeletonEvent } from '../components/SkeletonCard';
 import { useToast } from '../components/Toast';
 import DigitalTicket from '../components/DigitalTicket';
-
+import ShareModal from '../components/ShareModal';
+import { Share2 } from 'lucide-react';
 export default function EventsHub() {
   const [activeTab, setActiveTab] = useState('My Schedule');
   const { events, communities, user, users, eventRsvps, rsvpToEvent, isLoading } = useAppContext();
@@ -13,6 +14,8 @@ export default function EventsHub() {
   
   const [checkoutState, setCheckoutState] = useState('idle');
   const [showTicket, setShowTicket] = useState(null);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [hasUploadedMemory, setHasUploadedMemory] = useState(false);
   const [cardForm, setCardForm] = useState({ number: '', expiry: '', cvc: '', name: '' });
 
   const myRsvpEventIds = Object.keys(eventRsvps).filter(eventId => 
@@ -167,6 +170,17 @@ export default function EventsHub() {
         <DigitalTicket event={showTicket} user={user} onClose={() => setShowTicket(null)} />
       )}
 
+      {/* Share Modal */}
+      {selectedEvent && (
+        <ShareModal 
+          isOpen={showShareModal}
+          onClose={() => setShowShareModal(false)}
+          title={`Join me at ${selectedEvent.title}`}
+          text={`I'm going to ${selectedEvent.title} with ${selectedEvent.communityName}. You should come along!`}
+          url={`${window.location.origin}/events/${selectedEvent.id}`}
+        />
+      )}
+
       {/* Event Details Modal */}
       {selectedEvent && (
         <div className="modal-overlay" style={{ display: 'flex', flexDirection: 'column', padding: '20px' }}>
@@ -210,6 +224,17 @@ export default function EventsHub() {
                 {/* Who's Going */}
                 <div style={{ marginBottom: '24px' }}>
                   <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}><Users size={14} /> Who's going</div>
+                  
+                  {eventRsvps[selectedEvent.id] && eventRsvps[selectedEvent.id].length > 0 && (
+                    <div style={{ fontSize: '0.9rem', color: 'white', fontWeight: 600, marginBottom: '12px' }}>
+                      {(() => {
+                        const firstUser = users.find(u => u.id === eventRsvps[selectedEvent.id][0].userId);
+                        const count = eventRsvps[selectedEvent.id].length;
+                        return count === 1 ? `${firstUser?.name || 'Someone'} is going.` : `${firstUser?.name || 'Someone'} and ${count - 1} others are going.`;
+                      })()}
+                    </div>
+                  )}
+
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
                     {(eventRsvps[selectedEvent.id] || []).map((rsvp, idx) => {
                       const u = users.find(u => u.id === rsvp.userId);
@@ -222,14 +247,55 @@ export default function EventsHub() {
                   </div>
                 </div>
 
-                {checkoutState === 'idle' && (
-                  <>
+                {(() => {
+                  let isPastEvent = false;
+                  try {
+                    isPastEvent = new Date(selectedEvent.date) < new Date(new Date().setHours(0,0,0,0));
+                  } catch (e) {}
+
+                  if (isPastEvent) {
+                    return (
+                      <div style={{ marginTop: '24px', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '24px' }}>
+                        <h4 style={{ margin: '0 0 16px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <ImageIcon size={18} color="var(--teal-400)" /> Memory Drop
+                        </h4>
+                        {!hasUploadedMemory ? (
+                          <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px dashed rgba(255,255,255,0.2)', borderRadius: '12px', padding: '24px', textAlign: 'center' }}>
+                            <div style={{ filter: 'blur(8px)', opacity: 0.5, marginBottom: '-60px', display: 'flex', gap: '8px', overflow: 'hidden' }}>
+                              <div style={{ width: '100px', height: '100px', background: '#ccc', borderRadius: '8px' }}></div>
+                              <div style={{ width: '100px', height: '100px', background: '#aaa', borderRadius: '8px' }}></div>
+                            </div>
+                            <div style={{ position: 'relative', zIndex: 10 }}>
+                              <p style={{ color: 'white', fontSize: '0.95rem', fontWeight: 600, marginBottom: '8px' }}>Time to Be Real!</p>
+                              <p style={{ color: 'var(--slate-300)', fontSize: '0.85rem', marginBottom: '20px' }}>Upload a photo from the event to unlock everyone else's memories.</p>
+                              <button onClick={() => setHasUploadedMemory(true)} className="btn btn-primary interactive-press" style={{ borderRadius: '12px', padding: '12px 24px' }}>
+                                <ImageIcon size={16} style={{ marginRight: '8px', display: 'inline-block' }} />
+                                Upload Photo
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                            <img src="/portal/images/communities/parkrun.webp" alt="Memory 1" style={{ width: '100%', height: '140px', objectFit: 'cover', borderRadius: '8px' }} />
+                            <img src="/portal/images/communities/gallery-running-1.webp" alt="Memory 2" style={{ width: '100%', height: '140px', objectFit: 'cover', borderRadius: '8px' }} />
+                            <div className="interactive-press" style={{ width: '100%', height: '140px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--teal-400)', cursor: 'pointer', border: '1px dashed rgba(20,184,166,0.3)' }}>
+                              <ImageIcon size={24} style={{ marginBottom: '8px' }} />
+                              <span style={{ fontSize: '0.8rem', fontWeight: 600 }}>+ Upload More</span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  }
+
+                  return checkoutState === 'idle' && (
+                    <>
                     {!eventRsvps[selectedEvent.id]?.some(r => r.userId === user.id) ? (
-                      <button onClick={() => getEventPrice(selectedEvent) > 0 ? setCheckoutState('payment_select') : handleRSVP(false)} className="btn btn-primary interactive-press" style={{ width: '100%', padding: '16px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', borderRadius: '12px', fontSize: '1.05rem' }}>
+                      <button onClick={() => getEventPrice(selectedEvent) > 0 ? setCheckoutState('payment_select') : handleRSVP(false)} className="btn btn-primary interactive-press" style={{ width: '100%', padding: '16px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', borderRadius: '12px', fontSize: '1.05rem', marginBottom: '12px' }}>
                         {getEventPrice(selectedEvent) > 0 ? `Get Tickets — £${getEventPrice(selectedEvent)}` : 'Free RSVP'}
                       </button>
                     ) : (
-                      <div style={{ display: 'flex', gap: '8px' }}>
+                      <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
                         <button onClick={() => { setShowTicket(selectedEvent); closeEventModal(); }} className="btn btn-primary interactive-press" style={{ flex: 1, padding: '16px', display: 'flex', justifyContent: 'center', gap: '8px', borderRadius: '12px' }}>
                           <QrCode size={18} /> View Ticket
                         </button>
@@ -238,8 +304,13 @@ export default function EventsHub() {
                         </button>
                       </div>
                     )}
+                    
+                    <button onClick={() => setShowShareModal(true)} className="interactive-press" style={{ width: '100%', padding: '14px', background: 'rgba(20,184,166,0.1)', color: 'var(--teal-400)', border: '1px solid rgba(20,184,166,0.2)', borderRadius: '12px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', fontSize: '1rem', fontWeight: 600 }}>
+                      <Share2 size={18} /> Bring a Friend (+1)
+                    </button>
                   </>
-                )}
+                );
+                })()}
               </div>
             </div>
 
@@ -295,6 +366,13 @@ export default function EventsHub() {
             )}
           </div>
         </div>
+      )}
+
+      {showShareModal && (
+        <ShareModal 
+          event={selectedEvent} 
+          onClose={() => setShowShareModal(false)} 
+        />
       )}
 
     </div>

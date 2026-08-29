@@ -8,6 +8,7 @@ import { useToast } from '../components/Toast';
 import CommentsModal from '../components/CommentsModal';
 import PhotoGallery from '../components/PhotoGallery';
 import MemberDirectory from '../components/MemberDirectory';
+import ShareModal from '../components/ShareModal';
 import { useRef } from 'react';
 
 // Category-specific gallery photos (generated unique images)
@@ -80,6 +81,7 @@ export default function CommunityProfile() {
   const [selectedPostForComments, setSelectedPostForComments] = useState(null);
   const [localPhotos, setLocalPhotos] = useState([]);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
   const fileInputRef = useRef(null);
   
   const communityId = id || (user.joinedCommunities.length > 0 ? user.joinedCommunities[0] : 'tw-tech-meetup');
@@ -116,13 +118,7 @@ export default function CommunityProfile() {
   const nextEvent = upcomingEvents[0] || communityEvents[0];
 
   const handleShare = async () => {
-    const shareData = { title: community.name, text: community.description, url: window.location.href };
-    if (navigator.share) {
-      try { await navigator.share(shareData); } catch (err) { /* ignore */ }
-    } else {
-      await navigator.clipboard.writeText(window.location.href);
-      toast.success('Link copied!', 'Share this community with friends');
-    }
+    setShowShareModal(true);
   };
 
   const handleCreatePost = async () => {
@@ -182,6 +178,9 @@ export default function CommunityProfile() {
           </div>
           <div style={{ display: 'flex', gap: '8px' }}>
 
+            <button className="interactive-press" onClick={handleShare} style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.2)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+              <Share2 size={18} />
+            </button>
             {isLeader && (
               <button className="interactive-press" style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(20,184,166,0.2)', border: '1px solid rgba(20,184,166,0.4)', backdropFilter: 'blur(10px)', color: 'var(--teal-400)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }} onClick={() => navigate.back()}>
                 <Settings size={18} />
@@ -190,6 +189,14 @@ export default function CommunityProfile() {
           </div>
         </div>
       </div>
+      
+      <ShareModal 
+        isOpen={showShareModal} 
+        onClose={() => setShowShareModal(false)} 
+        title={community.name} 
+        text={community.description} 
+        url={typeof window !== 'undefined' ? window.location.href : ''} 
+      />
 
       {/* ===== HERO SECTION ===== */}
       <div style={{ 

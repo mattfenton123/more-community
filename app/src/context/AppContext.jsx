@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabaseClient';
 import { useAuth } from './AuthContext';
 import { initialExperiences } from '../lib/constants';
 import imageCompression from 'browser-image-compression';
-import { createEventAction, joinCommunityAction, leaveCommunityAction, rsvpToEventAction, createCommunityAction, uploadImageAction, updateEventAction, updateCommunityAction, createChannelAction, markNotificationReadAction, updateUserAction, adminVerifyCommunityAction, broadcastNotificationAction, promoteMemberAction, removeMemberAction, subscribeToPushNotificationsAction } from '../lib/actions';
+import { createEventAction, joinCommunityAction, leaveCommunityAction, rsvpToEventAction, createCommunityAction, uploadImageAction, updateEventAction, updateCommunityAction, createChannelAction, markNotificationReadAction, updateUserAction, adminVerifyCommunityAction, broadcastNotificationAction, promoteMemberAction, removeMemberAction, subscribeToPushNotificationsAction, ensureLeadersNetworkAction } from '../lib/actions';
 
 const AppContext = createContext();
 
@@ -81,7 +81,7 @@ export function AppProvider({ children }) {
     interests: []
   };
 
-  const user = { ...dbUser, joinedCommunities: [], leaderOf: null, isAdmin: false };
+  const user = { ...dbUser, joinedCommunities: [], ledCommunities: [], isAdmin: false };
     if (authUser?.email) {
       const email = authUser.email.toLowerCase();
       // ⚠️ TODO: Move admin check to a Supabase user_roles table + RLS policy.
@@ -98,15 +98,15 @@ export function AppProvider({ children }) {
       const myMem = mems.find(m => m.userId === user.id);
       if (myMem) {
         user.joinedCommunities.push(communityId);
-        if (myMem.role === 'Leader') user.leaderOf = communityId;
+        if (myMem.role === 'Leader') user.ledCommunities.push(communityId);
       }
     });
   }
 
   // Force demo users to be a leader of the first community (so they can test leader features)
-  if ((authUser?.email?.includes('demo') || user.isAdmin) && communities.length > 0 && !user.leaderOf) {
+  if ((authUser?.email?.includes('demo') || user.isAdmin) && communities.length > 0 && user.ledCommunities.length === 0) {
     const targetComm = communities[0];
-    user.leaderOf = targetComm.id;
+    user.ledCommunities.push(targetComm.id);
     if (!user.joinedCommunities.includes(targetComm.id)) user.joinedCommunities.push(targetComm.id);
   }
 
@@ -130,7 +130,22 @@ export function AppProvider({ children }) {
       if (usersRes.data) setUsers(usersRes.data);
 
       if (commsRes.data) {
-        setCommunities(commsRes.data.map(c => ({
+        let comms = [...commsRes.data];
+        // Ensure Leaders Network is in state (and seed DB if missing)
+        if (!comms.find(c => c.id === 'more-leaders-network')) {
+          const leadersComm = {
+             id: 'more-leaders-network',
+             name: 'The more. Leaders Network',
+             description: 'A private space for more. leaders to collaborate, share tips, and organize cross-community events.',
+             tags: ['leadership', 'network'],
+             leader_id: null,
+             is_private: true
+          };
+          comms.push(leadersComm);
+          ensureLeadersNetworkAction().catch(e => console.error("Error ensuring leaders network:", e));
+        }
+
+        setCommunities(comms.map(c => ({
           ...c, // pass through ALL columns from Supabase
           tags: c.tags || [],
           image: c.image || c.cover_image, // support both column names
@@ -175,6 +190,26 @@ export function AppProvider({ children }) {
           if (!memMap[m.community_id]) memMap[m.community_id] = [];
           memMap[m.community_id].push({ userId: m.user_id, role: m.role });
         });
+
+        // --- Leaders Network Auto-Join Logic ---
+        if (authUser?.id && user?.ledCommunities?.length > 0) {
+          if (!memMap['more-leaders-network']) memMap['more-leaders-network'] = [];
+          
+          // If they aren't in the network yet, add them optimistically and in DB
+          if (!memMap['more-leaders-network'].some(m => m.userId === authUser.id)) {
+            memMap['more-leaders-network'].push({ userId: authUser.id, role: 'Member' });
+            
+            // Fire and forget join action
+            joinCommunityAction(authUser.id, 'more-leaders-network', session?.access_token)
+              .catch(e => console.error('Failed auto-join Leaders Network:', e));
+              
+            // Also ensure it's in their local user profile joined list
+            if (!user.joinedCommunities.includes('more-leaders-network')) {
+              user.joinedCommunities.push('more-leaders-network');
+            }
+          }
+        }
+
         setCommunityMemberships(memMap);
       }
 

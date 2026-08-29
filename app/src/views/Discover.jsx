@@ -10,12 +10,14 @@ import { useToast } from '../components/Toast';
 import dynamic from 'next/dynamic';
 const MapView = dynamic(() => import('../components/MapView'), { ssr: false, loading: () => <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--slate-500)' }}>Loading map...</div> });
 import AppHeader from '../components/AppHeader';
+import SwipeDiscovery from '../components/SwipeDiscovery';
 
 export default function Discover() {
   const [activePill, setActivePill] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState('list'); // 'list' or 'map'
   const [sortBy, setSortBy] = useState('trending');
+  const [showSwipe, setShowSwipe] = useState(false);
   const pills = ['All', 'For You', '🔥 Trending', '🚶 Walking', '🏃 Running', '🧘 Wellness', '⛰️ Adventure', '🤝 Volunteering', '🎨 Creative', '💼 Business'];
   const { communities, user, users, communityMemberships, joinCommunity, isLoading, events } = useAppContext();
     const { messages } = useChat();
@@ -24,7 +26,7 @@ export default function Discover() {
 
   // Compute activity & trending data for each community
   const enrichedCommunities = useMemo(() => {
-    return communities.map(c => {
+    return communities.filter(c => c.id !== 'more-leaders-network').map(c => {
       const members = (communityMemberships[c.id] || []).length;
       const cEvents = events.filter(e => e.communityId === c.id && e.status !== 'cancelled').length;
       const upcomingEvents = events.filter(e => e.communityId === c.id && e.status !== 'cancelled' && e.date && new Date(e.date + 'T00:00:00') >= new Date()).length;
@@ -160,7 +162,12 @@ export default function Discover() {
       
       <div style={{ padding: '20px 20px 10px' }}>
         <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--slate-400)' }}>Local communities in</p>
-        <h2 style={{ margin: '4px 0 16px 0', fontFamily: 'var(--font-heading)', fontSize: '1.4rem' }}>Tunbridge Wells, UK</h2>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '4px 0 16px 0' }}>
+          <h2 style={{ margin: 0, fontFamily: 'var(--font-heading)', fontSize: '1.4rem' }}>Tunbridge Wells, UK</h2>
+          <button onClick={() => setShowSwipe(true)} className="interactive-press" style={{ background: 'var(--teal-500)', border: 'none', color: 'white', padding: '6px 12px', borderRadius: '99px', fontSize: '0.8rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', boxShadow: '0 4px 12px rgba(20,184,166,0.3)' }}>
+            <Sparkles size={14} /> Find Plans
+          </button>
+        </div>
         
         <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '999px', padding: '12px 20px', display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--slate-400)', border: '1px solid rgba(255,255,255,0.1)', transition: 'border-color 0.2s' }}>
           <Search size={18} />
@@ -377,6 +384,17 @@ export default function Discover() {
             </>
           )}
         </>
+      )}
+
+      {showSwipe && (
+        <SwipeDiscovery 
+          events={events.filter(e => !user.joinedCommunities.includes(e.communityId))} 
+          communities={communities} 
+          onClose={() => setShowSwipe(false)} 
+          onSave={(event) => {
+            // Already handled in SwipeDiscovery via toast, but could sync to backend here
+          }} 
+        />
       )}
     </div>
   );

@@ -20,6 +20,7 @@ export default function Chat() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newChannelName, setNewChannelName] = useState('');
   const [activeTab, setActiveTab] = useState('Communities');
+  const [createChannelCommunityId, setCreateChannelCommunityId] = useState(null);
   
   const { user, communities, users, communityMemberships, uploadImage, channels, createChannel, isLoading, whatsappSettings } = useAppContext();
     const { messages, directMessages, sendMessage, sendDirectMessage, chatReadReceipts, markChatRead } = useChat();
@@ -57,7 +58,7 @@ export default function Chat() {
           communityInboxItems.push({ comm: c, type: 'channel', name: ch.name, id: ch.id });
         });
       }
-      if (user.leaderOf === c.id) {
+      if (user.ledCommunities?.includes(c.id)) {
         communityInboxItems.push({ comm: c, type: 'group', name: 'Organizers Group', id: 'organizers' });
       }
     });
@@ -85,7 +86,7 @@ export default function Chat() {
 
     const handleCreateChannel = async () => {
       if (!newChannelName.trim()) return;
-      const leaderCommunity = user.leaderOf;
+      const leaderCommunity = createChannelCommunityId || user.ledCommunities?.[0];
       if (!leaderCommunity) return;
       await createChannel(leaderCommunity, newChannelName.trim());
       toast.success('Channel created!', `#${newChannelName.trim()} is now live`);
@@ -227,6 +228,21 @@ export default function Chat() {
                 onKeyDown={e => e.key === 'Enter' && handleCreateChannel()}
                 style={{ width: '100%', padding: '14px 16px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'white', fontSize: '1rem', marginBottom: '16px' }}
               />
+              {user.ledCommunities?.length > 1 && (
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--slate-400)', marginBottom: '8px' }}>Select Community</label>
+                  <select 
+                    value={createChannelCommunityId || user.ledCommunities[0]}
+                    onChange={e => setCreateChannelCommunityId(e.target.value)}
+                    style={{ width: '100%', padding: '12px', background: 'var(--slate-800)', color: 'white', border: '1px solid var(--slate-700)', borderRadius: '8px', fontSize: '0.95rem' }}
+                  >
+                    {user.ledCommunities.map(id => {
+                      const c = communities.find(comm => comm.id === id);
+                      return <option key={id} value={id}>{c?.name || id}</option>;
+                    })}
+                  </select>
+                </div>
+              )}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <button onClick={handleCreateChannel} className="btn btn-primary" style={{ display: 'flex', gap: '12px', justifyContent: 'center', padding: '16px', borderRadius: '12px' }}>
                   <Hash size={20} /> Create Channel

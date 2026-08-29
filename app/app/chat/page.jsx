@@ -179,7 +179,7 @@ export default function ChatIndex() {
 
       {/* New DM Modal */}
       {showNewDM && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)', zIndex: 1000, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)', zIndex: 2000, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}
           onClick={(e) => { if (e.target === e.currentTarget) setShowNewDM(false); }}
         >
           <div style={{ width: '100%', maxWidth: '500px', maxHeight: '70vh', background: 'var(--slate-900)', borderRadius: '24px 24px 0 0', padding: '24px', overflow: 'auto' }}>

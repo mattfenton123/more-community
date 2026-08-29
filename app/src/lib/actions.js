@@ -130,6 +130,21 @@ export async function joinCommunityAction(userId, communityId, token) {
   return data;
 }
 
+export async function ensureLeadersNetworkAction() {
+  const { error } = await supabaseAdmin.from('communities').upsert([{
+    id: 'more-leaders-network',
+    name: 'The more. Leaders Network',
+    description: 'A private space for more. leaders to collaborate, share tips, and organize cross-community events.',
+    tags: ['leadership', 'network'],
+    leader_id: null,
+    is_private: true,
+    activity_level: 'Active',
+    location_name: 'Global',
+    cost: 'Free for Leaders'
+  }], { onConflict: 'id' });
+  if (error) console.error('Failed to ensure Leaders Network:', error);
+}
+
 export async function createEventAction(eventData, token) {
   // In a real app we'd verify the user is a leader of the community, but for demo:
   await verifyUser(token);
@@ -178,8 +193,7 @@ export async function rsvpToEventAction(userId, eventId, status, ticketType, tok
     const { error } = await supabaseAdmin.from('event_rsvps').upsert([{
       user_id: userId,
       event_id: eventId,
-      status: status,
-      ticket_type: ticketType
+      status: status
     }], { onConflict: 'event_id,user_id' });
     if (error) throw new Error(error.message);
   }

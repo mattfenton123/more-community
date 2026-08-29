@@ -128,13 +128,13 @@ function TabBar() {
           <span className="tab-label">Admin</span>
         </Link>
       )}
-      {user.leaderOf && (
+      {user.ledCommunities?.length > 0 && (
         <Link href="/dashboard" className={`tab-item ${currentPath === '/dashboard' ? 'active' : ''}`}>
           <BarChart2 size={22} />
           <span className="tab-label">Lead</span>
         </Link>
       )}
-      {!user.leaderOf && (
+      {!(user.ledCommunities?.length > 0) && (
         <Link href="/profile" className={`tab-item ${currentPath.startsWith('/profile') ? 'active' : ''}`}>
           <User size={22} />
           <span className="tab-label">Profile</span>

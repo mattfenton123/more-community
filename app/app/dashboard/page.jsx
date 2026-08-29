@@ -84,7 +84,7 @@ export default function LeaderDashboard() {
   const [modalType, setModalType] = useState(null);
   const [editForm, setEditForm] = useState({ description: '', tags: '' });
   const [activeTab, setActiveTab] = useState('overview');
-  const [waConfig, setWaConfig] = useState({ businessConnected: false, groupLink: '' });
+  const [activeCommunityId, setActiveCommunityId] = useState(user?.ledCommunities?.[0] || null);
   
   const emptyEventForm = { title: '', description: '', date: '', time: '', location: '', maxCapacity: '', ticketPrice: '' };
   const [eventForm, setEventForm] = useState(emptyEventForm);
@@ -114,7 +114,7 @@ export default function LeaderDashboard() {
   const fileInputRef = useRef(null);
 
   // ─── Derived Data ─────────────────────────────────────────
-  const communityIdLed = user?.leaderOf;
+  const communityIdLed = activeCommunityId || user?.ledCommunities?.[0];
   const community = communities.find(c => c.id === communityIdLed);
   const memberList = community ? (communityMemberships[community.id] || []) : [];
   const communityEvents = community ? events.filter(e => e.communityId === community.id).sort((a, b) => new Date(a.date) - new Date(b.date)) : [];
@@ -633,7 +633,22 @@ export default function LeaderDashboard() {
       {community && (
         <div className="dashboard-sidebar desktop-only">
           <div className="dashboard-sidebar-header">
-            <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.2rem', color: 'white', margin: '0 0 4px' }}>{community.name}</h2>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%' }}>
+              {user?.ledCommunities?.length > 1 ? (
+                <select 
+                  value={communityIdLed} 
+                  onChange={e => setActiveCommunityId(e.target.value)}
+                  style={{ background: 'rgba(255,255,255,0.05)', color: 'white', border: '1px solid rgba(255,255,255,0.1)', padding: '6px 8px', borderRadius: '8px', fontSize: '1.1rem', fontFamily: 'var(--font-heading)', outline: 'none', width: '100%', marginBottom: '4px' }}
+                >
+                  {user.ledCommunities.map(id => {
+                    const c = communities.find(comm => comm.id === id);
+                    return <option key={id} value={id}>{c?.name || id}</option>;
+                  })}
+                </select>
+              ) : (
+                <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.2rem', color: 'white', margin: '0 0 4px' }}>{community.name}</h2>
+              )}
+            </div>
             <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>Leader View</div>
           </div>
           <div style={{ flex: 1 }}>
@@ -645,6 +660,7 @@ export default function LeaderDashboard() {
               { id: 'social hub', icon: Heart, label: 'Social Hub' },
               { id: 'crm', icon: BarChart3, label: 'CRM' },
               { id: 'members', icon: Users, label: 'Members' },
+              { id: 'network', icon: Map, label: 'Network' },
               { id: 'settings', icon: Settings, label: 'Settings' }
             ].map(tab => (
               <button 
@@ -675,8 +691,24 @@ export default function LeaderDashboard() {
         <>
           <div className="mobile-only">
             <AppHeader title="Dashboard" />
-            <div style={{ padding: '0 20px 20px' }}>
-              <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)' }}>{community.name} • Leader View</div>
+            <div style={{ padding: '0 20px 20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)' }}>
+                {user?.ledCommunities?.length > 1 ? (
+                  <select 
+                    value={communityIdLed} 
+                    onChange={e => setActiveCommunityId(e.target.value)}
+                    style={{ background: 'rgba(255,255,255,0.05)', color: 'white', border: '1px solid rgba(255,255,255,0.1)', padding: '4px 8px', borderRadius: '6px', fontSize: '0.85rem', outline: 'none' }}
+                  >
+                    {user.ledCommunities.map(id => {
+                      const c = communities.find(comm => comm.id === id);
+                      return <option key={id} value={id}>{c?.name || id}</option>;
+                    })}
+                  </select>
+                ) : (
+                  <span style={{ color: 'white', fontWeight: 600 }}>{community.name}</span>
+                )}
+                <span style={{ marginLeft: '8px' }}>• Leader View</span>
+              </div>
             </div>
           </div>
 
@@ -684,7 +716,7 @@ export default function LeaderDashboard() {
           {/* Tab Navigation (Mobile) */}
           <div className="mobile-only" style={{ padding: '0 20px', marginBottom: '24px' }}>
             <div style={{ display: 'flex', gap: '4px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', padding: '4px', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-              {['overview', 'events', 'monetisation', 'experiences', 'social hub', 'crm', 'members', 'settings'].map(tab => (
+              {['overview', 'events', 'network', 'monetisation', 'experiences', 'social hub', 'crm', 'members', 'settings'].map(tab => (
                 <button 
                   key={tab} onClick={() => setActiveTab(tab)}
                   style={{
@@ -975,6 +1007,84 @@ export default function LeaderDashboard() {
                   })}
                 </div>
               )}
+            </div>
+          )}
+
+          {/* ══════════════════════════════════════════════════════ */}
+          {/* TAB: NETWORK (Cross-Pollination)                       */}
+          {/* ══════════════════════════════════════════════════════ */}
+          {activeTab === 'network' && (
+            <div style={{ padding: '0 20px', marginBottom: '24px' }}>
+              <div style={{ marginBottom: '24px' }}>
+                <h2 style={{ margin: '0 0 8px 0', fontFamily: 'var(--font-heading)', fontSize: '1.2rem', color: 'white', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Map size={20} color="var(--teal-400)" /> Network Events
+                </h2>
+                <p style={{ color: 'var(--slate-400)', fontSize: '0.9rem', lineHeight: 1.5, margin: 0 }}>
+                  Discover and co-host events from other communities in the network. Co-hosting helps you provide more value to your members instantly.
+                </p>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {events.filter(e => e.status === 'published' && !user.ledCommunities?.includes(e.communityId)).map(event => {
+                  const sourceCommunity = communities.find(c => c.id === event.communityId);
+                  return (
+                    <div key={event.id} className="stagger-item" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '16px' }}>
+                      <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
+                        {event.image ? (
+                          <img src={event.image} alt={event.title} style={{ width: '64px', height: '64px', borderRadius: '12px', objectFit: 'cover' }} />
+                        ) : (
+                          <div style={{ width: '64px', height: '64px', borderRadius: '12px', background: 'rgba(20,184,166,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <Calendar size={24} color="var(--teal-400)" />
+                          </div>
+                        )}
+                        <div style={{ flex: 1 }}>
+                          <h4 style={{ margin: '0 0 4px 0', fontSize: '1.05rem', color: 'white', fontWeight: 600 }}>{event.title}</h4>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', color: 'var(--slate-400)', marginBottom: '8px' }}>
+                            <span style={{ color: 'var(--teal-300)' }}>{sourceCommunity?.name || 'Another Community'}</span>
+                            <span>•</span>
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={12} /> {event.date} at {event.time}</span>
+                          </div>
+                          <div style={{ fontSize: '0.85rem', color: 'var(--slate-300)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                            {event.description}
+                          </div>
+                          
+                          <button 
+                            onClick={async () => {
+                              try {
+                                const newEvent = {
+                                  title: `Co-Hosted: ${event.title}`,
+                                  description: event.description + `\n\nCo-hosted with ${sourceCommunity?.name || 'another community'}.`,
+                                  date: event.date,
+                                  time: event.time,
+                                  location: event.location,
+                                  image: event.image,
+                                  communityId: activeCommunityId,
+                                  status: 'published',
+                                  maxCapacity: event.maxCapacity || 50,
+                                  ticketPrice: event.ticketPrice || 0
+                                };
+                                await createEvent(newEvent);
+                                toast.success('Event Co-Hosted!', 'It has been added to your community calendar.');
+                              } catch (err) {
+                                toast.error('Error', 'Could not co-host this event.');
+                              }
+                            }}
+                            className="btn btn-outline interactive-press" 
+                            style={{ marginTop: '16px', display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', padding: '8px 16px', borderRadius: '8px', color: 'var(--teal-400)', borderColor: 'rgba(20,184,166,0.3)' }}
+                          >
+                            <Plus size={14} /> Promote to My Community
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+                {events.filter(e => e.status === 'published' && !user.ledCommunities?.includes(e.communityId)).length === 0 && (
+                  <div style={{ padding: '40px', textAlign: 'center', color: 'var(--slate-400)', background: 'rgba(255,255,255,0.02)', borderRadius: '16px' }}>
+                    No network events found. Check back later!
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
