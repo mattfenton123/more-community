@@ -58,6 +58,64 @@ function StepBasics({ name, setName, description, setDescription }) {
   );
 }
 
+function StepDetails({ targetAudience, setTargetAudience, cost, setCost, activityLevel, setActivityLevel, locationName, setLocationName }) {
+  return (
+    <div className="step-wrapper">
+      <div className="step-header">
+        <h2 className="step-title">The Details</h2>
+        <p className="step-subtitle">Help people decide if this community is right for them.</p>
+      </div>
+
+      <div className="input-group">
+        <label className="input-label">Who is it for?</label>
+        <input
+          type="text"
+          placeholder="e.g. All ages & abilities welcome."
+          value={targetAudience}
+          onChange={e => setTargetAudience(e.target.value)}
+          className="text-input"
+        />
+      </div>
+
+      <div className="input-group">
+        <label className="input-label">Cost</label>
+        <input
+          type="text"
+          placeholder="e.g. Free to join, pay for coffee"
+          value={cost}
+          onChange={e => setCost(e.target.value)}
+          className="text-input"
+        />
+      </div>
+
+      <div className="input-group">
+        <label className="input-label">How Often?</label>
+        <select
+          value={activityLevel}
+          onChange={e => setActivityLevel(e.target.value)}
+          className="text-input"
+          style={{ appearance: 'none', backgroundColor: 'var(--slate-800)' }}
+        >
+          <option value="Very Active">Very Active (Weekly)</option>
+          <option value="Active">Active (Fortnightly)</option>
+          <option value="Casual">Casual (Monthly or less)</option>
+        </select>
+      </div>
+
+      <div className="input-group">
+        <label className="input-label">General Location</label>
+        <input
+          type="text"
+          placeholder="e.g. Tunbridge Wells, Kent"
+          value={locationName}
+          onChange={e => setLocationName(e.target.value)}
+          className="text-input"
+        />
+      </div>
+    </div>
+  );
+}
+
 function StepAesthetics({ tags, toggleTag, coverImagePreview, handleImageSelect, fileInputRef }) {
   return (
     <div className="step-wrapper">
@@ -228,7 +286,13 @@ export default function CommunityOnboardingFlow({ onComplete }) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   
-  // Step 2: Aesthetics
+  // Step 2: Details
+  const [targetAudience, setTargetAudience] = useState('');
+  const [cost, setCost] = useState('Free');
+  const [activityLevel, setActivityLevel] = useState('Active');
+  const [locationName, setLocationName] = useState('');
+  
+  // Step 3: Aesthetics
   const [tags, setTags] = useState([]);
   const [coverImagePreview, setCoverImagePreview] = useState(null);
   const [coverImageFile, setCoverImageFile] = useState(null);
@@ -289,8 +353,10 @@ export default function CommunityOnboardingFlow({ onComplete }) {
         verified: false,
         instagram_handle: instagram.trim(),
         whatsapp_group: whatsapp.trim(),
-        activity_level: 'Active',
-        cost: 'Free'
+        activity_level: activityLevel,
+        cost: cost.trim(),
+        target_audience: targetAudience.trim(),
+        location_name: locationName.trim()
       };
 
       // Create Community
@@ -331,16 +397,25 @@ export default function CommunityOnboardingFlow({ onComplete }) {
   const isValidIg = instagram.trim() === '' || /^[@a-zA-Z0-9._]+$/.test(instagram.trim()) || instagram.includes('instagram.com');
   const isValidWa = whatsapp.trim() === '' || whatsapp.includes('chat.whatsapp.com') || whatsapp.includes('wa.me');
 
-  const canProceed = step === 0 
-    ? (name.trim().length >= 3 && description.trim().length >= 10) 
-    : step === 1 
-      ? (tags.length > 0) 
-      : step === 2 
-        ? !isPartiallyFilledEvent
-        : (isValidIg && isValidWa);
+  const TOTAL_STEPS = 5;
+  const isStep1Valid = name.trim().length >= 3 && description.trim().length >= 10;
+  const isStep2Valid = true;
+  const isStep3Valid = tags.length > 0;
+  const isStep4Valid = !isPartiallyFilledEvent;
+  const isStep5Valid = isValidIg && isValidWa;
+
+  const getCanProceed = () => {
+    if (step === 0) return isStep1Valid;
+    if (step === 1) return isStep2Valid;
+    if (step === 2) return isStep3Valid;
+    if (step === 3) return isStep4Valid;
+    if (step === 4) return isStep5Valid;
+    return true;
+  };
 
   const steps = [
     <StepBasics key="basics" name={name} setName={setName} description={description} setDescription={setDescription} />,
+    <StepDetails key="details" targetAudience={targetAudience} setTargetAudience={setTargetAudience} cost={cost} setCost={setCost} activityLevel={activityLevel} setActivityLevel={setActivityLevel} locationName={locationName} setLocationName={setLocationName} />,
     <StepAesthetics key="aesthetics" tags={tags} toggleTag={toggleTag} coverImagePreview={coverImagePreview} handleImageSelect={handleImageSelect} fileInputRef={fileInputRef} />,
     <StepEvent key="event" eventTitle={eventTitle} setEventTitle={setEventTitle} eventDate={eventDate} setEventDate={setEventDate} eventTime={eventTime} setEventTime={setEventTime} eventLocation={eventLocation} setEventLocation={setEventLocation} />,
     <StepVerification key="verify" instagram={instagram} setInstagram={setInstagram} whatsapp={whatsapp} setWhatsapp={setWhatsapp} />
@@ -381,8 +456,8 @@ export default function CommunityOnboardingFlow({ onComplete }) {
               if (step < steps.length - 1) setStep(step + 1);
               else handleFinish();
             }}
-            disabled={!canProceed || isSubmitting}
-            className={`btn btn-primary interactive-press btn-continue ${canProceed && !isSubmitting ? '' : 'disabled'}`}
+            disabled={!getCanProceed() || isSubmitting}
+            className={`btn btn-primary interactive-press btn-continue ${getCanProceed() && !isSubmitting ? '' : 'disabled'}`}
           >
             {isSubmitting ? 'Creating...' : step < steps.length - 1 ? (
               <>Continue <ArrowRight size={18} /></>

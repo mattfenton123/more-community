@@ -86,7 +86,11 @@ export async function createCommunityAction(communityData, token) {
     tags: communityData.tags,
     image: communityData.cover_image,
     lat: communityData.lat || null,
-    lng: communityData.lng || null
+    lng: communityData.lng || null,
+    target_audience: communityData.target_audience,
+    location_name: communityData.location_name,
+    cost: communityData.cost,
+    activity_level: communityData.activity_level
   }).select().single();
 
   if (error) throw new Error(error.message);

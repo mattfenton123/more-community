@@ -73,12 +73,15 @@ export default function CommunityProfile() {
     const { feedPosts, createFeedPost, likeFeedPost } = useFeed();
   const { toast } = useToast();
   const [showRules, setShowRules] = useState(false);
-  const [activeTab, setActiveTab] = useState('feed');
   const [newPostText, setNewPostText] = useState('');
   const [newPostImage, setNewPostImage] = useState(null);
   
   const communityId = id || (user.joinedCommunities.length > 0 ? user.joinedCommunities[0] : 'tw-tech-meetup');
   const community = communities.find(c => c.id === communityId);
+  const communityFeed = feedPosts?.filter(p => p.communityId === communityId) || [];
+  
+  // Default to about tab if no feed posts exist
+  const [activeTab, setActiveTab] = useState(communityFeed.length === 0 ? 'about' : 'feed');
 
   if (!community && !isLoading) {
     return (
@@ -105,7 +108,7 @@ export default function CommunityProfile() {
   const galleryType = getGalleryType(community.tags);
   const galleryPhotos = GALLERY_PHOTOS[galleryType];
   const nextEvent = upcomingEvents[0] || communityEvents[0];
-  const communityFeed = feedPosts?.filter(p => p.communityId === communityId) || [];
+  const nextEvent = upcomingEvents[0] || communityEvents[0];
 
   const handleShare = async () => {
     const shareData = { title: community.name, text: community.description, url: window.location.href };
@@ -375,7 +378,7 @@ export default function CommunityProfile() {
               <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px', padding: '16px' }}>
                 <div style={{ fontSize: '1.4rem', marginBottom: '4px' }}>👥</div>
                 <div style={{ fontSize: '0.75rem', color: 'var(--teal-400)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>Who It's For</div>
-                <div style={{ fontSize: '0.85rem', color: 'var(--slate-300)', lineHeight: 1.4 }}>All ages & abilities welcome. No experience needed.</div>
+                <div style={{ fontSize: '0.85rem', color: 'var(--slate-300)', lineHeight: 1.4 }}>{community.target_audience || 'All ages & abilities welcome.'}</div>
               </div>
               <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px', padding: '16px' }}>
                 <div style={{ fontSize: '1.4rem', marginBottom: '4px' }}>💷</div>
@@ -390,7 +393,7 @@ export default function CommunityProfile() {
               <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px', padding: '16px' }}>
                 <div style={{ fontSize: '1.4rem', marginBottom: '4px' }}>📍</div>
                 <div style={{ fontSize: '0.75rem', color: 'var(--teal-400)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>Location</div>
-                <div style={{ fontSize: '0.85rem', color: 'var(--slate-300)', lineHeight: 1.4 }}>Tunbridge Wells, Kent</div>
+                <div style={{ fontSize: '0.85rem', color: 'var(--slate-300)', lineHeight: 1.4 }}>{community.location_name || 'Tunbridge Wells, Kent'}</div>
               </div>
             </div>
 
