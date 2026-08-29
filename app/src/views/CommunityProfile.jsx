@@ -139,15 +139,15 @@ export default function CommunityProfile() {
     toast.success('Posted!', 'Your update is now live.');
   };
 
-  const handleJoinLeave = async () => {
-    if (isMember) {
-      if (window.confirm(`Are you sure you want to leave ${community.name}?`)) {
-        await leaveCommunity(community.id);
-        toast.info('Left community', `You've left ${community.name}`);
-      }
-    } else {
-      await joinCommunity(community.id);
-      toast.success('Welcome!', `You're now a member of ${community.name}`);
+  const handleJoin = async () => {
+    await joinCommunity(community.id);
+    toast.success('Welcome!', `You're now a member of ${community.name}`);
+  };
+
+  const handleLeave = async () => {
+    if (window.confirm(`Are you sure you want to leave ${community.name}?`)) {
+      await leaveCommunity(community.id);
+      toast.info('Left community', `You've left ${community.name}`);
     }
   };
 
@@ -218,9 +218,9 @@ export default function CommunityProfile() {
             return (
               <>
                 <button 
-                  className={`btn ${isMember ? 'btn-outline' : 'btn-primary'} interactive-press`} 
-                  style={{ width: '100%', padding: '16px', fontSize: '1.05rem', fontWeight: 700, borderRadius: '14px', boxShadow: isMember ? 'none' : '0 8px 24px rgba(20,184,166,0.3)' }}
-                  onClick={handleJoinLeave}
+                  className={`btn ${isMember ? 'btn-outline' : 'btn-primary'} ${isMember ? '' : 'interactive-press'}`} 
+                  style={{ width: '100%', padding: '16px', fontSize: '1.05rem', fontWeight: 700, borderRadius: '14px', boxShadow: isMember ? 'none' : '0 8px 24px rgba(20,184,166,0.3)', cursor: isMember ? 'default' : 'pointer' }}
+                  onClick={isMember ? undefined : handleJoin}
                 >
                   {isMember ? '✓ You\'re a Member' : isPaid ? `Join — £${subPrice}/month` : 'Join this Community — it\'s free'}
                 </button>
@@ -505,6 +505,23 @@ export default function CommunityProfile() {
                 </div>
               )}
             </div>
+
+            {/* Leave Community Section */}
+            {isMember && !isLeader && (
+              <div style={{ marginTop: '32px', marginBottom: '24px', display: 'flex', justifyContent: 'center' }}>
+                <button
+                  onClick={handleLeave}
+                  className="interactive-press"
+                  style={{
+                    background: 'transparent', border: '1px solid var(--rose-500)', 
+                    color: 'var(--rose-500)', padding: '10px 24px', borderRadius: '99px',
+                    fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer'
+                  }}
+                >
+                  Leave Community
+                </button>
+              </div>
+            )}
           </>
         )}
 
