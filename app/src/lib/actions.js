@@ -282,3 +282,10 @@ export async function adminVerifyCommunityAction(communityId, verified, token) {
   if (error) throw new Error(error.message);
   return true;
 }
+
+export async function broadcastNotificationAction(notifications, token) {
+  await verifyUser(token);
+  const { error } = await supabaseAdmin.from('notifications').insert(notifications);
+  if (error) throw new Error(error.message);
+  return true;
+}

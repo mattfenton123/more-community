@@ -7,7 +7,8 @@ import { useChat } from '../context/ChatContext';
 import { FALLBACK_IMAGES } from '../lib/constants';
 import { SkeletonList, SkeletonCard } from '../components/SkeletonCard';
 import { useToast } from '../components/Toast';
-import MapView from '../components/MapView';
+import dynamic from 'next/dynamic';
+const MapView = dynamic(() => import('../components/MapView'), { ssr: false, loading: () => <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--slate-500)' }}>Loading map...</div> });
 import AppHeader from '../components/AppHeader';
 
 export default function Discover() {

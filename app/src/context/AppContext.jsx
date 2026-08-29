@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabaseClient';
 import { useAuth } from './AuthContext';
 import { initialExperiences } from '../lib/constants';
 import imageCompression from 'browser-image-compression';
-import { createEventAction, joinCommunityAction, leaveCommunityAction, rsvpToEventAction, createCommunityAction, uploadImageAction, updateEventAction, updateCommunityAction, createChannelAction, markNotificationReadAction, updateUserAction, adminVerifyCommunityAction } from '../lib/actions';
+import { createEventAction, joinCommunityAction, leaveCommunityAction, rsvpToEventAction, createCommunityAction, uploadImageAction, updateEventAction, updateCommunityAction, createChannelAction, markNotificationReadAction, updateUserAction, adminVerifyCommunityAction, broadcastNotificationAction } from '../lib/actions';
 
 const AppContext = createContext();
 
@@ -660,8 +660,7 @@ export function AppProvider({ children }) {
     }));
     
     try {
-      const { error } = await supabase.from('notifications').insert(notifications);
-      if (error) throw error;
+      await broadcastNotificationAction(notifications, session?.access_token);
     } catch (err) {
       console.error('Broadcast failed:', err);
       throw err;
