@@ -1130,3 +1130,17 @@ textarea.form-input {
     order: -1;
   }
 }
+
+/* Chat UI */
+.app-content:has(.view-chat) {
+  padding-bottom: 0 !important;
+  overflow: hidden !important;
+}
+.view-chat {
+  padding-bottom: 80px;
+}
+@media (min-width: 1024px) {
+  .view-chat {
+    padding-bottom: 0;
+  }
+}

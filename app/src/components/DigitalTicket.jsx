@@ -45,7 +45,7 @@ export default function DigitalTicket({ event, user, onClose }) {
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--teal-400)', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '4px' }}>
               <Ticket size={14} /> Event Ticket
             </div>
-            <div style={{ fontFamily: 'var(--font-heading)', fontSize: '0.9rem', color: 'white', fontWeight: 700 }}>more.</div>
+            <img src="/logo.png" alt="more." style={{ height: '16px' }} />
           </div>
           <button onClick={onClose} className="interactive-press" style={{ background: 'rgba(255,255,255,0.05)', border: 'none', color: 'var(--slate-400)', cursor: 'pointer', width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <X size={16} />

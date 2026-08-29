@@ -839,6 +839,9 @@ export function AppProvider({ children }) {
       formData.append('file', compressedFile);
       formData.append('userId', user.id);
       
+      const sessionResponse = await supabase.auth.getSession();
+      const session = sessionResponse.data.session;
+      
       const publicUrl = await uploadImageAction(formData, session?.access_token);
       return publicUrl;
     } catch (err) {

@@ -26,8 +26,8 @@ export function FeedProvider({ children }) {
             id: post.id,
             communityId: post.community_id,
             authorId: post.author_id,
-            text: post.content,
-            media: post.media_url,
+            text: post.text,
+            media: post.media,
             likes: post.likes || 0,
             createdAt: post.created_at,
           })));
@@ -50,8 +50,8 @@ export function FeedProvider({ children }) {
             id: payload.new.id,
             communityId: payload.new.community_id,
             authorId: payload.new.author_id,
-            text: payload.new.content,
-            media: payload.new.media_url,
+            text: payload.new.text,
+            media: payload.new.media,
             likes: payload.new.likes || 0,
             createdAt: payload.new.created_at,
           }, ...prev];

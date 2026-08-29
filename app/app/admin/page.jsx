@@ -854,7 +854,7 @@ export default function AdminDashboard() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '0.8rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span style={{ color: 'var(--slate-400)' }}>App Name</span>
-                  <span style={{ color: 'white', fontWeight: 600 }}>more.</span>
+                  <img src="/logo.png" alt="more." style={{ height: '16px' }} />
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span style={{ color: 'var(--slate-400)' }}>Version</span>

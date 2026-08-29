@@ -114,6 +114,8 @@ export default function EventFlyerGenerator({ event, community, onClose, uploadI
   useEffect(() => { ['Syne', 'Instrument Serif', 'Plus Jakarta Sans'].forEach(loadFont); }, []);
 
   const tmpl = TEMPLATES[template];
+  const longestWord = titleText.split(' ').reduce((max, word) => Math.max(max, word.length), 0);
+  const autoScale = Math.min(1, 10 / (longestWord || 1));
 
   const formatDate = (dateStr) => {
     if (!dateStr) return '';
@@ -206,7 +208,7 @@ export default function EventFlyerGenerator({ event, community, onClose, uploadI
 
       // Title
       const baseTitleFontSize = template === 'bold' ? 86 : template === 'minimal' ? 76 : 72;
-      const titleFontSize = baseTitleFontSize * titleSizeMultiplier;
+      const titleFontSize = baseTitleFontSize * titleSizeMultiplier * autoScale;
       ctx.font = `${tmpl.titleWeight} ${titleFontSize}px "${font}", sans-serif`;
       ctx.fillStyle = titleColor;
       ctx.textAlign = 'left';
@@ -500,7 +502,7 @@ export default function EventFlyerGenerator({ event, community, onClose, uploadI
 
               {/* Title */}
               <h1 style={{
-                fontFamily: `"${font}", sans-serif`, fontSize: `calc(${tmpl.titleSize} * ${titleSizeMultiplier})`,
+                fontFamily: `"${font}", sans-serif`, fontSize: `calc(${tmpl.titleSize} * ${titleSizeMultiplier * autoScale})`,
                 fontWeight: tmpl.titleWeight, color: titleColor, margin: '0 0 16px 0',
                 lineHeight: 1.1,
                 textShadow: template === 'photo' ? '0 2px 20px rgba(0,0,0,0.5)' : 'none',
@@ -568,7 +570,7 @@ export default function EventFlyerGenerator({ event, community, onClose, uploadI
         </div>
 
         {/* Controls */}
-        <div style={{ padding: '0 20px 20px' }}>
+        <div style={{ padding: '0 20px 100px' }}>
           {/* Panel Tabs */}
           <div style={{ display: 'flex', gap: '6px', marginBottom: '12px' }}>
             <PanelButton id="template" icon={Layout} label="Layout" />

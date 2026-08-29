@@ -167,7 +167,7 @@ export default function CommunityProfile() {
             <ChevronLeft />
           </button>
           <div style={{ display: 'flex', alignItems: 'center' }}>
-            <span style={{ fontFamily: 'var(--font-heading)', color: 'white', fontSize: '1.2rem', fontWeight: 800 }}>more.</span>
+            <img src="/logo.png" alt="more." style={{ height: '20px' }} />
           </div>
           <div style={{ display: 'flex', gap: '8px' }}>
             <button className="interactive-press" style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.2)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }} onClick={handleShare}>
@@ -322,7 +322,7 @@ export default function CommunityProfile() {
                       <div>
                         <div style={{ fontWeight: 600, color: 'white', fontSize: '0.95rem' }}>{author?.name || 'Community Leader'}</div>
                         <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>
-                          {new Date(post.timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                          {new Date(post.createdAt || post.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                         </div>
                       </div>
                     </div>
