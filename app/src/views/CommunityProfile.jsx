@@ -12,7 +12,7 @@ import ShareModal from '../components/ShareModal';
 import { useRef } from 'react';
 
 // Category-specific gallery photos (generated unique images)
-const IMG = '/portal/images/communities';
+const IMG = '/images/communities';
 const GALLERY_PHOTOS = {
   running: [
     `${IMG}/parkrun.webp`,

@@ -148,7 +148,7 @@ export default function SwipeDiscovery({ events, communities, onClose, onSave })
 
           <div style={{ 
             height: '55%', 
-            background: `url(${currentEvent.image || community?.image || '/portal/images/communities/parkrun.webp'})`, 
+            background: `url(${currentEvent.image || community?.image || '/images/communities/parkrun.webp'})`, 
             backgroundSize: 'cover', 
             backgroundPosition: 'center',
             position: 'relative',

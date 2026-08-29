@@ -11,7 +11,7 @@ import CommentsModal from '../../../src/components/CommentsModal';
 import { downloadIcs } from '../../../src/lib/calendar';
 
 // Category-specific gallery photos (generated unique images)
-const IMG = '/portal/images/communities';
+const IMG = '/images/communities';
 const GALLERY_PHOTOS = {
   running: [
     `${IMG}/parkrun.webp`,

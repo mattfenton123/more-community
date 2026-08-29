@@ -276,8 +276,8 @@ export default function EventsHub() {
                           </div>
                         ) : (
                           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                            <img src="/portal/images/communities/parkrun.webp" alt="Memory 1" style={{ width: '100%', height: '140px', objectFit: 'cover', borderRadius: '8px' }} />
-                            <img src="/portal/images/communities/gallery-running-1.webp" alt="Memory 2" style={{ width: '100%', height: '140px', objectFit: 'cover', borderRadius: '8px' }} />
+                            <img src="/images/communities/parkrun.webp" alt="Memory 1" style={{ width: '100%', height: '140px', objectFit: 'cover', borderRadius: '8px' }} />
+                            <img src="/images/communities/gallery-running-1.webp" alt="Memory 2" style={{ width: '100%', height: '140px', objectFit: 'cover', borderRadius: '8px' }} />
                             <div className="interactive-press" style={{ width: '100%', height: '140px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--teal-400)', cursor: 'pointer', border: '1px dashed rgba(20,184,166,0.3)' }}>
                               <ImageIcon size={24} style={{ marginBottom: '8px' }} />
                               <span style={{ fontSize: '0.8rem', fontWeight: 600 }}>+ Upload More</span>

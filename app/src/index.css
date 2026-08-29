@@ -1033,7 +1033,7 @@ textarea.form-input {
     display: flex;
     flex-direction: column;
     align-items: center;
-    background: url('/portal/images/general.webp') no-repeat center center fixed !important;
+    background: url('/images/general.webp') no-repeat center center fixed !important;
     background-size: cover !important;
   }
   .view-profile::before {
