@@ -409,6 +409,7 @@ export default function LeaderDashboard() {
           ))}
         </div>
       ) : (
+        <>
 
       {/* Step Indicator */}
       <div style={{ display: 'flex', gap: '4px', marginBottom: '8px' }}>
@@ -541,6 +542,8 @@ export default function LeaderDashboard() {
           </button>
         )}
       </div>
+      </>
+      )}
     </>
   );
 
