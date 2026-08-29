@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabaseClient';
 import { useAuth } from './AuthContext';
 import { initialExperiences } from '../lib/constants';
 import imageCompression from 'browser-image-compression';
-import { createEventAction, joinCommunityAction, leaveCommunityAction, rsvpToEventAction, createCommunityAction, uploadImageAction, updateEventAction, updateCommunityAction, createChannelAction, markNotificationReadAction, updateUserAction, adminVerifyCommunityAction, broadcastNotificationAction, promoteMemberAction, removeMemberAction } from '../lib/actions';
+import { createEventAction, joinCommunityAction, leaveCommunityAction, rsvpToEventAction, createCommunityAction, uploadImageAction, updateEventAction, updateCommunityAction, createChannelAction, markNotificationReadAction, updateUserAction, adminVerifyCommunityAction, broadcastNotificationAction, promoteMemberAction, removeMemberAction, subscribeToPushNotificationsAction } from '../lib/actions';
 
 const AppContext = createContext();
 
@@ -893,6 +893,26 @@ export function AppProvider({ children }) {
     }
   };
 
+  const subscribeToPushNotifications = async () => {
+    if (!user?.id) return false;
+    try {
+      const permission = await Notification.requestPermission();
+      if (permission === 'granted') {
+        const registration = await navigator.serviceWorker.ready;
+        const subscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
+        });
+        
+        await subscribeToPushNotificationsAction(user.id, subscription, session?.access_token);
+        return true;
+      }
+    } catch (err) {
+      console.error('Failed to subscribe to push:', err);
+    }
+    return false;
+  };
+
   return (
     <AppContext.Provider value={{
       user,
@@ -924,6 +944,7 @@ export function AppProvider({ children }) {
       toggleUserRole,
       promoteMember,
       removeMember,
+      subscribeToPushNotifications,
       markNotificationRead,
       feedPosts,
       experiences,

@@ -1,6 +1,6 @@
 "use client";
 import { useState } from 'react';
-import { ChevronLeft, Share2, Users, Calendar, Settings, ChevronDown, ChevronUp, Image as ImageIcon, ExternalLink, Camera, Mail, Activity, Sparkles, MapPin, Clock, Star, MessageCircle, Heart, BadgeCheck, Globe } from 'lucide-react';
+import { ChevronLeft, Share2, Users, Calendar, Settings, ChevronDown, ChevronUp, Image as ImageIcon, ExternalLink, Camera, Mail, Activity, Sparkles, MapPin, Clock, Star, MessageCircle, Heart, BadgeCheck, Globe, Trash2, Flag } from 'lucide-react';
 import { useRouter as useNavigate, useParams } from 'next/navigation';
 import { useAppContext } from '../../../src/context/AppContext';
 import { useFeed } from '../../../src/context/FeedContext';
@@ -8,6 +8,7 @@ import { useToast } from '../../../src/components/Toast';
 import PhotoGallery from '../../../src/components/PhotoGallery';
 import MemberDirectory from '../../../src/components/MemberDirectory';
 import CommentsModal from '../../../src/components/CommentsModal';
+import { downloadIcs } from '../../../src/lib/calendar';
 
 // Category-specific gallery photos (generated unique images)
 const IMG = '/portal/images/communities';
@@ -70,8 +71,8 @@ function getGalleryType(tags) {
 export default function CommunityProfile() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { communities, user, joinCommunity, leaveCommunity, events, isLoading, users, communityMemberships, eventRsvps, uploadImage, experiences } = useAppContext();
-    const { feedPosts, createFeedPost, likeFeedPost } = useFeed();
+  const { user, communities, events, communityMemberships, users, eventRsvps } = useAppContext();
+  const { feedPosts, createFeedPost, likeFeedPost, deleteFeedPost } = useFeed();
   const { toast } = useToast();
   const [showRules, setShowRules] = useState(false);
   const [activeTab, setActiveTab] = useState('feed');
@@ -319,11 +320,23 @@ export default function CommunityProfile() {
                   <div key={post.id} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', overflow: 'hidden' }}>
                     <div style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
                       <img src={author?.avatar || 'https://i.pravatar.cc/40'} alt={author?.name} style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
-                      <div>
+                      <div style={{ flex: 1 }}>
                         <div style={{ fontWeight: 600, color: 'white', fontSize: '0.95rem' }}>{author?.name || 'Community Leader'}</div>
                         <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>
                           {new Date(post.createdAt || post.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                         </div>
+                      </div>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        {(isLeader || post.authorId === user?.id) && (
+                          <button onClick={() => deleteFeedPost(post.id)} className="interactive-press" style={{ background: 'none', border: 'none', color: 'var(--rose-400)', cursor: 'pointer', padding: '4px' }}>
+                            <Trash2 size={16} />
+                          </button>
+                        )}
+                        {post.authorId !== user?.id && (
+                          <button onClick={() => toast.success('Report submitted', 'Thank you for keeping the community safe.')} className="interactive-press" style={{ background: 'none', border: 'none', color: 'var(--slate-400)', cursor: 'pointer', padding: '4px' }}>
+                            <Flag size={16} />
+                          </button>
+                        )}
                       </div>
                     </div>
                     
@@ -415,6 +428,12 @@ export default function CommunityProfile() {
                     </div>
                     <div style={{ fontWeight: 700, fontSize: '1.1rem', color: 'white', marginBottom: '4px' }}>{nextEvent.title}</div>
                     <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)', display: 'flex', alignItems: 'center', gap: '4px' }}><MapPin size={14} /> {nextEvent.location}</div>
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); downloadIcs(nextEvent, community.name); }} 
+                      className="btn btn-outline interactive-press" 
+                      style={{ marginTop: '12px', width: '100%', padding: '10px', borderRadius: '10px', fontSize: '0.85rem', display: 'flex', gap: '6px', justifyContent: 'center' }}>
+                      <Calendar size={14} /> Add to Calendar
+                    </button>
                   </div>
                 </div>
               </div>
@@ -572,6 +591,12 @@ export default function CommunityProfile() {
                             {rsvps.length} going
                           </div>
                         )}
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); downloadIcs(event, community.name); }} 
+                          className="btn btn-outline interactive-press" 
+                          style={{ marginTop: '12px', width: '100%', padding: '10px', borderRadius: '10px', fontSize: '0.85rem', display: 'flex', gap: '6px', justifyContent: 'center' }}>
+                          <Calendar size={14} /> Add to Calendar
+                        </button>
                       </div>
                     </div>
                   );

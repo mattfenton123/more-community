@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { X, Send } from 'lucide-react';
+import { X, Send, Trash2, Flag, Image as ImageIcon } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import { useAppContext } from '../context/AppContext';
+import { useFeed } from '../context/FeedContext';
 
 export default function CommentsModal({ isOpen, onClose, post }) {
-  const { users, createFeedComment } = useAppContext();
+  const { users, user, communities, createFeedComment, uploadImage } = useAppContext();
+  const { deleteComment } = useFeed();
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
+  const [newCommentImage, setNewCommentImage] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -49,12 +52,17 @@ export default function CommentsModal({ isOpen, onClose, post }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!newComment.trim() || isSubmitting) return;
+    if ((!newComment.trim() && !newCommentImage) || isSubmitting) return;
     
     setIsSubmitting(true);
     try {
-      await createFeedComment(post.id, newComment, post.communityId);
+      let mediaUrl = null;
+      if (newCommentImage) {
+        mediaUrl = await uploadImage(newCommentImage, 'comments');
+      }
+      await createFeedComment(post.id, newComment, post.communityId, mediaUrl);
       setNewComment('');
+      setNewCommentImage(null);
     } catch (err) {
       console.error(err);
     } finally {
@@ -131,6 +139,23 @@ export default function CommentsModal({ isOpen, onClose, post }) {
                     <div style={{ color: 'var(--slate-300)', fontSize: '0.95rem', marginTop: '4px', lineHeight: '1.4' }}>
                       {comment.text}
                     </div>
+                    {comment.media_url && (
+                      <div style={{ marginTop: '8px', borderRadius: '12px', overflow: 'hidden' }}>
+                        <img src={comment.media_url} alt="Comment media" style={{ width: '100%', maxHeight: '200px', objectFit: 'cover' }} />
+                      </div>
+                    )}
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    {(post.communityId && communities.find(c => c.id === post.communityId)?.leaderId === user?.id || comment.author_id === user?.id) && (
+                      <button onClick={() => deleteComment(comment.id, post.id)} className="interactive-press" style={{ background: 'none', border: 'none', color: 'var(--rose-400)', cursor: 'pointer', padding: '4px' }}>
+                        <Trash2 size={14} />
+                      </button>
+                    )}
+                    {comment.author_id !== user?.id && (
+                      <button onClick={() => {}} className="interactive-press" style={{ background: 'none', border: 'none', color: 'var(--slate-400)', cursor: 'pointer', padding: '4px' }}>
+                        <Flag size={14} />
+                      </button>
+                    )}
                   </div>
                 </div>
               );
@@ -139,6 +164,14 @@ export default function CommentsModal({ isOpen, onClose, post }) {
         </div>
 
         {/* Input Area */}
+        {newCommentImage && (
+          <div style={{ padding: '8px 20px', background: 'rgba(255,255,255,0.02)' }}>
+            <div style={{ position: 'relative', display: 'inline-block' }}>
+              <img src={URL.createObjectURL(newCommentImage)} alt="Preview" style={{ height: '60px', borderRadius: '8px', objectFit: 'cover' }} />
+              <button onClick={() => setNewCommentImage(null)} style={{ position: 'absolute', top: '-8px', right: '-8px', background: 'var(--slate-800)', border: 'none', color: 'white', width: '20px', height: '20px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
+            </div>
+          </div>
+        )}
         <form onSubmit={handleSubmit} style={{
           padding: '16px 20px',
           borderTop: '1px solid rgba(255,255,255,0.1)',
@@ -146,6 +179,21 @@ export default function CommentsModal({ isOpen, onClose, post }) {
           display: 'flex',
           gap: '12px'
         }}>
+          <label style={{
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '44px',
+            height: '44px',
+            borderRadius: '50%',
+            background: 'rgba(255,255,255,0.05)',
+            color: 'var(--slate-400)',
+            flexShrink: 0
+          }}>
+            <input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => setNewCommentImage(e.target.files[0])} />
+            <ImageIcon size={20} />
+          </label>
           <input
             type="text"
             value={newComment}
@@ -164,23 +212,23 @@ export default function CommentsModal({ isOpen, onClose, post }) {
           />
           <button 
             type="submit" 
-            disabled={!newComment.trim() || isSubmitting}
+            disabled={(!newComment.trim() && !newCommentImage) || isSubmitting}
             className="interactive-press"
             style={{
               width: '44px',
               height: '44px',
               borderRadius: '50%',
-              background: newComment.trim() ? 'var(--teal-500)' : 'rgba(255,255,255,0.1)',
+              background: (newComment.trim() || newCommentImage) ? 'var(--teal-500)' : 'rgba(255,255,255,0.1)',
               border: 'none',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: newComment.trim() ? 'white' : 'var(--slate-400)',
-              cursor: newComment.trim() ? 'pointer' : 'default',
+              color: (newComment.trim() || newCommentImage) ? 'white' : 'var(--slate-400)',
+              cursor: (newComment.trim() || newCommentImage) ? 'pointer' : 'default',
               transition: 'all 0.2s'
             }}
           >
-            <Send size={18} style={{ marginLeft: '2px' }} />
+            {isSubmitting ? <div className="spinner" style={{ width: '16px', height: '16px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: 'white', borderRadius: '50%', animation: 'spin 1s linear infinite' }} /> : <Send size={18} style={{ marginLeft: '2px' }} />}
           </button>
         </form>
       </div>

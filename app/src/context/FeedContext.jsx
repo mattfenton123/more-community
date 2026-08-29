@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { useAuth } from './AuthContext';
 import { useAppContext } from './AppContext';
-import { createFeedPostAction, toggleFeedPostLikeAction, createFeedPostCommentAction } from '../lib/actions';
+import { createFeedPostAction, toggleFeedPostLikeAction, createFeedPostCommentAction, deleteFeedPostAction, deleteCommentAction } from '../lib/actions';
 
 const FeedContext = createContext({});
 
@@ -131,12 +131,36 @@ export function FeedProvider({ children }) {
     }
   };
 
-  const createFeedComment = async (postId, text, communityId) => {
-    if (!user.id || !text.trim()) return;
+  const createFeedComment = async (postId, text, communityId, mediaUrl = null) => {
+    if (!user.id || (!text.trim() && !mediaUrl)) return;
     try {
       const { session } = await supabase.auth.getSession();
-      await createFeedPostCommentAction(postId, communityId, user.id, text, session?.access_token);
+      await createFeedPostCommentAction(postId, communityId, user.id, text, mediaUrl, session?.access_token);
       setFeedPosts(prev => prev.map(p => p.id === postId ? { ...p, comments: (p.comments || 0) + 1 } : p));
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  };
+
+  const deleteFeedPost = async (postId) => {
+    if (!user.id) return;
+    try {
+      const { session } = await supabase.auth.getSession();
+      await deleteFeedPostAction(postId, session?.access_token);
+      setFeedPosts(prev => prev.filter(p => p.id !== postId));
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  };
+
+  const deleteComment = async (commentId, postId) => {
+    if (!user.id) return;
+    try {
+      const { session } = await supabase.auth.getSession();
+      await deleteCommentAction(commentId, postId, session?.access_token);
+      setFeedPosts(prev => prev.map(p => p.id === postId ? { ...p, comments: Math.max(0, (p.comments || 0) - 1) } : p));
     } catch (err) {
       console.error(err);
       throw err;
@@ -146,7 +170,7 @@ export function FeedProvider({ children }) {
   return (
     <FeedContext.Provider value={{
       feedPosts, isFeedLoading,
-      createFeedPost, likeFeedPost, createFeedComment
+      createFeedPost, likeFeedPost, createFeedComment, deleteFeedPost, deleteComment
     }}>
       {children}
     </FeedContext.Provider>

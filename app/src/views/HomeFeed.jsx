@@ -1,16 +1,30 @@
 "use client";
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useRouter as useNavigate } from 'next/navigation';
 import { useAppContext } from '../context/AppContext';
 import { useFeed } from '../context/FeedContext';
-import { Heart, MessageCircle, Share2, Calendar, MapPin, Clock, Compass } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Calendar, MapPin, Clock, Compass, Trash2, Flag } from 'lucide-react';
 import AppHeader from '../components/AppHeader';
 import { SkeletonList, SkeletonCard } from '../components/SkeletonCard';
 
 export default function HomeFeed() {
-  const { user, communities, events, users, eventRsvps, isLoading } = useAppContext();
-    const { feedPosts, likeFeedPost } = useFeed();
+  const { user, communities, events, users, eventRsvps, isLoading, subscribeToPushNotifications } = useAppContext();
+  const { feedPosts, likeFeedPost, deleteFeedPost } = useFeed();
   const navigate = useNavigate();
+  const [showPushPrompt, setShowPushPrompt] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      if (Notification.permission === 'default') {
+        setShowPushPrompt(true);
+      }
+    }
+  }, []);
+
+  const handleEnablePush = async () => {
+    const success = await subscribeToPushNotifications();
+    if (success) setShowPushPrompt(false);
+  };
 
   const joinedCommunities = communities.filter(c => user.joinedCommunities?.includes(c.id));
 
@@ -55,6 +69,19 @@ export default function HomeFeed() {
       {/* Header */}
       <AppHeader title="Home" />
 
+      {/* Push Notification Banner */}
+      {showPushPrompt && (
+        <div style={{ margin: '16px 20px', padding: '16px', background: 'rgba(20,184,166,0.1)', border: '1px solid var(--teal-500)', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <div style={{ fontWeight: 600, color: 'white', fontSize: '0.9rem' }}>Enable Notifications</div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--teal-200)', marginTop: '2px' }}>Get alerts for DMs and replies.</div>
+          </div>
+          <button onClick={handleEnablePush} className="btn btn-primary" style={{ padding: '8px 16px', fontSize: '0.8rem', borderRadius: '8px' }}>
+            Enable
+          </button>
+        </div>
+      )}
+
       {/* Stories Carousel */}
       <div style={{ padding: '16px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
         <div style={{ display: 'flex', overflowX: 'auto', gap: '16px', padding: '0 20px', WebkitOverflowScrolling: 'touch' }}>
@@ -92,11 +119,23 @@ export default function HomeFeed() {
               <div key={item.id} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', overflow: 'hidden' }}>
                 <div style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <img src={community?.image || community?.cover_image} alt={community?.name} loading="lazy" style={{ width: '40px', height: '40px', borderRadius: '8px', objectFit: 'cover', cursor: 'pointer' }} onClick={() => navigate.back()} />
-                  <div>
+                  <div style={{ flex: 1 }}>
                     <div style={{ fontWeight: 600, color: 'white', fontSize: '0.95rem', cursor: 'pointer' }} onClick={() => navigate.back()}>{community?.name}</div>
                     <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>
                       Posted by {author?.name || 'Community Leader'} • {new Date(post.timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                     </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    {(community?.leaderId === user?.id || post.authorId === user?.id) && (
+                      <button onClick={() => deleteFeedPost(post.id)} className="interactive-press" style={{ background: 'none', border: 'none', color: 'var(--rose-400)', cursor: 'pointer', padding: '4px' }}>
+                        <Trash2 size={16} />
+                      </button>
+                    )}
+                    {post.authorId !== user?.id && (
+                      <button onClick={() => {}} className="interactive-press" style={{ background: 'none', border: 'none', color: 'var(--slate-400)', cursor: 'pointer', padding: '4px' }}>
+                        <Flag size={16} />
+                      </button>
+                    )}
                   </div>
                 </div>
                 
