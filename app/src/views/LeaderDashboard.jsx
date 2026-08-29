@@ -548,7 +548,7 @@ export default function LeaderDashboard() {
   // RENDER
   // ═══════════════════════════════════════════════════════════
   return (
-    <div className="view-dashboard" style={{ position: 'relative', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div className="view-dashboard" style={{ position: 'relative', minHeight: '100vh', display: 'flex', flexDirection: 'column', paddingBottom: '80px' }}>
       {!community ? (
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px', color: 'white', textAlign: 'center' }}>
           <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem', marginBottom: '16px' }}>Lead a Community</h2>

@@ -102,6 +102,8 @@ export default function EventFlyerGenerator({ event, community, onClose, uploadI
   const [bgSource, setBgSource] = useState('event');
   const [isUploading, setIsUploading] = useState(false);
   const [exportStatus, setExportStatus] = useState(null);
+  const [titleColor, setTitleColor] = useState('#ffffff');
+  const [titleSizeMultiplier, setTitleSizeMultiplier] = useState(1);
   const [activePanel, setActivePanel] = useState('template');
   const [showFontDropdown, setShowFontDropdown] = useState(false);
 
@@ -203,9 +205,10 @@ export default function EventFlyerGenerator({ event, community, onClose, uploadI
       ctx.fillText(subtitleText.toUpperCase(), 108, template === 'photo' ? 750 : 420);
 
       // Title
-      const titleFontSize = template === 'bold' ? 86 : template === 'minimal' ? 76 : 72;
+      const baseTitleFontSize = template === 'bold' ? 86 : template === 'minimal' ? 76 : 72;
+      const titleFontSize = baseTitleFontSize * titleSizeMultiplier;
       ctx.font = `${tmpl.titleWeight} ${titleFontSize}px "${font}", sans-serif`;
-      ctx.fillStyle = 'white';
+      ctx.fillStyle = titleColor;
       ctx.textAlign = 'left';
       
       // Word-wrap title
@@ -497,8 +500,8 @@ export default function EventFlyerGenerator({ event, community, onClose, uploadI
 
               {/* Title */}
               <h1 style={{
-                fontFamily: `"${font}", sans-serif`, fontSize: tmpl.titleSize,
-                fontWeight: tmpl.titleWeight, color: 'white', margin: '0 0 16px 0',
+                fontFamily: `"${font}", sans-serif`, fontSize: `calc(${tmpl.titleSize} * ${titleSizeMultiplier})`,
+                fontWeight: tmpl.titleWeight, color: titleColor, margin: '0 0 16px 0',
                 lineHeight: 1.1, wordBreak: 'break-word',
                 textShadow: template === 'photo' ? '0 2px 20px rgba(0,0,0,0.5)' : 'none',
               }}>
@@ -634,6 +637,27 @@ export default function EventFlyerGenerator({ event, community, onClose, uploadI
                   ))}
                 </div>
               )}
+              
+              <div style={{ marginTop: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div>
+                  <label style={{ fontSize: '0.75rem', color: 'var(--slate-400)', fontWeight: 600, display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                    <span>Title Font Size</span>
+                    <span>{Math.round(titleSizeMultiplier * 100)}%</span>
+                  </label>
+                  <input type="range" min="0.5" max="1.5" step="0.05" value={titleSizeMultiplier}
+                    onChange={(e) => setTitleSizeMultiplier(parseFloat(e.target.value))}
+                    style={{ width: '100%', accentColor: 'var(--teal-400)', cursor: 'pointer' }} />
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <label style={{ fontSize: '0.75rem', color: 'var(--slate-400)', fontWeight: 600 }}>Title Colour</label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.05)', padding: '4px 8px', borderRadius: '8px' }}>
+                    <input type="color" value={titleColor}
+                      onChange={(e) => setTitleColor(e.target.value)}
+                      style={{ width: '28px', height: '28px', padding: 0, border: 'none', borderRadius: '6px', cursor: 'pointer', background: 'transparent' }} />
+                    <span style={{ fontSize: '0.75rem', color: 'var(--slate-300)', fontFamily: 'monospace' }}>{titleColor.toUpperCase()}</span>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 
