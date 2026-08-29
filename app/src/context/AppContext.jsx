@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { supabase } from '../lib/supabaseClient';
 import { useAuth } from './AuthContext';
 import { initialExperiences } from '../lib/constants';
-import { createEventAction, joinCommunityAction, leaveCommunityAction, rsvpToEventAction } from '../lib/actions';
+import { createEventAction, joinCommunityAction, leaveCommunityAction, rsvpToEventAction, createCommunityAction, uploadImageAction } from '../lib/actions';
 
 const AppContext = createContext();
 
@@ -810,47 +810,15 @@ export function AppProvider({ children }) {
     }));
 
     try {
-      // Create the community
-      const { error: commError } = await supabase.from('communities').insert([{
+      // Create the community using Server Action
+      await createCommunityAction({
         id: newId,
         name: communityData.name,
         description: communityData.description,
         tags: communityData.tags || [],
         cover_image: communityData.image || null,
-        verified: communityData.verified || false,
-        instagram_handle: communityData.instagram_handle || null,
-        whatsapp_group: communityData.whatsapp_group || null,
-        activity_level: communityData.activity_level || 'Active',
-        cost: communityData.cost || 'Free'
-      }]);
-      
-      if (commError) {
-        // If it's a schema error (column does not exist), fallback to base columns
-        if (commError.message && commError.message.includes('column')) {
-          console.warn('Schema mismatch, falling back to base columns...');
-          try {
-            const { error: fallbackError } = await supabase.from('communities').insert([{
-              id: newId,
-              name: communityData.name,
-              description: communityData.description
-            }]);
-            if (fallbackError) throw fallbackError;
-          } catch (superFallbackError) {
-            console.error('Super fallback also failed:', superFallbackError);
-            throw superFallbackError;
-          }
-        } else {
-          throw commError;
-        }
-      }
-
-      // Automatically join as Leader
-      const { error: memError } = await supabase.from('community_memberships').insert([{
-        community_id: newId,
-        user_id: user.id,
-        role: 'Leader'
-      }]);
-      if (memError) throw memError;
+        creatorId: user.id
+      }, session?.access_token);
       
       return newId;
     } catch (err) {
@@ -903,26 +871,12 @@ export function AppProvider({ children }) {
 
   const uploadImage = async (file) => {
     try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('userId', user.id);
       
-      const { data, error } = await supabase.storage
-        .from('uploads')
-        .upload(fileName, file, {
-          cacheControl: '3600',
-          upsert: false
-        });
-
-      if (error) {
-        console.error('Supabase upload error:', error);
-        throw error;
-      }
-      
-      const { data: publicData } = supabase.storage
-        .from('uploads')
-        .getPublicUrl(fileName);
-        
-      return publicData.publicUrl;
+      const publicUrl = await uploadImageAction(formData, session?.access_token);
+      return publicUrl;
     } catch (err) {
       console.error('Error in uploadImage:', err);
       throw err;

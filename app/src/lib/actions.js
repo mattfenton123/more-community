@@ -31,6 +31,47 @@ export async function sendMessageAction(messageData, token) {
   }).select().single();
   
   if (error) throw new Error(error.message);
+  
+  // --- WhatsApp Broadcast (Outbound Sync) ---
+  try {
+    // 1. Fetch community details to check for linked WhatsApp group
+    // In a real app, you would query the `whatsapp_group_id` from the community settings
+    // const { data: community } = await supabaseAdmin.from('communities').select('whatsapp_group_id').eq('id', messageData.communityId).single();
+    
+    // For MVP, simulate that 'yentw' community has a linked WhatsApp group
+    if (messageData.communityId === 'yentw' && process.env.WHATSAPP_ACCESS_TOKEN) {
+      const WHATSAPP_PHONE_NUMBER_ID = process.env.WHATSAPP_PHONE_NUMBER_ID;
+      const WHATSAPP_ACCESS_TOKEN = process.env.WHATSAPP_ACCESS_TOKEN;
+      const targetGroupId = 'MOCK_WHATSAPP_GROUP_ID'; // Replace with community.whatsapp_group_id
+
+      // 2. Fetch the sender's name to attribute the message
+      const { data: user } = await supabaseAdmin.from('users').select('name').eq('id', messageData.authorId).single();
+      const senderName = user?.name || 'A member';
+      
+      const whatsappPayload = {
+        messaging_product: "whatsapp",
+        recipient_type: "individual", // Changed to individual for standard Cloud API compatibility in MVP, would be group with Twilio or specialized Meta access
+        to: targetGroupId,
+        type: "text",
+        text: { 
+          body: `*${senderName}* (via more. app):\n${messageData.text}` 
+        }
+      };
+
+      // 3. Fire-and-forget the broadcast
+      fetch(`https://graph.facebook.com/v17.0/${WHATSAPP_PHONE_NUMBER_ID}/messages`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${WHATSAPP_ACCESS_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(whatsappPayload)
+      }).catch(err => console.error('Failed to broadcast to WhatsApp:', err));
+    }
+  } catch (err) {
+    console.error('Error in WhatsApp broadcast logic:', err);
+  }
+
   return data;
 }
 
@@ -84,14 +125,11 @@ export async function createEventAction(eventData, token) {
     ...(eventData.id && { id: eventData.id }),
     community_id: eventData.communityId,
     title: eventData.title,
-    description: eventData.description || '',
     date: eventData.date,
     time: eventData.time,
     location: eventData.location,
     image: eventData.image,
-    attendees: eventData.attendees || 0,
-    status: eventData.status || 'published',
-    max_capacity: eventData.maxCapacity || null
+    attendees: eventData.attendees || 0
   }).select().single();
 
   if (error) throw new Error(error.message);
@@ -129,4 +167,35 @@ export async function rsvpToEventAction(userId, eventId, status, ticketType, tok
     if (error) throw new Error(error.message);
   }
   return true;
+}
+
+export async function uploadImageAction(formData, token) {
+  await verifyUser(token);
+  
+  const file = formData.get('file');
+  const userId = formData.get('userId');
+  
+  if (!file) throw new Error("No file provided");
+  
+  const fileExt = file.name.split('.').pop();
+  const fileName = `${userId}/${Date.now()}.${fileExt}`;
+  
+  const arrayBuffer = await file.arrayBuffer();
+  const buffer = Buffer.from(arrayBuffer);
+  
+  const { data, error } = await supabaseAdmin.storage
+    .from('uploads')
+    .upload(fileName, buffer, {
+      contentType: file.type,
+      cacheControl: '3600',
+      upsert: false
+    });
+    
+  if (error) throw new Error(error.message);
+  
+  const { data: publicData } = supabaseAdmin.storage
+    .from('uploads')
+    .getPublicUrl(fileName);
+    
+  return publicData.publicUrl;
 }

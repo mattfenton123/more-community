@@ -11,11 +11,11 @@ const INTEREST_PILLS = [
   '🎓 Learning', '🎮 Gaming'
 ];
 
-// Background images for each step
-const STEP_IMAGES = [
-  'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=600&q=60', // people group
-  'https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=600&q=60', // festival/activities
-  'https://images.unsplash.com/photo-1528605248644-14dd04022da1?w=600&q=60', // community gathering
+// Background videos for each step
+const STEP_VIDEOS = [
+  'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4', // TODO: Replace with your actual community video 1
+  'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4', // TODO: Replace with your actual community video 2
+  'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4', // TODO: Replace with your actual community video 3
 ];
 
 export default function OnboardingFlow({ onComplete }) {
@@ -84,9 +84,9 @@ export default function OnboardingFlow({ onComplete }) {
   const steps = [
     // Step 0: Name, Bio & Avatar
     <div key="name" className="page-wrapper" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-      {/* Hero image strip */}
+      {/* Hero video strip */}
       <div style={{ borderRadius: '16px', overflow: 'hidden', height: '120px', marginBottom: '8px', position: 'relative' }}>
-        <img src={STEP_IMAGES[0]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        <video src={STEP_VIDEOS[0]} autoPlay loop muted playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent, rgba(2,6,23,0.8))' }}></div>
         <div style={{ position: 'absolute', bottom: '12px', left: '16px', fontSize: '0.8rem', color: 'var(--teal-300)', fontWeight: 600 }}>Join your local community 🤝</div>
       </div>
@@ -163,9 +163,9 @@ export default function OnboardingFlow({ onComplete }) {
 
     // Step 1: Interests
     <div key="interests" className="page-wrapper" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-      {/* Hero image strip */}
+      {/* Hero video strip */}
       <div style={{ borderRadius: '16px', overflow: 'hidden', height: '120px', marginBottom: '8px', position: 'relative' }}>
-        <img src={STEP_IMAGES[1]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        <video src={STEP_VIDEOS[1]} autoPlay loop muted playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent, rgba(2,6,23,0.8))' }}></div>
         <div style={{ position: 'absolute', bottom: '12px', left: '16px', fontSize: '0.8rem', color: 'var(--teal-300)', fontWeight: 600 }}>We'll match you to the right groups ✨</div>
       </div>
@@ -209,9 +209,9 @@ export default function OnboardingFlow({ onComplete }) {
 
     // Step 2: Welcome
     <div key="welcome" className="page-wrapper" style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px' }}>
-      {/* Hero image strip */}
+      {/* Hero video strip */}
       <div style={{ borderRadius: '16px', overflow: 'hidden', height: '160px', width: '100%', position: 'relative' }}>
-        <img src={STEP_IMAGES[2]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        <video src={STEP_VIDEOS[2]} autoPlay loop muted playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent, rgba(2,6,23,0.8))' }}></div>
       </div>
 
