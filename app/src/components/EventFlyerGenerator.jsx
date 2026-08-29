@@ -502,7 +502,7 @@ export default function EventFlyerGenerator({ event, community, onClose, uploadI
               <h1 style={{
                 fontFamily: `"${font}", sans-serif`, fontSize: `calc(${tmpl.titleSize} * ${titleSizeMultiplier})`,
                 fontWeight: tmpl.titleWeight, color: titleColor, margin: '0 0 16px 0',
-                lineHeight: 1.1, wordBreak: 'break-word',
+                lineHeight: 1.1,
                 textShadow: template === 'photo' ? '0 2px 20px rgba(0,0,0,0.5)' : 'none',
               }}>
                 {titleText}
