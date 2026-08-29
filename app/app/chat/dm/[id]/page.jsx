@@ -22,7 +22,7 @@ export default function DirectMessage() {
   const activeMessages = directMessages.filter(m =>
     (m.senderId === user?.id && m.receiverId === targetUserId) ||
     (m.senderId === targetUserId && m.receiverId === user?.id)
-  ).sort((a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0));
+  ).sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0));
 
   useEffect(() => {
     if (targetUserId) markChatRead(null, targetUserId);
@@ -103,7 +103,7 @@ export default function DirectMessage() {
                 {msg.image && <img src={msg.image} alt="" style={{ maxWidth: '100%', borderRadius: '8px', marginBottom: msg.text ? '8px' : 0 }} />}
                 {msg.text && <div style={{ color: 'white', fontSize: '0.9rem', lineHeight: 1.5, wordBreak: 'break-word' }}>{msg.text}</div>}
                 <div style={{ fontSize: '0.65rem', color: 'var(--slate-600)', marginTop: '4px', textAlign: isOwn ? 'right' : 'left' }}>
-                  {msg.created_at ? new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : (msg.timestamp ? (String(msg.timestamp).includes('T') ? new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : msg.timestamp) : '')}
+                  {msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
                 </div>
               </div>
             </div>

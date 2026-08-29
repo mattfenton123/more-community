@@ -142,7 +142,7 @@ export default function Chat() {
               if (item.type === 'dm') {
                 const latestDm = directMessages.filter(m => (m.senderId === item.id && m.receiverId === user.id) || (m.senderId === user.id && m.receiverId === item.id)).pop();
                 const dmReceipt = chatReadReceipts.find(r => !r.community_id && r.channel_id === item.id);
-                const hasUnread = latestDm && latestDm.senderId !== user.id && (!dmReceipt || new Date(dmReceipt.last_read_at) < new Date(latestDm.created_at || new Date().toISOString()));
+                const hasUnread = latestDm && latestDm.senderId !== user.id && (!dmReceipt || new Date(dmReceipt.last_read_at) < new Date(latestDm.createdAt || new Date().toISOString()));
                 
                 return (
                   <div 
@@ -175,7 +175,7 @@ export default function Chat() {
               // Normal community channel
               const latestMsg = messages.filter(m => m.communityId === item.comm.id && m.channel === item.id).pop();
               const commReceipt = chatReadReceipts.find(r => r.community_id === item.comm.id && r.channel_id === item.id);
-              const hasUnread = latestMsg && latestMsg.authorId !== user.id && (!commReceipt || new Date(commReceipt.last_read_at) < new Date(latestMsg.created_at || new Date().toISOString()));
+              const hasUnread = latestMsg && latestMsg.authorId !== user.id && (!commReceipt || new Date(commReceipt.last_read_at) < new Date(latestMsg.createdAt || new Date().toISOString()));
 
               return (
                 <div 
@@ -373,13 +373,13 @@ export default function Chat() {
               const isLastConsecutive = nextAuthorId !== currentAuthorId;
 
               // Date separator (very basic logic for prototype)
-              const showDate = index === 0 || (prevMsg && new Date(msg.created_at || new Date()).getDate() !== new Date(prevMsg.created_at || new Date()).getDate());
+              const showDate = index === 0 || (prevMsg && new Date(msg.createdAt || new Date()).getDate() !== new Date(prevMsg.createdAt || new Date()).getDate());
 
               return (
-                <div key={msg.id} style={{ display: 'flex', flexDirection: 'column' }}>
+                <div key={msg.id || index} style={{ display: 'flex', flexDirection: 'column' }}>
                   {showDate && (
                     <div style={{ textAlign: 'center', margin: '24px 0 16px 0', fontSize: '0.75rem', color: 'var(--slate-500)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px' }}>
-                      {msg.timestamp ? msg.timestamp.split(' ')[0] + ' Today' : 'Today'}
+                      {msg.createdAt ? new Date(msg.createdAt).toLocaleDateString() : 'Today'}
                     </div>
                   )}
                   <div className="stagger-item" style={{ alignSelf: isMe ? 'flex-end' : 'flex-start', maxWidth: '85%', marginTop: isConsecutive ? '4px' : '16px' }}>
@@ -409,7 +409,7 @@ export default function Chat() {
                       {msg.image && <img src={msg.image} alt="Attachment" style={{ width: '100%', borderRadius: '8px', maxHeight: '250px', objectFit: 'cover' }} />}
                       {msg.text && <div>{msg.text}</div>}
                       <div style={{ fontSize: '0.65rem', alignSelf: 'flex-end', opacity: 0.7, marginTop: '2px' }}>
-                        {msg.created_at ? new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : (msg.timestamp ? (String(msg.timestamp).includes('T') ? new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : msg.timestamp) : '')}
+                        {msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : (msg.timestamp ? (String(msg.timestamp).includes('T') ? new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : msg.timestamp) : '')}
                       </div>
                       {waConfig?.businessConnected && !isDirectMessage && isLastConsecutive && (
                         <div style={{ position: 'absolute', bottom: '-20px', right: isMe ? '0' : 'auto', left: isMe ? 'auto' : '0', color: 'var(--slate-500)', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.65rem' }}>

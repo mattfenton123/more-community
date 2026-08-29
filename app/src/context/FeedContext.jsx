@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { useAuth } from './AuthContext';
 import { useAppContext } from './AppContext';
-import { createFeedPostAction, toggleFeedPostLikeAction, createFeedPostCommentAction, deleteFeedPostAction, deleteCommentAction } from '../lib/actions';
+import { createFeedPostAction, toggleFeedPostLikeAction, createFeedPostCommentAction, deleteFeedPostAction, deleteCommentAction, getUserLikesAction } from '../lib/actions';
 
 const FeedContext = createContext({});
 
@@ -24,13 +24,13 @@ export function FeedProvider({ children }) {
         let userLikes = [];
         if (user?.id && data?.length) {
           const postIds = data.map(p => p.id);
-          const { data: likesData } = await supabase
-            .from('message_reactions')
-            .select('message_id')
-            .eq('user_id', user.id)
-            .eq('reaction', 'like')
-            .in('message_id', postIds);
-          if (likesData) userLikes = likesData.map(l => l.message_id);
+          try {
+            const { session } = await supabase.auth.getSession();
+            const likesData = await getUserLikesAction(postIds, user.id, session?.access_token);
+            if (likesData) userLikes = likesData.map(l => l.message_id);
+          } catch (e) {
+            console.error("Failed to load likes", e);
+          }
         }
 
         if (data) {

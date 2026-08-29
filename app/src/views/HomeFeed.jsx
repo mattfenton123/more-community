@@ -118,7 +118,7 @@ export default function HomeFeed() {
             return (
               <div key={item.id} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', overflow: 'hidden' }}>
                 <div style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <img src={community?.image || community?.cover_image} alt={community?.name} loading="lazy" style={{ width: '40px', height: '40px', borderRadius: '8px', objectFit: 'cover', cursor: 'pointer' }} onClick={() => navigate.back()} />
+                  <img src={community?.image || community?.cover_image || `https://ui-avatars.com/api/?name=${encodeURIComponent(community?.name || 'C')}&background=0D8B93&color=fff`} alt={community?.name} loading="lazy" style={{ width: '40px', height: '40px', borderRadius: '8px', objectFit: 'cover', cursor: 'pointer' }} onClick={() => navigate.back()} />
                   <div style={{ flex: 1 }}>
                     <div style={{ fontWeight: 600, color: 'white', fontSize: '0.95rem', cursor: 'pointer' }} onClick={() => navigate.back()}>{community?.name}</div>
                     <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>

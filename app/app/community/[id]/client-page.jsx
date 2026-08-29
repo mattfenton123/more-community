@@ -1,5 +1,5 @@
 "use client";
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { ChevronLeft, Share2, Users, Calendar, Settings, ChevronDown, ChevronUp, Image as ImageIcon, ExternalLink, Camera, Mail, Activity, Sparkles, MapPin, Clock, Star, MessageCircle, Heart, BadgeCheck, Globe, Trash2, Flag } from 'lucide-react';
 import { useRouter as useNavigate, useParams } from 'next/navigation';
 import { useAppContext } from '../../../src/context/AppContext';
@@ -71,7 +71,7 @@ function getGalleryType(tags) {
 export default function CommunityProfile() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user, communities, events, communityMemberships, users, eventRsvps } = useAppContext();
+  const { user, communities, events, communityMemberships, users, eventRsvps, uploadImage, joinCommunity, leaveCommunity } = useAppContext();
   const { feedPosts, createFeedPost, likeFeedPost, deleteFeedPost } = useFeed();
   const { toast } = useToast();
   const [showRules, setShowRules] = useState(false);
@@ -79,19 +79,12 @@ export default function CommunityProfile() {
   const [selectedPostForComments, setSelectedPostForComments] = useState(null);
   const [newPostText, setNewPostText] = useState('');
   const [newPostImage, setNewPostImage] = useState(null);
+  const [localPhotos, setLocalPhotos] = useState([]);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const fileInputRef = useRef(null);
   
   const communityId = id || (user.joinedCommunities.length > 0 ? user.joinedCommunities[0] : 'tw-tech-meetup');
   const community = communities.find(c => c.id === communityId);
-
-  if (!community && !isLoading) {
-    return (
-      <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'var(--slate-950)' }}>
-        <img src="/images/logo.webp" alt="more." style={{ height: '24px', opacity: 0.5, marginBottom: '24px', cursor: 'pointer' }} onClick={() => navigate.push('/')} />
-        <h2 style={{ color: 'white', fontFamily: 'var(--font-heading)' }}>Community not found</h2>
-        <button onClick={() => navigate.push('/discover')} className="btn btn-outline" style={{ marginTop: '16px' }}>Go Home</button>
-      </div>
-    );
-  }
 
   if (!community) {
     return <div style={{ padding: '40px', color: 'white', textAlign: 'center' }}>Loading...</div>;
@@ -106,7 +99,7 @@ export default function CommunityProfile() {
   const leaderUser = users.find(u => u.id === community.leader_id);
   const memberList = (communityMemberships[communityId] || []).map(m => users.find(u => u.id === m.userId || u.id === m.user_id)).filter(Boolean);
   const galleryType = getGalleryType(community.tags);
-  const galleryPhotos = GALLERY_PHOTOS[galleryType];
+  const galleryPhotos = [...localPhotos, ...GALLERY_PHOTOS[galleryType]];
   const nextEvent = upcomingEvents[0] || communityEvents[0];
   const communityFeed = feedPosts?.filter(p => p.communityId === communityId) || [];
 
@@ -141,13 +134,33 @@ export default function CommunityProfile() {
   };
 
   const handleJoinLeave = async () => {
-    if (isMember) {
-      await leaveCommunity(community.id);
-      toast.info('Left community', `You've left ${community.name}`);
-    } else {
-      await joinCommunity(community.id);
-      toast.success('Welcome!', `You're now a member of ${community.name}`);
+    try {
+      if (isMember) {
+        await leaveCommunity(community.id);
+        toast.info('Left community', `You've left ${community.name}`);
+      } else {
+        await joinCommunity(community.id);
+        toast.success('Welcome!', `You're now a member of ${community.name}`);
+      }
+    } catch (err) {
+      toast.error('Error', err.message);
     }
+  };
+
+  const handleUploadPhoto = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setIsUploadingPhoto(true);
+    try {
+      toast.info('Uploading photo...', 'Please wait');
+      const url = await uploadImage(file);
+      setLocalPhotos(prev => [url, ...prev]);
+      toast.success('Photo added!', 'Your photo is now in the gallery.');
+    } catch (err) {
+      toast.error('Upload failed', 'Could not upload photo');
+    }
+    setIsUploadingPhoto(false);
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   return (
@@ -202,10 +215,10 @@ export default function CommunityProfile() {
           
           {/* Meta strip */}
           <div style={{ display: 'flex', gap: '16px', fontSize: '0.85rem', color: 'var(--slate-300)', marginBottom: '16px', flexWrap: 'wrap' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><MapPin size={14} /> Tunbridge Wells</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><MapPin size={14} /> {community.location_name || 'Tunbridge Wells'}</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Users size={14} /> {community.members || memberList.length || 1} members</span>
             {community.activity_level && (
-              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Activity size={14} color="var(--teal-400)" /> {community.activity_level}</span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Activity size={14} color="var(--teal-400)" /> {community.activity_level === 'Very Active' ? 'Very Active (Weekly)' : community.activity_level === 'Active' ? 'Active (Fortnightly)' : community.activity_level === 'Casual' ? 'Casual (Monthly)' : community.activity_level}</span>
             )}
           </div>
 
@@ -401,7 +414,7 @@ export default function CommunityProfile() {
               <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px', padding: '16px' }}>
                 <div style={{ fontSize: '1.4rem', marginBottom: '4px' }}>📍</div>
                 <div style={{ fontSize: '0.75rem', color: 'var(--teal-400)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>Location</div>
-                <div style={{ fontSize: '0.85rem', color: 'var(--slate-300)', lineHeight: 1.4 }}>Tunbridge Wells, Kent</div>
+                <div style={{ fontSize: '0.85rem', color: 'var(--slate-300)', lineHeight: 1.4 }}>{community.location_name || 'Tunbridge Wells, Kent'}</div>
               </div>
             </div>
 
@@ -618,16 +631,19 @@ export default function CommunityProfile() {
               Photos & Moments
             </h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
-              {galleryPhotos.map((url, idx) => (
+              {[...localPhotos, ...galleryPhotos].map((url, idx) => (
                 <div key={idx} style={{ borderRadius: '12px', overflow: 'hidden', aspectRatio: idx === 0 ? '16/12' : '1/1', gridColumn: idx === 0 ? 'span 2' : 'span 1' }}>
                   <img src={url} alt={`Gallery ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 </div>
               ))}
             </div>
             {isMember && (
-              <button className="btn btn-outline interactive-press" style={{ width: '100%', marginTop: '16px', padding: '14px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                <Camera size={18} /> Upload a Photo
-              </button>
+              <>
+                <input type="file" ref={fileInputRef} accept="image/*" style={{ display: 'none' }} onChange={handleUploadPhoto} />
+                <button onClick={() => !isUploadingPhoto && fileInputRef.current?.click()} disabled={isUploadingPhoto} className="btn btn-outline interactive-press" style={{ width: '100%', marginTop: '16px', padding: '14px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                  <Camera size={18} /> {isUploadingPhoto ? 'Uploading...' : 'Upload a Photo'}
+                </button>
+              </>
             )}
           </>
         )}

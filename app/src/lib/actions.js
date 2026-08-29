@@ -92,7 +92,7 @@ export async function createCommunityAction(communityData, token) {
     name: communityData.name,
     description: communityData.description,
     tags: communityData.tags,
-    image: communityData.cover_image,
+    image: communityData.cover_image || communityData.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(communityData.name)}&background=0D8B93&color=fff&size=512`,
     lat: communityData.lat || null,
     lng: communityData.lng || null,
     target_audience: communityData.target_audience,
@@ -683,3 +683,23 @@ export async function reportMemberAction(reportedUserId, communityId, reason, to
   return true;
 }
 
+export async function getUserLikesAction(postIds, userId, token) {
+  await verifyUser(token, userId);
+  const { data, error } = await supabaseAdmin.from('message_reactions')
+    .select('message_id')
+    .eq('user_id', userId)
+    .in('message_id', postIds)
+    .eq('reaction', 'like');
+  if (error) throw new Error(error.message);
+  return data;
+}
+
+export async function getCommentsAction(postId, token) {
+  // optionally verify user token if required
+  const { data, error } = await supabaseAdmin.from('messages')
+    .select('*')
+    .eq('channel', postId)
+    .order('created_at', { ascending: true });
+  if (error) throw new Error(error.message);
+  return data;
+}

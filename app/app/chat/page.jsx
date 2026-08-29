@@ -30,17 +30,17 @@ export default function ChatIndex() {
       const conversation = directMessages.filter(m =>
         (m.senderId === user.id && m.receiverId === partnerId) ||
         (m.senderId === partnerId && m.receiverId === user.id)
-      ).sort((a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0));
+      ).sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0));
       const lastMessage = conversation[conversation.length - 1];
       
       // Check unread
       const receipt = chatReadReceipts.find(r => !r.community_id && r.channel_id === partnerId);
       const isUnread = lastMessage && lastMessage.senderId !== user.id && 
-        (!receipt || new Date(receipt.last_read_at) < new Date(lastMessage.created_at || new Date().toISOString()));
+        (!receipt || new Date(receipt.last_read_at) < new Date(lastMessage.createdAt || new Date().toISOString()));
 
       dmConversations.push({ partner, lastMessage, isUnread });
     });
-    dmConversations.sort((a, b) => new Date(b.lastMessage?.created_at || 0) - new Date(a.lastMessage?.created_at || 0));
+    dmConversations.sort((a, b) => new Date(b.lastMessage?.createdAt || 0) - new Date(a.lastMessage?.createdAt || 0));
   }
 
   // Users for new DM modal

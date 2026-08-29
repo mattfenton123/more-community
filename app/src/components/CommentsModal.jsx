@@ -3,6 +3,7 @@ import { X, Send, Trash2, Flag, Image as ImageIcon } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import { useAppContext } from '../context/AppContext';
 import { useFeed } from '../context/FeedContext';
+import { getCommentsAction } from '../lib/actions';
 
 export default function CommentsModal({ isOpen, onClose, post }) {
   const { users, user, communities, createFeedComment, uploadImage } = useAppContext();
@@ -20,14 +21,13 @@ export default function CommentsModal({ isOpen, onClose, post }) {
     
     // Fetch initial comments
     const fetchComments = async () => {
-      const { data } = await supabase
-        .from('messages')
-        .select('*')
-        .eq('community_id', 'feed_comments_' + post.communityId)
-        .eq('channel', post.id)
-        .order('created_at', { ascending: true });
-        
-      if (data) setComments(data);
+      try {
+        const { session } = await supabase.auth.getSession();
+        const data = await getCommentsAction(post.id, post.communityId, session?.access_token);
+        if (data) setComments(data);
+      } catch (e) {
+        console.error("Failed to load comments", e);
+      }
       setIsLoading(false);
     };
     

@@ -8,6 +8,7 @@ import { useToast } from '../components/Toast';
 import CommentsModal from '../components/CommentsModal';
 import PhotoGallery from '../components/PhotoGallery';
 import MemberDirectory from '../components/MemberDirectory';
+import { useRef } from 'react';
 
 // Category-specific gallery photos (generated unique images)
 const IMG = '/portal/images/communities';
@@ -77,6 +78,9 @@ export default function CommunityProfile() {
   const [newPostText, setNewPostText] = useState('');
   const [newPostImage, setNewPostImage] = useState(null);
   const [selectedPostForComments, setSelectedPostForComments] = useState(null);
+  const [localPhotos, setLocalPhotos] = useState([]);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const fileInputRef = useRef(null);
   
   const communityId = id || (user.joinedCommunities.length > 0 ? user.joinedCommunities[0] : 'tw-tech-meetup');
   const community = communities.find(c => c.id === communityId);
@@ -144,6 +148,22 @@ export default function CommunityProfile() {
   const handleJoin = async () => {
     await joinCommunity(community.id);
     toast.success('Welcome!', `You're now a member of ${community.name}`);
+  };
+
+  const handleUploadPhoto = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setIsUploadingPhoto(true);
+    try {
+      toast.info('Uploading photo...', 'Please wait');
+      const url = await uploadImage(file);
+      setLocalPhotos(prev => [url, ...prev]);
+      toast.success('Photo added!', 'Your photo is now in the gallery.');
+    } catch (err) {
+      toast.error('Upload failed', 'Could not upload photo');
+    }
+    setIsUploadingPhoto(false);
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
 
@@ -573,16 +593,19 @@ export default function CommunityProfile() {
               Photos & Moments
             </h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
-              {galleryPhotos.map((url, idx) => (
+              {[...localPhotos, ...galleryPhotos].map((url, idx) => (
                 <div key={idx} style={{ borderRadius: '12px', overflow: 'hidden', aspectRatio: idx === 0 ? '16/12' : '1/1', gridColumn: idx === 0 ? 'span 2' : 'span 1' }}>
                   <img src={url} alt={`Gallery ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 </div>
               ))}
             </div>
             {isMember && (
-              <button className="btn btn-outline interactive-press" style={{ width: '100%', marginTop: '16px', padding: '14px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                <Camera size={18} /> Upload a Photo
-              </button>
+              <>
+                <input type="file" ref={fileInputRef} accept="image/*" style={{ display: 'none' }} onChange={handleUploadPhoto} />
+                <button onClick={() => !isUploadingPhoto && fileInputRef.current?.click()} disabled={isUploadingPhoto} className="btn btn-outline interactive-press" style={{ width: '100%', marginTop: '16px', padding: '14px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                  <Camera size={18} /> {isUploadingPhoto ? 'Uploading...' : 'Upload a Photo'}
+                </button>
+              </>
             )}
           </>
         )}

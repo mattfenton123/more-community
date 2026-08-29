@@ -20,7 +20,7 @@ function MemberRow({ member, communityId }) {
   });
 
   return (
-    <div onClick={() => navigate.push(`/profile/${member.id}`)} className="interactive-press"
+    <div onClick={() => navigate.push(`/profile/${member.userId}`)} className="interactive-press"
       style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 12px', background: 'rgba(255,255,255,0.02)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.04)', cursor: 'pointer', marginBottom: '6px' }}>
       <img src={user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=0D8B93&color=fff`} alt="" style={{ width: '38px', height: '38px', borderRadius: '50%', objectFit: 'cover' }} />
       <div style={{ flex: 1, minWidth: 0 }}>
@@ -68,7 +68,7 @@ export default function MemberDirectory({ communityId, onClose }) {
           <Users size={18} color="var(--teal-400)" />
           <h3 style={{ margin: 0, color: 'white', fontSize: '1rem', fontFamily: 'var(--font-heading)' }}>Members ({members.length})</h3>
         </div>
-        <button onClick={() => navigate.push(`/profile/${member.id}`)} className="interactive-press"
+        <button onClick={() => alert('Leaderboard coming soon')} className="interactive-press"
           style={{ background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.2)', borderRadius: '8px', padding: '5px 10px', color: '#f59e0b', fontSize: '0.7rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
           <Trophy size={12} /> Leaderboard
         </button>
