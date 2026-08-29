@@ -1,5 +1,6 @@
 "use client";
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
+import { jsPDF } from 'jspdf';
 import { X, Download, Printer, Copy, Check, Image as ImageIcon, Type, Palette, Layout, ChevronDown, MapPin, Clock, Calendar } from 'lucide-react';
 
 // ─── 20 Curated Google Fonts ────────────────────────────────────
@@ -114,8 +115,16 @@ export default function EventFlyerGenerator({ event, community, onClose, uploadI
   useEffect(() => { ['Syne', 'Instrument Serif', 'Plus Jakarta Sans'].forEach(loadFont); }, []);
 
   const tmpl = TEMPLATES[template];
-  const longestWord = titleText.split(' ').reduce((max, word) => Math.max(max, word.length), 0);
-  const autoScale = Math.min(1, 10 / (longestWord || 1));
+  const autoScale = useMemo(() => {
+    if (typeof document === 'undefined') return 1;
+    const baseTitleFontSize = template === 'bold' ? 86 : template === 'minimal' ? 76 : 72;
+    const longestWordStr = titleText.split(' ').reduce((longest, word) => word.length > longest.length ? word : longest, "");
+    const canvasMeasure = document.createElement('canvas');
+    const ctxMeasure = canvasMeasure.getContext('2d');
+    ctxMeasure.font = `${tmpl.titleWeight} ${baseTitleFontSize}px "${font}", sans-serif`;
+    const longestWordWidth = ctxMeasure.measureText(longestWordStr).width;
+    return longestWordWidth > 864 ? 864 / longestWordWidth : 1;
+  }, [titleText, template, font, tmpl]);
 
   const formatDate = (dateStr) => {
     if (!dateStr) return '';
@@ -145,162 +154,163 @@ export default function EventFlyerGenerator({ event, community, onClose, uploadI
     else if (source === 'community') setBgImage(community?.image || community?.cover_image || '');
   };
 
-  // ─── Export: PNG via Canvas ───────────────────────────────────
+  // ─── Shared Canvas Generator ──────────────────────────────────────────
+  const generateCanvas = async () => {
+    const canvas = document.createElement('canvas');
+    const width = 1080;
+    const height = 1350;
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+
+    // Draw background
+    if (bgImage) {
+      await new Promise((resolve) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+          const scale = Math.max(width / img.width, height / img.height);
+          const w = img.width * scale;
+          const h = img.height * scale;
+          ctx.drawImage(img, (width - w) / 2, (height - h) / 2, w, h);
+          resolve();
+        };
+        img.onerror = () => resolve(); 
+        img.src = bgImage;
+      });
+    }
+
+    // Draw overlay gradient
+    const hexToRgb = (hex) => {
+      const r = parseInt(hex.slice(1, 3), 16);
+      const g = parseInt(hex.slice(3, 5), 16);
+      const b = parseInt(hex.slice(5, 7), 16);
+      return { r, g, b };
+    };
+    const accentRgb = hexToRgb(accent);
+
+    if (template === 'bold') {
+      const grad = ctx.createLinearGradient(0, 0, width, height);
+      grad.addColorStop(0, `rgba(${accentRgb.r},${accentRgb.g},${accentRgb.b},0.87)`);
+      grad.addColorStop(0.4, `rgba(${accentRgb.r},${accentRgb.g},${accentRgb.b},0.27)`);
+      grad.addColorStop(1, 'rgba(0,0,0,0.85)');
+      ctx.fillStyle = grad;
+    } else if (template === 'minimal') {
+      ctx.fillStyle = 'rgba(15,23,42,0.96)';
+    } else {
+      const grad = ctx.createLinearGradient(0, 0, 0, height);
+      grad.addColorStop(0, 'rgba(0,0,0,0)');
+      grad.addColorStop(0.5, 'rgba(0,0,0,0.4)');
+      grad.addColorStop(1, 'rgba(0,0,0,0.92)');
+      ctx.fillStyle = grad;
+    }
+    ctx.fillRect(0, 0, width, height);
+
+    // Subtitle
+    ctx.font = `600 30px "${font}", sans-serif`;
+    ctx.fillStyle = 'rgba(255,255,255,0.7)';
+    ctx.textAlign = 'left';
+    ctx.fillText(subtitleText.toUpperCase(), 108, template === 'photo' ? 750 : 420);
+
+    // Title
+    const baseTitleFontSize = template === 'bold' ? 86 : template === 'minimal' ? 76 : 72;
+    const titleFontSize = baseTitleFontSize * titleSizeMultiplier * autoScale;
+    ctx.font = `${tmpl.titleWeight} ${titleFontSize}px "${font}", sans-serif`;
+    ctx.fillStyle = titleColor;
+    ctx.textAlign = 'left';
+    
+    // Word-wrap title
+    const maxW = width - 216;
+    const words = titleText.split(' ');
+    let line = '';
+    let titleY = template === 'photo' ? 800 : 480;
+    const lineH = titleFontSize * 1.15;
+    for (const word of words) {
+      const test = line + word + ' ';
+      if (ctx.measureText(test).width > maxW && line) {
+        ctx.fillText(line.trim(), 108, titleY);
+        line = word + ' ';
+        titleY += lineH;
+      } else {
+        line = test;
+      }
+    }
+    ctx.fillText(line.trim(), 108, titleY);
+
+    // Info pills
+    const pillY = titleY + 70;
+    ctx.font = `600 28px "${font}", sans-serif`;
+    
+    const dateText = formatDate(event.date);
+    ctx.fillStyle = 'rgba(255,255,255,0.15)';
+    const dateW = ctx.measureText(dateText).width + 60;
+    ctx.beginPath();
+    ctx.roundRect(108, pillY - 28, dateW, 48, 12);
+    ctx.fill();
+    ctx.fillStyle = 'white';
+    ctx.fillText(dateText, 138, pillY + 2);
+
+    const timeX = 108 + dateW + 12;
+    const timeW = ctx.measureText(event.time).width + 60;
+    ctx.fillStyle = 'rgba(255,255,255,0.15)';
+    ctx.beginPath();
+    ctx.roundRect(timeX, pillY - 28, timeW, 48, 12);
+    ctx.fill();
+    ctx.fillStyle = 'white';
+    ctx.fillText(event.time, timeX + 30, pillY + 2);
+
+    const locY = pillY + 56;
+    const locW = ctx.measureText(event.location).width + 60;
+    ctx.fillStyle = 'rgba(255,255,255,0.15)';
+    ctx.beginPath();
+    ctx.roundRect(108, locY - 28, locW, 48, 12);
+    ctx.fill();
+    ctx.fillStyle = 'white';
+    ctx.fillText(event.location, 138, locY + 2);
+
+    // Description
+    if (bodyText) {
+      ctx.font = `400 26px "${font}", sans-serif`;
+      ctx.fillStyle = `rgba(255,255,255,${tmpl.bodyOpacity})`;
+      const descWords = bodyText.split(' ');
+      let descLine = '';
+      let descY = locY + 60;
+      let lineCount = 0;
+      for (const word of descWords) {
+        if (lineCount >= 4) break;
+        const test = descLine + word + ' ';
+        if (ctx.measureText(test).width > maxW && descLine) {
+          ctx.fillText(descLine.trim(), 108, descY);
+          descLine = word + ' ';
+          descY += 38;
+          lineCount++;
+        } else {
+          descLine = test;
+        }
+      }
+      if (lineCount < 4) ctx.fillText(descLine.trim(), 108, descY);
+    }
+
+    // Accent line
+    ctx.fillStyle = template === 'minimal' ? accent : 'rgba(255,255,255,0.3)';
+    ctx.beginPath();
+    ctx.roundRect(108, 1220, 64, 4, 2);
+    ctx.fill();
+
+    // Watermark
+    ctx.font = `700 30px "${font}", sans-serif`;
+    ctx.fillStyle = 'rgba(255,255,255,0.25)';
+    ctx.textAlign = 'right';
+    ctx.fillText('more.', width - 60, height - 50);
+
+    return canvas;
+  };
+
+  // ─── Export: Download via Canvas ───────────────────────────────────
   const exportAsPng = useCallback(async () => {
     setExportStatus('png');
     try {
-      const canvas = document.createElement('canvas');
-      const width = 1080;
-      const height = 1350;
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext('2d');
-
-      // Draw background
-      if (bgImage) {
-        await new Promise((resolve, reject) => {
-          const img = new Image();
-          img.crossOrigin = 'anonymous';
-          img.onload = () => {
-            // Cover-fit the image
-            const scale = Math.max(width / img.width, height / img.height);
-            const w = img.width * scale;
-            const h = img.height * scale;
-            ctx.drawImage(img, (width - w) / 2, (height - h) / 2, w, h);
-            resolve();
-          };
-          img.onerror = () => resolve(); // Proceed without image
-          img.src = bgImage;
-        });
-      }
-
-      // Draw overlay gradient
-      const hexToRgb = (hex) => {
-        const r = parseInt(hex.slice(1, 3), 16);
-        const g = parseInt(hex.slice(3, 5), 16);
-        const b = parseInt(hex.slice(5, 7), 16);
-        return { r, g, b };
-      };
-      const accentRgb = hexToRgb(accent);
-
-      if (template === 'bold') {
-        const grad = ctx.createLinearGradient(0, 0, width, height);
-        grad.addColorStop(0, `rgba(${accentRgb.r},${accentRgb.g},${accentRgb.b},0.87)`);
-        grad.addColorStop(0.4, `rgba(${accentRgb.r},${accentRgb.g},${accentRgb.b},0.27)`);
-        grad.addColorStop(1, 'rgba(0,0,0,0.85)');
-        ctx.fillStyle = grad;
-      } else if (template === 'minimal') {
-        ctx.fillStyle = 'rgba(15,23,42,0.96)';
-      } else {
-        const grad = ctx.createLinearGradient(0, 0, 0, height);
-        grad.addColorStop(0, 'rgba(0,0,0,0)');
-        grad.addColorStop(0.5, 'rgba(0,0,0,0.4)');
-        grad.addColorStop(1, 'rgba(0,0,0,0.92)');
-        ctx.fillStyle = grad;
-      }
-      ctx.fillRect(0, 0, width, height);
-
-      // Subtitle (community name)
-      ctx.font = `600 30px "${font}", sans-serif`;
-      ctx.fillStyle = 'rgba(255,255,255,0.7)';
-      ctx.textAlign = 'left';
-      ctx.fillText(subtitleText.toUpperCase(), 108, template === 'photo' ? 750 : 420);
-
-      // Title
-      const baseTitleFontSize = template === 'bold' ? 86 : template === 'minimal' ? 76 : 72;
-      const titleFontSize = baseTitleFontSize * titleSizeMultiplier * autoScale;
-      ctx.font = `${tmpl.titleWeight} ${titleFontSize}px "${font}", sans-serif`;
-      ctx.fillStyle = titleColor;
-      ctx.textAlign = 'left';
-      
-      // Word-wrap title
-      const maxW = width - 216;
-      const words = titleText.split(' ');
-      let line = '';
-      let titleY = template === 'photo' ? 800 : 480;
-      const lineH = titleFontSize * 1.15;
-      for (const word of words) {
-        const test = line + word + ' ';
-        if (ctx.measureText(test).width > maxW && line) {
-          ctx.fillText(line.trim(), 108, titleY);
-          line = word + ' ';
-          titleY += lineH;
-        } else {
-          line = test;
-        }
-      }
-      ctx.fillText(line.trim(), 108, titleY);
-
-      // Info pills
-      const pillY = titleY + 70;
-      ctx.font = `600 28px "${font}", sans-serif`;
-      
-      // Date pill
-      const dateText = formatDate(event.date);
-      ctx.fillStyle = 'rgba(255,255,255,0.15)';
-      const dateW = ctx.measureText(dateText).width + 60;
-      ctx.beginPath();
-      ctx.roundRect(108, pillY - 28, dateW, 48, 12);
-      ctx.fill();
-      ctx.fillStyle = 'white';
-      ctx.fillText(dateText, 138, pillY + 2);
-
-      // Time pill
-      const timeX = 108 + dateW + 12;
-      const timeW = ctx.measureText(event.time).width + 60;
-      ctx.fillStyle = 'rgba(255,255,255,0.15)';
-      ctx.beginPath();
-      ctx.roundRect(timeX, pillY - 28, timeW, 48, 12);
-      ctx.fill();
-      ctx.fillStyle = 'white';
-      ctx.fillText(event.time, timeX + 30, pillY + 2);
-
-      // Location pill
-      const locY = pillY + 56;
-      const locW = ctx.measureText(event.location).width + 60;
-      ctx.fillStyle = 'rgba(255,255,255,0.15)';
-      ctx.beginPath();
-      ctx.roundRect(108, locY - 28, locW, 48, 12);
-      ctx.fill();
-      ctx.fillStyle = 'white';
-      ctx.fillText(event.location, 138, locY + 2);
-
-      // Description
-      if (bodyText) {
-        ctx.font = `400 26px "${font}", sans-serif`;
-        ctx.fillStyle = `rgba(255,255,255,${tmpl.bodyOpacity})`;
-        const descWords = bodyText.split(' ');
-        let descLine = '';
-        let descY = locY + 60;
-        let lineCount = 0;
-        for (const word of descWords) {
-          if (lineCount >= 4) break;
-          const test = descLine + word + ' ';
-          if (ctx.measureText(test).width > maxW && descLine) {
-            ctx.fillText(descLine.trim(), 108, descY);
-            descLine = word + ' ';
-            descY += 38;
-            lineCount++;
-          } else {
-            descLine = test;
-          }
-        }
-        if (lineCount < 4) ctx.fillText(descLine.trim(), 108, descY);
-      }
-
-      // Accent line
-      ctx.fillStyle = template === 'minimal' ? accent : 'rgba(255,255,255,0.3)';
-      ctx.beginPath();
-      ctx.roundRect(108, 1220, 64, 4, 2);
-      ctx.fill();
-
-      // Watermark
-      ctx.font = `700 30px "${font}", sans-serif`;
-      ctx.fillStyle = 'rgba(255,255,255,0.25)';
-      ctx.textAlign = 'right';
-      ctx.fillText('more.', width - 60, height - 50);
-
-      // Export
+      const canvas = await generateCanvas();
       canvas.toBlob((blob) => {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -314,100 +324,43 @@ export default function EventFlyerGenerator({ event, community, onClose, uploadI
       console.error('PNG export failed:', err);
       setExportStatus(null);
     }
-  }, [titleText, subtitleText, bodyText, accent, font, bgImage, template, event, tmpl]);
+  }, [titleText, subtitleText, bodyText, accent, font, bgImage, template, event, tmpl, autoScale, titleSizeMultiplier, titleColor]);
 
   // ─── Export: PDF ──────────────────────────────────────────────
-  const exportAsPdf = useCallback(() => {
+  const exportAsPdf = useCallback(async () => {
     setExportStatus('pdf');
-    const style = document.createElement('style');
-    style.id = 'flyer-print-style';
-    style.textContent = `
-      @media print {
-        body * { visibility: hidden !important; }
-        #flyer-preview, #flyer-preview * { visibility: visible !important; }
-        #flyer-preview {
-          position: fixed !important;
-          top: 0 !important;
-          left: 0 !important;
-          width: 100vw !important;
-          height: 100vh !important;
-          margin: 0 !important;
-          border-radius: 0 !important;
-          box-shadow: none !important;
-        }
-        @page { size: portrait; margin: 0; }
-      }
-    `;
-    document.head.appendChild(style);
-    window.print();
-    setTimeout(() => {
-      document.getElementById('flyer-print-style')?.remove();
+    try {
+      const canvas = await generateCanvas();
+      const imgData = canvas.toDataURL('image/jpeg', 1.0);
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'px',
+        format: [1080, 1350]
+      });
+      pdf.addImage(imgData, 'JPEG', 0, 0, 1080, 1350);
+      pdf.save(`${titleText.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase()}-flyer.pdf`);
       setExportStatus(null);
-    }, 1000);
-  }, []);
+    } catch (err) {
+      console.error('PDF export failed:', err);
+      setExportStatus(null);
+    }
+  }, [titleText, subtitleText, bodyText, accent, font, bgImage, template, event, tmpl, autoScale, titleSizeMultiplier, titleColor]);
 
   // ─── Export: Copy to Clipboard ────────────────────────────────
   const copyToClipboard = useCallback(async () => {
     setExportStatus('copy');
     try {
-      const canvas = document.createElement('canvas');
-      canvas.width = 1080;
-      canvas.height = 1350;
-      const ctx = canvas.getContext('2d');
-
-      ctx.fillStyle = '#0f172a';
-      ctx.fillRect(0, 0, 1080, 1350);
-
-      const grad = ctx.createLinearGradient(0, 0, 1080, 1350);
-      grad.addColorStop(0, accent + 'cc');
-      grad.addColorStop(1, '#0f172aee');
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, 1080, 1350);
-
-      ctx.fillStyle = 'white';
-      ctx.font = `800 72px "${font}", sans-serif`;
-      ctx.textAlign = 'center';
-      
-      const words = titleText.split(' ');
-      let line = '';
-      let y = 500;
-      for (const word of words) {
-        const test = line + word + ' ';
-        if (ctx.measureText(test).width > 900 && line) {
-          ctx.fillText(line.trim(), 540, y);
-          line = word + ' ';
-          y += 85;
-        } else {
-          line = test;
-        }
-      }
-      ctx.fillText(line.trim(), 540, y);
-
-      ctx.font = `600 36px "${font}", sans-serif`;
-      ctx.fillStyle = accent;
-      ctx.fillText(subtitleText, 540, y + 80);
-
-      ctx.font = `400 32px "${font}", sans-serif`;
-      ctx.fillStyle = 'rgba(255,255,255,0.8)';
-      ctx.fillText(`${formatDate(event.date)} • ${event.time}`, 540, y + 150);
-      ctx.fillText(event.location, 540, y + 195);
-
-      ctx.font = `700 28px "${font}", sans-serif`;
-      ctx.fillStyle = 'rgba(255,255,255,0.3)';
-      ctx.textAlign = 'right';
-      ctx.fillText('more.', 1040, 1310);
-
+      const canvas = await generateCanvas();
       const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
       await navigator.clipboard.write([
         new ClipboardItem({ 'image/png': blob })
       ]);
-      
       setTimeout(() => setExportStatus(null), 2000);
     } catch (err) {
       console.error('Copy failed:', err);
       setExportStatus(null);
     }
-  }, [titleText, subtitleText, accent, font, event]);
+  }, [titleText, subtitleText, bodyText, accent, font, bgImage, template, event, tmpl, autoScale, titleSizeMultiplier, titleColor]);
 
   // ─── Panel Button ─────────────────────────────────────────────
   const PanelButton = ({ id, icon: Icon, label }) => (

@@ -5,6 +5,7 @@ import { useRouter as useNavigate, useParams } from 'next/navigation';
 import { useAppContext } from '../context/AppContext';
 import { useFeed } from '../context/FeedContext';
 import { useToast } from '../components/Toast';
+import CommentsModal from '../components/CommentsModal';
 import PhotoGallery from '../components/PhotoGallery';
 import MemberDirectory from '../components/MemberDirectory';
 
@@ -75,6 +76,7 @@ export default function CommunityProfile() {
   const [showRules, setShowRules] = useState(false);
   const [newPostText, setNewPostText] = useState('');
   const [newPostImage, setNewPostImage] = useState(null);
+  const [selectedPostForComments, setSelectedPostForComments] = useState(null);
   
   const communityId = id || (user.joinedCommunities.length > 0 ? user.joinedCommunities[0] : 'tw-tech-meetup');
   const community = communities.find(c => c.id === communityId);
@@ -159,9 +161,7 @@ export default function CommunityProfile() {
             <img src="/logo.png" alt="more." style={{ height: '20px' }} />
           </div>
           <div style={{ display: 'flex', gap: '8px' }}>
-            <button className="interactive-press" style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.2)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }} onClick={handleShare}>
-              <Share2 size={18} />
-            </button>
+
             {isLeader && (
               <button className="interactive-press" style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(20,184,166,0.2)', border: '1px solid rgba(20,184,166,0.4)', backdropFilter: 'blur(10px)', color: 'var(--teal-400)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }} onClick={() => navigate.back()}>
                 <Settings size={18} />
@@ -346,14 +346,11 @@ export default function CommunityProfile() {
                     )}
 
                     <div style={{ padding: '12px 16px', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', gap: '16px' }}>
-                      <button onClick={() => likeFeedPost(post.id)} className="interactive-press" style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--slate-400)', cursor: 'pointer', fontSize: '0.85rem' }}>
-                        <Heart size={16} /> {post.likes || 0}
+                      <button onClick={() => likeFeedPost(post.id)} className="interactive-press" style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '6px', color: post.liked ? 'var(--teal-400)' : 'var(--slate-400)', cursor: 'pointer', fontSize: '0.85rem' }}>
+                        <Heart size={16} fill={post.liked ? "currentColor" : "none"} /> {post.likes || 0}
                       </button>
-                      <button className="interactive-press" style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--slate-400)', cursor: 'pointer', fontSize: '0.85rem' }}>
-                        <MessageCircle size={16} /> {post.comments}
-                      </button>
-                      <button className="interactive-press" style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--slate-400)', cursor: 'pointer', fontSize: '0.85rem', marginLeft: 'auto' }}>
-                        <Share2 size={16} />
+                      <button onClick={() => setSelectedPostForComments(post)} className="interactive-press" style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--slate-400)', cursor: 'pointer', fontSize: '0.85rem' }}>
+                        <MessageCircle size={16} /> {post.comments || 0}
                       </button>
                     </div>
                   </div>
@@ -596,6 +593,7 @@ export default function CommunityProfile() {
         )}
 
       </div>
+      <CommentsModal isOpen={!!selectedPostForComments} onClose={() => setSelectedPostForComments(null)} post={selectedPostForComments} />
     </div>
   );
 }

@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { useAuth } from './AuthContext';
 import { useAppContext } from './AppContext';
-import { createFeedPostAction } from '../lib/actions';
+import { createFeedPostAction, toggleFeedPostLikeAction, createFeedPostCommentAction } from '../lib/actions';
 
 const FeedContext = createContext({});
 
@@ -21,6 +21,18 @@ export function FeedProvider({ children }) {
       try {
         const { data, error } = await supabase.from('feed_posts').select('*').order('created_at', { ascending: false }).limit(100);
 
+        let userLikes = [];
+        if (user?.id && data?.length) {
+          const postIds = data.map(p => p.id);
+          const { data: likesData } = await supabase
+            .from('message_reactions')
+            .select('message_id')
+            .eq('user_id', user.id)
+            .eq('reaction', 'like')
+            .in('message_id', postIds);
+          if (likesData) userLikes = likesData.map(l => l.message_id);
+        }
+
         if (data) {
           setFeedPosts(data.map(post => ({
             id: post.id,
@@ -29,6 +41,8 @@ export function FeedProvider({ children }) {
             text: post.text,
             media: post.media,
             likes: post.likes || 0,
+            comments: post.comments || 0,
+            liked: userLikes.includes(post.id),
             createdAt: post.created_at,
           })));
         }
@@ -98,23 +112,41 @@ export function FeedProvider({ children }) {
 
   const likeFeedPost = async (postId) => {
     if (!user.id) return;
-    // Optimistic
-    setFeedPosts(prev => prev.map(p => p.id === postId ? { ...p, likes: (p.likes || 0) + 1 } : p));
+    const post = feedPosts.find(p => p.id === postId);
+    if (!post) return;
+    
+    const isLiked = post.liked;
+    const increment = isLiked ? -1 : 1;
+    
+    // Optimistic update
+    setFeedPosts(prev => prev.map(p => p.id === postId ? { ...p, likes: Math.max(0, (p.likes || 0) + increment), liked: !isLiked } : p));
     
     try {
-      const post = feedPosts.find(p => p.id === postId);
-      const currentLikes = post?.likes || 0;
-      await supabase.from('feed_posts').update({ likes: currentLikes + 1 }).eq('id', postId);
+      const { session } = await supabase.auth.getSession();
+      await toggleFeedPostLikeAction(postId, user.id, session?.access_token);
     } catch (err) {
       console.error(err);
-      setFeedPosts(prev => prev.map(p => p.id === postId ? { ...p, likes: Math.max(0, (p.likes || 1) - 1) } : p));
+      // Revert on failure
+      setFeedPosts(prev => prev.map(p => p.id === postId ? { ...p, likes: Math.max(0, (p.likes || 0) - increment), liked: isLiked } : p));
+    }
+  };
+
+  const createFeedComment = async (postId, text, communityId) => {
+    if (!user.id || !text.trim()) return;
+    try {
+      const { session } = await supabase.auth.getSession();
+      await createFeedPostCommentAction(postId, communityId, user.id, text, session?.access_token);
+      setFeedPosts(prev => prev.map(p => p.id === postId ? { ...p, comments: (p.comments || 0) + 1 } : p));
+    } catch (err) {
+      console.error(err);
+      throw err;
     }
   };
 
   return (
     <FeedContext.Provider value={{
       feedPosts, isFeedLoading,
-      createFeedPost, likeFeedPost
+      createFeedPost, likeFeedPost, createFeedComment
     }}>
       {children}
     </FeedContext.Provider>

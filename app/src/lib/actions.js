@@ -327,3 +327,57 @@ export async function createFeedPostAction(communityId, authorId, content, media
   if (error) throw new Error(error.message);
   return data;
 }
+
+export async function toggleFeedPostLikeAction(postId, userId, token) {
+  await verifyUser(token, userId);
+  
+  const { data: existing } = await supabaseAdmin
+    .from('message_reactions')
+    .select('id')
+    .eq('message_id', postId)
+    .eq('user_id', userId)
+    .eq('reaction', 'like')
+    .single();
+
+  if (existing) {
+    await supabaseAdmin.from('message_reactions').delete().eq('id', existing.id);
+    const { data: post } = await supabaseAdmin.from('feed_posts').select('likes').eq('id', postId).single();
+    if (post) {
+      await supabaseAdmin.from('feed_posts').update({ likes: Math.max(0, (post.likes || 1) - 1) }).eq('id', postId);
+    }
+    return { liked: false };
+  } else {
+    await supabaseAdmin.from('message_reactions').insert({
+      message_id: postId,
+      user_id: userId,
+      reaction: 'like'
+    });
+    const { data: post } = await supabaseAdmin.from('feed_posts').select('likes').eq('id', postId).single();
+    if (post) {
+      await supabaseAdmin.from('feed_posts').update({ likes: (post.likes || 0) + 1 }).eq('id', postId);
+    }
+    return { liked: true };
+  }
+}
+
+export async function createFeedPostCommentAction(postId, communityId, authorId, text, token) {
+  await verifyUser(token, authorId);
+  
+  const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const { data, error } = await supabaseAdmin.from('messages').insert([{
+    community_id: 'feed_comments_' + communityId,
+    channel: postId,
+    author_id: authorId,
+    text: text,
+    timestamp: timestamp
+  }]).select().single();
+  
+  if (error) throw new Error(error.message);
+  
+  const { data: post } = await supabaseAdmin.from('feed_posts').select('comments').eq('id', postId).single();
+  if (post) {
+    await supabaseAdmin.from('feed_posts').update({ comments: (post.comments || 0) + 1 }).eq('id', postId);
+  }
+  
+  return data;
+}

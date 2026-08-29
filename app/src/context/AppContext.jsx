@@ -587,20 +587,35 @@ export function AppProvider({ children }) {
   };
 
   const likeFeedPost = async (postId) => {
-    // Optimistic update
-    setFeedPosts(prev => prev.map(p => p.id === postId ? { ...p, likes: (p.likes || 0) + 1 } : p));
+    const post = feedPosts.find(p => p.id === postId);
+    if (!post) return;
     
-    // We just do a naive increment here for the prototype. In production, we'd use a feed_post_likes table
-    // or an RPC function to avoid race conditions.
+    const isLiked = post.liked;
+    const increment = isLiked ? -1 : 1;
+    
+    // Optimistic update
+    setFeedPosts(prev => prev.map(p => p.id === postId ? { ...p, likes: Math.max(0, (p.likes || 0) + increment), liked: !isLiked } : p));
+    
     try {
-      const post = feedPosts.find(p => p.id === postId);
-      if (!post) return;
-      const { error } = await supabase.from('feed_posts').update({ likes: (post.likes || 0) + 1 }).eq('id', postId);
-      if (error) throw error;
+      const { session } = await supabase.auth.getSession();
+      const { toggleFeedPostLikeAction } = await import('../lib/actions');
+      await toggleFeedPostLikeAction(postId, session?.user?.id, session?.access_token);
     } catch (err) {
       console.error(err);
       // Revert on failure
-      setFeedPosts(prev => prev.map(p => p.id === postId ? { ...p, likes: Math.max(0, (p.likes || 1) - 1) } : p));
+      setFeedPosts(prev => prev.map(p => p.id === postId ? { ...p, likes: Math.max(0, (p.likes || 0) - increment), liked: isLiked } : p));
+    }
+  };
+
+  const createFeedComment = async (postId, text, communityId) => {
+    try {
+      const { session } = await supabase.auth.getSession();
+      const { createFeedPostCommentAction } = await import('../lib/actions');
+      await createFeedPostCommentAction(postId, communityId, session?.user?.id, text, session?.access_token);
+      setFeedPosts(prev => prev.map(p => p.id === postId ? { ...p, comments: (p.comments || 0) + 1 } : p));
+    } catch (err) {
+      console.error(err);
+      throw err;
     }
   };
 
@@ -916,6 +931,7 @@ export function AppProvider({ children }) {
       setConnectedSocialAccounts,
       createFeedPost,
       likeFeedPost,
+      createFeedComment,
       whatsappSettings,
       setWhatsappSettings,
       broadcastNotification,
