@@ -824,12 +824,18 @@ export function AppProvider({ children }) {
         maxSizeMB: 0.8,
         maxWidthOrHeight: 1200,
         useWebWorker: true,
+        fileType: "image/webp",
       };
       
       let compressedFile = file;
       if (file.type.startsWith('image/')) {
         try {
-          compressedFile = await imageCompression(file, options);
+          const result = await imageCompression(file, options);
+          
+          // Rename the file to .webp to ensure the server action gets the correct extension
+          const newName = file.name.replace(/\.[^/.]+$/, "") + ".webp";
+          compressedFile = new File([result], newName, { type: 'image/webp' });
+          
           console.log(`Compressed image from ${file.size / 1024}KB to ${compressedFile.size / 1024}KB`);
         } catch (error) {
           console.error("Compression failed, using original file", error);
