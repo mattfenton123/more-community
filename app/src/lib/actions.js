@@ -24,7 +24,7 @@ export async function sendMessageAction(messageData, token) {
   
   const { data, error } = await supabaseAdmin.from('messages').insert({
     community_id: messageData.communityId,
-    channel_id: messageData.channel,
+    channel: messageData.channel,
     author_id: messageData.authorId,
     text: messageData.text,
     image: messageData.image || null

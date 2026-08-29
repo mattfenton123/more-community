@@ -3,6 +3,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { useAuth } from './AuthContext';
 import { useAppContext } from './AppContext';
+import { sendMessageAction } from '../lib/actions';
 
 const ChatContext = createContext({});
 
@@ -118,13 +119,20 @@ export function ChatProvider({ children }) {
     setMessages(prev => [...prev, newMessage]);
 
     try {
-      const { data, error } = await supabase.from('messages').insert([{
-        community_id: communityId, channel, sender_id: user.id, text, image
-      }]).select().single();
-      if (error) throw error;
+      const sessionResponse = await supabase.auth.getSession();
+      const token = sessionResponse.data.session?.access_token;
+      
+      const data = await sendMessageAction({
+        communityId,
+        channel,
+        authorId: user.id,
+        text,
+        image
+      }, token);
+      
       setMessages(prev => {
         if (prev.some(m => m.id === data.id && m.id !== tempId)) return prev.filter(m => m.id !== tempId);
-        return prev.map(m => m.id === tempId ? { id: data.id, communityId: data.community_id, channel: data.channel, senderId: data.sender_id, text: data.text, image: data.image, createdAt: data.created_at } : m);
+        return prev.map(m => m.id === tempId ? { id: data.id, communityId: data.community_id, channel: data.channel, senderId: data.author_id, text: data.text, image: data.image, createdAt: data.created_at } : m);
       });
       markChatRead(communityId, channel);
     } catch (err) {
