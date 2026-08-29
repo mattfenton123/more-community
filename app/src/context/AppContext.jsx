@@ -611,7 +611,7 @@ export function AppProvider({ children }) {
     setFeedPosts(prev => prev.map(p => p.id === postId ? { ...p, likes: Math.max(0, (p.likes || 0) + increment), liked: !isLiked } : p));
     
     try {
-      const { session } = await supabase.auth.getSession();
+      const { data: { session } } = await supabase.auth.getSession();
       const { toggleFeedPostLikeAction } = await import('../lib/actions');
       await toggleFeedPostLikeAction(postId, session?.user?.id, session?.access_token);
     } catch (err) {
@@ -623,7 +623,7 @@ export function AppProvider({ children }) {
 
   const createFeedComment = async (postId, text, communityId) => {
     try {
-      const { session } = await supabase.auth.getSession();
+      const { data: { session } } = await supabase.auth.getSession();
       const { createFeedPostCommentAction } = await import('../lib/actions');
       await createFeedPostCommentAction(postId, communityId, session?.user?.id, text, session?.access_token);
       setFeedPosts(prev => prev.map(p => p.id === postId ? { ...p, comments: (p.comments || 0) + 1 } : p));

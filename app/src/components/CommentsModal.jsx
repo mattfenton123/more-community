@@ -22,7 +22,7 @@ export default function CommentsModal({ isOpen, onClose, post }) {
     // Fetch initial comments
     const fetchComments = async () => {
       try {
-        const { session } = await supabase.auth.getSession();
+        const { data: { session } } = await supabase.auth.getSession();
         const data = await getCommentsAction(post.id, post.communityId, session?.access_token);
         if (data) setComments(data);
       } catch (e) {

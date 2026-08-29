@@ -122,7 +122,7 @@ export function FeedProvider({ children }) {
     setFeedPosts(prev => prev.map(p => p.id === postId ? { ...p, likes: Math.max(0, (p.likes || 0) + increment), liked: !isLiked } : p));
     
     try {
-      const { session } = await supabase.auth.getSession();
+      const { data: { session } } = await supabase.auth.getSession();
       await toggleFeedPostLikeAction(postId, user.id, session?.access_token);
     } catch (err) {
       console.error(err);
@@ -134,7 +134,7 @@ export function FeedProvider({ children }) {
   const createFeedComment = async (postId, text, communityId, mediaUrl = null) => {
     if (!user.id || (!text.trim() && !mediaUrl)) return;
     try {
-      const { session } = await supabase.auth.getSession();
+      const { data: { session } } = await supabase.auth.getSession();
       await createFeedPostCommentAction(postId, communityId, user.id, text, mediaUrl, session?.access_token);
       setFeedPosts(prev => prev.map(p => p.id === postId ? { ...p, comments: (p.comments || 0) + 1 } : p));
     } catch (err) {
@@ -146,7 +146,7 @@ export function FeedProvider({ children }) {
   const deleteFeedPost = async (postId) => {
     if (!user.id) return;
     try {
-      const { session } = await supabase.auth.getSession();
+      const { data: { session } } = await supabase.auth.getSession();
       await deleteFeedPostAction(postId, session?.access_token);
       setFeedPosts(prev => prev.filter(p => p.id !== postId));
     } catch (err) {
@@ -158,7 +158,7 @@ export function FeedProvider({ children }) {
   const deleteComment = async (commentId, postId) => {
     if (!user.id) return;
     try {
-      const { session } = await supabase.auth.getSession();
+      const { data: { session } } = await supabase.auth.getSession();
       await deleteCommentAction(commentId, postId, session?.access_token);
       setFeedPosts(prev => prev.map(p => p.id === postId ? { ...p, comments: Math.max(0, (p.comments || 0) - 1) } : p));
     } catch (err) {
