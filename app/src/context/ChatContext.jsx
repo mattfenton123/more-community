@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { useAuth } from './AuthContext';
 import { useAppContext } from './AppContext';
-import { sendMessageAction } from '../lib/actions';
+import { sendMessageAction, sendDirectMessageAction } from '../lib/actions';
 
 const ChatContext = createContext({});
 
@@ -141,17 +141,14 @@ export function ChatProvider({ children }) {
     }
   };
 
-  const sendDirectMessage = async (receiverId, text) => {
+  const sendDirectMessage = async (receiverId, text, image) => {
     if (!user.id) return;
     const tempId = 'temp-' + Date.now();
-    const newMessage = { id: tempId, senderId: user.id, receiverId, text, createdAt: new Date().toISOString() };
+    const newMessage = { id: tempId, senderId: user.id, receiverId, text, image, createdAt: new Date().toISOString() };
     setDirectMessages(prev => [...prev, newMessage]);
 
     try {
-      const { data, error } = await supabase.from('direct_messages').insert([{
-        sender_id: user.id, receiver_id: receiverId, text
-      }]).select().single();
-      if (error) throw error;
+      const data = await sendDirectMessageAction(user.id, receiverId, text, image, session?.access_token);
       setDirectMessages(prev => {
         if (prev.some(m => m.id === data.id && m.id !== tempId)) return prev.filter(m => m.id !== tempId);
         return prev.map(m => m.id === tempId ? { id: data.id, senderId: data.sender_id, receiverId: data.receiver_id, text: data.text, createdAt: data.created_at } : m);

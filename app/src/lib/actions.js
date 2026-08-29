@@ -308,3 +308,13 @@ export async function removeMemberAction(communityId, memberId, token) {
   if (error) throw new Error(error.message);
   return true;
 }
+
+export async function sendDirectMessageAction(senderId, receiverId, text, image, token) {
+  await verifyUser(token, senderId);
+  const { data, error } = await supabaseAdmin.from('direct_messages').insert([{
+    sender_id: senderId, receiver_id: receiverId, text, image
+  }]).select().single();
+  
+  if (error) throw new Error(error.message);
+  return data;
+}

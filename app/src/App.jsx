@@ -48,7 +48,7 @@ function TabBar() {
         const latestMsg = messages.filter(m => m.communityId === c.id && m.channel === ch.id).pop();
         if (latestMsg && latestMsg.authorId !== user.id) {
           const receipt = chatReadReceipts.find(r => r.community_id === c.id && r.channel_id === ch.id);
-          if (!receipt || new Date(receipt.last_read_at) < new Date(latestMsg.created_at || new Date().toISOString())) {
+          if (!receipt || new Date(receipt.last_read_at) < new Date(latestMsg.createdAt || new Date().toISOString())) {
             unreadChatCount++;
           }
         }
@@ -65,7 +65,7 @@ function TabBar() {
       const latestDm = directMessages.filter(m => (m.senderId === otherId && m.receiverId === user.id) || (m.senderId === user.id && m.receiverId === otherId)).pop();
       if (latestDm && latestDm.senderId !== user.id) {
         const receipt = chatReadReceipts.find(r => !r.community_id && r.channel_id === otherId);
-        if (!receipt || new Date(receipt.last_read_at) < new Date(latestDm.created_at || new Date().toISOString())) {
+        if (!receipt || new Date(receipt.last_read_at) < new Date(latestDm.createdAt || new Date().toISOString())) {
           unreadChatCount++;
         }
       }
