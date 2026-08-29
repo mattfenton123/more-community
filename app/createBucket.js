@@ -5,7 +5,7 @@ async function createBucket() {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
+      'Authorization': `Bearer ${SERVICE_KEY}`,
     },
     body: JSON.stringify({
       id: 'uploads',
