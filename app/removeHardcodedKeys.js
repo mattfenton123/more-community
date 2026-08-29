@@ -1,8 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 
-const SECRET_KEY = 'sb_secret_3q0ih_hSN57WBnym_RXoJA_zD-v6Lja';
-const SUPABASE_URL = 'https://nkyithbhufwgwnbxvqqu.supabase.co';
+const SECRET_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || 'REPLACE_ME';
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'REPLACE_ME';
 
 const files = [
   'seedFullData.js',
