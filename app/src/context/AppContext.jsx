@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabaseClient';
 import { useAuth } from './AuthContext';
 import { initialExperiences } from '../lib/constants';
 import imageCompression from 'browser-image-compression';
-import { createEventAction, joinCommunityAction, leaveCommunityAction, rsvpToEventAction, createCommunityAction, uploadImageAction, updateEventAction, updateCommunityAction, createChannelAction, markNotificationReadAction, updateUserAction, adminVerifyCommunityAction, broadcastNotificationAction } from '../lib/actions';
+import { createEventAction, joinCommunityAction, leaveCommunityAction, rsvpToEventAction, createCommunityAction, uploadImageAction, updateEventAction, updateCommunityAction, createChannelAction, markNotificationReadAction, updateUserAction, adminVerifyCommunityAction, broadcastNotificationAction, promoteMemberAction, removeMemberAction } from '../lib/actions';
 
 const AppContext = createContext();
 
@@ -433,10 +433,7 @@ export function AppProvider({ children }) {
       };
     });
     try {
-      const { error } = await supabase.from('community_memberships')
-        .update({ role: newRole })
-        .match({ community_id: communityId, user_id: memberId });
-      if (error) throw error;
+      await promoteMemberAction(communityId, memberId, newRole, session?.access_token);
     } catch (err) {
       console.error('Failed to promote member', err);
     }
@@ -451,10 +448,7 @@ export function AppProvider({ children }) {
       };
     });
     try {
-      const { error } = await supabase.from('community_memberships')
-        .delete()
-        .match({ community_id: communityId, user_id: memberId });
-      if (error) throw error;
+      await removeMemberAction(communityId, memberId, session?.access_token);
     } catch (err) {
       console.error('Failed to remove member', err);
     }

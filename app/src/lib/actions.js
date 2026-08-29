@@ -290,3 +290,21 @@ export async function broadcastNotificationAction(notifications, token) {
   if (error) throw new Error(error.message);
   return true;
 }
+
+export async function promoteMemberAction(communityId, memberId, newRole, token) {
+  await verifyUser(token);
+  const { error } = await supabaseAdmin.from('community_memberships')
+    .update({ role: newRole })
+    .match({ community_id: communityId, user_id: memberId });
+  if (error) throw new Error(error.message);
+  return true;
+}
+
+export async function removeMemberAction(communityId, memberId, token) {
+  await verifyUser(token);
+  const { error } = await supabaseAdmin.from('community_memberships')
+    .delete()
+    .match({ community_id: communityId, user_id: memberId });
+  if (error) throw new Error(error.message);
+  return true;
+}
