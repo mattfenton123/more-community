@@ -84,9 +84,9 @@ export async function createCommunityAction(communityData, token) {
     name: communityData.name,
     description: communityData.description,
     tags: communityData.tags,
-    cover_image: communityData.cover_image,
-    lat: communityData.lat,
-    lng: communityData.lng
+    image: communityData.cover_image,
+    lat: communityData.lat || null,
+    lng: communityData.lng || null
   }).select().single();
 
   if (error) throw new Error(error.message);
@@ -177,7 +177,8 @@ export async function uploadImageAction(formData, token) {
   
   if (!file) throw new Error("No file provided");
   
-  const fileExt = file.name.split('.').pop();
+  const filename = file.name || 'image.webp';
+  const fileExt = filename.split('.').pop();
   const fileName = `${userId}/${Date.now()}.${fileExt}`;
   
   const arrayBuffer = await file.arrayBuffer();
