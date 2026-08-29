@@ -148,7 +148,10 @@ export function ChatProvider({ children }) {
     setDirectMessages(prev => [...prev, newMessage]);
 
     try {
-      const data = await sendDirectMessageAction(user.id, receiverId, text, image, session?.access_token);
+      const sessionResponse = await supabase.auth.getSession();
+      const token = sessionResponse.data.session?.access_token;
+      
+      const data = await sendDirectMessageAction(user.id, receiverId, text, image, token);
       setDirectMessages(prev => {
         if (prev.some(m => m.id === data.id && m.id !== tempId)) return prev.filter(m => m.id !== tempId);
         return prev.map(m => m.id === tempId ? { id: data.id, senderId: data.sender_id, receiverId: data.receiver_id, text: data.text, createdAt: data.created_at } : m);
