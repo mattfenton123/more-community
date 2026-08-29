@@ -90,7 +90,8 @@ export async function createCommunityAction(communityData, token) {
     target_audience: communityData.target_audience,
     location_name: communityData.location_name,
     cost: communityData.cost,
-    activity_level: communityData.activity_level
+    activity_level: communityData.activity_level,
+    leader_id: communityData.creatorId
   }).select().single();
 
   if (error) throw new Error(error.message);
@@ -126,14 +127,18 @@ export async function createEventAction(eventData, token) {
   await verifyUser(token);
 
   const { data, error } = await supabaseAdmin.from('events').insert({
-    ...(eventData.id && { id: eventData.id }),
+    id: eventData.id || crypto.randomUUID(),
     community_id: eventData.communityId,
     title: eventData.title,
     date: eventData.date,
     time: eventData.time,
     location: eventData.location,
     image: eventData.image,
-    attendees: eventData.attendees || 0
+    attendees: eventData.attendees || 0,
+    description: eventData.description || '',
+    status: eventData.status || 'published',
+    max_capacity: eventData.maxCapacity || null,
+    ticket_price: eventData.ticketPrice || 0
   }).select().single();
 
   if (error) throw new Error(error.message);
