@@ -144,12 +144,7 @@ export default function CommunityProfile() {
     toast.success('Welcome!', `You're now a member of ${community.name}`);
   };
 
-  const handleLeave = async () => {
-    if (window.confirm(`Are you sure you want to leave ${community.name}?`)) {
-      await leaveCommunity(community.id);
-      toast.info('Left community', `You've left ${community.name}`);
-    }
-  };
+
 
   return (
     <div className="view-profile" style={{ background: 'var(--slate-950)', minHeight: '100vh', paddingBottom: '80px' }}>
@@ -217,13 +212,19 @@ export default function CommunityProfile() {
             const isPaid = subPrice > 0 && !isMember;
             return (
               <>
-                <button 
-                  className={`btn ${isMember ? 'btn-outline' : 'btn-primary'} ${isMember ? '' : 'interactive-press'}`} 
-                  style={{ width: '100%', padding: '16px', fontSize: '1.05rem', fontWeight: 700, borderRadius: '14px', boxShadow: isMember ? 'none' : '0 8px 24px rgba(20,184,166,0.3)', cursor: isMember ? 'default' : 'pointer' }}
-                  onClick={isMember ? undefined : handleJoin}
-                >
-                  {isMember ? '✓ You\'re a Member' : isPaid ? `Join — £${subPrice}/month` : 'Join this Community — it\'s free'}
-                </button>
+                {isMember ? (
+                  <div style={{ width: '100%', padding: '16px', fontSize: '1.05rem', fontWeight: 700, borderRadius: '14px', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--slate-300)', textAlign: 'center', background: 'rgba(255,255,255,0.05)' }}>
+                    ✓ You're a Member
+                  </div>
+                ) : (
+                  <button 
+                    className="btn btn-primary interactive-press" 
+                    style={{ width: '100%', padding: '16px', fontSize: '1.05rem', fontWeight: 700, borderRadius: '14px', boxShadow: '0 8px 24px rgba(20,184,166,0.3)', cursor: 'pointer' }}
+                    onClick={handleJoin}
+                  >
+                    {isPaid ? `Join — £${subPrice}/month` : 'Join this Community — it\'s free'}
+                  </button>
+                )}
                 {isPaid && !isMember && (
                   <div style={{ textAlign: 'center', fontSize: '0.75rem', color: 'var(--slate-500)', marginTop: '8px' }}>
                     Cancel anytime. You won't be charged during the trial period.
@@ -506,22 +507,7 @@ export default function CommunityProfile() {
               )}
             </div>
 
-            {/* Leave Community Section */}
-            {isMember && !isLeader && (
-              <div style={{ marginTop: '32px', marginBottom: '24px', display: 'flex', justifyContent: 'center' }}>
-                <button
-                  onClick={handleLeave}
-                  className="interactive-press"
-                  style={{
-                    background: 'transparent', border: '1px solid var(--rose-500)', 
-                    color: 'var(--rose-500)', padding: '10px 24px', borderRadius: '99px',
-                    fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer'
-                  }}
-                >
-                  Leave Community
-                </button>
-              </div>
-            )}
+
           </>
         )}
 
