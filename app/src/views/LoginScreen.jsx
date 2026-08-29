@@ -99,16 +99,16 @@ export default function LoginScreen() {
             Find your people in Tunbridge Wells
           </h1>
           
-          {/* Value proposition pills */}
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', flexWrap: 'wrap', marginTop: '16px', marginBottom: '8px' }}>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.8rem', color: 'var(--teal-300)', background: 'rgba(20,184,166,0.1)', padding: '6px 12px', borderRadius: '99px', border: '1px solid rgba(20,184,166,0.2)' }}>
-              <Calendar size={12} /> Discover Events
+          {/* Value proposition labels */}
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', flexWrap: 'wrap', marginTop: '16px', marginBottom: '8px' }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.78rem', color: 'var(--slate-400)', letterSpacing: '0.02em' }}>
+              <Calendar size={14} style={{ color: 'var(--teal-400)', opacity: 0.7 }} /> Discover Events
             </span>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.8rem', color: 'var(--teal-300)', background: 'rgba(20,184,166,0.1)', padding: '6px 12px', borderRadius: '99px', border: '1px solid rgba(20,184,166,0.2)' }}>
-              <MessageCircle size={12} /> Chat Locally
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.78rem', color: 'var(--slate-400)', letterSpacing: '0.02em' }}>
+              <MessageCircle size={14} style={{ color: 'var(--teal-400)', opacity: 0.7 }} /> Chat Locally
             </span>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.8rem', color: 'var(--teal-300)', background: 'rgba(20,184,166,0.1)', padding: '6px 12px', borderRadius: '99px', border: '1px solid rgba(20,184,166,0.2)' }}>
-              <Users size={12} /> Meet IRL
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.78rem', color: 'var(--slate-400)', letterSpacing: '0.02em' }}>
+              <Users size={14} style={{ color: 'var(--teal-400)', opacity: 0.7 }} /> Meet IRL
             </span>
           </div>
         </div>
