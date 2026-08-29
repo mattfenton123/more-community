@@ -402,7 +402,7 @@ export function AppProvider({ children }) {
         const notifs = leaders.map(l => ({
           user_id: l.userId,
           title: 'New Member',
-          body: `${user.name} has joined ${targetComm.name}!`,
+          message: `${user.name} has joined ${targetComm.name}!`,
           type: 'alert',
           link: `/community/${communityId}`
         }));
