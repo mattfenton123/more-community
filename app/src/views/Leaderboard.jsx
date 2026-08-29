@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 import { Trophy, Flame, Crown, Medal, Star, ChevronRight, ArrowLeft } from 'lucide-react';
 import { useRouter as useNavigate } from 'next/navigation';
 import { useAppContext } from '../context/AppContext';
+import { useChat } from '../context/ChatContext';
 import { useGamification, BadgeRow } from '../components/Gamification';
 
 function UserLeaderboardRow({ userId, rank }) {
@@ -67,7 +68,8 @@ function UserLeaderboardRow({ userId, rank }) {
 }
 
 export default function Leaderboard() {
-  const { users, communityMemberships, events, eventRsvps, messages } = useAppContext();
+  const { users, communityMemberships, events, eventRsvps } = useAppContext();
+    const { messages } = useChat();
   const navigate = useNavigate();
 
   // Calculate XP for all users and rank them

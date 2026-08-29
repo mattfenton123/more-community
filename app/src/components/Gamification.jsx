@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { Trophy, Flame, Star, Zap, Target, Crown, Heart, Users, Calendar, MessageCircle, Award } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
+import { useChat } from '../context/ChatContext';
 
 // ─── Badge Definitions ──────────────────────────────────────
 const BADGES = [
@@ -20,7 +21,8 @@ const BADGES = [
 
 // ─── Calculate user stats for badge checking ────────────────
 export function useGamification(userId) {
-  const { communityMemberships, events, eventRsvps, messages, communities, user } = useAppContext();
+  const { communityMemberships, events, eventRsvps, communities, user } = useAppContext();
+    const { messages } = useChat();
 
   return useMemo(() => {
     const targetId = userId || user?.id;

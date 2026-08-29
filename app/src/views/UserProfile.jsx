@@ -2,6 +2,7 @@
 import { useState, useRef } from 'react';
 import { useRouter as useNavigate, useParams } from 'next/navigation';
 import { useAppContext } from '../context/AppContext';
+import { useChat } from '../context/ChatContext';
 import { ArrowLeft, Users, Calendar, MapPin, Settings, Camera, Check, X, MessageCircle, Edit3, Trophy, Flame } from 'lucide-react';
 import { useToast } from '../components/Toast';
 import GamificationPanel, { BadgeRow, useGamification } from '../components/Gamification';
@@ -10,7 +11,8 @@ import { FALLBACK_IMAGES } from '../lib/constants';
 export default function UserProfile() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { users, communities, communityMemberships, user: currentUser, updateUser, uploadImage, events, eventRsvps, messages } = useAppContext();
+  const { users, communities, communityMemberships, user: currentUser, updateUser, uploadImage, events, eventRsvps } = useAppContext();
+    const { messages } = useChat();
   const { toast } = useToast();
   
   const targetId = id || currentUser.id;

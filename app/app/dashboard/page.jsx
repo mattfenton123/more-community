@@ -1,9 +1,10 @@
 "use client";
 import { useState, useRef, useMemo } from 'react';
-import { Users, Calendar, MessageCircle, TrendingUp, Search, Plus, MapPin, Image as ImageIcon, CreditCard, ChevronRight, Download, Activity, Globe, Heart, Crown, Info, X, Map, Zap, Mail, Trash2, UserCheck, Ban, ChevronDown, ChevronUp, Settings, Megaphone, QrCode, BarChart3, Ticket, ScanLine, UserPlus, DollarSign, Clock, Edit3, Check, Eye, EyeOff, Shield } from 'lucide-react';
+import { Users, Calendar, MessageCircle, TrendingUp, Search, Plus, MapPin, Image as ImageIcon, CreditCard, ChevronRight, Download, Activity, Globe, Heart, Crown, Info, X, Map, Zap, Mail, Trash2, UserCheck, Ban, ChevronDown, ChevronUp, Settings, Megaphone, QrCode, BarChart3, Ticket, ScanLine, UserPlus, DollarSign, Clock, Edit3, Check, Eye, EyeOff, Shield, Star } from 'lucide-react';
 import AppHeader from '../../src/components/AppHeader';
 import { useRouter } from 'next/navigation';
 import { useAppContext } from '../../src/context/AppContext';
+import { useChat } from '../../src/context/ChatContext';
 import { useToast } from '../../src/components/Toast';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip as RechartsTooltip, CartesianGrid } from 'recharts';
 import SocialHub from '../../src/components/SocialHub';
@@ -12,6 +13,8 @@ import DigitalTicket from '../../src/components/DigitalTicket';
 import QRScanner from '../../src/components/QRScanner';
 import CommunityOnboardingFlow from '../../src/views/CommunityOnboardingFlow';
 import EventFlyerGenerator from '../../src/components/EventFlyerGenerator';
+import dynamic from 'next/dynamic';
+const LocationPicker = dynamic(() => import('../../src/components/LocationPicker'), { ssr: false });
 
 // ─── Stat Card Component ──────────────────────────────────
 const StatCard = ({ value, label, color, icon: Icon, accent }) => (
@@ -71,12 +74,8 @@ function getEngagementScore(member, events, eventRsvps, messages, communityId) {
 
 // ─── Component ──────────────────────────────────────────────────
 export default function LeaderDashboard() {
-  const { 
-    user, communities, events, updateCommunity, users, communityMemberships, 
-    createEvent, updateEvent, cancelEvent, uploadImage, eventRsvps, messages,
-    whatsappSettings, setWhatsappSettings, promoteMember, removeMember, 
-    checkInMember, broadcastNotification, experiences
-  } = useAppContext();
+  const { user, communities, events, updateCommunity, users, communityMemberships, createEvent, updateEvent, cancelEvent, uploadImage, eventRsvps, whatsappSettings, setWhatsappSettings, promoteMember, removeMember, checkInMember, broadcastNotification, experiences } = useAppContext();
+    const { messages } = useChat();
   const { toast } = useToast();
   const router = useRouter();
   
@@ -110,6 +109,7 @@ export default function LeaderDashboard() {
   const [discoveryResults, setDiscoveryResults] = useState(null);
   const [aiPrompt, setAiPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [showWelcomeGuide, setShowWelcomeGuide] = useState(true);
 
   const fileInputRef = useRef(null);
 
@@ -540,7 +540,7 @@ export default function LeaderDashboard() {
           </div>
           <div className="form-group">
             <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><MapPin size={14} color="#3b82f6" /> Location <span style={{ color: 'var(--rose-400)', fontSize: '0.7rem' }}>*</span></label>
-            <input className="form-input" placeholder="e.g. The Common, Tunbridge Wells" value={eventForm.location} onChange={e => setEventForm({...eventForm, location: e.target.value})} style={{ padding: '14px 16px' }} />
+            <LocationPicker locationName={eventForm.location} setLocationName={(loc) => setEventForm({...eventForm, location: loc})} />
           </div>
         </>
       )}
@@ -641,6 +641,7 @@ export default function LeaderDashboard() {
               { id: 'overview', icon: Activity, label: 'Overview' },
               { id: 'events', icon: Calendar, label: 'Events' },
               { id: 'monetisation', icon: DollarSign, label: 'Monetisation' },
+              { id: 'experiences', icon: Globe, label: 'Experiences' },
               { id: 'social hub', icon: Heart, label: 'Social Hub' },
               { id: 'crm', icon: BarChart3, label: 'CRM' },
               { id: 'members', icon: Users, label: 'Members' },
@@ -683,7 +684,7 @@ export default function LeaderDashboard() {
           {/* Tab Navigation (Mobile) */}
           <div className="mobile-only" style={{ padding: '0 20px', marginBottom: '24px' }}>
             <div style={{ display: 'flex', gap: '4px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', padding: '4px', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-              {['overview', 'events', 'monetisation', 'social hub', 'crm', 'members', 'settings'].map(tab => (
+              {['overview', 'events', 'monetisation', 'experiences', 'social hub', 'crm', 'members', 'settings'].map(tab => (
                 <button 
                   key={tab} onClick={() => setActiveTab(tab)}
                   style={{
@@ -1026,96 +1027,6 @@ export default function LeaderDashboard() {
                         <div style={{ textAlign: 'right' }}>
                           <div style={{ fontWeight: 700, color: ev.revenue > 0 ? '#f59e0b' : 'var(--slate-500)', fontSize: '1rem' }}>£{ev.revenue}</div>
                           <div style={{ fontSize: '0.65rem', color: 'var(--slate-500)' }}>{ev.price > 0 ? 'Paid' : 'Free'}</div>
-          {/* ===== EXPERIENCES MARKETPLACE TAB ===== */}
-          {activeTab === 'experiences' && (
-            <div className="glass-panel" style={{ padding: '24px', borderRadius: '24px', marginTop: '24px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
-                <div>
-                  <h2 style={{ fontSize: '1.4rem', color: 'white', fontFamily: 'var(--font-heading)', margin: '0 0 8px 0', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <Globe color="var(--teal-400)" /> Trips & Retreats Marketplace
-                  </h2>
-                  <p style={{ color: 'var(--slate-400)', margin: 0, fontSize: '0.95rem' }}>Curate premium, high-margin experiences for your community. Powered by Viator & TourRadar.</p>
-                </div>
-                <button onClick={() => setIsDiscoveryModalOpen(true)} className="btn btn-primary interactive-press" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 16px', borderRadius: '12px' }}>
-                  <Search size={16} /> Discover via API
-                </button>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
-                {experiences.map(exp => {
-                  const isPromoted = exp.promotedBy === community?.id;
-                  const finalPrice = exp.basePrice + Math.round(exp.basePrice * ((exp.leaderMarkup || 0) / 100));
-                  
-                  return (
-                    <div key={exp.id} style={{ background: 'rgba(255,255,255,0.03)', border: isPromoted ? '2px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', overflow: 'hidden' }}>
-                      <div style={{ position: 'relative', height: '140px' }}>
-                        <img src={exp.image} alt={exp.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        <div style={{ position: 'absolute', top: '10px', right: '10px', background: 'rgba(0,0,0,0.6)', padding: '4px 10px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 600, color: 'white', backdropFilter: 'blur(4px)' }}>
-                          £{exp.basePrice} base
-                        </div>
-                      </div>
-                      <div style={{ padding: '16px' }}>
-                        <div style={{ fontSize: '0.75rem', color: 'var(--teal-400)', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px' }}>{exp.category}</div>
-                        <h4 style={{ color: 'white', margin: '0 0 8px 0', fontSize: '1.05rem', lineHeight: 1.3 }}>{exp.title}</h4>
-                        <div style={{ display: 'flex', gap: '12px', fontSize: '0.8rem', color: 'var(--slate-400)', marginBottom: '16px' }}>
-                          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={14} /> {exp.duration}</span>
-                          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Star size={14} color="#fbbf24" /> {exp.rating}</span>
-                        </div>
-                        
-                        {!isPromoted ? (
-                          <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '16px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                              <span style={{ fontSize: '0.85rem', color: 'var(--slate-300)' }}>Your Markup:</span>
-                              <select 
-                                onChange={(e) => {
-                                  exp.leaderMarkup = parseInt(e.target.value);
-                                  toast(`Markup set to +${e.target.value}%`, "success");
-                                }}
-                                style={{ background: 'var(--slate-800)', color: 'white', border: '1px solid var(--slate-700)', padding: '4px 8px', borderRadius: '6px', fontSize: '0.85rem' }}
-                              >
-                                <option value="0">0%</option>
-                                <option value="10">+10%</option>
-                                <option value="15">+15%</option>
-                                <option value="20">+20%</option>
-                                <option value="30">+30%</option>
-                              </select>
-                            </div>
-                            <button 
-                              onClick={() => {
-                                exp.promotedBy = community?.id;
-                                toast(`${exp.title} added to your Community Profile!`, "success");
-                                setActiveTab('overview'); setTimeout(() => setActiveTab('experiences'), 10);
-                              }}
-                              className="btn btn-primary" style={{ width: '100%', padding: '10px', fontSize: '0.9rem' }}
-                            >
-                              Promote to Community
-                            </button>
-                          </div>
-                        ) : (
-                          <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '16px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', background: 'rgba(20,184,166,0.1)', padding: '10px', borderRadius: '8px' }}>
-                              <span style={{ fontSize: '0.85rem', color: 'var(--teal-300)' }}>Selling Price: <strong>£{finalPrice}</strong></span>
-                              <span style={{ fontSize: '0.85rem', color: 'var(--teal-300)' }}>Profit: <strong>£{finalPrice - exp.basePrice}</strong></span>
-                            </div>
-                            <button 
-                              onClick={() => {
-                                exp.promotedBy = null;
-                                toast(`${exp.title} removed.`, "info");
-                                setActiveTab('overview'); setTimeout(() => setActiveTab('experiences'), 10);
-                              }}
-                              className="btn btn-outline" style={{ width: '100%', padding: '10px', fontSize: '0.9rem' }}
-                            >
-                              Remove
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
 
                         </div>
                       </div>
@@ -1127,7 +1038,7 @@ export default function LeaderDashboard() {
                       </div>
                       <h4 style={{ margin: '0 0 8px 0', fontSize: '1rem', color: 'var(--white)' }}>No upcoming events</h4>
                       <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--slate-400)', maxWidth: '250px' }}>Create your first event to start engaging with your community.</p>
-                      <button className="btn btn-outline" style={{ marginTop: '16px', borderRadius: '20px', padding: '8px 20px' }}>Create Event</button>
+                      <button className="btn btn-outline" style={{ marginTop: '16px', borderRadius: '20px', padding: '8px 20px' }} onClick={() => openEventWizard()}>Create Event</button>
                     </div>
                   )}
                 </div>
@@ -1162,6 +1073,73 @@ export default function LeaderDashboard() {
                    <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--teal-500)' }}></div>
                    <span style={{ fontSize: '0.85rem', color: 'var(--slate-300)' }}>Payouts arrive daily on a 7-day rolling basis.</span>
                 </div>
+              </div>
+            </div>
+          )}
+
+
+          {/* ══════════════════════════════════════════════════════ */}
+          {/* TAB: EXPERIENCES MARKETPLACE                          */}
+          {/* ══════════════════════════════════════════════════════ */}
+          {activeTab === 'experiences' && (
+            <div className="glass-panel" style={{ padding: '24px', borderRadius: '24px', margin: '0 20px 24px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
+                <div>
+                  <h2 style={{ fontSize: '1.4rem', color: 'white', fontFamily: 'var(--font-heading)', margin: '0 0 8px 0', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <Globe color="var(--teal-400)" /> Trips & Retreats Marketplace
+                  </h2>
+                  <p style={{ color: 'var(--slate-400)', margin: 0, fontSize: '0.95rem' }}>Curate premium, high-margin experiences for your community. Powered by Viator & TourRadar.</p>
+                </div>
+                <button onClick={() => setIsDiscoveryModalOpen(true)} className="btn btn-primary interactive-press" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 16px', borderRadius: '12px' }}>
+                  <Search size={16} /> Discover via API
+                </button>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
+                {experiences.map(exp => {
+                  const isPromoted = exp.promotedBy === community?.id;
+                  const finalPrice = exp.basePrice + Math.round(exp.basePrice * ((exp.leaderMarkup || 0) / 100));
+                  return (
+                    <div key={exp.id} style={{ background: 'rgba(255,255,255,0.03)', border: isPromoted ? '2px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', overflow: 'hidden' }}>
+                      <div style={{ position: 'relative', height: '140px' }}>
+                        <img src={exp.image} alt={exp.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <div style={{ position: 'absolute', top: '10px', right: '10px', background: 'rgba(0,0,0,0.6)', padding: '4px 10px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 600, color: 'white', backdropFilter: 'blur(4px)' }}>
+                          £{exp.basePrice} base
+                        </div>
+                      </div>
+                      <div style={{ padding: '16px' }}>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--teal-400)', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px' }}>{exp.category}</div>
+                        <h4 style={{ color: 'white', margin: '0 0 8px 0', fontSize: '1.05rem', lineHeight: 1.3 }}>{exp.title}</h4>
+                        <div style={{ display: 'flex', gap: '12px', fontSize: '0.8rem', color: 'var(--slate-400)', marginBottom: '16px' }}>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={14} /> {exp.duration}</span>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Star size={14} color="#fbbf24" /> {exp.rating}</span>
+                        </div>
+                        {!isPromoted ? (
+                          <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '16px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                              <span style={{ fontSize: '0.85rem', color: 'var(--slate-300)' }}>Your Markup:</span>
+                              <select onChange={(e) => { exp.leaderMarkup = parseInt(e.target.value); toast(`Markup set to +\${e.target.value}%`, "success"); }}
+                                style={{ background: 'var(--slate-800)', color: 'white', border: '1px solid var(--slate-700)', padding: '4px 8px', borderRadius: '6px', fontSize: '0.85rem' }}>
+                                <option value="0">0%</option><option value="10">+10%</option><option value="15">+15%</option><option value="20">+20%</option><option value="30">+30%</option>
+                              </select>
+                            </div>
+                            <button onClick={() => { exp.promotedBy = community?.id; toast(`\${exp.title} added!`, "success"); setActiveTab('overview'); setTimeout(() => setActiveTab('experiences'), 10); }}
+                              className="btn btn-primary" style={{ width: '100%', padding: '10px', fontSize: '0.9rem' }}>Promote to Community</button>
+                          </div>
+                        ) : (
+                          <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '16px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', background: 'rgba(20,184,166,0.1)', padding: '10px', borderRadius: '8px' }}>
+                              <span style={{ fontSize: '0.85rem', color: 'var(--teal-300)' }}>Selling: <strong>£{finalPrice}</strong></span>
+                              <span style={{ fontSize: '0.85rem', color: 'var(--teal-300)' }}>Profit: <strong>£{finalPrice - exp.basePrice}</strong></span>
+                            </div>
+                            <button onClick={() => { exp.promotedBy = null; toast(`\${exp.title} removed.`, "info"); setActiveTab('overview'); setTimeout(() => setActiveTab('experiences'), 10); }}
+                              className="btn btn-outline" style={{ width: '100%', padding: '10px', fontSize: '0.9rem' }}>Remove</button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}

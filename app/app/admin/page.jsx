@@ -6,6 +6,8 @@ import { Shield, Activity, Users, Map, CheckCircle, XCircle, Search, BadgeCheck,
   BarChart3, UserCheck, Zap, Star, Globe, Lock, Mail, Clock, AlertTriangle,
   ChevronRight, ScanLine, Ticket } from 'lucide-react';
 import { useAppContext } from '../../src/context/AppContext';
+import { useFeed } from '../../src/context/FeedContext';
+import { useChat } from '../../src/context/ChatContext';
 import { useToast } from '../../src/components/Toast';
 import { useRouter as useNavigate } from 'next/navigation';
 
@@ -65,11 +67,9 @@ function getEngagementScore(member, events, eventRsvps, messages, communityId) {
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
-  const { 
-    user, communities, users, events, messages, communityMemberships, eventRsvps, 
-    adminVerifyCommunity, feedPosts, notifications, broadcastNotification,
-    toggleUserRole, updateCommunity
-  } = useAppContext();
+  const { user, communities, users, events, communityMemberships, eventRsvps, adminVerifyCommunity, notifications, broadcastNotification, toggleUserRole, updateCommunity } = useAppContext();
+    const { feedPosts } = useFeed();
+    const { messages } = useChat();
   const { toast } = useToast();
 
   const [activeTab, setActiveTab] = useState('overview');
@@ -602,10 +602,10 @@ export default function AdminDashboard() {
 
                           {/* Actions */}
                           <div style={{ display: 'flex', gap: '6px' }}>
-                            <button onClick={(e) => { e.stopPropagation(); navigate.back(); }} className="btn btn-outline interactive-press" style={{ flex: 1, padding: '8px', borderRadius: '8px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                            <button onClick={(e) => { e.stopPropagation(); navigate.push('/'); }} className="btn btn-outline interactive-press" style={{ flex: 1, padding: '8px', borderRadius: '8px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
                               <Eye size={12} /> View Profile
                             </button>
-                            <button onClick={(e) => { e.stopPropagation(); navigate.back(); }} className="btn btn-primary interactive-press" style={{ flex: 1, padding: '8px', borderRadius: '8px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', background: 'var(--teal-500)', border: 'none' }}>
+                            <button onClick={(e) => { e.stopPropagation(); navigate.push('/'); }} className="btn btn-primary interactive-press" style={{ flex: 1, padding: '8px', borderRadius: '8px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', background: 'var(--teal-500)', border: 'none' }}>
                               <MessageCircle size={12} /> Message
                             </button>
                             {!u.isAdmin && (

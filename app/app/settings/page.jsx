@@ -5,6 +5,7 @@ import AppHeader from '../../src/components/AppHeader';
 import { useRouter as useNavigate } from 'next/navigation';
 import { useAuth } from '../../src/context/AuthContext';
 import { useAppContext } from '../../src/context/AppContext';
+import { useChat } from '../../src/context/ChatContext';
 import { useToast } from '../../src/components/Toast';
 
 export default function SettingsScreen() {
@@ -78,7 +79,7 @@ export default function SettingsScreen() {
   };
 
   const menuItems = [
-    { icon: <User size={20} />, label: 'View Profile', color: '#3b82f6', onClick: () => navigate.back() },
+    { icon: <User size={20} />, label: 'View Profile', color: '#3b82f6', onClick: () => navigate.push('/profile') },
     { icon: <Shield size={20} />, label: 'Privacy & Security', color: '#a78bfa', onClick: () => toast.info('Coming soon', 'Privacy settings are on the way') },
     { icon: <Info size={20} />, label: 'About more.', color: 'var(--teal-400)', onClick: () => toast.info('more. v1.0.0', 'Built with ❤️ in Tunbridge Wells') },
   ];

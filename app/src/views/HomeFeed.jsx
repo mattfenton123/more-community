@@ -2,12 +2,14 @@
 import { useMemo } from 'react';
 import { useRouter as useNavigate } from 'next/navigation';
 import { useAppContext } from '../context/AppContext';
+import { useFeed } from '../context/FeedContext';
 import { Heart, MessageCircle, Share2, Calendar, MapPin, Clock, Compass } from 'lucide-react';
 import AppHeader from '../components/AppHeader';
 import { SkeletonList, SkeletonCard } from '../components/SkeletonCard';
 
 export default function HomeFeed() {
-  const { user, communities, feedPosts, events, users, likeFeedPost, eventRsvps, isLoading } = useAppContext();
+  const { user, communities, events, users, eventRsvps, isLoading } = useAppContext();
+    const { feedPosts, likeFeedPost } = useFeed();
   const navigate = useNavigate();
 
   const joinedCommunities = communities.filter(c => user.joinedCommunities?.includes(c.id));

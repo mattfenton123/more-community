@@ -2,62 +2,45 @@
 import { useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppContext } from '../src/context/AppContext';
-import { Heart, MessageCircle, Share2, Calendar, MapPin, Clock, Compass } from 'lucide-react';
+import { useFeed } from '../src/context/FeedContext';
+import { Heart, MessageCircle, Share2, Calendar, MapPin, Clock, Compass, Plus } from 'lucide-react';
 import AppHeader from '../src/components/AppHeader';
 import { SkeletonList, SkeletonCard } from '../src/components/SkeletonCard';
 
 export default function HomeFeed() {
-  const { user, communities, feedPosts, events, users, likeFeedPost, eventRsvps, isLoading } = useAppContext();
+  const { user, communities, events, users, eventRsvps, isLoading } = useAppContext();
+  const { feedPosts, likeFeedPost } = useFeed();
   const router = useRouter();
 
   const joinedCommunities = communities.filter(c => user.joinedCommunities?.includes(c.id));
 
   const feedItems = useMemo(() => {
     const items = [];
-    
-    // Add Posts
     if (feedPosts && user.joinedCommunities) {
       feedPosts.forEach(post => {
         if (user.joinedCommunities.includes(post.communityId)) {
-          items.push({
-            type: 'post',
-            id: `post-${post.id}`,
-            data: post,
-            timestamp: new Date(post.timestamp).getTime()
-          });
+          items.push({ type: 'post', id: `post-${post.id}`, data: post, timestamp: new Date(post.timestamp).getTime() });
         }
       });
     }
-
-    // Add Events
     if (events && user.joinedCommunities) {
       events.forEach(event => {
         if (user.joinedCommunities.includes(event.communityId)) {
-          // Only add events that are in the future or recently created
-          items.push({
-            type: 'event',
-            id: `event-${event.id}`,
-            data: event,
-            timestamp: new Date(event.createdAt || event.date).getTime()
-          });
+          items.push({ type: 'event', id: `event-${event.id}`, data: event, timestamp: new Date(event.createdAt || event.date).getTime() });
         }
       });
     }
-
-    // Sort by timestamp descending
     return items.sort((a, b) => b.timestamp - a.timestamp);
   }, [feedPosts, events, user.joinedCommunities]);
 
   return (
     <div className="view-home" style={{ paddingBottom: '80px', background: 'var(--slate-950)', minHeight: '100vh' }}>
-      {/* Header */}
       <AppHeader title="Home" />
 
       {/* Stories Carousel */}
       <div style={{ padding: '16px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
         <div style={{ display: 'flex', overflowX: 'auto', gap: '16px', padding: '0 20px', WebkitOverflowScrolling: 'touch' }}>
-          
-          <div onClick={() => navigate.back()} className="interactive-press" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', cursor: 'pointer', minWidth: '64px' }}>
+          <div onClick={() => router.push('/discover')} className="interactive-press" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', cursor: 'pointer', minWidth: '64px' }}>
             <div style={{ width: '64px', height: '64px', borderRadius: '50%', border: '2px dashed var(--slate-600)', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.02)' }}>
               <Compass size={24} color="var(--slate-400)" />
             </div>
@@ -65,7 +48,7 @@ export default function HomeFeed() {
           </div>
 
           {joinedCommunities.map(community => (
-            <div key={community.id} onClick={() => navigate.back()} className="interactive-press" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', cursor: 'pointer', minWidth: '64px' }}>
+            <div key={community.id} onClick={() => router.push(`/community/${community.id}`)} className="interactive-press" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', cursor: 'pointer', minWidth: '64px' }}>
               <div style={{ width: '64px', height: '64px', borderRadius: '50%', padding: '3px', background: 'linear-gradient(45deg, var(--teal-500), #3b82f6)' }}>
                 <img src={community.image || community.cover_image} alt={community.name} loading="lazy" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--slate-950)' }} />
               </div>
@@ -89,25 +72,20 @@ export default function HomeFeed() {
             return (
               <div key={item.id} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', overflow: 'hidden' }}>
                 <div style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <img src={community?.image || community?.cover_image} alt={community?.name} loading="lazy" style={{ width: '40px', height: '40px', borderRadius: '8px', objectFit: 'cover', cursor: 'pointer' }} onClick={() => navigate.back()} />
+                  <img src={community?.image || community?.cover_image} alt={community?.name} loading="lazy" style={{ width: '40px', height: '40px', borderRadius: '8px', objectFit: 'cover', cursor: 'pointer' }} onClick={() => router.push(`/community/${community?.id}`)} />
                   <div>
-                    <div style={{ fontWeight: 600, color: 'white', fontSize: '0.95rem', cursor: 'pointer' }} onClick={() => navigate.back()}>{community?.name}</div>
+                    <div style={{ fontWeight: 600, color: 'white', fontSize: '0.95rem', cursor: 'pointer' }} onClick={() => router.push(`/community/${community?.id}`)}>{community?.name}</div>
                     <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>
                       Posted by {author?.name || 'Community Leader'} • {new Date(post.timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                     </div>
                   </div>
                 </div>
-                
-                <div style={{ padding: '0 16px 12px', color: 'var(--slate-200)', fontSize: '0.95rem', lineHeight: 1.5 }}>
-                  {post.text}
-                </div>
-
+                <div style={{ padding: '0 16px 12px', color: 'var(--slate-200)', fontSize: '0.95rem', lineHeight: 1.5 }}>{post.text}</div>
                 {post.media && (
                   <div style={{ width: '100%', background: 'var(--slate-900)' }}>
                     <img src={post.media} alt="Post media" loading="lazy" style={{ width: '100%', maxHeight: '400px', objectFit: 'cover' }} />
                   </div>
                 )}
-
                 <div style={{ padding: '12px 16px', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', gap: '16px' }}>
                   <button onClick={() => likeFeedPost(post.id)} className="interactive-press" style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--slate-400)', cursor: 'pointer', fontSize: '0.85rem' }}>
                     <Heart size={16} fill={post.likes > 0 ? "var(--teal-400)" : "none"} color={post.likes > 0 ? "var(--teal-400)" : "var(--slate-400)"} /> {post.likes || 0}
@@ -132,7 +110,7 @@ export default function HomeFeed() {
                 <div style={{ padding: '12px 16px', background: 'rgba(20,184,166,0.1)', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8rem', color: 'var(--teal-300)', fontWeight: 600 }}>
                   <Calendar size={14} /> New Event in {community?.name}
                 </div>
-                <div onClick={() => navigate.back()} className="interactive-press" style={{ cursor: 'pointer' }}>
+                <div onClick={() => router.push(`/community/${community?.id}`)} className="interactive-press" style={{ cursor: 'pointer' }}>
                   {event.image && (
                     <div style={{ height: '140px', background: `url(${event.image})`, backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative' }}>
                       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.6))' }}></div>
@@ -177,6 +155,11 @@ export default function HomeFeed() {
             <button onClick={() => router.push('/discover')} className="btn btn-primary interactive-press">
               Discover Communities
             </button>
+            <div style={{ marginTop: '12px' }}>
+              <button onClick={() => router.push('/dashboard')} className="btn btn-outline interactive-press" style={{ fontSize: '0.9rem' }}>
+                🚀 Start a Community
+              </button>
+            </div>
           </div>
         )}
       </div>

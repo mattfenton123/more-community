@@ -138,7 +138,7 @@ export default function LoginScreen() {
 
             <button
               type="submit"
-              disabled={isLoading || !email.trim() || !password.trim()}
+              disabled={isLoading || !email.trim() || !password.trim() || (isSignUp && !name.trim())}
               className="btn btn-primary"
               style={{
                 width: '100%',

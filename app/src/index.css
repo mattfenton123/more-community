@@ -994,3 +994,139 @@ textarea.form-input {
     flex: 1;
   }
 }
+/* Microsite Desktop Layout */
+@media (min-width: 1024px) {
+  .view-profile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .microsite-hero {
+    height: 480px !important;
+  }
+  .microsite-content {
+    max-width: 1100px;
+    width: 100%;
+    margin: -60px auto 0;
+    position: relative;
+    z-index: 10;
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 32px;
+    padding: 0 24px;
+  }
+  .microsite-main {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  .microsite-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    margin-top: 0;
+  }
+}
+/* Refined Microsite Desktop Layout */
+@media (min-width: 1024px) {
+  .view-profile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: url('/portal/images/general.webp') no-repeat center center fixed !important;
+    background-size: cover !important;
+  }
+  .view-profile::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(2, 6, 23, 0.7);
+    backdrop-filter: blur(20px);
+    z-index: 0;
+  }
+  .view-profile > * {
+    z-index: 1;
+    position: relative;
+  }
+  
+  .microsite-container {
+    max-width: 540px !important;
+    width: 100%;
+    margin: 40px auto;
+    background: var(--slate-950);
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+}
+/* Global App Desktop Layout overrides */
+@media (min-width: 1024px) {
+  /* Let the app container fill the screen */
+  .app-container {
+    max-width: 100% !important;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+  }
+  
+  /* Convert bottom tab bar to left sidebar */
+  .tab-bar {
+    position: sticky !important;
+    top: 0;
+    left: 0 !important;
+    transform: none !important;
+    width: 240px !important;
+    max-width: 240px !important;
+    height: 100vh !important;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    padding: 40px 20px;
+    border-top: none !important;
+    border-right: 1px solid rgba(255,255,255,0.05);
+  }
+
+  .tab-item {
+    width: 100%;
+    flex-direction: row !important;
+    justify-content: flex-start !important;
+    padding: 16px 20px !important;
+    gap: 16px;
+    font-size: 1.1rem !important;
+  }
+  
+  .tab-label {
+    font-size: 1.1rem !important;
+    margin-top: 0 !important;
+  }
+
+  /* Center the main content feed */
+  .app-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-bottom: 0 !important;
+    height: 100vh;
+    overflow-y: auto;
+  }
+
+  /* Feed views constraints */
+  .app-content > div {
+    max-width: 600px;
+    width: 100%;
+    margin: 0 auto;
+  }
+  
+  /* Microsite and Dashboard can break out of the 600px constraint */
+  .app-content > .view-profile,
+  .app-content > .dashboard-layout {
+    max-width: 100%;
+  }
+}
+@media (min-width: 1024px) {
+  .app-container > .tab-bar {
+    order: -1;
+  }
+}

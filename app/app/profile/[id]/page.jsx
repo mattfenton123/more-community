@@ -2,7 +2,9 @@
 import { useState, useRef } from 'react';
 import { useRouter as useNavigate, useParams } from 'next/navigation';
 import { useAppContext } from '../../../src/context/AppContext';
-import { ArrowLeft, Users, Calendar, MapPin, Settings, Camera, Check, X, MessageCircle, Edit3, Trophy, Flame } from 'lucide-react';
+import { useChat } from '../../../src/context/ChatContext';
+import { useAuth } from '../../../src/context/AuthContext';
+import { ArrowLeft, Users, Calendar, MapPin, Settings, Camera, Check, X, MessageCircle, Edit3, Trophy, Flame, Plus, Compass, Star, LogOut, ChevronRight } from 'lucide-react';
 import { useToast } from '../../../src/components/Toast';
 import GamificationPanel, { BadgeRow, useGamification } from '../../../src/components/Gamification';
 import { FALLBACK_IMAGES } from '../../../src/lib/constants';
@@ -10,7 +12,9 @@ import { FALLBACK_IMAGES } from '../../../src/lib/constants';
 export default function UserProfile() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { users, communities, communityMemberships, user: currentUser, updateUser, uploadImage, events, eventRsvps, messages } = useAppContext();
+  const { users, communities, communityMemberships, user: currentUser, updateUser, uploadImage, events, eventRsvps } = useAppContext();
+  const { messages } = useChat();
+  const { signOut } = useAuth();
   const { toast } = useToast();
   
   const targetId = id || currentUser.id;
@@ -61,18 +65,36 @@ export default function UserProfile() {
     } catch (err) { toast.error('Failed to save profile'); }
   };
 
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      navigate.push('/login');
+    } catch (err) {
+      toast.error('Sign out failed');
+    }
+  };
+
+  // Quick action items for own profile
+  const quickActions = [
+    { icon: Plus, label: 'Start a Community', desc: 'Create and lead your own group', color: '#8b5cf6', href: '/dashboard' },
+    { icon: Compass, label: 'Discover Communities', desc: 'Find groups near you', color: 'var(--teal-500)', href: '/discover' },
+    { icon: Calendar, label: 'Browse Events', desc: 'See what\'s happening locally', color: '#3b82f6', href: '/events' },
+    { icon: Star, label: 'Leaderboard', desc: 'See top community members', color: '#f59e0b', href: '/leaderboard' },
+    { icon: Settings, label: 'Settings', desc: 'Account preferences', color: 'var(--slate-400)', href: '/settings' },
+  ];
+
   return (
     <div className="view-profile" style={{ paddingBottom: '80px', overflowY: 'auto', height: '100%', background: 'var(--slate-950)' }}>
       {/* Hero Banner */}
       <div style={{ height: '180px', background: `url(${FALLBACK_IMAGES.general})`, backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative' }}>
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.1), var(--slate-950))' }}></div>
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, padding: '20px', display: 'flex', justifyContent: 'space-between', zIndex: 10 }}>
-          <button className="interactive-press" onClick={() => navigate.back()} style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(10px)', border: 'none', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+          <button className="interactive-press" onClick={() => navigate.push('/')} style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(10px)', border: 'none', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
             <ArrowLeft size={24} />
           </button>
           <div style={{ display: 'flex', gap: '8px' }}>
             {!isOwnProfile && (
-              <button className="interactive-press" onClick={() => navigate.back()} style={{ height: '40px', padding: '0 16px', borderRadius: '20px', background: 'var(--teal-500)', border: 'none', color: 'white', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 600 }}>
+              <button className="interactive-press" onClick={() => navigate.push(`/chat/dm/${targetId}`)} style={{ height: '40px', padding: '0 16px', borderRadius: '20px', background: 'var(--teal-500)', border: 'none', color: 'white', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 600 }}>
                 <MessageCircle size={18} /> Message
               </button>
             )}
@@ -81,7 +103,7 @@ export default function UserProfile() {
                 <button className="interactive-press" onClick={() => setIsEditing(true)} style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(236,72,153,0.2)', border: '1px solid rgba(236,72,153,0.4)', backdropFilter: 'blur(10px)', color: 'var(--pink-400)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
                   <Edit3 size={20} />
                 </button>
-                <button className="interactive-press" onClick={() => navigate.back()} style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(20,184,166,0.2)', border: '1px solid rgba(20,184,166,0.4)', backdropFilter: 'blur(10px)', color: 'var(--teal-400)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                <button className="interactive-press" onClick={() => navigate.push('/settings')} style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(20,184,166,0.2)', border: '1px solid rgba(20,184,166,0.4)', backdropFilter: 'blur(10px)', color: 'var(--teal-400)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
                   <Settings size={20} />
                 </button>
               </>
@@ -173,6 +195,55 @@ export default function UserProfile() {
           </div>
         </div>
 
+        {/* Quick Actions (own profile only) */}
+        {isOwnProfile && !isEditing && (
+          <div style={{ marginBottom: '24px' }}>
+            <h3 style={{ fontSize: '0.8rem', color: 'var(--slate-500)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '12px' }}>Quick Actions</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', background: 'rgba(255,255,255,0.02)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.06)', overflow: 'hidden' }}>
+              {quickActions.map((action, i) => (
+                <button
+                  key={action.label}
+                  onClick={() => navigate.push(action.href)}
+                  className="interactive-press"
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 16px',
+                    background: 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left',
+                    borderBottom: i < quickActions.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
+                  }}
+                >
+                  <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: `${action.color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <action.icon size={18} color={action.color} />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: 600, color: 'white', fontSize: '0.9rem' }}>{action.label}</div>
+                    <div style={{ fontSize: '0.78rem', color: 'var(--slate-400)' }}>{action.desc}</div>
+                  </div>
+                  <ChevronRight size={16} color="var(--slate-600)" />
+                </button>
+              ))}
+
+              {/* Sign Out */}
+              <button
+                onClick={handleSignOut}
+                className="interactive-press"
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 16px',
+                  background: 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left',
+                  borderTop: '1px solid rgba(255,255,255,0.04)',
+                }}
+              >
+                <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: 'rgba(239,68,68,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <LogOut size={18} color="#ef4444" />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 600, color: '#ef4444', fontSize: '0.9rem' }}>Sign Out</div>
+                  <div style={{ fontSize: '0.78rem', color: 'var(--slate-400)' }}>Log out of your account</div>
+                </div>
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Tab Navigation */}
         <div style={{ display: 'flex', gap: '4px', marginBottom: '20px', background: 'rgba(255,255,255,0.03)', borderRadius: '10px', padding: '3px' }}>
           {['badges', 'communities'].map(tab => (
@@ -195,12 +266,15 @@ export default function UserProfile() {
           <div style={{ marginBottom: '24px' }}>
             {joinedCommunities.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '32px', background: 'rgba(255,255,255,0.02)', borderRadius: '16px', border: '1px dashed rgba(255,255,255,0.1)' }}>
-                <p style={{ color: 'var(--slate-400)', fontSize: '0.9rem', margin: 0 }}>Not a member of any communities yet.</p>
+                <p style={{ color: 'var(--slate-400)', fontSize: '0.9rem', margin: '0 0 16px 0' }}>Not a member of any communities yet.</p>
+                <button onClick={() => navigate.push('/discover')} className="btn btn-primary interactive-press" style={{ borderRadius: '99px' }}>
+                  Discover Communities
+                </button>
               </div>
             ) : (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '12px' }}>
                 {joinedCommunities.map(comm => (
-                  <div key={comm.id} onClick={() => navigate.back()} className="interactive-press" style={{ position: 'relative', height: '120px', borderRadius: '12px', overflow: 'hidden', cursor: 'pointer' }}>
+                  <div key={comm.id} onClick={() => navigate.push(`/community/${comm.id}`)} className="interactive-press" style={{ position: 'relative', height: '120px', borderRadius: '12px', overflow: 'hidden', cursor: 'pointer' }}>
                     <div style={{ height: '100px', background: 'var(--slate-800)' }}>
                       <img src={comm.image || FALLBACK_IMAGES.community} alt={comm.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     </div>

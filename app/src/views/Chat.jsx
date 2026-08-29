@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Send, Menu, MessageCircle, ChevronLeft, Plus, Users, Hash, Image as ImageIcon, X } from 'lucide-react';
 import AppHeader from '../components/AppHeader';
 import { useAppContext } from '../context/AppContext';
+import { useChat } from '../context/ChatContext';
 import { useRouter as useNavigate, useParams } from 'next/navigation';
 import { SkeletonChatBubble, SkeletonLine, SkeletonAvatar } from '../components/SkeletonCard';
 import { useToast } from '../components/Toast';
@@ -20,7 +21,8 @@ export default function Chat() {
   const [newChannelName, setNewChannelName] = useState('');
   const [activeTab, setActiveTab] = useState('Communities');
   
-  const { messages, directMessages, user, communities, sendMessage, sendDirectMessage, users, communityMemberships, uploadImage, channels, createChannel, isLoading, whatsappSettings, chatReadReceipts, markChatRead } = useAppContext();
+  const { user, communities, users, communityMemberships, uploadImage, channels, createChannel, isLoading, whatsappSettings } = useAppContext();
+    const { messages, directMessages, sendMessage, sendDirectMessage, chatReadReceipts, markChatRead } = useChat();
   const { toast } = useToast();
   const [showNewChatModal, setShowNewChatModal] = useState(false);
   const [userSearchTerm, setUserSearchTerm] = useState('');

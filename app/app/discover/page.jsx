@@ -3,6 +3,7 @@ import { useState, useMemo } from 'react';
 import { Compass, Users, MapPin, Search, Calendar, ChevronRight, X, List, Map as MapIcon, Sparkles, BadgeCheck, TrendingUp, Activity, Zap } from 'lucide-react';
 import { useRouter as useNavigate } from 'next/navigation';
 import { useAppContext } from '../../src/context/AppContext';
+import { useChat } from '../../src/context/ChatContext';
 import { FALLBACK_IMAGES } from '../../src/lib/constants';
 import { SkeletonList, SkeletonCard } from '../../src/components/SkeletonCard';
 import { useToast } from '../../src/components/Toast';
@@ -16,7 +17,8 @@ export default function Discover() {
   const [viewMode, setViewMode] = useState('list'); // 'list' or 'map'
   const [sortBy, setSortBy] = useState('trending');
   const pills = ['All', 'For You', '🔥 Trending', '🚶 Walking', '🏃 Running', '🧘 Wellness', '⛰️ Adventure', '🤝 Volunteering', '🎨 Creative', '💼 Business'];
-  const { communities, user, users, communityMemberships, joinCommunity, isLoading, events, messages } = useAppContext();
+  const { communities, user, users, communityMemberships, joinCommunity, isLoading, events } = useAppContext();
+    const { messages } = useChat();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -149,7 +151,7 @@ export default function Discover() {
                 <MapIcon size={18} />
               </button>
             </div>
-            <button onClick={() => navigate.back()} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 }}>
+            <button onClick={() => navigate.push('/profile')} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 }}>
               <img src={user?.avatar || 'https://i.pravatar.cc/150'} alt="Profile" style={{ width: '36px', height: '36px', borderRadius: '50%', border: '2px solid var(--slate-700)', objectFit: 'cover' }} />
             </button>
           </>
@@ -261,7 +263,7 @@ export default function Discover() {
               {/* Experiences Marketplace Banner */}
               {activePill === 'All' && (
                 <div
-                  onClick={() => navigate.back()}
+                  onClick={() => navigate.push('/discover')}
                   className="interactive-press"
                   style={{
                     margin: '0 20px 16px', padding: '1.1rem 1.25rem',

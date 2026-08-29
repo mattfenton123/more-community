@@ -1,6 +1,6 @@
 "use client";
 import { useState } from 'react';
-import { useRouter as useNavigate } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useAppContext } from '../../src/context/AppContext';
 import { Users, Search, Plus } from 'lucide-react';
 import AppHeader from '../../src/components/AppHeader';
@@ -10,7 +10,7 @@ import CommunityOnboardingFlow from '../../src/views/CommunityOnboardingFlow';
 
 export default function MyCommunities() {
   const { user, communities, isLoading } = useAppContext();
-  const navigate = useNavigate();
+  const router = useRouter();
   const [showCreateModal, setShowCreateModal] = useState(false);
 
   const joined = communities.filter(c => user.joinedCommunities.includes(c.id));
@@ -32,7 +32,7 @@ export default function MyCommunities() {
             <h3 style={{ fontFamily: 'var(--font-heading)', color: 'white', marginBottom: '8px' }}>No communities yet</h3>
             <p style={{ color: 'var(--slate-400)', fontSize: '0.9rem', marginBottom: '24px' }}>Join a community to see it here.</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'center' }}>
-              <button onClick={() => navigate.back()} className="btn btn-primary" style={{ display: 'inline-flex', padding: '12px 24px', borderRadius: '99px' }}>
+              <button onClick={() => router.push('/discover')} className="btn btn-primary" style={{ display: 'inline-flex', padding: '12px 24px', borderRadius: '99px' }}>
                 Discover Communities
               </button>
               <button 
@@ -48,7 +48,7 @@ export default function MyCommunities() {
             {joined.map((comm, i) => (
               <div 
                 key={comm.id}
-                onClick={() => navigate.back()}
+                onClick={() => router.push('/community/' + comm.id)}
                 className="glass-panel interactive-hover stagger-item"
                 style={{ overflow: 'hidden', cursor: 'pointer', padding: 0 }}
               >
@@ -75,7 +75,7 @@ export default function MyCommunities() {
             
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
               <button 
-                onClick={() => navigate.back()}
+                onClick={() => router.push('/discover')}
                 className="interactive-press"
                 style={{ padding: '20px', border: '1px dashed rgba(255,255,255,0.1)', background: 'transparent', borderRadius: '16px', color: 'var(--slate-400)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', cursor: 'pointer', transition: 'background 0.2s' }}
                 onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'}

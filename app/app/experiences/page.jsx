@@ -46,7 +46,7 @@ export default function ExperiencesMarketplace() {
         padding: '1rem 1.25rem'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
-          <button onClick={() => navigate.back()} style={{
+          <button onClick={() => navigate.push('/')} style={{
             background: 'none', border: 'none', color: 'var(--slate-400)', cursor: 'pointer',
             display: 'flex', alignItems: 'center', padding: '4px'
           }}>

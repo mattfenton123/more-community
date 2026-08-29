@@ -3,11 +3,13 @@ import { useState, useMemo } from 'react';
 import { Search, Users, Crown, MessageCircle, ChevronRight, Trophy, Flame } from 'lucide-react';
 import { useRouter as useNavigate } from 'next/navigation';
 import { useAppContext } from '../context/AppContext';
+import { useChat } from '../context/ChatContext';
 import { BadgeRow, useGamification } from './Gamification';
 
 function MemberRow({ member, communityId }) {
   const navigate = useNavigate();
-  const { users, messages, eventRsvps, events } = useAppContext();
+  const { users, eventRsvps, events } = useAppContext();
+    const { messages } = useChat();
   const user = users.find(u => u.id === member.userId);
   if (!user) return null;
 
@@ -18,7 +20,7 @@ function MemberRow({ member, communityId }) {
   });
 
   return (
-    <div onClick={() => navigate.back()} className="interactive-press"
+    <div onClick={() => navigate.push(`/profile/${member.id}`)} className="interactive-press"
       style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 12px', background: 'rgba(255,255,255,0.02)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.04)', cursor: 'pointer', marginBottom: '6px' }}>
       <img src={user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=0D8B93&color=fff`} alt="" style={{ width: '38px', height: '38px', borderRadius: '50%', objectFit: 'cover' }} />
       <div style={{ flex: 1, minWidth: 0 }}>
@@ -66,7 +68,7 @@ export default function MemberDirectory({ communityId, onClose }) {
           <Users size={18} color="var(--teal-400)" />
           <h3 style={{ margin: 0, color: 'white', fontSize: '1rem', fontFamily: 'var(--font-heading)' }}>Members ({members.length})</h3>
         </div>
-        <button onClick={() => navigate.back()} className="interactive-press"
+        <button onClick={() => navigate.push(`/profile/${member.id}`)} className="interactive-press"
           style={{ background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.2)', borderRadius: '8px', padding: '5px 10px', color: '#f59e0b', fontSize: '0.7rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
           <Trophy size={12} /> Leaderboard
         </button>

@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { supabase } from '../lib/supabaseClient';
 import { useAuth } from './AuthContext';
 import { initialExperiences } from '../lib/constants';
-import { createEventAction, joinCommunityAction, leaveCommunityAction, rsvpToEventAction, createCommunityAction, uploadImageAction } from '../lib/actions';
+import { createEventAction, joinCommunityAction, leaveCommunityAction, rsvpToEventAction } from '../lib/actions';
 
 const AppContext = createContext();
 
@@ -115,7 +115,7 @@ export function AppProvider({ children }) {
       setIsLoading(true);
 
       // Batch 1: All independent queries run in parallel
-      const [usersRes, commsRes, chanRes, evRes, rsvpRes, memRes] =
+      const [usersRes, commsRes, chanRes, evRes, rsvpRes, memRes, msgRes, feedRes] =
         await Promise.all([
           supabase.from('users').select('*'),
           supabase.from('communities').select('*'),
@@ -123,6 +123,8 @@ export function AppProvider({ children }) {
           supabase.from('events').select('*'),
           supabase.from('event_rsvps').select('*'),
           supabase.from('community_memberships').select('*'),
+          supabase.from('messages').select('*').order('created_at', { ascending: false }).limit(500),
+          supabase.from('feed_posts').select('*').order('created_at', { ascending: false }).limit(100),
         ]);
 
       // Process results
@@ -177,11 +179,34 @@ export function AppProvider({ children }) {
         setCommunityMemberships(memMap);
       }
 
+      if (msgRes.data) {
+        setMessages(msgRes.data.reverse().map(msg => ({
+          id: msg.id,
+          communityId: msg.community_id,
+          channel: msg.channel,
+          authorId: msg.author_id,
+          text: msg.text,
+          image: msg.image,
+          timestamp: msg.timestamp
+        })));
+      }
 
+      if (!feedRes.error && feedRes.data) {
+        setFeedPosts(feedRes.data.map(post => ({
+          id: post.id,
+          communityId: post.community_id,
+          authorId: post.author_id,
+          text: post.text,
+          media: post.media,
+          likes: post.likes,
+          comments: post.comments,
+          timestamp: post.created_at
+        })));
+      }
 
       // Batch 2: Auth-dependent queries (run in parallel with each other)
       if (authUser?.id) {
-        const [notifRes, readRes] = await Promise.all([
+        const [notifRes, dmRes, readRes] = await Promise.all([
           supabase
             .from('notifications')
             .select('*')
@@ -200,6 +225,18 @@ export function AppProvider({ children }) {
 
         if (!notifRes.error && notifRes.data) {
           setNotifications(notifRes.data);
+        }
+
+        if (!dmRes.error && dmRes.data) {
+          setDirectMessages(dmRes.data.map(dm => ({
+            id: dm.id,
+            senderId: dm.sender_id,
+            receiverId: dm.receiver_id,
+            text: dm.text,
+            image: dm.image,
+            created_at: dm.created_at,
+            timestamp: new Date(dm.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          })));
         }
 
         if (!readRes.error && readRes.data) {
@@ -692,7 +729,6 @@ export function AppProvider({ children }) {
         description: eventData.description || '',
         date: eventData.date,
         time: eventData.time,
-      ticket_price: eventData.ticketPrice || 0,
         location: eventData.location,
         image: eventData.image,
         attendees: 0,
@@ -774,15 +810,47 @@ export function AppProvider({ children }) {
     }));
 
     try {
-      // Create the community using Server Action
-      await createCommunityAction({
+      // Create the community
+      const { error: commError } = await supabase.from('communities').insert([{
         id: newId,
         name: communityData.name,
         description: communityData.description,
         tags: communityData.tags || [],
         cover_image: communityData.image || null,
-        creatorId: user.id
-      }, session?.access_token);
+        verified: communityData.verified || false,
+        instagram_handle: communityData.instagram_handle || null,
+        whatsapp_group: communityData.whatsapp_group || null,
+        activity_level: communityData.activity_level || 'Active',
+        cost: communityData.cost || 'Free'
+      }]);
+      
+      if (commError) {
+        // If it's a schema error (column does not exist), fallback to base columns
+        if (commError.message && commError.message.includes('column')) {
+          console.warn('Schema mismatch, falling back to base columns...');
+          try {
+            const { error: fallbackError } = await supabase.from('communities').insert([{
+              id: newId,
+              name: communityData.name,
+              description: communityData.description
+            }]);
+            if (fallbackError) throw fallbackError;
+          } catch (superFallbackError) {
+            console.error('Super fallback also failed:', superFallbackError);
+            throw superFallbackError;
+          }
+        } else {
+          throw commError;
+        }
+      }
+
+      // Automatically join as Leader
+      const { error: memError } = await supabase.from('community_memberships').insert([{
+        community_id: newId,
+        user_id: user.id,
+        role: 'Leader'
+      }]);
+      if (memError) throw memError;
       
       return newId;
     } catch (err) {
@@ -835,12 +903,26 @@ export function AppProvider({ children }) {
 
   const uploadImage = async (file) => {
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('userId', user.id);
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
       
-      const publicUrl = await uploadImageAction(formData, session?.access_token);
-      return publicUrl;
+      const { data, error } = await supabase.storage
+        .from('uploads')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (error) {
+        console.error('Supabase upload error:', error);
+        throw error;
+      }
+      
+      const { data: publicData } = supabase.storage
+        .from('uploads')
+        .getPublicUrl(fileName);
+        
+      return publicData.publicUrl;
     } catch (err) {
       console.error('Error in uploadImage:', err);
       throw err;

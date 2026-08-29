@@ -6,12 +6,15 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { AppProvider, useAppContext } from '../src/context/AppContext';
+import { useChat, ChatProvider } from '../src/context/ChatContext';
+import { FeedProvider } from '../src/context/FeedContext';
 import { AuthProvider, useAuth } from '../src/context/AuthContext';
 import { ToastProvider } from '../src/components/Toast';
 
 function TabBar() {
   const currentPath = usePathname();
-  const { user, notifications, messages, directMessages, chatReadReceipts, communities, channels } = useAppContext();
+  const { user, notifications, communities, channels } = useAppContext();
+    const { messages, directMessages, chatReadReceipts } = useChat();
   const unreadCount = notifications ? notifications.filter(n => !n.is_read).length : 0;
   
   let unreadChatCount = 0;
@@ -111,6 +114,8 @@ function MainLayout({ children }) {
   const { user, isLoading: appLoading } = useAppContext();
   const { authUser, isLoading: authLoading } = useAuth();
   const isDashboard = currentPath?.startsWith('/dashboard') || currentPath?.startsWith('/council-dashboard') || currentPath?.startsWith('/admin');
+  const hideTabBar = isDashboard || currentPath === '/login' || currentPath === '/onboarding';
+  const isDesktopFriendly = isDashboard || currentPath?.startsWith('/community/');
 
   useEffect(() => {
     // Wait for auth to initialize
@@ -127,14 +132,25 @@ function MainLayout({ children }) {
   }, [authUser, user, authLoading, appLoading, currentPath, router]);
 
   // Don't render content until auth checks are done
-  if (authLoading || (authUser && !user)) return null;
+  if (authLoading || (authUser && !user)) return (
+    <div style={{ minHeight: '100vh', background: 'var(--slate-950)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '16px' }}>
+      <div style={{ width: '40px', height: '40px', border: '3px solid rgba(20,184,166,0.2)', borderTopColor: 'var(--teal-500)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+      <span style={{ color: 'var(--slate-400)', fontSize: '0.9rem' }}>Loading...</span>
+    </div>
+  );
 
   return (
-    <div className={`app-container ${isDashboard ? 'desktop-mode' : ''}`}>
+    <div className={`app-container ${isDesktopFriendly ? 'desktop-mode' : ''}`}>
+      <ChatProvider user={user}>
+      <FeedProvider user={user}>
+
       <div className="app-content">
+
         {children}
-      </div>
-      {!isDashboard && <TabBar />}
+            </div>
+      {!hideTabBar && <TabBar />}
+          </FeedProvider>
+    </ChatProvider>
     </div>
   );
 }
