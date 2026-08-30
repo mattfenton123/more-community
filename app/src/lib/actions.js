@@ -3,11 +3,17 @@
 import webpush from 'web-push';
 import { createClient } from '@supabase/supabase-js';
 
-webpush.setVapidDetails(
-  'mailto:admin@more-community.com',
-  process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
-  process.env.VAPID_PRIVATE_KEY
-);
+if (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
+  try {
+    webpush.setVapidDetails(
+      'mailto:admin@more-community.com',
+      process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+      process.env.VAPID_PRIVATE_KEY
+    );
+  } catch(e) {
+    console.error("Failed to initialize webpush:", e);
+  }
+}
 
 // Instantiate Supabase client using Service Role Key (bypasses RLS)
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://nkyithbhufwgwnbxvqqu.supabase.co';
