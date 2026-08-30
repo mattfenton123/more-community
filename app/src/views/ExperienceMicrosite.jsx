@@ -222,10 +222,10 @@ export default function ExperienceMicrosite() {
 
       {/* Sticky Bottom Booking Bar */}
       <div style={{
-        position: 'fixed', bottom: 0, left: 0, right: 0,
+        position: 'fixed', bottom: 'calc(80px + env(safe-area-inset-bottom))', left: 0, right: 0,
         background: 'rgba(2,6,23,0.95)', backdropFilter: 'blur(20px)',
         borderTop: '1px solid rgba(255,255,255,0.1)',
-        padding: '20px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', zIndex: 100
+        padding: '20px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', zIndex: 90
       }}>
         <div>
           <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'white' }}>£{getTotalPrice(experience)}</div>
