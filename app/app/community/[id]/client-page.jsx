@@ -168,6 +168,36 @@ export default function CommunityProfile() {
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
+  const handleGenerateFomoReel = async (event) => {
+    toast.info('Generating FOMO Reel...', 'Pulling photos & attendees');
+    
+    // Pick 3 random photos from the gallery
+    const allPhotos = [...localPhotos, ...galleryPhotos];
+    const shuffledPhotos = allPhotos.sort(() => 0.5 - Math.random());
+    const selectedPhotos = shuffledPhotos.slice(0, 3);
+    
+    // Pick up to 2 random RSVPs to tag
+    const rsvps = eventRsvps[event.id] || [];
+    const attendeesToTag = rsvps
+      .sort(() => 0.5 - Math.random())
+      .slice(0, 2)
+      .map(r => users.find(u => u.id === r.userId)?.name?.split(' ')[0] || 'Member')
+      .map(name => `@${name}`);
+      
+    const tagsStr = attendeesToTag.length > 0 ? `Massive thanks to ${attendeesToTag.join(', ')} for bringing the energy to ${event.title}.` : `Massive thanks to everyone who brought the energy to ${event.title}!`;
+    const fomoText = `🔥 WHAT A VIBE! 🔥\n\n${tagsStr}\n\nIf you missed it, you missed out! Make sure to RSVP to the next one! 🚀`;
+
+    try {
+      // Store array of image URLs as a JSON string in post.media
+      const mediaPayload = JSON.stringify(selectedPhotos);
+      await createFeedPost(communityId, fomoText, mediaPayload);
+      toast.success('FOMO Reel Published!', 'Check the feed to see it in action.');
+      setActiveTab('feed');
+    } catch (err) {
+      toast.error('Failed to generate Reel', err.message);
+    }
+  };
+
   return (
     <div className="view-profile" style={{ background: 'var(--slate-950)', minHeight: '100vh', paddingBottom: '80px', width: '100%' }}>
       <div className="microsite-container">
@@ -387,11 +417,43 @@ export default function CommunityProfile() {
                       {post.text}
                     </div>
 
-                    {post.media && (
-                      <div style={{ width: '100%', background: 'var(--slate-900)' }}>
-                        <img src={post.media} alt="Post media" style={{ width: '100%', maxHeight: '400px', objectFit: 'cover' }} />
-                      </div>
-                    )}
+                    {(() => {
+                      if (!post.media) return null;
+                      
+                      let mediaArr = [post.media];
+                      try {
+                        const parsed = JSON.parse(post.media);
+                        if (Array.isArray(parsed)) mediaArr = parsed;
+                      } catch (e) {
+                        // Not JSON, assume it's a single URL
+                      }
+                      
+                      if (mediaArr.length > 1) {
+                        // Render Collage
+                        return (
+                          <div style={{ width: '100%', display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '2px', background: 'var(--slate-950)' }}>
+                            <div style={{ height: '300px' }}>
+                              <img src={mediaArr[0]} alt="Post media 1" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', height: '300px' }}>
+                              <img src={mediaArr[1]} alt="Post media 2" style={{ width: '100%', height: '50%', objectFit: 'cover' }} />
+                              {mediaArr[2] ? (
+                                <img src={mediaArr[2]} alt="Post media 3" style={{ width: '100%', height: '50%', objectFit: 'cover' }} />
+                              ) : (
+                                <div style={{ width: '100%', height: '50%', background: 'var(--slate-800)' }}></div>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      }
+                      
+                      // Render Single Image
+                      return (
+                        <div style={{ width: '100%', background: 'var(--slate-900)' }}>
+                          <img src={mediaArr[0]} alt="Post media" style={{ width: '100%', maxHeight: '400px', objectFit: 'cover' }} />
+                        </div>
+                      );
+                    })()}
 
                     <div style={{ padding: '12px 16px', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', gap: '16px' }}>
                       <button onClick={() => likeFeedPost(post.id)} className="interactive-press" style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '6px', color: post.liked ? 'var(--teal-400)' : 'var(--slate-400)', cursor: 'pointer', fontSize: '0.85rem' }}>
@@ -808,12 +870,24 @@ export default function CommunityProfile() {
                             {rsvps.length} going
                           </div>
                         )}
-                        <button 
-                          onClick={(e) => { e.stopPropagation(); downloadIcs(event, community.name); }} 
-                          className="btn btn-outline interactive-press" 
-                          style={{ marginTop: '12px', width: '100%', padding: '10px', borderRadius: '10px', fontSize: '0.85rem', display: 'flex', gap: '6px', justifyContent: 'center' }}>
-                          <Calendar size={14} /> Add to Calendar
-                        </button>
+                        
+                        {new Date(event.date) < new Date() ? (
+                          isLeader && (
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); handleGenerateFomoReel(event); }} 
+                              className="btn interactive-press" 
+                              style={{ marginTop: '12px', width: '100%', padding: '10px', borderRadius: '10px', fontSize: '0.85rem', display: 'flex', gap: '6px', justifyContent: 'center', background: 'linear-gradient(135deg, var(--teal-500), var(--teal-600))', color: 'white', border: 'none', fontWeight: 600 }}>
+                              <Sparkles size={14} /> Generate FOMO Reel
+                            </button>
+                          )
+                        ) : (
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); downloadIcs(event, community.name); }} 
+                            className="btn btn-outline interactive-press" 
+                            style={{ marginTop: '12px', width: '100%', padding: '10px', borderRadius: '10px', fontSize: '0.85rem', display: 'flex', gap: '6px', justifyContent: 'center' }}>
+                            <Calendar size={14} /> Add to Calendar
+                          </button>
+                        )}
                       </div>
                     </div>
                   );

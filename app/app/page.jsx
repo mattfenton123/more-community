@@ -87,11 +87,43 @@ export default function HomeFeed() {
                   </div>
                 </div>
                 <div style={{ padding: '0 16px 12px', color: 'var(--slate-200)', fontSize: '0.95rem', lineHeight: 1.5 }}>{post.text}</div>
-                {post.media && (
-                  <div style={{ width: '100%', background: 'var(--slate-900)' }}>
-                    <img src={post.media} alt="Post media" loading="lazy" style={{ width: '100%', maxHeight: '400px', objectFit: 'cover' }} />
-                  </div>
-                )}
+                {(() => {
+                  if (!post.media) return null;
+                  
+                  let mediaArr = [post.media];
+                  try {
+                    const parsed = JSON.parse(post.media);
+                    if (Array.isArray(parsed)) mediaArr = parsed;
+                  } catch (e) {
+                    // Not JSON, assume it's a single URL
+                  }
+                  
+                  if (mediaArr.length > 1) {
+                    // Render Collage
+                    return (
+                      <div style={{ width: '100%', display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '2px', background: 'var(--slate-950)' }}>
+                        <div style={{ height: '300px' }}>
+                          <img src={mediaArr[0]} alt="Post media 1" loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', height: '300px' }}>
+                          <img src={mediaArr[1]} alt="Post media 2" loading="lazy" style={{ width: '100%', height: '50%', objectFit: 'cover' }} />
+                          {mediaArr[2] ? (
+                            <img src={mediaArr[2]} alt="Post media 3" loading="lazy" style={{ width: '100%', height: '50%', objectFit: 'cover' }} />
+                          ) : (
+                            <div style={{ width: '100%', height: '50%', background: 'var(--slate-800)' }}></div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  }
+                  
+                  // Render Single Image
+                  return (
+                    <div style={{ width: '100%', background: 'var(--slate-900)' }}>
+                      <img src={mediaArr[0]} alt="Post media" loading="lazy" style={{ width: '100%', maxHeight: '400px', objectFit: 'cover' }} />
+                    </div>
+                  );
+                })()}
                 <div style={{ padding: '12px 16px', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', gap: '16px' }}>
                   <button onClick={() => likeFeedPost(post.id)} className="interactive-press" style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--slate-400)', cursor: 'pointer', fontSize: '0.85rem' }}>
                     <Heart size={16} fill={post.likes > 0 ? "var(--teal-400)" : "none"} color={post.likes > 0 ? "var(--teal-400)" : "var(--slate-400)"} /> {post.likes || 0}
