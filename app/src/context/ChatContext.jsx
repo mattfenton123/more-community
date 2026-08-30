@@ -3,6 +3,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { useAuth } from './AuthContext';
 import { useAppContext } from './AppContext';
+import { useToast } from '../components/Toast';
 import { sendMessageAction, sendDirectMessageAction, updateMessageAction } from '../lib/actions';
 
 const ChatContext = createContext({});
@@ -10,6 +11,7 @@ const ChatContext = createContext({});
 export function ChatProvider({ children }) {
   const { authUser } = useAuth();
   const { user } = useAppContext();
+  const { toast } = useToast();
   const [messages, setMessages] = useState([]);
   const [directMessages, setDirectMessages] = useState([]);
   const [chatReadReceipts, setChatReadReceipts] = useState([]);
@@ -137,6 +139,7 @@ export function ChatProvider({ children }) {
       markChatRead(communityId, channel);
     } catch (err) {
       console.error(err);
+      toast.error('Send Failed', 'Could not send message. Please refresh or log in again.');
       setMessages(prev => prev.filter(m => m.id !== tempId));
     }
   };
@@ -159,6 +162,7 @@ export function ChatProvider({ children }) {
       markChatRead(null, receiverId);
     } catch (err) {
       console.error(err);
+      toast.error('Send Failed', 'Could not send DM. Please refresh or log in again.');
       setDirectMessages(prev => prev.filter(m => m.id !== tempId));
     }
   };
