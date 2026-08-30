@@ -10,6 +10,7 @@ import MemberDirectory from '../../../src/components/MemberDirectory';
 import InlineComments from '../../../src/components/InlineComments';
 import ExperiencesCatalog from '../../../src/components/ExperiencesCatalog';
 import { downloadIcs } from '../../../src/lib/calendar';
+import confetti from 'canvas-confetti';
 
 // Category-specific gallery photos (generated unique images)
 const IMG = '/images/communities';
@@ -529,8 +530,15 @@ export default function CommunityProfile() {
                               <div style={{ width: `${progress}%`, height: '100%', background: 'var(--teal-500)', transition: 'width 0.5s ease' }} />
                             </div>
                             {progress >= 100 && (
-                              <div style={{ marginTop: '8px', fontSize: '0.8rem', color: 'var(--yellow-400)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                <Sparkles size={14} /> Goal Reached! Waiting for Leader to schedule.
+                              <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                <div style={{ fontSize: '0.8rem', color: 'var(--yellow-400)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                  <Sparkles size={14} /> Goal Reached! Waiting for Leader to schedule.
+                                </div>
+                                {isLeader && (
+                                  <button onClick={() => navigate.push(`/community/${communityId}/create-event?experienceId=${campaignExp.id}`)} className="btn btn-primary interactive-press" style={{ padding: '6px 12px', fontSize: '0.8rem', width: 'fit-content', borderRadius: '8px' }}>
+                                    Set Date & Schedule
+                                  </button>
+                                )}
                               </div>
                             )}
                           </div>
@@ -541,7 +549,17 @@ export default function CommunityProfile() {
                       {post.mediaUrl && <img src={post.mediaUrl} alt="Attached media" style={{ width: '100%', borderRadius: '12px', marginBottom: '12px', maxHeight: '200px', objectFit: 'cover' }} />}
                       
                       <div style={{ display: 'flex', gap: '16px', marginTop: '12px' }}>
-                        <button onClick={() => likeFeedPost(post.id)} className="interactive-press" style={{ background: (post.likes || []).includes(user.id) ? 'rgba(20,184,166,0.15)' : 'rgba(255,255,255,0.05)', padding: '6px 12px', borderRadius: '20px', border: '1px solid', borderColor: (post.likes || []).includes(user.id) ? 'rgba(20,184,166,0.3)' : 'transparent', display: 'flex', alignItems: 'center', gap: '6px', color: (post.likes || []).includes(user.id) ? 'var(--teal-400)' : 'white', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}>
+                        <button 
+                          onClick={() => {
+                            const isLiked = (post.likes || []).includes(user.id);
+                            likeFeedPost(post.id);
+                            if (isCampaign && !isLiked && votes + 1 === threshold) {
+                              confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+                            }
+                          }}
+                          className="interactive-press" 
+                          style={{ background: (post.likes || []).includes(user.id) ? 'rgba(20,184,166,0.15)' : 'rgba(255,255,255,0.05)', padding: '6px 12px', borderRadius: '20px', border: '1px solid', borderColor: (post.likes || []).includes(user.id) ? 'rgba(20,184,166,0.3)' : 'transparent', display: 'flex', alignItems: 'center', gap: '6px', color: (post.likes || []).includes(user.id) ? 'var(--teal-400)' : 'white', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}
+                        >
                           <Heart size={16} fill={(post.likes || []).includes(user.id) ? 'var(--teal-400)' : 'none'} />
                           {isCampaign ? "I'm Interested" : "Upvote"} ({votes})
                         </button>

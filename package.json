@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "canvas-confetti": "^1.9.4",
     "emoji-picker-react": "^4.19.1",
     "exceljs": "^4.4.0",
     "pg": "^8.21.0",
