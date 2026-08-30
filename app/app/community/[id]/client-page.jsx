@@ -94,7 +94,7 @@ export default function CommunityProfile() {
 
   const isMember = user.joinedCommunities.includes(communityId);
   const isLeader = user.ledCommunities?.includes(communityId);
-  const communityEvents = events.filter(e => e.communityId === communityId);
+  const communityEvents = events.filter(e => e.communityId === communityId || e.collabCommunityIds?.includes(communityId));
   const upcomingEvents = communityEvents.filter(e => {
     try { return new Date(e.date) >= new Date(); } catch { return true; }
   });
@@ -637,7 +637,10 @@ export default function CommunityProfile() {
                       <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Calendar size={14} /> {nextEvent.date}</span>
                       <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={14} /> {nextEvent.time}</span>
                     </div>
-                    <div style={{ fontWeight: 700, fontSize: '1.1rem', color: 'white', marginBottom: '4px' }}>{nextEvent.title}</div>
+                    <div style={{ fontWeight: 700, fontSize: '1.1rem', color: 'white', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      {nextEvent.title}
+                      {nextEvent.communityId !== communityId && <span style={{ fontSize: '0.65rem', background: 'var(--teal-500)', color: 'white', padding: '2px 6px', borderRadius: '6px', fontWeight: 700, textTransform: 'uppercase' }}>Collab</span>}
+                    </div>
                     <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)', display: 'flex', alignItems: 'center', gap: '4px' }}><MapPin size={14} /> {nextEvent.location}</div>
                     <button 
                       onClick={(e) => { e.stopPropagation(); downloadIcs(nextEvent, community.name); }} 
@@ -783,7 +786,10 @@ export default function CommunityProfile() {
                         </div>
                       )}
                       <div style={{ padding: '16px' }}>
-                        <div style={{ fontWeight: 700, fontSize: '1.05rem', color: 'white', marginBottom: '6px' }}>{event.title}</div>
+                        <div style={{ fontWeight: 700, fontSize: '1.05rem', color: 'white', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          {event.title}
+                          {event.communityId !== communityId && <span style={{ fontSize: '0.65rem', background: 'var(--teal-500)', color: 'white', padding: '2px 6px', borderRadius: '6px', fontWeight: 700, textTransform: 'uppercase' }}>Collab</span>}
+                        </div>
                         <div style={{ display: 'flex', gap: '16px', fontSize: '0.8rem', color: 'var(--slate-400)', marginBottom: '8px' }}>
                           <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={14} /> {event.time}</span>
                           <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><MapPin size={14} /> {event.location}</span>

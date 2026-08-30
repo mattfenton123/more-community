@@ -8,6 +8,7 @@ export default function HostExperienceModal({ experience, communities, user, onC
   const [nonMemberPrice, setNonMemberPrice] = useState(experience.basePrice + 25);
   const [maxCapacity, setMaxCapacity] = useState(experience.spotsLeft || 20);
   const [communityId, setCommunityId] = useState(user.ledCommunities[0]);
+  const [collabCommunityIds, setCollabCommunityIds] = useState([]);
   const [isPublic, setIsPublic] = useState(true);
 
   const handleSubmit = (e) => {
@@ -19,7 +20,8 @@ export default function HostExperienceModal({ experience, communities, user, onC
       memberPrice,
       nonMemberPrice,
       maxCapacity,
-      isPublic
+      isPublic,
+      collabCommunityIds
     });
   };
 
@@ -58,6 +60,42 @@ export default function HostExperienceModal({ experience, communities, user, onC
                 return <option key={id} value={id}>{c?.name || id}</option>;
               })}
             </select>
+          </div>
+
+          <div>
+            <label style={{ display: 'block', color: 'var(--slate-300)', fontSize: '0.9rem', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Globe size={14} /> Invite Collabs (Optional)
+            </label>
+            <p style={{ fontSize: '0.75rem', color: 'var(--slate-500)', marginBottom: '8px', lineHeight: 1.4 }}>
+              Select communities to cross-post this event to their feed and merge RSVPs.
+            </p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+              {communities.filter(c => c.id !== communityId).map(c => {
+                const isSelected = collabCommunityIds.includes(c.id);
+                return (
+                  <button
+                    key={c.id}
+                    type="button"
+                    onClick={() => {
+                      if (isSelected) setCollabCommunityIds(prev => prev.filter(id => id !== c.id));
+                      else setCollabCommunityIds(prev => [...prev, c.id]);
+                    }}
+                    style={{
+                      background: isSelected ? 'var(--teal-500)' : 'rgba(255,255,255,0.05)',
+                      border: '1px solid',
+                      borderColor: isSelected ? 'var(--teal-400)' : 'rgba(255,255,255,0.1)',
+                      color: isSelected ? 'white' : 'var(--slate-300)',
+                      padding: '6px 12px',
+                      borderRadius: '20px',
+                      fontSize: '0.8rem',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {c.name}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           <div style={{ display: 'flex', gap: '12px' }}>

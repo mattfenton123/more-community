@@ -177,7 +177,8 @@ export async function createEventAction(eventData, token) {
     description: eventData.description || '',
     status: eventData.status || 'published',
     max_capacity: eventData.maxCapacity || null,
-    ticket_price: eventData.ticketPrice || 0
+    ticket_price: eventData.ticketPrice || 0,
+    cohost_community_ids: eventData.collabCommunityIds || []
   }).select().single();
 
   if (error) throw new Error(error.message);

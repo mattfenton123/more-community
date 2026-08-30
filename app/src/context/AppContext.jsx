@@ -168,6 +168,7 @@ export function AppProvider({ children }) {
         setEvents(evRes.data.map(e => ({
           id: e.id,
           communityId: e.community_id,
+          collabCommunityIds: e.cohost_community_ids || [],
           title: e.title,
           description: e.description || '',
           date: e.date,
@@ -770,7 +771,8 @@ export function AppProvider({ children }) {
         image: eventData.image,
         attendees: 0,
         status: 'published',
-        maxCapacity: eventData.maxCapacity || null
+        maxCapacity: eventData.maxCapacity || null,
+        collabCommunityIds: eventData.collabCommunityIds || []
       };
 
       const data = await createEventAction(newEvent, session?.access_token);
@@ -781,6 +783,7 @@ export function AppProvider({ children }) {
         setEvents(prev => [...prev, {
           id: e.id,
           communityId: e.community_id,
+          collabCommunityIds: e.cohost_community_ids || [],
           title: e.title,
           description: e.description || '',
           date: e.date,

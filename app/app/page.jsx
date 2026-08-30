@@ -28,7 +28,10 @@ export default function HomeFeed() {
     }
     if (events && user.joinedCommunities) {
       events.forEach(event => {
-        if (user.joinedCommunities.includes(event.communityId)) {
+        const isMemberOfPrimary = user.joinedCommunities.includes(event.communityId);
+        const isMemberOfCollab = event.collabCommunityIds?.some(id => user.joinedCommunities.includes(id));
+        
+        if (isMemberOfPrimary || isMemberOfCollab) {
           items.push({ type: 'event', id: `event-${event.id}`, data: event, timestamp: new Date(event.createdAt || event.date).getTime() });
         }
       });
@@ -126,7 +129,10 @@ export default function HomeFeed() {
                     </div>
                   )}
                   <div style={{ padding: '16px' }}>
-                    <div style={{ fontWeight: 700, fontSize: '1.05rem', color: 'white', marginBottom: '6px' }}>{event.title}</div>
+                    <div style={{ fontWeight: 700, fontSize: '1.05rem', color: 'white', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      {event.title}
+                      {event.collabCommunityIds?.length > 0 && <span style={{ fontSize: '0.65rem', background: 'var(--teal-500)', color: 'white', padding: '2px 6px', borderRadius: '6px', fontWeight: 700, textTransform: 'uppercase' }}>Collab</span>}
+                    </div>
                     <div style={{ display: 'flex', gap: '16px', fontSize: '0.8rem', color: 'var(--slate-400)', marginBottom: '8px' }}>
                       <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={14} /> {event.time}</span>
                       <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><MapPin size={14} /> {event.location}</span>
