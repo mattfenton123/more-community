@@ -175,7 +175,10 @@ export function ChatProvider({ children }) {
       return [...prev, { user_id: user.id, community_id: communityId, channel_id: channelId, last_read_at: new Date().toISOString() }];
     });
     try {
-      await supabase.from('chat_read_receipts').upsert([{ user_id: user.id, community_id: communityId, channel_id: channelId, last_read_at: new Date().toISOString() }]);
+      await supabase.from('chat_read_receipts').upsert(
+        [{ user_id: user.id, community_id: communityId, channel_id: channelId, last_read_at: new Date().toISOString() }],
+        { onConflict: 'user_id,community_id,channel_id' }
+      );
     } catch (err) {
       console.error(err);
     }
