@@ -113,8 +113,9 @@ export default function CommunityProfile() {
     }
   };
 
-  const handleCreatePost = async () => {
-    if (!newPostText.trim() && !newPostImage) return;
+  const handleCreatePost = async (overrideText = null) => {
+    const textToPost = overrideText !== null ? overrideText : newPostText;
+    if (!textToPost.trim() && !newPostImage) return;
     
     let mediaUrl = null;
     if (newPostImage) {
@@ -127,9 +128,11 @@ export default function CommunityProfile() {
       }
     }
     
-    await createFeedPost(communityId, newPostText, mediaUrl);
-    setNewPostText('');
-    setNewPostImage(null);
+    await createFeedPost(communityId, textToPost, mediaUrl);
+    if (overrideText === null) {
+      setNewPostText('');
+      setNewPostImage(null);
+    }
     toast.success('Posted!', 'Your update is now live.');
   };
 
@@ -230,10 +233,10 @@ export default function CommunityProfile() {
               <>
                 <button 
                   className={`btn ${isMember ? 'btn-outline' : 'btn-primary'} interactive-press`} 
-                  style={{ width: '100%', padding: '16px', fontSize: '1.05rem', fontWeight: 700, borderRadius: '14px', boxShadow: isMember ? 'none' : '0 8px 24px rgba(20,184,166,0.3)', cursor: isMember ? 'default' : 'pointer' }}
-                  onClick={isMember ? undefined : handleJoinLeave}
+                  style={{ width: '100%', padding: '16px', fontSize: '1.05rem', fontWeight: 700, borderRadius: '14px', boxShadow: isMember ? 'none' : '0 8px 24px rgba(20,184,166,0.3)', cursor: 'pointer' }}
+                  onClick={handleJoinLeave}
                 >
-                  {isMember ? '✓ You\'re a Member' : isPaid ? `Join — £${subPrice}/month` : 'Join this Community — it\'s free'}
+                  {isMember ? 'Leave Community' : isPaid ? `Join — £${subPrice}/month` : 'Join this Community — it\'s free'}
                 </button>
                 {isPaid && !isMember && (
                   <div style={{ textAlign: 'center', fontSize: '0.75rem', color: 'var(--slate-500)', marginTop: '8px' }}>
@@ -427,8 +430,8 @@ export default function CommunityProfile() {
                       onClick={() => {
                         if (!newPostText.trim()) return;
                         const originalText = newPostText;
-                        setNewPostText(`💡 **SUGGESTION:**\n${originalText}`);
-                        setTimeout(() => handleCreatePost(), 0); // Hack to allow state to update before submit
+                        handleCreatePost(`💡 **SUGGESTION:**\n${originalText}`);
+                        setNewPostText('');
                       }}
                       className="btn btn-primary interactive-press"
                       style={{ padding: '8px 16px', borderRadius: '99px', fontSize: '0.9rem' }}

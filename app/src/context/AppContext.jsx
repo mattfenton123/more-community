@@ -98,7 +98,7 @@ export function AppProvider({ children }) {
       const myMem = mems.find(m => m.userId === user.id);
       if (myMem) {
         user.joinedCommunities.push(communityId);
-        if (myMem.role === 'Leader') user.ledCommunities.push(communityId);
+        if (myMem.role === 'Leader' || myMem.role === 'Co-Leader') user.ledCommunities.push(communityId);
       }
     });
   }
@@ -138,6 +138,8 @@ export function AppProvider({ children }) {
              name: 'The more. Leaders Network',
              description: 'A private space for more. leaders to collaborate, share tips, and organize cross-community events.',
              tags: ['leadership', 'network'],
+             image: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1200&q=80',
+             category: 'leadership',
              leader_id: null,
              is_private: true
           };
@@ -450,6 +452,7 @@ export function AppProvider({ children }) {
         ...prev,
         [communityId]: (prev[communityId] || []).filter(m => m.userId !== user.id)
       }));
+      throw err;
     }
   };
 
@@ -470,6 +473,7 @@ export function AppProvider({ children }) {
         ...prev,
         [communityId]: prevMems
       }));
+      throw err;
     }
   };
 

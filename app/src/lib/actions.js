@@ -126,7 +126,13 @@ export async function joinCommunityAction(userId, communityId, token) {
     role: 'Member'
   }).select().single();
 
-  if (error) throw new Error(error.message);
+  if (error) {
+    if (error.code === '23505') {
+      // Unique constraint violation - already joined
+      return { user_id: userId, community_id: communityId, role: 'Member' };
+    }
+    throw new Error(error.message);
+  }
   return data;
 }
 
@@ -138,6 +144,7 @@ export async function ensureLeadersNetworkAction() {
     tags: ['leadership', 'network'],
     leader_id: null,
     is_private: true,
+    image: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1200&q=80',
     activity_level: 'Active',
     location_name: 'Global',
     cost: 'Free for Leaders'
