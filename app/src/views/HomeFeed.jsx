@@ -6,12 +6,14 @@ import { useFeed } from '../context/FeedContext';
 import { Heart, MessageCircle, Share2, Calendar, MapPin, Clock, Compass, Trash2, Flag } from 'lucide-react';
 import AppHeader from '../components/AppHeader';
 import { SkeletonList, SkeletonCard } from '../components/SkeletonCard';
+import CommentsModal from '../components/CommentsModal';
 
 export default function HomeFeed() {
   const { user, communities, events, users, eventRsvps, isLoading, subscribeToPushNotifications } = useAppContext();
   const { feedPosts, likeFeedPost, deleteFeedPost } = useFeed();
   const navigate = useNavigate();
   const [showPushPrompt, setShowPushPrompt] = useState(false);
+  const [activePostForComments, setActivePostForComments] = useState(null);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && 'Notification' in window) {
@@ -153,7 +155,7 @@ export default function HomeFeed() {
                   <button onClick={() => likeFeedPost(post.id)} className="interactive-press" style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--slate-400)', cursor: 'pointer', fontSize: '0.85rem' }}>
                     <Heart size={16} fill={post.likes > 0 ? "var(--teal-400)" : "none"} color={post.likes > 0 ? "var(--teal-400)" : "var(--slate-400)"} /> {post.likes || 0}
                   </button>
-                  <button className="interactive-press" style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--slate-400)', cursor: 'pointer', fontSize: '0.85rem' }}>
+                  <button onClick={() => setActivePostForComments(post)} className="interactive-press" style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--slate-400)', cursor: 'pointer', fontSize: '0.85rem' }}>
                     <MessageCircle size={16} /> {post.comments}
                   </button>
                 </div>
@@ -218,6 +220,12 @@ export default function HomeFeed() {
           </div>
         )}
       </div>
+
+      <CommentsModal 
+        isOpen={!!activePostForComments}
+        onClose={() => setActivePostForComments(null)}
+        post={activePostForComments}
+      />
     </div>
   );
 }
