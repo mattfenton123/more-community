@@ -122,7 +122,7 @@ export default function ExperiencesMarketplace() {
           </div>
         ) : (
           filteredExperiences.map(exp => (
-            <div key={exp.id} onClick={() => navigate(`/experiences/${exp.id}`)} style={{
+            <div key={exp.id} onClick={() => navigate.push(`/experiences/${exp.id}`)} style={{
               background: 'rgba(255,255,255,0.03)',
               border: '1px solid rgba(255,255,255,0.07)',
               borderRadius: '14px', overflow: 'hidden',

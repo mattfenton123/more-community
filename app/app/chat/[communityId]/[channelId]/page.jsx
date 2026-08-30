@@ -13,7 +13,8 @@ export default function Chat() {
   const { communityId, channelId, targetUserId } = useParams();
   const navigate = useNavigate();
   const [inputText, setInputText] = useState('');
-  const [imageFile, setImageFile] = useState(null);
+  const [imageFiles, setImageFiles] = useState([]);
+  const [hoveredMsgId, setHoveredMsgId] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -22,7 +23,7 @@ export default function Chat() {
   const [activeTab, setActiveTab] = useState('Communities');
   
   const { user, communities, users, communityMemberships, uploadImage, channels, createChannel, isLoading, whatsappSettings } = useAppContext();
-    const { messages, directMessages, sendMessage, sendDirectMessage, chatReadReceipts, markChatRead } = useChat();
+  const { messages, directMessages, sendMessage, sendDirectMessage, chatReadReceipts, markChatRead, reactToMessage } = useChat();
   const { toast } = useToast();
   const [showNewChatModal, setShowNewChatModal] = useState(false);
   const [userSearchTerm, setUserSearchTerm] = useState('');
@@ -292,27 +293,31 @@ export default function Chat() {
   const waConfig = communityId ? whatsappSettings[communityId] : null;
   
   const handleSend = async () => {
-    if (!inputText.trim() && !imageFile) return;
-    
+    if ((!inputText.trim() && imageFiles.length === 0) || isUploading) return;
     setIsUploading(true);
-    let imageUrl = '';
     
-    if (imageFile) {
+    let imageUrls = [];
+    if (imageFiles.length > 0) {
       try {
-        imageUrl = await uploadImage(imageFile);
+        for (let file of imageFiles) {
+          const url = await uploadImage(file);
+          imageUrls.push(url);
+        }
       } catch (err) {
-        toast.error('Upload failed', 'Could not upload image');
+        toast.error('Upload failed', 'Could not upload some images');
       }
     }
     
+    const finalImage = imageUrls.length > 0 ? JSON.stringify(imageUrls) : '';
+    
     if (isDirectMessage) {
-      await sendDirectMessage(targetUserId, inputText, imageUrl);
+      await sendDirectMessage(targetUserId, inputText, finalImage);
     } else {
-      sendMessage(communityId, channelId, inputText, imageUrl);
+      sendMessage(communityId, channelId, inputText, finalImage);
     }
     
     setInputText('');
-    setImageFile(null);
+    setImageFiles([]);
     setIsUploading(false);
   };
 
@@ -375,6 +380,28 @@ export default function Chat() {
               // Date separator (very basic logic for prototype)
               const showDate = index === 0 || (prevMsg && new Date(msg.createdAt || new Date()).getDate() !== new Date(prevMsg.createdAt || new Date()).getDate());
 
+              // Parse images
+              let msgImages = [];
+              if (msg.image) {
+                try {
+                  msgImages = JSON.parse(msg.image);
+                  if (!Array.isArray(msgImages)) msgImages = [msg.image];
+                } catch(e) {
+                  msgImages = [msg.image];
+                }
+              }
+
+              // Parse reactions
+              let cleanText = msg.text || '';
+              let reactions = {};
+              const metaMatch = cleanText.match(/<!--REACTIONS:(.*?)-->/);
+              if (metaMatch && metaMatch[1]) {
+                try {
+                  reactions = JSON.parse(metaMatch[1]);
+                  cleanText = cleanText.replace(metaMatch[0], '');
+                } catch(e) {}
+              }
+
               return (
                 <div key={msg.id || index} style={{ display: 'flex', flexDirection: 'column' }}>
                   {showDate && (
@@ -382,7 +409,7 @@ export default function Chat() {
                       {msg.createdAt ? new Date(msg.createdAt).toLocaleDateString() : 'Today'}
                     </div>
                   )}
-                  <div className="stagger-item" style={{ alignSelf: isMe ? 'flex-end' : 'flex-start', maxWidth: '85%', marginTop: isConsecutive ? '4px' : '16px' }}>
+                  <div className="stagger-item" style={{ alignSelf: isMe ? 'flex-end' : 'flex-start', maxWidth: '85%', marginTop: isConsecutive ? '4px' : '16px' }} onMouseEnter={() => setHoveredMsgId(msg.id)} onMouseLeave={() => setHoveredMsgId(null)}>
                     {!isMe && !isConsecutive && (
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px', marginLeft: '4px' }}>
                         <img onClick={() => navigate.push(`/profile/${msg.authorId || msg.senderId}`)} src={authorObj.avatar} alt={authorObj.name} style={{ width: '20px', height: '20px', borderRadius: '50%', objectFit: 'cover', cursor: 'pointer' }} />
@@ -406,8 +433,34 @@ export default function Chat() {
                       gap: '8px',
                       position: 'relative'
                     }}>
-                      {msg.image && <img src={msg.image} alt="Attachment" style={{ width: '100%', borderRadius: '8px', maxHeight: '250px', objectFit: 'cover' }} />}
-                      {msg.text && <div>{msg.text}</div>}
+                      {hoveredMsgId === msg.id && (
+                        <div style={{ position: 'absolute', top: '-16px', right: isMe ? '16px' : (msgImages.length ? '-16px' : 'auto'), left: isMe ? 'auto' : (msgImages.length ? 'auto' : '-16px'), background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '99px', padding: '4px', display: 'flex', gap: '4px', zIndex: 10, boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }}>
+                          {['❤️', '👍', '😂', '🔥', '🎉'].map(e => (
+                            <button key={e} onClick={() => reactToMessage(msg.id, e)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem', padding: '2px 4px', transition: 'transform 0.1s' }} onMouseEnter={ev => ev.currentTarget.style.transform='scale(1.2)'} onMouseLeave={ev => ev.currentTarget.style.transform='scale(1)'}>
+                              {e}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+
+                      {msgImages.length > 0 && (
+                        <div style={{ display: 'grid', gridTemplateColumns: msgImages.length > 1 ? '1fr 1fr' : '1fr', gap: '4px', borderRadius: '8px', overflow: 'hidden' }}>
+                          {msgImages.map((img, i) => <img key={i} src={img} alt="Attachment" style={{ width: '100%', height: msgImages.length > 1 ? '120px' : 'auto', maxHeight: '250px', objectFit: 'cover' }} />)}
+                        </div>
+                      )}
+                      
+                      {cleanText && <div>{cleanText}</div>}
+                      
+                      {Object.keys(reactions).length > 0 && (
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '4px' }}>
+                          {Object.entries(reactions).map(([emoji, usersArr]) => (
+                            <div key={emoji} onClick={() => reactToMessage(msg.id, emoji)} style={{ background: usersArr.includes(user.id) ? (isMe ? 'rgba(255,255,255,0.2)' : 'var(--teal-600)') : 'rgba(255,255,255,0.1)', padding: '2px 6px', borderRadius: '12px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.05)' }}>
+                              {emoji} <span style={{ opacity: 0.9 }}>{usersArr.length}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
                       <div style={{ fontSize: '0.65rem', alignSelf: 'flex-end', opacity: 0.7, marginTop: '2px' }}>
                         {msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : (msg.timestamp ? (String(msg.timestamp).includes('T') ? new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : msg.timestamp) : '')}
                       </div>
@@ -427,17 +480,25 @@ export default function Chat() {
       </div>
 
       <div style={{ padding: '16px 20px', background: 'rgba(15, 23, 42, 0.9)', borderTop: '1px solid rgba(255,255,255,0.05)', zIndex: 10 }}>
-        {imageFile && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px 12px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', marginBottom: '8px' }}>
-            <ImageIcon size={16} color="var(--teal-400)" />
-            <span style={{ fontSize: '0.85rem', flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{imageFile.name}</span>
-            <button onClick={() => setImageFile(null)} className="interactive-press" style={{ background: 'none', border: 'none', color: 'var(--slate-400)', cursor: 'pointer' }}>
-              <X size={16} />
-            </button>
+        {imageFiles.length > 0 && (
+          <div style={{ display: 'flex', gap: '12px', padding: '8px 12px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', marginBottom: '8px', overflowX: 'auto' }}>
+            {Array.from(imageFiles).map((file, i) => (
+              <div key={i} style={{ position: 'relative', flexShrink: 0 }}>
+                <div style={{ width: '40px', height: '40px', borderRadius: '4px', background: 'var(--slate-800)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <ImageIcon size={16} color="var(--teal-400)" />
+                </div>
+                <button onClick={() => setImageFiles(Array.from(imageFiles).filter((_, idx) => idx !== i))} className="interactive-press" style={{ position: 'absolute', top: '-6px', right: '-6px', background: 'var(--slate-700)', border: 'none', color: 'white', borderRadius: '50%', padding: '2px', cursor: 'pointer' }}>
+                  <X size={12} />
+                </button>
+              </div>
+            ))}
           </div>
         )}
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-          <input type="file" accept="image/*" ref={fileInputRef} onChange={e => setImageFile(e.target.files[0])} style={{ display: 'none' }} />
+          <input type="file" accept="image/*" multiple ref={fileInputRef} onChange={e => {
+            const files = Array.from(e.target.files);
+            setImageFiles(prev => [...prev, ...files]);
+          }} style={{ display: 'none' }} />
           <button onClick={() => fileInputRef.current?.click()} className="interactive-press" style={{ background: 'none', border: 'none', color: 'var(--slate-400)', padding: '8px', cursor: 'pointer' }}>
             <ImageIcon size={20} />
           </button>

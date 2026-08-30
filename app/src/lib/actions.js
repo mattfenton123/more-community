@@ -373,6 +373,11 @@ export async function toggleFeedPostLikeAction(postId, userId, token) {
   if (existingErr && existingErr.code !== 'PGRST116') {
     if (existingErr.message.includes('schema cache') || existingErr.message.includes('does not exist')) {
       console.warn('feed_post_likes table missing, mocking like');
+      // Optimistic increment fallback
+      const { data: post } = await supabaseAdmin.from('feed_posts').select('likes').eq('id', postId).single();
+      if (post) {
+        await supabaseAdmin.from('feed_posts').update({ likes: (post.likes || 0) + 1 }).eq('id', postId);
+      }
       return { liked: true };
     }
   }
@@ -532,6 +537,21 @@ export async function getCommentsAction(postId, token) {
   if (error) {
     console.warn('getCommentsAction error (likely table missing):', error.message);
     return [];
+  }
+  return data;
+}
+
+export async function updateMessageAction(messageId, updates, token) {
+  await verifyUser(token);
+  const { data, error } = await supabaseAdmin
+    .from('messages')
+    .update(updates)
+    .eq('id', messageId)
+    .select()
+    .single();
+    
+  if (error) {
+    throw new Error(error.message);
   }
   return data;
 }

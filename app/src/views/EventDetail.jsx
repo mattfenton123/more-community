@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Calendar as CalIcon, MapPin, Search, X, CheckCircle2, CreditCard, Check, Ticket, Users, QrCode, Image as ImageIcon } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { SkeletonList, SkeletonEvent } from '../components/SkeletonCard';
@@ -11,6 +12,7 @@ export default function EventsHub() {
   const [activeTab, setActiveTab] = useState('My Schedule');
   const { events, communities, user, users, eventRsvps, rsvpToEvent, isLoading } = useAppContext();
   const { toast } = useToast();
+  const router = useRouter();
   
   const [checkoutState, setCheckoutState] = useState('idle');
   const [showTicket, setShowTicket] = useState(null);
@@ -34,8 +36,18 @@ export default function EventsHub() {
   const [selectedEvent, setSelectedEvent] = useState(null);
 
   const getEventPrice = (event) => {
-    if (event.ticketPrice && event.ticketPrice > 0) return event.ticketPrice;
-    return 0;
+    let price = event.ticketPrice || 0;
+    const isMember = user.joinedCommunities.includes(event.communityId);
+    if (!isMember && event.description?.includes('<!--META:')) {
+      try {
+        const match = event.description.match(/<!--META:(.*?)-->/);
+        if (match && match[1]) {
+          const meta = JSON.parse(match[1]);
+          if (meta.nonMemberPrice) price = meta.nonMemberPrice;
+        }
+      } catch(e) {}
+    }
+    return price;
   };
 
   const handleRSVP = async (isPaid) => {
@@ -324,6 +336,36 @@ export default function EventsHub() {
                       <span>Checkout</span>
                       <span>£{getEventPrice(selectedEvent).toFixed(2)}</span>
                     </h3>
+                    
+                    {/* Upsell Logic */}
+                    {(() => {
+                      const isMember = user.joinedCommunities.includes(selectedEvent.communityId);
+                      let nonMemberPrice = null;
+                      if (!isMember && selectedEvent.description?.includes('<!--META:')) {
+                        try {
+                          const match = selectedEvent.description.match(/<!--META:(.*?)-->/);
+                          if (match && match[1]) {
+                            const meta = JSON.parse(match[1]);
+                            if (meta.nonMemberPrice) nonMemberPrice = meta.nonMemberPrice;
+                          }
+                        } catch(e) {}
+                      }
+
+                      if (nonMemberPrice && nonMemberPrice > selectedEvent.ticketPrice) {
+                        return (
+                          <div style={{ background: 'rgba(20,184,166,0.05)', border: '1px dashed var(--teal-500)', borderRadius: '12px', padding: '16px', marginBottom: '16px' }}>
+                            <div style={{ color: 'var(--teal-400)', fontWeight: 700, marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}><Ticket size={16}/> Unlock Member Pricing!</div>
+                            <div style={{ fontSize: '0.9rem', color: 'var(--slate-300)', marginBottom: '12px', lineHeight: 1.5 }}>
+                              You're paying £{nonMemberPrice}. Join <strong>{selectedEvent.communityName}</strong> today and get this ticket for just <strong>£{selectedEvent.ticketPrice}</strong>!
+                            </div>
+                            <button onClick={() => router.push(`/community/${selectedEvent.communityId}`)} className="btn btn-outline interactive-press" style={{ width: '100%', padding: '10px', borderRadius: '8px', fontSize: '0.9rem', borderColor: 'var(--teal-500)', color: 'var(--teal-400)' }}>
+                              View Community
+                            </button>
+                          </div>
+                        )
+                      }
+                      return null;
+                    })()}
 
                     {/* Stripe integration coming soon */}
                     <div style={{ background: 'rgba(20,184,166,0.06)', border: '1px solid rgba(20,184,166,0.2)', borderRadius: '14px', padding: '24px', textAlign: 'center', marginBottom: '12px' }}>

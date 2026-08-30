@@ -1,26 +1,21 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter as useNavigate } from 'next/navigation';
-import { MapPin, Clock, Users, ArrowLeft, Share2, Star, Sparkles } from 'lucide-react';
+import { MapPin, Clock, Users, ArrowLeft, Share2, Star, Sparkles, Calendar } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { useToast } from '../components/Toast';
+import HostExperienceModal from '../components/HostExperienceModal';
 
 export default function ExperienceMicrosite() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { experiences, communities, user, createEvent } = useAppContext();
   const { toast } = useToast();
-  const [isPromoting, setIsPromoting] = useState(false);
-  const [promoteCommunityId, setPromoteCommunityId] = useState(user?.ledCommunities?.[0] || '');
+  const [showHostModal, setShowHostModal] = useState(false);
 
   const experience = experiences.find(e => e.id === id);
 
-  useEffect(() => {
-    if (!promoteCommunityId && user?.ledCommunities?.length > 0) {
-      setPromoteCommunityId(user.ledCommunities[0]);
-    }
-  }, [user, promoteCommunityId]);
-
+  // No need for promoteCommunityId effect since it's handled in the modal
   if (!experience) {
     return (
       <div style={{ padding: '40px 20px', textAlign: 'center', color: 'white' }}>
@@ -36,33 +31,34 @@ export default function ExperienceMicrosite() {
 
   const isLeader = user?.ledCommunities?.length > 0;
 
-  const handlePromote = async () => {
-    const leaderCommunityId = promoteCommunityId || user?.ledCommunities?.[0];
-
-    if (!leaderCommunityId) {
-      toast.error('Permission Denied', 'You must be a community leader to promote experiences.');
-      return;
-    }
-    setIsPromoting(true);
+  const handleHostSubmit = async (data) => {
+    setShowHostModal(false);
     try {
+      const metadata = {
+        isExperience: true,
+        baseExperienceId: experience.id,
+        nonMemberPrice: data.nonMemberPrice
+      };
+      
       const newEvent = {
         title: experience.title,
-        description: experience.description + `\n\nProvider: ${experience.provider}`,
-        date: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 14 days from now
-        time: '10:00 AM',
+        description: experience.description + `\n\nProvider: ${experience.provider}\n<!--META:${JSON.stringify(metadata)}-->`,
+        date: data.date,
+        time: data.time,
         location: experience.location,
         image: experience.image,
-        communityId: leaderCommunityId,
-        status: 'published',
-        maxCapacity: experience.spotsLeft || 20,
-        ticketPrice: getTotalPrice(experience)
+        communityId: data.communityId,
+        status: data.isPublic ? 'published' : 'private',
+        maxCapacity: data.maxCapacity,
+        ticketPrice: data.memberPrice,
+        nonMemberPrice: data.nonMemberPrice,
+        isExperience: true,
+        baseExperienceId: experience.id
       };
-      await createEvent(leaderCommunityId, newEvent);
-      toast.success('Promoted!', `${experience.title} added to your community events.`);
+      await createEvent(data.communityId, newEvent);
+      toast.success('Experience Hosted!', `${experience.title} added to your community events.`);
     } catch (err) {
-      toast.error('Error', 'Failed to promote experience.');
-    } finally {
-      setIsPromoting(false);
+      toast.error('Error', 'Failed to host experience.');
     }
   };
 
@@ -78,6 +74,12 @@ export default function ExperienceMicrosite() {
       toast.success('Link Copied', 'Copied to clipboard');
     }
   };
+
+  const communityEvents = useAppContext().events.filter(ev => {
+    if (ev.title === experience.title) return true;
+    if (ev.description && ev.description.includes(`"baseExperienceId":"${experience.id}"`)) return true;
+    return false;
+  });
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--slate-950)', color: 'white', paddingBottom: '100px' }}>
@@ -162,22 +164,58 @@ export default function ExperienceMicrosite() {
                 <div style={{ fontSize: '1.3rem', fontWeight: 800, color: 'white' }}>£{getTotalPrice(experience)}</div>
               </div>
             </div>
+          </div>
+        )}
 
-            {user.ledCommunities.length > 1 && (
-              <div style={{ marginTop: '20px' }}>
-                <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--slate-400)', marginBottom: '8px' }}>Promote to Community:</label>
-                <select 
-                  value={promoteCommunityId} 
-                  onChange={e => setPromoteCommunityId(e.target.value)}
-                  style={{ width: '100%', padding: '12px', background: 'var(--slate-900)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'white' }}
-                >
-                  {user.ledCommunities.map(id => {
-                    const c = communities.find(comm => comm.id === id);
-                    return <option key={id} value={id}>{c?.name || id}</option>;
-                  })}
-                </select>
-              </div>
-            )}
+        {/* Upcoming Community Trips Section */}
+        {communityEvents.length > 0 && (
+          <div style={{ padding: '24px', background: 'rgba(255,255,255,0.02)', borderRadius: '16px', border: '1px dashed rgba(255,255,255,0.1)', marginBottom: '24px' }}>
+            <h3 style={{ fontSize: '1.2rem', fontFamily: 'var(--font-heading)', color: 'white', margin: '0 0 16px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Users size={20} color="var(--teal-400)" /> Upcoming Community Trips
+            </h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {communityEvents.map(ev => {
+                const comm = communities.find(c => c.id === ev.communityId);
+                
+                // Parse metadata if present
+                let nonMemberPrice = ev.ticketPrice + 25; // default fallback
+                if (ev.description?.includes('<!--META:')) {
+                  try {
+                    const match = ev.description.match(/<!--META:(.*?)-->/);
+                    if (match && match[1]) {
+                      const meta = JSON.parse(match[1]);
+                      if (meta.nonMemberPrice) nonMemberPrice = meta.nonMemberPrice;
+                    }
+                  } catch(e) {}
+                }
+
+                return (
+                  <div key={ev.id} style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '16px', background: 'var(--slate-900)', borderRadius: '12px', border: '1px solid var(--slate-800)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <div>
+                        <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>Hosted By</div>
+                        <div style={{ color: 'white', fontWeight: 700, fontSize: '1.1rem' }}>{comm?.name || 'A Community'}</div>
+                        <div style={{ fontSize: '0.9rem', color: 'var(--slate-300)', marginTop: '4px' }}><Calendar size={14} style={{ display: 'inline', marginRight: '4px' }} />{ev.date} at {ev.time}</div>
+                      </div>
+                      <button onClick={() => navigate.push(`/checkout/experience/${ev.id}`)} className="btn btn-primary interactive-press" style={{ padding: '8px 16px', borderRadius: '8px', fontSize: '0.9rem' }}>
+                        Join Trip
+                      </button>
+                    </div>
+                    
+                    <div style={{ display: 'flex', gap: '12px', marginTop: '4px' }}>
+                      <div style={{ flex: 1, padding: '12px', background: 'rgba(255,255,255,0.03)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', marginBottom: '4px' }}>Non-Member</div>
+                        <div style={{ fontSize: '1.1rem', color: 'white', fontWeight: 600 }}>£{nonMemberPrice}</div>
+                      </div>
+                      <div style={{ flex: 1, padding: '12px', background: 'rgba(20,184,166,0.05)', borderRadius: '8px', border: '1px solid rgba(20,184,166,0.2)' }}>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--teal-400)', marginBottom: '4px', fontWeight: 700 }}>Member Price</div>
+                        <div style={{ fontSize: '1.1rem', color: 'var(--teal-300)', fontWeight: 700 }}>£{ev.ticketPrice}</div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
       </div>
@@ -196,12 +234,11 @@ export default function ExperienceMicrosite() {
         
         {isLeader ? (
           <button 
-            onClick={handlePromote} 
-            disabled={isPromoting}
+            onClick={() => setShowHostModal(true)} 
             className="btn btn-primary interactive-press" 
             style={{ padding: '14px 28px', borderRadius: '99px', fontSize: '1rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}
           >
-            {isPromoting ? 'Promoting...' : <><Sparkles size={16} /> Promote</>}
+            <Sparkles size={16} /> Host for my Community
           </button>
         ) : (
           <button 
@@ -213,6 +250,16 @@ export default function ExperienceMicrosite() {
           </button>
         )}
       </div>
+
+      {showHostModal && (
+        <HostExperienceModal 
+          experience={experience} 
+          communities={communities}
+          user={user}
+          onClose={() => setShowHostModal(false)}
+          onHost={handleHostSubmit}
+        />
+      )}
     </div>
   );
 }

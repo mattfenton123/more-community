@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { useAuth } from './AuthContext';
 import { useAppContext } from './AppContext';
-import { sendMessageAction, sendDirectMessageAction } from '../lib/actions';
+import { sendMessageAction, sendDirectMessageAction, updateMessageAction } from '../lib/actions';
 
 const ChatContext = createContext({});
 
@@ -177,10 +177,54 @@ export function ChatProvider({ children }) {
     }
   };
 
+  const reactToMessage = async (messageId, emoji) => {
+    if (!user.id) return;
+    const msg = messages.find(m => m.id === messageId);
+    if (!msg) return;
+
+    // Parse existing reactions if any
+    let currentText = msg.text || '';
+    let rawReactions = {};
+    const metaMatch = currentText.match(/<!--REACTIONS:(.*?)-->/);
+    if (metaMatch && metaMatch[1]) {
+      try {
+        rawReactions = JSON.parse(metaMatch[1]);
+        currentText = currentText.replace(metaMatch[0], '');
+      } catch (e) {}
+    }
+
+    // Toggle reaction logic
+    if (!rawReactions[emoji]) {
+      rawReactions[emoji] = [];
+    }
+    const userIndex = rawReactions[emoji].indexOf(user.id);
+    if (userIndex > -1) {
+      rawReactions[emoji].splice(userIndex, 1);
+      if (rawReactions[emoji].length === 0) delete rawReactions[emoji];
+    } else {
+      rawReactions[emoji].push(user.id);
+    }
+
+    const newText = `${currentText}<!--REACTIONS:${JSON.stringify(rawReactions)}-->`;
+
+    // Optimistic UI update
+    setMessages(prev => prev.map(m => m.id === messageId ? { ...m, text: newText } : m));
+
+    try {
+      const sessionResponse = await supabase.auth.getSession();
+      const token = sessionResponse.data.session?.access_token;
+      await updateMessageAction(messageId, { text: newText }, token);
+    } catch (err) {
+      console.error('Reaction failed:', err);
+      // Revert optimism
+      setMessages(prev => prev.map(m => m.id === messageId ? { ...m, text: msg.text } : m));
+    }
+  };
+
   return (
     <ChatContext.Provider value={{
       messages, directMessages, chatReadReceipts, isChatLoading,
-      sendMessage, sendDirectMessage, markChatRead
+      sendMessage, sendDirectMessage, markChatRead, reactToMessage
     }}>
       {children}
     </ChatContext.Provider>
