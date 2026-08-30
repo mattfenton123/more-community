@@ -97,8 +97,8 @@ export function FeedProvider({ children }) {
         id: data.id,
         communityId: data.community_id,
         authorId: data.author_id,
-        text: data.content,
-        media: data.media_url,
+        text: data.text,
+        media: data.media,
         likes: data.likes,
         createdAt: data.created_at,
       };
