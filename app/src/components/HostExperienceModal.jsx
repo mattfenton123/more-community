@@ -140,7 +140,7 @@ export default function HostExperienceModal({ experience, communities, user, onC
                     min={experience.basePrice}
                     required
                     value={memberPrice} 
-                    onChange={e => setMemberPrice(Number(e.target.value))}
+                    onChange={e => setMemberPrice(e.target.value === '' ? '' : Number(e.target.value))}
                     style={{ width: '100%', padding: '12px 12px 12px 36px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'white', fontSize: '1rem', boxSizing: 'border-box' }}
                   />
                 </div>
@@ -154,7 +154,7 @@ export default function HostExperienceModal({ experience, communities, user, onC
                     min={memberPrice}
                     required
                     value={nonMemberPrice} 
-                    onChange={e => setNonMemberPrice(Number(e.target.value))}
+                    onChange={e => setNonMemberPrice(e.target.value === '' ? '' : Number(e.target.value))}
                     style={{ width: '100%', padding: '12px 12px 12px 36px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'white', fontSize: '1rem', boxSizing: 'border-box' }}
                   />
                 </div>
@@ -200,7 +200,7 @@ export default function HostExperienceModal({ experience, communities, user, onC
                 max={experience.spotsLeft}
                 required
                 value={maxCapacity} 
-                onChange={e => setMaxCapacity(Number(e.target.value))}
+                onChange={e => setMaxCapacity(e.target.value === '' ? '' : Number(e.target.value))}
                 style={{ width: '100%', padding: '12px 12px 12px 36px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'white', fontSize: '1rem', boxSizing: 'border-box' }}
               />
             </div>
