@@ -1,7 +1,7 @@
 "use client";
 
 import '../src/index.css';
-import { Compass, Users, Calendar, MessageCircle, BarChart2, User, Bell, Shield, Home } from 'lucide-react';
+import { Compass, Users, Calendar, MessageCircle, BarChart2, User, Bell, Shield, Home, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
@@ -99,9 +99,9 @@ function TabBar() {
         </Link>
       )}
       {!user?.leaderOf && (
-        <Link href="/profile" className={`tab-item ${currentPath?.startsWith('/profile') ? 'active' : ''}`}>
-          <User size={22} />
-          <span className="tab-label">Profile</span>
+        <Link href="/experiences" className={`tab-item ${currentPath?.startsWith('/experiences') ? 'active' : ''}`}>
+          <Sparkles size={22} />
+          <span className="tab-label">Experiences</span>
         </Link>
       )}
     </div>

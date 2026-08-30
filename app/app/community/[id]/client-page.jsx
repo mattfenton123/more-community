@@ -8,6 +8,7 @@ import { useToast } from '../../../src/components/Toast';
 import PhotoGallery from '../../../src/components/PhotoGallery';
 import MemberDirectory from '../../../src/components/MemberDirectory';
 import InlineComments from '../../../src/components/InlineComments';
+import ExperiencesCatalog from '../../../src/components/ExperiencesCatalog';
 import { downloadIcs } from '../../../src/lib/calendar';
 
 // Category-specific gallery photos (generated unique images)
@@ -437,33 +438,25 @@ export default function CommunityProfile() {
 
               {/* Suggestion Form */}
               {isMember ? (
-                <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '16px', marginBottom: '32px' }}>
-                  <textarea 
-                    placeholder="Describe your event or trip idea..."
-                    value={newPostText}
-                    onChange={e => setNewPostText(e.target.value)}
-                    style={{ width: '100%', background: 'transparent', border: 'none', color: 'white', resize: 'none', minHeight: '80px', fontSize: '1rem', outline: 'none' }}
-                  />
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px' }}>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>Suggestions are posted to the public feed</div>
+                <div style={{ marginBottom: '32px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                    <h4 style={{ fontSize: '1rem', color: 'white', margin: 0 }}>Browse Experiences to Pitch</h4>
                     <button 
                       onClick={() => {
-                        if (!newPostText.trim()) return;
-                        const originalText = newPostText;
-                        handleCreatePost(`💡 **SUGGESTION:**\n${originalText}`);
-                        setNewPostText('');
+                        const idea = prompt('What is your custom idea?');
+                        if (idea) handleCreatePost(`💡 **SUGGESTION:**\n${idea}`);
                       }}
-                      className="btn btn-primary interactive-press"
-                      style={{ padding: '8px 16px', borderRadius: '99px', fontSize: '0.9rem' }}
-                      disabled={!newPostText.trim()}
+                      className="btn btn-outline interactive-press"
+                      style={{ padding: '6px 12px', fontSize: '0.8rem', borderColor: 'rgba(255,255,255,0.1)' }}
                     >
-                      Post Suggestion
+                      Or Pitch Custom Idea
                     </button>
                   </div>
+                  <ExperiencesCatalog onPitchExperience={handlePitchExperience} />
                 </div>
               ) : (
                 <div style={{ padding: '20px', textAlign: 'center', background: 'rgba(255,255,255,0.02)', borderRadius: '16px', marginBottom: '32px' }}>
-                  <p style={{ color: 'var(--slate-400)', margin: '0 0 12px 0' }}>You must be a member to post a suggestion.</p>
+                  <p style={{ color: 'var(--slate-400)', margin: '0 0 12px 0' }}>You must be a member to pitch an event.</p>
                   <button onClick={handleJoinLeave} className="btn btn-primary interactive-press" style={{ padding: '8px 16px', borderRadius: '99px' }}>
                     Join Community
                   </button>
@@ -471,21 +464,42 @@ export default function CommunityProfile() {
               )}
             </div>
 
-            <h4 style={{ fontSize: '1rem', color: 'white', marginBottom: '16px' }}>Recent Suggestions</h4>
-            {communityFeed.filter(p => p.text?.includes('💡 **SUGGESTION:**')).length === 0 ? (
+            <h4 style={{ fontSize: '1rem', color: 'white', marginBottom: '16px' }}>Active Campaigns & Suggestions</h4>
+            {communityFeed.filter(p => p.text?.includes('💡 **SUGGESTION:**') || p.text?.includes('🚀 **CAMPAIGN:**')).length === 0 ? (
               <div style={{ padding: '32px', textAlign: 'center', background: 'rgba(255,255,255,0.02)', borderRadius: '16px' }}>
-                <p style={{ color: 'var(--slate-400)' }}>No suggestions yet. Be the first!</p>
+                <p style={{ color: 'var(--slate-400)' }}>No active campaigns yet. Pitch an experience above!</p>
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                {communityFeed.filter(p => p.text?.includes('💡 **SUGGESTION:**')).map(post => {
+                {communityFeed.filter(p => p.text?.includes('💡 **SUGGESTION:**') || p.text?.includes('🚀 **CAMPAIGN:**')).map(post => {
                   const author = users.find(u => u.id === post.authorId);
+                  const isCampaign = post.text?.includes('🚀 **CAMPAIGN:**');
+                  let campaignExp = null;
+                  let campaignText = post.text;
+                  
+                  if (isCampaign) {
+                    const match = post.text.match(/🚀 \*\*CAMPAIGN:\*\* (\w+)/);
+                    if (match) {
+                      campaignExp = experiences.find(e => e.id === match[1]);
+                      campaignText = post.text.replace(/🚀 \*\*CAMPAIGN:\*\* \w+\n/, '');
+                    }
+                  } else {
+                    campaignText = post.text.replace('💡 **SUGGESTION:**', '').trim();
+                  }
+
+                  const votes = post.likes?.length || 0;
+                  const threshold = 10;
+                  const progress = Math.min((votes / threshold) * 100, 100);
+
                   return (
                     <div key={post.id} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '16px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
                         <img src={author?.avatar || 'https://i.pravatar.cc/150'} alt="" style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }} />
                         <div>
-                          <div style={{ fontWeight: 600, color: 'white', fontSize: '0.9rem' }}>{author?.name}</div>
+                          <div style={{ fontWeight: 600, color: 'white', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            {author?.name}
+                            {isCampaign && <span style={{ fontSize: '0.65rem', background: 'var(--teal-500)', color: 'white', padding: '2px 6px', borderRadius: '6px', fontWeight: 700, textTransform: 'uppercase' }}>Campaign</span>}
+                          </div>
                           <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>
                             {(post.timestamp || post.createdAt || post.created_at) && !isNaN(new Date(post.timestamp || post.createdAt || post.created_at).getTime())
                               ? new Date(post.timestamp || post.createdAt || post.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
@@ -493,12 +507,43 @@ export default function CommunityProfile() {
                           </div>
                         </div>
                       </div>
-                      <p style={{ color: 'var(--slate-200)', fontSize: '0.95rem', lineHeight: 1.5, margin: '0 0 12px 0' }}>{post.text.replace('💡 **SUGGESTION:**', '').trim()}</p>
+                      
+                      {isCampaign && campaignExp && (
+                        <div style={{ background: 'var(--slate-900)', borderRadius: '12px', padding: '12px', marginBottom: '16px', border: '1px solid rgba(20,184,166,0.2)' }}>
+                          <div style={{ display: 'flex', gap: '12px' }}>
+                            <img src={campaignExp.image} alt="" style={{ width: '60px', height: '60px', borderRadius: '8px', objectFit: 'cover' }} />
+                            <div>
+                              <div style={{ fontWeight: 700, color: 'white', fontSize: '1rem', marginBottom: '4px' }}>{campaignExp.title}</div>
+                              <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <span><MapPin size={12} style={{ display: 'inline', marginRight: '2px' }} /> {campaignExp.location}</span>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div style={{ marginTop: '16px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--slate-300)', marginBottom: '6px', fontWeight: 600 }}>
+                              <span>Campaign Progress</span>
+                              <span>{votes} / {threshold} Interested</span>
+                            </div>
+                            <div style={{ height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', overflow: 'hidden' }}>
+                              <div style={{ width: `${progress}%`, height: '100%', background: 'var(--teal-500)', transition: 'width 0.5s ease' }} />
+                            </div>
+                            {progress >= 100 && (
+                              <div style={{ marginTop: '8px', fontSize: '0.8rem', color: 'var(--yellow-400)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                <Sparkles size={14} /> Goal Reached! Waiting for Leader to schedule.
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      <p style={{ color: 'var(--slate-200)', fontSize: '0.95rem', lineHeight: 1.5, margin: '0 0 12px 0' }}>{campaignText}</p>
                       {post.mediaUrl && <img src={post.mediaUrl} alt="Attached media" style={{ width: '100%', borderRadius: '12px', marginBottom: '12px', maxHeight: '200px', objectFit: 'cover' }} />}
-                      <div style={{ display: 'flex', gap: '16px' }}>
-                        <button onClick={() => likeFeedPost(post.id)} className="interactive-press" style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '6px', color: (post.likes || []).includes(user.id) ? 'var(--teal-400)' : 'var(--slate-400)', cursor: 'pointer', fontSize: '0.85rem' }}>
+                      
+                      <div style={{ display: 'flex', gap: '16px', marginTop: '12px' }}>
+                        <button onClick={() => likeFeedPost(post.id)} className="interactive-press" style={{ background: (post.likes || []).includes(user.id) ? 'rgba(20,184,166,0.15)' : 'rgba(255,255,255,0.05)', padding: '6px 12px', borderRadius: '20px', border: '1px solid', borderColor: (post.likes || []).includes(user.id) ? 'rgba(20,184,166,0.3)' : 'transparent', display: 'flex', alignItems: 'center', gap: '6px', color: (post.likes || []).includes(user.id) ? 'var(--teal-400)' : 'white', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}>
                           <Heart size={16} fill={(post.likes || []).includes(user.id) ? 'var(--teal-400)' : 'none'} />
-                          {post.likes?.length || 0}
+                          {isCampaign ? "I'm Interested" : "Upvote"} ({votes})
                         </button>
                         <button onClick={() => setExpandedComments(prev => ({...prev, [post.id]: !prev[post.id]}))} className="interactive-press" style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '6px', color: expandedComments[post.id] ? 'var(--teal-400)' : 'var(--slate-400)', cursor: 'pointer', fontSize: '0.85rem' }}>
                           <MessageCircle size={16} />
