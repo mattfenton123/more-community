@@ -237,9 +237,9 @@ export default function CommunityProfile() {
                       ✓ You're a Member
                     </div>
                     <button 
-                      onClick={handleJoinLeave} 
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleJoinLeave(); }} 
                       className="interactive-press" 
-                      style={{ background: 'none', border: 'none', color: 'var(--slate-400)', fontSize: '0.85rem', cursor: 'pointer', textDecoration: 'underline' }}
+                      style={{ position: 'relative', zIndex: 100, background: 'none', border: 'none', color: 'var(--slate-400)', fontSize: '0.85rem', cursor: 'pointer', textDecoration: 'underline' }}
                     >
                       Leave Community
                     </button>

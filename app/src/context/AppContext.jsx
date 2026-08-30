@@ -104,7 +104,7 @@ export function AppProvider({ children }) {
   }
 
   // Force demo users to be a leader of the first community (so they can test leader features)
-  if ((authUser?.email?.includes('demo') || user.isAdmin) && communities.length > 0 && user.ledCommunities.length === 0) {
+  if (authUser?.email?.includes('demo') && communities.length > 0 && user.ledCommunities.length === 0) {
     const targetComm = communities[0];
     user.ledCommunities.push(targetComm.id);
     if (!user.joinedCommunities.includes(targetComm.id)) user.joinedCommunities.push(targetComm.id);

@@ -181,7 +181,8 @@ export async function leaveCommunityAction(userId, communityId, token) {
 
   const { error } = await supabaseAdmin.from('community_memberships')
     .delete()
-    .match({ user_id: userId, community_id: communityId });
+    .eq('user_id', userId)
+    .eq('community_id', communityId);
 
   if (error) throw new Error(error.message);
   return true;
