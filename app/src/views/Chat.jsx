@@ -1,6 +1,7 @@
 "use client";
 import { useState, useRef, useEffect } from 'react';
-import { Send, Menu, MessageCircle, ChevronLeft, Plus, Users, Hash, Image as ImageIcon, X } from 'lucide-react';
+import { Send, Menu, MessageCircle, ChevronLeft, Plus, Users, Hash, Image as ImageIcon, X, Smile } from 'lucide-react';
+import EmojiPicker from 'emoji-picker-react';
 import AppHeader from '../components/AppHeader';
 import { useAppContext } from '../context/AppContext';
 import { useChat } from '../context/ChatContext';
@@ -17,6 +18,7 @@ export default function Chat() {
   const [isUploading, setIsUploading] = useState(false);
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newChannelName, setNewChannelName] = useState('');
   const [activeTab, setActiveTab] = useState('Communities');
@@ -27,6 +29,11 @@ export default function Chat() {
   const { toast } = useToast();
   const [showNewChatModal, setShowNewChatModal] = useState(false);
   const [userSearchTerm, setUserSearchTerm] = useState('');
+
+  const onEmojiClick = (emojiObject) => {
+    setInputText(prev => prev + emojiObject.emoji);
+    setShowEmojiPicker(false);
+  };
 
   const activeMessages = (targetUserId)
     ? directMessages.filter(m => (m.senderId === user.id && m.receiverId === targetUserId) || (m.senderId === targetUserId && m.receiverId === user.id))
@@ -459,6 +466,16 @@ export default function Chat() {
           <button onClick={() => fileInputRef.current?.click()} className="interactive-press" style={{ background: 'none', border: 'none', color: 'var(--slate-400)', padding: '8px', cursor: 'pointer' }}>
             <ImageIcon size={20} />
           </button>
+          <div style={{ position: 'relative' }}>
+            <button onClick={() => setShowEmojiPicker(!showEmojiPicker)} className="interactive-press" style={{ background: 'none', border: 'none', color: showEmojiPicker ? 'var(--teal-400)' : 'var(--slate-400)', padding: '8px', cursor: 'pointer', display: 'flex' }}>
+              <Smile size={20} />
+            </button>
+            {showEmojiPicker && (
+              <div style={{ position: 'absolute', bottom: '50px', left: '0', zIndex: 100 }}>
+                <EmojiPicker onEmojiClick={onEmojiClick} theme="dark" />
+              </div>
+            )}
+          </div>
           <input 
             type="text" 
             value={inputText}

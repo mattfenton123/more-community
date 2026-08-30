@@ -159,6 +159,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
+        <meta charSet="utf-8" />
         <title>more | The Power of Real-Life Connection</title>
         <meta name="description" content="more is a movement celebrating the power of connecting in person. Find local groups, join real-life meetups, and experience the joy of shared passions. Free for community leaders. Starting in Tunbridge Wells." />
         <meta property="og:title" content="more | The Power of Real-Life Connection" />

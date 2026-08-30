@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { X, Send, Trash2, Flag, Image as ImageIcon } from 'lucide-react';
+import { X, Send, Trash2, Flag, Image as ImageIcon, Smile } from 'lucide-react';
+import EmojiPicker from 'emoji-picker-react';
 import { supabase } from '../lib/supabaseClient';
 import { useAppContext } from '../context/AppContext';
 import { useFeed } from '../context/FeedContext';
@@ -13,6 +14,12 @@ export default function CommentsModal({ isOpen, onClose, post }) {
   const [newCommentImage, setNewCommentImage] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+
+  const onEmojiClick = (emojiObject) => {
+    setNewComment(prev => prev + emojiObject.emoji);
+    setShowEmojiPicker(false);
+  };
 
   useEffect(() => {
     if (!isOpen || !post) return;
@@ -194,6 +201,16 @@ export default function CommentsModal({ isOpen, onClose, post }) {
             <input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => setNewCommentImage(e.target.files[0])} />
             <ImageIcon size={20} />
           </label>
+          <div style={{ position: 'relative' }}>
+            <button type="button" onClick={() => setShowEmojiPicker(!showEmojiPicker)} className="interactive-press" style={{ background: 'none', border: 'none', color: showEmojiPicker ? 'var(--teal-400)' : 'var(--slate-400)', padding: '12px 4px', cursor: 'pointer', display: 'flex' }}>
+              <Smile size={20} />
+            </button>
+            {showEmojiPicker && (
+              <div style={{ position: 'absolute', bottom: '50px', left: '0', zIndex: 100 }}>
+                <EmojiPicker onEmojiClick={onEmojiClick} theme="dark" />
+              </div>
+            )}
+          </div>
           <input
             type="text"
             value={newComment}
