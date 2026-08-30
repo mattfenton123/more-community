@@ -243,13 +243,28 @@ export default function CommunityProfile() {
             const isPaid = subPrice > 0 && !isMember;
             return (
               <>
-                <button 
-                  className={`btn ${isMember ? 'btn-outline' : 'btn-primary'} interactive-press`} 
-                  style={{ width: '100%', padding: '16px', fontSize: '1.05rem', fontWeight: 700, borderRadius: '14px', boxShadow: isMember ? 'none' : '0 8px 24px rgba(20,184,166,0.3)', cursor: 'pointer' }}
-                  onClick={handleJoinLeave}
-                >
-                  {isMember ? 'Leave Community' : isPaid ? `Join — £${subPrice}/month` : 'Join this Community — it\'s free'}
-                </button>
+                {isMember ? (
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ width: '100%', padding: '16px', fontSize: '1.05rem', fontWeight: 700, borderRadius: '14px', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--slate-300)', background: 'rgba(255,255,255,0.05)', marginBottom: '8px' }}>
+                      ✓ You're a Member
+                    </div>
+                    <button 
+                      onClick={handleJoinLeave} 
+                      className="interactive-press" 
+                      style={{ background: 'none', border: 'none', color: 'var(--slate-400)', fontSize: '0.85rem', cursor: 'pointer', textDecoration: 'underline' }}
+                    >
+                      Leave Community
+                    </button>
+                  </div>
+                ) : (
+                  <button 
+                    className="btn btn-primary interactive-press" 
+                    style={{ width: '100%', padding: '16px', fontSize: '1.05rem', fontWeight: 700, borderRadius: '14px', boxShadow: '0 8px 24px rgba(20,184,166,0.3)', cursor: 'pointer' }}
+                    onClick={handleJoinLeave}
+                  >
+                    {isPaid ? `Join — £${subPrice}/month` : 'Join this Community — it\'s free'}
+                  </button>
+                )}
                 {isPaid && !isMember && (
                   <div style={{ textAlign: 'center', fontSize: '0.75rem', color: 'var(--slate-500)', marginTop: '8px' }}>
                     Cancel anytime. You won't be charged during the trial period.
