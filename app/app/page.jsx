@@ -6,14 +6,14 @@ import { useFeed } from '../src/context/FeedContext';
 import { Heart, MessageCircle, Share2, Calendar, MapPin, Clock, Compass, Plus } from 'lucide-react';
 import AppHeader from '../src/components/AppHeader';
 import { SkeletonList, SkeletonCard } from '../src/components/SkeletonCard';
-import CommentsModal from '../src/components/CommentsModal';
+import InlineComments from '../src/components/InlineComments';
 import { useState } from 'react';
 
 export default function HomeFeed() {
   const { user, communities, events, users, eventRsvps, isLoading } = useAppContext();
   const { feedPosts, likeFeedPost } = useFeed();
   const router = useRouter();
-  const [activePostForComments, setActivePostForComments] = useState(null);
+  const [expandedComments, setExpandedComments] = useState({});
 
   const joinedCommunities = communities.filter(c => user.joinedCommunities?.includes(c.id));
 
@@ -93,13 +93,16 @@ export default function HomeFeed() {
                   <button onClick={() => likeFeedPost(post.id)} className="interactive-press" style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--slate-400)', cursor: 'pointer', fontSize: '0.85rem' }}>
                     <Heart size={16} fill={post.likes > 0 ? "var(--teal-400)" : "none"} color={post.likes > 0 ? "var(--teal-400)" : "var(--slate-400)"} /> {post.likes || 0}
                   </button>
-                  <button onClick={() => setActivePostForComments(post)} className="interactive-press" style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--slate-400)', cursor: 'pointer', fontSize: '0.85rem' }}>
+                  <button onClick={() => setExpandedComments(prev => ({...prev, [post.id]: !prev[post.id]}))} className="interactive-press" style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '6px', color: expandedComments[post.id] ? 'var(--teal-400)' : 'var(--slate-400)', cursor: 'pointer', fontSize: '0.85rem' }}>
                     <MessageCircle size={16} /> {post.comments || 0}
                   </button>
                   <button className="interactive-press" style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--slate-400)', cursor: 'pointer', fontSize: '0.85rem', marginLeft: 'auto' }}>
                     <Share2 size={16} />
                   </button>
                 </div>
+                {expandedComments[post.id] && (
+                  <InlineComments post={post} />
+                )}
               </div>
             );
           }
@@ -166,12 +169,6 @@ export default function HomeFeed() {
           </div>
         )}
       </div>
-
-      <CommentsModal 
-        isOpen={!!activePostForComments}
-        onClose={() => setActivePostForComments(null)}
-        post={activePostForComments}
-      />
     </div>
   );
 }

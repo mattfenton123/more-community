@@ -7,7 +7,7 @@ import { useFeed } from '../../../src/context/FeedContext';
 import { useToast } from '../../../src/components/Toast';
 import PhotoGallery from '../../../src/components/PhotoGallery';
 import MemberDirectory from '../../../src/components/MemberDirectory';
-import CommentsModal from '../../../src/components/CommentsModal';
+import InlineComments from '../../../src/components/InlineComments';
 import { downloadIcs } from '../../../src/lib/calendar';
 
 // Category-specific gallery photos (generated unique images)
@@ -76,7 +76,7 @@ export default function CommunityProfile() {
   const { toast } = useToast();
   const [showRules, setShowRules] = useState(false);
   const [activeTab, setActiveTab] = useState('feed');
-  const [selectedPostForComments, setSelectedPostForComments] = useState(null);
+  const [expandedComments, setExpandedComments] = useState({});
   const [newPostText, setNewPostText] = useState('');
   const [newPostImage, setNewPostImage] = useState(null);
   const [localPhotos, setLocalPhotos] = useState([]);
@@ -362,7 +362,9 @@ export default function CommunityProfile() {
                           )}
                         </div>
                         <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>
-                          {new Date(post.createdAt || post.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                          {(post.createdAt || post.created_at || post.timestamp) && !isNaN(new Date(post.createdAt || post.created_at || post.timestamp).getTime()) 
+                            ? new Date(post.createdAt || post.created_at || post.timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+                            : 'Recently'}
                         </div>
                       </div>
                       <div style={{ display: 'flex', gap: '8px' }}>
@@ -393,10 +395,13 @@ export default function CommunityProfile() {
                       <button onClick={() => likeFeedPost(post.id)} className="interactive-press" style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '6px', color: post.liked ? 'var(--teal-400)' : 'var(--slate-400)', cursor: 'pointer', fontSize: '0.85rem' }}>
                         <Heart size={16} fill={post.liked ? "currentColor" : "none"} /> {post.likes || 0}
                       </button>
-                      <button onClick={() => setSelectedPostForComments(post)} className="interactive-press" style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--slate-400)', cursor: 'pointer', fontSize: '0.85rem' }}>
+                      <button onClick={() => setExpandedComments(prev => ({...prev, [post.id]: !prev[post.id]}))} className="interactive-press" style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '6px', color: expandedComments[post.id] ? 'var(--teal-400)' : 'var(--slate-400)', cursor: 'pointer', fontSize: '0.85rem' }}>
                         <MessageCircle size={16} /> {post.comments || 0}
                       </button>
                     </div>
+                    {expandedComments[post.id] && (
+                      <InlineComments post={post} />
+                    )}
                   </div>
                 );
               }) : (
@@ -481,7 +486,11 @@ export default function CommunityProfile() {
                         <img src={author?.avatar || 'https://i.pravatar.cc/150'} alt="" style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }} />
                         <div>
                           <div style={{ fontWeight: 600, color: 'white', fontSize: '0.9rem' }}>{author?.name}</div>
-                          <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>{post.timestamp}</div>
+                          <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>
+                            {(post.timestamp || post.createdAt || post.created_at) && !isNaN(new Date(post.timestamp || post.createdAt || post.created_at).getTime())
+                              ? new Date(post.timestamp || post.createdAt || post.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+                              : 'Recently'}
+                          </div>
                         </div>
                       </div>
                       <p style={{ color: 'var(--slate-200)', fontSize: '0.95rem', lineHeight: 1.5, margin: '0 0 12px 0' }}>{post.text.replace('💡 **SUGGESTION:**', '').trim()}</p>
@@ -491,11 +500,16 @@ export default function CommunityProfile() {
                           <Heart size={16} fill={(post.likes || []).includes(user.id) ? 'var(--teal-400)' : 'none'} />
                           {post.likes?.length || 0}
                         </button>
-                        <button onClick={() => { setSelectedPostForComments(post); }} className="interactive-press" style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--slate-400)', cursor: 'pointer', fontSize: '0.85rem' }}>
+                        <button onClick={() => setExpandedComments(prev => ({...prev, [post.id]: !prev[post.id]}))} className="interactive-press" style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '6px', color: expandedComments[post.id] ? 'var(--teal-400)' : 'var(--slate-400)', cursor: 'pointer', fontSize: '0.85rem' }}>
                           <MessageCircle size={16} />
                           {post.comments?.length || 0}
                         </button>
                       </div>
+                      {expandedComments[post.id] && (
+                        <div style={{ marginTop: '16px' }}>
+                          <InlineComments post={post} />
+                        </div>
+                      )}
                     </div>
                   );
                 })}
@@ -776,7 +790,6 @@ export default function CommunityProfile() {
 
       </div>
       </div>
-      <CommentsModal isOpen={!!selectedPostForComments} onClose={() => setSelectedPostForComments(null)} post={selectedPostForComments} />
     </div>
   );
 }
