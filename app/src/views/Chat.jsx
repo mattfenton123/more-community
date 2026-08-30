@@ -1,7 +1,7 @@
 "use client";
 import { useState, useRef, useEffect } from 'react';
 import { Send, Menu, MessageCircle, ChevronLeft, Plus, Users, Hash, Image as ImageIcon, X, Smile } from 'lucide-react';
-import EmojiPicker from 'emoji-picker-react';
+import dynamic from 'next/dynamic';
 import AppHeader from '../components/AppHeader';
 import { useAppContext } from '../context/AppContext';
 import { useChat } from '../context/ChatContext';
@@ -9,6 +9,8 @@ import { useRouter as useNavigate, useParams } from 'next/navigation';
 import { SkeletonChatBubble, SkeletonLine, SkeletonAvatar } from '../components/SkeletonCard';
 import { useToast } from '../components/Toast';
 import { FALLBACK_IMAGES } from '../lib/constants';
+
+const EmojiPicker = dynamic(() => import('emoji-picker-react'), { ssr: false });
 
 export default function Chat() {
   const { communityId, channelId, targetUserId } = useParams();
@@ -466,7 +468,7 @@ export default function Chat() {
           <button onClick={() => fileInputRef.current?.click()} className="interactive-press" style={{ background: 'none', border: 'none', color: 'var(--slate-400)', padding: '8px', cursor: 'pointer' }}>
             <ImageIcon size={20} />
           </button>
-          <div style={{ position: 'relative' }}>
+          <div style={{ position: 'relative', flexShrink: 0, display: 'flex' }}>
             <button onClick={() => setShowEmojiPicker(!showEmojiPicker)} className="interactive-press" style={{ background: 'none', border: 'none', color: showEmojiPicker ? 'var(--teal-400)' : 'var(--slate-400)', padding: '8px', cursor: 'pointer', display: 'flex' }}>
               <Smile size={20} />
             </button>

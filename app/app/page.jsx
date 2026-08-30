@@ -6,11 +6,14 @@ import { useFeed } from '../src/context/FeedContext';
 import { Heart, MessageCircle, Share2, Calendar, MapPin, Clock, Compass, Plus } from 'lucide-react';
 import AppHeader from '../src/components/AppHeader';
 import { SkeletonList, SkeletonCard } from '../src/components/SkeletonCard';
+import CommentsModal from '../src/components/CommentsModal';
+import { useState } from 'react';
 
 export default function HomeFeed() {
   const { user, communities, events, users, eventRsvps, isLoading } = useAppContext();
   const { feedPosts, likeFeedPost } = useFeed();
   const router = useRouter();
+  const [activePostForComments, setActivePostForComments] = useState(null);
 
   const joinedCommunities = communities.filter(c => user.joinedCommunities?.includes(c.id));
 
@@ -76,7 +79,7 @@ export default function HomeFeed() {
                   <div>
                     <div style={{ fontWeight: 600, color: 'white', fontSize: '0.95rem', cursor: 'pointer' }} onClick={() => router.push(`/community/${community?.id}`)}>{community?.name}</div>
                     <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>
-                      Posted by {author?.name || 'Community Leader'} • {new Date(post.timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                      Posted by {author?.name || 'Community Leader'} • {post.timestamp && !isNaN(new Date(post.timestamp).getTime()) ? new Date(post.timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'Recently'}
                     </div>
                   </div>
                 </div>
@@ -90,8 +93,8 @@ export default function HomeFeed() {
                   <button onClick={() => likeFeedPost(post.id)} className="interactive-press" style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--slate-400)', cursor: 'pointer', fontSize: '0.85rem' }}>
                     <Heart size={16} fill={post.likes > 0 ? "var(--teal-400)" : "none"} color={post.likes > 0 ? "var(--teal-400)" : "var(--slate-400)"} /> {post.likes || 0}
                   </button>
-                  <button className="interactive-press" style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--slate-400)', cursor: 'pointer', fontSize: '0.85rem' }}>
-                    <MessageCircle size={16} /> {post.comments}
+                  <button onClick={() => setActivePostForComments(post)} className="interactive-press" style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--slate-400)', cursor: 'pointer', fontSize: '0.85rem' }}>
+                    <MessageCircle size={16} /> {post.comments || 0}
                   </button>
                   <button className="interactive-press" style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--slate-400)', cursor: 'pointer', fontSize: '0.85rem', marginLeft: 'auto' }}>
                     <Share2 size={16} />
@@ -163,6 +166,12 @@ export default function HomeFeed() {
           </div>
         )}
       </div>
+
+      <CommentsModal 
+        isOpen={!!activePostForComments}
+        onClose={() => setActivePostForComments(null)}
+        post={activePostForComments}
+      />
     </div>
   );
 }

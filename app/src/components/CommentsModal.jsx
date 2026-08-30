@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { X, Send, Trash2, Flag, Image as ImageIcon, Smile } from 'lucide-react';
-import EmojiPicker from 'emoji-picker-react';
 import { supabase } from '../lib/supabaseClient';
 import { useAppContext } from '../context/AppContext';
 import { useFeed } from '../context/FeedContext';
 import { getCommentsAction } from '../lib/actions';
+import dynamic from 'next/dynamic';
+
+const EmojiPicker = dynamic(() => import('emoji-picker-react'), { ssr: false });
 
 export default function CommentsModal({ isOpen, onClose, post }) {
   const { users, user, communities, createFeedComment, uploadImage } = useAppContext();
@@ -23,7 +25,6 @@ export default function CommentsModal({ isOpen, onClose, post }) {
 
   useEffect(() => {
     if (!isOpen || !post) return;
-    
     setIsLoading(true);
     
     // Fetch initial comments

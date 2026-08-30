@@ -1,6 +1,6 @@
 "use client";
 import { useState, useRef, useEffect } from 'react';
-import { Send, Menu, MessageCircle, ChevronLeft, Plus, Users, Hash, Image as ImageIcon, X } from 'lucide-react';
+import { Send, Menu, MessageCircle, ChevronLeft, Plus, Users, Hash, Image as ImageIcon, X, Smile } from 'lucide-react';
 import AppHeader from '../../../../src/components/AppHeader';
 import { useAppContext } from '../../../../src/context/AppContext';
 import { useChat } from '../../../../src/context/ChatContext';
@@ -8,6 +8,9 @@ import { useRouter as useNavigate, useParams } from 'next/navigation';
 import { SkeletonChatBubble, SkeletonLine, SkeletonAvatar } from '../../../../src/components/SkeletonCard';
 import { useToast } from '../../../../src/components/Toast';
 import { FALLBACK_IMAGES } from '../../../../src/lib/constants';
+import dynamic from 'next/dynamic';
+
+const EmojiPicker = dynamic(() => import('emoji-picker-react'), { ssr: false });
 
 export default function Chat() {
   const { communityId, channelId, targetUserId } = useParams();
@@ -21,6 +24,12 @@ export default function Chat() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newChannelName, setNewChannelName] = useState('');
   const [activeTab, setActiveTab] = useState('Communities');
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  
+  const onEmojiClick = (emojiObject) => {
+    setInputText(prev => prev + emojiObject.emoji);
+    setShowEmojiPicker(false);
+  };
   
   const { user, communities, users, communityMemberships, uploadImage, channels, createChannel, isLoading, whatsappSettings } = useAppContext();
   const { messages, directMessages, sendMessage, sendDirectMessage, chatReadReceipts, markChatRead, reactToMessage } = useChat();
@@ -502,6 +511,16 @@ export default function Chat() {
           <button onClick={() => fileInputRef.current?.click()} className="interactive-press" style={{ background: 'none', border: 'none', color: 'var(--slate-400)', padding: '8px', cursor: 'pointer' }}>
             <ImageIcon size={20} />
           </button>
+          <div style={{ position: 'relative', flexShrink: 0, display: 'flex' }}>
+            <button onClick={() => setShowEmojiPicker(!showEmojiPicker)} className="interactive-press" style={{ background: 'none', border: 'none', color: showEmojiPicker ? 'var(--teal-400)' : 'var(--slate-400)', padding: '8px', cursor: 'pointer', display: 'flex' }}>
+              <Smile size={20} />
+            </button>
+            {showEmojiPicker && (
+              <div style={{ position: 'absolute', bottom: '50px', left: '0', zIndex: 100 }}>
+                <EmojiPicker onEmojiClick={onEmojiClick} theme="dark" />
+              </div>
+            )}
+          </div>
           <input 
             type="text" 
             value={inputText}
