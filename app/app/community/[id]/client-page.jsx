@@ -171,10 +171,10 @@ export default function CommunityProfile() {
   const handleGenerateFomoReel = async (event) => {
     toast.info('Generating FOMO Reel...', 'Pulling photos & attendees');
     
-    // Pick 3 random photos from the gallery
+    // Pick 5 random photos from the gallery
     const allPhotos = [...localPhotos, ...galleryPhotos];
     const shuffledPhotos = allPhotos.sort(() => 0.5 - Math.random());
-    const selectedPhotos = shuffledPhotos.slice(0, 3);
+    const selectedPhotos = shuffledPhotos.slice(0, 5);
     
     // Pick up to 2 random RSVPs to tag
     const rsvps = eventRsvps[event.id] || [];
@@ -428,8 +428,26 @@ export default function CommunityProfile() {
                         // Not JSON, assume it's a single URL
                       }
                       
-                      if (mediaArr.length > 1) {
-                        // Render Collage
+                      if (mediaArr.length >= 4) {
+                        return (
+                          <div style={{ width: '100%', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2px', background: 'var(--slate-950)' }}>
+                            <div style={{ height: '300px' }}>
+                              <img src={mediaArr[0]} alt="Post media 1" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '1fr 1fr', gap: '2px', height: '300px' }}>
+                              <img src={mediaArr[1]} alt="Post media 2" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                              <img src={mediaArr[2]} alt="Post media 3" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                              <img src={mediaArr[3]} alt="Post media 4" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                              {mediaArr[4] ? (
+                                <img src={mediaArr[4]} alt="Post media 5" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                              ) : (
+                                <div style={{ width: '100%', height: '100%', background: 'var(--slate-800)' }}></div>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      } else if (mediaArr.length > 1) {
+                        // Render Collage (3 images)
                         return (
                           <div style={{ width: '100%', display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '2px', background: 'var(--slate-950)' }}>
                             <div style={{ height: '300px' }}>
