@@ -147,7 +147,6 @@ export async function ensureLeadersNetworkAction() {
     description: 'A private space for more. leaders to collaborate, share tips, and organize cross-community events.',
     tags: ['leadership', 'network'],
     leader_id: null,
-    is_private: true,
     image: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1200&q=80',
     activity_level: 'Active',
     location_name: 'Global',
@@ -380,38 +379,16 @@ export async function createFeedPostAction(communityId, authorId, content, media
   }
 }
 
-export async function toggleFeedPostLikeAction(postId, userId, token) {
+export async function toggleFeedPostLikeAction(postId, userId, increment, token) {
   try {
     await verifyUser(token, userId);
-    
-    // Check if the user already liked it (using event_rsvps as storage)
-    const { data: existing, error: existingErr } = await supabaseAdmin
-      .from('event_rsvps')
-      .select('id')
-      .eq('event_id', postId)
-      .eq('user_id', userId)
-      .eq('status', 'liked')
-      .single();
-
-    if (existing) {
-      await supabaseAdmin.from('event_rsvps').delete().eq('id', existing.id).catch(() => {});
-      const { data: post } = await supabaseAdmin.from('feed_posts').select('likes').eq('id', postId).single();
-      if (post) {
-        await supabaseAdmin.from('feed_posts').update({ likes: Math.max(0, (post.likes || 1) - 1) }).eq('id', postId);
-      }
-      return { liked: false };
-    } else {
-      await supabaseAdmin.from('event_rsvps').insert({
-        event_id: postId,
-        user_id: userId,
-        status: 'liked'
-      });
-      const { data: post } = await supabaseAdmin.from('feed_posts').select('likes').eq('id', postId).single();
-      if (post) {
-        await supabaseAdmin.from('feed_posts').update({ likes: (post.likes || 0) + 1 }).eq('id', postId);
-      }
-      return { liked: true };
+    const { data: post } = await supabaseAdmin.from('feed_posts').select('likes').eq('id', postId).single();
+    if (post) {
+      const newLikes = Math.max(0, (post.likes || 0) + (increment ? 1 : -1));
+      await supabaseAdmin.from('feed_posts').update({ likes: newLikes }).eq('id', postId);
+      return { liked: increment, likes: newLikes };
     }
+    return { error: 'Post not found' };
   } catch (err) {
     return { error: err.message };
   }
@@ -536,16 +513,9 @@ export async function reportMemberAction(reportedUserId, communityId, reason, to
 }
 
 export async function getUserLikesAction(postIds, userId, token) {
-  await verifyUser(token, userId);
-  const { data, error } = await supabaseAdmin.from('feed_post_likes')
-    .select('post_id')
-    .eq('user_id', userId)
-    .in('post_id', postIds);
-  if (error) {
-    console.warn('getUserLikesAction error (likely table missing):', error.message);
-    return [];
-  }
-  return data;
+  // Mock this since we don't have a feed_post_likes table
+  // Users will rely on localStorage for their own 'liked' state across refreshes
+  return [];
 }
 
 export async function getCommentsAction(postId, token) {

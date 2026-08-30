@@ -22,15 +22,10 @@ export function FeedProvider({ children }) {
         const { data, error } = await supabase.from('feed_posts').select('*').order('created_at', { ascending: false }).limit(100);
 
         let userLikes = [];
-        if (user?.id && data?.length) {
-          const postIds = data.map(p => p.id);
-          try {
-            const { data: { session } } = await supabase.auth.getSession();
-            const likesData = await getUserLikesAction(postIds, user.id, session?.access_token);
-            if (likesData) userLikes = likesData.map(l => l.post_id);
-          } catch (e) {
-            console.error("Failed to load likes", e);
-          }
+        try {
+          userLikes = JSON.parse(localStorage.getItem('user_likes') || '[]');
+        } catch (e) {
+          console.error("Failed to parse local likes", e);
         }
 
         if (data) {
@@ -123,14 +118,33 @@ export function FeedProvider({ children }) {
     // Optimistic update
     setFeedPosts(prev => prev.map(p => p.id === postId ? { ...p, likes: Math.max(0, (p.likes || 0) + increment), liked: !isLiked } : p));
     
+    // Update local storage
+    try {
+      const currentLikes = JSON.parse(localStorage.getItem('user_likes') || '[]');
+      if (!isLiked && !currentLikes.includes(postId)) {
+        localStorage.setItem('user_likes', JSON.stringify([...currentLikes, postId]));
+      } else if (isLiked) {
+        localStorage.setItem('user_likes', JSON.stringify(currentLikes.filter(id => id !== postId)));
+      }
+    } catch(e) {}
+    
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      const result = await toggleFeedPostLikeAction(postId, user.id, session?.access_token);
+      const result = await toggleFeedPostLikeAction(postId, user.id, !isLiked, session?.access_token);
       if (result && result.error) throw new Error(result.error);
     } catch (err) {
       console.error(err);
       // Revert on failure
       setFeedPosts(prev => prev.map(p => p.id === postId ? { ...p, likes: Math.max(0, (p.likes || 0) - increment), liked: isLiked } : p));
+      
+      try {
+        const currentLikes = JSON.parse(localStorage.getItem('user_likes') || '[]');
+        if (isLiked && !currentLikes.includes(postId)) {
+          localStorage.setItem('user_likes', JSON.stringify([...currentLikes, postId]));
+        } else if (!isLiked) {
+          localStorage.setItem('user_likes', JSON.stringify(currentLikes.filter(id => id !== postId)));
+        }
+      } catch(e) {}
     }
   };
 
