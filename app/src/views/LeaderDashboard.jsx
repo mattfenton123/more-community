@@ -663,19 +663,38 @@ export default function LeaderDashboard() {
                     <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--slate-300)' }}>Member Growth</div>
                     <div style={{ fontSize: '0.7rem', color: 'var(--slate-500)' }}>Last 7 weeks</div>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '6px', height: '80px' }}>
-                    {growthData.weeks.map((w, i) => (
-                      <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-                        <div style={{ 
-                          width: '100%', 
-                          height: `${Math.max(10, (w.count / growthData.max) * 100)}%`, 
-                          background: i === growthData.weeks.length - 1 ? 'var(--teal-500)' : 'rgba(20,184,166,0.25)', 
-                          borderRadius: '4px 4px 0 0',
-                          transition: 'height 0.3s ease'
-                        }}></div>
-                        <div style={{ fontSize: '0.55rem', color: 'var(--slate-500)', whiteSpace: 'nowrap' }}>{w.label}</div>
-                      </div>
-                    ))}
+                  <div style={{ height: '140px', width: '100%', marginLeft: '-10px' }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={growthData.weeks} margin={{ top: 5, right: 0, left: 0, bottom: 0 }}>
+                        <defs>
+                          <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="var(--teal-500)" stopOpacity={0.4}/>
+                            <stop offset="95%" stopColor="var(--teal-500)" stopOpacity={0}/>
+                          </linearGradient>
+                        </defs>
+                        <XAxis 
+                          dataKey="label" 
+                          axisLine={false} 
+                          tickLine={false} 
+                          tick={{ fontSize: 10, fill: 'var(--slate-500)' }} 
+                          dy={10}
+                        />
+                        <RechartsTooltip 
+                          contentStyle={{ background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '8px', color: 'white', fontSize: '0.85rem' }}
+                          itemStyle={{ color: 'var(--teal-400)', fontWeight: 700 }}
+                          cursor={{ stroke: 'rgba(255,255,255,0.1)', strokeWidth: 1, strokeDasharray: '4 4' }}
+                        />
+                        <Area 
+                          type="monotone" 
+                          dataKey="count" 
+                          stroke="var(--teal-400)" 
+                          strokeWidth={3}
+                          fillOpacity={1} 
+                          fill="url(#colorCount)" 
+                          activeDot={{ r: 6, fill: 'var(--teal-500)', stroke: 'white', strokeWidth: 2 }}
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
                   </div>
                 </div>
               </div>
