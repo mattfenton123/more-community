@@ -59,6 +59,47 @@ export function AppProvider({ children }) {
     }
   ]);
 
+  const [services, setServices] = useState([
+    {
+      id: 'srv-1',
+      communityId: 'yentw',
+      userId: 'demo-user-id',
+      category: 'Freelance',
+      title: 'Graphic Design for Startups',
+      description: 'I design amazing logos and pitch decks for startups in Tunbridge Wells.',
+      perk: '20% off for YENTW members!',
+      isPremium: true,
+      status: 'approved',
+      createdAt: new Date().toISOString()
+    },
+    {
+      id: 'srv-2',
+      communityId: 'yentw',
+      userId: 'demo-user-id-2',
+      category: 'F&B',
+      title: 'The Daily Grind Cafe',
+      description: 'Best coffee in town. A great place for members to co-work.',
+      perk: 'Free pastry with every large coffee.',
+      isPremium: false,
+      status: 'approved',
+      createdAt: new Date().toISOString()
+    }
+  ]);
+
+  const pitchService = (serviceData) => {
+    const newService = {
+      id: `srv-${Date.now()}`,
+      ...serviceData,
+      status: 'pending',
+      createdAt: new Date().toISOString()
+    };
+    setServices(prev => [newService, ...prev]);
+  };
+
+  const updateServiceStatus = (serviceId, newStatus) => {
+    setServices(prev => prev.map(s => s.id === serviceId ? { ...s, status: newStatus } : s));
+  };
+
   const [connectedSocialAccounts, setConnectedSocialAccounts] = useState({
     instagram: { connected: true, handle: '@more.community' },
     x: { connected: false, handle: '' },
@@ -1029,7 +1070,10 @@ export function AppProvider({ children }) {
       sponsors,
       sponsorshipAssignments,
       prescribingLinks,
-      setPrescribingLinks
+      setPrescribingLinks,
+      services,
+      pitchService,
+      updateServiceStatus
     }}>
       {children}
     </AppContext.Provider>

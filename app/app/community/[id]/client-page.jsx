@@ -1,6 +1,6 @@
 "use client";
 import { useState, useRef } from 'react';
-import { ChevronLeft, Share2, Users, Calendar, Settings, ChevronDown, ChevronUp, Image as ImageIcon, ExternalLink, Camera, Mail, Activity, Sparkles, MapPin, Clock, Star, MessageCircle, Heart, BadgeCheck, Globe, Trash2, Flag, Search } from 'lucide-react';
+import { ChevronLeft, Share2, Users, Calendar, Settings, ChevronDown, ChevronUp, Image as ImageIcon, ExternalLink, Camera, Mail, Activity, Sparkles, MapPin, Clock, Star, MessageCircle, Heart, BadgeCheck, Globe, Trash2, Flag, Search, Briefcase, Check, X } from 'lucide-react';
 import { useRouter as useNavigate, useParams } from 'next/navigation';
 import { useAppContext } from '../../../src/context/AppContext';
 import { useFeed } from '../../../src/context/FeedContext';
@@ -9,6 +9,7 @@ import PhotoGallery from '../../../src/components/PhotoGallery';
 import MemberDirectory from '../../../src/components/MemberDirectory';
 import InlineComments from '../../../src/components/InlineComments';
 import ExperiencesCatalog from '../../../src/components/ExperiencesCatalog';
+import CreateServiceModal from '../../../src/components/CreateServiceModal';
 import { downloadIcs } from '../../../src/lib/calendar';
 import confetti from 'canvas-confetti';
 
@@ -73,7 +74,7 @@ function getGalleryType(tags) {
 export default function CommunityProfile() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user, communities, events, communityMemberships, users, eventRsvps, uploadImage, joinCommunity, leaveCommunity, experiences } = useAppContext();
+  const { user, communities, events, communityMemberships, users, eventRsvps, uploadImage, joinCommunity, leaveCommunity, experiences, services, updateServiceStatus } = useAppContext();
   const { feedPosts, createFeedPost, likeFeedPost, deleteFeedPost } = useFeed();
   const { toast } = useToast();
   const [showRules, setShowRules] = useState(false);
@@ -83,6 +84,7 @@ export default function CommunityProfile() {
   const [newPostImage, setNewPostImage] = useState(null);
   const [localPhotos, setLocalPhotos] = useState([]);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
   const fileInputRef = useRef(null);
   
   const communityId = id || (user.joinedCommunities.length > 0 ? user.joinedCommunities[0] : 'tw-tech-meetup');
@@ -323,7 +325,7 @@ export default function CommunityProfile() {
       {/* ===== TAB NAVIGATION ===== */}
       <div style={{ padding: '0 20px', marginBottom: '24px' }}>
         <div style={{ display: 'flex', gap: '4px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', padding: '4px', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-          {['feed', 'suggestions', 'about', 'events', 'photos', 'members'].map(tab => (
+          {['feed', 'services', 'suggestions', 'about', 'events', 'photos', 'members'].map(tab => (
             <button 
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -949,8 +951,125 @@ export default function CommunityProfile() {
           <MemberDirectory communityId={communityId} />
         )}
 
+        {/* ===== SERVICES TAB ===== */}
+        {activeTab === 'services' && (
+          <>
+            <h3 style={{ fontSize: '1.3rem', fontFamily: 'var(--font-heading)', color: 'white', margin: '0 0 16px 0' }}>
+              Services & Perks
+            </h3>
+            
+            {isLeader && (
+              <div style={{ marginBottom: '24px' }}>
+                <h4 style={{ fontSize: '1rem', color: 'var(--slate-300)', marginBottom: '12px' }}>Pending Pitches</h4>
+                {services.filter(s => s.communityId === communityId && s.status === 'pending').length === 0 ? (
+                  <div style={{ padding: '16px', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px dashed rgba(255,255,255,0.1)', color: 'var(--slate-500)', fontSize: '0.85rem' }}>
+                    No pending pitches to review.
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {services.filter(s => s.communityId === communityId && s.status === 'pending').map(srv => {
+                      const srvUser = users.find(u => u.id === srv.userId) || { name: 'Member', avatar: 'https://i.pravatar.cc/40' };
+                      return (
+                        <div key={srv.id} style={{ background: 'var(--slate-800)', border: '1px solid var(--amber-500)', borderRadius: '12px', padding: '16px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                            <div>
+                              <div style={{ fontWeight: 600, color: 'white', fontSize: '1rem' }}>{srv.title}</div>
+                              <div style={{ fontSize: '0.8rem', color: 'var(--amber-400)', marginBottom: '8px' }}>By {srvUser.name} • {srv.category} {srv.isPremium ? '• Requested Premium Placement' : ''}</div>
+                              <p style={{ margin: '0 0 12px 0', fontSize: '0.9rem', color: 'var(--slate-300)' }}>{srv.description}</p>
+                              {srv.perk && (
+                                <div style={{ background: 'rgba(234,179,8,0.1)', padding: '8px', borderRadius: '8px', color: 'var(--amber-300)', fontSize: '0.85rem', marginBottom: '12px' }}>
+                                  🎁 Perk: {srv.perk}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          <div style={{ display: 'flex', gap: '8px' }}>
+                            <button onClick={() => updateServiceStatus(srv.id, 'approved')} className="btn interactive-press" style={{ flex: 1, padding: '8px', borderRadius: '8px', background: 'var(--teal-500)', color: 'white', border: 'none', fontWeight: 600, display: 'flex', justifyContent: 'center', gap: '4px' }}>
+                              <Check size={16} /> Approve
+                            </button>
+                            <button onClick={() => updateServiceStatus(srv.id, 'rejected')} className="btn interactive-press" style={{ flex: 1, padding: '8px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', color: 'var(--slate-300)', border: '1px solid rgba(255,255,255,0.1)', fontWeight: 600, display: 'flex', justifyContent: 'center', gap: '4px' }}>
+                              <X size={16} /> Reject
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {services.filter(s => s.communityId === communityId && s.status === 'approved').length === 0 ? (
+                <div style={{ padding: '40px 20px', textAlign: 'center', background: 'rgba(255,255,255,0.02)', borderRadius: '16px', border: '1px dashed rgba(255,255,255,0.1)' }}>
+                  <div style={{ fontSize: '2rem', marginBottom: '12px' }}>💼</div>
+                  <p style={{ color: 'var(--slate-400)', margin: 0 }}>No services listed yet.</p>
+                </div>
+              ) : (
+                services.filter(s => s.communityId === communityId && s.status === 'approved')
+                .sort((a, b) => (b.isPremium === a.isPremium ? 0 : b.isPremium ? 1 : -1))
+                .map(srv => {
+                  const srvUser = users.find(u => u.id === srv.userId) || { name: 'Member', avatar: 'https://i.pravatar.cc/40' };
+                  return (
+                    <div key={srv.id} style={{ 
+                      background: srv.isPremium ? 'linear-gradient(to bottom right, rgba(234,179,8,0.05), rgba(0,0,0,0))' : 'rgba(255,255,255,0.02)', 
+                      border: `1px solid ${srv.isPremium ? 'rgba(234,179,8,0.3)' : 'rgba(255,255,255,0.06)'}`, 
+                      borderRadius: '16px', 
+                      padding: '20px'
+                    }}>
+                      <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', marginBottom: '12px' }}>
+                        <img src={srvUser.avatar} alt={srvUser.name} style={{ width: '48px', height: '48px', borderRadius: '12px', objectFit: 'cover' }} />
+                        <div style={{ flex: 1 }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                            <div style={{ fontWeight: 700, color: 'white', fontSize: '1.05rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              {srv.title}
+                              {srv.isPremium && <span style={{ fontSize: '0.65rem', background: 'var(--amber-500)', color: 'white', padding: '2px 6px', borderRadius: '6px', fontWeight: 700, textTransform: 'uppercase' }}>Featured</span>}
+                            </div>
+                          </div>
+                          <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)' }}>{srv.category} • {srvUser.name}</div>
+                        </div>
+                      </div>
+                      
+                      <p style={{ margin: '0 0 16px 0', color: 'var(--slate-200)', fontSize: '0.95rem', lineHeight: 1.5 }}>
+                        {srv.description}
+                      </p>
+                      
+                      {srv.perk && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(234,179,8,0.1)', padding: '12px', borderRadius: '12px', color: 'var(--amber-300)', fontSize: '0.9rem', fontWeight: 600 }}>
+                          <Sparkles size={16} />
+                          {srv.perk}
+                        </div>
+                      )}
+                      
+                      <button onClick={() => navigate.push(`/chat/dm/${srvUser.id}`)} className="btn btn-outline interactive-press" style={{ width: '100%', marginTop: '16px', padding: '10px', borderRadius: '10px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', fontSize: '0.9rem' }}>
+                        <MessageCircle size={16} /> Message to Enquire
+                      </button>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            {isMember && (
+              <button 
+                onClick={() => setIsServiceModalOpen(true)}
+                className="btn btn-primary interactive-press" 
+                style={{ width: '100%', marginTop: '24px', padding: '16px', borderRadius: '14px', fontSize: '1.05rem', fontWeight: 700, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', boxShadow: '0 8px 24px rgba(20,184,166,0.2)' }}
+              >
+                <Briefcase size={18} /> Pitch a Service or Perk
+              </button>
+            )}
+          </>
+        )}
+
       </div>
       </div>
+      
+      <CreateServiceModal 
+        isOpen={isServiceModalOpen} 
+        onClose={() => setIsServiceModalOpen(false)} 
+        communityId={communityId} 
+      />
     </div>
   );
 }
