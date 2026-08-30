@@ -671,11 +671,11 @@ export function AppProvider({ children }) {
     }
   };
 
-  const createFeedComment = async (postId, text, communityId) => {
+  const createFeedComment = async (postId, text, communityId, mediaUrl = null) => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       const { createFeedPostCommentAction } = await import('../lib/actions');
-      await createFeedPostCommentAction(postId, communityId, session?.user?.id, text, session?.access_token);
+      await createFeedPostCommentAction(postId, communityId, session?.user?.id, text, mediaUrl, session?.access_token);
       setFeedPosts(prev => prev.map(p => p.id === postId ? { ...p, comments: (p.comments || 0) + 1 } : p));
     } catch (err) {
       console.error(err);

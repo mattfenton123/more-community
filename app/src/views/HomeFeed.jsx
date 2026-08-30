@@ -39,7 +39,7 @@ export default function HomeFeed() {
             type: 'post',
             id: `post-${post.id}`,
             data: post,
-            timestamp: new Date(post.timestamp).getTime()
+            timestamp: new Date(post.createdAt || new Date()).getTime()
           });
         }
       });
@@ -155,9 +155,6 @@ export default function HomeFeed() {
                   </button>
                   <button className="interactive-press" style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--slate-400)', cursor: 'pointer', fontSize: '0.85rem' }}>
                     <MessageCircle size={16} /> {post.comments}
-                  </button>
-                  <button className="interactive-press" style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--slate-400)', cursor: 'pointer', fontSize: '0.85rem', marginLeft: 'auto' }}>
-                    <Share2 size={16} />
                   </button>
                 </div>
               </div>
