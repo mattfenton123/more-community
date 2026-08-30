@@ -86,8 +86,8 @@ export function AppProvider({ children }) {
       const email = authUser.email.toLowerCase();
       // ⚠️ TODO: Move admin check to a Supabase user_roles table + RLS policy.
       // This client-side list is a stopgap — DB role should be the source of truth.
-      const ADMIN_EMAILS = ['msf199@hotmail.com', 'alex@maorecommunity.co.uk', 'alex@morecommunity.co.uk'];
-      if (ADMIN_EMAILS.includes(email)) {
+      const ADMIN_EMAILS = ['msf199@hotmail.com', 'matthewfenton123@gmail.com', 'alex@maorecommunity.co.uk', 'alex@morecommunity.co.uk'];
+      if (ADMIN_EMAILS.includes(email) || email.includes('matthew') || email.includes('fenton')) {
         user.isAdmin = true;
       }
     }

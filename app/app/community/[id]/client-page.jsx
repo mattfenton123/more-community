@@ -404,24 +404,48 @@ export default function CommunityProfile() {
               
               <div style={{ display: 'flex', gap: '12px', marginBottom: '24px' }}>
                 <button 
-                  onClick={() => {
-                    setNewPostText('💡 **SUGGESTION:** ');
-                    setActiveTab('feed');
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                  }} 
-                  className="btn btn-primary interactive-press" 
-                  style={{ flex: 1, padding: '12px', borderRadius: '12px', display: 'flex', justifyContent: 'center', gap: '8px', fontSize: '0.95rem' }}
-                >
-                  <MessageCircle size={16} /> Post Public Suggestion
-                </button>
-                <button 
-                  onClick={() => leaderUser && navigate.push(`/chat/dm/${leaderUser.id}`)}
+                  onClick={() => leaderUser ? navigate.push(`/chat/dm/${leaderUser.id}`) : toast.error('No Leader', 'This community does not have a designated leader.')}
                   className="btn btn-outline interactive-press" 
-                  style={{ flex: 1, padding: '12px', borderRadius: '12px', display: 'flex', justifyContent: 'center', gap: '8px', fontSize: '0.95rem', borderColor: 'rgba(255,255,255,0.1)' }}
+                  style={{ flex: 1, padding: '12px', borderRadius: '12px', display: 'flex', justifyContent: 'center', gap: '8px', fontSize: '0.95rem', borderColor: 'rgba(255,255,255,0.1)', opacity: leaderUser ? 1 : 0.5 }}
                 >
-                  <Search size={16} /> Suggest to Leader Privately
+                  <MessageCircle size={16} /> Message Leader Privately
                 </button>
               </div>
+
+              {/* Suggestion Form */}
+              {isMember ? (
+                <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '16px', marginBottom: '32px' }}>
+                  <textarea 
+                    placeholder="Describe your event or trip idea..."
+                    value={newPostText}
+                    onChange={e => setNewPostText(e.target.value)}
+                    style={{ width: '100%', background: 'transparent', border: 'none', color: 'white', resize: 'none', minHeight: '80px', fontSize: '1rem', outline: 'none' }}
+                  />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px' }}>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>Suggestions are posted to the public feed</div>
+                    <button 
+                      onClick={() => {
+                        if (!newPostText.trim()) return;
+                        const originalText = newPostText;
+                        setNewPostText(`💡 **SUGGESTION:**\n${originalText}`);
+                        setTimeout(() => handleCreatePost(), 0); // Hack to allow state to update before submit
+                      }}
+                      className="btn btn-primary interactive-press"
+                      style={{ padding: '8px 16px', borderRadius: '99px', fontSize: '0.9rem' }}
+                      disabled={!newPostText.trim()}
+                    >
+                      Post Suggestion
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div style={{ padding: '20px', textAlign: 'center', background: 'rgba(255,255,255,0.02)', borderRadius: '16px', marginBottom: '32px' }}>
+                  <p style={{ color: 'var(--slate-400)', margin: '0 0 12px 0' }}>You must be a member to post a suggestion.</p>
+                  <button onClick={handleJoinLeave} className="btn btn-primary interactive-press" style={{ padding: '8px 16px', borderRadius: '99px' }}>
+                    Join Community
+                  </button>
+                </div>
+              )}
             </div>
 
             <h4 style={{ fontSize: '1rem', color: 'white', marginBottom: '16px' }}>Recent Suggestions</h4>
