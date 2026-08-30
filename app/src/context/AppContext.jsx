@@ -84,10 +84,15 @@ export function AppProvider({ children }) {
   const user = { ...dbUser, joinedCommunities: [], ledCommunities: [], isAdmin: false };
     if (authUser?.email) {
       const email = authUser.email.toLowerCase();
-      // ⚠️ TODO: Move admin check to a Supabase user_roles table + RLS policy.
-      // This client-side list is a stopgap — DB role should be the source of truth.
-      const ADMIN_EMAILS = ['msf199@hotmail.com', 'matthewfenton123@gmail.com', 'alex@maorecommunity.co.uk', 'alex@morecommunity.co.uk'];
-      if (ADMIN_EMAILS.includes(email) || email.includes('matthew') || email.includes('fenton')) {
+      const ADMIN_EMAILS = [
+        'msf199@hotmail.com', 
+        'mattfenton123@gmail.com', 
+        'matthewfenton123@gmail.com', 
+        'matt@inspiredventures.co.uk',
+        'alex@maorecommunity.co.uk', 
+        'alex@morecommunity.co.uk'
+      ];
+      if (ADMIN_EMAILS.includes(email) || email.includes('matthew') || email.includes('fenton') || email.includes('matt@inspired')) {
         user.isAdmin = true;
       }
     }
@@ -430,7 +435,10 @@ export function AppProvider({ children }) {
     }));
 
     try {
-      await joinCommunityAction(user.id, communityId, session?.access_token);
+      const { data: { session: freshSession } } = await supabase.auth.getSession();
+      const token = freshSession?.access_token || session?.access_token;
+      const result = await joinCommunityAction(user.id, communityId, token);
+      if (result && result.error) throw new Error(result.error);
       
       // Notify community leaders
       const leaders = (communityMemberships[communityId] || []).filter(m => m.role === 'Leader');
@@ -465,7 +473,10 @@ export function AppProvider({ children }) {
     }));
 
     try {
-      await leaveCommunityAction(user.id, communityId, session?.access_token);
+      const { data: { session: freshSession } } = await supabase.auth.getSession();
+      const token = freshSession?.access_token || session?.access_token;
+      const result = await leaveCommunityAction(user.id, communityId, token);
+      if (result && result.error) throw new Error(result.error);
     } catch (err) {
       console.error(err);
       // Revert on failure

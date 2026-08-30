@@ -117,23 +117,27 @@ export async function createCommunityAction(communityData, token) {
 }
 
 export async function joinCommunityAction(userId, communityId, token) {
-  if (!userId || !communityId) throw new Error("Missing data");
-  await verifyUser(token, userId);
+  try {
+    if (!userId || !communityId) return { error: "Missing data" };
+    await verifyUser(token, userId);
 
-  const { data, error } = await supabaseAdmin.from('community_memberships').insert({
-    user_id: userId,
-    community_id: communityId,
-    role: 'Member'
-  }).select().single();
+    const { data, error } = await supabaseAdmin.from('community_memberships').insert({
+      user_id: userId,
+      community_id: communityId,
+      role: 'Member'
+    }).select().single();
 
-  if (error) {
-    if (error.code === '23505') {
-      // Unique constraint violation - already joined
-      return { user_id: userId, community_id: communityId, role: 'Member' };
+    if (error) {
+      if (error.code === '23505') {
+        // Unique constraint violation - already joined
+        return { data: { user_id: userId, community_id: communityId, role: 'Member' } };
+      }
+      return { error: error.message };
     }
-    throw new Error(error.message);
+    return { data };
+  } catch (err) {
+    return { error: err.message };
   }
-  return data;
 }
 
 export async function ensureLeadersNetworkAction() {
@@ -176,16 +180,20 @@ export async function createEventAction(eventData, token) {
 }
 
 export async function leaveCommunityAction(userId, communityId, token) {
-  if (!userId || !communityId) throw new Error("Missing data");
-  await verifyUser(token, userId);
+  try {
+    if (!userId || !communityId) return { error: "Missing data" };
+    await verifyUser(token, userId);
 
-  const { error } = await supabaseAdmin.from('community_memberships')
-    .delete()
-    .eq('user_id', userId)
-    .eq('community_id', communityId);
+    const { error } = await supabaseAdmin.from('community_memberships')
+      .delete()
+      .eq('user_id', userId)
+      .eq('community_id', communityId);
 
-  if (error) throw new Error(error.message);
-  return true;
+    if (error) return { error: error.message };
+    return { success: true };
+  } catch (err) {
+    return { error: err.message };
+  }
 }
 
 export async function rsvpToEventAction(userId, eventId, status, ticketType, token) {
@@ -360,88 +368,100 @@ export async function sendDirectMessageAction(senderId, receiverId, text, image,
 }
 
 export async function createFeedPostAction(communityId, authorId, content, mediaUrl, token) {
-  await verifyUser(token, authorId);
-  const { data, error } = await supabaseAdmin.from('feed_posts').insert([{
-    community_id: communityId, author_id: authorId, text: content, media: mediaUrl, likes: 0
-  }]).select().single();
-  if (error) throw new Error(error.message);
-  return data;
+  try {
+    await verifyUser(token, authorId);
+    const { data, error } = await supabaseAdmin.from('feed_posts').insert([{
+      community_id: communityId, author_id: authorId, text: content, media: mediaUrl, likes: 0
+    }]).select().single();
+    if (error) return { error: error.message };
+    return { data };
+  } catch (err) {
+    return { error: err.message };
+  }
 }
 
 export async function toggleFeedPostLikeAction(postId, userId, token) {
-  await verifyUser(token, userId);
-  
-  const { data: existing, error: existingErr } = await supabaseAdmin
-    .from('feed_post_likes')
-    .select('post_id')
-    .eq('post_id', postId)
-    .eq('user_id', userId)
-    .single();
+  try {
+    await verifyUser(token, userId);
+    
+    const { data: existing, error: existingErr } = await supabaseAdmin
+      .from('feed_post_likes')
+      .select('post_id')
+      .eq('post_id', postId)
+      .eq('user_id', userId)
+      .single();
 
-  if (existingErr && existingErr.code !== 'PGRST116') {
-    if (existingErr.message.includes('schema cache') || existingErr.message.includes('does not exist')) {
-      console.warn('feed_post_likes table missing, mocking like');
-      // Optimistic increment fallback
+    if (existingErr && existingErr.code !== 'PGRST116') {
+      if (existingErr.message.includes('schema cache') || existingErr.message.includes('does not exist')) {
+        console.warn('feed_post_likes table missing, mocking like');
+        // Optimistic increment fallback
+        const { data: post } = await supabaseAdmin.from('feed_posts').select('likes').eq('id', postId).single();
+        if (post) {
+          await supabaseAdmin.from('feed_posts').update({ likes: (post.likes || 0) + 1 }).eq('id', postId);
+        }
+        return { liked: true };
+      }
+    }
+
+    if (existing) {
+      await supabaseAdmin.from('feed_post_likes').delete().eq('post_id', postId).eq('user_id', userId).catch(() => {});
+      const { data: post } = await supabaseAdmin.from('feed_posts').select('likes').eq('id', postId).single();
+      if (post) {
+        await supabaseAdmin.from('feed_posts').update({ likes: Math.max(0, (post.likes || 1) - 1) }).eq('id', postId);
+      }
+      return { liked: false };
+    } else {
+      await supabaseAdmin.from('feed_post_likes').insert({
+        post_id: postId,
+        user_id: userId
+      });
       const { data: post } = await supabaseAdmin.from('feed_posts').select('likes').eq('id', postId).single();
       if (post) {
         await supabaseAdmin.from('feed_posts').update({ likes: (post.likes || 0) + 1 }).eq('id', postId);
       }
       return { liked: true };
     }
-  }
-
-  if (existing) {
-    await supabaseAdmin.from('feed_post_likes').delete().eq('post_id', postId).eq('user_id', userId).catch(() => {});
-    const { data: post } = await supabaseAdmin.from('feed_posts').select('likes').eq('id', postId).single();
-    if (post) {
-      await supabaseAdmin.from('feed_posts').update({ likes: Math.max(0, (post.likes || 1) - 1) }).eq('id', postId);
-    }
-    return { liked: false };
-  } else {
-    await supabaseAdmin.from('feed_post_likes').insert({
-      post_id: postId,
-      user_id: userId
-    });
-    const { data: post } = await supabaseAdmin.from('feed_posts').select('likes').eq('id', postId).single();
-    if (post) {
-      await supabaseAdmin.from('feed_posts').update({ likes: (post.likes || 0) + 1 }).eq('id', postId);
-    }
-    return { liked: true };
+  } catch (err) {
+    return { error: err.message };
   }
 }
 
 export async function createFeedPostCommentAction(postId, communityId, authorId, text, mediaUrl = null, token) {
-  await verifyUser(token, authorId);
-  
-  const { data, error } = await supabaseAdmin.from('feed_post_comments').insert([{
-    post_id: postId,
-    author_id: authorId,
-    text: text
-  }]).select().single();
-  
-  if (error) {
-    if (error.message.includes('schema cache') || error.message.includes('does not exist')) {
-      console.warn('feed_post_comments table missing, mocking comment');
-      return { id: 'mock-' + Date.now(), text, author_id: authorId, created_at: new Date().toISOString() };
-    }
-    throw new Error(error.message);
-  }
-  
-  const { data: post } = await supabaseAdmin.from('feed_posts').select('comments, author_id').eq('id', postId).single();
-  if (post) {
-    await supabaseAdmin.from('feed_posts').update({ comments: (post.comments || 0) + 1 }).eq('id', postId);
+  try {
+    await verifyUser(token, authorId);
     
-    if (post.author_id !== authorId) {
-      const { data: author } = await supabaseAdmin.from('users').select('name').eq('id', authorId).single();
-      await sendPushNotificationAction(post.author_id, {
-        title: `New comment from ${author?.name || 'someone'}`,
-        body: text,
-        url: `/`
-      });
+    const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const { data, error } = await supabaseAdmin.from('messages').insert([{
+      community_id: communityId,
+      channel: postId,
+      author_id: authorId,
+      text: text,
+      timestamp: timestamp,
+      image: mediaUrl
+    }]).select().single();
+    
+    if (error) {
+      return { error: error.message };
     }
+    
+    const { data: post } = await supabaseAdmin.from('feed_posts').select('comments, author_id').eq('id', postId).single();
+    if (post) {
+      await supabaseAdmin.from('feed_posts').update({ comments: (post.comments || 0) + 1 }).eq('id', postId);
+      
+      if (post.author_id !== authorId) {
+        const { data: author } = await supabaseAdmin.from('users').select('name').eq('id', authorId).single();
+        await sendPushNotificationAction(post.author_id, {
+          title: `New comment from ${author?.name || 'someone'}`,
+          body: text,
+          url: `/`
+        });
+      }
+    }
+    
+    return { data };
+  } catch (err) {
+    return { error: err.message };
   }
-  
-  return data;
 }
 
 export async function subscribeToPushNotificationsAction(userId, subscription, token) {
@@ -538,9 +558,9 @@ export async function getUserLikesAction(postIds, userId, token) {
 }
 
 export async function getCommentsAction(postId, token) {
-  const { data, error } = await supabaseAdmin.from('feed_post_comments')
+  const { data, error } = await supabaseAdmin.from('messages')
     .select('*')
-    .eq('post_id', postId)
+    .eq('channel', postId)
     .order('created_at', { ascending: true });
   if (error) {
     console.warn('getCommentsAction error (likely table missing):', error.message);

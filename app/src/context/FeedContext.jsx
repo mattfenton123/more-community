@@ -91,7 +91,9 @@ export function FeedProvider({ children }) {
       const token = sessionResponse.data.session?.access_token;
       let mediaUrl = media;
       
-      const data = await createFeedPostAction(communityId, user.id, text, mediaUrl, token);
+      const result = await createFeedPostAction(communityId, user.id, text, mediaUrl, token);
+      if (result && result.error) throw new Error(result.error);
+      const data = result.data;
       
       const newPost = {
         id: data.id,
@@ -123,7 +125,8 @@ export function FeedProvider({ children }) {
     
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      await toggleFeedPostLikeAction(postId, user.id, session?.access_token);
+      const result = await toggleFeedPostLikeAction(postId, user.id, session?.access_token);
+      if (result && result.error) throw new Error(result.error);
     } catch (err) {
       console.error(err);
       // Revert on failure
@@ -135,7 +138,8 @@ export function FeedProvider({ children }) {
     if (!user.id || (!text.trim() && !mediaUrl)) return;
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      await createFeedPostCommentAction(postId, communityId, user.id, text, mediaUrl, session?.access_token);
+      const result = await createFeedPostCommentAction(postId, communityId, user.id, text, mediaUrl, session?.access_token);
+      if (result && result.error) throw new Error(result.error);
       setFeedPosts(prev => prev.map(p => p.id === postId ? { ...p, comments: (p.comments || 0) + 1 } : p));
     } catch (err) {
       console.error(err);
