@@ -384,36 +384,27 @@ export async function toggleFeedPostLikeAction(postId, userId, token) {
   try {
     await verifyUser(token, userId);
     
+    // Check if the user already liked it (using event_rsvps as storage)
     const { data: existing, error: existingErr } = await supabaseAdmin
-      .from('feed_post_likes')
-      .select('post_id')
-      .eq('post_id', postId)
+      .from('event_rsvps')
+      .select('id')
+      .eq('event_id', postId)
       .eq('user_id', userId)
+      .eq('status', 'liked')
       .single();
 
-    if (existingErr && existingErr.code !== 'PGRST116') {
-      if (existingErr.message.includes('schema cache') || existingErr.message.includes('does not exist')) {
-        console.warn('feed_post_likes table missing, mocking like');
-        // Optimistic increment fallback
-        const { data: post } = await supabaseAdmin.from('feed_posts').select('likes').eq('id', postId).single();
-        if (post) {
-          await supabaseAdmin.from('feed_posts').update({ likes: (post.likes || 0) + 1 }).eq('id', postId);
-        }
-        return { liked: true };
-      }
-    }
-
     if (existing) {
-      await supabaseAdmin.from('feed_post_likes').delete().eq('post_id', postId).eq('user_id', userId).catch(() => {});
+      await supabaseAdmin.from('event_rsvps').delete().eq('id', existing.id).catch(() => {});
       const { data: post } = await supabaseAdmin.from('feed_posts').select('likes').eq('id', postId).single();
       if (post) {
         await supabaseAdmin.from('feed_posts').update({ likes: Math.max(0, (post.likes || 1) - 1) }).eq('id', postId);
       }
       return { liked: false };
     } else {
-      await supabaseAdmin.from('feed_post_likes').insert({
-        post_id: postId,
-        user_id: userId
+      await supabaseAdmin.from('event_rsvps').insert({
+        event_id: postId,
+        user_id: userId,
+        status: 'liked'
       });
       const { data: post } = await supabaseAdmin.from('feed_posts').select('likes').eq('id', postId).single();
       if (post) {
@@ -582,4 +573,41 @@ export async function updateMessageAction(messageId, updates, token) {
     throw new Error(error.message);
   }
   return data;
+}
+
+export async function deleteCommunityAction(communityId, token) {
+  try {
+    await verifyUser(token);
+    
+    // Delete all related records
+    await supabaseAdmin.from('community_memberships').delete().eq('community_id', communityId);
+    await supabaseAdmin.from('feed_posts').delete().eq('community_id', communityId);
+    await supabaseAdmin.from('events').delete().eq('community_id', communityId);
+    
+    const { error } = await supabaseAdmin.from('communities').delete().eq('id', communityId);
+    if (error) throw new Error(error.message);
+    return { success: true };
+  } catch (err) {
+    return { error: err.message };
+  }
+}
+
+export async function deleteUserAction(userId, token) {
+  try {
+    await verifyUser(token);
+    
+    // Delete all related records
+    await supabaseAdmin.from('community_memberships').delete().eq('user_id', userId);
+    await supabaseAdmin.from('feed_posts').delete().eq('author_id', userId);
+    
+    const { error: dbError } = await supabaseAdmin.from('users').delete().eq('id', userId);
+    if (dbError) throw new Error(dbError.message);
+    
+    const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(userId);
+    if (authError) throw new Error(authError.message);
+    
+    return { success: true };
+  } catch (err) {
+    return { error: err.message };
+  }
 }
