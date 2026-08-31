@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Calendar as CalIcon, MapPin, Search, X, CheckCircle2, CreditCard, Check, Ticket, Users, QrCode, Share } from 'lucide-react';
+import { Calendar as CalIcon, MapPin, Search, X, CheckCircle2, CreditCard, Check, Ticket, Users, QrCode, Share, Sparkles } from 'lucide-react';
 import { useAppContext } from '../../src/context/AppContext';
 import { SkeletonList, SkeletonEvent } from '../../src/components/SkeletonCard';
 import { useToast } from '../../src/components/Toast';

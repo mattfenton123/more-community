@@ -299,6 +299,7 @@ export async function updateCommunityAction(communityId, updates, token) {
   if (updates.visibility !== undefined) dbUpdates.visibility = updates.visibility;
   if (updates.require_approval !== undefined) dbUpdates.require_approval = updates.require_approval;
   if (updates.external_links !== undefined) dbUpdates.external_links = updates.external_links;
+  if (updates.gallery_photos !== undefined) dbUpdates.gallery_photos = updates.gallery_photos;
   
   const { data, error } = await supabaseAdmin.from('communities').update(dbUpdates).eq('id', communityId).select().single();
   if (error) throw new Error(error.message);

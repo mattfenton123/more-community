@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { ChevronLeft, Share2, Users, Calendar, Settings, ChevronDown, ChevronUp, Image as ImageIcon, ExternalLink, Camera, Mail, Activity, Sparkles, MapPin, Clock, Star, MessageCircle, Heart, BadgeCheck, Globe, Trash2, Flag, Search, Briefcase, Check, X, MessageSquare, Lightbulb, Info } from 'lucide-react';
 import { useRouter as useNavigate, useParams } from 'next/navigation';
 import { useAppContext } from '../../../src/context/AppContext';
@@ -72,7 +72,7 @@ function getGalleryType(tags) {
 export default function CommunityProfile() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user, communities, events, communityMemberships, users, eventRsvps, uploadImage, joinCommunity, leaveCommunity, experiences, services, updateServiceStatus, reviews } = useAppContext();
+  const { user, communities, events, communityMemberships, users, eventRsvps, uploadImage, joinCommunity, leaveCommunity, experiences, services, updateServiceStatus, reviews, updateCommunity } = useAppContext();
   const { feedPosts, createFeedPost, likeFeedPost, deleteFeedPost } = useFeed();
   const { toast } = useToast();
   const [showRules, setShowRules] = useState(false);
@@ -80,7 +80,7 @@ export default function CommunityProfile() {
   const [expandedComments, setExpandedComments] = useState({});
   const [newPostText, setNewPostText] = useState('');
   const [newPostImage, setNewPostImage] = useState(null);
-  const [localPhotos, setLocalPhotos] = useState([]);
+
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
   const [showIdeaModal, setShowIdeaModal] = useState(false);
@@ -103,7 +103,9 @@ export default function CommunityProfile() {
   const leaderUser = users.find(u => u.id === community.leader_id);
   const memberList = (communityMemberships[communityId] || []).map(m => users.find(u => u.id === m.userId || u.id === m.user_id)).filter(Boolean);
   const galleryType = getGalleryType(community.tags);
-  const galleryPhotos = [...localPhotos, ...GALLERY_PHOTOS[galleryType]];
+  const dbPhotos = (community.gallery_photos || []).map(p => typeof p === 'string' ? { url: p, uploaderId: null } : p);
+  const stockPhotos = GALLERY_PHOTOS[galleryType].map(url => ({ url, uploaderId: 'stock' }));
+  const galleryPhotos = [...dbPhotos, ...stockPhotos];
   const nextEvent = upcomingEvents[0] || communityEvents[0];
   const communityFeed = feedPosts?.filter(p => p.communityId === communityId) || [];
   
@@ -167,13 +169,28 @@ export default function CommunityProfile() {
     try {
       toast.info('Uploading photo...', 'Please wait');
       const url = await uploadImage(file);
-      setLocalPhotos(prev => [url, ...prev]);
+      const newPhoto = { url, uploaderId: user?.id };
+      const currentGallery = community?.gallery_photos || [];
+      await updateCommunity(community.id, { gallery_photos: [newPhoto, ...currentGallery] });
       toast.success('Photo added!', 'Your photo is now in the gallery.');
     } catch (err) {
       toast.error('Upload failed', 'Could not upload photo');
     }
     setIsUploadingPhoto(false);
     if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const handleDeletePhoto = async (photoIndex, e) => {
+    e.stopPropagation();
+    if (!window.confirm("Are you sure you want to delete this photo?")) return;
+    try {
+      const currentGallery = community?.gallery_photos || [];
+      const updatedGallery = currentGallery.filter((_, idx) => idx !== photoIndex);
+      await updateCommunity(community.id, { gallery_photos: updatedGallery });
+      toast.success("Photo deleted");
+    } catch (err) {
+      toast.error("Failed to delete photo");
+    }
   };
 
   const handleGenerateFomoReel = async (event) => {
@@ -1227,9 +1244,17 @@ export default function CommunityProfile() {
               Photos & Moments
             </h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
-              {[...localPhotos, ...galleryPhotos].map((url, idx) => (
-                <div key={idx} style={{ borderRadius: '12px', overflow: 'hidden', aspectRatio: idx === 0 ? '16/12' : '1/1', gridColumn: idx === 0 ? 'span 2' : 'span 1' }}>
-                  <img src={url} alt={`Gallery ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              {galleryPhotos.map((photo, idx) => (
+                <div key={idx} style={{ borderRadius: '12px', overflow: 'hidden', aspectRatio: idx === 0 ? '16/12' : '1/1', gridColumn: idx === 0 ? 'span 2' : 'span 1', position: 'relative' }}>
+                  <img src={photo.url} alt={`Gallery ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  {photo.uploaderId !== 'stock' && (isLeader || photo.uploaderId === user?.id) && (
+                    <button 
+                      onClick={(e) => handleDeletePhoto(idx, e)}
+                      style={{ position: 'absolute', top: '8px', right: '8px', background: 'rgba(0,0,0,0.6)', border: 'none', borderRadius: '50%', padding: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    >
+                      <Trash2 size={14} color="#ef4444" />
+                    </button>
+                  )}
                 </div>
               ))}
             </div>
