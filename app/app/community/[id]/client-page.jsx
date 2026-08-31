@@ -56,12 +56,7 @@ const GALLERY_PHOTOS = {
   ]
 };
 
-// Mock reviews per community type
-const MOCK_REVIEWS = [
-  { name: 'Sarah C.', avatar: 'https://i.pravatar.cc/40?img=5', text: "Absolutely brilliant group! I've made genuine friendships here and look forward to every meetup.", rating: 5 },
-  { name: 'James W.', avatar: 'https://i.pravatar.cc/40?img=11', text: "Well organised with a really welcoming atmosphere. Perfect for newcomers to the area.", rating: 5 },
-  { name: 'Emma J.', avatar: 'https://i.pravatar.cc/40?img=26', text: "Joined 3 months ago and it's completely changed my weekends. Highly recommend!", rating: 4 },
-];
+// Mock reviews per community type removed
 
 function getGalleryType(tags) {
   const tagStr = (tags || []).join(' ').toLowerCase();
@@ -77,7 +72,7 @@ function getGalleryType(tags) {
 export default function CommunityProfile() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user, communities, events, communityMemberships, users, eventRsvps, uploadImage, joinCommunity, leaveCommunity, experiences, services, updateServiceStatus } = useAppContext();
+  const { user, communities, events, communityMemberships, users, eventRsvps, uploadImage, joinCommunity, leaveCommunity, experiences, services, updateServiceStatus, reviews } = useAppContext();
   const { feedPosts, createFeedPost, likeFeedPost, deleteFeedPost } = useFeed();
   const { toast } = useToast();
   const [showRules, setShowRules] = useState(false);
@@ -111,6 +106,12 @@ export default function CommunityProfile() {
   const galleryPhotos = [...localPhotos, ...GALLERY_PHOTOS[galleryType]];
   const nextEvent = upcomingEvents[0] || communityEvents[0];
   const communityFeed = feedPosts?.filter(p => p.communityId === communityId) || [];
+  
+  // Real reviews
+  const communityReviews = (reviews || [])
+    .filter(r => r.target_id === communityId && r.target_type === 'community')
+    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  const topReviews = communityReviews.slice(0, 3);
 
   const handleShare = async () => {
     const shareData = { title: community.name, text: community.description, url: window.location.href };
@@ -852,35 +853,85 @@ export default function CommunityProfile() {
         {/* ===== ABOUT TAB ===== */}
         {activeTab === 'about' && (
           <>
+            {/* Leader Editing Prompt */}
+            {isLeader && (
+              <div style={{ marginBottom: '24px', padding: '16px', background: 'rgba(20,184,166,0.1)', border: '1px dashed var(--teal-500)', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                  <Sparkles size={20} color="var(--teal-400)" />
+                  <div>
+                    <div style={{ color: 'var(--teal-300)', fontWeight: 600, fontSize: '0.95rem' }}>Edit Community Profile</div>
+                    <div style={{ color: 'var(--slate-300)', fontSize: '0.85rem' }}>Add a welcome video, update pricing, or change social links.</div>
+                  </div>
+                </div>
+                <button onClick={() => navigate.push('/dashboard?tab=settings')} className="btn btn-primary interactive-press" style={{ padding: '8px 16px', borderRadius: '8px', fontSize: '0.85rem' }}>
+                  Edit Settings
+                </button>
+              </div>
+            )}
+
+            {/* Welcome Video */}
+            {community.welcome_video_url ? (
+              <div style={{ marginBottom: '32px', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
+                <iframe 
+                  width="100%" 
+                  height="220" 
+                  src={community.welcome_video_url} 
+                  title="Welcome Video" 
+                  frameBorder="0" 
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                  allowFullScreen
+                  style={{ display: 'block' }}
+                />
+              </div>
+            ) : isLeader ? (
+              <div onClick={() => navigate.push('/dashboard?tab=settings')} className="interactive-press" style={{ marginBottom: '32px', borderRadius: '16px', padding: '24px', textAlign: 'center', border: '1px dashed rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.02)', cursor: 'pointer' }}>
+                <Camera size={24} color="var(--slate-400)" style={{ margin: '0 auto 8px' }} />
+                <div style={{ color: 'var(--white)', fontWeight: 600, fontSize: '0.95rem' }}>Add a Welcome Video</div>
+                <div style={{ color: 'var(--slate-400)', fontSize: '0.85rem' }}>Introduce yourself and welcome new members.</div>
+              </div>
+            ) : null}
+
             {/* Description */}
             <div style={{ marginBottom: '32px' }}>
-              <h3 style={{ fontSize: '1.3rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: '0 0 16px 0' }}>What we're about</h3>
-              <p style={{ lineHeight: 1.8, color: 'var(--slate-200)', fontSize: '1rem', margin: 0 }}>
-                {community.description}
-              </p>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <h3 style={{ fontSize: '1.3rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: 0 }}>What we're about</h3>
+              </div>
+              <div style={{ lineHeight: 1.8, color: 'var(--slate-200)', fontSize: '1rem', margin: 0 }}>
+                {community.description?.split('\n').map((line, i) => (
+                  <p key={i} style={{ margin: '0 0 12px 0', minHeight: line.trim() === '' ? '12px' : 'auto' }}>{line}</p>
+                ))}
+              </div>
             </div>
 
             {/* Key Info Cards */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '32px' }}>
-              <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px', padding: '16px' }}>
-                <div style={{ fontSize: '1.4rem', marginBottom: '4px' }}>👥</div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--teal-400)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>Who It's For</div>
-                <div style={{ fontSize: '0.85rem', color: 'var(--slate-300)', lineHeight: 1.4 }}>All ages & abilities welcome. No experience needed.</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '32px' }}>
+              <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '16px' }}>
+                <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(20,184,166,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px', color: 'var(--teal-400)' }}>
+                  <Users size={20} />
+                </div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px', letterSpacing: '0.05em' }}>Who It's For</div>
+                <div style={{ fontSize: '0.9rem', color: 'var(--white)', fontWeight: 500, lineHeight: 1.4 }}>All ages & abilities welcome. No experience needed.</div>
               </div>
-              <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px', padding: '16px' }}>
-                <div style={{ fontSize: '1.4rem', marginBottom: '4px' }}>💷</div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--teal-400)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>Cost</div>
-                <div style={{ fontSize: '0.85rem', color: 'var(--slate-300)', lineHeight: 1.4 }}>{community.cost || community.metrics?.cost || 'Free to join'}</div>
+              <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '16px' }}>
+                <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(20,184,166,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px', color: 'var(--teal-400)' }}>
+                  <span style={{ fontSize: '1.2rem', fontWeight: 600 }}>£</span>
+                </div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px', letterSpacing: '0.05em' }}>Cost</div>
+                <div style={{ fontSize: '0.9rem', color: 'var(--white)', fontWeight: 500, lineHeight: 1.4 }}>{community.cost || community.metrics?.cost || 'Free to join'}</div>
               </div>
-              <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px', padding: '16px' }}>
-                <div style={{ fontSize: '1.4rem', marginBottom: '4px' }}>📅</div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--teal-400)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>How Often</div>
-                <div style={{ fontSize: '0.85rem', color: 'var(--slate-300)', lineHeight: 1.4 }}>{community.activity_level === 'Very Active' ? 'Weekly meetups' : community.activity_level === 'Active' ? 'Fortnightly' : 'Monthly'}</div>
+              <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '16px' }}>
+                <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(20,184,166,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px', color: 'var(--teal-400)' }}>
+                  <Calendar size={20} />
+                </div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px', letterSpacing: '0.05em' }}>How Often</div>
+                <div style={{ fontSize: '0.9rem', color: 'var(--white)', fontWeight: 500, lineHeight: 1.4 }}>{community.activity_level === 'Very Active' ? 'Weekly meetups' : community.activity_level === 'Active' ? 'Fortnightly' : 'Monthly'}</div>
               </div>
-              <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px', padding: '16px' }}>
-                <div style={{ fontSize: '1.4rem', marginBottom: '4px' }}>📍</div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--teal-400)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>Location</div>
-                <div style={{ fontSize: '0.85rem', color: 'var(--slate-300)', lineHeight: 1.4 }}>{community.location_name || 'Tunbridge Wells, Kent'}</div>
+              <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '16px' }}>
+                <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(20,184,166,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px', color: 'var(--teal-400)' }}>
+                  <MapPin size={20} />
+                </div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px', letterSpacing: '0.05em' }}>Location</div>
+                <div style={{ fontSize: '0.9rem', color: 'var(--white)', fontWeight: 500, lineHeight: 1.4 }}>{community.location_name || 'Tunbridge Wells, Kent'}</div>
               </div>
             </div>
 
@@ -891,7 +942,7 @@ export default function CommunityProfile() {
                   <Sparkles size={18} color="var(--teal-400)" /> Next Event
                 </h3>
                 <div 
-                  onClick={() => navigate.push('/')} 
+                  onClick={() => navigate.push(`/events/${nextEvent.id}`)} 
                   className="interactive-press"
                   style={{ borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(20,184,166,0.2)', background: 'rgba(20,184,166,0.05)', cursor: 'pointer' }}
                 >
@@ -932,7 +983,7 @@ export default function CommunityProfile() {
                   {experiences.filter(exp => exp.promotedBy === community.id).map(exp => {
                     const finalPrice = exp.basePrice + Math.round(exp.basePrice * ((exp.leaderMarkup || 0) / 100));
                     return (
-                      <div key={exp.id} onClick={() => navigate.push('/experiences')} className="interactive-press" style={{ display: 'flex', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px', overflow: 'hidden', cursor: 'pointer' }}>
+                      <div key={exp.id} onClick={() => navigate.push(`/checkout/experience/${exp.id}`)} className="interactive-press" style={{ display: 'flex', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px', overflow: 'hidden', cursor: 'pointer' }}>
                         <div style={{ width: '100px', flexShrink: 0 }}>
                           <img src={exp.image} alt={exp.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         </div>
@@ -957,22 +1008,39 @@ export default function CommunityProfile() {
                 <Star size={18} color="var(--amber-400)" /> What members say
               </h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {MOCK_REVIEWS.map((review, idx) => (
-                  <div key={idx} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px', padding: '16px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-                      <img src={review.avatar} alt={review.name} style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }} />
-                      <div>
-                        <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.9rem' }}>{review.name}</div>
-                        <div style={{ display: 'flex', gap: '2px' }}>
-                          {Array.from({ length: review.rating }).map((_, i) => (
-                            <Star key={i} size={12} fill="var(--amber-400)" color="var(--amber-400)" />
-                          ))}
+                {topReviews.length > 0 ? topReviews.map((review) => {
+                  const author = users.find(u => u.id === review.user_id) || { name: 'Community Member', avatar: 'https://i.pravatar.cc/150' };
+                  return (
+                    <div key={review.id} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px', padding: '16px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                        <img src={author.avatar} alt={author.name} style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }} />
+                        <div>
+                          <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.9rem' }}>{author.name}</div>
+                          <div style={{ display: 'flex', gap: '2px' }}>
+                            {Array.from({ length: 5 }).map((_, i) => (
+                              <Star key={i} size={12} fill={i < review.rating ? "var(--amber-400)" : "none"} color={i < review.rating ? "var(--amber-400)" : "var(--slate-600)"} />
+                            ))}
+                          </div>
                         </div>
                       </div>
+                      <p style={{ margin: 0, color: 'var(--slate-300)', fontSize: '0.9rem', lineHeight: 1.5, fontStyle: 'italic' }}>"{review.content}"</p>
                     </div>
-                    <p style={{ margin: 0, color: 'var(--slate-300)', fontSize: '0.9rem', lineHeight: 1.5, fontStyle: 'italic' }}>"{review.text}"</p>
+                  );
+                }) : (
+                  <div style={{ padding: '24px', textAlign: 'center', background: 'rgba(255,255,255,0.02)', borderRadius: '16px', border: '1px dashed rgba(255,255,255,0.1)' }}>
+                    <p style={{ color: 'var(--slate-400)', margin: '0 0 12px 0' }}>No reviews yet.</p>
+                    {isMember && (
+                      <button onClick={() => { setActiveTab('reviews'); setShowReviewForm(true); }} className="btn btn-outline interactive-press" style={{ padding: '6px 16px', fontSize: '0.85rem' }}>
+                        Leave a Review
+                      </button>
+                    )}
                   </div>
-                ))}
+                )}
+                {communityReviews.length > 3 && (
+                  <button onClick={() => setActiveTab('reviews')} className="interactive-press" style={{ background: 'none', border: 'none', color: 'var(--teal-400)', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer', padding: '8px' }}>
+                    View all {communityReviews.length} reviews
+                  </button>
+                )}
               </div>
             </div>
 

@@ -16,11 +16,11 @@ export default function HomeFeed() {
   const [activeFeedTab, setActiveFeedTab] = useState('Feed');
 
   const unreadCount = notifications ? notifications.filter(n => !n.is_read).length : 0;
-  const joinedCommunities = communities.filter(c => user.joinedCommunities?.includes(c.id));
+  const joinedCommunities = communities.filter(c => user?.joinedCommunities?.includes(c.id));
 
   // Determine Daily Briefing
   const todayEvents = events?.filter(e => {
-    if (!user.joinedCommunities?.includes(e.communityId)) return false;
+    if (!user?.joinedCommunities?.includes(e.communityId)) return false;
     // Check if event is today
     const eventDate = new Date(e.createdAt || e.date);
     const today = new Date();
@@ -28,7 +28,7 @@ export default function HomeFeed() {
   }) || [];
   
   const recentPosts = feedPosts?.filter(p => {
-    if (!user.joinedCommunities?.includes(p.communityId)) return false;
+    if (!user?.joinedCommunities?.includes(p.communityId)) return false;
     const postDate = new Date(p.timestamp);
     const today = new Date();
     return postDate > new Date(today.getTime() - 24 * 60 * 60 * 1000);
@@ -36,7 +36,7 @@ export default function HomeFeed() {
 
   const feedItems = useMemo(() => {
     let items = [];
-    if (feedPosts && user.joinedCommunities) {
+    if (feedPosts && user?.joinedCommunities) {
       feedPosts.forEach(post => {
         if (user.joinedCommunities.includes(post.communityId)) {
           let isIdea = false;
@@ -63,7 +63,7 @@ export default function HomeFeed() {
         }
       });
     }
-    if (events && user.joinedCommunities) {
+    if (events && user?.joinedCommunities) {
       events.forEach(event => {
         const isMemberOfPrimary = user.joinedCommunities.includes(event.communityId);
         const isMemberOfCollab = event.collabCommunityIds?.some(id => user.joinedCommunities.includes(id));
