@@ -1,6 +1,6 @@
 "use client";
 import { useState, useRef, useMemo, useEffect } from 'react';
-import { Users, Calendar, MessageCircle, TrendingUp, Search, Plus, MapPin, Image as ImageIcon, CreditCard, ChevronRight, Download, Activity, Globe, Heart, Crown, Info, X, Map, Zap, Mail, Trash2, UserCheck, Ban, ChevronDown, ChevronUp, Settings, Megaphone, QrCode, BarChart3, Ticket, ScanLine, UserPlus, DollarSign, Clock, Edit3, Check, Eye, EyeOff, Shield, Star } from 'lucide-react';
+import { Users, Calendar, MessageCircle, TrendingUp, Search, Plus, MapPin, Image as ImageIcon, CreditCard, ChevronRight, Download, Activity, Globe, Heart, Crown, Info, X, Map, Zap, Mail, Trash2, UserCheck, Ban, ChevronDown, ChevronUp, Settings, Megaphone, QrCode, BarChart3, Ticket, ScanLine, UserPlus, DollarSign, Clock, Edit3, Check, Eye, EyeOff, Shield, Star, Sparkles } from 'lucide-react';
 import AppHeader from '../../src/components/AppHeader';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAppContext } from '../../src/context/AppContext';
@@ -92,7 +92,7 @@ export default function LeaderDashboard() {
     if (tab) setActiveTab(tab);
   }, [searchParams]);
   
-  const emptyEventForm = { title: '', description: '', date: '', time: '', location: '', maxCapacity: '', ticketPrice: '' };
+  const emptyEventForm = { title: '', description: '', date: '', time: '', location: '', maxCapacity: '', ticketPrice: '', autoReminders: true, autoFeedback: true };
   const [eventForm, setEventForm] = useState(emptyEventForm);
   const [editingEventId, setEditingEventId] = useState(null);
   const [broadcastText, setBroadcastText] = useState('');
@@ -262,6 +262,8 @@ export default function LeaderDashboard() {
         ...eventForm,
         maxCapacity: eventForm.maxCapacity ? parseInt(eventForm.maxCapacity, 10) : null,
         ticketPrice: eventForm.ticketPrice ? parseFloat(eventForm.ticketPrice) : 0,
+        autoReminders: eventForm.autoReminders,
+        autoFeedback: eventForm.autoFeedback,
         image: imageUrl
       });
       
@@ -285,7 +287,9 @@ export default function LeaderDashboard() {
       date: event.date || '', time: event.time || '',
       location: event.location || '',
       maxCapacity: event.maxCapacity ? event.maxCapacity.toString() : '',
-      ticketPrice: event.ticketPrice ? event.ticketPrice.toString() : ''
+      ticketPrice: event.ticketPrice ? event.ticketPrice.toString() : '',
+      autoReminders: event.autoReminders ?? true,
+      autoFeedback: event.autoFeedback ?? true
     });
     setImageFile(null);
     setModalType('edit-event');
@@ -305,6 +309,8 @@ export default function LeaderDashboard() {
       date: eventForm.date, time: eventForm.time, location: eventForm.location,
       maxCapacity: eventForm.maxCapacity ? parseInt(eventForm.maxCapacity, 10) : null,
       ticketPrice: eventForm.ticketPrice ? parseFloat(eventForm.ticketPrice) : 0,
+      autoReminders: eventForm.autoReminders,
+      autoFeedback: eventForm.autoFeedback
     };
     if (imageUrl) updates.image = imageUrl;
     await updateEvent(editingEventId, updates);
@@ -347,7 +353,9 @@ export default function LeaderDashboard() {
         location: "City Park Main Entrance",
         maxCapacity: "50",
         ticketPrice: "0",
-        image: "https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=800&q=80"
+        image: "https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=800&q=80",
+        autoReminders: true,
+        autoFeedback: true
       };
 
       if (lowerPrompt.includes('hike') || lowerPrompt.includes('walk')) {
@@ -359,7 +367,9 @@ export default function LeaderDashboard() {
           location: "Ridge Trailhead Parking Lot",
           maxCapacity: "20",
           ticketPrice: "0",
-          image: "https://images.unsplash.com/photo-1551632811-561732d1e306?w=800&q=80"
+          image: "https://images.unsplash.com/photo-1551632811-561732d1e306?w=800&q=80",
+          autoReminders: true,
+          autoFeedback: true
         };
       } else if (lowerPrompt.includes('dinner') || lowerPrompt.includes('drink')) {
         generated = {
@@ -370,7 +380,9 @@ export default function LeaderDashboard() {
           location: "The Local Bistro, Main St",
           maxCapacity: "15",
           ticketPrice: "25",
-          image: "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=800&q=80"
+          image: "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=800&q=80",
+          autoReminders: true,
+          autoFeedback: true
         };
       }
 
@@ -449,6 +461,7 @@ export default function LeaderDashboard() {
     { label: 'Details', icon: Edit3, desc: 'Name & describe your event' },
     { label: 'When & Where', icon: MapPin, desc: 'Set the date, time & location' },
     { label: 'Extras', icon: Settings, desc: 'Capacity, pricing & image' },
+    { label: 'Autopilot', icon: Sparkles, desc: 'Automated CRM Triggers' },
   ];
 
   const canAdvanceStep = () => {
@@ -600,6 +613,61 @@ export default function LeaderDashboard() {
         </>
       )}
 
+      {/* Step 3: Autopilot Triggers */}
+      {eventStep === 3 && (
+        <>
+          <div style={{ background: 'rgba(20,184,166,0.05)', border: '1px solid rgba(20,184,166,0.15)', borderRadius: '12px', padding: '14px', marginBottom: '16px', display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+            <Sparkles size={20} color="var(--teal-400)" style={{ flexShrink: 0, marginTop: '2px' }} />
+            <div>
+              <div style={{ fontWeight: 600, color: 'var(--teal-400)', fontSize: '0.9rem', marginBottom: '4px' }}>AI-Configured Triggers</div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--slate-300)', lineHeight: 1.5 }}>
+                Based on your event details, the AI has pre-configured these automated CRM triggers. You can toggle them off if you prefer to manage communications manually.
+              </div>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div 
+              className="interactive-press"
+              onClick={() => setEventForm({...eventForm, autoReminders: !eventForm.autoReminders})}
+              style={{ padding: '16px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ width: '40px', height: '40px', background: 'rgba(59,130,246,0.1)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <MessageCircle size={18} color="#3b82f6" />
+                </div>
+                <div>
+                  <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.9rem' }}>24h Event Reminder</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>Auto-message attendees 1 day before</div>
+                </div>
+              </div>
+              <div style={{ width: '44px', height: '24px', background: eventForm.autoReminders ? 'var(--teal-500)' : 'rgba(255,255,255,0.1)', borderRadius: '12px', position: 'relative', transition: 'all 0.3s' }}>
+                <div style={{ position: 'absolute', width: '20px', height: '20px', background: 'white', borderRadius: '50%', top: '2px', left: eventForm.autoReminders ? '22px' : '2px', transition: 'all 0.3s' }} />
+              </div>
+            </div>
+
+            <div 
+              className="interactive-press"
+              onClick={() => setEventForm({...eventForm, autoFeedback: !eventForm.autoFeedback})}
+              style={{ padding: '16px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ width: '40px', height: '40px', background: 'rgba(245,158,11,0.1)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Star size={18} color="#f59e0b" />
+                </div>
+                <div>
+                  <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.9rem' }}>Post-Event Feedback</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>Request a 5-star review 2h after event ends</div>
+                </div>
+              </div>
+              <div style={{ width: '44px', height: '24px', background: eventForm.autoFeedback ? 'var(--teal-500)' : 'rgba(255,255,255,0.1)', borderRadius: '12px', position: 'relative', transition: 'all 0.3s' }}>
+                <div style={{ position: 'absolute', width: '20px', height: '20px', background: 'white', borderRadius: '50%', top: '2px', left: eventForm.autoFeedback ? '22px' : '2px', transition: 'all 0.3s' }} />
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
       {/* Navigation Buttons */}
       <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
         {eventStep > 0 && (
@@ -607,7 +675,7 @@ export default function LeaderDashboard() {
             ← Back
           </button>
         )}
-        {eventStep < 2 ? (
+        {eventStep < 3 ? (
           <button 
             onClick={() => setEventStep(eventStep + 1)} 
             disabled={!canAdvanceStep()}

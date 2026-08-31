@@ -184,7 +184,9 @@ export async function createEventAction(eventData, token) {
     activity_level: eventData.activityLevel || 'All Levels',
     cohost_community_ids: eventData.collabCommunityIds || [],
     profit_share_enabled: eventData.profitShareEnabled || false,
-    profit_share_amount: eventData.profitShareAmount || 0
+    profit_share_amount: eventData.profitShareAmount || 0,
+    auto_reminders_enabled: eventData.autoReminders !== false,
+    auto_feedback_enabled: eventData.autoFeedback !== false
   }).select().single();
 
   if (error) throw new Error(error.message);
@@ -281,6 +283,8 @@ export async function updateEventAction(eventId, updates, token) {
   if (updates.activityLevel !== undefined) dbUpdates.activity_level = updates.activityLevel;
   if (updates.profitShareEnabled !== undefined) dbUpdates.profit_share_enabled = updates.profitShareEnabled;
   if (updates.profitShareAmount !== undefined) dbUpdates.profit_share_amount = updates.profitShareAmount;
+  if (updates.autoReminders !== undefined) dbUpdates.auto_reminders_enabled = updates.autoReminders;
+  if (updates.autoFeedback !== undefined) dbUpdates.auto_feedback_enabled = updates.autoFeedback;
   
   const { data, error } = await supabaseAdmin.from('events').update(dbUpdates).eq('id', eventId).select().single();
   if (error) throw new Error(error.message);
