@@ -507,6 +507,45 @@ html, body {
   padding-bottom: 110px; /* Space for the floating bottom nav */
 }
 
+/* Segmented Control Tabs */
+.segmented-control {
+  display: flex;
+  background: var(--slate-900);
+  border: 1px solid var(--slate-800);
+  border-radius: 12px;
+  padding: 4px;
+  gap: 4px;
+}
+
+.segmented-control button {
+  flex: 1;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--slate-400);
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.segmented-control button.active {
+  background: var(--teal-500);
+  color: white;
+  box-shadow: 0 4px 12px rgba(20,184,166,0.3);
+}
+
+.segmented-control button:hover:not(.active) {
+  background: rgba(255,255,255,0.05);
+  color: var(--slate-200);
+}
+
+/* Forms */
 /* Headers */
 .app-header {
   padding: 16px 20px;
