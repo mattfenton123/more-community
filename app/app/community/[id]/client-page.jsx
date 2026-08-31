@@ -935,6 +935,40 @@ export default function CommunityProfile() {
               </div>
             </div>
 
+            {/* External Links */}
+            {community.external_links && community.external_links.length > 0 && (
+              <div style={{ marginBottom: '32px' }}>
+                <h3 style={{ fontSize: '1.1rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: '0 0 16px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Globe size={18} color="var(--teal-400)" /> Community Links
+                </h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {community.external_links.map((link, idx) => {
+                     let IconComponent = Globe;
+                     const titleLower = (link.title || '').toLowerCase();
+                     const urlLower = (link.url || '').toLowerCase();
+                     if (titleLower.includes('strava') || urlLower.includes('strava')) IconComponent = Activity;
+                     if (titleLower.includes('whatsapp') || urlLower.includes('whatsapp')) IconComponent = MessageCircle;
+                     
+                     let displayUrl = link.url;
+                     try { displayUrl = new URL(link.url).hostname.replace('www.', ''); } catch(e) {}
+
+                     return (
+                        <a key={idx} href={link.url} target="_blank" rel="noopener noreferrer" className="interactive-press" style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', textDecoration: 'none', color: 'var(--white)' }}>
+                          <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(20,184,166,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--teal-400)' }}>
+                            <IconComponent size={20} />
+                          </div>
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontWeight: 600, fontSize: '1rem' }}>{link.title}</div>
+                            <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)', marginTop: '2px' }}>{displayUrl}</div>
+                          </div>
+                          <ChevronRight size={18} color="var(--slate-500)" />
+                        </a>
+                     )
+                  })}
+                </div>
+              </div>
+            )}
+
             {/* Next Event CTA */}
             {nextEvent && (
               <div style={{ marginBottom: '32px' }}>

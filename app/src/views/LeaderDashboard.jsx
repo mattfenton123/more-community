@@ -82,7 +82,7 @@ export default function LeaderDashboard() {
   // ─── State ──────────────────────────────────────────────────
   const [isEditing, setIsEditing] = useState(false);
   const [modalType, setModalType] = useState(null);
-  const [editForm, setEditForm] = useState({ description: '', tags: '' });
+  const [editForm, setEditForm] = useState({ description: '', tags: '', externalLinks: [] });
   const [activeTab, setActiveTab] = useState('overview');
   const [activeCommunityId, setActiveCommunityId] = useState(user?.ledCommunities?.[0] || null);
   
@@ -234,7 +234,11 @@ export default function LeaderDashboard() {
   // ─── Handlers ─────────────────────────────────────────────
   const handleEditClick = () => {
     if (community) {
-      setEditForm({ description: community.description || '', tags: community.tags ? community.tags.join(', ') : '' });
+      setEditForm({ 
+        description: community.description || '', 
+        tags: community.tags ? community.tags.join(', ') : '',
+        externalLinks: community.external_links || []
+      });
       setSubscriptionPrice(community.subscriptionPrice || community.subscription_price || '');
     }
     setIsEditing(true);
@@ -243,7 +247,8 @@ export default function LeaderDashboard() {
   const handleSave = () => {
     updateCommunity(community.id, {
       description: editForm.description,
-      tags: editForm.tags.split(',').map(t => t.trim()).filter(Boolean)
+      tags: editForm.tags.split(',').map(t => t.trim()).filter(Boolean),
+      external_links: editForm.externalLinks.filter(l => l.title && l.url)
     });
     toast.success('Profile updated!', 'Your community microsite has been saved');
     setIsEditing(false);
@@ -1354,6 +1359,30 @@ export default function LeaderDashboard() {
                 <div>
                   <label style={{ display: 'block', marginBottom: '8px', color: 'var(--slate-300)', fontSize: '0.9rem' }}>Vibe & Values Tags (comma separated)</label>
                   <input type="text" value={editForm.tags} onChange={(e) => setEditForm({...editForm, tags: e.target.value})} style={{ width: '100%', padding: '12px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'var(--white)' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', color: 'var(--slate-300)', fontSize: '0.9rem' }}>External Links (Strava, WhatsApp, Spotify, etc.)</label>
+                  {editForm.externalLinks.map((link, idx) => (
+                    <div key={idx} style={{ display: 'flex', gap: '8px', marginBottom: '8px', alignItems: 'center' }}>
+                      <input type="text" placeholder="Title (e.g. Strava Club)" value={link.title} onChange={e => {
+                        const newLinks = [...editForm.externalLinks];
+                        newLinks[idx].title = e.target.value;
+                        setEditForm({...editForm, externalLinks: newLinks});
+                      }} style={{ flex: 1, padding: '12px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'var(--white)' }} />
+                      <input type="url" placeholder="https://" value={link.url} onChange={e => {
+                        const newLinks = [...editForm.externalLinks];
+                        newLinks[idx].url = e.target.value;
+                        setEditForm({...editForm, externalLinks: newLinks});
+                      }} style={{ flex: 2, padding: '12px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'var(--white)' }} />
+                      <button onClick={() => {
+                        const newLinks = editForm.externalLinks.filter((_, i) => i !== idx);
+                        setEditForm({...editForm, externalLinks: newLinks});
+                      }} style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '0 8px' }}>
+                        <X size={18} />
+                      </button>
+                    </div>
+                  ))}
+                  <button onClick={() => setEditForm({...editForm, externalLinks: [...editForm.externalLinks, { title: '', url: '' }]})} className="btn btn-outline" style={{ marginTop: '8px', padding: '8px 16px', fontSize: '0.85rem' }}>+ Add Link</button>
                 </div>
               </>
             )}
