@@ -51,7 +51,7 @@ export default function NotificationsFeed({ onClose }) {
 
   const handleNotificationClick = (n) => {
     markNotificationRead(n.id);
-    if (n.link) { navigate.push('/'); if (onClose) onClose(); }
+    if (n.link) { navigate.push(n.link); if (onClose) onClose(); }
   };
 
   const handleMarkAllRead = () => {
