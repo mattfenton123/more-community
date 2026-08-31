@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { X, Heart, X as XIcon, MapPin, Calendar, Sparkles, Info } from 'lucide-react';
 import { useToast } from './Toast';
 
-export default function SwipeDiscovery({ events, communities, onSave }) {
+export default function SwipeDiscovery({ events, communities, onClose, onSave }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [offset, setOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
