@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Heart, X as XIcon, MapPin, Calendar, Sparkles } from 'lucide-react';
+import { X, Heart, X as XIcon, MapPin, Calendar, Sparkles, Info } from 'lucide-react';
 import { useToast } from './Toast';
 
 export default function SwipeDiscovery({ events, communities, onSave }) {
@@ -8,6 +8,7 @@ export default function SwipeDiscovery({ events, communities, onSave }) {
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
   const [leaveDirection, setLeaveDirection] = useState(null); // 'left' | 'right'
+  const [showInfo, setShowInfo] = useState(false);
   const cardRef = useRef(null);
   const { toast } = useToast();
 
@@ -162,8 +163,19 @@ export default function SwipeDiscovery({ events, communities, onSave }) {
             </div>
             
             <div style={{ padding: '24px', flex: 1, display: 'flex', flexDirection: 'column', pointerEvents: 'none' }}>
-              <div style={{ color: 'var(--teal-400)', fontSize: '0.85rem', fontWeight: 700, textTransform: 'uppercase', marginBottom: '8px' }}>
-                {community?.name}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                <div style={{ color: 'var(--teal-400)', fontSize: '0.85rem', fontWeight: 700, textTransform: 'uppercase' }}>
+                  {community?.name}
+                </div>
+                <button 
+                  onPointerDown={(e) => e.stopPropagation()} 
+                  onMouseDown={(e) => e.stopPropagation()} 
+                  onTouchStart={(e) => e.stopPropagation()}
+                  onClick={() => setShowInfo(true)}
+                  style={{ pointerEvents: 'auto', background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '50%', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--white)', cursor: 'pointer' }}
+                >
+                  <Info size={16} />
+                </button>
               </div>
               <h3 style={{ fontSize: '2rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: '0 0 16px 0', lineHeight: 1.1 }}>
                 {currentEvent.title}
@@ -206,6 +218,5 @@ export default function SwipeDiscovery({ events, communities, onSave }) {
         </div>
       </div>
     </div>
-  );
   );
 }
