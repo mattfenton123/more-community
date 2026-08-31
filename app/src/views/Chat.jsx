@@ -310,20 +310,18 @@ export default function Chat() {
             <button 
               onClick={() => setShowCreateModal(true)}
               className="interactive-press"
-              style={{ background: 'var(--teal-500)', color: 'white', width: '56px', height: '56px', borderRadius: '50%', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 16px rgba(20,184,166,0.4)', cursor: 'pointer' }}
-              title="Create Channel"
+              style={{ background: 'var(--teal-500)', color: 'white', padding: '0 20px', height: '56px', borderRadius: '28px', border: 'none', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 16px rgba(20,184,166,0.4)', cursor: 'pointer', fontWeight: 600, fontSize: '0.95rem' }}
             >
-              <Hash size={24} />
+              <Hash size={20} /> New Channel
             </button>
           )}
           {activeTab === 'Direct Messages' && (
             <button 
               onClick={() => setShowNewChatModal(true)}
               className="interactive-press"
-              style={{ background: 'var(--teal-500)', color: 'white', width: '56px', height: '56px', borderRadius: '50%', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 16px rgba(20,184,166,0.4)', cursor: 'pointer' }}
-              title="New Message"
+              style={{ background: 'var(--teal-500)', color: 'white', padding: '0 20px', height: '56px', borderRadius: '28px', border: 'none', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 16px rgba(20,184,166,0.4)', cursor: 'pointer', fontWeight: 600, fontSize: '0.95rem' }}
             >
-              <Plus size={24} />
+              <Plus size={20} /> New Message
             </button>
           )}
         </div>
