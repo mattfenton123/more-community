@@ -5,6 +5,7 @@ import { useAppContext } from '../../src/context/AppContext';
 import { SkeletonList, SkeletonEvent } from '../../src/components/SkeletonCard';
 import { useToast } from '../../src/components/Toast';
 import DigitalTicket from '../../src/components/DigitalTicket';
+import AppHeader from '../../src/components/AppHeader';
 
 export default function EventsHub() {
   const [activeTab, setActiveTab] = useState('My Schedule');
@@ -128,9 +129,7 @@ export default function EventsHub() {
 
   return (
     <div className="view-events" style={{ paddingBottom: '80px' }}>
-      <div style={{ padding: '20px 20px 0' }}>
-        <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem', fontWeight: 800, margin: '0 0 16px 0' }}>Events</h1>
-      </div>
+      <AppHeader title="Events" />
 
       <div style={{ display: 'flex', gap: '12px', padding: '0 20px', borderBottom: '1px solid rgba(255,255,255,0.05)', marginBottom: '10px' }}>
         {['My Schedule', 'Recommended', 'Explore'].map(tab => (

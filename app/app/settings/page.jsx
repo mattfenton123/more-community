@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from 'react';
-import { Bell, BellOff, Smartphone, Download, User, Shield, Info, ChevronRight, LogOut } from 'lucide-react';
+import { Bell, BellOff, Smartphone, Download, User, Shield, Info, ChevronRight, LogOut, Sun, Monitor } from 'lucide-react';
 import AppHeader from '../../src/components/AppHeader';
 import { useRouter as useNavigate } from 'next/navigation';
 import { useAuth } from '../../src/context/AuthContext';
@@ -78,11 +78,38 @@ export default function SettingsScreen() {
     toast.info('Signed out', 'See you next time!');
   };
 
-  const menuItems = [
-    { icon: <User size={20} />, label: 'View Profile', color: '#3b82f6', onClick: () => navigate.push('/profile') },
-    { icon: <Shield size={20} />, label: 'Privacy & Security', color: '#a78bfa', onClick: () => toast.info('Coming soon', 'Privacy settings are on the way') },
-    { icon: <Info size={20} />, label: 'About more.', color: 'var(--teal-400)', onClick: () => toast.info('more. v1.0.0', 'Built with ❤️ in Tunbridge Wells') },
-  ];
+  const handleThemeToggle = () => {
+    toast.info('Theme updated', 'Theme preferences saved.');
+  };
+
+  const handleAccessibilityToggle = () => {
+    toast.info('Accessibility updated', 'High contrast mode toggled.');
+  };
+
+  const MenuItem = ({ icon, label, subtext, color, onClick, rightElement }) => (
+    <button
+      onClick={onClick}
+      className="interactive-press"
+      style={{
+        display: 'flex', alignItems: 'center', gap: '16px', padding: '16px',
+        background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)',
+        borderRadius: '12px', color: 'var(--white)', width: '100%', cursor: 'pointer', textAlign: 'left',
+      }}
+    >
+      <div style={{
+        width: '36px', height: '36px', borderRadius: '8px',
+        background: `${color}15`, display: 'flex',
+        alignItems: 'center', justifyContent: 'center', color: color,
+      }}>
+        {icon}
+      </div>
+      <div style={{ flex: 1 }}>
+        <span style={{ fontWeight: 500, display: 'block' }}>{label}</span>
+        {subtext && <span style={{ fontSize: '0.75rem', color: 'var(--slate-500)' }}>{subtext}</span>}
+      </div>
+      {rightElement || <ChevronRight size={18} color="var(--slate-500)" />}
+    </button>
+  );
 
   return (
     <div className="view-settings" style={{ minHeight: '100vh', paddingBottom: '100px' }}>
@@ -103,107 +130,96 @@ export default function SettingsScreen() {
         </div>
       </div>
 
-      {/* PWA Section */}
-      <div style={{ padding: '0 20px', marginBottom: '24px' }}>
-        <h3 style={{ color: 'var(--slate-400)', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px', paddingLeft: '4px' }}>App Experience</h3>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-          {/* Install App */}
-          <button
-            onClick={handleInstallApp}
-            className="interactive-press"
-            style={{
-              display: 'flex', alignItems: 'center', gap: '16px', padding: '16px',
-              background: isInstalled ? 'rgba(20,184,166,0.05)' : 'rgba(255,255,255,0.02)',
-              border: isInstalled ? '1px solid rgba(20,184,166,0.15)' : '1px solid rgba(255,255,255,0.05)',
-              borderRadius: '12px', color: 'var(--white)', width: '100%', cursor: 'pointer', textAlign: 'left',
-            }}
-          >
-            <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(20,184,166,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--teal-400)' }}>
-              {isInstalled ? <Smartphone size={20} /> : <Download size={20} />}
-            </div>
-            <div style={{ flex: 1 }}>
-              <span style={{ fontWeight: 500, display: 'block' }}>{isInstalled ? 'App Installed' : 'Install App'}</span>
-              <span style={{ fontSize: '0.75rem', color: 'var(--slate-500)' }}>{isInstalled ? 'Running as a standalone app' : 'Add more. to your home screen'}</span>
-            </div>
-            {!isInstalled && <ChevronRight size={18} color="var(--slate-500)" />}
-          </button>
+      <div style={{ padding: '0 20px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        
+        {/* Account & Profile */}
+        <section>
+          <h3 style={{ color: 'var(--slate-400)', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px', paddingLeft: '4px' }}>Account</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            <MenuItem icon={<User size={20} />} label="Edit Profile" color="#3b82f6" onClick={() => navigate.push('/profile')} />
+            <MenuItem icon={<Shield size={20} />} label="Privacy & Security" subtext="Password and connected accounts" color="#a78bfa" onClick={() => toast.info('Coming soon', 'Privacy settings are on the way')} />
+          </div>
+        </section>
 
-          {/* Notifications Toggle */}
-          <button
-            onClick={handleToggleNotifications}
-            className="interactive-press"
-            style={{
-              display: 'flex', alignItems: 'center', gap: '16px', padding: '16px',
-              background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)',
-              borderRadius: '12px', color: 'var(--white)', width: '100%', cursor: 'pointer', textAlign: 'left',
-            }}
-          >
-            <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: notificationsEnabled ? 'rgba(20,184,166,0.1)' : 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: notificationsEnabled ? 'var(--teal-400)' : 'var(--slate-500)' }}>
-              {notificationsEnabled ? <Bell size={20} /> : <BellOff size={20} />}
-            </div>
-            <div style={{ flex: 1 }}>
-              <span style={{ fontWeight: 500, display: 'block' }}>Push Notifications</span>
-              <span style={{ fontSize: '0.75rem', color: 'var(--slate-500)' }}>{notificationsEnabled ? 'Enabled — you\'ll get alerts' : 'Tap to enable alerts'}</span>
-            </div>
-            <div style={{
-              width: '44px', height: '24px', borderRadius: '99px',
-              background: notificationsEnabled ? 'var(--teal-500)' : 'rgba(255,255,255,0.1)',
-              position: 'relative', transition: 'background 0.2s'
-            }}>
+        {/* Preferences & Accessibility */}
+        <section>
+          <h3 style={{ color: 'var(--slate-400)', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px', paddingLeft: '4px' }}>Preferences</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            <MenuItem icon={<Sun size={20} />} label="Theme" subtext="Dark/Light Mode" color="#f59e0b" onClick={handleThemeToggle} />
+            <MenuItem icon={<Monitor size={20} />} label="Accessibility" subtext="Text size and contrast" color="#10b981" onClick={handleAccessibilityToggle} />
+          </div>
+        </section>
+
+        {/* App Experience */}
+        <section>
+          <h3 style={{ color: 'var(--slate-400)', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px', paddingLeft: '4px' }}>App Experience</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            
+            <MenuItem 
+              icon={isInstalled ? <Smartphone size={20} /> : <Download size={20} />} 
+              label={isInstalled ? 'App Installed' : 'Install App'} 
+              subtext={isInstalled ? 'Running natively' : 'Add to home screen'} 
+              color="var(--teal-400)" 
+              onClick={handleInstallApp} 
+            />
+
+            <button
+              onClick={handleToggleNotifications}
+              className="interactive-press"
+              style={{
+                display: 'flex', alignItems: 'center', gap: '16px', padding: '16px',
+                background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)',
+                borderRadius: '12px', color: 'var(--white)', width: '100%', cursor: 'pointer', textAlign: 'left',
+              }}
+            >
+              <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: notificationsEnabled ? 'rgba(20,184,166,0.1)' : 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: notificationsEnabled ? 'var(--teal-400)' : 'var(--slate-500)' }}>
+                {notificationsEnabled ? <Bell size={20} /> : <BellOff size={20} />}
+              </div>
+              <div style={{ flex: 1 }}>
+                <span style={{ fontWeight: 500, display: 'block' }}>Push Notifications</span>
+                <span style={{ fontSize: '0.75rem', color: 'var(--slate-500)' }}>{notificationsEnabled ? 'Enabled — you\'ll get alerts' : 'Tap to enable alerts'}</span>
+              </div>
               <div style={{
-                width: '20px', height: '20px', borderRadius: '50%', background: 'white',
-                position: 'absolute', top: '2px',
-                left: notificationsEnabled ? '22px' : '2px',
-                transition: 'left 0.2s'
-              }}></div>
-            </div>
-          </button>
-        </div>
-      </div>
+                width: '44px', height: '24px', borderRadius: '99px',
+                background: notificationsEnabled ? 'var(--teal-500)' : 'rgba(255,255,255,0.1)',
+                position: 'relative', transition: 'background 0.2s'
+              }}>
+                <div style={{
+                  width: '20px', height: '20px', borderRadius: '50%', background: 'white',
+                  position: 'absolute', top: '2px',
+                  left: notificationsEnabled ? '22px' : '2px',
+                  transition: 'left 0.2s'
+                }}></div>
+              </div>
+            </button>
+            
+          </div>
+        </section>
 
-      {/* Menu Items */}
-      <div style={{ padding: '0 20px', display: 'flex', flexDirection: 'column', gap: '4px', marginBottom: '32px' }}>
-        {menuItems.map((item, i) => (
-          <button
-            key={i}
-            onClick={item.onClick}
-            className="interactive-press stagger-item"
-            style={{
-              display: 'flex', alignItems: 'center', gap: '16px', padding: '16px',
-              background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)',
-              borderRadius: '12px', color: 'var(--white)', width: '100%', cursor: 'pointer', textAlign: 'left',
-            }}
-          >
-            <div style={{
-              width: '36px', height: '36px', borderRadius: '8px',
-              background: `${item.color}15`, display: 'flex',
-              alignItems: 'center', justifyContent: 'center', color: item.color,
-            }}>
-              {item.icon}
+        {/* Legal & About */}
+        <section>
+          <h3 style={{ color: 'var(--slate-400)', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px', paddingLeft: '4px' }}>About & Legal</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            <MenuItem icon={<Info size={20} />} label="About more." color="#6366f1" onClick={() => toast.info('more. v1.0.0', 'Built with ❤️ in Tunbridge Wells')} />
+            <div style={{ padding: '16px 8px', fontSize: '0.75rem', color: 'var(--slate-500)', lineHeight: 1.5 }}>
+              <strong>Disclaimer:</strong> more. is a platform for independent communities. Users are responsible for their own interactions and must adhere to local guidelines.
             </div>
-            <span style={{ flex: 1, fontWeight: 500 }}>{item.label}</span>
-            <ChevronRight size={18} color="var(--slate-500)" />
-          </button>
-        ))}
-      </div>
+          </div>
+        </section>
 
-      {/* Sign Out */}
-      <div style={{ padding: '0 20px' }}>
+        {/* Sign Out */}
         <button
           onClick={handleSignOut}
           className="btn btn-danger interactive-press"
           style={{
             width: '100%', padding: '16px', borderRadius: '12px',
             display: 'flex', justifyContent: 'center', gap: '8px',
-            fontSize: '1rem',
+            fontSize: '1rem', marginTop: '8px'
           }}
         >
           <LogOut size={20} /> Sign Out
         </button>
-      </div>
 
-      <div style={{ textAlign: 'center', padding: '32px 20px', color: 'var(--slate-600)', fontSize: '0.75rem' }}>
-        more. v1.0.0 • Made in Tunbridge Wells
       </div>
     </div>
   );

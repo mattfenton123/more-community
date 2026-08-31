@@ -829,6 +829,8 @@ export function AppProvider({ children }) {
       is_read: false
     }));
     
+    if (notifications.length === 0) return;
+    
     try {
       await broadcastNotificationAction(notifications, session?.access_token);
     } catch (err) {

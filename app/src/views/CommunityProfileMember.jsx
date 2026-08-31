@@ -232,7 +232,15 @@ export default function CommunityProfile() {
             const isPaid = subPrice > 0 && !isMember;
             return (
               <>
-                {isMember ? (
+                {isLeader ? (
+                  <button 
+                    onClick={() => navigate.push(`/community/${communityId}/admin`)} 
+                    className="btn btn-primary interactive-press" 
+                    style={{ width: '100%', padding: '16px', fontSize: '1.05rem', background: 'var(--slate-800)', border: '1px solid var(--slate-600)', color: 'var(--white)', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', marginBottom: '8px' }}
+                  >
+                    <Settings size={20} /> Manage Community
+                  </button>
+                ) : isMember ? (
                   <div style={{ textAlign: 'center' }}>
                     <div style={{ width: '100%', padding: '16px', fontSize: '1.05rem', fontWeight: 700, borderRadius: '14px', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--slate-300)', background: 'rgba(255,255,255,0.05)', marginBottom: '8px' }}>
                       ✓ You're a Member

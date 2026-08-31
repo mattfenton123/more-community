@@ -4,6 +4,7 @@ import { useAppContext } from '../../src/context/AppContext';
 import { useChat } from '../../src/context/ChatContext';
 import { useRouter } from 'next/navigation';
 import { MessageCircle, Users, ChevronRight, Hash, Search, Plus, User } from 'lucide-react';
+import AppHeader from '../../src/components/AppHeader';
 import { FALLBACK_IMAGES } from '../../src/lib/constants';
 
 export default function ChatIndex() {
@@ -59,20 +60,20 @@ export default function ChatIndex() {
   }
 
   return (
-    <div style={{ padding: '24px', paddingBottom: '100px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <MessageCircle size={24} color="var(--teal-400)" />
-          <div style={{ fontSize: '1.4rem', fontWeight: 700, fontFamily: 'var(--font-heading)', color: 'var(--white)' }}>Chat</div>
-        </div>
-        <button 
-          onClick={() => setShowNewDM(true)}
-          className="interactive-press"
-          style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(20,184,166,0.15)', border: '1px solid rgba(20,184,166,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-        >
-          <Plus size={18} color="var(--teal-400)" />
-        </button>
-      </div>
+    <div className="view-chat" style={{ paddingBottom: '100px' }}>
+      <AppHeader 
+        title="Chat" 
+        rightElement={
+          <button 
+            onClick={() => setShowNewDM(true)}
+            className="interactive-press"
+            style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(20,184,166,0.15)', border: '1px solid rgba(20,184,166,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+          >
+            <Plus size={18} color="var(--teal-400)" />
+          </button>
+        }
+      />
+      <div style={{ padding: '24px' }}>
 
       {/* Tab Switcher */}
       <div className="segmented-control" style={{ marginBottom: '20px' }}>
@@ -225,6 +226,7 @@ export default function ChatIndex() {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }

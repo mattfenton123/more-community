@@ -5,6 +5,7 @@ import { useAppContext } from '../../../src/context/AppContext';
 import { useChat } from '../../../src/context/ChatContext';
 import { useAuth } from '../../../src/context/AuthContext';
 import { ArrowLeft, Users, Calendar, MapPin, Settings, Camera, Check, X, MessageCircle, Edit3, Trophy, Flame, Plus, Compass, Star, LogOut, ChevronRight, Shield, BarChart2 } from 'lucide-react';
+import AppHeader from '../../../src/components/AppHeader';
 import { useToast } from '../../../src/components/Toast';
 import GamificationPanel, { BadgeRow, useGamification } from '../../../src/components/Gamification';
 import { FALLBACK_IMAGES } from '../../../src/lib/constants';
@@ -89,41 +90,32 @@ export default function UserProfile() {
 
   return (
     <div className="view-profile" style={{ paddingBottom: '80px', overflowY: 'auto', height: '100%', background: 'var(--slate-950)' }}>
-      {/* Hero Banner */}
-      <div style={{ height: '180px', background: `url(${FALLBACK_IMAGES.general})`, backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative' }}>
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.1), var(--slate-950))' }}></div>
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, padding: '20px', display: 'flex', justifyContent: 'space-between', zIndex: 10 }}>
-          <button className="interactive-press" onClick={() => navigate.push('/')} style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(10px)', border: 'none', color: 'var(--white)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-            <ArrowLeft size={24} />
-          </button>
+      <AppHeader 
+        title={isOwnProfile ? "Profile" : profileUser?.name} 
+        showBack={true}
+        rightElement={
           <div style={{ display: 'flex', gap: '8px' }}>
             {!isOwnProfile && (
-              <button className="interactive-press" onClick={() => navigate.push(`/chat/dm/${targetId}`)} style={{ height: '40px', padding: '0 16px', borderRadius: '20px', background: 'var(--teal-500)', border: 'none', color: 'var(--white)', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 600 }}>
-                <MessageCircle size={18} /> Message
+              <button className="interactive-press" onClick={() => navigate.push(`/chat/dm/${targetId}`)} style={{ height: '32px', padding: '0 16px', borderRadius: '16px', background: 'var(--teal-500)', border: 'none', color: 'var(--white)', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.8rem' }}>
+                <MessageCircle size={14} /> Message
               </button>
             )}
             {isOwnProfile && !isEditing && (
               <>
-                <button className="interactive-press" onClick={() => setIsEditing(true)} style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(236,72,153,0.2)', border: '1px solid rgba(236,72,153,0.4)', backdropFilter: 'blur(10px)', color: 'var(--pink-400)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-                  <Edit3 size={20} />
+                <button className="interactive-press" onClick={() => setIsEditing(true)} style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(236,72,153,0.2)', border: '1px solid rgba(236,72,153,0.4)', color: 'var(--pink-400)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                  <Edit3 size={16} />
                 </button>
-                <button className="interactive-press" onClick={() => navigate.push('/settings')} style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(20,184,166,0.2)', border: '1px solid rgba(20,184,166,0.4)', backdropFilter: 'blur(10px)', color: 'var(--teal-400)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-                  <Settings size={20} />
-                </button>
-              </>
-            )}
-            {isOwnProfile && isEditing && (
-              <>
-                <button className="interactive-press" onClick={() => setIsEditing(false)} style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(239,68,68,0.2)', border: '1px solid rgba(239,68,68,0.4)', color: 'var(--red-400)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-                  <X size={20} />
-                </button>
-                <button className="interactive-press" onClick={handleSave} style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(20,184,166,0.9)', border: 'none', color: 'var(--white)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-                  <Check size={20} />
+                <button className="interactive-press" onClick={() => navigate.push('/settings')} style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(20,184,166,0.2)', border: '1px solid rgba(20,184,166,0.4)', color: 'var(--teal-400)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                  <Settings size={16} />
                 </button>
               </>
             )}
           </div>
-        </div>
+        }
+      />
+      {/* Hero Banner */}
+      <div style={{ height: '180px', background: `url(${FALLBACK_IMAGES.general})`, backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative' }}>
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.1), var(--slate-950))' }}></div>
       </div>
 
       <div style={{ padding: '0 20px', marginTop: '-60px', position: 'relative', zIndex: 10 }}>
