@@ -203,7 +203,7 @@ export default function CommunityProfile() {
     }
   };
 
-  const handleCreatePost = async (text, mediaUrl = null) => {
+  const handlePitchPost = async (text, mediaUrl = null) => {
     if (!text.trim() && !mediaUrl) return;
     try {
       await createFeedPost(communityId, text, mediaUrl);
@@ -217,7 +217,7 @@ export default function CommunityProfile() {
 
   const handlePitchExperience = (experience) => {
     const pitchText = `🚀 **CAMPAIGN:** Let's do "${experience.title}"!\n\n${experience.description}\n\nPrice: £${experience.price_per_person}\n\n*Like this post to support the idea!*`;
-    handleCreatePost(pitchText);
+    handlePitchPost(pitchText);
     setActiveTab('feed');
   };
 
