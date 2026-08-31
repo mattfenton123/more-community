@@ -203,6 +203,24 @@ export default function CommunityProfile() {
     }
   };
 
+  const handleCreatePost = async (text, mediaUrl = null) => {
+    if (!text.trim() && !mediaUrl) return;
+    try {
+      await createFeedPost(communityId, text, mediaUrl);
+      setNewPostText('');
+      setNewPostImage(null);
+      toast.success('Post created!', 'Your post has been added to the feed.');
+    } catch (err) {
+      toast.error('Failed to post', err.message);
+    }
+  };
+
+  const handlePitchExperience = (experience) => {
+    const pitchText = `🚀 **CAMPAIGN:** Let's do "${experience.title}"!\n\n${experience.description}\n\nPrice: £${experience.price_per_person}\n\n*Like this post to support the idea!*`;
+    handleCreatePost(pitchText);
+    setActiveTab('feed');
+  };
+
   return (
     <div className="view-profile" style={{ background: 'var(--slate-950)', minHeight: '100vh', paddingBottom: '80px', width: '100%' }}>
       <div className="microsite-container">
