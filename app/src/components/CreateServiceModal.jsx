@@ -69,8 +69,8 @@ export default function CreateServiceModal({ isOpen, onClose, communityId }) {
         background: 'var(--slate-900)', 
         borderTopLeftRadius: '24px', 
         borderTopRightRadius: '24px', 
-        padding: '24px',
-        maxHeight: '90vh',
+        padding: '24px 24px 100px 24px',
+        maxHeight: '90dvh',
         overflowY: 'auto'
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>

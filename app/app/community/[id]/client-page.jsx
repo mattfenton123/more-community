@@ -222,7 +222,7 @@ export default function CommunityProfile() {
     const userMessage = prompt(`Add a message for pitching "${experience.title}":`, "I think this would be really fun for us!");
     if (userMessage === null) return;
     
-    const pitchText = `🚀 **CAMPAIGN:** [${experience.id}]\n${userMessage}\n\n📍 Location: ${experience.location}\n⏱ Duration: ${experience.duration}\n💰 Price: £${experience.price_per_person}\n\n*Click "I'm Interested" to support the idea!*`;
+    const pitchText = `🚀 **CAMPAIGN:** [${experience.id}]\n${userMessage}\n\n📍 Location: ${experience.location}\n⏱ Duration: ${experience.duration}\n💰 Price: £${experience.basePrice}\n\n*Click "I'm Interested" to support the idea!*`;
     handlePitchPost(pitchText, experience.image);
     setActiveTab('feed');
   };

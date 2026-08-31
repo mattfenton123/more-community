@@ -35,8 +35,8 @@ export default function HostExperienceModal({ experience, communities, user, onC
         background: 'var(--slate-900)', 
         width: '100%', maxWidth: '500px', 
         borderTopLeftRadius: '24px', borderTopRightRadius: '24px',
-        padding: '24px', 
-        maxHeight: '90vh', overflowY: 'auto',
+        padding: '24px 24px 100px 24px', 
+        maxHeight: '90dvh', overflowY: 'auto',
         animation: 'slideUp 0.3s ease-out'
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
