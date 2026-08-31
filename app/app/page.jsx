@@ -3,9 +3,10 @@ import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppContext } from '../src/context/AppContext';
 import { useFeed } from '../src/context/FeedContext';
-import { Heart, MessageCircle, Share2, Calendar, MapPin, Clock, Compass, Plus, Bell, Megaphone, Edit3, Briefcase } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Calendar, MapPin, Clock, Compass, Plus, Megaphone, Edit3, Briefcase } from 'lucide-react';
 import { SkeletonList, SkeletonCard } from '../src/components/SkeletonCard';
 import InlineComments from '../src/components/InlineComments';
+import AppHeader from '../src/components/AppHeader';
 
 export default function HomeFeed() {
   const { user, communities, events, users, eventRsvps, isLoading, notifications } = useAppContext();
@@ -61,9 +62,10 @@ export default function HomeFeed() {
 
   return (
     <div className="view-home" style={{ paddingBottom: '80px', background: 'var(--slate-950)', minHeight: '100vh' }}>
+      <AppHeader />
       
       {/* Personalized Dynamic Header */}
-      <div style={{ padding: '24px 20px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', background: 'linear-gradient(to bottom, var(--slate-900), var(--slate-950))' }}>
+      <div style={{ padding: '16px 20px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', background: 'linear-gradient(to bottom, var(--slate-900), var(--slate-950))' }}>
         <div>
           <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.8rem', fontWeight: 800, color: 'white', margin: '0 0 4px 0' }}>
             Good morning, {user?.name?.split(' ')[0] || 'there'}!
@@ -75,25 +77,6 @@ export default function HomeFeed() {
                 ? `${recentPosts.length} new post${recentPosts.length > 1 ? 's' : ''} in your communities.`
                 : "You're all caught up for today."}
           </p>
-        </div>
-        <div 
-          className="interactive-press" 
-          onClick={() => router.push('/notifications')}
-          style={{ position: 'relative', cursor: 'pointer', padding: '8px', background: 'rgba(255,255,255,0.05)', borderRadius: '50%' }}
-        >
-          <Bell size={22} color="var(--slate-300)" />
-          {unreadCount > 0 && (
-            <div style={{
-              position: 'absolute', top: '0px', right: '0px',
-              background: 'var(--rose-500)', color: 'white',
-              fontSize: '0.65rem', fontWeight: 700,
-              width: '18px', height: '18px', borderRadius: '50%',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              border: '2px solid var(--slate-900)',
-            }}>
-              {unreadCount > 9 ? '9+' : unreadCount}
-            </div>
-          )}
         </div>
       </div>
 
