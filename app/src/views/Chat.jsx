@@ -106,27 +106,24 @@ export default function Chat() {
     return (
       <div className="view-chat" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
         <AppHeader title="Inbox" />
-        <div style={{ padding: '0 20px', display: 'flex', gap: '16px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-          <button 
-            onClick={() => setActiveTab('Communities')}
-            style={{ 
-              background: 'none', border: 'none', padding: '12px 0', fontSize: '1rem', fontWeight: 600, cursor: 'pointer',
-              color: activeTab === 'Communities' ? 'white' : 'var(--slate-500)',
-              borderBottom: activeTab === 'Communities' ? '2px solid var(--teal-400)' : '2px solid transparent',
-              transition: 'all 0.2s'
-            }}>
-            Communities
-          </button>
-          <button 
-            onClick={() => setActiveTab('Direct Messages')}
-            style={{ 
-              background: 'none', border: 'none', padding: '12px 0', fontSize: '1rem', fontWeight: 600, cursor: 'pointer',
-              color: activeTab === 'Direct Messages' ? 'white' : 'var(--slate-500)',
-              borderBottom: activeTab === 'Direct Messages' ? '2px solid var(--teal-400)' : '2px solid transparent',
-              transition: 'all 0.2s'
-            }}>
-            Direct Messages
-          </button>
+        <div style={{ padding: '16px 20px 8px' }}>
+          <div style={{ display: 'flex', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', padding: '4px', gap: '4px' }}>
+            {['Communities', 'Direct Messages'].map(tab => (
+              <button 
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className="interactive-press"
+                style={{ 
+                  flex: 1, background: activeTab === tab ? 'rgba(255,255,255,0.1)' : 'transparent', 
+                  border: '1px solid ' + (activeTab === tab ? 'rgba(255,255,255,0.1)' : 'transparent'),
+                  borderRadius: '8px', padding: '8px 0', fontSize: '0.85rem', cursor: 'pointer', fontWeight: 600,
+                  color: activeTab === tab ? 'white' : 'var(--slate-400)',
+                  transition: 'all 0.2s', boxShadow: activeTab === tab ? '0 4px 12px rgba(0,0,0,0.1)' : 'none'
+                }}>
+                {tab}
+              </button>
+            ))}
+          </div>
         </div>
         
         <div style={{ flex: 1, overflowY: 'auto', padding: '10px 0' }}>
@@ -163,7 +160,7 @@ export default function Chat() {
                     onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
                     onMouseOut={e => e.currentTarget.style.background = 'transparent'}
                   >
-                    {hasUnread && <div style={{ position: 'absolute', top: '16px', left: '8px', width: '8px', height: '8px', borderRadius: '50%', background: 'var(--teal-400)' }} />}
+                    {hasUnread && <div style={{ position: 'absolute', top: '50%', transform: 'translateY(-50%)', left: '8px', width: '8px', height: '8px', borderRadius: '50%', background: 'var(--teal-400)', boxShadow: '0 0 10px rgba(45,212,191,0.8)' }} />}
                     <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: `url(${item.otherUser.avatar})`, backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative' }}>
                       <div style={{ position: 'absolute', bottom: '-4px', right: '-4px', background: 'var(--slate-800)', borderRadius: '50%', padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid var(--slate-950)' }}>
                         <MessageCircle size={12} color="var(--teal-400)" />
@@ -196,7 +193,7 @@ export default function Chat() {
                   onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
                   onMouseOut={e => e.currentTarget.style.background = 'transparent'}
                 >
-                  {hasUnread && <div style={{ position: 'absolute', top: '16px', left: '8px', width: '8px', height: '8px', borderRadius: '50%', background: 'var(--teal-400)' }} />}
+                  {hasUnread && <div style={{ position: 'absolute', top: '50%', transform: 'translateY(-50%)', left: '8px', width: '8px', height: '8px', borderRadius: '50%', background: 'var(--teal-400)', boxShadow: '0 0 10px rgba(45,212,191,0.8)' }} />}
                   <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: `url(${item.comm.image || FALLBACK_IMAGES.community})`, backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative' }}>
                     <div style={{ position: 'absolute', bottom: '-4px', right: '-4px', background: 'var(--slate-800)', borderRadius: '50%', padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid var(--slate-950)' }}>
                       {item.type === 'channel' ? <Hash size={12} color="var(--teal-400)" /> : <Users size={12} color="var(--amber-400)" />}
@@ -407,29 +404,30 @@ export default function Chat() {
                       {msg.timestamp ? msg.timestamp.split(' ')[0] + ' Today' : 'Today'}
                     </div>
                   )}
-                  <div className="stagger-item" style={{ alignSelf: isMe ? 'flex-end' : 'flex-start', maxWidth: '85%', marginTop: isConsecutive ? '4px' : '16px' }}>
+                  <div className="stagger-item" style={{ alignSelf: isMe ? 'flex-end' : 'flex-start', maxWidth: '85%', marginTop: isConsecutive ? '2px' : '16px' }}>
                     {!isMe && !isConsecutive && (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px', marginLeft: '4px' }}>
-                        <img onClick={() => navigate.back()} src={authorObj.avatar} alt={authorObj.name} style={{ width: '20px', height: '20px', borderRadius: '50%', objectFit: 'cover', cursor: 'pointer' }} />
-                        <div onClick={() => navigate.back()} style={{ fontSize: '0.75rem', color: isLeader ? 'var(--teal-400)' : 'var(--slate-400)', fontWeight: isLeader ? 600 : 400, cursor: 'pointer' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px', marginLeft: '4px' }}>
+                        <img onClick={() => navigate.back()} src={authorObj.avatar} alt={authorObj.name} style={{ width: '24px', height: '24px', borderRadius: '50%', objectFit: 'cover', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.1)' }} />
+                        <div onClick={() => navigate.back()} style={{ fontSize: '0.8rem', color: isLeader ? 'var(--teal-400)' : 'var(--slate-400)', fontWeight: isLeader ? 600 : 500, cursor: 'pointer' }}>
                           {authorObj.name} {isLeader && '👑'}
                         </div>
                       </div>
                     )}
                     <div style={{ 
-                      background: isMe ? 'var(--teal-600)' : 'rgba(255,255,255,0.05)', 
-                      border: isMe ? 'none' : '1px solid rgba(255,255,255,0.05)', 
+                      background: isMe ? 'var(--teal-600)' : 'rgba(255,255,255,0.08)', 
+                      border: isMe ? 'none' : '1px solid rgba(255,255,255,0.08)', 
                       padding: '12px 16px', 
                       borderRadius: isMe 
-                        ? `16px ${isConsecutive ? '4px' : '16px'} ${isLastConsecutive ? '16px' : '4px'} 16px` 
-                        : `${isConsecutive ? '4px' : '16px'} 16px 16px ${isLastConsecutive ? '16px' : '4px'}`, 
+                        ? `18px ${isConsecutive ? '4px' : '18px'} ${isLastConsecutive ? '2px' : '4px'} 18px` 
+                        : `${isConsecutive ? '4px' : '18px'} 18px 18px ${isLastConsecutive ? '2px' : '4px'}`, 
                       fontSize: '0.95rem', 
-                      color: isMe ? 'white' : 'var(--slate-200)',
-                      lineHeight: 1.4,
+                      color: isMe ? 'white' : 'var(--slate-100)',
+                      lineHeight: 1.45,
                       display: 'flex',
                       flexDirection: 'column',
                       gap: '8px',
-                      position: 'relative'
+                      position: 'relative',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
                     }}>
                       {msg.image && <img src={msg.image} alt="Attachment" style={{ width: '100%', borderRadius: '8px', maxHeight: '250px', objectFit: 'cover' }} />}
                       {msg.text && <div>{msg.text}</div>}
@@ -453,7 +451,7 @@ export default function Chat() {
         </div>
       </div>
 
-      <div style={{ padding: '16px 20px', background: 'rgba(15, 23, 42, 0.9)', borderTop: '1px solid rgba(255,255,255,0.05)', zIndex: 10 }}>
+      <div style={{ padding: '16px 20px', background: 'rgba(15, 23, 42, 0.75)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderTop: '1px solid rgba(255,255,255,0.08)', zIndex: 10, position: 'relative' }}>
         {imageFile && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px 12px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', marginBottom: '8px' }}>
             <ImageIcon size={16} color="var(--teal-400)" />
@@ -463,29 +461,29 @@ export default function Chat() {
             </button>
           </div>
         )}
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           <input type="file" accept="image/*" ref={fileInputRef} onChange={e => setImageFile(e.target.files[0])} style={{ display: 'none' }} />
           <button onClick={() => fileInputRef.current?.click()} className="interactive-press" style={{ background: 'none', border: 'none', color: 'var(--slate-400)', padding: '8px', cursor: 'pointer' }}>
             <ImageIcon size={20} />
           </button>
-          <div style={{ position: 'relative', flexShrink: 0, display: 'flex' }}>
-            <button onClick={() => setShowEmojiPicker(!showEmojiPicker)} className="interactive-press" style={{ background: 'none', border: 'none', color: showEmojiPicker ? 'var(--teal-400)' : 'var(--slate-400)', padding: '8px', cursor: 'pointer', display: 'flex' }}>
-              <Smile size={20} />
-            </button>
-            {showEmojiPicker && (
-              <div style={{ position: 'absolute', bottom: '50px', left: 0, zIndex: 100 }}>
-                <EmojiPicker onEmojiClick={onEmojiClick} theme="dark" width={300} height={400} />
-              </div>
-            )}
-          </div>
+          
+          <button onClick={() => setShowEmojiPicker(!showEmojiPicker)} className="interactive-press" style={{ background: 'none', border: 'none', color: showEmojiPicker ? 'var(--teal-400)' : 'var(--slate-400)', padding: '8px', cursor: 'pointer', display: 'flex' }}>
+            <Smile size={20} />
+          </button>
+          
+          {showEmojiPicker && (
+            <div style={{ position: 'absolute', bottom: '80px', left: '20px', zIndex: 100, maxWidth: 'calc(100vw - 40px)' }}>
+              <EmojiPicker onEmojiClick={onEmojiClick} theme="dark" width={Math.min(320, typeof window !== 'undefined' ? window.innerWidth - 40 : 320)} height={400} />
+            </div>
+          )}
           <input 
             type="text" 
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
             placeholder={isDirectMessage ? 'Message...' : `Message #${channelId}...`}
-            style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '999px', padding: '12px 20px', color: 'var(--white)', fontSize: '16px', outline: 'none', transition: 'border-color 0.2s' }}
-            onFocus={e => e.target.style.borderColor = 'rgba(20,184,166,0.4)'}
+            style={{ flex: 1, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '999px', padding: '12px 20px', color: 'var(--white)', fontSize: '0.95rem', outline: 'none', transition: 'border-color 0.2s', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)' }}
+            onFocus={e => e.target.style.borderColor = 'rgba(20,184,166,0.5)'}
             onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
           />
           <button disabled={isUploading} className="btn btn-primary interactive-press" onClick={handleSend} style={{ width: '44px', height: '44px', borderRadius: '50%', padding: 0, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: isUploading ? 0.5 : 1 }}>
