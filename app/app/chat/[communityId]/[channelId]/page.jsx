@@ -300,29 +300,34 @@ export default function Chat() {
   const community = isDirectMessage ? null : communities.find(c => c.id === communityId);
   const targetUser = isDirectMessage ? users.find(u => u.id === targetUserId) : null;
   const waConfig = communityId ? whatsappSettings[communityId] : null;
+
+  const currentChannelObj = channels.find(c => c.id === channelId);
+  const isLeader = !isDirectMessage && communityMemberships[communityId]?.find(m => m.userId === user?.id)?.role === 'Leader';
+  const isReadOnly = currentChannelObj?.type === 'announcement' && !isLeader;
   
   const handleSend = async () => {
-    if ((!inputText.trim() && imageFiles.length === 0) || isUploading) return;
-    setIsUploading(true);
+    if ((!inputText.trim() && imageFiles.length === 0) || isReadOnly) return;
     
+    setIsUploading(true);
     let imageUrls = [];
+    
     if (imageFiles.length > 0) {
       try {
-        for (let file of imageFiles) {
+        for (const file of imageFiles) {
           const url = await uploadImage(file);
-          imageUrls.push(url);
+          if (url) imageUrls.push(url);
         }
       } catch (err) {
-        toast.error('Upload failed', 'Could not upload some images');
+        toast.error('Upload failed', 'Could not upload image');
       }
     }
     
-    const finalImage = imageUrls.length > 0 ? JSON.stringify(imageUrls) : '';
+    const finalImageValue = imageUrls.length > 0 ? JSON.stringify(imageUrls) : '';
     
     if (isDirectMessage) {
-      await sendDirectMessage(targetUserId, inputText, finalImage);
+      await sendDirectMessage(targetUserId, inputText, finalImageValue);
     } else {
-      sendMessage(communityId, channelId, inputText, finalImage);
+      sendMessage(communityId, channelId, inputText, finalImageValue);
     }
     
     setInputText('');
@@ -334,8 +339,8 @@ export default function Chat() {
     <div className="view-chat" style={{ height: '100%', display: 'flex', flexDirection: 'column', position: 'relative' }}>
       
       <AppHeader 
-        title={isDirectMessage ? targetUser?.name : community?.name}
-        subtitle={isDirectMessage ? 'Direct Message' : `#${channelId}`}
+        title={isDirectMessage ? targetUser?.name : (currentChannelObj?.name || channelId)}
+        subtitle={isDirectMessage ? 'Direct Message' : community?.name}
         showBack={true}
         onBack={() => navigate.push('/chat')}
       />
@@ -488,54 +493,61 @@ export default function Chat() {
         </div>
       </div>
 
-      <div style={{ padding: '16px 20px', background: 'var(--slate-900)', borderTop: '1px solid var(--slate-800)', zIndex: 10 }}>
-        {imageFiles.length > 0 && (
-          <div style={{ display: 'flex', gap: '12px', padding: '8px 12px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', marginBottom: '8px', overflowX: 'auto' }}>
-            {Array.from(imageFiles).map((file, i) => (
-              <div key={i} style={{ position: 'relative', flexShrink: 0 }}>
-                <div style={{ width: '40px', height: '40px', borderRadius: '4px', background: 'var(--slate-800)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <ImageIcon size={16} color="var(--teal-400)" />
+      {!isReadOnly ? (
+        <div style={{ padding: '16px 20px', background: 'var(--slate-900)', borderTop: '1px solid var(--slate-800)', zIndex: 10 }}>
+          {imageFiles.length > 0 && (
+            <div style={{ display: 'flex', gap: '12px', padding: '8px 12px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', marginBottom: '8px', overflowX: 'auto' }}>
+              {Array.from(imageFiles).map((file, i) => (
+                <div key={i} style={{ position: 'relative', flexShrink: 0 }}>
+                  <div style={{ width: '40px', height: '40px', borderRadius: '4px', background: 'var(--slate-800)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <ImageIcon size={16} color="var(--teal-400)" />
+                  </div>
+                  <button onClick={() => setImageFiles(Array.from(imageFiles).filter((_, idx) => idx !== i))} className="interactive-press" style={{ position: 'absolute', top: '-6px', right: '-6px', background: 'var(--slate-700)', border: 'none', color: 'var(--white)', borderRadius: '50%', padding: '2px', cursor: 'pointer' }}>
+                    <X size={12} />
+                  </button>
                 </div>
-                <button onClick={() => setImageFiles(Array.from(imageFiles).filter((_, idx) => idx !== i))} className="interactive-press" style={{ position: 'absolute', top: '-6px', right: '-6px', background: 'var(--slate-700)', border: 'none', color: 'var(--white)', borderRadius: '50%', padding: '2px', cursor: 'pointer' }}>
-                  <X size={12} />
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-          <input type="file" accept="image/*" multiple ref={fileInputRef} onChange={e => {
-            const files = Array.from(e.target.files);
-            setImageFiles(prev => [...prev, ...files]);
-          }} style={{ display: 'none' }} />
-          <button onClick={() => fileInputRef.current?.click()} className="interactive-press" style={{ background: 'none', border: 'none', color: 'var(--slate-400)', padding: '8px', cursor: 'pointer' }}>
-            <ImageIcon size={20} />
-          </button>
-          <div style={{ position: 'relative', flexShrink: 0, display: 'flex' }}>
-            <button onClick={() => setShowEmojiPicker(!showEmojiPicker)} className="interactive-press" style={{ background: 'none', border: 'none', color: showEmojiPicker ? 'var(--teal-400)' : 'var(--slate-400)', padding: '8px', cursor: 'pointer', display: 'flex' }}>
-              <Smile size={20} />
+              ))}
+            </div>
+          )}
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+            <input type="file" accept="image/*" multiple ref={fileInputRef} onChange={e => {
+              const files = Array.from(e.target.files);
+              setImageFiles(prev => [...prev, ...files]);
+            }} style={{ display: 'none' }} />
+            <button onClick={() => fileInputRef.current?.click()} className="interactive-press" style={{ background: 'none', border: 'none', color: 'var(--slate-400)', padding: '8px', cursor: 'pointer' }}>
+              <ImageIcon size={20} />
             </button>
-            {showEmojiPicker && (
-              <div style={{ position: 'absolute', bottom: '50px', left: '0', zIndex: 100 }}>
-                <EmojiPicker onEmojiClick={onEmojiClick} theme="dark" />
-              </div>
-            )}
+            <div style={{ position: 'relative', flexShrink: 0, display: 'flex' }}>
+              <button onClick={() => setShowEmojiPicker(!showEmojiPicker)} className="interactive-press" style={{ background: 'none', border: 'none', color: showEmojiPicker ? 'var(--teal-400)' : 'var(--slate-400)', padding: '8px', cursor: 'pointer', display: 'flex' }}>
+                <Smile size={20} />
+              </button>
+              {showEmojiPicker && (
+                <div style={{ position: 'absolute', bottom: '50px', left: '0', zIndex: 100 }}>
+                  <EmojiPicker onEmojiClick={onEmojiClick} theme="dark" />
+                </div>
+              )}
+            </div>
+            <input 
+              type="text" 
+              value={inputText}
+              onChange={(e) => setInputText(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+              placeholder={isDirectMessage ? 'Message...' : `Message #${channelId}...`}
+              style={{ flex: 1, background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '999px', padding: '12px 20px', color: 'var(--slate-200)', outline: 'none', transition: 'border-color 0.2s' }}
+              onFocus={e => e.target.style.borderColor = 'rgba(20,184,166,0.4)'}
+              onBlur={e => e.target.style.borderColor = 'var(--slate-700)'}
+            />
+            <button disabled={isUploading || (!inputText.trim() && imageFiles.length === 0)} className="btn btn-primary interactive-press" onClick={handleSend} style={{ width: '44px', height: '44px', borderRadius: '50%', padding: 0, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: (isUploading || (!inputText.trim() && imageFiles.length === 0)) ? 0.5 : 1 }}>
+              <Send size={18} />
+            </button>
           </div>
-          <input 
-            type="text" 
-            value={inputText}
-            onChange={(e) => setInputText(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-            placeholder={isDirectMessage ? 'Message...' : `Message #${channelId}...`}
-            style={{ flex: 1, background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '999px', padding: '12px 20px', color: 'var(--slate-200)', outline: 'none', transition: 'border-color 0.2s' }}
-            onFocus={e => e.target.style.borderColor = 'rgba(20,184,166,0.4)'}
-            onBlur={e => e.target.style.borderColor = 'var(--slate-700)'}
-          />
-          <button disabled={isUploading} className="btn btn-primary interactive-press" onClick={handleSend} style={{ width: '44px', height: '44px', borderRadius: '50%', padding: 0, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: isUploading ? 0.5 : 1 }}>
-            <Send size={18} />
-          </button>
         </div>
-      </div>
+      ) : (
+        <div style={{ padding: '24px 20px', background: 'rgba(255,255,255,0.02)', borderTop: '1px solid rgba(255,255,255,0.05)', textAlign: 'center', color: 'var(--slate-400)', fontSize: '0.85rem' }}>
+          <Megaphone size={16} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '6px' }} />
+          Only community leaders can send messages to this announcement channel.
+        </div>
+      )}
     </div>
   );
 }
