@@ -10,88 +10,6 @@ import MemberDirectory from '../../../src/components/MemberDirectory';
 import InlineComments from '../../../src/components/InlineComments';
 import ExperiencesCatalog from '../../../src/components/ExperiencesCatalog';
 import CreateServiceModal from '../../../src/components/CreateServiceModal';
-import ReviewsList from '../../../src/components/ReviewsList';
-import ReviewForm from '../../../src/components/ReviewForm';
-import { downloadIcs } from '../../../src/lib/calendar';
-import confetti from 'canvas-confetti';
-
-// Category-specific gallery photos (generated unique images)
-const IMG = '/images/communities';
-const GALLERY_PHOTOS = {
-  running: [
-    `${IMG}/parkrun.webp`,
-    `${IMG}/gallery-running-1.webp`,
-    `${IMG}/gallery-running-2.webp`,
-  ],
-  walking: [
-    `${IMG}/ramblers.webp`,
-    `${IMG}/gallery-walking-1.webp`,
-    `${IMG}/az-challenge.webp`,
-  ],
-  wellness: [
-    `${IMG}/mindful-miles.webp`,
-    `${IMG}/yoga-collective.webp`,
-    `${IMG}/gallery-yoga-1.webp`,
-  ],
-  business: [
-    `${IMG}/entrepreneurs.webp`,
-    `${IMG}/gallery-running-2.webp`,
-    `${IMG}/interfaith.webp`,
-  ],
-  creative: [
-    `${IMG}/creative-collective.webp`,
-    `${IMG}/gallery-creative-1.webp`,
-    `${IMG}/good-neighbours.webp`,
-  ],
-  volunteering: [
-    `${IMG}/good-neighbours.webp`,
-    `${IMG}/interfaith.webp`,
-    `${IMG}/gallery-walking-1.webp`,
-  ],
-  default: [
-    `${IMG}/parkrun.webp`,
-    `${IMG}/good-neighbours.webp`,
-    `${IMG}/gallery-adventure-1.webp`,
-  ]
-};
-
-// Mock reviews per community type
-const MOCK_REVIEWS = [
-  { name: 'Sarah C.', avatar: 'https://i.pravatar.cc/40?img=5', text: "Absolutely brilliant group! I've made genuine friendships here and look forward to every meetup.", rating: 5 },
-  { name: 'James W.', avatar: 'https://i.pravatar.cc/40?img=11', text: "Well organised with a really welcoming atmosphere. Perfect for newcomers to the area.", rating: 5 },
-  { name: 'Emma J.', avatar: 'https://i.pravatar.cc/40?img=26', text: "Joined 3 months ago and it's completely changed my weekends. Highly recommend!", rating: 4 },
-];
-
-function getGalleryType(tags) {
-  const tagStr = (tags || []).join(' ').toLowerCase();
-  if (tagStr.includes('running') || tagStr.includes('fitness')) return 'running';
-  if (tagStr.includes('walking') || tagStr.includes('adventure')) return 'walking';
-  if (tagStr.includes('wellness') || tagStr.includes('yoga')) return 'wellness';
-  if (tagStr.includes('business') || tagStr.includes('professional')) return 'business';
-  if (tagStr.includes('creative') || tagStr.includes('art')) return 'creative';
-  if (tagStr.includes('volunteering')) return 'volunteering';
-  return 'default';
-}
-
-export default function CommunityProfile() {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const { user, communities, events, communityMemberships, users, eventRsvps, uploadImage, joinCommunity, leaveCommunity, experiences, services, updateServiceStatus } = useAppContext();
-  const { feedPosts, createFeedPost, likeFeedPost, deleteFeedPost } = useFeed();
-  const { toast } = useToast();
-  const [showRules, setShowRules] = useState(false);
-"use client";
-import { useState, useRef } from 'react';
-import { ChevronLeft, Share2, Users, Calendar, Settings, ChevronDown, ChevronUp, Image as ImageIcon, ExternalLink, Camera, Mail, Activity, Sparkles, MapPin, Clock, Star, MessageCircle, Heart, BadgeCheck, Globe, Trash2, Flag, Search, Briefcase, Check, X, MessageSquare, Lightbulb, Info } from 'lucide-react';
-import { useRouter as useNavigate, useParams } from 'next/navigation';
-import { useAppContext } from '../../../src/context/AppContext';
-import { useFeed } from '../../../src/context/FeedContext';
-import { useToast } from '../../../src/components/Toast';
-import PhotoGallery from '../../../src/components/PhotoGallery';
-import MemberDirectory from '../../../src/components/MemberDirectory';
-import InlineComments from '../../../src/components/InlineComments';
-import ExperiencesCatalog from '../../../src/components/ExperiencesCatalog';
-import CreateServiceModal from '../../../src/components/CreateServiceModal';
 import CreateIdeaModal from '../../../src/components/CreateIdeaModal';
 import ReviewsList from '../../../src/components/ReviewsList';
 import ReviewForm from '../../../src/components/ReviewForm';
@@ -666,9 +584,12 @@ export default function CommunityProfile() {
                 <div style={{ marginBottom: '32px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                     <h4 style={{ fontSize: '1rem', color: 'var(--white)', margin: 0 }}>Browse Experiences to Pitch</h4>
-                    <button onClick={() => setShowIdeaModal(true)} className="interactive-press" style={{ background: 'rgba(255,255,255,0.05)', border: '1px dashed rgba(255,255,255,0.2)', padding: '16px', borderRadius: '12px', color: 'var(--white)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-                        <Lightbulb size={24} color="var(--amber-400)" />
-                        <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>Pitch a custom idea</span>
+                    <button 
+                      onClick={() => setShowIdeaModal(true)}
+                      className="btn btn-outline interactive-press"
+                      style={{ padding: '6px 12px', fontSize: '0.8rem', borderColor: 'rgba(255,255,255,0.1)' }}
+                    >
+                      Or Pitch Custom Idea
                     </button>
                   </div>
                   <ExperiencesCatalog onPitchExperience={handlePitchExperience} />
@@ -1225,11 +1146,7 @@ export default function CommunityProfile() {
       </div>
       
       {isServiceModalOpen && (
-        <CreateServiceModal 
-        isOpen={isServiceModalOpen} 
-        onClose={() => setIsServiceModalOpen(false)} 
-        communityId={communityId} 
-      />
+        <CreateServiceModal communityId={communityId} onClose={() => setIsServiceModalOpen(false)} />
       )}
 
       <CreateIdeaModal 

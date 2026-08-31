@@ -1,22 +1,15 @@
 "use client";
 import { useState } from 'react';
-import { Share2, Image as ImageIcon, Send, Activity, Users, Settings, Plus, CheckCircle2, AlertCircle, PieChart, Trash2 } from 'lucide-react';
+import { Share2, Image as ImageIcon, Send, Activity, Users, Settings, Plus, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { useToast } from './Toast';
 import { FALLBACK_IMAGES } from '../lib/constants';
 
 export default function SocialHub({ communityId }) {
-  const { connectedSocialAccounts, setConnectedSocialAccounts, createPost, polls, createPollAction } = useAppContext();
+  const { connectedSocialAccounts, setConnectedSocialAccounts, createPost } = useAppContext();
   const { toast } = useToast();
   
-  const [activeTab, setActiveTab] = useState('composer'); // composer, calendar, accounts, polls
-  
-  // Polls State
-  const [pollQuestion, setPollQuestion] = useState('');
-  const [pollOptions, setPollOptions] = useState(['', '']);
-  const [isCreatingPoll, setIsCreatingPoll] = useState(false);
-  
-  const communityPolls = polls.filter(p => p.communityId === communityId);
+  const [activeTab, setActiveTab] = useState('composer'); // composer, calendar, accounts
   
   // Composer State
   const [postText, setPostText] = useState('');
@@ -69,29 +62,11 @@ export default function SocialHub({ communityId }) {
     }
   };
 
-  const handleCreatePoll = async () => {
-    if (!pollQuestion.trim() || pollOptions.some(o => !o.trim())) {
-      toast.error('Incomplete Poll', 'Please fill in the question and all options.');
-      return;
-    }
-    setIsCreatingPoll(true);
-    try {
-      await createPollAction(communityId, pollQuestion, pollOptions.filter(o => o.trim()));
-      toast.success('Poll created!', 'Your community can now vote.');
-      setPollQuestion('');
-      setPollOptions(['', '']);
-    } catch (err) {
-      toast.error('Failed to create poll');
-    } finally {
-      setIsCreatingPoll(false);
-    }
-  };
-
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       {/* Social Hub Header / Tabs */}
       <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', background: 'rgba(255,255,255,0.02)', padding: '6px', borderRadius: '16px' }}>
-        {['composer', 'calendar', 'accounts', 'polls'].map(tab => (
+        {['composer', 'calendar', 'accounts'].map(tab => (
           <button 
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -279,92 +254,7 @@ export default function SocialHub({ communityId }) {
             );
           })}
         </div>
-      {activeTab === 'polls' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-          {/* Create Poll */}
-          <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '24px', padding: '24px' }}>
-            <h3 style={{ margin: '0 0 16px 0', color: 'var(--white)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <PieChart size={20} color="var(--teal-400)" /> Create a Poll
-            </h3>
-            
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--slate-400)', marginBottom: '8px', fontWeight: 600 }}>QUESTION</label>
-              <input 
-                value={pollQuestion}
-                onChange={e => setPollQuestion(e.target.value)}
-                placeholder="Ask your community something..."
-                style={{ width: '100%', padding: '12px', background: 'var(--slate-900)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'var(--white)' }}
-              />
-            </div>
-            
-            <div style={{ marginBottom: '20px' }}>
-              <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--slate-400)', marginBottom: '8px', fontWeight: 600 }}>OPTIONS</label>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {pollOptions.map((opt, idx) => (
-                  <div key={idx} style={{ display: 'flex', gap: '8px' }}>
-                    <input 
-                      value={opt}
-                      onChange={e => {
-                        const newOpts = [...pollOptions];
-                        newOpts[idx] = e.target.value;
-                        setPollOptions(newOpts);
-                      }}
-                      placeholder={`Option ${idx + 1}`}
-                      style={{ flex: 1, padding: '10px', background: 'var(--slate-900)', border: '1px solid var(--slate-700)', borderRadius: '10px', color: 'var(--white)' }}
-                    />
-                    {pollOptions.length > 2 && (
-                      <button 
-                        onClick={() => setPollOptions(pollOptions.filter((_, i) => i !== idx))}
-                        style={{ width: '40px', background: 'rgba(239,68,68,0.1)', border: 'none', color: '#ef4444', borderRadius: '10px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-              <button 
-                onClick={() => setPollOptions([...pollOptions, ''])}
-                className="interactive-press"
-                style={{ marginTop: '12px', display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--teal-400)', background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}
-              >
-                <Plus size={14} /> Add Option
-              </button>
-            </div>
-            
-            <button 
-              onClick={handleCreatePoll}
-              disabled={isCreatingPoll || !pollQuestion.trim() || pollOptions.some(o => !o.trim())}
-              className="btn btn-primary interactive-press"
-              style={{ width: '100%', padding: '14px', borderRadius: '12px', opacity: (isCreatingPoll || !pollQuestion.trim() || pollOptions.some(o => !o.trim())) ? 0.5 : 1 }}
-            >
-              {isCreatingPoll ? 'Publishing...' : 'Publish Poll'}
-            </button>
-          </div>
-
-          {/* Active Polls */}
-          {communityPolls.length > 0 && (
-            <div>
-              <h4 style={{ margin: '0 0 16px 0', color: 'var(--white)' }}>Active Polls</h4>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {communityPolls.map(poll => (
-                  <div key={poll.id} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '16px', padding: '16px' }}>
-                    <div style={{ fontWeight: 600, color: 'var(--white)', marginBottom: '12px', fontSize: '1.05rem' }}>{poll.question}</div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      {poll.options.map((opt, idx) => (
-                        <div key={idx} style={{ padding: '8px 12px', background: 'var(--slate-800)', borderRadius: '8px', fontSize: '0.9rem', color: 'var(--slate-300)' }}>
-                          {opt}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
       )}
-
     </div>
   );
 }
