@@ -303,6 +303,30 @@ export default function Chat() {
             </div>
           </div>
         )}
+
+        {/* Floating Action Button */}
+        <div style={{ position: 'absolute', bottom: '24px', right: '24px', zIndex: 50, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '12px' }}>
+          {(user.ledCommunities?.length > 0 && activeTab === 'Communities') && (
+            <button 
+              onClick={() => setShowCreateModal(true)}
+              className="interactive-press"
+              style={{ background: 'var(--teal-500)', color: 'white', width: '56px', height: '56px', borderRadius: '50%', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 16px rgba(20,184,166,0.4)', cursor: 'pointer' }}
+              title="Create Channel"
+            >
+              <Hash size={24} />
+            </button>
+          )}
+          {activeTab === 'Direct Messages' && (
+            <button 
+              onClick={() => setShowNewChatModal(true)}
+              className="interactive-press"
+              style={{ background: 'var(--teal-500)', color: 'white', width: '56px', height: '56px', borderRadius: '50%', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 16px rgba(20,184,166,0.4)', cursor: 'pointer' }}
+              title="New Message"
+            >
+              <Plus size={24} />
+            </button>
+          )}
+        </div>
       </div>
     );
   }
