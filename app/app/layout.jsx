@@ -17,7 +17,8 @@ function MainLayout({ children }) {
   const { user, isLoading: appLoading } = useAppContext();
   const { authUser, isLoading: authLoading } = useAuth();
   const isDashboard = currentPath?.startsWith('/dashboard') || currentPath?.startsWith('/council-dashboard') || currentPath?.startsWith('/admin');
-  const hideTabBar = currentPath === '/login' || currentPath === '/onboarding';
+  const isChatRoom = currentPath?.match(/^\/chat\/.+/);
+  const hideTabBar = currentPath === '/login' || currentPath === '/onboarding' || isChatRoom;
   const isDesktopFriendly = isDashboard || currentPath?.startsWith('/community/');
 
   useEffect(() => {
@@ -47,11 +48,11 @@ function MainLayout({ children }) {
       <ChatProvider user={user}>
       <FeedProvider user={user}>
 
-      <div className="app-content">
+      <div className="app-content" style={hideTabBar ? { paddingBottom: 0 } : {}}>
 
         {children}
             </div>
-      <BottomNav />
+      {!hideTabBar && <BottomNav />}
           </FeedProvider>
     </ChatProvider>
     </div>

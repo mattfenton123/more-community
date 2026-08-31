@@ -1020,6 +1020,46 @@ textarea.form-input {
     background-color: var(--slate-950);
   }
   
+  .app-container.desktop-mode .app-content {
+    margin-left: 80px;
+    padding-bottom: 0 !important;
+  }
+
+  /* Convert BottomNav to Global Left Sidebar */
+  .bottom-nav {
+    top: 0 !important;
+    left: 0 !important;
+    bottom: auto !important;
+    width: 80px !important;
+    height: 100vh !important;
+    max-width: none !important;
+    flex-direction: column !important;
+    justify-content: flex-start !important;
+    padding: 32px 0 !important;
+    border-radius: 0 !important;
+    background: var(--slate-950) !important;
+    border: none !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
+    transform: none !important;
+    box-shadow: none !important;
+    gap: 16px !important;
+  }
+  .bottom-nav-item {
+    flex-direction: column !important;
+    height: 64px !important;
+    justify-content: center !important;
+    flex: none !important;
+    border-radius: 12px !important;
+    width: 64px !important;
+    margin: 0 auto !important;
+  }
+  .bottom-nav-item:hover {
+    background: rgba(255, 255, 255, 0.05) !important;
+  }
+  .bottom-nav-item.active {
+    background: rgba(20, 184, 166, 0.1) !important;
+  }
+  
   /* Dashboard layout wrapper */
   .dashboard-layout {
     display: flex;
