@@ -188,8 +188,8 @@ export default function HomeFeed() {
         ) : feedItems.length > 0 ? feedItems.map(item => {
           if (item.type === 'post') {
             const post = item.data;
-            const author = users.find(u => u.id === post.authorId);
-            const community = communities.find(c => c.id === post.communityId);
+            const author = users?.find(u => u.id === post.authorId);
+            const community = communities?.find(c => c.id === post.communityId);
             return (
               <div key={item.id} style={{ background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 8px 24px rgba(0,0,0,0.2)' }}>
                 <div style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -278,8 +278,8 @@ export default function HomeFeed() {
           if (item.type === 'idea') {
             const idea = item.data;
             const ideaData = item.ideaData || {};
-            const author = users.find(u => u.id === idea.authorId);
-            const community = communities.find(c => c.id === idea.communityId);
+            const author = users?.find(u => u.id === idea.authorId);
+            const community = communities?.find(c => c.id === idea.communityId);
             return (
               <div key={item.id} style={{ background: 'linear-gradient(to bottom right, rgba(20,184,166,0.05), rgba(255,255,255,0.02))', backdropFilter: 'blur(10px)', border: '1px solid rgba(20,184,166,0.3)', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 8px 24px rgba(0,0,0,0.2)', display: 'flex' }}>
                 <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(0,0,0,0.2)', borderRight: '1px solid rgba(255,255,255,0.05)', minWidth: '70px' }}>
@@ -323,7 +323,7 @@ export default function HomeFeed() {
           if (item.type === 'event') {
             const event = item.data;
             const rsvps = eventRsvps[event.id] || [];
-            const community = communities.find(c => c.id === event.communityId);
+            const community = communities?.find(c => c.id === event.communityId);
             return (
               <div key={item.id} style={{ background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(10px)', border: '1px solid rgba(20,184,166,0.4)', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 8px 24px rgba(0,0,0,0.2)' }}>
                 <div style={{ padding: '12px 16px', background: 'linear-gradient(to right, rgba(20,184,166,0.15), transparent)', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', color: 'var(--teal-400)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
@@ -354,7 +354,7 @@ export default function HomeFeed() {
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', color: 'var(--slate-300)', fontWeight: 600 }}>
                         <div style={{ display: 'flex' }}>
                           {rsvps.slice(0, 3).map((r, i) => {
-                            const ru = users.find(u => u.id === r.userId);
+                            const ru = users?.find(u => u.id === r.userId);
                             return <img key={i} src={ru?.avatar || 'https://i.pravatar.cc/24'} alt="" style={{ width: '28px', height: '28px', borderRadius: '50%', border: '2px solid var(--slate-900)', marginLeft: i > 0 ? '-8px' : 0, objectFit: 'cover' }} />;
                           })}
                         </div>
