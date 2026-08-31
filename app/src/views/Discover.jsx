@@ -15,9 +15,8 @@ import SwipeDiscovery from '../components/SwipeDiscovery';
 export default function Discover() {
   const [activePill, setActivePill] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
-  const [viewMode, setViewMode] = useState('list'); // 'list' or 'map'
+  const [viewMode, setViewMode] = useState('list'); // 'list' | 'map' | 'swipe'
   const [sortBy, setSortBy] = useState('trending');
-  const [showSwipe, setShowSwipe] = useState(false);
   const pills = ['All', 'For You', '🔥 Trending', '🚶 Walking', '🏃 Running', '🧘 Wellness', '⛰️ Adventure', '🤝 Volunteering', '🎨 Creative', '💼 Business'];
   const { communities, user, users, communityMemberships, joinCommunity, isLoading, events } = useAppContext();
     const { messages } = useChat();
@@ -152,6 +151,20 @@ export default function Discover() {
               >
                 <MapIcon size={18} />
               </button>
+              <button
+                onClick={() => setViewMode('swipe')}
+                className="interactive-press"
+                style={{
+                  background: viewMode === 'swipe' ? 'rgba(20,184,166,0.1)' : 'transparent',
+                  border: viewMode === 'swipe' ? '1px solid rgba(20,184,166,0.3)' : '1px solid transparent',
+                  borderRadius: '8px', width: '36px', height: '36px',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  cursor: 'pointer', color: viewMode === 'swipe' ? 'var(--teal-400)' : 'var(--slate-400)',
+                  transition: 'all 0.2s',
+                }}
+              >
+                <Sparkles size={18} />
+              </button>
             </div>
             <button onClick={() => navigate.back()} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 }}>
               <img src={user?.avatar || 'https://i.pravatar.cc/150'} alt="Profile" style={{ width: '36px', height: '36px', borderRadius: '50%', border: '2px solid var(--slate-700)', objectFit: 'cover' }} />
@@ -164,9 +177,6 @@ export default function Discover() {
         <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--slate-400)' }}>Local communities in</p>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '4px 0 16px 0' }}>
           <h2 style={{ margin: 0, fontFamily: 'var(--font-heading)', fontSize: '1.4rem' }}>Tunbridge Wells, UK</h2>
-          <button onClick={() => setShowSwipe(true)} className="interactive-press" style={{ background: 'var(--teal-500)', border: 'none', color: 'white', padding: '6px 12px', borderRadius: '99px', fontSize: '0.8rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', boxShadow: '0 4px 12px rgba(20,184,166,0.3)' }}>
-            <Sparkles size={14} /> Find Plans
-          </button>
         </div>
         
         <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '999px', padding: '12px 20px', display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--slate-400)', border: '1px solid rgba(255,255,255,0.1)', transition: 'border-color 0.2s' }}>
@@ -204,7 +214,17 @@ export default function Discover() {
         ))}
       </div>
 
-      {viewMode === 'map' ? (
+      {viewMode === 'swipe' ? (
+        <div style={{ padding: '0 20px', flex: 1, position: 'relative' }}>
+          <SwipeDiscovery 
+            events={events.filter(e => !user.joinedCommunities.includes(e.communityId))} 
+            communities={communities} 
+            onSave={(event) => {
+              // Handled inside SwipeDiscovery
+            }} 
+          />
+        </div>
+      ) : viewMode === 'map' ? (
         /* Map View */
         <div style={{ width: '100%', height: 'calc(100vh - 170px)', position: 'relative' }}>
           <MapView communities={filteredCommunities} />
@@ -384,17 +404,6 @@ export default function Discover() {
             </>
           )}
         </>
-      )}
-
-      {showSwipe && (
-        <SwipeDiscovery 
-          events={events.filter(e => !user.joinedCommunities.includes(e.communityId))} 
-          communities={communities} 
-          onClose={() => setShowSwipe(false)} 
-          onSave={(event) => {
-            // Already handled in SwipeDiscovery via toast, but could sync to backend here
-          }} 
-        />
       )}
     </div>
   );

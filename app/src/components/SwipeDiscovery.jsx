@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { X, Heart, X as XIcon, MapPin, Calendar, Sparkles } from 'lucide-react';
 import { useToast } from './Toast';
 
-export default function SwipeDiscovery({ events, communities, onClose, onSave }) {
+export default function SwipeDiscovery({ events, communities, onSave }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [offset, setOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -66,19 +66,13 @@ export default function SwipeDiscovery({ events, communities, onClose, onSave })
 
   if (!currentEvent) {
     return (
-      <div className="modal-overlay" style={{ display: 'flex', flexDirection: 'column', zIndex: 3000, background: 'var(--slate-950)' }}>
-        <div style={{ padding: '20px', display: 'flex', justifyContent: 'flex-end' }}>
-          <button onClick={onClose} className="interactive-press" style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: 'white', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <X size={20} />
-          </button>
-        </div>
+      <div style={{ height: 'calc(100vh - 200px)', display: 'flex', flexDirection: 'column', background: 'var(--slate-950)', borderRadius: '24px', overflow: 'hidden' }}>
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px', textAlign: 'center' }}>
           <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(20,184,166,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '24px' }}>
             <Sparkles size={40} color="var(--teal-400)" />
           </div>
           <h2 style={{ color: 'white', fontFamily: 'var(--font-heading)', fontSize: '2rem', marginBottom: '16px' }}>You're all caught up!</h2>
           <p style={{ color: 'var(--slate-400)', fontSize: '1rem', lineHeight: 1.6, marginBottom: '32px' }}>We've run out of new events to show you right now. Check back later for more.</p>
-          <button onClick={onClose} className="btn btn-primary" style={{ padding: '16px 32px', borderRadius: '99px', fontSize: '1.1rem' }}>Back to Discover</button>
         </div>
       </div>
     );
@@ -88,15 +82,8 @@ export default function SwipeDiscovery({ events, communities, onClose, onSave })
   const rotation = (offset / window.innerWidth) * 30; // Max 30 deg rotation
 
   return (
-    <div className="modal-overlay slide-up" style={{ display: 'flex', flexDirection: 'column', zIndex: 3000, background: 'var(--slate-950)', overflow: 'hidden' }}>
-      <div style={{ padding: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ color: 'white', fontWeight: 700, fontSize: '1.2rem', fontFamily: 'var(--font-heading)' }}>Find Plans</div>
-        <button onClick={onClose} className="interactive-press" style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: 'white', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-          <X size={20} />
-        </button>
-      </div>
-
-      <div style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', overflow: 'hidden' }}>
+    <div style={{ height: 'calc(100vh - 200px)', display: 'flex', flexDirection: 'column', background: 'var(--slate-950)', borderRadius: '24px', overflow: 'hidden', position: 'relative' }}>
+      <div style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', overflow: 'hidden' }}>
         
         {/* Next Card Background (Preview) */}
         {events[currentIndex + 1] && (
@@ -104,7 +91,8 @@ export default function SwipeDiscovery({ events, communities, onClose, onSave })
             position: 'absolute', 
             width: 'calc(100% - 40px)', 
             height: 'calc(100% - 40px)', 
-            background: 'var(--slate-900)', 
+            background: 'rgba(15, 23, 42, 0.4)',
+            backdropFilter: 'blur(10px)',
             borderRadius: '24px', 
             transform: 'scale(0.95) translateY(20px)', 
             opacity: 0.5,
@@ -125,9 +113,10 @@ export default function SwipeDiscovery({ events, communities, onClose, onSave })
             position: 'absolute',
             width: 'calc(100% - 40px)',
             height: 'calc(100% - 40px)',
-            background: 'var(--slate-900)',
+            background: 'rgba(15, 23, 42, 0.75)',
+            backdropFilter: 'blur(20px)',
             borderRadius: '24px',
-            boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1)',
             zIndex: 10,
             transform: `translateX(${offset}px) rotate(${rotation}deg)`,
             transition: isDragging ? 'none' : 'transform 0.3s ease-out',
@@ -154,7 +143,7 @@ export default function SwipeDiscovery({ events, communities, onClose, onSave })
             position: 'relative',
             pointerEvents: 'none'
           }}>
-            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 50%, var(--slate-900) 100%)' }}></div>
+            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 50%, rgba(15, 23, 42, 0.95) 100%)' }}></div>
             <div style={{ position: 'absolute', top: '16px', right: '16px', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', color: 'white', padding: '6px 12px', borderRadius: '99px', fontSize: '0.8rem', fontWeight: 700 }}>
               {currentEvent.ticketPrice > 0 ? `£${currentEvent.ticketPrice}` : 'FREE'}
             </div>
