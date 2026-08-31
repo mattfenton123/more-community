@@ -1254,6 +1254,16 @@ textarea.form-input {
   }
 }
 
-[data-theme="light"] .theme-invert {
-  filter: invert(1);
+[data-theme="light"] img.theme-invert {
+  object-position: -99999px 99999px;
+  background-color: var(--teal-500);
+  -webkit-mask-image: url('/logo.png');
+  -webkit-mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-image: url('/logo.png');
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  filter: none;
 }
