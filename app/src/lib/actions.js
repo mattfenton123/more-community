@@ -421,11 +421,12 @@ export async function sendDirectMessageAction(senderId, receiverId, text, image,
   return data;
 }
 
-export async function createFeedPostAction(communityId, authorId, content, mediaUrl, token) {
+export async function createFeedPostAction(communityId, authorId, content, mediaUrl, isAnnouncement = false, isPinned = false, token) {
   try {
     await verifyUser(token, authorId);
     const { data, error } = await supabaseAdmin.from('feed_posts').insert([{
-      community_id: communityId, author_id: authorId, text: content, media: mediaUrl, likes: 0
+      community_id: communityId, author_id: authorId, text: content, media: mediaUrl, likes: 0,
+      is_announcement: isAnnouncement, is_pinned: isPinned
     }]).select().single();
     if (error) return { error: error.message };
     return { data };

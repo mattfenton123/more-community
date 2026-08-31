@@ -79,14 +79,14 @@ export function FeedProvider({ children }) {
     };
   }, [authUser, user]);
 
-  const createFeedPost = async (communityId, text, media = null) => {
+  const createFeedPost = async (communityId, text, media = null, isAnnouncement = false, isPinned = false) => {
     if (!user.id) return;
     try {
       const sessionResponse = await supabase.auth.getSession();
       const token = sessionResponse.data.session?.access_token;
       let mediaUrl = media;
       
-      const result = await createFeedPostAction(communityId, user.id, text, mediaUrl, token);
+      const result = await createFeedPostAction(communityId, user.id, text, mediaUrl, isAnnouncement, isPinned, token);
       if (result && result.error) throw new Error(result.error);
       const data = result.data;
       

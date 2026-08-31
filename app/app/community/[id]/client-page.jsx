@@ -80,7 +80,8 @@ export default function CommunityProfile() {
   const [expandedComments, setExpandedComments] = useState({});
   const [newPostText, setNewPostText] = useState('');
   const [newPostImage, setNewPostImage] = useState(null);
-
+  const [isAnnouncement, setIsAnnouncement] = useState(false);
+  const [isPinned, setIsPinned] = useState(false);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
   const [showIdeaModal, setShowIdeaModal] = useState(false);
@@ -140,10 +141,12 @@ export default function CommunityProfile() {
       }
     }
     
-    await createFeedPost(communityId, textToPost, mediaUrl);
+    await createFeedPost(communityId, textToPost, mediaUrl, isAnnouncement, isPinned);
     if (overrideText === null) {
       setNewPostText('');
       setNewPostImage(null);
+      setIsAnnouncement(false);
+      setIsPinned(false);
     }
     toast.success('Posted!', 'Your update is now live.');
   };
@@ -447,11 +450,27 @@ export default function CommunityProfile() {
                       </div>
                     )}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                      <label style={{ cursor: 'pointer', color: 'var(--slate-400)', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem' }}>
-                        <input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => setNewPostImage(e.target.files[0])} />
-                        <ImageIcon size={16} /> Add Media
-                      </label>
-                      <button onClick={handleCreatePost} disabled={!newPostText.trim() && !newPostImage} className="btn btn-primary" style={{ padding: '6px 16px', fontSize: '0.85rem', borderRadius: '20px' }}>
+                      <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                        <label style={{ cursor: 'pointer', color: 'var(--slate-400)', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem' }}>
+                          <input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => setNewPostImage(e.target.files[0])} />
+                          <ImageIcon size={16} /> Add Media
+                        </label>
+                        {isLeader && (
+                          <>
+                            <label style={{ cursor: 'pointer', color: isAnnouncement ? 'var(--amber-400)' : 'var(--slate-400)', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', transition: 'color 0.2s' }}>
+                              <input type="checkbox" checked={isAnnouncement} onChange={e => setIsAnnouncement(e.target.checked)} style={{ display: 'none' }} />
+                              <Megaphone size={16} /> Announcement
+                            </label>
+                            {isAnnouncement && (
+                              <label style={{ cursor: 'pointer', color: isPinned ? 'var(--teal-400)' : 'var(--slate-400)', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', transition: 'color 0.2s' }}>
+                                <input type="checkbox" checked={isPinned} onChange={e => setIsPinned(e.target.checked)} style={{ display: 'none' }} />
+                                <MapPin size={16} style={{ transform: 'rotate(45deg)' }} /> Pin
+                              </label>
+                            )}
+                          </>
+                        )}
+                      </div>
+                      <button onClick={() => handleCreatePost()} disabled={!newPostText.trim() && !newPostImage} className="btn btn-primary" style={{ padding: '6px 16px', fontSize: '0.85rem', borderRadius: '20px' }}>
                         Post
                       </button>
                     </div>
@@ -460,7 +479,11 @@ export default function CommunityProfile() {
               </div>
             )}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              {communityFeed.length > 0 ? communityFeed.map(post => {
+              {communityFeed.length > 0 ? communityFeed.sort((a,b) => {
+                if (a.is_pinned && !b.is_pinned) return -1;
+                if (!a.is_pinned && b.is_pinned) return 1;
+                return 0;
+              }).map(post => {
                 const author = users.find(u => u.id === post.authorId) || leaderUser;
                 const isCampaign = post.text?.includes('🚀 **CAMPAIGN:**');
                 const isSuggestion = post.text?.includes('💡 **SUGGESTION:**');
@@ -473,10 +496,18 @@ export default function CommunityProfile() {
                   wrapperStyle = { background: 'var(--slate-900)', border: '1px solid rgba(245,158,11,0.2)', borderLeft: '4px solid var(--amber-500)', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 4px 20px rgba(245,158,11,0.05)' };
                 } else if (isReview) {
                   wrapperStyle = { background: 'linear-gradient(135deg, rgba(20,184,166,0.1), rgba(15,23,42,1))', border: '1px solid rgba(20,184,166,0.2)', borderRadius: '16px', overflow: 'hidden' };
+                } else if (post.is_announcement || post.isAnnouncement) {
+                  wrapperStyle = { background: 'var(--slate-900)', border: '1px solid rgba(245,158,11,0.4)', borderRadius: '16px', overflow: 'hidden', position: 'relative' };
                 }
 
                 return (
                   <div key={post.id} style={wrapperStyle}>
+                    {(post.is_announcement || post.isAnnouncement) && (
+                      <div style={{ background: 'rgba(245,158,11,0.1)', color: 'var(--amber-400)', padding: '6px 16px', fontSize: '0.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px', borderBottom: '1px solid rgba(245,158,11,0.1)' }}>
+                        <Megaphone size={14} /> ANNOUNCEMENT
+                        {post.is_pinned && <MapPin size={12} style={{ marginLeft: 'auto', transform: 'rotate(45deg)' }} />}
+                      </div>
+                    )}
                     <div style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
                       <img src={author?.avatar || 'https://i.pravatar.cc/40'} alt={author?.name} style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
                       <div style={{ flex: 1 }}>

@@ -37,6 +37,10 @@ export default function ChatIndex() {
         if (ch.member_ids && ch.member_ids.length > 0 && !ch.member_ids.includes(user?.id) && !user?.ledCommunities?.includes(c.id)) {
           return;
         }
+        // Filter out legacy announcement channels
+        if (ch.type === 'announcement') {
+          return;
+        }
         inboxItems.push({ 
           type: 'channel', 
           channelType: ch.type || 'text', 
@@ -224,7 +228,6 @@ export default function ChatIndex() {
                 {createMode === 'menu' && 'New Chat'}
                 {createMode === 'dm' && 'New Direct Message'}
                 {createMode === 'group' && 'New Group'}
-                {createMode === 'announcement' && 'New Announcement'}
               </h2>
               <button onClick={() => setShowCreateModal(false)} className="interactive-press" style={{ background: 'rgba(255,255,255,0.05)', border: 'none', color: 'var(--white)', cursor: 'pointer', width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <X size={18} />
@@ -252,17 +255,6 @@ export default function ChatIndex() {
                     <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)' }}>Create a private group for an event or topic</div>
                   </div>
                 </button>
-                {user?.ledCommunities?.length > 0 && (
-                  <button onClick={() => setCreateMode('announcement')} className="interactive-press" style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.2)', borderRadius: '12px', color: 'white', cursor: 'pointer', textAlign: 'left' }}>
-                    <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(245,158,11,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Megaphone size={20} color="#f59e0b" />
-                    </div>
-                    <div>
-                      <div style={{ fontWeight: 600 }}>New Announcement</div>
-                      <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)' }}>Read-only broadcast channel for members</div>
-                    </div>
-                  </button>
-                )}
               </div>
             )}
 
@@ -283,10 +275,10 @@ export default function ChatIndex() {
               </>
             )}
 
-            {/* Group / Announcement Mode */}
-            {(createMode === 'group' || createMode === 'announcement') && (
+            {/* Group Mode */}
+            {createMode === 'group' && (
               <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-                <input type="text" placeholder={createMode === 'group' ? "Group Name" : "Announcement Name"} value={newChannelName} onChange={e => setNewChannelName(e.target.value)} style={{ width: '100%', padding: '14px 16px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'var(--white)', fontSize: '1rem', marginBottom: '16px' }} />
+                <input type="text" placeholder="Group Name" value={newChannelName} onChange={e => setNewChannelName(e.target.value)} style={{ width: '100%', padding: '14px 16px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'var(--white)', fontSize: '1rem', marginBottom: '16px' }} />
                 
                 {myCommunities.length > 1 && (
                   <select value={createChannelCommunityId || myCommunities[0]?.id} onChange={e => setCreateChannelCommunityId(e.target.value)} style={{ width: '100%', padding: '12px', background: 'var(--slate-800)', color: 'var(--white)', border: '1px solid var(--slate-700)', borderRadius: '8px', marginBottom: '16px' }}>
@@ -313,12 +305,12 @@ export default function ChatIndex() {
                 )}
 
                 <button 
-                  onClick={() => handleCreateChannel(createMode, selectedMembers.length > 0 ? [user?.id, ...selectedMembers] : null)} 
+                  onClick={() => handleCreateChannel('group', selectedMembers.length > 0 ? [user?.id, ...selectedMembers] : null)} 
                   disabled={!newChannelName.trim() || isCreating}
                   className="btn btn-primary" 
                   style={{ padding: '16px', borderRadius: '12px', opacity: (!newChannelName.trim() || isCreating) ? 0.5 : 1 }}
                 >
-                  {isCreating ? 'Creating...' : `Create ${createMode === 'group' ? 'Group' : 'Announcement'}`}
+                  {isCreating ? 'Creating...' : 'Create Group'}
                 </button>
               </div>
             )}

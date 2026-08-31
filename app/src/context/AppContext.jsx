@@ -768,7 +768,7 @@ export function AppProvider({ children }) {
     }
   };
 
-  const createFeedPost = async (communityId, text, media = null) => {
+  const createFeedPost = async (communityId, text, media = null, isAnnouncement = false, isPinned = false) => {
     try {
       const { error } = await supabase.from('feed_posts').insert([{
         community_id: communityId,
@@ -776,7 +776,9 @@ export function AppProvider({ children }) {
         text: text,
         media: media,
         likes: 0,
-        comments: 0
+        comments: 0,
+        is_announcement: isAnnouncement,
+        is_pinned: isPinned
       }]);
       if (error) throw error;
     } catch (err) {
