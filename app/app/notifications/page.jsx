@@ -1,4 +1,5 @@
 "use client";
+import { useState } from 'react';
 import { Bell, Check, CheckCheck, Calendar, Users, Megaphone, MessageCircle, Ticket, Star, UserPlus, Trash2 } from 'lucide-react';
 import { useAppContext } from '../../src/context/AppContext';
 import { useRouter as useNavigate } from 'next/navigation';
@@ -45,18 +46,73 @@ function timeAgo(dateStr) {
 export default function NotificationsFeed({ onClose }) {
   const { notifications, markNotificationRead } = useAppContext();
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('inbox');
+  const [selectedNotification, setSelectedNotification] = useState(null);
+
+  const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
+
+  const inboxList = notifications.filter(n => !n.is_read || (Date.now() - new Date(n.created_at).getTime()) < THIRTY_DAYS);
+  const historyList = notifications.filter(n => n.is_read && (Date.now() - new Date(n.created_at).getTime()) >= THIRTY_DAYS);
 
   const unreadCount = notifications.filter(n => !n.is_read).length;
-  const sorted = [...notifications].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  
+  const currentList = activeTab === 'inbox' ? inboxList : historyList;
+  const sorted = [...currentList].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
   const handleNotificationClick = (n) => {
     markNotificationRead(n.id);
-    if (n.link) { navigate.push(n.link); if (onClose) onClose(); }
+    setSelectedNotification(n);
   };
 
   const handleMarkAllRead = () => {
     notifications.filter(n => !n.is_read).forEach(n => markNotificationRead(n.id));
   };
+
+  if (selectedNotification) {
+    const type = getNotificationType(selectedNotification);
+    const config = TYPE_CONFIG[type] || TYPE_CONFIG.default;
+    const Icon = config.icon;
+
+    return (
+      <div className="glass-panel" style={{ width: '100%', maxWidth: '440px', minHeight: '300px', padding: 0, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', flexDirection: 'column' }}>
+        {/* Header */}
+        <div style={{ padding: '14px 16px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', background: 'rgba(255,255,255,0.02)' }}>
+          <button onClick={() => setSelectedNotification(null)} className="interactive-press" style={{ background: 'transparent', border: 'none', color: 'var(--slate-400)', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 0, marginRight: '12px' }}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+          </button>
+          <h3 style={{ margin: 0, color: 'var(--white)', fontSize: '1rem', fontFamily: 'var(--font-heading)' }}>Notification Details</h3>
+        </div>
+
+        <div style={{ padding: '24px', flex: 1, overflowY: 'auto' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: `${config.color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Icon size={24} color={config.color} />
+            </div>
+            <div>
+              <h2 style={{ margin: '0 0 4px', fontSize: '1.1rem', color: 'var(--white)' }}>{selectedNotification.title}</h2>
+              <span style={{ fontSize: '0.8rem', color: 'var(--slate-500)' }}>{timeAgo(selectedNotification.created_at)}</span>
+            </div>
+          </div>
+          
+          <div style={{ color: 'var(--slate-300)', fontSize: '0.95rem', lineHeight: 1.6, padding: '16px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+            {selectedNotification.message}
+          </div>
+        </div>
+
+        {selectedNotification.link && (
+          <div style={{ padding: '16px', borderTop: '1px solid rgba(255,255,255,0.05)', background: 'rgba(255,255,255,0.02)' }}>
+            <button 
+              onClick={() => { navigate.push(selectedNotification.link); if (onClose) onClose(); }}
+              className="btn btn-primary interactive-press" 
+              style={{ width: '100%', padding: '12px', borderRadius: '8px', background: 'var(--teal-500)', border: 'none', color: 'white', fontWeight: 600 }}
+            >
+              View Content
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="glass-panel" style={{ width: '100%', maxWidth: '440px', padding: 0, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
@@ -77,13 +133,29 @@ export default function NotificationsFeed({ onClose }) {
           </button>
         )}
       </div>
+
+      {/* Tabs */}
+      <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+        <button 
+          onClick={() => setActiveTab('inbox')}
+          style={{ flex: 1, padding: '12px', background: 'transparent', border: 'none', borderBottom: activeTab === 'inbox' ? '2px solid var(--teal-400)' : '2px solid transparent', color: activeTab === 'inbox' ? 'var(--teal-400)' : 'var(--slate-400)', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer' }}
+        >
+          Inbox
+        </button>
+        <button 
+          onClick={() => setActiveTab('history')}
+          style={{ flex: 1, padding: '12px', background: 'transparent', border: 'none', borderBottom: activeTab === 'history' ? '2px solid var(--teal-400)' : '2px solid transparent', color: activeTab === 'history' ? 'var(--teal-400)' : 'var(--slate-400)', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer' }}
+        >
+          History
+        </button>
+      </div>
       
-      <div style={{ maxHeight: '500px', overflowY: 'auto' }}>
+      <div style={{ maxHeight: '450px', overflowY: 'auto' }}>
         {sorted.length === 0 ? (
           <div style={{ padding: '40px 16px', textAlign: 'center', color: 'var(--slate-400)' }}>
             <Bell size={36} style={{ opacity: 0.15, marginBottom: '12px' }} />
-            <p style={{ margin: '0 0 4px', fontSize: '0.95rem', fontWeight: 600, color: 'var(--slate-300)' }}>You're all caught up!</p>
-            <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--slate-500)' }}>New notifications will appear here.</p>
+            <p style={{ margin: '0 0 4px', fontSize: '0.95rem', fontWeight: 600, color: 'var(--slate-300)' }}>{activeTab === 'inbox' ? "You're all caught up!" : "No history available"}</p>
+            <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--slate-500)' }}>{activeTab === 'inbox' ? 'New notifications will appear here.' : 'Read notifications older than 30 days appear here.'}</p>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column' }}>
