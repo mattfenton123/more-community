@@ -19,14 +19,9 @@ export default function CreateIdeaModal({ isOpen, onClose, communityId }) {
     
     setIsSubmitting(true);
     try {
-      const ideaData = {
-        type: 'idea',
-        title: title.trim(),
-        location: location.trim(),
-      };
-      const mediaJson = JSON.stringify(ideaData);
+      const postText = `💡 **SUGGESTION:**\n**${title.trim()}**\n\n${description.trim()}${location ? `\n\n📍 Location: ${location.trim()}` : ''}`;
       
-      await createFeedPost(communityId, description.trim(), mediaJson);
+      await createFeedPost(communityId, postText);
       setTitle('');
       setDescription('');
       setLocation('');

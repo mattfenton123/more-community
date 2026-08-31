@@ -178,7 +178,13 @@ export async function createEventAction(eventData, token) {
     status: eventData.status || 'published',
     max_capacity: eventData.maxCapacity || null,
     ticket_price: eventData.ticketPrice || 0,
-    cohost_community_ids: eventData.collabCommunityIds || []
+    meeting_point: eventData.meetingPoint || '',
+    itinerary: eventData.itinerary || '',
+    what_to_bring: eventData.whatToBring || '',
+    activity_level: eventData.activityLevel || 'All Levels',
+    cohost_community_ids: eventData.collabCommunityIds || [],
+    profit_share_enabled: eventData.profitShareEnabled || false,
+    profit_share_amount: eventData.profitShareAmount || 0
   }).select().single();
 
   if (error) throw new Error(error.message);
@@ -202,7 +208,7 @@ export async function leaveCommunityAction(userId, communityId, token) {
   }
 }
 
-export async function rsvpToEventAction(userId, eventId, status, ticketType, token) {
+export async function rsvpToEventAction(userId, eventId, status, ticketType, referredBy, token) {
   if (!userId || !eventId) throw new Error("Missing data");
   await verifyUser(token, userId);
 
@@ -212,11 +218,14 @@ export async function rsvpToEventAction(userId, eventId, status, ticketType, tok
       .match({ user_id: userId, event_id: eventId });
     if (error) throw new Error(error.message);
   } else {
-    const { error } = await supabaseAdmin.from('event_rsvps').upsert([{
+    const rsvpData = {
       user_id: userId,
       event_id: eventId,
       status: status
-    }], { onConflict: 'event_id,user_id' });
+    };
+    if (referredBy) rsvpData.referred_by = referredBy;
+    
+    const { error } = await supabaseAdmin.from('event_rsvps').upsert([rsvpData], { onConflict: 'event_id,user_id' });
     if (error) throw new Error(error.message);
   }
   return true;
@@ -266,6 +275,12 @@ export async function updateEventAction(eventId, updates, token) {
   if (updates.image !== undefined) dbUpdates.image = updates.image;
   if (updates.status !== undefined) dbUpdates.status = updates.status;
   if (updates.maxCapacity !== undefined) dbUpdates.max_capacity = updates.maxCapacity;
+  if (updates.meetingPoint !== undefined) dbUpdates.meeting_point = updates.meetingPoint;
+  if (updates.itinerary !== undefined) dbUpdates.itinerary = updates.itinerary;
+  if (updates.whatToBring !== undefined) dbUpdates.what_to_bring = updates.whatToBring;
+  if (updates.activityLevel !== undefined) dbUpdates.activity_level = updates.activityLevel;
+  if (updates.profitShareEnabled !== undefined) dbUpdates.profit_share_enabled = updates.profitShareEnabled;
+  if (updates.profitShareAmount !== undefined) dbUpdates.profit_share_amount = updates.profitShareAmount;
   
   const { data, error } = await supabaseAdmin.from('events').update(dbUpdates).eq('id', eventId).select().single();
   if (error) throw new Error(error.message);
@@ -341,6 +356,32 @@ export async function promoteMemberAction(communityId, memberId, newRole, token)
     .match({ community_id: communityId, user_id: memberId });
   if (error) throw new Error(error.message);
   return true;
+}
+
+export async function createPollAction(communityId, question, options, token) {
+  await verifyUser(token);
+  
+  const { data, error } = await supabaseAdmin.from('polls').insert({
+    community_id: communityId,
+    question,
+    options
+  }).select().single();
+  
+  if (error) throw new Error(error.message);
+  return data;
+}
+
+export async function votePollAction(pollId, userId, optionIndex, token) {
+  await verifyUser(token, userId);
+  
+  const { data, error } = await supabaseAdmin.from('poll_votes').upsert([{
+    poll_id: pollId,
+    user_id: userId,
+    option_index: optionIndex
+  }], { onConflict: 'poll_id,user_id' }).select().single();
+  
+  if (error) throw new Error(error.message);
+  return data;
 }
 
 export async function removeMemberAction(communityId, memberId, token) {

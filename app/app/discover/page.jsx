@@ -170,7 +170,7 @@ export default function Discover() {
             fontSize: '0.8rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px', 
             cursor: 'pointer', boxShadow: '0 4px 16px rgba(45,212,191,0.4)', textShadow: '0 1px 2px rgba(0,0,0,0.2)' 
           }}>
-            <Sparkles size={14} /> Find Plans
+            <Sparkles size={14} /> Find Communities
           </button>
         </div>
         

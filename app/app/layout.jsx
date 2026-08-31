@@ -35,6 +35,12 @@ function MainLayout({ children }) {
     }
   }, [authUser, user, authLoading, appLoading, currentPath, router]);
 
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(err => console.error('SW registration failed', err));
+    }
+  }, []);
+
   // Don't render content until auth checks are done
   if (authLoading || (authUser && !user)) return (
     <div style={{ minHeight: '100vh', background: 'var(--slate-950)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '16px' }}>
@@ -71,7 +77,8 @@ export default function RootLayout({ children }) {
         <meta property="og:image" content="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=1200&q=80" />
         <meta name="theme-color" content="#020617" />
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
-        <link rel="icon" href="https://fav.farm/✨" />
+        <link rel="icon" href="/favicon.svg" />
+        <link rel="manifest" href="/manifest.json" />
       </head>
       <body>
         <AuthProvider>

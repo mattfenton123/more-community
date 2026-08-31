@@ -33,6 +33,8 @@ export function AppProvider({ children }) {
     { id: 'lnk-1', name: 'Mental Health Walk Link', created: '2026-08-10', uses: 14, communityId: 'mindful-miles' },
     { id: 'lnk-2', name: 'Type-2 Diabetes Active Group', created: '2026-08-15', uses: 8, communityId: 'tw-ramblers' }
   ]);
+  const [polls, setPolls] = useState([]);
+  const [pollVotes, setPollVotes] = useState({});
   
   // Sponsors (Mocked until DB tables are created via Supabase Dashboard)
   const [sponsors, setSponsors] = useState([
@@ -215,7 +217,7 @@ export function AppProvider({ children }) {
       setIsLoading(true);
 
       // Batch 1: All independent queries run in parallel
-      const [usersRes, commsRes, chanRes, evRes, rsvpRes, memRes, revRes] =
+      const [usersRes, commsRes, chanRes, evRes, rsvpRes, memRes, revRes, pollsRes, pollVotesRes] =
         await Promise.all([
           supabase.from('users').select('*'),
           supabase.from('communities').select('*'),
@@ -224,11 +226,22 @@ export function AppProvider({ children }) {
           supabase.from('event_rsvps').select('*'),
           supabase.from('community_memberships').select('*'),
           supabase.from('reviews').select('*'),
+          supabase.from('polls').select('*'),
+          supabase.from('poll_votes').select('*'),
         ]);
 
       // Process results
       if (usersRes.data) setUsers(usersRes.data);
       if (revRes && revRes.data) setReviews(revRes.data);
+      if (pollsRes && pollsRes.data) setPolls(pollsRes.data);
+      if (pollVotesRes && pollVotesRes.data) {
+        const pVotes = {};
+        pollVotesRes.data.forEach(pv => {
+          if (!pVotes[pv.poll_id]) pVotes[pv.poll_id] = [];
+          pVotes[pv.poll_id].push(pv);
+        });
+        setPollVotes(pVotes);
+      }
 
       if (commsRes.data) {
         let comms = [...commsRes.data];
@@ -275,6 +288,12 @@ export function AppProvider({ children }) {
           status: e.status || 'published',
           maxCapacity: e.max_capacity || null,
           ticketPrice: e.ticket_price || 0,
+          meetingPoint: e.meeting_point || '',
+          itinerary: e.itinerary || '',
+          whatToBring: e.what_to_bring || '',
+          activityLevel: e.activity_level || 'All Levels',
+          profitShareEnabled: e.profit_share_enabled || false,
+          profitShareAmount: e.profit_share_amount || 0,
           createdAt: e.created_at
         })));
       }
@@ -283,7 +302,7 @@ export function AppProvider({ children }) {
         const rsvpMap = {};
         rsvpRes.data.forEach(r => {
           if (!rsvpMap[r.event_id]) rsvpMap[r.event_id] = [];
-          rsvpMap[r.event_id].push({ userId: r.user_id, status: r.status });
+          rsvpMap[r.event_id].push({ userId: r.user_id, status: r.status, referredBy: r.referred_by });
         });
         setEventRsvps(rsvpMap);
       }
@@ -780,19 +799,19 @@ export function AppProvider({ children }) {
     }
   };
 
-  const rsvpToEvent = async (eventId, status, ticketType = 'free') => {
+  const rsvpToEvent = async (eventId, status, ticketType = 'free', referredBy = null) => {
     // Optimistic update
     setEventRsvps(prev => {
       const eventRsvpsList = prev[eventId] || [];
       const updatedList = eventRsvpsList.filter(r => r.userId !== user.id);
       if (status !== 'not_going') {
-        updatedList.push({ userId: user.id, status, ticketType });
+        updatedList.push({ userId: user.id, status, ticketType, referredBy });
       }
       return { ...prev, [eventId]: updatedList };
     });
 
     try {
-      await rsvpToEventAction(user.id, eventId, status, ticketType, session?.access_token);
+      await rsvpToEventAction(user.id, eventId, status, ticketType, referredBy, session?.access_token);
     } catch (err) {
       console.error('RSVP error:', err);
     }
@@ -1098,6 +1117,39 @@ export function AppProvider({ children }) {
     return false;
   };
 
+  const createPoll = async (communityId, question, options) => {
+    try {
+      const { data: { session: freshSession } } = await supabase.auth.getSession();
+      const token = freshSession?.access_token || session?.access_token;
+      const { createPollAction } = await import('../lib/actions');
+      const newPoll = await createPollAction(communityId, question, options, token);
+      setPolls(prev => [...prev, newPoll]);
+      return newPoll;
+    } catch (err) {
+      console.error('Failed to create poll', err);
+      throw err;
+    }
+  };
+
+  const votePoll = async (pollId, optionIndex) => {
+    try {
+      setPollVotes(prev => {
+        const currentVotes = prev[pollId] || [];
+        const filtered = currentVotes.filter(v => v.user_id !== user.id);
+        filtered.push({ poll_id: pollId, user_id: user.id, option_index: optionIndex });
+        return { ...prev, [pollId]: filtered };
+      });
+
+      const { data: { session: freshSession } } = await supabase.auth.getSession();
+      const token = freshSession?.access_token || session?.access_token;
+      const { votePollAction } = await import('../lib/actions');
+      await votePollAction(pollId, user.id, optionIndex, token);
+    } catch (err) {
+      console.error('Failed to vote on poll', err);
+      throw err;
+    }
+  };
+
   return (
     <AppContext.Provider value={{
       user,
@@ -1111,6 +1163,10 @@ export function AppProvider({ children }) {
       notifications,
       directMessages,
       isLoading,
+      polls,
+      pollVotes,
+      createPoll,
+      votePoll,
       joinCommunity,
       leaveCommunity,
       sendMessage,

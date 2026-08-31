@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic';
 const LocationPicker = dynamic(() => import('../components/LocationPicker'), { ssr: false });
 import { useAppContext } from '../context/AppContext';
 import { useChat } from '../context/ChatContext';
+import { useRouter } from 'next/navigation';
 import { useToast } from '../components/Toast';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip as RechartsTooltip, CartesianGrid } from 'recharts';
 import SocialHub from '../components/SocialHub';
@@ -75,6 +76,7 @@ function getEngagementScore(member, events, eventRsvps, messages, communityId) {
 export default function LeaderDashboard() {
   const { user, communities, events, updateCommunity, users, communityMemberships, createEvent, updateEvent, cancelEvent, uploadImage, eventRsvps, whatsappSettings, setWhatsappSettings, promoteMember, removeMember, checkInMember, broadcastNotification } = useAppContext();
     const { messages } = useChat();
+  const router = useRouter();
   const { toast } = useToast();
   
   // ─── State ──────────────────────────────────────────────────
@@ -84,7 +86,7 @@ export default function LeaderDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
   const [activeCommunityId, setActiveCommunityId] = useState(user?.ledCommunities?.[0] || null);
   
-  const emptyEventForm = { title: '', description: '', date: '', time: '', location: '', maxCapacity: '', ticketPrice: '' };
+  const emptyEventForm = { title: '', description: '', date: '', time: '', location: '', meetingPoint: '', itinerary: '', whatToBring: '', activityLevel: 'All Levels', maxCapacity: '', ticketPrice: '', collabCommunityIds: [], profitShareEnabled: false, profitShareAmount: '' };
   const [eventForm, setEventForm] = useState(emptyEventForm);
   const [editingEventId, setEditingEventId] = useState(null);
   const [broadcastText, setBroadcastText] = useState('');
@@ -260,7 +262,10 @@ export default function LeaderDashboard() {
       ...eventForm,
       maxCapacity: eventForm.maxCapacity ? parseInt(eventForm.maxCapacity, 10) : null,
       ticketPrice: eventForm.ticketPrice ? parseFloat(eventForm.ticketPrice) : 0,
-      image: imageUrl
+      image: imageUrl,
+      collabCommunityIds: eventForm.collabCommunityIds || [],
+      profitShareEnabled: eventForm.profitShareEnabled || false,
+      profitShareAmount: eventForm.profitShareAmount ? parseFloat(eventForm.profitShareAmount) : 0
     });
     setIsUploading(false);
     setModalType(null);
@@ -276,8 +281,15 @@ export default function LeaderDashboard() {
       title: event.title || '', description: event.description || '',
       date: event.date || '', time: event.time || '',
       location: event.location || '',
+      meetingPoint: event.meetingPoint || '',
+      itinerary: event.itinerary || '',
+      whatToBring: event.whatToBring || '',
+      activityLevel: event.activityLevel || 'All Levels',
       maxCapacity: event.maxCapacity ? event.maxCapacity.toString() : '',
-      ticketPrice: event.ticketPrice ? event.ticketPrice.toString() : ''
+      ticketPrice: event.ticketPrice ? event.ticketPrice.toString() : '',
+      collabCommunityIds: event.collabCommunityIds || [],
+      profitShareEnabled: event.profitShareEnabled || false,
+      profitShareAmount: event.profitShareAmount ? event.profitShareAmount.toString() : ''
     });
     setImageFile(null);
     setModalType('edit-event');
@@ -295,8 +307,13 @@ export default function LeaderDashboard() {
     const updates = {
       title: eventForm.title, description: eventForm.description,
       date: eventForm.date, time: eventForm.time, location: eventForm.location,
+      meetingPoint: eventForm.meetingPoint, itinerary: eventForm.itinerary,
+      whatToBring: eventForm.whatToBring, activityLevel: eventForm.activityLevel,
       maxCapacity: eventForm.maxCapacity ? parseInt(eventForm.maxCapacity, 10) : null,
       ticketPrice: eventForm.ticketPrice ? parseFloat(eventForm.ticketPrice) : 0,
+      collabCommunityIds: eventForm.collabCommunityIds || [],
+      profitShareEnabled: eventForm.profitShareEnabled || false,
+      profitShareAmount: eventForm.profitShareAmount ? parseFloat(eventForm.profitShareAmount) : 0
     };
     if (imageUrl) updates.image = imageUrl;
     await updateEvent(editingEventId, updates);
@@ -352,12 +369,14 @@ export default function LeaderDashboard() {
   const eventSteps = [
     { label: 'Details', icon: Edit3, desc: 'Name & describe your event' },
     { label: 'When & Where', icon: MapPin, desc: 'Set the date, time & location' },
+    { label: 'Deep Dive', icon: List, desc: 'Itinerary, Checklist & Vibe' },
     { label: 'Extras', icon: Settings, desc: 'Capacity, pricing & image' },
   ];
 
   const canAdvanceStep = () => {
     if (eventStep === 0) return eventForm.title.trim().length > 0;
     if (eventStep === 1) return eventForm.date && eventForm.time && eventForm.location.trim().length > 0;
+    if (eventStep === 2) return true;
     return true;
   };
 
@@ -479,8 +498,43 @@ export default function LeaderDashboard() {
         </>
       )}
 
-      {/* Step 2: Extras */}
+      {/* Step 2: Deep Dive */}
       {eventStep === 2 && (
+        <>
+          <div style={{ background: 'rgba(139,92,246,0.05)', border: '1px solid rgba(139,92,246,0.15)', borderRadius: '12px', padding: '14px', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <List size={16} color="#a78bfa" style={{ flexShrink: 0 }} />
+            <span style={{ fontSize: '0.8rem', color: '#c4b5fd', lineHeight: 1.4 }}>Help members prepare by sharing the plan, what to bring, and the expected vibe.</span>
+          </div>
+          <div className="form-group">
+            <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><MapPin size={14} color="#a78bfa" /> Meeting Point Instructions</label>
+            <input className="form-input" placeholder="e.g. By the entrance gates" value={eventForm.meetingPoint} onChange={e => setEventForm({...eventForm, meetingPoint: e.target.value})} style={{ padding: '14px 16px' }} />
+          </div>
+          <div className="form-group">
+            <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Clock size={14} color="#a78bfa" /> Itinerary (Optional)</label>
+            <textarea className="form-input" placeholder="10:00 AM - Meet up&#10;10:15 AM - Start walk&#10;12:00 PM - Lunch" value={eventForm.itinerary} onChange={e => setEventForm({...eventForm, itinerary: e.target.value})} rows={3} style={{ lineHeight: 1.5 }} />
+          </div>
+          <div className="form-row">
+            <div className="form-group" style={{ flex: 2 }}>
+              <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Check size={14} color="#a78bfa" /> What to Bring</label>
+              <input className="form-input" placeholder="e.g. Water, good shoes (comma separated)" value={eventForm.whatToBring} onChange={e => setEventForm({...eventForm, whatToBring: e.target.value})} style={{ padding: '14px 16px' }} />
+            </div>
+            <div className="form-group" style={{ flex: 1 }}>
+              <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Activity size={14} color="#a78bfa" /> Vibe</label>
+              <select className="form-input" value={eventForm.activityLevel} onChange={e => setEventForm({...eventForm, activityLevel: e.target.value})} style={{ padding: '14px 16px' }}>
+                <option>All Levels</option>
+                <option>Beginner</option>
+                <option>Intermediate</option>
+                <option>Advanced</option>
+                <option>Chill</option>
+                <option>High Energy</option>
+              </select>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Step 3: Extras */}
+      {eventStep === 3 && (
         <>
           <div style={{ background: 'rgba(245,158,11,0.05)', border: '1px solid rgba(245,158,11,0.15)', borderRadius: '12px', padding: '14px', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
             <Zap size={16} color="#f59e0b" style={{ flexShrink: 0 }} />
@@ -495,6 +549,48 @@ export default function LeaderDashboard() {
               <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><CreditCard size={14} color="#f59e0b" /> Ticket Price (£)</label>
               <input type="number" className="form-input" placeholder="0 = Free" value={eventForm.ticketPrice} onChange={e => setEventForm({...eventForm, ticketPrice: e.target.value})} min="0" step="0.50" style={{ padding: '14px 16px' }} />
             </div>
+          </div>
+          
+          <div className="form-group" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: eventForm.profitShareEnabled ? '12px' : '0' }}>
+              <div>
+                <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}><DollarSign size={14} color="#10b981" /> Affiliate Profit Share</label>
+                <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', marginTop: '4px' }}>Reward members who invite others to buy tickets.</div>
+              </div>
+              <button 
+                type="button"
+                onClick={() => setEventForm({...eventForm, profitShareEnabled: !eventForm.profitShareEnabled})}
+                style={{ background: eventForm.profitShareEnabled ? 'var(--teal-500)' : 'var(--slate-700)', border: 'none', borderRadius: '16px', width: '40px', height: '24px', position: 'relative', cursor: 'pointer', transition: 'background 0.2s' }}
+              >
+                <div style={{ position: 'absolute', top: '2px', left: eventForm.profitShareEnabled ? '18px' : '2px', width: '20px', height: '20px', background: 'white', borderRadius: '50%', transition: 'left 0.2s' }}></div>
+              </button>
+            </div>
+            {eventForm.profitShareEnabled && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ fontSize: '0.8rem', color: 'var(--slate-300)', marginBottom: '4px', display: 'block' }}>Reward Amount (£)</label>
+                  <input type="number" className="form-input" placeholder="e.g. 5" value={eventForm.profitShareAmount} onChange={e => setEventForm({...eventForm, profitShareAmount: e.target.value})} min="0" step="0.50" style={{ padding: '10px 14px' }} />
+                </div>
+                <div style={{ flex: 2, fontSize: '0.8rem', color: 'var(--slate-400)', alignSelf: 'flex-end', paddingBottom: '10px' }}>
+                  paid per successful referral.
+                </div>
+              </div>
+            )}
+          </div>
+          
+          <div className="form-group">
+            <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={14} color="#f59e0b" /> Co-Host Community (Optional)</label>
+            <select 
+              className="form-input" 
+              value={eventForm.collabCommunityIds?.[0] || ''} 
+              onChange={e => setEventForm({...eventForm, collabCommunityIds: e.target.value ? [e.target.value] : []})} 
+              style={{ padding: '14px 16px' }}
+            >
+              <option value="">None</option>
+              {communities.filter(c => c.id !== communityIdLed).map(c => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
           </div>
           <div className="form-group">
             <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><ImageIcon size={14} color="#f59e0b" /> Cover Image</label>
@@ -886,6 +982,9 @@ export default function LeaderDashboard() {
                               {isExpanded ? <ChevronUp size={12} style={{ marginRight: '4px' }} /> : <ChevronDown size={12} style={{ marginRight: '4px' }} />}
                               {isExpanded ? 'Hide' : 'Attendees'}
                             </button>
+                            <button onClick={() => router.push(`/events/${event.id}`)} className="btn btn-outline interactive-press" style={{ padding: '6px 12px', fontSize: '0.75rem' }}>
+                              <Activity size={12} style={{ marginRight: '4px' }} /> View Page
+                            </button>
                             <button onClick={() => handleEditEvent(event)} className="btn btn-outline interactive-press" style={{ padding: '6px 12px', fontSize: '0.75rem' }}>
                               <Edit3 size={12} style={{ marginRight: '4px' }} /> Edit
                             </button>
@@ -1244,7 +1343,7 @@ export default function LeaderDashboard() {
             </button>
           </div>
           
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', flex: 1, overflowY: 'auto', padding: '20px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', flex: 1, overflowY: 'auto', padding: '20px', paddingBottom: '100px' }}>
             {/* Edit Profile */}
             {isEditing && (
               <>

@@ -1,6 +1,6 @@
 "use client";
 import { useState } from 'react';
-import { ChevronLeft, Share2, Users, Calendar, Settings, ChevronDown, ChevronUp, Image as ImageIcon, ExternalLink, Camera, Mail, Activity, Sparkles, MapPin, Clock, Star, MessageCircle, Heart, BadgeCheck, Briefcase, Check, X, Lightbulb } from 'lucide-react';
+import { ChevronLeft, Share2, Users, Calendar, Settings, ChevronDown, ChevronUp, Image as ImageIcon, ExternalLink, Camera, Mail, Activity, Sparkles, MapPin, Clock, Star, MessageCircle, Heart, BadgeCheck, Briefcase, Check, X, Lightbulb, PieChart, BarChart3 } from 'lucide-react';
 import { useRouter as useNavigate, useParams } from 'next/navigation';
 import { useAppContext } from '../context/AppContext';
 import { useFeed } from '../context/FeedContext';
@@ -75,7 +75,7 @@ function getGalleryType(tags) {
 export default function CommunityProfile() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { communities, user, joinCommunity, leaveCommunity, events, isLoading, users, communityMemberships, eventRsvps, uploadImage, services, updateServiceStatus, updateCommunity } = useAppContext();
+  const { communities, user, joinCommunity, leaveCommunity, events, isLoading, users, communityMemberships, eventRsvps, uploadImage, services, updateServiceStatus, updateCommunity, polls, votePollAction } = useAppContext();
     const { feedPosts, createFeedPost, likeFeedPost } = useFeed();
   const { toast } = useToast();
   const [showRules, setShowRules] = useState(false);
@@ -92,6 +92,16 @@ export default function CommunityProfile() {
   const communityId = id || (user.joinedCommunities.length > 0 ? user.joinedCommunities[0] : 'tw-tech-meetup');
   const community = communities.find(c => c.id === communityId);
   const communityFeed = feedPosts?.filter(p => p.communityId === communityId) || [];
+  const communityPolls = polls ? polls.filter(p => p.communityId === communityId) : [];
+  
+  const handleVote = async (pollId, optionIndex) => {
+    try {
+      await votePollAction(pollId, optionIndex);
+      toast.success('Vote recorded!');
+    } catch (err) {
+      toast.error('Failed to vote', 'Please try again.');
+    }
+  };
   
   // Default to about tab if no feed posts exist
   const [activeTab, setActiveTab] = useState('home');
@@ -300,7 +310,7 @@ export default function CommunityProfile() {
       {/* ===== TAB NAVIGATION ===== */}
       <div style={{ padding: '0 20px', marginBottom: '24px' }}>
         <div style={{ display: 'flex', gap: '4px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', padding: '4px', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-          {['home', 'feed', 'events', 'marketplace', 'directory'].map(tab => (
+          {['home', 'feed', 'events', 'marketplace', 'directory', 'polls'].map(tab => (
             <button 
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -633,10 +643,73 @@ export default function CommunityProfile() {
                 <Briefcase size={18} /> Pitch a Service or Perk
               </button>
             )}
-          </>
+          </div>
+        )}
+
+        {/* ===== POLLS TAB ===== */}
+        {activeTab === 'polls' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <h3 style={{ fontSize: '1.2rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: '0 0 16px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <PieChart size={20} color="var(--teal-400)" /> Community Polls
+            </h3>
+            
+            {communityPolls.length > 0 ? communityPolls.map(poll => {
+              // Calculate total votes for percentages
+              const totalVotes = poll.options.reduce((sum, _, idx) => sum + (poll.votes?.[idx] || 0), 0);
+              // Check if current user has voted
+              const userVoted = Object.values(poll.voters || {}).includes(user.id) || !!(poll.voters && poll.voters[user.id]);
+              
+              return (
+                <div key={poll.id} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '16px', padding: '20px' }}>
+                  <div style={{ fontWeight: 600, color: 'var(--white)', marginBottom: '16px', fontSize: '1.1rem' }}>{poll.question}</div>
+                  
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {poll.options.map((opt, idx) => {
+                      const optionVotes = poll.votes?.[idx] || 0;
+                      const percentage = totalVotes > 0 ? Math.round((optionVotes / totalVotes) * 100) : 0;
+                      
+                      return (
+                        <div key={idx} style={{ position: 'relative' }}>
+                          <button 
+                            onClick={() => !userVoted && handleVote(poll.id, idx)}
+                            disabled={userVoted}
+                            style={{ 
+                              width: '100%', padding: '14px 16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', 
+                              background: 'transparent', color: 'var(--white)', textAlign: 'left', cursor: userVoted ? 'default' : 'pointer',
+                              position: 'relative', overflow: 'hidden', display: 'flex', justifyContent: 'space-between', zIndex: 2
+                            }}
+                            className={userVoted ? '' : 'interactive-hover'}
+                          >
+                            <span style={{ zIndex: 2, fontWeight: 500 }}>{opt}</span>
+                            {userVoted && <span style={{ zIndex: 2, fontWeight: 600, color: 'var(--teal-300)' }}>{percentage}%</span>}
+                          </button>
+                          {userVoted && (
+                            <div style={{ 
+                              position: 'absolute', top: 0, left: 0, height: '100%', width: `${percentage}%`, 
+                              background: 'rgba(20,184,166,0.15)', borderRadius: '12px', zIndex: 1 
+                            }}></div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div style={{ marginTop: '16px', fontSize: '0.85rem', color: 'var(--slate-500)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <BarChart3 size={14} /> {totalVotes} votes {userVoted && '• You voted'}
+                  </div>
+                </div>
+              );
+            }) : (
+              <div style={{ padding: '40px 20px', textAlign: 'center', background: 'rgba(255,255,255,0.02)', borderRadius: '16px', border: '1px dashed rgba(255,255,255,0.1)' }}>
+                <PieChart size={32} color="var(--slate-500)" style={{ marginBottom: '12px' }} />
+                <p style={{ color: 'var(--slate-400)', margin: 0 }}>No active polls right now.</p>
+              </div>
+            )}
+          </div>
         )}
 
       </div>
+
+      {showShareModal && <ShareModal title={community.name} text={community.description} url={`https://more.community/${community.id}`} onClose={() => setShowShareModal(false)} />}
       <CommentsModal isOpen={!!selectedPostForComments} onClose={() => setSelectedPostForComments(null)} post={selectedPostForComments} />
       
       <CreateServiceModal 

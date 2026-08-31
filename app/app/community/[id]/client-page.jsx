@@ -80,6 +80,89 @@ export default function CommunityProfile() {
   const { feedPosts, createFeedPost, likeFeedPost, deleteFeedPost } = useFeed();
   const { toast } = useToast();
   const [showRules, setShowRules] = useState(false);
+"use client";
+import { useState, useRef } from 'react';
+import { ChevronLeft, Share2, Users, Calendar, Settings, ChevronDown, ChevronUp, Image as ImageIcon, ExternalLink, Camera, Mail, Activity, Sparkles, MapPin, Clock, Star, MessageCircle, Heart, BadgeCheck, Globe, Trash2, Flag, Search, Briefcase, Check, X, MessageSquare, Lightbulb, Info } from 'lucide-react';
+import { useRouter as useNavigate, useParams } from 'next/navigation';
+import { useAppContext } from '../../../src/context/AppContext';
+import { useFeed } from '../../../src/context/FeedContext';
+import { useToast } from '../../../src/components/Toast';
+import PhotoGallery from '../../../src/components/PhotoGallery';
+import MemberDirectory from '../../../src/components/MemberDirectory';
+import InlineComments from '../../../src/components/InlineComments';
+import ExperiencesCatalog from '../../../src/components/ExperiencesCatalog';
+import CreateServiceModal from '../../../src/components/CreateServiceModal';
+import CreateIdeaModal from '../../../src/components/CreateIdeaModal';
+import ReviewsList from '../../../src/components/ReviewsList';
+import ReviewForm from '../../../src/components/ReviewForm';
+import { downloadIcs } from '../../../src/lib/calendar';
+import confetti from 'canvas-confetti';
+
+// Category-specific gallery photos (generated unique images)
+const IMG = '/images/communities';
+const GALLERY_PHOTOS = {
+  running: [
+    `${IMG}/parkrun.webp`,
+    `${IMG}/gallery-running-1.webp`,
+    `${IMG}/gallery-running-2.webp`,
+  ],
+  walking: [
+    `${IMG}/ramblers.webp`,
+    `${IMG}/gallery-walking-1.webp`,
+    `${IMG}/az-challenge.webp`,
+  ],
+  wellness: [
+    `${IMG}/mindful-miles.webp`,
+    `${IMG}/yoga-collective.webp`,
+    `${IMG}/gallery-yoga-1.webp`,
+  ],
+  business: [
+    `${IMG}/entrepreneurs.webp`,
+    `${IMG}/gallery-running-2.webp`,
+    `${IMG}/interfaith.webp`,
+  ],
+  creative: [
+    `${IMG}/creative-collective.webp`,
+    `${IMG}/gallery-creative-1.webp`,
+    `${IMG}/good-neighbours.webp`,
+  ],
+  volunteering: [
+    `${IMG}/good-neighbours.webp`,
+    `${IMG}/interfaith.webp`,
+    `${IMG}/gallery-walking-1.webp`,
+  ],
+  default: [
+    `${IMG}/parkrun.webp`,
+    `${IMG}/good-neighbours.webp`,
+    `${IMG}/gallery-adventure-1.webp`,
+  ]
+};
+
+// Mock reviews per community type
+const MOCK_REVIEWS = [
+  { name: 'Sarah C.', avatar: 'https://i.pravatar.cc/40?img=5', text: "Absolutely brilliant group! I've made genuine friendships here and look forward to every meetup.", rating: 5 },
+  { name: 'James W.', avatar: 'https://i.pravatar.cc/40?img=11', text: "Well organised with a really welcoming atmosphere. Perfect for newcomers to the area.", rating: 5 },
+  { name: 'Emma J.', avatar: 'https://i.pravatar.cc/40?img=26', text: "Joined 3 months ago and it's completely changed my weekends. Highly recommend!", rating: 4 },
+];
+
+function getGalleryType(tags) {
+  const tagStr = (tags || []).join(' ').toLowerCase();
+  if (tagStr.includes('running') || tagStr.includes('fitness')) return 'running';
+  if (tagStr.includes('walking') || tagStr.includes('adventure')) return 'walking';
+  if (tagStr.includes('wellness') || tagStr.includes('yoga')) return 'wellness';
+  if (tagStr.includes('business') || tagStr.includes('professional')) return 'business';
+  if (tagStr.includes('creative') || tagStr.includes('art')) return 'creative';
+  if (tagStr.includes('volunteering')) return 'volunteering';
+  return 'default';
+}
+
+export default function CommunityProfile() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const { user, communities, events, communityMemberships, users, eventRsvps, uploadImage, joinCommunity, leaveCommunity, experiences, services, updateServiceStatus } = useAppContext();
+  const { feedPosts, createFeedPost, likeFeedPost, deleteFeedPost } = useFeed();
+  const { toast } = useToast();
+  const [showRules, setShowRules] = useState(false);
   const [activeTab, setActiveTab] = useState('feed');
   const [expandedComments, setExpandedComments] = useState({});
   const [newPostText, setNewPostText] = useState('');
@@ -87,6 +170,7 @@ export default function CommunityProfile() {
   const [localPhotos, setLocalPhotos] = useState([]);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
+  const [showIdeaModal, setShowIdeaModal] = useState(false);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const fileInputRef = useRef(null);
   
@@ -216,8 +300,8 @@ export default function CommunityProfile() {
   };
 
   const handlePitchExperience = (experience) => {
-    const pitchText = `🚀 **CAMPAIGN:** Let's do "${experience.title}"!\n\n${experience.description}\n\nPrice: £${experience.price_per_person}\n\n*Like this post to support the idea!*`;
-    handlePitchPost(pitchText);
+    const pitchText = `🚀 **CAMPAIGN:** [${experience.id}]\nLet's do "${experience.title}"!\n\n${experience.description}\n\n📍 Location: ${experience.location}\n⏱ Duration: ${experience.duration}\n💰 Price: £${experience.price_per_person}\n\n*Like this post to support the idea!*`;
+    handlePitchPost(pitchText, experience.image);
     setActiveTab('feed');
   };
 
@@ -582,15 +666,9 @@ export default function CommunityProfile() {
                 <div style={{ marginBottom: '32px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                     <h4 style={{ fontSize: '1rem', color: 'var(--white)', margin: 0 }}>Browse Experiences to Pitch</h4>
-                    <button 
-                      onClick={() => {
-                        const idea = prompt('What is your custom idea?');
-                        if (idea) handleCreatePost(`💡 **SUGGESTION:**\n${idea}`);
-                      }}
-                      className="btn btn-outline interactive-press"
-                      style={{ padding: '6px 12px', fontSize: '0.8rem', borderColor: 'rgba(255,255,255,0.1)' }}
-                    >
-                      Or Pitch Custom Idea
+                    <button onClick={() => setShowIdeaModal(true)} className="interactive-press" style={{ background: 'rgba(255,255,255,0.05)', border: '1px dashed rgba(255,255,255,0.2)', padding: '16px', borderRadius: '12px', color: 'var(--white)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                        <Lightbulb size={24} color="var(--amber-400)" />
+                        <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>Pitch a custom idea</span>
                     </button>
                   </div>
                   <ExperiencesCatalog onPitchExperience={handlePitchExperience} />
@@ -619,10 +697,10 @@ export default function CommunityProfile() {
                   let campaignText = post.text;
                   
                   if (isCampaign) {
-                    const match = post.text.match(/🚀 \*\*CAMPAIGN:\*\* (\w+)/);
+                    const match = post.text.match(/🚀 \*\*CAMPAIGN:\*\* \[([a-zA-Z0-9-]+)\]/);
                     if (match) {
                       campaignExp = experiences.find(e => e.id === match[1]);
-                      campaignText = post.text.replace(/🚀 \*\*CAMPAIGN:\*\* \w+\n/, '');
+                      campaignText = post.text.replace(/🚀 \*\*CAMPAIGN:\*\* \[([a-zA-Z0-9-]+)\]\n/, '');
                     }
                   } else {
                     campaignText = post.text.replace('💡 **SUGGESTION:**', '').trim();
@@ -662,6 +740,9 @@ export default function CommunityProfile() {
                           </div>
                           
                           <div style={{ marginTop: '16px' }}>
+                            <button onClick={() => navigate.push(`/experiences/${campaignExp.id}`)} className="interactive-press" style={{ width: '100%', marginBottom: '16px', padding: '8px', borderRadius: '8px', fontSize: '0.85rem', color: 'var(--teal-400)', background: 'rgba(20,184,166,0.1)', border: '1px solid rgba(20,184,166,0.3)', cursor: 'pointer', fontWeight: 600 }}>
+                              View Experience Details
+                            </button>
                             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--slate-300)', marginBottom: '6px', fontWeight: 600 }}>
                               <span>Campaign Progress</span>
                               <span>{votes} / {threshold} Interested</span>
@@ -685,7 +766,16 @@ export default function CommunityProfile() {
                         </div>
                       )}
 
-                      <p style={{ color: 'var(--slate-200)', fontSize: '0.95rem', lineHeight: 1.5, margin: '0 0 12px 0' }}>{campaignText}</p>
+                      {!isCampaign ? (
+                        <div style={{ background: 'var(--slate-900)', borderRadius: '12px', padding: '16px', marginBottom: '16px', border: '1px solid rgba(245,158,11,0.2)', borderLeft: '4px solid var(--amber-500)' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px', color: 'var(--amber-400)', fontWeight: 700, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                            <Lightbulb size={16} /> Community Suggestion
+                          </div>
+                          <p style={{ color: 'var(--white)', fontSize: '1.05rem', lineHeight: 1.5, margin: 0, fontWeight: 500 }}>{campaignText}</p>
+                        </div>
+                      ) : (
+                        <p style={{ color: 'var(--slate-200)', fontSize: '0.95rem', lineHeight: 1.5, margin: '0 0 12px 0' }}>{campaignText}</p>
+                      )}
                       {post.mediaUrl && <img src={post.mediaUrl} alt="Attached media" style={{ width: '100%', borderRadius: '12px', marginBottom: '12px', maxHeight: '200px', objectFit: 'cover' }} />}
                       
                       <div style={{ display: 'flex', gap: '16px', marginTop: '12px' }}>
@@ -1135,8 +1225,18 @@ export default function CommunityProfile() {
       </div>
       
       {isServiceModalOpen && (
-        <CreateServiceModal communityId={communityId} onClose={() => setIsServiceModalOpen(false)} />
+        <CreateServiceModal 
+        isOpen={isServiceModalOpen} 
+        onClose={() => setIsServiceModalOpen(false)} 
+        communityId={communityId} 
+      />
       )}
+
+      <CreateIdeaModal 
+        isOpen={showIdeaModal} 
+        onClose={() => setShowIdeaModal(false)} 
+        communityId={communityId} 
+      />
       
       {showReviewForm && (
         <ReviewForm communityId={communityId} onClose={() => setShowReviewForm(false)} />

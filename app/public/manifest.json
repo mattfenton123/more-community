@@ -2,15 +2,15 @@
   "name": "more. community",
   "short_name": "more.",
   "description": "Discover, join and lead your local communities",
-  "start_url": "/portal/",
-  "scope": "/portal/",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#0f172a",
   "theme_color": "#14b8a6",
   "orientation": "portrait",
   "icons": [
     {
-      "src": "/portal/favicon.svg",
+      "src": "/favicon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any maskable"

@@ -15,14 +15,17 @@ export default function SecuritySettings() {
 
   const [visibility, setVisibility] = useState(user.privacy_visibility || 'public');
   const [dmLimit, setDmLimit] = useState(user.privacy_dms || 'everyone');
+  const [showActivity, setShowActivity] = useState(user.privacy_activity !== false);
   const [isExporting, setIsExporting] = useState(false);
 
   const handleSavePrivacy = async (key, value) => {
     try {
       if (key === 'visibility') setVisibility(value);
       if (key === 'dmLimit') setDmLimit(value);
+      if (key === 'activity') setShowActivity(value);
       
-      await updateUser(user.id, { [`privacy_${key === 'dmLimit' ? 'dms' : key}`]: value });
+      const dbKey = key === 'dmLimit' ? 'privacy_dms' : key === 'activity' ? 'privacy_activity' : `privacy_${key}`;
+      await updateUser(user.id, { [dbKey]: value });
       toast.success('Privacy updated');
     } catch (e) {
       toast.error('Failed to update privacy');
@@ -98,6 +101,12 @@ export default function SecuritySettings() {
               title="Members Only" 
               description="Only people in communities you have joined can view your full profile." 
             />
+            <ToggleOption 
+              selected={visibility === 'private'} 
+              onClick={() => handleSavePrivacy('visibility', 'private')}
+              title="Private / Hidden" 
+              description="Omit everything. You will not appear in the directory." 
+            />
           </div>
         </section>
 
@@ -120,6 +129,38 @@ export default function SecuritySettings() {
               title="Shared Communities Only" 
               description="Only people who share a community with you can message you." 
             />
+            <ToggleOption 
+              selected={dmLimit === 'nobody'} 
+              onClick={() => handleSavePrivacy('dmLimit', 'nobody')}
+              title="Nobody" 
+              description="Disable direct messaging entirely." 
+            />
+          </div>
+        </section>
+
+        {/* Online Activity */}
+        <section>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+            <Eye size={20} color="#10b981" />
+            <h2 style={{ fontSize: '1.1rem', fontWeight: 600, margin: 0 }}>Online Activity</h2>
+          </div>
+          <div style={{ background: 'rgba(255,255,255,0.02)', padding: '20px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <h3 style={{ margin: '0 0 4px 0', fontSize: '1rem', color: 'var(--white)' }}>Show Activity Status</h3>
+              <div style={{ color: 'var(--slate-400)', fontSize: '0.85rem' }}>Let others see when you are online.</div>
+            </div>
+            <button 
+              onClick={() => handleSavePrivacy('activity', !showActivity)}
+              style={{ 
+                width: '48px', height: '26px', borderRadius: '99px', border: 'none', cursor: 'pointer', position: 'relative',
+                background: showActivity ? 'var(--teal-500)' : 'rgba(255,255,255,0.1)'
+              }}
+            >
+              <div style={{
+                width: '20px', height: '20px', borderRadius: '50%', background: 'white', position: 'absolute', top: '3px',
+                left: showActivity ? '25px' : '3px', transition: 'left 0.2s'
+              }} />
+            </button>
           </div>
         </section>
 

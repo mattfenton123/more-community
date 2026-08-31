@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { X, Heart, X as XIcon, MapPin, Calendar, Sparkles, Info } from 'lucide-react';
 import { useToast } from './Toast';
 
@@ -11,6 +12,7 @@ export default function SwipeDiscovery({ events, communities, onClose, onSave })
   const [showInfo, setShowInfo] = useState(false);
   const cardRef = useRef(null);
   const { toast } = useToast();
+  const router = useRouter();
 
   const currentEvent = events[currentIndex];
 
@@ -171,7 +173,10 @@ export default function SwipeDiscovery({ events, communities, onClose, onSave })
                   onPointerDown={(e) => e.stopPropagation()} 
                   onMouseDown={(e) => e.stopPropagation()} 
                   onTouchStart={(e) => e.stopPropagation()}
-                  onClick={() => setShowInfo(true)}
+                  onClick={() => {
+                    onClose();
+                    router.push(`/events/${currentEvent.id}`);
+                  }}
                   style={{ pointerEvents: 'auto', background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '50%', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--white)', cursor: 'pointer' }}
                 >
                   <Info size={16} />

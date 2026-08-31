@@ -59,7 +59,7 @@ export default function CreateServiceModal({ isOpen, onClose, communityId }) {
   };
 
   return (
-    <div className="modal-overlay" style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
+    <div className="modal-overlay" style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', zIndex: 10000 }}>
       <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)' }} onClick={onClose} />
       
       <div style={{ 

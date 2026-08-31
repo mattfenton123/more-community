@@ -50,7 +50,10 @@ export default function MemberDirectory({ communityId, onClose }) {
   const members = communityMemberships[communityId] || [];
 
   const filteredMembers = useMemo(() => {
-    let list = members;
+    let list = members.filter(m => {
+      const u = users.find(u => u.id === m.userId);
+      return u && u.privacy_visibility !== 'private';
+    });
     if (filter === 'leaders') list = list.filter(m => m.role === 'Leader');
     if (search) {
       list = list.filter(m => {

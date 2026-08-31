@@ -3,7 +3,7 @@ import { useState, useRef } from 'react';
 import { useRouter as useNavigate, useParams } from 'next/navigation';
 import { useAppContext } from '../context/AppContext';
 import { useChat } from '../context/ChatContext';
-import { ArrowLeft, Users, Calendar, MapPin, Settings, Camera, Check, X, MessageCircle, Edit3, Trophy, Flame } from 'lucide-react';
+import { ArrowLeft, Users, Calendar, MapPin, Settings, Camera, Check, X, MessageCircle, Edit3, Trophy, Flame, DollarSign } from 'lucide-react';
 import { useToast } from '../components/Toast';
 import GamificationPanel, { BadgeRow, useGamification } from '../components/Gamification';
 import { FALLBACK_IMAGES } from '../lib/constants';
@@ -21,7 +21,11 @@ export default function UserProfile() {
   const { level, streak, earnedBadges, xp } = useGamification(targetId);
 
   const [isEditing, setIsEditing] = useState(false);
-  const [editForm, setEditForm] = useState({ name: profileUser.name, bio: profileUser.bio || '' });
+  const [editForm, setEditForm] = useState({ 
+    name: profileUser.name, 
+    bio: profileUser.bio || '',
+    interests: profileUser.interests ? profileUser.interests.join(', ') : '' 
+  });
   const [isUploading, setIsUploading] = useState(false);
   const [activeTab, setActiveTab] = useState('badges');
   const fileInputRef = useRef(null);
@@ -29,6 +33,16 @@ export default function UserProfile() {
 
   if (!profileUser) {
     return <div style={{ padding: '40px', color: 'var(--white)', textAlign: 'center' }}>User not found.</div>;
+  }
+
+  if (profileUser.privacy_visibility === 'private' && profileUser.id !== currentUser.id) {
+    return (
+      <div style={{ padding: '40px', color: 'var(--white)', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', minHeight: '100vh', justifyContent: 'center' }}>
+        <ArrowLeft size={32} onClick={() => navigate.back()} style={{ cursor: 'pointer', position: 'absolute', top: '20px', left: '20px' }} />
+        <h2 style={{ fontFamily: 'var(--font-heading)' }}>This profile is private</h2>
+        <p style={{ color: 'var(--slate-400)' }}>The user has chosen to hide their profile from the directory.</p>
+      </div>
+    );
   }
 
   const joinedCommunityIds = [];
@@ -43,6 +57,23 @@ export default function UserProfile() {
     if (rsvps.some(r => r.userId === targetId && r.status === 'going')) eventsAttended++;
   });
   const messagesSent = messages.filter(m => m.authorId === targetId).length;
+
+  // Compute Earnings
+  let totalEarnings = 0;
+  let successfulReferrals = 0;
+  if (isOwnProfile) {
+    Object.values(eventRsvps).forEach(rsvps => {
+      rsvps.forEach(r => {
+        if (r.referredBy === targetId && r.status === 'going') {
+          successfulReferrals++;
+          const ev = events.find(e => e.id === r.eventId) || events.find(e => eventRsvps[e.id] === rsvps);
+          if (ev && ev.profitShareEnabled) {
+            totalEarnings += (ev.profitShareAmount || 0);
+          }
+        }
+      });
+    });
+  }
 
   const handleAvatarClick = () => { if (isOwnProfile && isEditing) fileInputRef.current?.click(); };
   const handleFileChange = async (e) => {
@@ -72,7 +103,8 @@ export default function UserProfile() {
   };
   const handleSave = async () => {
     try {
-      await updateUser(targetId, { name: editForm.name, bio: editForm.bio });
+      const interestsArray = editForm.interests.split(',').map(i => i.trim()).filter(i => i.length > 0);
+      await updateUser(targetId, { name: editForm.name, bio: editForm.bio, interests: interestsArray });
       setIsEditing(false);
       toast.success('Profile saved');
     } catch (err) { toast.error('Failed to save profile'); }
@@ -89,8 +121,8 @@ export default function UserProfile() {
             <ArrowLeft size={24} />
           </button>
           <div style={{ display: 'flex', gap: '8px' }}>
-            {!isOwnProfile && (
-              <button className="interactive-press" onClick={() => navigate.back()} style={{ height: '40px', padding: '0 16px', borderRadius: '20px', background: 'var(--teal-500)', border: 'none', color: 'var(--white)', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 600 }}>
+            {!isOwnProfile && profileUser.privacy_dms !== 'nobody' && (
+              <button className="interactive-press" onClick={() => navigate.push(`/chat/dm/${profileUser.id}`)} style={{ height: '40px', padding: '0 16px', borderRadius: '20px', background: 'var(--teal-500)', border: 'none', color: 'var(--white)', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 600 }}>
                 <MessageCircle size={18} /> Message
               </button>
             )}
@@ -144,6 +176,7 @@ export default function UserProfile() {
             <div style={{ width: '100%', maxWidth: '300px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <input type="text" value={editForm.name} onChange={e => setEditForm({ ...editForm, name: e.target.value })} className="input" placeholder="Your Name" style={{ textAlign: 'center', fontSize: '1.2rem', fontWeight: 700 }} />
               <textarea value={editForm.bio} onChange={e => setEditForm({ ...editForm, bio: e.target.value })} className="input" placeholder="Write a short bio..." style={{ textAlign: 'center', minHeight: '80px', resize: 'none' }} />
+              <input type="text" value={editForm.interests} onChange={e => setEditForm({ ...editForm, interests: e.target.value })} className="input" placeholder="Interests (comma separated)" style={{ textAlign: 'center' }} />
             </div>
           ) : (
             <>
@@ -202,7 +235,7 @@ export default function UserProfile() {
 
         {/* Tab Navigation */}
         <div style={{ display: 'flex', gap: '4px', marginBottom: '20px', background: 'rgba(255,255,255,0.03)', borderRadius: '10px', padding: '3px' }}>
-          {['badges', 'communities'].map(tab => (
+          {(isOwnProfile ? ['badges', 'communities', 'earnings'] : ['badges', 'communities']).map(tab => (
             <button key={tab} onClick={() => setActiveTab(tab)} style={{
               flex: 1, padding: '8px', borderRadius: '8px', border: 'none',
               background: activeTab === tab ? 'rgba(20,184,166,0.15)' : 'transparent',
@@ -238,6 +271,23 @@ export default function UserProfile() {
                 ))}
               </div>
             )}
+          </div>
+        )}
+
+        {/* Earnings Tab */}
+        {activeTab === 'earnings' && isOwnProfile && (
+          <div style={{ marginBottom: '24px' }}>
+            <div style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)', borderRadius: '16px', padding: '24px', textAlign: 'center', marginBottom: '16px' }}>
+              <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(16,185,129,0.2)', color: 'var(--teal-400)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px auto' }}>
+                <DollarSign size={24} />
+              </div>
+              <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>Total Earned</div>
+              <div style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--teal-400)', fontFamily: 'var(--font-heading)' }}>£{totalEarnings.toFixed(2)}</div>
+              <div style={{ fontSize: '0.9rem', color: 'var(--slate-300)', marginTop: '8px' }}>From {successfulReferrals} successful ticket {successfulReferrals === 1 ? 'referral' : 'referrals'}</div>
+            </div>
+            <p style={{ fontSize: '0.85rem', color: 'var(--slate-500)', textAlign: 'center', lineHeight: 1.5 }}>
+              Share your affiliate links for paid events. When someone buys a ticket using your link, the community leader will pay out your reward.
+            </p>
           </div>
         )}
       </div>
