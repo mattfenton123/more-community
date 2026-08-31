@@ -247,7 +247,7 @@ export default function CommunityProfile() {
             <ChevronLeft />
           </button>
           <div style={{ display: 'flex', alignItems: 'center' }}>
-            <img src="/logo.png" className="theme-invert" alt="more." style={{ height: '20px' }} />
+            <img src="/logo.png" alt="more." style={{ height: '20px' }} />
           </div>
           <div style={{ display: 'flex', gap: '8px' }}>
 
@@ -278,7 +278,7 @@ export default function CommunityProfile() {
           </div>
           
           {/* Meta strip */}
-          <div style={{ display: 'flex', gap: '16px', fontSize: '0.85rem', color: 'var(--slate-300)', marginBottom: '16px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: '16px', fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)', marginBottom: '16px', flexWrap: 'wrap' }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><MapPin size={14} /> {community.location_name || 'Tunbridge Wells'}</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Users size={14} /> {community.members || memberList.length || 1} members</span>
             {community.activity_level && (

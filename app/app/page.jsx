@@ -16,7 +16,7 @@ export default function HomeFeed() {
   const [activeFeedTab, setActiveFeedTab] = useState('Feed');
 
   const unreadCount = notifications ? notifications.filter(n => !n.is_read).length : 0;
-  const joinedCommunities = communities.filter(c => user?.joinedCommunities?.includes(c.id));
+  const joinedCommunities = communities?.filter(c => user?.joinedCommunities?.includes(c.id)) || [];
 
   // Determine Daily Briefing
   const todayEvents = events?.filter(e => {
