@@ -22,6 +22,7 @@ export function AppProvider({ children }) {
   const [notifications, setNotifications] = useState([]);
   const [feedPosts, setFeedPosts] = useState([]);
   const [experiences, setExperiences] = useState([]);
+  const [reviews, setReviews] = useState([]);
   const [prescribingLinks, setPrescribingLinks] = useState([
     { id: 'lnk-1', name: 'Mental Health Walk Link', created: '2026-08-10', uses: 14, communityId: 'mindful-miles' },
     { id: 'lnk-2', name: 'Type-2 Diabetes Active Group', created: '2026-08-15', uses: 8, communityId: 'tw-ramblers' }
@@ -162,7 +163,7 @@ export function AppProvider({ children }) {
       setIsLoading(true);
 
       // Batch 1: All independent queries run in parallel
-      const [usersRes, commsRes, chanRes, evRes, rsvpRes, memRes] =
+      const [usersRes, commsRes, chanRes, evRes, rsvpRes, memRes, revRes] =
         await Promise.all([
           supabase.from('users').select('*'),
           supabase.from('communities').select('*'),
@@ -170,10 +171,12 @@ export function AppProvider({ children }) {
           supabase.from('events').select('*'),
           supabase.from('event_rsvps').select('*'),
           supabase.from('community_memberships').select('*'),
+          supabase.from('reviews').select('*'),
         ]);
 
       // Process results
       if (usersRes.data) setUsers(usersRes.data);
+      if (revRes && revRes.data) setReviews(revRes.data);
 
       if (commsRes.data) {
         let comms = [...commsRes.data];
@@ -1056,6 +1059,7 @@ export function AppProvider({ children }) {
       markNotificationRead,
       feedPosts,
       experiences,
+      reviews,
       connectedSocialAccounts,
       setConnectedSocialAccounts,
       createFeedPost,

@@ -10,6 +10,8 @@ import MemberDirectory from '../../../src/components/MemberDirectory';
 import InlineComments from '../../../src/components/InlineComments';
 import ExperiencesCatalog from '../../../src/components/ExperiencesCatalog';
 import CreateServiceModal from '../../../src/components/CreateServiceModal';
+import ReviewsList from '../../../src/components/ReviewsList';
+import ReviewForm from '../../../src/components/ReviewForm';
 import { downloadIcs } from '../../../src/lib/calendar';
 import confetti from 'canvas-confetti';
 
@@ -85,6 +87,7 @@ export default function CommunityProfile() {
   const [localPhotos, setLocalPhotos] = useState([]);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
+  const [showReviewForm, setShowReviewForm] = useState(false);
   const fileInputRef = useRef(null);
   
   const communityId = id || (user.joinedCommunities.length > 0 ? user.joinedCommunities[0] : 'tw-tech-meetup');
@@ -325,7 +328,7 @@ export default function CommunityProfile() {
       {/* ===== TAB NAVIGATION ===== */}
       <div style={{ padding: '0 20px', marginBottom: '24px' }}>
         <div style={{ display: 'flex', gap: '4px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', padding: '4px', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-          {['feed', 'services', 'suggestions', 'about', 'events', 'photos', 'members'].map(tab => (
+          {['feed', 'services', 'suggestions', 'about', 'events', 'reviews', 'photos', 'members'].map(tab => (
             <button 
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -661,6 +664,17 @@ export default function CommunityProfile() {
               </div>
             )}
           </>
+        )}
+
+        {/* ===== REVIEWS TAB ===== */}
+        {activeTab === 'reviews' && (
+          <ReviewsList communityId={communityId} onAddReview={() => {
+            if (!isMember) {
+              toast.error('Members Only', 'You must be a member to leave a review.');
+            } else {
+              setShowReviewForm(true);
+            }
+          }} />
         )}
 
         {/* ===== ABOUT TAB ===== */}
@@ -1065,11 +1079,13 @@ export default function CommunityProfile() {
       </div>
       </div>
       
-      <CreateServiceModal 
-        isOpen={isServiceModalOpen} 
-        onClose={() => setIsServiceModalOpen(false)} 
-        communityId={communityId} 
-      />
+      {isServiceModalOpen && (
+        <CreateServiceModal communityId={communityId} onClose={() => setIsServiceModalOpen(false)} />
+      )}
+      
+      {showReviewForm && (
+        <ReviewForm communityId={communityId} onClose={() => setShowReviewForm(false)} />
+      )}
     </div>
   );
 }

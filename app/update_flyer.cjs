@@ -10,10 +10,10 @@ if (!content.includes('import { useState, useRef, useCallback, useEffect, useMem
 }
 
 // 1. Better autoScale using Canvas measurement
-const oldAutoScale = \`  const longestWord = titleText.split(' ').reduce((max, word) => Math.max(max, word.length), 0);
-  const autoScale = Math.min(1, 10 / (longestWord || 1));\`;
+const oldAutoScale = `  const longestWord = titleText.split(' ').reduce((max, word) => Math.max(max, word.length), 0);
+  const autoScale = Math.min(1, 10 / (longestWord || 1));`;
 
-const newAutoScale = \`  const autoScale = useMemo(() => {
+const newAutoScale = `  const autoScale = useMemo(() => {
     if (typeof document === 'undefined') return 1;
     const baseTitleFontSize = template === 'bold' ? 86 : template === 'minimal' ? 76 : 72;
     const longestWordStr = titleText.split(' ').reduce((longest, word) => word.length > longest.length ? word : longest, "");
@@ -22,7 +22,7 @@ const newAutoScale = \`  const autoScale = useMemo(() => {
     ctxMeasure.font = \\\`\\\${tmpl.titleWeight} \\\${baseTitleFontSize}px "\\\${font}", sans-serif\\\`;
     const longestWordWidth = ctxMeasure.measureText(longestWordStr).width;
     return longestWordWidth > 864 ? 864 / longestWordWidth : 1;
-  }, [titleText, template, font, tmpl]);\`;
+  }, [titleText, template, font, tmpl]);`;
 
 if (content.includes(oldAutoScale)) {
   content = content.replace(oldAutoScale, newAutoScale);
@@ -32,7 +32,7 @@ if (content.includes(oldAutoScale)) {
 const startIndex = content.indexOf('  // ─── Export: Download via Canvas ───────────────────────────────────');
 const endIndex = content.indexOf('  // ─── Panel Button ─────────────────────────────────────────────');
 
-const exportFns = \`  // ─── Shared Canvas Generator ──────────────────────────────────────────
+const exportFns = `  // ─── Shared Canvas Generator ──────────────────────────────────────────
   const generateCanvas = async () => {
     const canvas = document.createElement('canvas');
     const width = 1080;
@@ -240,7 +240,7 @@ const exportFns = \`  // ─── Shared Canvas Generator ───────
     }
   }, [titleText, subtitleText, bodyText, accent, font, bgImage, template, event, tmpl, autoScale, titleSizeMultiplier, titleColor]);
 
-\`;
+`;
 
 if (startIndex !== -1 && endIndex !== -1) {
   content = content.slice(0, startIndex) + exportFns + content.slice(endIndex);
