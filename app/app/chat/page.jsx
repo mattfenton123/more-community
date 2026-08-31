@@ -117,7 +117,25 @@ export default function ChatIndex() {
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             {inboxItems.map((item, i) => {
               const title = item.type === 'dm' ? item.otherUser.name : item.name;
-              let avatar = item.type === 'dm' ? item.otherUser.avatar : (item.comm.image || FALLBACK_IMAGES.community);
+              
+              let displayTitle = title;
+              let displaySubtitle = item.type !== 'dm' ? item.comm.name : null;
+
+              if (item.type !== 'dm' && title.toLowerCase() === 'general') {
+                displayTitle = item.comm.name;
+                displaySubtitle = 'General Chat';
+              }
+              
+              // Use user avatar for DMs. For channels, use a generated avatar based on the channel name
+              // so that different groups/channels don't all look identical with the same community image.
+              let avatar = item.type === 'dm' 
+                ? (item.otherUser.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(item.otherUser.name)}&background=0D8B93&color=fff`)
+                : `https://ui-avatars.com/api/?name=${encodeURIComponent(displayTitle)}&background=1e293b&color=2dd4bf`;
+              
+              if (item.type !== 'dm' && title.toLowerCase() === 'general') {
+                // For the main general channel, use the community image
+                avatar = item.comm.image || FALLBACK_IMAGES.community;
+              }
               
               let Icon = Hash;
               if (item.type === 'dm') Icon = MessageCircle;
@@ -146,8 +164,15 @@ export default function ChatIndex() {
                   
                   <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', justifyContent: 'center', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '16px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '4px' }}>
-                      <div style={{ fontWeight: item.hasUnread ? 700 : 600, fontSize: '1.05rem', color: item.hasUnread ? 'white' : 'var(--slate-200)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {title}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden' }}>
+                        <div style={{ fontWeight: item.hasUnread ? 700 : 600, fontSize: '1.05rem', color: item.hasUnread ? 'white' : 'var(--slate-200)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {displayTitle}
+                        </div>
+                        {displaySubtitle && (
+                          <div style={{ fontSize: '0.75rem', color: 'var(--slate-500)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {displaySubtitle}
+                          </div>
+                        )}
                       </div>
                       <div style={{ fontSize: '0.75rem', color: item.hasUnread ? 'var(--teal-400)' : 'var(--slate-500)', fontWeight: item.hasUnread ? 600 : 400 }}>
                         {item.latestMsg?.timestamp?.split(' ')[0] || ''}
