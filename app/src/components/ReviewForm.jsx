@@ -3,7 +3,8 @@ import { Star, X, Share2, MessageCircle } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { useFeed } from '../context/FeedContext';
 import { useToast } from './Toast';
-import { submitReview } from '../actions/reviews';
+import { submitReviewAction } from '../lib/actions';
+import { supabase } from '../lib/supabaseClient';
 
 export default function ReviewForm({ communityId, onClose }) {
   const { user, addReview } = useAppContext();
@@ -23,7 +24,10 @@ export default function ReviewForm({ communityId, onClose }) {
     
     setIsSubmitting(true);
     try {
-      const data = await submitReview(user.id, communityId, 'community', rating, content);
+      const sessionResponse = await supabase.auth.getSession();
+      const token = sessionResponse.data.session?.access_token;
+      
+      const data = await submitReviewAction(user.id, communityId, 'community', rating, content, token);
       
       // Update local state so it appears immediately
       addReview({

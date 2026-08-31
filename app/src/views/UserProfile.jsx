@@ -99,7 +99,7 @@ export default function UserProfile() {
                 <button className="interactive-press" onClick={() => setIsEditing(true)} style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(236,72,153,0.2)', border: '1px solid rgba(236,72,153,0.4)', backdropFilter: 'blur(10px)', color: 'var(--pink-400)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
                   <Edit3 size={20} />
                 </button>
-                <button className="interactive-press" onClick={() => navigate.back()} style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(20,184,166,0.2)', border: '1px solid rgba(20,184,166,0.4)', backdropFilter: 'blur(10px)', color: 'var(--teal-400)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                <button className="interactive-press" onClick={() => navigate.push('/settings')} style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(20,184,166,0.2)', border: '1px solid rgba(20,184,166,0.4)', backdropFilter: 'blur(10px)', color: 'var(--teal-400)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
                   <Settings size={20} />
                 </button>
               </>

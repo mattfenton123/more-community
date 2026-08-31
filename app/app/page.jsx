@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppContext } from '../src/context/AppContext';
 import { useFeed } from '../src/context/FeedContext';
-import { Heart, MessageCircle, Share2, Calendar, MapPin, Clock, Compass, Plus, Megaphone, Edit3, Briefcase } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Calendar, MapPin, Clock, Compass, Plus, Megaphone, Edit3, Briefcase, ChevronUp } from 'lucide-react';
 import { SkeletonList, SkeletonCard } from '../src/components/SkeletonCard';
 import InlineComments from '../src/components/InlineComments';
 import AppHeader from '../src/components/AppHeader';
@@ -13,7 +13,7 @@ export default function HomeFeed() {
   const { feedPosts, likeFeedPost } = useFeed();
   const router = useRouter();
   const [expandedComments, setExpandedComments] = useState({});
-  const [activeFeedTab, setActiveFeedTab] = useState('All');
+  const [activeFeedTab, setActiveFeedTab] = useState('Feed');
 
   const unreadCount = notifications ? notifications.filter(n => !n.is_read).length : 0;
   const joinedCommunities = communities.filter(c => user.joinedCommunities?.includes(c.id));
@@ -39,8 +39,26 @@ export default function HomeFeed() {
     if (feedPosts && user.joinedCommunities) {
       feedPosts.forEach(post => {
         if (user.joinedCommunities.includes(post.communityId)) {
-          if (activeFeedTab === 'All' || activeFeedTab === 'Discussions') {
-            items.push({ type: 'post', id: `post-${post.id}`, data: post, timestamp: new Date(post.timestamp).getTime() });
+          let isIdea = false;
+          let ideaData = null;
+          if (post.media) {
+            try {
+               const parsed = JSON.parse(post.media);
+               if (parsed.type === 'idea') {
+                 isIdea = true;
+                 ideaData = parsed;
+               }
+            } catch (e) {}
+          }
+          
+          if (isIdea) {
+             if (activeFeedTab === 'Feed' || activeFeedTab === 'Ideas') {
+                items.push({ type: 'idea', id: `idea-${post.id}`, data: post, ideaData, timestamp: new Date(post.timestamp || post.createdAt).getTime() });
+             }
+          } else {
+             if (activeFeedTab === 'Feed') {
+                items.push({ type: 'post', id: `post-${post.id}`, data: post, timestamp: new Date(post.timestamp || post.createdAt).getTime() });
+             }
           }
         }
       });
@@ -51,7 +69,7 @@ export default function HomeFeed() {
         const isMemberOfCollab = event.collabCommunityIds?.some(id => user.joinedCommunities.includes(id));
         
         if (isMemberOfPrimary || isMemberOfCollab) {
-          if (activeFeedTab === 'All' || activeFeedTab === 'Events') {
+          if (activeFeedTab === 'Feed' || activeFeedTab === 'Events') {
             items.push({ type: 'event', id: `event-${event.id}`, data: event, timestamp: new Date(event.createdAt || event.date).getTime() });
           }
         }
@@ -62,7 +80,7 @@ export default function HomeFeed() {
 
   return (
     <div className="view-home" style={{ paddingBottom: '80px', background: 'var(--slate-950)', minHeight: '100vh' }}>
-      <AppHeader />
+      <AppHeader title="Home" />
       
       {/* Personalized Dynamic Header */}
       <div style={{ padding: '16px 20px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', background: 'linear-gradient(to bottom, var(--slate-900), var(--slate-950))' }}>
@@ -142,7 +160,7 @@ export default function HomeFeed() {
       {/* Segmented Feed Control */}
       <div style={{ padding: '0 20px' }}>
         <div className="segmented-control">
-          {['All', 'Discussions', 'Events'].map(tab => (
+          {['Feed', 'Events', 'Ideas'].map(tab => (
             <button 
               key={tab} 
               onClick={() => setActiveFeedTab(tab)} 
@@ -244,6 +262,51 @@ export default function HomeFeed() {
                 {expandedComments[post.id] && (
                   <InlineComments post={post} />
                 )}
+              </div>
+            );
+          }
+          
+          if (item.type === 'idea') {
+            const idea = item.data;
+            const ideaData = item.ideaData || {};
+            const author = users.find(u => u.id === idea.authorId);
+            const community = communities.find(c => c.id === idea.communityId);
+            return (
+              <div key={item.id} style={{ background: 'linear-gradient(to bottom right, rgba(20,184,166,0.05), rgba(255,255,255,0.02))', backdropFilter: 'blur(10px)', border: '1px solid rgba(20,184,166,0.3)', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 8px 24px rgba(0,0,0,0.2)', display: 'flex' }}>
+                <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(0,0,0,0.2)', borderRight: '1px solid rgba(255,255,255,0.05)', minWidth: '70px' }}>
+                  <button onClick={() => likeFeedPost(idea.id)} className="interactive-press" style={{ background: idea.liked ? 'var(--teal-500)' : 'rgba(255,255,255,0.1)', width: '40px', height: '40px', borderRadius: '12px', border: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: idea.liked ? 'white' : 'var(--slate-300)', cursor: 'pointer', fontWeight: 800 }}>
+                    <ChevronUp size={20} strokeWidth={3} />
+                  </button>
+                  <div style={{ marginTop: '8px', fontSize: '1.1rem', fontWeight: 800, color: 'white' }}>{idea.likes || 0}</div>
+                  <div style={{ fontSize: '0.7rem', color: 'var(--slate-400)', textTransform: 'uppercase', fontWeight: 700, marginTop: '2px' }}>Votes</div>
+                </div>
+                <div style={{ flex: 1, padding: '16px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                     <span style={{ fontSize: '0.7rem', background: 'rgba(20,184,166,0.2)', color: 'var(--teal-300)', padding: '4px 8px', borderRadius: '6px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Suggestion</span>
+                     <span style={{ fontSize: '0.8rem', color: 'var(--slate-400)' }}>by {author?.name || 'Member'} in {community?.name}</span>
+                  </div>
+                  <div style={{ fontWeight: 800, color: 'white', fontSize: '1.2rem', marginBottom: '8px', lineHeight: 1.3 }}>{ideaData.title || idea.text}</div>
+                  {ideaData.location && (
+                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.85rem', color: 'var(--slate-400)', marginBottom: '12px' }}>
+                       <MapPin size={14} /> {ideaData.location}
+                     </div>
+                  )}
+                  {ideaData.title && idea.text !== ideaData.title && (
+                    <div style={{ color: 'var(--slate-300)', fontSize: '0.95rem', lineHeight: 1.5, marginBottom: '16px' }}>{idea.text}</div>
+                  )}
+                  
+                  <div style={{ display: 'flex', gap: '12px', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '16px' }}>
+                    <button onClick={() => setExpandedComments(prev => ({...prev, [idea.id]: !prev[idea.id]}))} className="btn btn-outline interactive-press" style={{ padding: '8px 16px', borderRadius: '12px', fontSize: '0.85rem', display: 'flex', gap: '6px', alignItems: 'center' }}>
+                      <MessageCircle size={16} /> Discuss ({idea.comments || 0})
+                    </button>
+                    <button className="interactive-press" style={{ background: 'rgba(255,255,255,0.05)', width: '38px', height: '38px', borderRadius: '50%', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', cursor: 'pointer', marginLeft: 'auto' }}>
+                      <Share2 size={18} />
+                    </button>
+                  </div>
+                  {expandedComments[idea.id] && (
+                    <div style={{ marginTop: '16px' }}><InlineComments post={idea} /></div>
+                  )}
+                </div>
               </div>
             );
           }

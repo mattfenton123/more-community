@@ -588,3 +588,37 @@ export async function deleteUserAction(userId, token) {
     return { error: err.message };
   }
 }
+
+
+export async function submitReviewAction(userId, targetId, targetType, rating, content, token) {
+  await verifyUser(token, userId);
+  
+  if (!userId || !targetId || !targetType || !rating) {
+    throw new Error("Missing required fields for review");
+  }
+  if (rating < 1 || rating > 5) {
+    throw new Error("Rating must be between 1 and 5");
+  }
+
+  const { data, error } = await supabaseAdmin
+    .from("reviews")
+    .insert([
+      {
+        user_id: userId,
+        target_id: targetId,
+        target_type: targetType,
+        rating,
+        content
+      }
+    ])
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Error submitting review:", error);
+    throw new Error(error.message);
+  }
+
+  return data;
+}
+
