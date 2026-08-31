@@ -4,7 +4,7 @@ import { useRouter as useNavigate, useParams } from 'next/navigation';
 import { useAppContext } from '../../../src/context/AppContext';
 import { useChat } from '../../../src/context/ChatContext';
 import { useAuth } from '../../../src/context/AuthContext';
-import { ArrowLeft, Users, Calendar, MapPin, Settings, Camera, Check, X, MessageCircle, Edit3, Trophy, Flame, Plus, Compass, Star, LogOut, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Users, Calendar, MapPin, Settings, Camera, Check, X, MessageCircle, Edit3, Trophy, Flame, Plus, Compass, Star, LogOut, ChevronRight, Shield, BarChart2 } from 'lucide-react';
 import { useToast } from '../../../src/components/Toast';
 import GamificationPanel, { BadgeRow, useGamification } from '../../../src/components/Gamification';
 import { FALLBACK_IMAGES } from '../../../src/lib/constants';
@@ -76,7 +76,11 @@ export default function UserProfile() {
 
   // Quick action items for own profile
   const quickActions = [
-    { icon: Plus, label: 'Start a Community', desc: 'Create and lead your own group', color: '#8b5cf6', href: '/dashboard' },
+    ...(currentUser.isAdmin ? [{ icon: Shield, label: 'Admin Hub', desc: 'Platform management', color: '#ef4444', href: '/admin' }] : []),
+    ...(currentUser.leaderOf ? 
+      [{ icon: BarChart2, label: 'Leader Dashboard', desc: 'Manage your communities', color: '#8b5cf6', href: '/dashboard' }] :
+      [{ icon: Plus, label: 'Start a Community', desc: 'Create and lead your own group', color: '#8b5cf6', href: '/dashboard' }]
+    ),
     { icon: Compass, label: 'Discover Communities', desc: 'Find groups near you', color: 'var(--teal-500)', href: '/discover' },
     { icon: Calendar, label: 'Browse Events', desc: 'See what\'s happening locally', color: '#3b82f6', href: '/events' },
     { icon: Star, label: 'Leaderboard', desc: 'See top community members', color: '#f59e0b', href: '/leaderboard' },

@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Compass, MessageCircle, User, Activity } from 'lucide-react';
+import { Compass, MessageCircle, User, Activity, Calendar } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { useChat } from '../context/ChatContext';
 
@@ -38,6 +38,7 @@ export default function BottomNav() {
   const navItems = [
     { id: 'home', label: 'Home', icon: Activity, href: '/' },
     { id: 'discover', label: 'Discover', icon: Compass, href: '/discover' },
+    { id: 'events', label: 'Events', icon: Calendar, href: '/events' },
     { id: 'chat', label: 'Chat', icon: MessageCircle, href: '/chat', badge: unreadChatCount },
     { id: 'profile', label: 'Profile', icon: User, href: `/profile/${user?.id || ''}` },
   ];

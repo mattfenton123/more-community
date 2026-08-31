@@ -1,14 +1,39 @@
 "use client";
 import { useRouter as useNavigate } from 'next/navigation';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, Bell } from 'lucide-react';
+import { useAppContext } from '../context/AppContext';
 
 export default function AppHeader({ title, subtitle, rightElement, showBack = false, onBack }) {
   const navigate = useNavigate();
+  const { notifications } = useAppContext();
+  const unreadCount = notifications ? notifications.filter(n => !n.is_read).length : 0;
 
   const handleBack = () => {
     if (onBack) onBack();
     else navigate.back();
   };
+
+  const defaultRightElement = (
+    <div 
+      className="interactive-press" 
+      onClick={() => navigate.push('/notifications')}
+      style={{ position: 'relative', cursor: 'pointer', padding: '4px' }}
+    >
+      <Bell size={22} color="white" />
+      {unreadCount > 0 && (
+        <div style={{
+          position: 'absolute', top: '0px', right: '0px',
+          background: 'var(--rose-500)', color: 'white',
+          fontSize: '0.6rem', fontWeight: 700,
+          width: '16px', height: '16px', borderRadius: '50%',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          border: '2px solid var(--slate-900)',
+        }}>
+          {unreadCount > 9 ? '9+' : unreadCount}
+        </div>
+      )}
+    </div>
+  );
 
   return (
     <div className="app-header" style={{ padding: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--slate-900)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
@@ -40,11 +65,9 @@ export default function AppHeader({ title, subtitle, rightElement, showBack = fa
           </div>
         )}
       </div>
-      {rightElement && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          {rightElement}
-        </div>
-      )}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        {rightElement !== undefined ? rightElement : defaultRightElement}
+      </div>
     </div>
   );
 }
