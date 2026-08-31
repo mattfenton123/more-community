@@ -11,6 +11,12 @@ const AppContext = createContext();
 export function AppProvider({ children }) {
   const { authUser, session } = useAuth();
   
+  // Accessibility & Theme State
+  const [theme, setTheme] = useState('dark'); // 'light', 'dark', 'system'
+  const [highContrast, setHighContrast] = useState(false);
+  const [largeText, setLargeText] = useState(false);
+  const [reduceMotion, setReduceMotion] = useState(false);
+
   const [communities, setCommunities] = useState([]);
   const [events, setEvents] = useState([]);
   const [channels, setChannels] = useState([]);
@@ -160,6 +166,48 @@ export function AppProvider({ children }) {
     user.ledCommunities.push(targetComm.id);
     if (!user.joinedCommunities.includes(targetComm.id)) user.joinedCommunities.push(targetComm.id);
   }
+
+  // Load accessibility preferences from local storage and apply to DOM
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedTheme = localStorage.getItem('more_theme') || 'dark';
+      const savedHighContrast = localStorage.getItem('more_high_contrast') === 'true';
+      const savedLargeText = localStorage.getItem('more_large_text') === 'true';
+      const savedReduceMotion = localStorage.getItem('more_reduce_motion') === 'true';
+      
+      setTheme(savedTheme);
+      setHighContrast(savedHighContrast);
+      setLargeText(savedLargeText);
+      setReduceMotion(savedReduceMotion);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      const root = document.documentElement;
+      
+      let effectiveTheme = theme;
+      if (theme === 'system') {
+        effectiveTheme = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+      }
+      
+      root.setAttribute('data-theme', effectiveTheme);
+      if (highContrast) root.setAttribute('data-high-contrast', 'true');
+      else root.removeAttribute('data-high-contrast');
+      
+      if (largeText) root.setAttribute('data-large-text', 'true');
+      else root.removeAttribute('data-large-text');
+      
+      if (reduceMotion) root.setAttribute('data-reduce-motion', 'true');
+      else root.removeAttribute('data-reduce-motion');
+      
+      // Save to localStorage
+      localStorage.setItem('more_theme', theme);
+      localStorage.setItem('more_high_contrast', highContrast);
+      localStorage.setItem('more_large_text', largeText);
+      localStorage.setItem('more_reduce_motion', reduceMotion);
+    }
+  }, [theme, highContrast, largeText, reduceMotion]);
 
   // Supabase Real-time Setup & Initial Fetch
   useEffect(() => {
@@ -1082,7 +1130,11 @@ export function AppProvider({ children }) {
       setPrescribingLinks,
       services,
       pitchService,
-      updateServiceStatus
+      updateServiceStatus,
+      theme, setTheme,
+      highContrast, setHighContrast,
+      largeText, setLargeText,
+      reduceMotion, setReduceMotion
     }}>
       {children}
     </AppContext.Provider>

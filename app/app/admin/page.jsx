@@ -9,7 +9,7 @@ import { useAppContext } from '../../src/context/AppContext';
 import { useFeed } from '../../src/context/FeedContext';
 import { useChat } from '../../src/context/ChatContext';
 import { useToast } from '../../src/components/Toast';
-import { useRouter as useNavigate } from 'next/navigation';
+import { useRouter as useNavigate, useSearchParams } from 'next/navigation';
 
 // ─── Shared Components ────────────────────────────────────
 const StatCard = ({ value, label, icon: Icon, color, accent }) => (
@@ -71,8 +71,9 @@ export default function AdminDashboard() {
     const { feedPosts } = useFeed();
     const { messages } = useChat();
   const { toast } = useToast();
+  const searchParams = useSearchParams();
 
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'overview');
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedId, setExpandedId] = useState(null);
   const [communityFilter, setCommunityFilter] = useState('all');

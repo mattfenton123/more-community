@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { ArrowRight, Camera, Check, Users, Calendar, MessageCircle } from 'lucide-react';
+import { ArrowRight, Camera, Check, Users, Calendar, MessageCircle, Eye, Type, Moon, Sun, Monitor, Activity } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useAppContext } from '../context/AppContext';
 import { useToast } from '../components/Toast';
@@ -20,7 +20,7 @@ const STEP_VIDEOS = [
 
 export default function OnboardingFlow({ onComplete }) {
   const { authUser } = useAuth();
-  const { user, updateUser, uploadImage } = useAppContext();
+  const { user, updateUser, uploadImage, theme, setTheme, highContrast, setHighContrast, largeText, setLargeText, reduceMotion, setReduceMotion } = useAppContext();
   const [step, setStep] = useState(0);
   const [name, setName] = useState(user?.name || '');
   const [bio, setBio] = useState('');
@@ -207,7 +207,67 @@ export default function OnboardingFlow({ onComplete }) {
       </p>
     </div>,
 
-    // Step 2: Welcome
+    // Step 2: App Experience
+    <div key="experience" className="page-wrapper" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      <div style={{ textAlign: 'center', marginBottom: '8px' }}>
+        <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.6rem', margin: '0 0 8px 0' }}>App Experience</h2>
+        <p style={{ color: 'var(--slate-400)', fontSize: '0.9rem', margin: 0 }}>Customize how more. looks and feels for you.</p>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <div>
+          <label style={{ display: 'block', marginBottom: '8px', color: 'var(--slate-300)', fontSize: '0.85rem', fontWeight: 500 }}>Theme</label>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button onClick={() => setTheme('light')} className="interactive-press" style={{ flex: 1, padding: '12px', borderRadius: '12px', border: theme === 'light' ? '1px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.1)', background: theme === 'light' ? 'rgba(20,184,166,0.12)' : 'var(--slate-800)', color: theme === 'light' ? 'var(--teal-300)' : 'var(--slate-400)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+              <Sun size={20} /> <span style={{ fontSize: '0.8rem' }}>Light</span>
+            </button>
+            <button onClick={() => setTheme('dark')} className="interactive-press" style={{ flex: 1, padding: '12px', borderRadius: '12px', border: theme === 'dark' ? '1px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.1)', background: theme === 'dark' ? 'rgba(20,184,166,0.12)' : 'var(--slate-800)', color: theme === 'dark' ? 'var(--teal-300)' : 'var(--slate-400)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+              <Moon size={20} /> <span style={{ fontSize: '0.8rem' }}>Dark</span>
+            </button>
+            <button onClick={() => setTheme('system')} className="interactive-press" style={{ flex: 1, padding: '12px', borderRadius: '12px', border: theme === 'system' ? '1px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.1)', background: theme === 'system' ? 'rgba(20,184,166,0.12)' : 'var(--slate-800)', color: theme === 'system' ? 'var(--teal-300)' : 'var(--slate-400)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+              <Monitor size={20} /> <span style={{ fontSize: '0.8rem' }}>Auto</span>
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <label style={{ display: 'block', marginBottom: '8px', color: 'var(--slate-300)', fontSize: '0.85rem', fontWeight: 500 }}>Accessibility</label>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div onClick={() => setHighContrast(!highContrast)} className="interactive-press" style={{ padding: '12px 16px', borderRadius: '12px', background: 'var(--slate-800)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <Eye size={18} color="var(--teal-400)" />
+                <span style={{ fontSize: '0.9rem', color: 'var(--slate-200)' }}>High Contrast</span>
+              </div>
+              <div style={{ width: '40px', height: '22px', borderRadius: '11px', background: highContrast ? 'var(--teal-500)' : 'var(--slate-700)', position: 'relative', transition: '0.2s' }}>
+                <div style={{ position: 'absolute', top: '2px', left: highContrast ? '20px' : '2px', width: '18px', height: '18px', borderRadius: '50%', background: 'white', transition: '0.2s' }}></div>
+              </div>
+            </div>
+            
+            <div onClick={() => setLargeText(!largeText)} className="interactive-press" style={{ padding: '12px 16px', borderRadius: '12px', background: 'var(--slate-800)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <Type size={18} color="var(--teal-400)" />
+                <span style={{ fontSize: '0.9rem', color: 'var(--slate-200)' }}>Large Text</span>
+              </div>
+              <div style={{ width: '40px', height: '22px', borderRadius: '11px', background: largeText ? 'var(--teal-500)' : 'var(--slate-700)', position: 'relative', transition: '0.2s' }}>
+                <div style={{ position: 'absolute', top: '2px', left: largeText ? '20px' : '2px', width: '18px', height: '18px', borderRadius: '50%', background: 'white', transition: '0.2s' }}></div>
+              </div>
+            </div>
+            
+            <div onClick={() => setReduceMotion(!reduceMotion)} className="interactive-press" style={{ padding: '12px 16px', borderRadius: '12px', background: 'var(--slate-800)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <Activity size={18} color="var(--teal-400)" />
+                <span style={{ fontSize: '0.9rem', color: 'var(--slate-200)' }}>Reduce Motion</span>
+              </div>
+              <div style={{ width: '40px', height: '22px', borderRadius: '11px', background: reduceMotion ? 'var(--teal-500)' : 'var(--slate-700)', position: 'relative', transition: '0.2s' }}>
+                <div style={{ position: 'absolute', top: '2px', left: reduceMotion ? '20px' : '2px', width: '18px', height: '18px', borderRadius: '50%', background: 'white', transition: '0.2s' }}></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>,
+
+    // Step 3: Welcome
     <div key="welcome" className="page-wrapper" style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px' }}>
       {/* Hero video strip */}
       <div style={{ borderRadius: '16px', overflow: 'hidden', height: '160px', width: '100%', position: 'relative' }}>
@@ -262,7 +322,7 @@ export default function OnboardingFlow({ onComplete }) {
       {/* Progress bar */}
       <div style={{ padding: '20px 24px 0' }}>
         <div style={{ display: 'flex', gap: '8px' }}>
-          {[0, 1, 2].map(i => (
+          {[0, 1, 2, 3].map(i => (
             <div
               key={i}
               style={{
@@ -276,7 +336,7 @@ export default function OnboardingFlow({ onComplete }) {
           ))}
         </div>
         <div style={{ fontSize: '0.75rem', color: 'var(--slate-500)', marginTop: '12px' }}>
-          Step {step + 1} of 3
+          Step {step + 1} of 4
         </div>
       </div>
 
@@ -289,7 +349,7 @@ export default function OnboardingFlow({ onComplete }) {
       <div style={{ padding: '16px 24px 32px' }}>
         <button
           onClick={() => {
-            if (step < 2) setStep(step + 1);
+            if (step < 3) setStep(step + 1);
             else handleFinish();
           }}
           disabled={!canProceed || isSubmitting}
@@ -306,7 +366,7 @@ export default function OnboardingFlow({ onComplete }) {
             opacity: canProceed && !isSubmitting ? 1 : 0.4,
           }}
         >
-          {isSubmitting ? 'Setting up...' : step < 2 ? (
+          {isSubmitting ? 'Setting up...' : step < 3 ? (
             <>Continue <ArrowRight size={18} /></>
           ) : (
             <>Let's Go! <ArrowRight size={18} /></>

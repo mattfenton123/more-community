@@ -75,15 +75,14 @@ export default function ChatIndex() {
       </div>
 
       {/* Tab Switcher */}
-      <div style={{ display: 'flex', gap: '4px', marginBottom: '20px', background: 'rgba(255,255,255,0.03)', borderRadius: '10px', padding: '3px' }}>
+      <div className="segmented-control" style={{ marginBottom: '20px' }}>
         {['communities', 'direct'].map(tab => (
-          <button key={tab} onClick={() => setActiveTab(tab)} style={{
-            flex: 1, padding: '10px', borderRadius: '8px', border: 'none',
-            background: activeTab === tab ? 'rgba(20,184,166,0.15)' : 'transparent',
-            color: activeTab === tab ? 'var(--teal-300)' : 'var(--slate-400)',
-            fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer', textTransform: 'capitalize',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px'
-          }}>
+          <button 
+            key={tab} 
+            onClick={() => setActiveTab(tab)} 
+            className={activeTab === tab ? 'active' : ''}
+            style={{ textTransform: 'capitalize' }}
+          >
             {tab === 'communities' ? <><Hash size={14} /> Communities</> : <><User size={14} /> Direct Messages</>}
             {tab === 'direct' && dmConversations.some(c => c.isUnread) && (
               <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--teal-400)' }} />

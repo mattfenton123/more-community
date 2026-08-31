@@ -2,7 +2,7 @@
 import { useState, useRef, useMemo } from 'react';
 import { Users, Calendar, MessageCircle, TrendingUp, Search, Plus, MapPin, Image as ImageIcon, CreditCard, ChevronRight, Download, Activity, Globe, Heart, Crown, Info, X, Map, Zap, Mail, Trash2, UserCheck, Ban, ChevronDown, ChevronUp, Settings, Megaphone, QrCode, BarChart3, Ticket, ScanLine, UserPlus, DollarSign, Clock, Edit3, Check, Eye, EyeOff, Shield, Star } from 'lucide-react';
 import AppHeader from '../../src/components/AppHeader';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAppContext } from '../../src/context/AppContext';
 import { useChat } from '../../src/context/ChatContext';
 import { useToast } from '../../src/components/Toast';
@@ -78,12 +78,13 @@ export default function LeaderDashboard() {
     const { messages } = useChat();
   const { toast } = useToast();
   const router = useRouter();
+  const searchParams = useSearchParams();
   
   // ─── State ──────────────────────────────────────────────────
   const [isEditing, setIsEditing] = useState(false);
   const [modalType, setModalType] = useState(null);
   const [editForm, setEditForm] = useState({ description: '', tags: '' });
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'overview');
   const [activeCommunityId, setActiveCommunityId] = useState(user?.ledCommunities?.[0] || null);
   
   const emptyEventForm = { title: '', description: '', date: '', time: '', location: '', maxCapacity: '', ticketPrice: '' };

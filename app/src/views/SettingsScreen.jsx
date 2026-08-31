@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from 'react';
-import { Bell, BellOff, Smartphone, Download, User, Shield, Info, ChevronRight, LogOut } from 'lucide-react';
+import { LogOut, ChevronRight, Download, Smartphone, Bell, BellOff, Info, LifeBuoy, Sun, Moon, Monitor, Eye, Type, Activity } from 'lucide-react';
 import AppHeader from '../components/AppHeader';
 import { useRouter as useNavigate } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
@@ -10,8 +10,8 @@ import { useToast } from '../components/Toast';
 
 export default function SettingsScreen() {
   const navigate = useNavigate();
-  const { signOut, authUser } = useAuth();
-  const { user } = useAppContext();
+  const { authUser, signOut } = useAuth();
+  const { user, theme, setTheme, highContrast, setHighContrast, largeText, setLargeText, reduceMotion, setReduceMotion } = useAppContext();
   const { toast } = useToast();
   const [notificationsEnabled, setNotificationsEnabled] = useState(() => {
     return 'Notification' in window && Notification.permission === 'granted';
@@ -158,6 +158,61 @@ export default function SettingsScreen() {
               }}></div>
             </div>
           </button>
+
+          {/* Theme Selector */}
+          <div style={{
+            padding: '16px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', marginTop: '12px'
+          }}>
+            <span style={{ fontWeight: 500, display: 'block', marginBottom: '12px' }}>Theme</span>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button onClick={() => setTheme('light')} className="interactive-press" style={{ flex: 1, padding: '10px', borderRadius: '8px', border: theme === 'light' ? '1px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.1)', background: theme === 'light' ? 'rgba(20,184,166,0.12)' : 'rgba(255,255,255,0.02)', color: theme === 'light' ? 'var(--teal-300)' : 'var(--slate-400)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                <Sun size={16} /> <span style={{ fontSize: '0.8rem' }}>Light</span>
+              </button>
+              <button onClick={() => setTheme('dark')} className="interactive-press" style={{ flex: 1, padding: '10px', borderRadius: '8px', border: theme === 'dark' ? '1px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.1)', background: theme === 'dark' ? 'rgba(20,184,166,0.12)' : 'rgba(255,255,255,0.02)', color: theme === 'dark' ? 'var(--teal-300)' : 'var(--slate-400)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                <Moon size={16} /> <span style={{ fontSize: '0.8rem' }}>Dark</span>
+              </button>
+              <button onClick={() => setTheme('system')} className="interactive-press" style={{ flex: 1, padding: '10px', borderRadius: '8px', border: theme === 'system' ? '1px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.1)', background: theme === 'system' ? 'rgba(20,184,166,0.12)' : 'rgba(255,255,255,0.02)', color: theme === 'system' ? 'var(--teal-300)' : 'var(--slate-400)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                <Monitor size={16} /> <span style={{ fontSize: '0.8rem' }}>Auto</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Accessibility Toggles */}
+          <div style={{
+            padding: '8px 16px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', marginTop: '12px'
+          }}>
+            <span style={{ fontWeight: 500, display: 'block', marginBottom: '12px', marginTop: '8px' }}>Accessibility</span>
+            
+            <div onClick={() => setHighContrast(!highContrast)} className="interactive-press" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', cursor: 'pointer' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <Eye size={18} color={highContrast ? 'var(--teal-400)' : 'var(--slate-400)'} />
+                <span style={{ fontSize: '0.9rem', color: highContrast ? 'var(--teal-400)' : 'var(--slate-200)' }}>High Contrast</span>
+              </div>
+              <div style={{ width: '40px', height: '22px', borderRadius: '11px', background: highContrast ? 'var(--teal-500)' : 'rgba(255,255,255,0.1)', position: 'relative', transition: '0.2s' }}>
+                <div style={{ position: 'absolute', top: '2px', left: highContrast ? '20px' : '2px', width: '18px', height: '18px', borderRadius: '50%', background: 'white', transition: '0.2s' }}></div>
+              </div>
+            </div>
+
+            <div onClick={() => setLargeText(!largeText)} className="interactive-press" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', cursor: 'pointer' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <Type size={18} color={largeText ? 'var(--teal-400)' : 'var(--slate-400)'} />
+                <span style={{ fontSize: '0.9rem', color: largeText ? 'var(--teal-400)' : 'var(--slate-200)' }}>Large Text</span>
+              </div>
+              <div style={{ width: '40px', height: '22px', borderRadius: '11px', background: largeText ? 'var(--teal-500)' : 'rgba(255,255,255,0.1)', position: 'relative', transition: '0.2s' }}>
+                <div style={{ position: 'absolute', top: '2px', left: largeText ? '20px' : '2px', width: '18px', height: '18px', borderRadius: '50%', background: 'white', transition: '0.2s' }}></div>
+              </div>
+            </div>
+
+            <div onClick={() => setReduceMotion(!reduceMotion)} className="interactive-press" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0', cursor: 'pointer' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <Activity size={18} color={reduceMotion ? 'var(--teal-400)' : 'var(--slate-400)'} />
+                <span style={{ fontSize: '0.9rem', color: reduceMotion ? 'var(--teal-400)' : 'var(--slate-200)' }}>Reduce Motion</span>
+              </div>
+              <div style={{ width: '40px', height: '22px', borderRadius: '11px', background: reduceMotion ? 'var(--teal-500)' : 'rgba(255,255,255,0.1)', position: 'relative', transition: '0.2s' }}>
+                <div style={{ position: 'absolute', top: '2px', left: reduceMotion ? '20px' : '2px', width: '18px', height: '18px', borderRadius: '50%', background: 'white', transition: '0.2s' }}></div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
