@@ -1,5 +1,5 @@
 // Service Worker for more. community PWA
-const CACHE_NAME = 'more-community-v1';
+const CACHE_NAME = 'more-community-v2';
 const OFFLINE_URL = '/';
 
 // Assets to pre-cache
