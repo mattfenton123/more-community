@@ -8,7 +8,7 @@ import DigitalTicket from '../../../src/components/DigitalTicket';
 
 export default function EventClient({ id }) {
   const router = useRouter();
-  const { events, communities, user, eventRsvps, rsvpToEvent } = useAppContext();
+  const { events, communities, user, eventRsvps, rsvpToEvent, joinCommunity } = useAppContext();
   const { toast } = useToast();
   const [event, setEvent] = useState(null);
   const [community, setCommunity] = useState(null);
@@ -36,6 +36,15 @@ export default function EventClient({ id }) {
   const myRsvp = rsvps.find(r => r.userId === user?.id);
   const isGoing = myRsvp?.status === 'going';
   const spotsLeft = event.maxCapacity ? Math.max(0, event.maxCapacity - rsvps.filter(r => r.status === 'going').length) : null;
+  const isMember = user?.joinedCommunities?.includes(event.communityId);
+
+  const handleJoinAndRSVP = async () => {
+    if (!isMember) {
+      await joinCommunity(event.communityId);
+      toast.success('Joined Community!', `You are now a member of ${community.name}`);
+    }
+    handleRSVP();
+  };
 
   const handleRSVP = async () => {
     if (event.ticketPrice > 0 && !isGoing) {
@@ -242,7 +251,7 @@ export default function EventClient({ id }) {
             )}
           </div>
           <button 
-            onClick={handleRSVP}
+            onClick={!isMember && !isGoing ? handleJoinAndRSVP : handleRSVP}
             disabled={checkoutState === 'processing' || (spotsLeft === 0 && !isGoing)}
             className="interactive-press"
             style={{ 
@@ -259,6 +268,7 @@ export default function EventClient({ id }) {
             {checkoutState === 'processing' ? 'Processing...' : 
              isGoing ? 'Cancel RSVP' : 
              spotsLeft === 0 ? 'Sold Out' :
+             !isMember ? 'Join Community to ' + (event.ticketPrice > 0 ? 'Buy Ticket' : 'RSVP') :
              event.ticketPrice > 0 ? 'Buy Ticket' : 'RSVP'}
           </button>
         </div>
