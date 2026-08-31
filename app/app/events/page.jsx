@@ -267,7 +267,6 @@ export default function EventsHub() {
           </>
         ) : (
           <>
-          <>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
               <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)', fontWeight: 600 }}>DISCOVER EVENTS</div>
               <button 
