@@ -1,11 +1,11 @@
 // Service Worker for more. community PWA
 const CACHE_NAME = 'more-community-v1';
-const OFFLINE_URL = '/portal/';
+const OFFLINE_URL = '/';
 
 // Assets to pre-cache
 const PRECACHE_ASSETS = [
-  '/portal/',
-  '/portal/favicon.svg'
+  '/',
+  '/logo.png'
 ];
 
 // Install event - cache core assets
@@ -63,11 +63,11 @@ self.addEventListener('push', (event) => {
   const title = data.title || 'more. community';
   const options = {
     body: data.body || 'You have a new notification',
-    icon: '/portal/favicon.svg',
-    badge: '/portal/favicon.svg',
+    icon: '/logo.png',
+    badge: '/logo.png',
     vibrate: [100, 50, 100],
     data: {
-      url: data.url || '/portal/'
+      url: data.url || '/'
     }
   };
 
@@ -79,12 +79,12 @@ self.addEventListener('push', (event) => {
 // Notification click handler
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  const url = event.notification.data?.url || '/portal/';
+  const url = event.notification.data?.url || '/';
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
       // Focus existing window or open new one
       for (const client of windowClients) {
-        if (client.url.includes('/portal/') && 'focus' in client) {
+        if (client.url.includes('/') && 'focus' in client) {
           return client.focus();
         }
       }
