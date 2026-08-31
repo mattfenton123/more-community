@@ -79,7 +79,7 @@ export default function HomeFeed() {
   }, [feedPosts, events, user.joinedCommunities, activeFeedTab]);
 
   return (
-    <div className="view-home" style={{ paddingBottom: '80px', background: 'var(--slate-950)', minHeight: '100vh' }}>
+    <div className="view-home" style={{ paddingBottom: '80px', background: 'var(--slate-950)', minHeight: '100dvh' }}>
       <AppHeader title="Home" />
       
       {/* Personalized Dynamic Header */}
@@ -133,17 +133,26 @@ export default function HomeFeed() {
 
       {/* Quick Action Hub */}
       <div style={{ padding: '20px', display: 'flex', gap: '12px', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-        {user?.isAdmin || user?.leaderOf ? (
+        {user?.ledCommunities?.length > 0 || user?.isAdmin ? (
           <>
-            <button onClick={() => router.push(user?.isAdmin ? '/admin?tab=users' : '/dashboard?tab=members')} className="btn interactive-press" style={{ flex: '0 0 auto', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px 16px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', color: 'var(--white)' }}>
-              <Edit3 size={18} color="var(--teal-400)" /> Update Members
-            </button>
-            <button onClick={() => router.push(user?.isAdmin ? '/admin?tab=events' : '/dashboard?tab=events')} className="btn interactive-press" style={{ flex: '0 0 auto', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px 16px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', color: 'var(--white)' }}>
-              <Calendar size={18} color="var(--teal-400)" /> Host Event
-            </button>
-            <button onClick={() => router.push(user?.isAdmin ? '/admin?tab=communications' : '/dashboard?tab=crm')} className="btn interactive-press" style={{ flex: '0 0 auto', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px 16px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', color: 'var(--white)' }}>
-              <Megaphone size={18} color="var(--teal-400)" /> Broadcast
-            </button>
+            {user?.ledCommunities?.length > 0 && (
+              <>
+                <button onClick={() => router.push('/dashboard?tab=members')} className="btn interactive-press" style={{ flex: '0 0 auto', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px 16px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', color: 'var(--white)' }}>
+                  <Edit3 size={18} color="var(--teal-400)" /> Update Members
+                </button>
+                <button onClick={() => router.push('/dashboard?tab=events')} className="btn interactive-press" style={{ flex: '0 0 auto', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px 16px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', color: 'var(--white)' }}>
+                  <Calendar size={18} color="var(--teal-400)" /> Host Event
+                </button>
+                <button onClick={() => router.push('/dashboard?tab=crm')} className="btn interactive-press" style={{ flex: '0 0 auto', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px 16px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', color: 'var(--white)' }}>
+                  <Megaphone size={18} color="var(--teal-400)" /> Broadcast
+                </button>
+              </>
+            )}
+            {user?.isAdmin && (
+              <button onClick={() => router.push('/admin')} className="btn interactive-press" style={{ flex: '0 0 auto', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px 16px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', color: 'var(--white)' }}>
+                <Shield size={18} color="var(--teal-400)" /> Admin Panel
+              </button>
+            )}
           </>
         ) : (
           <>

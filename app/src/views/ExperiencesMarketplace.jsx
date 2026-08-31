@@ -39,7 +39,7 @@ export default function ExperiencesMarketplace() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--slate-950)', paddingBottom: '100px' }}>
+    <div style={{ minHeight: '100dvh', background: 'var(--slate-950)', paddingBottom: '100px' }}>
       {/* Header */}
       <div style={{
         position: 'sticky', top: 0, zIndex: 50,

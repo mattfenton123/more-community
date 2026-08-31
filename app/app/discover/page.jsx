@@ -221,7 +221,7 @@ export default function Discover() {
 
       {viewMode === 'map' ? (
         /* Map View */
-        <div style={{ width: '100%', height: 'calc(100vh - 170px)', position: 'relative' }}>
+        <div style={{ width: '100%', height: 'calc(100dvh - 170px)', position: 'relative' }}>
           <MapView communities={filteredCommunities} />
           <div style={{
             position: 'absolute', bottom: '16px', left: '50%', transform: 'translateX(-50%)',

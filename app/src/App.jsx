@@ -24,7 +24,7 @@ const ExperiencesMarketplace = React.lazy(() => import('./views/ExperiencesMarke
 
 function RouteFallback() {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: 'var(--slate-950)' }}>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100dvh', background: 'var(--slate-950)' }}>
       <div className="skeleton" style={{ width: '120px', height: '4px', borderRadius: '99px' }} />
     </div>
   );
@@ -159,7 +159,7 @@ import { ErrorBoundary } from 'react-error-boundary';
 
 function ErrorFallback({ error }) {
   return (
-    <div style={{ padding: '40px', color: 'var(--white)', background: 'var(--slate-950)', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+    <div style={{ padding: '40px', color: 'var(--white)', background: 'var(--slate-950)', minHeight: '100dvh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
       <h2 style={{ color: 'var(--rose-500)', fontFamily: 'var(--font-heading)', marginBottom: '16px' }}>Something went wrong</h2>
       <p style={{ color: 'var(--slate-400)', marginBottom: '24px', textAlign: 'center' }}>
         We hit an unexpected problem. Our team has been notified. Please try reloading.

@@ -270,7 +270,7 @@ export default function AdminDashboard() {
   ];
 
   return (
-    <div style={{ paddingBottom: '80px', minHeight: '100vh', background: 'var(--slate-950)' }}>
+    <div style={{ paddingBottom: '80px', minHeight: '100dvh', background: 'var(--slate-950)' }}>
       {/* ═══ HEADER ═══ */}
       <div style={{ padding: '28px 20px 20px', background: 'linear-gradient(180deg, rgba(59,130,246,0.12) 0%, transparent 100%)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '4px' }}>

@@ -227,7 +227,7 @@ export default function CommunityProfile() {
   };
 
   return (
-    <div className="view-profile" style={{ background: 'var(--slate-950)', minHeight: '100vh', paddingBottom: '80px', width: '100%' }}>
+    <div className="view-profile" style={{ background: 'var(--slate-950)', minHeight: '100dvh', paddingBottom: '80px', width: '100%' }}>
       <div className="microsite-container">
         
         {/* ===== HERO SECTION ===== */}

@@ -37,7 +37,7 @@ export default function UserProfile() {
 
   if (profileUser.privacy_visibility === 'private' && profileUser.id !== currentUser.id) {
     return (
-      <div style={{ padding: '40px', color: 'var(--white)', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', minHeight: '100vh', justifyContent: 'center' }}>
+      <div style={{ padding: '40px', color: 'var(--white)', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', minHeight: '100dvh', justifyContent: 'center' }}>
         <ArrowLeft size={32} onClick={() => navigate.back()} style={{ cursor: 'pointer', position: 'absolute', top: '20px', left: '20px' }} />
         <h2 style={{ fontFamily: 'var(--font-heading)' }}>This profile is private</h2>
         <p style={{ color: 'var(--slate-400)' }}>The user has chosen to hide their profile from the directory.</p>

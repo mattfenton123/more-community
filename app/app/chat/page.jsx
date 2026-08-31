@@ -3,17 +3,18 @@ import { useState } from 'react';
 import { useAppContext } from '../../src/context/AppContext';
 import { useChat } from '../../src/context/ChatContext';
 import { useRouter } from 'next/navigation';
-import { MessageCircle, Users, ChevronRight, Hash, Search, Plus, User } from 'lucide-react';
+import { MessageCircle, Users, ChevronRight, Hash, Search, Plus, User, ChevronDown } from 'lucide-react';
 import AppHeader from '../../src/components/AppHeader';
 import { FALLBACK_IMAGES } from '../../src/lib/constants';
 
 export default function ChatIndex() {
-  const { communities, user, users, isLoading } = useAppContext();
+  const { communities, user, users, isLoading, channels } = useAppContext();
   const { directMessages, chatReadReceipts } = useChat();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('communities');
   const [showNewDM, setShowNewDM] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [expandedCommunities, setExpandedCommunities] = useState({});
 
   const myCommunities = communities.filter(c => user?.joinedCommunities?.includes(c.id));
 
@@ -105,27 +106,55 @@ export default function ChatIndex() {
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {myCommunities.map(community => (
-                <div 
-                  key={community.id}
-                  onClick={() => router.push(`/chat/${community.id}/general`)}
-                  className="interactive-press glass-panel"
-                  style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: '14px', cursor: 'pointer', borderRadius: '14px' }}
-                >
-                  <img 
-                    src={community.image || FALLBACK_IMAGES.community} 
-                    alt={community.name} 
-                    style={{ width: '48px', height: '48px', borderRadius: '12px', objectFit: 'cover' }} 
-                  />
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ color: 'var(--white)', fontWeight: 600, fontSize: '0.95rem', marginBottom: '2px' }}>{community.name}</div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--slate-400)', fontSize: '0.8rem' }}>
-                      <Hash size={12} /> general
+              {myCommunities.map(community => {
+                const commChannels = channels?.filter(c => c.communityId === community.id) || [];
+                if (commChannels.length === 0) commChannels.push({ id: 'general', name: 'general', communityId: community.id });
+                
+                const isExpanded = expandedCommunities[community.id] ?? true;
+                
+                return (
+                  <div 
+                    key={community.id}
+                    className="glass-panel"
+                    style={{ borderRadius: '14px', overflow: 'hidden' }}
+                  >
+                    <div 
+                      onClick={() => setExpandedCommunities(prev => ({ ...prev, [community.id]: !isExpanded }))}
+                      className="interactive-press"
+                      style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: '14px', cursor: 'pointer', background: 'rgba(255,255,255,0.02)' }}
+                    >
+                      <img 
+                        src={community.image || FALLBACK_IMAGES.community} 
+                        alt={community.name} 
+                        style={{ width: '48px', height: '48px', borderRadius: '12px', objectFit: 'cover' }} 
+                      />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ color: 'var(--white)', fontWeight: 600, fontSize: '0.95rem', marginBottom: '2px' }}>{community.name}</div>
+                        <div style={{ color: 'var(--slate-400)', fontSize: '0.8rem' }}>
+                          {commChannels.length} channel{commChannels.length === 1 ? '' : 's'}
+                        </div>
+                      </div>
+                      {isExpanded ? <ChevronDown size={18} color="var(--slate-500)" /> : <ChevronRight size={18} color="var(--slate-500)" />}
                     </div>
+                    
+                    {isExpanded && (
+                      <div style={{ padding: '8px 16px 16px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        {commChannels.map(channel => (
+                          <div 
+                            key={channel.id}
+                            onClick={() => router.push(`/chat/${community.id}/${channel.id}`)}
+                            className="interactive-press"
+                            style={{ padding: '10px 12px', display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', borderRadius: '8px', background: 'rgba(255,255,255,0.03)' }}
+                          >
+                            <Hash size={16} color="var(--teal-400)" />
+                            <span style={{ color: 'var(--slate-200)', fontSize: '0.95rem' }}>{channel.name}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                  <ChevronRight size={18} color="var(--slate-500)" />
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </>

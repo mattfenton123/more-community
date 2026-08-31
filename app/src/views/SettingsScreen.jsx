@@ -85,7 +85,7 @@ export default function SettingsScreen() {
   ];
 
   return (
-    <div className="view-settings" style={{ minHeight: '100vh', paddingBottom: '100px' }}>
+    <div className="view-settings" style={{ minHeight: '100dvh', paddingBottom: '100px' }}>
       <AppHeader title="Settings" showBack={true} />
 
       {/* Profile Card */}

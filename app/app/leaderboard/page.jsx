@@ -104,7 +104,7 @@ export default function Leaderboard() {
   }, [users, communityMemberships, eventRsvps, messages]);
 
   return (
-    <div style={{ paddingBottom: '80px', minHeight: '100vh', background: 'var(--slate-950)' }}>
+    <div style={{ paddingBottom: '80px', minHeight: '100dvh', background: 'var(--slate-950)' }}>
       {/* Header */}
       <div style={{ padding: '28px 20px 20px', background: 'linear-gradient(180deg, rgba(245,158,11,0.1) 0%, transparent 100%)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>

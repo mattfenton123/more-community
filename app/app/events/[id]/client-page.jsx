@@ -29,7 +29,7 @@ export default function EventClient({ id }) {
   }, [events, communities, id]);
 
   if (!event || !community) {
-    return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', color: 'var(--slate-400)' }}>Loading event...</div>;
+    return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100dvh', color: 'var(--slate-400)' }}>Loading event...</div>;
   }
 
   const rsvps = eventRsvps[event.id] || [];
@@ -75,7 +75,7 @@ export default function EventClient({ id }) {
   const whatToBringItems = event.whatToBring ? event.whatToBring.split(',').map(i => i.trim()).filter(i => i) : [];
 
   return (
-    <div className="view-events" style={{ paddingBottom: '100px', minHeight: '100vh', background: 'var(--slate-950)' }}>
+    <div className="view-events" style={{ paddingBottom: '100px', minHeight: '100dvh', background: 'var(--slate-950)' }}>
       {/* Header / Hero Image */}
       <div style={{ position: 'relative', width: '100%', height: '300px', background: 'var(--slate-900)' }}>
         <img 

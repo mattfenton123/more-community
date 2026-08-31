@@ -48,7 +48,7 @@ export default function CouncilDashboard() {
   };
 
   return (
-    <div className="dashboard-layout" style={{ minHeight: '100vh', background: 'var(--slate-950)', color: 'var(--white)' }}>
+    <div className="dashboard-layout" style={{ minHeight: '100dvh', background: 'var(--slate-950)', color: 'var(--white)' }}>
       
       {/* ─── SIDEBAR (Desktop Only) ─── */}
       <div className="dashboard-sidebar desktop-only">

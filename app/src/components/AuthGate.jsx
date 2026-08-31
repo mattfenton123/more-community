@@ -13,7 +13,7 @@ export default function AuthGate({ children }) {
   if (isLoading) {
     return (
       <div style={{
-        height: '100vh',
+        height: '100dvh',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',

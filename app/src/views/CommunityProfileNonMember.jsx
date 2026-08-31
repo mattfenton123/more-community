@@ -44,7 +44,7 @@ export default function CommunityProfileNonMember({
   const subPrice = community.subscription_price || community.subscriptionPrice || 0;
 
   return (
-    <div style={{ background: 'var(--slate-950)', minHeight: '100vh', paddingBottom: '100px' }}>
+    <div style={{ background: 'var(--slate-950)', minHeight: '100dvh', paddingBottom: '100px' }}>
       <AppHeader title={community.name} showBack={true} />
 
       {/* Hero Section */}

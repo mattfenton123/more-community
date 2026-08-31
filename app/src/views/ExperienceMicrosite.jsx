@@ -82,7 +82,7 @@ export default function ExperienceMicrosite() {
   });
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--slate-950)', color: 'var(--white)', paddingBottom: '100px' }}>
+    <div style={{ minHeight: '100dvh', background: 'var(--slate-950)', color: 'var(--white)', paddingBottom: '100px' }}>
       {/* Hero Section */}
       <div style={{ position: 'relative', height: '350px' }}>
         <img src={experience.image} alt={experience.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />

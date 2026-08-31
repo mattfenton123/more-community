@@ -43,7 +43,7 @@ function MainLayout({ children }) {
 
   // Don't render content until auth checks are done
   if (authLoading || (authUser && !user)) return (
-    <div style={{ minHeight: '100vh', background: 'var(--slate-950)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '16px' }}>
+    <div style={{ minHeight: '100dvh', background: 'var(--slate-950)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '16px' }}>
       <div style={{ width: '40px', height: '40px', border: '3px solid rgba(20,184,166,0.2)', borderTopColor: 'var(--teal-500)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
       <span style={{ color: 'var(--slate-400)', fontSize: '0.9rem' }}>Loading...</span>
     </div>

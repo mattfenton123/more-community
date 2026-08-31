@@ -79,7 +79,7 @@ export default function HomeFeed() {
   }, [feedPosts, events, user.joinedCommunities, activeFeedTab]);
 
   return (
-    <div className="view-home" style={{ paddingBottom: '80px', background: 'var(--slate-950)', minHeight: '100vh' }}>
+    <div className="view-home" style={{ paddingBottom: '80px', background: 'var(--slate-950)', minHeight: '100dvh' }}>
       <AppHeader title="Home" />
       
       {/* Personalized Dynamic Header */}

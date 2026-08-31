@@ -634,7 +634,7 @@ export default function LeaderDashboard() {
   // RENDER
   // ═══════════════════════════════════════════════════════════
   return (
-    <div className="view-dashboard dashboard-layout" style={{ position: 'relative', minHeight: '100vh', display: 'flex' }}>
+    <div className="view-dashboard dashboard-layout" style={{ position: 'relative', minHeight: '100dvh', display: 'flex' }}>
       {/* Desktop Sidebar */}
       {community && (
         <div className="dashboard-sidebar desktop-only">

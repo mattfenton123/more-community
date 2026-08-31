@@ -77,7 +77,7 @@ export default function SecuritySettings() {
   );
 
   return (
-    <div className="view-settings" style={{ minHeight: '100vh', paddingBottom: '100px' }}>
+    <div className="view-settings" style={{ minHeight: '100dvh', paddingBottom: '100px' }}>
       <AppHeader title="Privacy & Security" showBack={true} />
 
       <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '24px' }}>

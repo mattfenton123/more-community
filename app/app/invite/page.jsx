@@ -7,7 +7,7 @@ import { FALLBACK_IMAGES } from '../../src/lib/constants';
 
 export default function InvitePageWrapper() {
   return (
-    <Suspense fallback={<div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--slate-950)', color: 'var(--teal-400)' }}>Loading...</div>}>
+    <Suspense fallback={<div style={{ minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--slate-950)', color: 'var(--teal-400)' }}>Loading...</div>}>
       <InvitePage />
     </Suspense>
   );
@@ -42,7 +42,7 @@ function InvitePage() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--slate-950)' }}>
+      <div style={{ minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--slate-950)' }}>
         <div style={{ color: 'var(--teal-400)' }}>Loading prescription details...</div>
       </div>
     );
@@ -50,7 +50,7 @@ function InvitePage() {
 
   if (!prescription || !community) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'var(--slate-950)', color: 'var(--white)', padding: '24px', textAlign: 'center' }}>
+      <div style={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'var(--slate-950)', color: 'var(--white)', padding: '24px', textAlign: 'center' }}>
         <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(244,63,94,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '24px' }}>
           <HeartPulse size={32} color="#f43f5e" />
         </div>
@@ -64,7 +64,7 @@ function InvitePage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--slate-950)', position: 'relative', overflow: 'hidden' }}>
+    <div style={{ minHeight: '100dvh', background: 'var(--slate-950)', position: 'relative', overflow: 'hidden' }}>
       <div style={{
         position: 'absolute', top: 0, left: 0, right: 0, height: '60%',
         background: `url(${community.image || FALLBACK_IMAGES.walking})`,

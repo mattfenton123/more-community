@@ -70,7 +70,7 @@ export default function SwipeDiscovery({ events, communities, onClose, onSave })
   if (!currentEvent) {
     return (
       <div className="modal-overlay" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '20px', zIndex: 2000 }}>
-        <div style={{ height: 'calc(100vh - 120px)', width: '100%', maxWidth: '440px', margin: '0 auto', display: 'flex', flexDirection: 'column', background: 'var(--slate-950)', borderRadius: '24px', overflow: 'hidden', position: 'relative', boxShadow: '0 24px 64px rgba(0,0,0,0.5)' }}>
+        <div style={{ height: 'calc(100dvh - 120px)', width: '100%', maxWidth: '440px', margin: '0 auto', display: 'flex', flexDirection: 'column', background: 'var(--slate-950)', borderRadius: '24px', overflow: 'hidden', position: 'relative', boxShadow: '0 24px 64px rgba(0,0,0,0.5)' }}>
           <button onClick={onClose} className="interactive-press" style={{ position: 'absolute', top: '16px', right: '16px', width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--white)', cursor: 'pointer', zIndex: 100 }}>
             <X size={20} />
           </button>
@@ -92,7 +92,7 @@ export default function SwipeDiscovery({ events, communities, onClose, onSave })
 
   return (
     <div className="modal-overlay" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '20px', zIndex: 2000 }}>
-      <div style={{ height: 'calc(100vh - 120px)', width: '100%', maxWidth: '440px', margin: '0 auto', display: 'flex', flexDirection: 'column', background: 'var(--slate-950)', borderRadius: '24px', overflow: 'hidden', position: 'relative', boxShadow: '0 24px 64px rgba(0,0,0,0.5)' }}>
+      <div style={{ height: 'calc(100dvh - 120px)', width: '100%', maxWidth: '440px', margin: '0 auto', display: 'flex', flexDirection: 'column', background: 'var(--slate-950)', borderRadius: '24px', overflow: 'hidden', position: 'relative', boxShadow: '0 24px 64px rgba(0,0,0,0.5)' }}>
         
         <button onClick={onClose} className="interactive-press" style={{ position: 'absolute', top: '16px', right: '16px', width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(10px)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--white)', cursor: 'pointer', zIndex: 100 }}>
           <X size={20} />

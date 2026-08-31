@@ -19,7 +19,7 @@ const STEP_VIDEOS = [
 ];
 
 export default function OnboardingFlow({ onComplete }) {
-  const { authUser } = useAuth();
+  const { authUser, signOut } = useAuth();
   const { user, updateUser, uploadImage, theme, setTheme, highContrast, setHighContrast, largeText, setLargeText, reduceMotion, setReduceMotion } = useAppContext();
   const [step, setStep] = useState(0);
   const [name, setName] = useState(user?.name || '');
@@ -58,7 +58,8 @@ export default function OnboardingFlow({ onComplete }) {
         try {
           avatarUrl = await uploadImage(avatarFile, 'avatars');
         } catch (err) {
-          console.error('Avatar upload failed:', err);
+          console.error("Avatar upload failed:", err);
+          toast.error("Avatar Upload Failed", "Could not upload image, using default");
         }
       }
 
@@ -66,19 +67,28 @@ export default function OnboardingFlow({ onComplete }) {
         name: name.trim(),
         bio: bio.trim(),
         interests: interests,
+        avatar: avatarUrl || user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=14b8a6&color=fff`,
         onboarded: true,
       };
-      if (avatarUrl) updates.avatar = avatarUrl;
 
       await updateUser(authUser.id, updates);
 
       toast.success('Welcome!', 'Your profile has been created');
-      onComplete();
+      onComplete?.();
     } catch (err) {
-      console.error(err);
-      toast.error('Error', 'Could not save your profile. Try again.');
+      console.error('Failed to finish onboarding:', err);
+      toast.error("Onboarding Failed", "Please try again later");
+    } finally {
+      setIsSubmitting(false);
     }
-    setIsSubmitting(false);
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+    } catch (e) {
+      console.error('Sign out failed:', e);
+    }
   };
 
   const steps = [
@@ -312,31 +322,46 @@ export default function OnboardingFlow({ onComplete }) {
 
   return (
     <div style={{
-      minHeight: '100vh',
+      minHeight: '100dvh',
       display: 'flex',
       flexDirection: 'column',
       background: 'var(--slate-950)',
       maxWidth: '480px',
       margin: '0 auto',
     }}>
-      {/* Progress bar */}
-      <div style={{ padding: '20px 24px 0' }}>
-        <div style={{ display: 'flex', gap: '8px' }}>
-          {[0, 1, 2, 3].map(i => (
-            <div
-              key={i}
-              style={{
-                flex: 1,
-                height: '3px',
-                borderRadius: '99px',
-                background: i <= step ? 'var(--teal-500)' : 'rgba(255,255,255,0.08)',
-                transition: 'background 0.3s ease',
-              }}
-            />
-          ))}
+      {/* Progress bar and header */}
+      <div style={{ padding: '20px 24px 0', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <img src={`/images/logo.webp`} alt="more." style={{ height: '24px', opacity: 0.9, filter: 'brightness(0) invert(1)' }} />
+          <button 
+            onClick={handleSignOut}
+            className="interactive-press"
+            style={{ 
+              background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', 
+              color: 'var(--white)', padding: '6px 12px', borderRadius: '99px', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer' 
+            }}
+          >
+            Sign Out
+          </button>
         </div>
-        <div style={{ fontSize: '0.75rem', color: 'var(--slate-500)', marginTop: '12px' }}>
-          Step {step + 1} of 4
+        <div>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            {[0, 1, 2, 3].map(i => (
+              <div
+                key={i}
+                style={{
+                  flex: 1,
+                  height: '3px',
+                  borderRadius: '99px',
+                  background: i <= step ? 'var(--teal-500)' : 'rgba(255,255,255,0.08)',
+                  transition: 'background 0.3s ease',
+                }}
+              />
+            ))}
+          </div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--slate-500)', marginTop: '12px' }}>
+            Step {step + 1} of 4
+          </div>
         </div>
       </div>
 

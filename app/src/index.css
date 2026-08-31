@@ -1031,7 +1031,7 @@ textarea.form-input {
     left: 0 !important;
     bottom: auto !important;
     width: 80px !important;
-    height: 100vh !important;
+    height: 100dvh !important;
     max-width: none !important;
     flex-direction: column !important;
     justify-content: flex-start !important;
@@ -1063,7 +1063,7 @@ textarea.form-input {
   /* Dashboard layout wrapper */
   .dashboard-layout {
     display: flex;
-    min-height: 100vh;
+    min-height: 100dvh;
     width: 100%;
   }
 
@@ -1077,7 +1077,7 @@ textarea.form-input {
     flex-direction: column;
     position: sticky;
     top: 0;
-    height: 100vh;
+    height: 100dvh;
     padding: 24px 0;
     overflow-y: auto;
   }
@@ -1146,7 +1146,7 @@ textarea.form-input {
   .dashboard-layout {
     display: flex;
     flex-direction: column;
-    min-height: 100vh;
+    min-height: 100dvh;
   }
   .dashboard-sidebar {
     display: none;
@@ -1234,7 +1234,7 @@ textarea.form-input {
     border-right: 1px solid rgba(255,255,255,0.1);
     position: relative;
     transform: translateZ(0); /* Forces position: fixed to be relative to this container */
-    height: 100vh;
+    height: 100dvh;
     background: var(--slate-950);
     box-shadow: 0 0 50px rgba(0,0,0,0.5);
   }

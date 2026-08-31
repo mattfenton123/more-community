@@ -108,7 +108,7 @@ export default function CommunityProfile() {
 
   if (!community && !isLoading) {
     return (
-      <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'var(--slate-950)' }}>
+      <div style={{ height: '100dvh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'var(--slate-950)' }}>
         <img src={`/images/logo.webp`} alt="more." style={{ height: '24px', opacity: 0.5, marginBottom: '24px', cursor: 'pointer' }} onClick={() => navigate.back()} />
         <h2 style={{ color: 'var(--white)', fontFamily: 'var(--font-heading)' }}>Community not found</h2>
         <button onClick={() => navigate.back()} className="btn btn-outline" style={{ marginTop: '16px' }}>Go Home</button>
@@ -185,7 +185,7 @@ export default function CommunityProfile() {
 
 
   return (
-    <div className="view-profile" style={{ background: 'var(--slate-950)', minHeight: '100vh', paddingBottom: '80px' }}>
+    <div className="view-profile" style={{ background: 'var(--slate-950)', minHeight: '100dvh', paddingBottom: '80px' }}>
       
       <AppHeader title={community.name} showBack={true} />
       
