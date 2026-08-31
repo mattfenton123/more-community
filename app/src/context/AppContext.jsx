@@ -839,6 +839,26 @@ export function AppProvider({ children }) {
     }
   };
 
+  const platformBroadcast = async (title, message) => {
+    const notifications = users.map(u => ({
+      user_id: u.id,
+      type: 'broadcast',
+      title: title,
+      message: message,
+      link: '/',
+      is_read: false
+    }));
+
+    if (notifications.length === 0) return;
+    
+    try {
+      await broadcastNotificationAction(notifications, session?.access_token);
+    } catch (err) {
+      console.error('Platform broadcast failed:', err);
+      throw err;
+    }
+  };
+
   const checkInMember = async (eventId, userId) => {
     setEventRsvps(prev => ({
       ...prev,
@@ -1121,8 +1141,9 @@ export function AppProvider({ children }) {
       likeFeedPost,
       createFeedComment,
       whatsappSettings,
-      setWhatsappSettings,
+      adminVerifyCommunity,
       broadcastNotification,
+      platformBroadcast,
       checkInMember,
       chatReadReceipts,
       markChatRead,

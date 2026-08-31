@@ -67,7 +67,7 @@ function getEngagementScore(member, events, eventRsvps, messages, communityId) {
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
-  const { user, communities, users, events, communityMemberships, eventRsvps, adminVerifyCommunity, notifications, broadcastNotification, toggleUserRole, updateCommunity } = useAppContext();
+  const { user, communities, users, events, communityMemberships, eventRsvps, adminVerifyCommunity, notifications, broadcastNotification, platformBroadcast, toggleUserRole, updateCommunity } = useAppContext();
     const { feedPosts } = useFeed();
     const { messages } = useChat();
   const { toast } = useToast();
@@ -220,11 +220,8 @@ export default function AdminDashboard() {
     if (!broadcastText.trim()) return;
     setIsSending(true);
     try {
-      // Broadcast to every community
-      for (const c of communities) {
-        await broadcastNotification(c.id, '📢 Platform Announcement', broadcastText);
-      }
-      toast.success('Broadcast sent!', `Pushed to ${users.length} users across ${communities.length} communities`);
+      await platformBroadcast('📢 Platform Announcement', broadcastText);
+      toast.success('Broadcast sent!', `Pushed to ${users.length} users`);
       setBroadcastText('');
     } catch (err) {
       toast.error('Broadcast failed', err.message);

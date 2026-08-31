@@ -24,10 +24,17 @@ export default function UserProfile() {
   const { level, streak, earnedBadges, xp } = useGamification(targetId);
 
   const [isEditing, setIsEditing] = useState(false);
-  const [editForm, setEditForm] = useState({ name: profileUser.name, bio: profileUser.bio || '' });
+  const [editForm, setEditForm] = useState({ 
+    name: profileUser.name, 
+    bio: profileUser.bio || '',
+    role: profileUser.role || '',
+    interests: profileUser.interests || [],
+    banner: profileUser.banner || FALLBACK_IMAGES.general
+  });
   const [isUploading, setIsUploading] = useState(false);
   const [activeTab, setActiveTab] = useState('badges');
   const fileInputRef = useRef(null);
+  const bannerInputRef = useRef(null);
 
   if (!profileUser) {
     return <div style={{ padding: '40px', color: 'var(--white)', textAlign: 'center' }}>User not found.</div>;
@@ -58,9 +65,27 @@ export default function UserProfile() {
     } catch (err) { toast.error('Upload failed'); }
     finally { setIsUploading(false); }
   };
+  
+  const handleBannerChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setIsUploading(true);
+    try {
+      const publicUrl = await uploadImage(file, 'banners');
+      setEditForm({ ...editForm, banner: publicUrl });
+      toast.success('Banner uploaded!');
+    } catch (err) { toast.error('Upload failed'); }
+    finally { setIsUploading(false); }
+  };
   const handleSave = async () => {
     try {
-      await updateUser(targetId, { name: editForm.name, bio: editForm.bio });
+      await updateUser(targetId, { 
+        name: editForm.name, 
+        bio: editForm.bio,
+        role: editForm.role,
+        interests: editForm.interests,
+        banner: editForm.banner
+      });
       setIsEditing(false);
       toast.success('Profile saved');
     } catch (err) { toast.error('Failed to save profile'); }
@@ -114,9 +139,15 @@ export default function UserProfile() {
         }
       />
       {/* Hero Banner */}
-      <div style={{ height: '180px', background: `url(${FALLBACK_IMAGES.general})`, backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative' }}>
+      <div style={{ height: '180px', background: `url(${isEditing ? editForm.banner : (profileUser.banner || FALLBACK_IMAGES.general)})`, backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative' }}>
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.1), var(--slate-950))' }}></div>
+        {isEditing && (
+          <div onClick={() => bannerInputRef.current?.click()} className="interactive-hover" style={{ position: 'absolute', right: '16px', bottom: '16px', background: 'rgba(0,0,0,0.6)', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 20 }}>
+            <Camera size={18} color="white" />
+          </div>
+        )}
       </div>
+      <input type="file" ref={bannerInputRef} onChange={handleBannerChange} accept="image/*" style={{ display: 'none' }} />
 
       <div style={{ padding: '0 20px', marginTop: '-60px', position: 'relative', zIndex: 10 }}>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', marginBottom: '24px' }}>
@@ -134,11 +165,21 @@ export default function UserProfile() {
           {isEditing ? (
             <div style={{ width: '100%', maxWidth: '300px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <input type="text" value={editForm.name} onChange={e => setEditForm({ ...editForm, name: e.target.value })} className="input" placeholder="Your Name" style={{ textAlign: 'center', fontSize: '1.2rem', fontWeight: 700 }} />
+              <input type="text" value={editForm.role} onChange={e => setEditForm({ ...editForm, role: e.target.value })} className="input" placeholder="Job Title / Role" style={{ textAlign: 'center' }} />
               <textarea value={editForm.bio} onChange={e => setEditForm({ ...editForm, bio: e.target.value })} className="input" placeholder="Write a short bio..." style={{ textAlign: 'center', minHeight: '80px', resize: 'none' }} />
+              <input 
+                type="text" 
+                placeholder="Add interests (comma separated)..."
+                className="input" 
+                value={editForm.interests.join(', ')} 
+                onChange={e => setEditForm({ ...editForm, interests: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })}
+                style={{ textAlign: 'center' }} 
+              />
             </div>
           ) : (
             <>
               <h1 style={{ margin: '0 0 4px 0', fontSize: '1.6rem', fontFamily: 'var(--font-heading)', color: 'var(--white)' }}>{profileUser.name}</h1>
+              {profileUser.role && <div style={{ color: 'var(--teal-400)', fontSize: '0.9rem', marginBottom: '8px' }}>{profileUser.role}</div>}
               
               {/* Level + XP + Streak row */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>

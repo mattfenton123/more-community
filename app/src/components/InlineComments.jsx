@@ -174,7 +174,7 @@ export default function InlineComments({ post }) {
           </button>
           {showEmojiPicker && (
             <div style={{ position: 'absolute', bottom: '40px', left: '0', zIndex: 100 }}>
-              <EmojiPicker onEmojiClick={onEmojiClick} theme="dark" />
+              <EmojiPicker onEmojiClick={onEmojiClick} theme="dark" width={300} height={400} />
             </div>
           )}
         </div>

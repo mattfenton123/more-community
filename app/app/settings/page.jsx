@@ -11,7 +11,7 @@ import { useToast } from '../../src/components/Toast';
 export default function SettingsScreen() {
   const navigate = useNavigate();
   const { signOut, authUser } = useAuth();
-  const { user } = useAppContext();
+  const { user, theme, setTheme, highContrast, setHighContrast, largeText, setLargeText } = useAppContext();
   const { toast } = useToast();
   const [notificationsEnabled, setNotificationsEnabled] = useState(() => {
     return typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted';
@@ -29,6 +29,7 @@ export default function SettingsScreen() {
     // Listen for install prompt
     const handler = (e) => {
       e.preventDefault();
+      window.deferredPrompt = e;
       setDeferredPrompt(e);
     };
     window.addEventListener('beforeinstallprompt', handler);
@@ -36,13 +37,15 @@ export default function SettingsScreen() {
   }, []);
 
   const handleInstallApp = async () => {
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
+    const promptEvent = window.deferredPrompt || deferredPrompt;
+    if (promptEvent) {
+      promptEvent.prompt();
+      const { outcome } = await promptEvent.userChoice;
       if (outcome === 'accepted') {
         setIsInstalled(true);
         toast.success('App installed!', 'Find more. on your home screen');
       }
+      window.deferredPrompt = null;
       setDeferredPrompt(null);
     } else {
       toast.info('Add to Home Screen', 'Use your browser\'s "Add to Home Screen" option to install more.');
@@ -79,11 +82,14 @@ export default function SettingsScreen() {
   };
 
   const handleThemeToggle = () => {
-    toast.info('Theme updated', 'Theme preferences saved.');
+    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+    toast.info('Theme updated', theme === 'dark' ? 'Light mode enabled.' : 'Dark mode enabled.');
   };
 
   const handleAccessibilityToggle = () => {
-    toast.info('Accessibility updated', 'High contrast mode toggled.');
+    setHighContrast(prev => !prev);
+    setLargeText(prev => !prev);
+    toast.info('Accessibility updated', !highContrast ? 'High contrast & large text enabled.' : 'Standard accessibility enabled.');
   };
 
   const MenuItem = ({ icon, label, subtext, color, onClick, rightElement }) => (
@@ -137,7 +143,7 @@ export default function SettingsScreen() {
           <h3 style={{ color: 'var(--slate-400)', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px', paddingLeft: '4px' }}>Account</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
             <MenuItem icon={<User size={20} />} label="Edit Profile" color="#3b82f6" onClick={() => navigate.push('/profile')} />
-            <MenuItem icon={<Shield size={20} />} label="Privacy & Security" subtext="Password and connected accounts" color="#a78bfa" onClick={() => toast.info('Coming soon', 'Privacy settings are on the way')} />
+            <MenuItem icon={<Shield size={20} />} label="Privacy & Security" subtext="Profile visibility and data" color="#a78bfa" onClick={() => navigate.push('/settings/security')} />
           </div>
         </section>
 

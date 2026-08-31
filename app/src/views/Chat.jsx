@@ -473,8 +473,8 @@ export default function Chat() {
               <Smile size={20} />
             </button>
             {showEmojiPicker && (
-              <div style={{ position: 'absolute', bottom: '50px', left: '-20px', zIndex: 100 }}>
-                <EmojiPicker onEmojiClick={onEmojiClick} theme="dark" width={320} height={400} />
+              <div style={{ position: 'absolute', bottom: '50px', left: 0, zIndex: 100 }}>
+                <EmojiPicker onEmojiClick={onEmojiClick} theme="dark" width={300} height={400} />
               </div>
             )}
           </div>
