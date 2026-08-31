@@ -50,7 +50,7 @@ export default function Chat() {
   // Auto-scroll
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [activeMessages]);
+  }, [activeMessages.length]);
 
   // INBOX VIEW (If no params provided)
   if (!communityId && !channelId && !targetUserId) {
@@ -336,7 +336,7 @@ export default function Chat() {
   };
 
   return (
-    <div className="view-chat" style={{ height: '100%', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+    <div className="view-chat" style={{ height: 'calc(100dvh - 70px)', display: 'flex', flexDirection: 'column', position: 'relative' }}>
       
       <AppHeader 
         title={isDirectMessage ? targetUser?.name : (currentChannelObj?.name || channelId)}

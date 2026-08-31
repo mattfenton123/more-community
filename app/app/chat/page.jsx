@@ -20,6 +20,7 @@ export default function ChatIndex() {
   const [createChannelCommunityId, setCreateChannelCommunityId] = useState(null);
   const [selectedMembers, setSelectedMembers] = useState([]);
   const [userSearchTerm, setUserSearchTerm] = useState('');
+  const [isCreating, setIsCreating] = useState(false);
 
   const myCommunities = communities.filter(c => user?.joinedCommunities?.includes(c.id));
 
@@ -77,20 +78,26 @@ export default function ChatIndex() {
       ...item,
       latestMsg,
       hasUnread,
-      sortTime: latestMsg?.createdAt ? new Date(latestMsg.createdAt).getTime() : (latestMsg?.created_at ? new Date(latestMsg.created_at).getTime() : 0)
+      sortTime: latestMsg?.createdAt 
+        ? new Date(latestMsg.createdAt).getTime() 
+        : (latestMsg?.created_at 
+            ? new Date(latestMsg.created_at).getTime() 
+            : (item.created_at ? new Date(item.created_at).getTime() : Date.now()))
     };
   }).sort((a, b) => b.sortTime - a.sortTime);
 
   const handleCreateChannel = async (type = 'text', members = null) => {
-    if (!newChannelName.trim()) return;
+    if (!newChannelName.trim() || isCreating) return;
     const targetCommunity = createChannelCommunityId || user.ledCommunities?.[0] || myCommunities[0]?.id;
     if (!targetCommunity) return;
     
+    setIsCreating(true);
     await createChannel(targetCommunity, newChannelName.trim(), type, members);
     toast.success('Chat created!', `${newChannelName.trim()} is now live`);
     
     setNewChannelName('');
     setSelectedMembers([]);
+    setIsCreating(false);
     setShowCreateModal(false);
   };
 
@@ -307,11 +314,11 @@ export default function ChatIndex() {
 
                 <button 
                   onClick={() => handleCreateChannel(createMode, selectedMembers.length > 0 ? [user?.id, ...selectedMembers] : null)} 
-                  disabled={!newChannelName.trim()}
+                  disabled={!newChannelName.trim() || isCreating}
                   className="btn btn-primary" 
-                  style={{ padding: '16px', borderRadius: '12px', opacity: !newChannelName.trim() ? 0.5 : 1 }}
+                  style={{ padding: '16px', borderRadius: '12px', opacity: (!newChannelName.trim() || isCreating) ? 0.5 : 1 }}
                 >
-                  Create {createMode === 'group' ? 'Group' : 'Announcement'}
+                  {isCreating ? 'Creating...' : `Create ${createMode === 'group' ? 'Group' : 'Announcement'}`}
                 </button>
               </div>
             )}
