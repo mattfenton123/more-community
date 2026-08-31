@@ -1,6 +1,10 @@
 "use server";
 
-import { supabaseAdmin as supabase } from '../lib/supabaseAdmin.js';
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://nkyithbhufwgwnbxvqqu.supabase.co';
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 export async function submitReview(userId, targetId, targetType, rating, content) {
   if (!userId || !targetId || !targetType || !rating) {
