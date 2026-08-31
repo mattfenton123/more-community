@@ -1,8 +1,6 @@
 "use client";
 
 import '../src/index.css';
-import { Compass, Users, Calendar, MessageCircle, BarChart2, User, Bell, Shield, Home, Sparkles } from 'lucide-react';
-import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { AppProvider, useAppContext } from '../src/context/AppContext';
@@ -10,103 +8,8 @@ import { useChat, ChatProvider } from '../src/context/ChatContext';
 import { FeedProvider } from '../src/context/FeedContext';
 import { AuthProvider, useAuth } from '../src/context/AuthContext';
 import { ToastProvider } from '../src/components/Toast';
+import BottomNav from '../src/components/BottomNav';
 
-function TabBar() {
-  const currentPath = usePathname();
-  const { user, notifications, communities, channels } = useAppContext();
-    const { messages, directMessages, chatReadReceipts } = useChat();
-  const unreadCount = notifications ? notifications.filter(n => !n.is_read).length : 0;
-  
-  let unreadChatCount = 0;
-  // simplified unread chat count for migration...
-  if (user && user.id) {
-    const dmUsers = new Set();
-    directMessages.forEach(dm => {
-      if (dm.senderId === user.id) dmUsers.add(dm.receiverId);
-      if (dm.receiverId === user.id) dmUsers.add(dm.senderId);
-    });
-    dmUsers.forEach(otherId => {
-      const latestDm = directMessages.filter(m => (m.senderId === otherId && m.receiverId === user.id) || (m.senderId === user.id && m.receiverId === otherId)).pop();
-      if (latestDm && latestDm.senderId !== user.id) {
-        const receipt = chatReadReceipts.find(r => !r.community_id && r.channel_id === otherId);
-        if (!receipt || new Date(receipt.last_read_at) < new Date(latestDm.created_at || new Date().toISOString())) {
-          unreadChatCount++;
-        }
-      }
-    });
-  }
-
-  return (
-    <div className="tab-bar">
-      <Link href="/" className={`tab-item ${currentPath === '/' ? 'active' : ''}`}>
-        <Home size={22} />
-        <span className="tab-label">Home</span>
-      </Link>
-      <Link href="/discover" className={`tab-item ${currentPath === '/discover' ? 'active' : ''}`}>
-        <Compass size={22} />
-        <span className="tab-label">Discover</span>
-      </Link>
-      <Link href="/events" className={`tab-item ${currentPath === '/events' ? 'active' : ''}`}>
-        <Calendar size={22} />
-        <span className="tab-label">Events</span>
-      </Link>
-      <Link href="/chat" className={`tab-item ${currentPath?.startsWith('/chat') ? 'active' : ''}`} style={{ position: 'relative' }}>
-        <div style={{ position: 'relative' }}>
-          <MessageCircle size={22} />
-          {unreadChatCount > 0 && (
-            <div style={{
-              position: 'absolute', top: '-4px', right: '-6px',
-              background: 'var(--teal-500)', color: 'white',
-              fontSize: '0.6rem', fontWeight: 700,
-              width: '16px', height: '16px', borderRadius: '50%',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              border: '2px solid var(--slate-950)',
-            }}>
-              {unreadChatCount > 9 ? '9+' : unreadChatCount}
-            </div>
-          )}
-        </div>
-        <span className="tab-label">Chat</span>
-      </Link>
-      <Link href="/notifications" className={`tab-item ${currentPath === '/notifications' ? 'active' : ''}`} style={{ position: 'relative' }}>
-        <div style={{ position: 'relative' }}>
-          <Bell size={22} />
-          {unreadCount > 0 && (
-            <div style={{
-              position: 'absolute', top: '-4px', right: '-6px',
-              background: 'var(--rose-500)', color: 'white',
-              fontSize: '0.6rem', fontWeight: 700,
-              width: '16px', height: '16px', borderRadius: '50%',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              border: '2px solid var(--slate-950)',
-            }}>
-              {unreadCount > 9 ? '9+' : unreadCount}
-            </div>
-          )}
-        </div>
-        <span className="tab-label">Alerts</span>
-      </Link>
-      {user?.isAdmin && (
-        <Link href="/admin" className={`tab-item ${currentPath === '/admin' ? 'active' : ''}`}>
-          <Shield size={22} />
-          <span className="tab-label">Admin</span>
-        </Link>
-      )}
-      {user?.leaderOf && (
-        <Link href="/dashboard" className={`tab-item ${currentPath === '/dashboard' ? 'active' : ''}`}>
-          <BarChart2 size={22} />
-          <span className="tab-label">Lead</span>
-        </Link>
-      )}
-      {!user?.leaderOf && (
-        <Link href="/experiences" className={`tab-item ${currentPath?.startsWith('/experiences') ? 'active' : ''}`}>
-          <Sparkles size={22} />
-          <span className="tab-label">Experiences</span>
-        </Link>
-      )}
-    </div>
-  );
-}
 
 function MainLayout({ children }) {
   const currentPath = usePathname();
@@ -148,7 +51,7 @@ function MainLayout({ children }) {
 
         {children}
             </div>
-      {!hideTabBar && <TabBar />}
+      <BottomNav />
           </FeedProvider>
     </ChatProvider>
     </div>

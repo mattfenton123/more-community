@@ -429,27 +429,29 @@ html, body {
   -webkit-overflow-scrolling: touch;
 }
 
-/* Tab Bar */
-.tab-bar {
+/* Bottom Navigation (Floating Pill) */
+.bottom-nav {
   position: fixed;
-  bottom: 0;
+  bottom: 24px;
   left: 50%;
   transform: translateX(-50%);
-  width: 100%;
-  max-width: 480px;
-  height: 65px;
-  background: rgba(15, 23, 42, 0.95);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  width: calc(100% - 48px);
+  max-width: 400px;
+  height: 64px;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 32px;
   display: flex;
   justify-content: space-around;
   align-items: center;
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding: 0 8px;
   z-index: 1000;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 }
 
-.tab-item {
+.bottom-nav-item {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -459,20 +461,50 @@ html, body {
   gap: 4px;
   flex: 1;
   height: 100%;
-  transition: color var(--transition-fast), transform var(--transition-fast);
+  transition: all var(--transition-base) var(--ease-out-expo);
 }
 
-.tab-item:active {
+.bottom-nav-item:active {
   transform: scale(0.92);
 }
 
-.tab-item.active {
+.bottom-nav-item.active {
   color: var(--teal-400);
 }
 
-.tab-label {
+.icon-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+}
+
+.nav-label {
   font-size: 0.65rem;
-  font-weight: 500;
+  font-weight: 600;
+}
+
+.nav-badge {
+  position: absolute;
+  top: -4px;
+  right: -6px;
+  background: var(--teal-500);
+  color: white;
+  font-size: 0.6rem;
+  font-weight: 700;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--slate-950);
+}
+
+.app-content {
+  padding-bottom: 110px; /* Space for the floating bottom nav */
 }
 
 /* Headers */
