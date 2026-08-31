@@ -606,9 +606,30 @@ export default function CommunityProfile() {
                     })()}
 
                     <div style={{ padding: '12px 16px', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', gap: '16px' }}>
-                      <button onClick={() => likeFeedPost(post.id)} className="interactive-press" style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '6px', color: post.liked ? 'var(--teal-400)' : 'var(--slate-400)', cursor: 'pointer', fontSize: '0.85rem' }}>
-                        <Heart size={16} fill={post.liked ? "currentColor" : "none"} /> {post.likes || 0}
-                      </button>
+                      {(() => {
+                        const isCampaign = post.text?.includes('🚀 **CAMPAIGN:**');
+                        const isSuggestion = post.text?.includes('💡 **SUGGESTION:**');
+                        const isIdea = isCampaign || isSuggestion;
+                        
+                        if (isIdea) {
+                          return (
+                            <button 
+                              onClick={() => likeFeedPost(post.id)}
+                              className="interactive-press" 
+                              style={{ background: post.liked ? 'rgba(20,184,166,0.15)' : 'rgba(255,255,255,0.05)', padding: '6px 12px', borderRadius: '20px', border: '1px solid', borderColor: post.liked ? 'rgba(20,184,166,0.3)' : 'transparent', display: 'flex', alignItems: 'center', gap: '6px', color: post.liked ? 'var(--teal-400)' : 'white', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}
+                            >
+                              <Heart size={16} fill={post.liked ? 'var(--teal-400)' : 'none'} />
+                              {isCampaign ? "I'm Interested" : "Upvote"} ({post.likes || 0})
+                            </button>
+                          );
+                        }
+                        
+                        return (
+                          <button onClick={() => likeFeedPost(post.id)} className="interactive-press" style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '6px', color: post.liked ? 'var(--teal-400)' : 'var(--slate-400)', cursor: 'pointer', fontSize: '0.85rem' }}>
+                            <Heart size={16} fill={post.liked ? "currentColor" : "none"} /> {post.likes || 0}
+                          </button>
+                        );
+                      })()}
                       <button onClick={() => setExpandedComments(prev => ({...prev, [post.id]: !prev[post.id]}))} className="interactive-press" style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '6px', color: expandedComments[post.id] ? 'var(--teal-400)' : 'var(--slate-400)', cursor: 'pointer', fontSize: '0.85rem' }}>
                         <MessageCircle size={16} /> {post.comments || 0}
                       </button>
