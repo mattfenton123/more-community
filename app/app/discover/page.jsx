@@ -164,12 +164,26 @@ export default function Discover() {
         <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--slate-400)' }}>Local communities in</p>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '4px 0 16px 0' }}>
           <h2 style={{ margin: 0, fontFamily: 'var(--font-heading)', fontSize: '1.4rem' }}>Tunbridge Wells, UK</h2>
-          <button onClick={() => setShowSwipe(true)} className="interactive-press" style={{ background: 'var(--teal-500)', border: 'none', color: 'var(--white)', padding: '6px 12px', borderRadius: '99px', fontSize: '0.8rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', boxShadow: '0 4px 12px rgba(20,184,166,0.3)' }}>
+          <button onClick={() => setShowSwipe(true)} className="interactive-press" style={{ 
+            background: 'linear-gradient(135deg, var(--teal-400), var(--teal-600))', 
+            border: 'none', color: 'var(--white)', padding: '6px 14px', borderRadius: '99px', 
+            fontSize: '0.8rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px', 
+            cursor: 'pointer', boxShadow: '0 4px 16px rgba(45,212,191,0.4)', textShadow: '0 1px 2px rgba(0,0,0,0.2)' 
+          }}>
             <Sparkles size={14} /> Find Plans
           </button>
         </div>
         
-        <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '999px', padding: '12px 20px', display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--slate-400)', border: '1px solid rgba(255,255,255,0.1)', transition: 'border-color 0.2s' }}>
+        <div 
+          style={{ 
+            background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+            borderRadius: '999px', padding: '12px 20px', display: 'flex', alignItems: 'center', gap: '12px', 
+            color: 'var(--slate-400)', border: '1px solid rgba(255,255,255,0.1)', transition: 'all 0.3s',
+            boxShadow: '0 4px 24px rgba(0,0,0,0.2)' 
+          }}
+          onFocus={(e) => { e.currentTarget.style.borderColor = 'var(--teal-400)'; e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; }}
+          onBlur={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; }}
+        >
           <Search size={18} />
           <input 
             type="text" 
@@ -181,7 +195,7 @@ export default function Discover() {
         </div>
       </div>
 
-      <div style={{ padding: '10px 20px', display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '16px' }} className="hide-scrollbar">
+      <div style={{ padding: '10px 20px', display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '16px', scrollSnapType: 'x mandatory' }} className="hide-scrollbar">
         {pills.map(pill => (
           <button 
             key={pill}
@@ -190,13 +204,14 @@ export default function Discover() {
               whiteSpace: 'nowrap', 
               padding: '8px 16px', 
               borderRadius: '999px',
-              border: activePill === pill ? 'none' : '1px solid rgba(255,255,255,0.1)',
-              background: activePill === pill ? 'var(--white)' : 'transparent',
-              color: activePill === pill ? 'var(--slate-900)' : 'var(--white)',
+              border: activePill === pill ? 'none' : '1px solid rgba(255,255,255,0.08)',
+              background: activePill === pill ? 'var(--white)' : 'rgba(255,255,255,0.02)',
+              color: activePill === pill ? 'var(--slate-900)' : 'var(--slate-300)',
               fontWeight: 600,
               fontSize: '0.85rem',
               cursor: 'pointer',
-              transition: 'all 0.2s'
+              transition: 'all 0.2s',
+              scrollSnapAlign: 'start'
             }}
           >
             {pill}
@@ -273,23 +288,29 @@ export default function Discover() {
                   onClick={() => navigate.push('/experiences')}
                   className="interactive-press"
                   style={{
-                    margin: '0 20px 16px', padding: '1.1rem 1.25rem',
-                    background: 'linear-gradient(135deg, rgba(45,212,191,0.1), rgba(251,191,36,0.08))',
-                    border: '1px solid rgba(45,212,191,0.15)', borderRadius: '14px',
+                    margin: '0 20px 24px', padding: '24px 20px',
+                    background: 'linear-gradient(135deg, rgba(13, 148, 136, 0.2), rgba(245, 158, 11, 0.15))',
+                    border: '1px solid rgba(45, 212, 191, 0.3)', borderRadius: '24px',
                     cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '1rem',
-                    transition: 'all 0.3s'
+                    transition: 'all 0.3s', position: 'relative', overflow: 'hidden',
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.2)'
                   }}
+                  onMouseOver={(e) => { e.currentTarget.style.transform = 'scale(1.02)'; e.currentTarget.style.borderColor = 'rgba(45,212,191,0.5)'; }}
+                  onMouseOut={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.borderColor = 'rgba(45,212,191,0.3)'; }}
                 >
-                  <div style={{ fontSize: '1.6rem' }}>🎯</div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontFamily: "'Syne', sans-serif", fontSize: '0.82rem', fontWeight: 700, color: 'var(--white)', marginBottom: '3px' }}>
+                  <div style={{ position: 'absolute', top: '-50%', right: '-10%', width: '150px', height: '150px', background: 'rgba(251,191,36,0.2)', filter: 'blur(40px)', borderRadius: '50%' }}></div>
+                  <div style={{ fontSize: '2.2rem', zIndex: 1, filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.2))' }}>🎯</div>
+                  <div style={{ flex: 1, zIndex: 1 }}>
+                    <div style={{ fontFamily: "'Syne', sans-serif", fontSize: '1.05rem', fontWeight: 800, color: 'var(--white)', marginBottom: '4px', letterSpacing: '-0.02em' }}>
                       Experiences Marketplace
                     </div>
-                    <div style={{ fontSize: '0.7rem', color: 'var(--slate-400)', lineHeight: 1.4 }}>
+                    <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.7)', lineHeight: 1.4 }}>
                       Skydiving, retreats, theatre & more — curated by your community leaders
                     </div>
                   </div>
-                  <ChevronRight size={16} style={{ color: 'var(--teal-400)', flexShrink: 0 }} />
+                  <div style={{ background: 'rgba(255,255,255,0.1)', padding: '8px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1, backdropFilter: 'blur(4px)' }}>
+                    <ChevronRight size={18} style={{ color: 'var(--white)' }} />
+                  </div>
                 </div>
               )}
               {filteredCommunities.map((community, index) => {
@@ -300,9 +321,9 @@ export default function Discover() {
                   <div 
                     key={community.id} 
                     className="stagger-item interactive-press" 
-                    style={{ margin: '0 20px 16px', borderRadius: '16px', overflow: 'hidden', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', transition: 'all 0.2s', cursor: 'pointer' }}
-                    onMouseOver={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'}
-                    onMouseOut={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)'}
+                    style={{ margin: '0 20px 16px', borderRadius: '16px', overflow: 'hidden', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', transition: 'all 0.3s', cursor: 'pointer' }}
+                    onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'; e.currentTarget.style.transform = 'scale(1.02)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.2)'; }}
+                    onMouseOut={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)'; e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = 'none'; }}
                   >
                     {/* Cover Image */}
                     <div 

@@ -15,6 +15,7 @@ export default function EventsHub() {
   const [checkoutState, setCheckoutState] = useState('idle');
   const [showTicket, setShowTicket] = useState(null);
   const [cardForm, setCardForm] = useState({ number: '', expiry: '', cvc: '', name: '' });
+  const [showCalendarDropdown, setShowCalendarDropdown] = useState(false);
 
   const myRsvpEventIds = Object.keys(eventRsvps).filter(eventId => 
     eventRsvps[eventId]?.some(r => r.userId === user.id)
@@ -77,6 +78,54 @@ export default function EventsHub() {
     }
   };
 
+  const handleAddToCalendar = (type) => {
+    if (!selectedEvent) return;
+    
+    let startDate = new Date();
+    if (selectedEvent.date) {
+      const parsed = new Date(selectedEvent.date);
+      if (!isNaN(parsed)) startDate = parsed;
+    }
+    const endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000);
+
+    const title = encodeURIComponent(selectedEvent.title);
+    const location = encodeURIComponent(selectedEvent.location || 'TBA');
+    const description = encodeURIComponent(`Hosted by ${selectedEvent.communityName || 'more.'}\n\nJoin us at ${window.location.href}`);
+
+    if (type === 'google') {
+      const startIso = startDate.toISOString().replace(/-|:|\.\d\d\d/g, '');
+      const endIso = endDate.toISOString().replace(/-|:|\.\d\d\d/g, '');
+      const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startIso}/${endIso}&details=${description}&location=${location}`;
+      window.open(url, '_blank');
+    } else if (type === 'ics') {
+      const formatIcsDate = (date) => date.toISOString().replace(/-|:|\.\d\d\d/g, '');
+      const icsData = [
+        "BEGIN:VCALENDAR",
+        "VERSION:2.0",
+        "BEGIN:VEVENT",
+        `DTSTART:${formatIcsDate(startDate)}`,
+        `DTEND:${formatIcsDate(endDate)}`,
+        `SUMMARY:${selectedEvent.title}`,
+        `DESCRIPTION:Hosted by ${selectedEvent.communityName}.`,
+        `LOCATION:${selectedEvent.location || ''}`,
+        "END:VEVENT",
+        "END:VCALENDAR"
+      ].join('\\n');
+      
+      const blob = new Blob([icsData], { type: 'text/calendar;charset=utf-8' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${selectedEvent.title.replace(/\\s+/g, '_')}.ics`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      a.remove();
+      toast.success('Calendar file downloaded');
+    }
+    setShowCalendarDropdown(false);
+  };
+
   const formatCardNumber = (val) => {
     const cleaned = val.replace(/\D/g, '').substring(0, 16);
     return cleaned.replace(/(.{4})/g, '$1 ').trim();
@@ -98,18 +147,33 @@ export default function EventsHub() {
         key={event.id} 
         onClick={() => setSelectedEvent({ ...event, communityName: community?.name })}
         className="interactive-press stagger-item" 
-        style={{ cursor: 'pointer', marginBottom: '16px', borderRadius: '16px', overflow: 'hidden', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', transition: 'all 0.2s' }}
-        onMouseOver={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'}
-        onMouseOut={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)'}
+        style={{ cursor: 'pointer', marginBottom: '20px', borderRadius: '20px', overflow: 'hidden', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', transition: 'all 0.3s', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}
+        onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'; e.currentTarget.style.transform = 'scale(1.02)'; e.currentTarget.style.boxShadow = '0 8px 30px rgba(0,0,0,0.2)'; }}
+        onMouseOut={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)'; e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.1)'; }}
       >
         {eventImage && (
-          <div style={{ height: '120px', background: `url(${eventImage})`, backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative' }}>
-            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.6))' }}></div>
-            <div style={{ position: 'absolute', top: '10px', right: '10px', fontSize: '0.75rem', fontWeight: 700, color: price > 0 ? 'var(--amber-400)' : 'var(--teal-300)', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)', padding: '4px 10px', borderRadius: '99px' }}>
+          <div style={{ height: '140px', background: `url(${eventImage})`, backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative' }}>
+            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.8))' }}></div>
+            
+            {/* Calendar Leaf Overlay */}
+            <div style={{ 
+              position: 'absolute', top: '12px', left: '12px', background: 'rgba(15,23,42,0.85)', backdropFilter: 'blur(8px)', 
+              borderRadius: '10px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)',
+              display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: '42px', boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
+            }}>
+              <div style={{ background: 'var(--teal-500)', color: 'white', width: '100%', textAlign: 'center', fontSize: '0.65rem', fontWeight: 800, padding: '2px 0', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                {event.date ? event.date.split(' ')[0].substring(0,3) : 'TBA'}
+              </div>
+              <div style={{ padding: '4px 8px', color: 'white', fontSize: '1.1rem', fontWeight: 800 }}>
+                {event.date ? (event.date.match(/\d+/) ? event.date.match(/\d+/)[0] : '—') : '—'}
+              </div>
+            </div>
+
+            <div style={{ position: 'absolute', top: '12px', right: '12px', fontSize: '0.75rem', fontWeight: 700, color: price > 0 ? 'var(--amber-400)' : 'var(--teal-300)', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)', padding: '6px 12px', borderRadius: '99px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}>
               {price > 0 ? `£${price}` : 'FREE'}
             </div>
             {hasRsvp && (
-              <div style={{ position: 'absolute', top: '10px', left: '10px', fontSize: '0.7rem', fontWeight: 700, color: 'var(--teal-300)', background: 'rgba(20,184,166,0.2)', backdropFilter: 'blur(6px)', padding: '4px 10px', borderRadius: '99px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <div style={{ position: 'absolute', bottom: '12px', right: '12px', fontSize: '0.7rem', fontWeight: 700, color: 'var(--teal-300)', background: 'rgba(20,184,166,0.2)', backdropFilter: 'blur(6px)', padding: '4px 10px', borderRadius: '99px', border: '1px solid rgba(20,184,166,0.4)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                 <Check size={12} /> Going
               </div>
             )}
@@ -131,17 +195,20 @@ export default function EventsHub() {
     <div className="view-events" style={{ paddingBottom: '80px' }}>
       <AppHeader title="Events" />
 
-      <div style={{ display: 'flex', gap: '12px', padding: '0 20px', borderBottom: '1px solid rgba(255,255,255,0.05)', marginBottom: '10px' }}>
-        {['My Schedule', 'Recommended', 'Explore'].map(tab => (
-          <button key={tab} onClick={() => setActiveTab(tab)} style={{
-            background: 'none', border: 'none', padding: '12px 0', fontSize: '0.95rem', cursor: 'pointer', fontWeight: 600,
-            color: activeTab === tab ? 'white' : 'var(--slate-500)',
-            borderBottom: activeTab === tab ? '2px solid var(--teal-400)' : '2px solid transparent',
-            transition: 'all 0.2s'
-          }}>
-            {tab}
-          </button>
-        ))}
+      <div style={{ padding: '16px 20px 8px' }}>
+        <div style={{ display: 'flex', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', padding: '4px', gap: '4px' }}>
+          {['My Schedule', 'Recommended', 'Explore'].map(tab => (
+            <button key={tab} onClick={() => setActiveTab(tab)} className="interactive-press" style={{
+              flex: 1, background: activeTab === tab ? 'rgba(255,255,255,0.1)' : 'transparent', 
+              border: '1px solid ' + (activeTab === tab ? 'rgba(255,255,255,0.1)' : 'transparent'),
+              borderRadius: '8px', padding: '8px 0', fontSize: '0.85rem', cursor: 'pointer', fontWeight: 600,
+              color: activeTab === tab ? 'white' : 'var(--slate-400)',
+              transition: 'all 0.2s', boxShadow: activeTab === tab ? '0 4px 12px rgba(0,0,0,0.1)' : 'none'
+            }}>
+              {tab}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div style={{ padding: '10px 20px' }}>
@@ -151,7 +218,22 @@ export default function EventsHub() {
             {isLoading ? (
               <SkeletonList count={3} Component={SkeletonEvent} />
             ) : userEvents.length > 0 ? userEvents.map((e, i) => renderEvent(e, i)) : (
-              <p style={{ color: 'var(--slate-400)' }}>You have no upcoming events. Join some communities to fill your schedule!</p>
+              <div style={{ textAlign: 'center', padding: '50px 20px', background: 'rgba(255,255,255,0.02)', borderRadius: '24px', border: '1px dashed rgba(255,255,255,0.1)', marginTop: '20px' }}>
+                <div style={{ width: '80px', height: '80px', background: 'rgba(20,184,166,0.1)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', color: 'var(--teal-400)' }}>
+                  <CalIcon size={36} />
+                </div>
+                <h3 style={{ fontSize: '1.2rem', margin: '0 0 10px 0', color: 'var(--white)' }}>No Upcoming Events</h3>
+                <p style={{ color: 'var(--slate-400)', fontSize: '0.9rem', marginBottom: '24px', lineHeight: 1.5, maxWidth: '280px', margin: '0 auto 24px' }}>
+                  Your schedule is looking empty. Join some communities or explore events to fill it up!
+                </p>
+                <button 
+                  onClick={() => setActiveTab('Explore')}
+                  className="interactive-press"
+                  style={{ background: 'var(--teal-500)', color: 'white', border: 'none', padding: '12px 24px', borderRadius: '99px', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 12px rgba(20,184,166,0.3)' }}
+                >
+                  Explore Events
+                </button>
+              </div>
             )}
           </>
         ) : activeTab === 'Recommended' ? (
@@ -256,6 +338,20 @@ export default function EventsHub() {
                       <button onClick={handlePromote} className="interactive-press" style={{ marginTop: '12px', width: '100%', padding: '16px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', borderRadius: '12px', fontSize: '1rem', background: 'rgba(139, 92, 246, 0.1)', border: '1px solid rgba(139, 92, 246, 0.3)', color: '#a78bfa', fontWeight: 600 }}>
                         <Share size={18} /> Promote to Members
                       </button>
+                    )}
+                    
+                    {eventRsvps[selectedEvent.id]?.some(r => r.userId === user.id) && (
+                      <div style={{ position: 'relative', marginTop: '12px' }}>
+                        <button onClick={() => setShowCalendarDropdown(!showCalendarDropdown)} className="interactive-press" style={{ width: '100%', padding: '16px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', borderRadius: '12px', fontSize: '1rem', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)', color: 'var(--white)', fontWeight: 600 }}>
+                          <CalIcon size={18} /> Add to Calendar
+                        </button>
+                        {showCalendarDropdown && (
+                          <div style={{ position: 'absolute', bottom: '100%', left: 0, right: 0, marginBottom: '8px', background: 'var(--slate-800)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', overflow: 'hidden', zIndex: 10 }}>
+                            <button onClick={() => handleAddToCalendar('google')} style={{ width: '100%', padding: '14px', background: 'transparent', border: 'none', color: 'var(--white)', textAlign: 'left', cursor: 'pointer', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>Google Calendar</button>
+                            <button onClick={() => handleAddToCalendar('ics')} style={{ width: '100%', padding: '14px', background: 'transparent', border: 'none', color: 'var(--white)', textAlign: 'left', cursor: 'pointer' }}>Download .ics file</button>
+                          </div>
+                        )}
+                      </div>
                     )}
                   </>
                 )}
