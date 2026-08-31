@@ -445,8 +445,21 @@ export default function CommunityProfile() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               {communityFeed.length > 0 ? communityFeed.map(post => {
                 const author = users.find(u => u.id === post.authorId) || leaderUser;
+                const isCampaign = post.text?.includes('🚀 **CAMPAIGN:**');
+                const isSuggestion = post.text?.includes('💡 **SUGGESTION:**');
+                const isReview = post.text?.startsWith('⭐️⭐️⭐️⭐️⭐️');
+                
+                let wrapperStyle = { background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', overflow: 'hidden' };
+                if (isCampaign) {
+                  wrapperStyle = { background: 'var(--slate-900)', border: '1px solid rgba(20,184,166,0.3)', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 4px 20px rgba(20,184,166,0.05)' };
+                } else if (isSuggestion) {
+                  wrapperStyle = { background: 'var(--slate-900)', border: '1px solid rgba(245,158,11,0.2)', borderLeft: '4px solid var(--amber-500)', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 4px 20px rgba(245,158,11,0.05)' };
+                } else if (isReview) {
+                  wrapperStyle = { background: 'linear-gradient(135deg, rgba(20,184,166,0.1), rgba(15,23,42,1))', border: '1px solid rgba(20,184,166,0.2)', borderRadius: '16px', overflow: 'hidden' };
+                }
+
                 return (
-                  <div key={post.id} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', overflow: 'hidden' }}>
+                  <div key={post.id} style={wrapperStyle}>
                     <div style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
                       <img src={author?.avatar || 'https://i.pravatar.cc/40'} alt={author?.name} style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
                       <div style={{ flex: 1 }}>
@@ -481,9 +494,6 @@ export default function CommunityProfile() {
                     
                     <div style={{ padding: '0 16px 12px', color: 'var(--slate-200)', fontSize: '0.95rem', lineHeight: 1.5 }}>
                       {(() => {
-                        const isCampaign = post.text?.includes('🚀 **CAMPAIGN:**');
-                        const isSuggestion = post.text?.includes('💡 **SUGGESTION:**');
-                        const isReview = post.text?.startsWith('⭐️⭐️⭐️⭐️⭐️');
                         let campaignExp = null;
                         let campaignText = post.text;
                         
@@ -504,7 +514,7 @@ export default function CommunityProfile() {
                           const threshold = 20;
                           const progress = Math.min((votes / threshold) * 100, 100);
                           return (
-                            <div style={{ background: 'var(--slate-900)', borderRadius: '12px', padding: '12px', marginBottom: '16px', border: '1px solid rgba(20,184,166,0.2)' }}>
+                            <div style={{ padding: '0px', marginBottom: '16px' }}>
                               <div style={{ display: 'flex', gap: '12px' }}>
                                 <img src={campaignExp.image} alt="" style={{ width: '60px', height: '60px', borderRadius: '8px', objectFit: 'cover' }} />
                                 <div>
@@ -543,7 +553,7 @@ export default function CommunityProfile() {
                           );
                         } else if (isSuggestion) {
                           return (
-                            <div style={{ background: 'var(--slate-900)', borderRadius: '12px', padding: '16px', marginBottom: '16px', border: '1px solid rgba(245,158,11,0.2)', borderLeft: '4px solid var(--amber-500)' }}>
+                            <div style={{ padding: '0px', marginBottom: '16px' }}>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px', color: 'var(--amber-400)', fontWeight: 700, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                                 <Lightbulb size={16} /> Community Suggestion
                               </div>
@@ -552,7 +562,7 @@ export default function CommunityProfile() {
                           );
                         } else if (isReview) {
                           return (
-                            <div style={{ background: 'linear-gradient(135deg, var(--teal-900), var(--slate-900))', borderRadius: '12px', padding: '16px', marginBottom: '16px', border: '1px solid rgba(20,184,166,0.2)' }}>
+                            <div style={{ padding: '0px', marginBottom: '16px' }}>
                               <div style={{ display: 'flex', gap: '4px', color: 'var(--yellow-400)', marginBottom: '12px' }}>
                                 {[1,2,3,4,5].map(i => <Star key={i} size={14} fill="currentColor" />)}
                               </div>
