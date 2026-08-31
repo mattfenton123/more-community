@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppContext } from '../src/context/AppContext';
 import { useFeed } from '../src/context/FeedContext';
-import { Heart, MessageCircle, Share2, Calendar, MapPin, Clock, Compass, Plus, Megaphone, Edit3, Briefcase, ChevronUp } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Calendar, MapPin, Clock, Compass, Plus, Megaphone, Edit3, Briefcase, ChevronUp, Shield } from 'lucide-react';
 import { SkeletonList, SkeletonCard } from '../src/components/SkeletonCard';
 import InlineComments from '../src/components/InlineComments';
 import AppHeader from '../src/components/AppHeader';
