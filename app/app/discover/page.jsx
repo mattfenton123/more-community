@@ -308,15 +308,15 @@ export default function Discover() {
                   <div style={{ position: 'absolute', top: '-50%', right: '-10%', width: '150px', height: '150px', background: 'rgba(251,191,36,0.2)', filter: 'blur(40px)', borderRadius: '50%' }}></div>
                   <div style={{ fontSize: '2.2rem', zIndex: 1, filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.2))' }}>🎯</div>
                   <div style={{ flex: 1, zIndex: 1 }}>
-                    <div style={{ fontFamily: "'Syne', sans-serif", fontSize: '1.05rem', fontWeight: 800, color: '#0f172a', marginBottom: '4px', letterSpacing: '-0.02em' }}>
+                    <div style={{ fontFamily: "'Syne', sans-serif", fontSize: '1.05rem', fontWeight: 800, color: 'var(--white)', marginBottom: '4px', letterSpacing: '-0.02em' }}>
                       Experiences Marketplace
                     </div>
-                    <div style={{ fontSize: '0.8rem', color: 'rgba(15,23,42,0.8)', lineHeight: 1.4 }}>
+                    <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.8)', lineHeight: 1.4 }}>
                       Skydiving, retreats, theatre & more — curated by your community leaders
                     </div>
                   </div>
-                  <div style={{ background: 'rgba(15,23,42,0.1)', padding: '8px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1, backdropFilter: 'blur(4px)' }}>
-                    <ChevronRight size={18} style={{ color: '#0f172a' }} />
+                  <div style={{ background: 'rgba(255,255,255,0.1)', padding: '8px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1, backdropFilter: 'blur(4px)' }}>
+                    <ChevronRight size={18} style={{ color: 'var(--white)' }} />
                   </div>
                 </div>
               )}
