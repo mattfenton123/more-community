@@ -12,8 +12,15 @@ export default function BottomNav() {
   const { user } = useAppContext();
   const { directMessages, chatReadReceipts } = useChat();
 
-  // Hide bottom nav on specific pages if needed
-  const hideBottomNav = currentPath === '/login' || currentPath === '/onboarding';
+  // Hide bottom nav on specific pages, particularly deep pages where fixed footers or chat inputs shouldn't be obscured
+  const isDeepPage = currentPath.match(/^\/events\/[^/]+$/) || 
+                     currentPath.match(/^\/community\/[^/]+$/) || 
+                     currentPath.match(/^\/chat\/[^/]+\/[^/]+$/) || 
+                     currentPath.match(/^\/chat\/dm\/[^/]+$/) ||
+                     currentPath.match(/^\/profile\/[^/]+$/) ||
+                     currentPath === '/settings';
+  
+  const hideBottomNav = currentPath === '/login' || currentPath === '/onboarding' || isDeepPage;
   
   if (hideBottomNav) return null;
 

@@ -19,7 +19,7 @@ export default function Discover() {
   const [sortBy, setSortBy] = useState('trending');
   const [showSwipe, setShowSwipe] = useState(false);
   const pills = ['All', 'For You', '🔥 Trending', '🚶 Walking', '🏃 Running', '🧘 Wellness', '⛰️ Adventure', '🤝 Volunteering', '🎨 Creative', '💼 Business'];
-  const { communities, user, users, communityMemberships, joinCommunity, isLoading, events } = useAppContext();
+  const { communities, user, users, communityMemberships, joinCommunity, isLoading, events, theme, setTheme } = useAppContext();
     const { messages } = useChat();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -152,6 +152,13 @@ export default function Discover() {
               >
                 <MapIcon size={18} />
               </button>
+            </div>
+            <div 
+              className="interactive-press"
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--slate-300)' }}
+            >
+              {theme === 'light' ? <Moon size={22} /> : <Sun size={22} />}
             </div>
             <button onClick={() => navigate.push('/profile')} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 }}>
               <img src={user?.avatar || 'https://i.pravatar.cc/150'} alt="Profile" style={{ width: '36px', height: '36px', borderRadius: '50%', border: '2px solid var(--slate-700)', objectFit: 'cover' }} />

@@ -734,7 +734,7 @@ html, body {
 
 .btn-primary {
   background: var(--teal-600);
-  color: var(--white);
+  color: #ffffff;
 }
 
 .btn-primary:hover {

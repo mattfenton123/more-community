@@ -22,10 +22,10 @@ export default function EventsHub() {
   const [showSwipe, setShowSwipe] = useState(false);
 
   const myRsvpEventIds = Object.keys(eventRsvps).filter(eventId => 
-    eventRsvps[eventId]?.some(r => r.userId === user.id)
+    eventRsvps[eventId]?.some(r => r.userId === user?.id)
   );
-  const userEvents = events.filter(e => myRsvpEventIds.includes(e.id) || user.joinedCommunities.includes(e.communityId));
-  const exploreEvents = events.filter(e => !user.joinedCommunities.includes(e.communityId));
+  const userEvents = events.filter(e => myRsvpEventIds.includes(e.id) || user?.joinedCommunities?.includes(e.communityId));
+  const exploreEvents = events.filter(e => !user?.joinedCommunities?.includes(e.communityId));
   
   const [exploreSearchQuery, setExploreSearchQuery] = useState('');
   const [exploreDateFilter, setExploreDateFilter] = useState('');
