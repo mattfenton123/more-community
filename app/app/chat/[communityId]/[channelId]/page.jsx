@@ -428,8 +428,8 @@ export default function Chat() {
                       </div>
                     )}
                     <div style={{ 
-                      background: isMe ? 'var(--teal-600)' : 'rgba(255,255,255,0.05)', 
-                      border: isMe ? 'none' : '1px solid rgba(255,255,255,0.05)', 
+                      background: isMe ? 'var(--teal-600)' : 'var(--slate-800)', 
+                      border: isMe ? 'none' : '1px solid var(--slate-700)', 
                       padding: '12px 16px', 
                       borderRadius: isMe 
                         ? `16px ${isConsecutive ? '4px' : '16px'} ${isLastConsecutive ? '16px' : '4px'} 16px` 
@@ -488,7 +488,7 @@ export default function Chat() {
         </div>
       </div>
 
-      <div style={{ padding: '16px 20px', background: 'rgba(15, 23, 42, 0.9)', borderTop: '1px solid rgba(255,255,255,0.05)', zIndex: 10 }}>
+      <div style={{ padding: '16px 20px', background: 'var(--slate-900)', borderTop: '1px solid var(--slate-800)', zIndex: 10 }}>
         {imageFiles.length > 0 && (
           <div style={{ display: 'flex', gap: '12px', padding: '8px 12px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', marginBottom: '8px', overflowX: 'auto' }}>
             {Array.from(imageFiles).map((file, i) => (
@@ -527,9 +527,9 @@ export default function Chat() {
             onChange={(e) => setInputText(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
             placeholder={isDirectMessage ? 'Message...' : `Message #${channelId}...`}
-            style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '999px', padding: '12px 20px', color: 'var(--white)', outline: 'none', transition: 'border-color 0.2s' }}
+            style={{ flex: 1, background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '999px', padding: '12px 20px', color: 'var(--slate-200)', outline: 'none', transition: 'border-color 0.2s' }}
             onFocus={e => e.target.style.borderColor = 'rgba(20,184,166,0.4)'}
-            onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
+            onBlur={e => e.target.style.borderColor = 'var(--slate-700)'}
           />
           <button disabled={isUploading} className="btn btn-primary interactive-press" onClick={handleSend} style={{ width: '44px', height: '44px', borderRadius: '50%', padding: 0, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: isUploading ? 0.5 : 1 }}>
             <Send size={18} />

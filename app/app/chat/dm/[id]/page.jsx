@@ -97,11 +97,11 @@ export default function DirectMessage() {
               )}
               <div style={{
                 maxWidth: '75%', padding: '10px 14px', borderRadius: isOwn ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
-                background: isOwn ? 'rgba(20,184,166,0.2)' : 'rgba(255,255,255,0.05)',
-                border: isOwn ? '1px solid rgba(20,184,166,0.3)' : '1px solid rgba(255,255,255,0.06)',
+                background: isOwn ? 'var(--teal-600)' : 'var(--slate-800)',
+                border: isOwn ? 'none' : '1px solid var(--slate-700)',
               }}>
                 {msg.image && <img src={msg.image} alt="" style={{ maxWidth: '100%', borderRadius: '8px', marginBottom: msg.text ? '8px' : 0 }} />}
-                {msg.text && <div style={{ color: 'var(--white)', fontSize: '0.9rem', lineHeight: 1.5, wordBreak: 'break-word' }}>{msg.text}</div>}
+                {msg.text && <div style={{ color: isOwn ? 'white' : 'var(--slate-200)', fontSize: '0.9rem', lineHeight: 1.5, wordBreak: 'break-word' }}>{msg.text}</div>}
                 <div style={{ fontSize: '0.65rem', color: 'var(--slate-600)', marginTop: '4px', textAlign: isOwn ? 'right' : 'left' }}>
                   {msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
                 </div>
@@ -113,7 +113,7 @@ export default function DirectMessage() {
       </div>
 
       {/* Input */}
-      <div style={{ padding: '12px 16px', borderTop: '1px solid rgba(255,255,255,0.06)', background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+      <div style={{ padding: '12px 16px', borderTop: '1px solid var(--slate-800)', background: 'var(--slate-900)', display: 'flex', alignItems: 'center', gap: '8px' }}>
         <input type="file" ref={fileInputRef} accept="image/*" style={{ display: 'none' }} onChange={(e) => setImageFile(e.target.files[0])} />
         <button onClick={() => fileInputRef.current?.click()} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '8px' }}>
           <ImageIcon size={20} color="var(--slate-400)" />
@@ -124,7 +124,7 @@ export default function DirectMessage() {
           onChange={(e) => setInputText(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
           placeholder={`Message ${targetUser.name}...`}
-          style={{ flex: 1, padding: '10px 16px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: 'var(--white)', fontSize: '0.9rem', outline: 'none' }}
+          style={{ flex: 1, padding: '10px 16px', borderRadius: '20px', border: '1px solid var(--slate-700)', background: 'var(--slate-800)', color: 'var(--slate-200)', fontSize: '0.9rem', outline: 'none' }}
         />
         {imageFile && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(20,184,166,0.1)', padding: '4px 8px', borderRadius: '8px', fontSize: '0.75rem', color: 'var(--teal-300)' }}>
