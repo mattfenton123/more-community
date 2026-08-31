@@ -62,10 +62,10 @@ export default function NotificationsFeed({ onClose }) {
     <div className="glass-panel" style={{ width: '100%', maxWidth: '440px', padding: 0, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
       {/* Header */}
       <div style={{ padding: '14px 16px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.02)' }}>
-        <h3 style={{ margin: 0, color: 'white', fontSize: '1rem', fontFamily: 'var(--font-heading)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <h3 style={{ margin: 0, color: 'var(--white)', fontSize: '1rem', fontFamily: 'var(--font-heading)', display: 'flex', alignItems: 'center', gap: '8px' }}>
           <Bell size={18} /> Notifications
           {unreadCount > 0 && (
-            <span style={{ fontSize: '0.65rem', fontWeight: 700, padding: '2px 8px', borderRadius: '99px', background: 'var(--teal-500)', color: 'white' }}>
+            <span style={{ fontSize: '0.65rem', fontWeight: 700, padding: '2px 8px', borderRadius: '99px', background: 'var(--teal-500)', color: 'var(--white)' }}>
               {unreadCount}
             </span>
           )}

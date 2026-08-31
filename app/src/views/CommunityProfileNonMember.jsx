@@ -60,7 +60,7 @@ export default function CommunityProfileNonMember({
             </div>
           )}
           
-          <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2.8rem', color: 'white', margin: '0 0 16px 0', lineHeight: 1.1 }}>
+          <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2.8rem', color: 'var(--white)', margin: '0 0 16px 0', lineHeight: 1.1 }}>
             {community.name} {community.verified && <BadgeCheck size={28} color="#3b82f6" style={{ display: 'inline', verticalAlign: 'middle' }} />}
           </h1>
           
@@ -76,7 +76,7 @@ export default function CommunityProfileNonMember({
         
         {/* About */}
         <div>
-          <h2 style={{ fontSize: '1.4rem', fontFamily: 'var(--font-heading)', color: 'white', margin: '0 0 16px 0' }}>About us</h2>
+          <h2 style={{ fontSize: '1.4rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: '0 0 16px 0' }}>About us</h2>
           <p style={{ color: 'var(--slate-300)', fontSize: '1.05rem', lineHeight: 1.6, margin: 0 }}>
             {community.description}
           </p>
@@ -85,19 +85,19 @@ export default function CommunityProfileNonMember({
             <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '16px', padding: '16px' }}>
               <div style={{ fontSize: '1.5rem', marginBottom: '8px' }}>👥</div>
               <div style={{ fontSize: '0.8rem', color: 'var(--teal-400)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>For Who</div>
-              <div style={{ fontSize: '0.95rem', color: 'white', fontWeight: 500 }}>{community.target_audience || 'Everyone welcome'}</div>
+              <div style={{ fontSize: '0.95rem', color: 'var(--white)', fontWeight: 500 }}>{community.target_audience || 'Everyone welcome'}</div>
             </div>
             <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '16px', padding: '16px' }}>
               <div style={{ fontSize: '1.5rem', marginBottom: '8px' }}>📅</div>
               <div style={{ fontSize: '0.8rem', color: 'var(--teal-400)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>How Often</div>
-              <div style={{ fontSize: '0.95rem', color: 'white', fontWeight: 500 }}>{community.activity_level || 'Active weekly'}</div>
+              <div style={{ fontSize: '0.95rem', color: 'var(--white)', fontWeight: 500 }}>{community.activity_level || 'Active weekly'}</div>
             </div>
           </div>
         </div>
 
         {/* Gallery Preview */}
         <div>
-          <h2 style={{ fontSize: '1.4rem', fontFamily: 'var(--font-heading)', color: 'white', margin: '0 0 16px 0' }}>The Vibe</h2>
+          <h2 style={{ fontSize: '1.4rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: '0 0 16px 0' }}>The Vibe</h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
             {galleryPhotos.map((url, idx) => (
               <div key={idx} style={{ borderRadius: '16px', overflow: 'hidden', aspectRatio: idx === 0 ? '16/12' : '1/1', gridColumn: idx === 0 ? 'span 2' : 'span 1' }}>
@@ -112,25 +112,25 @@ export default function CommunityProfileNonMember({
           <img src={leaderUser?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(community.name)}&background=0D8B93&color=fff`} alt="Organiser" style={{ width: '56px', height: '56px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--teal-500)' }} />
           <div>
             <div style={{ fontSize: '0.8rem', color: 'var(--teal-400)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>Organised by</div>
-            <div style={{ fontWeight: 800, color: 'white', fontSize: '1.1rem' }}>{leaderUser?.name || 'Community Team'}</div>
+            <div style={{ fontWeight: 800, color: 'var(--white)', fontSize: '1.1rem' }}>{leaderUser?.name || 'Community Team'}</div>
           </div>
         </div>
 
         {/* Next Event */}
         {nextEvent && (
           <div>
-            <h2 style={{ fontSize: '1.4rem', fontFamily: 'var(--font-heading)', color: 'white', margin: '0 0 16px 0' }}>Join us at</h2>
+            <h2 style={{ fontSize: '1.4rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: '0 0 16px 0' }}>Join us at</h2>
             <div style={{ borderRadius: '20px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.03)' }}>
               {nextEvent.image && (
                 <div style={{ height: '160px', background: `url(${nextEvent.image})`, backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative' }}>
                   <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.8))' }}></div>
-                  <div style={{ position: 'absolute', bottom: '16px', left: '16px', background: 'var(--teal-500)', padding: '6px 12px', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 800, color: 'white' }}>
+                  <div style={{ position: 'absolute', bottom: '16px', left: '16px', background: 'var(--teal-500)', padding: '6px 12px', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 800, color: 'var(--white)' }}>
                     {nextEvent.date}
                   </div>
                 </div>
               )}
               <div style={{ padding: '20px' }}>
-                <div style={{ fontWeight: 800, fontSize: '1.2rem', color: 'white', marginBottom: '8px' }}>{nextEvent.title}</div>
+                <div style={{ fontWeight: 800, fontSize: '1.2rem', color: 'var(--white)', marginBottom: '8px' }}>{nextEvent.title}</div>
                 <div style={{ display: 'flex', gap: '16px', fontSize: '0.9rem', color: 'var(--slate-400)' }}>
                   <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={16} /> {nextEvent.time}</span>
                   <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><MapPin size={16} /> {nextEvent.location}</span>
@@ -142,7 +142,7 @@ export default function CommunityProfileNonMember({
 
         {/* Reviews */}
         <div>
-          <h2 style={{ fontSize: '1.4rem', fontFamily: 'var(--font-heading)', color: 'white', margin: '0 0 16px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <h2 style={{ fontSize: '1.4rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: '0 0 16px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Star size={22} color="var(--amber-400)" fill="var(--amber-400)" /> What members say
           </h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -151,7 +151,7 @@ export default function CommunityProfileNonMember({
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
                   <img src={review.avatar} alt={review.name} style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
                   <div>
-                    <div style={{ fontWeight: 700, color: 'white', fontSize: '1rem' }}>{review.name}</div>
+                    <div style={{ fontWeight: 700, color: 'var(--white)', fontSize: '1rem' }}>{review.name}</div>
                     <div style={{ display: 'flex', gap: '2px', marginTop: '2px' }}>
                       {Array.from({ length: review.rating }).map((_, i) => (
                         <Star key={i} size={12} fill="var(--amber-400)" color="var(--amber-400)" />

@@ -26,7 +26,7 @@ const SearchBar = ({ placeholder, value, onChange }) => (
   <div style={{ position: 'relative', marginBottom: '16px' }}>
     <Search size={16} color="var(--slate-500)" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)' }} />
     <input type="text" placeholder={placeholder} value={value} onChange={onChange}
-      style={{ width: '100%', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '12px 12px 12px 40px', color: 'white', fontSize: '0.9rem' }} />
+      style={{ width: '100%', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '12px 12px 12px 40px', color: 'var(--white)', fontSize: '0.9rem' }} />
   </div>
 );
 
@@ -278,7 +278,7 @@ export default function AdminDashboard() {
             <Shield size={22} />
           </div>
           <div>
-            <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'white', margin: 0, fontFamily: 'var(--font-heading)' }}>Platform Admin</h1>
+            <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--white)', margin: 0, fontFamily: 'var(--font-heading)' }}>Platform Admin</h1>
             <p style={{ color: 'var(--slate-500)', margin: 0, fontSize: '0.8rem' }}>Global Oversight & Control Centre</p>
           </div>
         </div>
@@ -344,7 +344,7 @@ export default function AdminDashboard() {
                     <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'var(--slate-800)', overflow: 'hidden', flexShrink: 0 }}>
                       {c.image ? <img src={c.image} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Globe size={14} color="var(--slate-600)" /></div>}
                     </div>
-                    <span style={{ flex: 1, fontSize: '0.85rem', color: 'white', fontWeight: 500 }}>{c.name}</span>
+                    <span style={{ flex: 1, fontSize: '0.85rem', color: 'var(--white)', fontWeight: 500 }}>{c.name}</span>
                     <span style={{ fontSize: '0.7rem', color: 'var(--slate-500)' }}>{c.members} members</span>
                     <HealthBadge health={c.health} />
                   </div>
@@ -397,7 +397,7 @@ export default function AdminDashboard() {
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
-                          <h3 style={{ margin: 0, color: 'white', fontSize: '0.9rem', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.name}</h3>
+                          <h3 style={{ margin: 0, color: 'var(--white)', fontSize: '0.9rem', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.name}</h3>
                           {c.verified && <BadgeCheck size={14} color="#3b82f6" />}
                         </div>
                         <div style={{ display: 'flex', gap: '10px', fontSize: '0.7rem', color: 'var(--slate-500)' }}>
@@ -422,7 +422,7 @@ export default function AdminDashboard() {
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', padding: '10px', background: 'rgba(255,255,255,0.02)', borderRadius: '8px' }}>
                             <img src={leaderUser.avatar} alt="" style={{ width: '28px', height: '28px', borderRadius: '50%' }} />
                             <div style={{ flex: 1 }}>
-                              <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'white' }}>{leaderUser.name}</div>
+                              <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--white)' }}>{leaderUser.name}</div>
                               <div style={{ fontSize: '0.7rem', color: 'var(--slate-500)' }}>{leaderUser.email} • Leader</div>
                             </div>
                             <Crown size={14} color="#f59e0b" />
@@ -430,7 +430,7 @@ export default function AdminDashboard() {
                         )}
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginBottom: '12px' }}>
                           <div style={{ textAlign: 'center', padding: '10px', background: 'rgba(255,255,255,0.02)', borderRadius: '8px' }}>
-                            <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'white' }}>{c.members}</div>
+                            <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--white)' }}>{c.members}</div>
                             <div style={{ fontSize: '0.65rem', color: 'var(--slate-500)' }}>Members</div>
                           </div>
                           <div style={{ textAlign: 'center', padding: '10px', background: 'rgba(255,255,255,0.02)', borderRadius: '8px' }}>
@@ -478,7 +478,7 @@ export default function AdminDashboard() {
             {/* User Stats Summary */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '8px', marginBottom: '16px' }}>
               {[
-                { value: users.length, label: 'Total', color: 'white' },
+                { value: users.length, label: 'Total', color: 'var(--white)' },
                 { value: users.filter(u => ADMIN_EMAILS.includes(u.email?.toLowerCase())).length, label: 'Admins', color: '#3b82f6' },
                 { value: (() => { let c = 0; Object.values(communityMemberships).forEach(mems => { mems.forEach(m => { if (m.role === 'Leader') c++; }); }); return c; })(), label: 'Leaders', color: '#f59e0b' },
                 { value: (() => { let active = 0; users.forEach(u => { const msgs = messages.filter(m => m.authorId === u.id).length; let evts = 0; Object.values(eventRsvps).forEach(r => { if (r.some(rv => rv.userId === u.id)) evts++; }); if (msgs + evts > 2) active++; }); return active; })(), label: 'Active', color: '#22c55e' },
@@ -538,7 +538,7 @@ export default function AdminDashboard() {
                         </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '1px' }}>
-                            <span style={{ fontWeight: 600, color: 'white', fontSize: '0.9rem' }}>{u.name}</span>
+                            <span style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.9rem' }}>{u.name}</span>
                             {u.isAdmin && <span style={{ fontSize: '0.55rem', fontWeight: 700, padding: '1px 5px', borderRadius: '4px', background: 'rgba(59,130,246,0.15)', color: '#3b82f6' }}>ADMIN</span>}
                             {u.isLeader && <span style={{ fontSize: '0.55rem', fontWeight: 700, padding: '1px 5px', borderRadius: '4px', background: 'rgba(245,158,11,0.15)', color: '#f59e0b' }}>LEADER</span>}
                           </div>
@@ -644,7 +644,7 @@ export default function AdminDashboard() {
             {/* Event Stats Row */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginBottom: '16px' }}>
               <div style={{ textAlign: 'center', padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.04)' }}>
-                <div style={{ fontSize: '1.3rem', fontWeight: 700, color: 'white' }}>{platformStats.totalEvents}</div>
+                <div style={{ fontSize: '1.3rem', fontWeight: 700, color: 'var(--white)' }}>{platformStats.totalEvents}</div>
                 <div style={{ fontSize: '0.65rem', color: 'var(--slate-500)' }}>Total Events</div>
               </div>
               <div style={{ textAlign: 'center', padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.04)' }}>
@@ -661,11 +661,11 @@ export default function AdminDashboard() {
               {filteredEvents.map(e => (
                 <div key={e.id} style={{ display: 'flex', gap: '12px', padding: '12px 14px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', ...(e.status === 'cancelled' ? { opacity: 0.5 } : {}) }}>
                   <div style={{ width: '42px', height: '46px', background: 'rgba(20,184,166,0.08)', borderRadius: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <div style={{ fontSize: '1rem', fontWeight: 700, color: 'white', lineHeight: 1 }}>{e.date ? new Date(e.date + 'T00:00:00').getDate() : '—'}</div>
+                    <div style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--white)', lineHeight: 1 }}>{e.date ? new Date(e.date + 'T00:00:00').getDate() : '—'}</div>
                     <div style={{ fontSize: '0.55rem', color: 'var(--teal-400)', fontWeight: 600, textTransform: 'uppercase' }}>{e.date ? new Date(e.date + 'T00:00:00').toLocaleDateString('en-GB', { month: 'short' }) : ''}</div>
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontWeight: 600, color: 'white', fontSize: '0.9rem', marginBottom: '2px' }}>{e.title}</div>
+                    <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.9rem', marginBottom: '2px' }}>{e.title}</div>
                     <div style={{ fontSize: '0.7rem', color: 'var(--slate-500)', marginBottom: '4px' }}>{e.communityName}</div>
                     <div style={{ display: 'flex', gap: '10px', fontSize: '0.7rem' }}>
                       <span style={{ color: 'var(--teal-400)' }}>{e.rsvpCount} RSVPs</span>
@@ -697,7 +697,7 @@ export default function AdminDashboard() {
               {revenueByComm.length > 0 ? revenueByComm.map(c => (
                 <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.04)', marginBottom: '8px' }}>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 600, color: 'white', fontSize: '0.9rem' }}>{c.name}</div>
+                    <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.9rem' }}>{c.name}</div>
                     <div style={{ fontSize: '0.7rem', color: 'var(--slate-500)' }}>{c.cEvents} events • {c.members} members</div>
                   </div>
                   <div style={{ fontWeight: 700, color: '#f59e0b', fontSize: '1.1rem' }}>£{c.cRevenue}</div>
@@ -714,7 +714,7 @@ export default function AdminDashboard() {
                 communities.filter(c => (c.subscription_price || c.subscriptionPrice || 0) > 0).map(c => (
                   <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: 'rgba(245,158,11,0.04)', borderRadius: '10px', border: '1px solid rgba(245,158,11,0.1)', marginBottom: '8px' }}>
                     <Crown size={16} color="#f59e0b" />
-                    <span style={{ flex: 1, fontWeight: 500, color: 'white', fontSize: '0.9rem' }}>{c.name}</span>
+                    <span style={{ flex: 1, fontWeight: 500, color: 'var(--white)', fontSize: '0.9rem' }}>{c.name}</span>
                     <span style={{ fontWeight: 700, color: '#f59e0b' }}>£{c.subscription_price || c.subscriptionPrice}/mo</span>
                   </div>
                 ))
@@ -743,11 +743,11 @@ export default function AdminDashboard() {
             <div className="glass-panel" style={{ padding: '18px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
                 <Megaphone size={16} color="#f59e0b" />
-                <span style={{ fontWeight: 600, color: 'white', fontSize: '0.9rem' }}>Platform Broadcast</span>
+                <span style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.9rem' }}>Platform Broadcast</span>
               </div>
               <p style={{ fontSize: '0.8rem', color: 'var(--slate-400)', marginBottom: '12px' }}>Send an announcement to every user across all {communities.length} communities.</p>
               <textarea placeholder="Write your platform-wide announcement..." value={broadcastText} onChange={e => setBroadcastText(e.target.value)}
-                style={{ width: '100%', padding: '12px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', color: 'white', minHeight: '100px', fontFamily: 'inherit', resize: 'none', marginBottom: '10px' }} />
+                style={{ width: '100%', padding: '12px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', color: 'var(--white)', minHeight: '100px', fontFamily: 'inherit', resize: 'none', marginBottom: '10px' }} />
               <button onClick={handlePlatformBroadcast} disabled={isSending || !broadcastText.trim()} className="btn btn-primary interactive-press"
                 style={{ width: '100%', padding: '12px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', opacity: isSending || !broadcastText.trim() ? 0.5 : 1 }}>
                 <Megaphone size={16} /> {isSending ? 'Sending...' : `Broadcast to ${users.length} Users`}
@@ -775,7 +775,7 @@ export default function AdminDashboard() {
                     <div key={i} style={{ padding: '10px 12px', background: 'rgba(255,255,255,0.02)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.04)' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
                         {author?.avatar && <img src={author.avatar} alt="" style={{ width: '22px', height: '22px', borderRadius: '50%' }} />}
-                        <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'white' }}>{author?.name || 'Unknown'}</span>
+                        <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--white)' }}>{author?.name || 'Unknown'}</span>
                         <span style={{ fontSize: '0.65rem', color: 'var(--slate-600)' }}>in {comm?.name || 'Unknown'}</span>
                       </div>
                       <div style={{ fontSize: '0.8rem', color: 'var(--slate-300)', lineHeight: 1.4 }}>{post.content?.substring(0, 120)}{post.content?.length > 120 ? '...' : ''}</div>
@@ -803,7 +803,7 @@ export default function AdminDashboard() {
                     {adminUser?.avatar && <img src={adminUser.avatar} alt="" style={{ width: '32px', height: '32px', borderRadius: '50%' }} />}
                     {!adminUser?.avatar && <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(59,130,246,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Shield size={14} color="#3b82f6" /></div>}
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontWeight: 600, color: 'white', fontSize: '0.85rem' }}>{adminUser?.name || 'Not registered'}</div>
+                      <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.85rem' }}>{adminUser?.name || 'Not registered'}</div>
                       <div style={{ fontSize: '0.7rem', color: 'var(--slate-500)' }}>{email}</div>
                     </div>
                     <Shield size={14} color="#3b82f6" />
@@ -827,7 +827,7 @@ export default function AdminDashboard() {
                   <div key={row.table} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', borderBottom: i < 5 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
                     <row.icon size={14} color="var(--slate-500)" />
                     <span style={{ flex: 1, fontSize: '0.8rem', color: 'var(--slate-300)', fontFamily: 'monospace' }}>{row.table}</span>
-                    <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'white' }}>{row.count} rows</span>
+                    <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--white)' }}>{row.count} rows</span>
                   </div>
                 ))}
               </div>
@@ -839,7 +839,7 @@ export default function AdminDashboard() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {['users', 'communities', 'events'].map(type => (
                   <button key={type} onClick={() => handleExportCSV(type)} className="interactive-press"
-                    style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', color: 'white', cursor: 'pointer', width: '100%', textAlign: 'left' }}>
+                    style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', color: 'var(--white)', cursor: 'pointer', width: '100%', textAlign: 'left' }}>
                     <Download size={16} color="var(--teal-400)" />
                     <span style={{ flex: 1, fontWeight: 500, fontSize: '0.85rem', textTransform: 'capitalize' }}>Export {type}</span>
                     <span style={{ fontSize: '0.7rem', color: 'var(--slate-500)' }}>CSV</span>
@@ -854,11 +854,11 @@ export default function AdminDashboard() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '0.8rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span style={{ color: 'var(--slate-400)' }}>App Name</span>
-                  <img src="/logo.png" alt="more." style={{ height: '16px' }} />
+                  <img src="/logo.png" className="theme-invert" alt="more." style={{ height: '16px' }} />
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span style={{ color: 'var(--slate-400)' }}>Version</span>
-                  <span style={{ color: 'white' }}>1.0.0</span>
+                  <span style={{ color: 'var(--white)' }}>1.0.0</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span style={{ color: 'var(--slate-400)' }}>Environment</span>
@@ -866,7 +866,7 @@ export default function AdminDashboard() {
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span style={{ color: 'var(--slate-400)' }}>Backend</span>
-                  <span style={{ color: 'white' }}>Supabase</span>
+                  <span style={{ color: 'var(--white)' }}>Supabase</span>
                 </div>
               </div>
             </div>

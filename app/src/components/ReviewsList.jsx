@@ -23,7 +23,7 @@ export default function ReviewsList({ communityId, onAddReview }) {
     <div style={{ marginBottom: '32px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
         <div>
-          <h3 style={{ fontSize: '1.2rem', fontFamily: 'var(--font-heading)', color: 'white', margin: '0 0 4px 0' }}>Reviews</h3>
+          <h3 style={{ fontSize: '1.2rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: '0 0 4px 0' }}>Reviews</h3>
           <p style={{ fontSize: '0.85rem', color: 'var(--slate-400)', margin: 0 }}>What members are saying</p>
         </div>
         <button 
@@ -39,7 +39,7 @@ export default function ReviewsList({ communityId, onAddReview }) {
       {totalReviews > 0 ? (
         <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '20px', marginBottom: '24px', display: 'flex', gap: '24px', alignItems: 'center' }}>
           <div style={{ textAlign: 'center', minWidth: '100px' }}>
-            <div style={{ fontSize: '3rem', fontFamily: 'var(--font-heading)', color: 'white', lineHeight: 1 }}>{averageRating}</div>
+            <div style={{ fontSize: '3rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', lineHeight: 1 }}>{averageRating}</div>
             <div style={{ display: 'flex', justifyContent: 'center', gap: '2px', color: 'var(--teal-400)', margin: '8px 0' }}>
               {[1, 2, 3, 4, 5].map(i => (
                 <Star key={i} size={16} fill={i <= Math.round(averageRating) ? "currentColor" : "none"} strokeWidth={i <= Math.round(averageRating) ? 0 : 1} />
@@ -81,7 +81,7 @@ export default function ReviewsList({ communityId, onAddReview }) {
                 <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                   <img src={author.avatar} alt={author.name} style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
                   <div>
-                    <div style={{ fontWeight: 600, color: 'white', fontSize: '0.95rem' }}>{author.name}</div>
+                    <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.95rem' }}>{author.name}</div>
                     <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>
                       {new Date(review.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                     </div>

@@ -29,7 +29,7 @@ export default function UserProfile() {
   const fileInputRef = useRef(null);
 
   if (!profileUser) {
-    return <div style={{ padding: '40px', color: 'white', textAlign: 'center' }}>User not found.</div>;
+    return <div style={{ padding: '40px', color: 'var(--white)', textAlign: 'center' }}>User not found.</div>;
   }
 
   const joinedCommunityIds = [];
@@ -93,12 +93,12 @@ export default function UserProfile() {
       <div style={{ height: '180px', background: `url(${FALLBACK_IMAGES.general})`, backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative' }}>
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.1), var(--slate-950))' }}></div>
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, padding: '20px', display: 'flex', justifyContent: 'space-between', zIndex: 10 }}>
-          <button className="interactive-press" onClick={() => navigate.push('/')} style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(10px)', border: 'none', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+          <button className="interactive-press" onClick={() => navigate.push('/')} style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(10px)', border: 'none', color: 'var(--white)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
             <ArrowLeft size={24} />
           </button>
           <div style={{ display: 'flex', gap: '8px' }}>
             {!isOwnProfile && (
-              <button className="interactive-press" onClick={() => navigate.push(`/chat/dm/${targetId}`)} style={{ height: '40px', padding: '0 16px', borderRadius: '20px', background: 'var(--teal-500)', border: 'none', color: 'white', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 600 }}>
+              <button className="interactive-press" onClick={() => navigate.push(`/chat/dm/${targetId}`)} style={{ height: '40px', padding: '0 16px', borderRadius: '20px', background: 'var(--teal-500)', border: 'none', color: 'var(--white)', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 600 }}>
                 <MessageCircle size={18} /> Message
               </button>
             )}
@@ -117,7 +117,7 @@ export default function UserProfile() {
                 <button className="interactive-press" onClick={() => setIsEditing(false)} style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(239,68,68,0.2)', border: '1px solid rgba(239,68,68,0.4)', color: 'var(--red-400)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
                   <X size={20} />
                 </button>
-                <button className="interactive-press" onClick={handleSave} style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(20,184,166,0.9)', border: 'none', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                <button className="interactive-press" onClick={handleSave} style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(20,184,166,0.9)', border: 'none', color: 'var(--white)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
                   <Check size={20} />
                 </button>
               </>
@@ -131,11 +131,11 @@ export default function UserProfile() {
           {/* Avatar */}
           <div style={{ position: 'relative', marginBottom: '12px', cursor: isEditing ? 'pointer' : 'default' }} onClick={handleAvatarClick} className={isEditing ? 'interactive-hover' : ''}>
             <img src={profileUser.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(profileUser.name)}&background=0D8B93&color=fff`} alt={profileUser.name} style={{ width: '110px', height: '110px', borderRadius: '50%', objectFit: 'cover', border: '4px solid var(--slate-950)', background: 'var(--slate-800)', opacity: isUploading ? 0.5 : 1 }} />
-            {isEditing && <div style={{ position: 'absolute', inset: 4, borderRadius: '50%', background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}><Camera size={28} /></div>}
+            {isEditing && <div style={{ position: 'absolute', inset: 4, borderRadius: '50%', background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--white)' }}><Camera size={28} /></div>}
             <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" style={{ display: 'none' }} />
             {/* Level Badge */}
             <div style={{ position: 'absolute', bottom: -2, right: -2, width: '32px', height: '32px', borderRadius: '10px', background: 'linear-gradient(135deg, #f59e0b, #ef4444)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '3px solid var(--slate-950)' }}>
-              <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'white' }}>{level}</span>
+              <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--white)' }}>{level}</span>
             </div>
           </div>
           
@@ -146,7 +146,7 @@ export default function UserProfile() {
             </div>
           ) : (
             <>
-              <h1 style={{ margin: '0 0 4px 0', fontSize: '1.6rem', fontFamily: 'var(--font-heading)', color: 'white' }}>{profileUser.name}</h1>
+              <h1 style={{ margin: '0 0 4px 0', fontSize: '1.6rem', fontFamily: 'var(--font-heading)', color: 'var(--white)' }}>{profileUser.name}</h1>
               
               {/* Level + XP + Streak row */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
@@ -219,7 +219,7 @@ export default function UserProfile() {
                     <action.icon size={18} color={action.color} />
                   </div>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 600, color: 'white', fontSize: '0.9rem' }}>{action.label}</div>
+                    <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.9rem' }}>{action.label}</div>
                     <div style={{ fontSize: '0.78rem', color: 'var(--slate-400)' }}>{action.desc}</div>
                   </div>
                   <ChevronRight size={16} color="var(--slate-600)" />
@@ -283,7 +283,7 @@ export default function UserProfile() {
                       <img src={comm.image || FALLBACK_IMAGES.community} alt={comm.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     </div>
                     <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.9), transparent)', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '12px' }}>
-                      <div style={{ fontWeight: 600, color: 'white', fontSize: '0.85rem', lineHeight: 1.2 }}>{comm.name}</div>
+                      <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.85rem', lineHeight: 1.2 }}>{comm.name}</div>
                     </div>
                   </div>
                 ))}

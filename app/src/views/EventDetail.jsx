@@ -199,7 +199,7 @@ export default function EventsHub() {
           <div className="modal-content" style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
               <h2 style={{ fontFamily: 'var(--font-heading)', margin: 0 }}>Event Details</h2>
-              <button onClick={closeEventModal} className="interactive-press" style={{ background: 'rgba(255,255,255,0.05)', border: 'none', color: 'white', cursor: 'pointer', width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <button onClick={closeEventModal} className="interactive-press" style={{ background: 'rgba(255,255,255,0.05)', border: 'none', color: 'var(--white)', cursor: 'pointer', width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <X size={18} />
               </button>
             </div>
@@ -211,7 +211,7 @@ export default function EventsHub() {
                 </div>
                 
                 <div style={{ fontSize: '0.85rem', color: 'var(--teal-400)', fontWeight: 600, textTransform: 'uppercase', marginBottom: '8px' }}>{selectedEvent.communityName}</div>
-                <h3 style={{ fontSize: '1.5rem', fontFamily: 'var(--font-heading)', marginBottom: '16px', color: 'white', paddingRight: '60px' }}>{selectedEvent.title}</h3>
+                <h3 style={{ fontSize: '1.5rem', fontFamily: 'var(--font-heading)', marginBottom: '16px', color: 'var(--white)', paddingRight: '60px' }}>{selectedEvent.title}</h3>
                 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '24px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--slate-300)' }}>
@@ -238,7 +238,7 @@ export default function EventsHub() {
                   <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}><Users size={14} /> Who's going</div>
                   
                   {eventRsvps[selectedEvent.id] && eventRsvps[selectedEvent.id].length > 0 && (
-                    <div style={{ fontSize: '0.9rem', color: 'white', fontWeight: 600, marginBottom: '12px' }}>
+                    <div style={{ fontSize: '0.9rem', color: 'var(--white)', fontWeight: 600, marginBottom: '12px' }}>
                       {(() => {
                         const firstUser = users.find(u => u.id === eventRsvps[selectedEvent.id][0].userId);
                         const count = eventRsvps[selectedEvent.id].length;
@@ -278,7 +278,7 @@ export default function EventsHub() {
                               <div style={{ width: '100px', height: '100px', background: '#aaa', borderRadius: '8px' }}></div>
                             </div>
                             <div style={{ position: 'relative', zIndex: 10 }}>
-                              <p style={{ color: 'white', fontSize: '0.95rem', fontWeight: 600, marginBottom: '8px' }}>Time to Be Real!</p>
+                              <p style={{ color: 'var(--white)', fontSize: '0.95rem', fontWeight: 600, marginBottom: '8px' }}>Time to Be Real!</p>
                               <p style={{ color: 'var(--slate-300)', fontSize: '0.85rem', marginBottom: '20px' }}>Upload a photo from the event to unlock everyone else's memories.</p>
                               <button onClick={() => setHasUploadedMemory(true)} className="btn btn-primary interactive-press" style={{ borderRadius: '12px', padding: '12px 24px' }}>
                                 <ImageIcon size={16} style={{ marginRight: '8px', display: 'inline-block' }} />
@@ -332,7 +332,7 @@ export default function EventsHub() {
                 
                 {checkoutState === 'payment_select' && (
                   <>
-                    <h3 style={{ margin: '0 0 16px 0', color: 'white', display: 'flex', justifyContent: 'space-between' }}>
+                    <h3 style={{ margin: '0 0 16px 0', color: 'var(--white)', display: 'flex', justifyContent: 'space-between' }}>
                       <span>Checkout</span>
                       <span>£{getEventPrice(selectedEvent).toFixed(2)}</span>
                     </h3>
@@ -370,7 +370,7 @@ export default function EventsHub() {
                     {/* Stripe integration coming soon */}
                     <div style={{ background: 'rgba(20,184,166,0.06)', border: '1px solid rgba(20,184,166,0.2)', borderRadius: '14px', padding: '24px', textAlign: 'center', marginBottom: '12px' }}>
                       <div style={{ fontSize: '2rem', marginBottom: '12px' }}>🎫</div>
-                      <div style={{ fontWeight: 700, color: 'white', marginBottom: '8px', fontSize: '1rem' }}>Secure payment coming soon</div>
+                      <div style={{ fontWeight: 700, color: 'var(--white)', marginBottom: '8px', fontSize: '1rem' }}>Secure payment coming soon</div>
                       <p style={{ color: 'var(--slate-400)', fontSize: '0.85rem', margin: '0 0 16px 0', lineHeight: 1.5 }}>
                         We're integrating Stripe for safe, seamless payments. In the meantime, please contact the community leader directly to arrange your ticket.
                       </p>
@@ -396,7 +396,7 @@ export default function EventsHub() {
                 {checkoutState === 'success' && (
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px 0', color: 'var(--teal-400)' }}>
                     <CheckCircle2 size={48} style={{ marginBottom: '16px' }} />
-                    <h3 style={{ margin: '0 0 8px 0', color: 'white' }}>You're going!</h3>
+                    <h3 style={{ margin: '0 0 8px 0', color: 'var(--white)' }}>You're going!</h3>
                     <p style={{ margin: '0 0 16px 0', color: 'var(--slate-400)', textAlign: 'center', fontSize: '0.9rem' }}>We've added this event to your schedule.</p>
                     <button onClick={() => { setShowTicket(selectedEvent); closeEventModal(); }} className="btn btn-outline interactive-press" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 24px', borderRadius: '10px' }}>
                       <QrCode size={18} /> View Your Ticket

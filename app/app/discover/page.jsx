@@ -164,7 +164,7 @@ export default function Discover() {
         <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--slate-400)' }}>Local communities in</p>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '4px 0 16px 0' }}>
           <h2 style={{ margin: 0, fontFamily: 'var(--font-heading)', fontSize: '1.4rem' }}>Tunbridge Wells, UK</h2>
-          <button onClick={() => setShowSwipe(true)} className="interactive-press" style={{ background: 'var(--teal-500)', border: 'none', color: 'white', padding: '6px 12px', borderRadius: '99px', fontSize: '0.8rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', boxShadow: '0 4px 12px rgba(20,184,166,0.3)' }}>
+          <button onClick={() => setShowSwipe(true)} className="interactive-press" style={{ background: 'var(--teal-500)', border: 'none', color: 'var(--white)', padding: '6px 12px', borderRadius: '99px', fontSize: '0.8rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', boxShadow: '0 4px 12px rgba(20,184,166,0.3)' }}>
             <Sparkles size={14} /> Find Plans
           </button>
         </div>
@@ -176,7 +176,7 @@ export default function Discover() {
             placeholder="Search communities..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            style={{ background: 'transparent', border: 'none', color: 'white', outline: 'none', flex: 1, fontSize: '0.9rem' }}
+            style={{ background: 'transparent', border: 'none', color: 'var(--white)', outline: 'none', flex: 1, fontSize: '0.9rem' }}
           />
         </div>
       </div>
@@ -238,12 +238,12 @@ export default function Discover() {
               />
               <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.2) 50%, transparent 100%)' }}></div>
               <div style={{ position: 'absolute', top: '16px', left: '16px' }}>
-                <span style={{ background: 'var(--teal-500)', color: 'white', padding: '6px 14px', borderRadius: '99px', fontSize: '0.75rem', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                <span style={{ background: 'var(--teal-500)', color: 'var(--white)', padding: '6px 14px', borderRadius: '99px', fontSize: '0.75rem', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                   <Sparkles size={12} /> Featured Community
                 </span>
               </div>
               <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '20px' }}>
-                <h3 style={{ margin: '0 0 6px 0', fontSize: '1.4rem', fontFamily: 'var(--font-heading)', color: 'white' }}>{featuredCommunity.name}</h3>
+                <h3 style={{ margin: '0 0 6px 0', fontSize: '1.4rem', fontFamily: 'var(--font-heading)', color: 'var(--white)' }}>{featuredCommunity.name}</h3>
                 <p style={{ margin: '0 0 8px 0', fontSize: '0.85rem', color: 'var(--slate-300)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{featuredCommunity.description}</p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '0.8rem', color: 'var(--slate-400)' }}>
                   <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Users size={14} /> {getMemberCount(featuredCommunity.id)} members</span>
@@ -317,7 +317,7 @@ export default function Discover() {
                     >
                       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.4) 100%)' }}></div>
                       {community.category && (
-                        <div style={{ position: 'absolute', top: '12px', left: '12px', background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(8px)', padding: '4px 10px', borderRadius: '99px', fontSize: '0.7rem', fontWeight: 600, color: 'white' }}>
+                        <div style={{ position: 'absolute', top: '12px', left: '12px', background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(8px)', padding: '4px 10px', borderRadius: '99px', fontSize: '0.7rem', fontWeight: 600, color: 'var(--white)' }}>
                           {community.category}
                         </div>
                       )}
@@ -328,7 +328,7 @@ export default function Discover() {
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px' }}>
                         <div onClick={() => navigate.push('/community/' + community.id)} style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
-                            <h3 style={{ margin: 0, fontFamily: 'var(--font-heading)', fontSize: '1.1rem', color: 'white' }}>{community.name}</h3>
+                            <h3 style={{ margin: 0, fontFamily: 'var(--font-heading)', fontSize: '1.1rem', color: 'var(--white)' }}>{community.name}</h3>
                             {community.verified && <BadgeCheck size={15} color="#3b82f6" />}
                           </div>
                           <p style={{ margin: '0 0 8px 0', fontSize: '0.85rem', color: 'var(--slate-400)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: 1.4 }}>
@@ -363,7 +363,7 @@ export default function Discover() {
               {filteredCommunities.length === 0 && (
                 <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--slate-400)' }}>
                   <div style={{ fontSize: '3rem', marginBottom: '16px' }}>🔍</div>
-                  <h3 style={{ fontFamily: 'var(--font-heading)', color: 'white', marginBottom: '8px' }}>No communities found</h3>
+                  <h3 style={{ fontFamily: 'var(--font-heading)', color: 'var(--white)', marginBottom: '8px' }}>No communities found</h3>
                   <p style={{ fontSize: '0.9rem' }}>Try a different search or filter.</p>
                 </div>
               )}

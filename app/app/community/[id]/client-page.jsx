@@ -94,7 +94,7 @@ export default function CommunityProfile() {
   const community = communities.find(c => c.id === communityId);
 
   if (!community) {
-    return <div style={{ padding: '40px', color: 'white', textAlign: 'center' }}>Loading...</div>;
+    return <div style={{ padding: '40px', color: 'var(--white)', textAlign: 'center' }}>Loading...</div>;
   }
 
   const isMember = user.joinedCommunities.includes(communityId);
@@ -237,11 +237,11 @@ export default function CommunityProfile() {
         
         {/* Nav */}
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, padding: '20px', display: 'flex', justifyContent: 'space-between', zIndex: 10 }}>
-          <button className="interactive-press" style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.2)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }} onClick={() => navigate.push('/')}>
+          <button className="interactive-press" style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.2)', color: 'var(--white)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }} onClick={() => navigate.push('/')}>
             <ChevronLeft />
           </button>
           <div style={{ display: 'flex', alignItems: 'center' }}>
-            <img src="/logo.png" alt="more." style={{ height: '20px' }} />
+            <img src="/logo.png" className="theme-invert" alt="more." style={{ height: '20px' }} />
           </div>
           <div style={{ display: 'flex', gap: '8px' }}>
 
@@ -259,13 +259,13 @@ export default function CommunityProfile() {
           {community.tags && community.tags.length > 0 && (
             <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '12px' }}>
               {community.tags.map(tag => (
-                <span key={tag} style={{ fontSize: '0.7rem', background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(4px)', color: 'white', padding: '4px 10px', borderRadius: '99px', fontWeight: 500 }}>{tag}</span>
+                <span key={tag} style={{ fontSize: '0.7rem', background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(4px)', color: 'var(--white)', padding: '4px 10px', borderRadius: '99px', fontWeight: 500 }}>{tag}</span>
               ))}
             </div>
           )}
           
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: '0 0 12px 0' }}>
-            <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2.4rem', color: 'white', margin: 0, lineHeight: 1.1 }}>
+            <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2.4rem', color: 'var(--white)', margin: 0, lineHeight: 1.1 }}>
               {community.name}
             </h1>
             {community.verified && <BadgeCheck size={28} color="#3b82f6" style={{ flexShrink: 0 }} />}
@@ -335,7 +335,7 @@ export default function CommunityProfile() {
           />
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: '0.75rem', color: 'var(--teal-400)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Organised by</div>
-            <div style={{ fontWeight: 700, color: 'white', fontSize: '1rem' }}>{leaderUser?.name || 'Community Team'}</div>
+            <div style={{ fontWeight: 700, color: 'var(--white)', fontSize: '1rem' }}>{leaderUser?.name || 'Community Team'}</div>
           </div>
           <button onClick={() => leaderUser && navigate.push(`/chat/dm/${leaderUser.id}`)} className="btn btn-outline interactive-press" style={{ padding: '8px 14px', borderRadius: '10px', fontSize: '0.8rem', display: 'flex', gap: '4px', alignItems: 'center' }}>
             <MessageCircle size={14} /> Message
@@ -415,12 +415,12 @@ export default function CommunityProfile() {
                       placeholder="Share an update with the community..." 
                       value={newPostText}
                       onChange={e => setNewPostText(e.target.value)}
-                      style={{ width: '100%', background: 'transparent', border: 'none', color: 'white', resize: 'none', outline: 'none', minHeight: '60px', fontFamily: 'inherit', fontSize: '0.95rem' }}
+                      style={{ width: '100%', background: 'transparent', border: 'none', color: 'var(--white)', resize: 'none', outline: 'none', minHeight: '60px', fontFamily: 'inherit', fontSize: '0.95rem' }}
                     />
                     {newPostImage && (
                       <div style={{ position: 'relative', marginTop: '8px', display: 'inline-block' }}>
                         <img src={URL.createObjectURL(newPostImage)} alt="Preview" style={{ height: '80px', borderRadius: '8px' }} />
-                        <button onClick={() => setNewPostImage(null)} style={{ position: 'absolute', top: '-8px', right: '-8px', background: 'var(--slate-800)', border: 'none', color: 'white', width: '20px', height: '20px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
+                        <button onClick={() => setNewPostImage(null)} style={{ position: 'absolute', top: '-8px', right: '-8px', background: 'var(--slate-800)', border: 'none', color: 'var(--white)', width: '20px', height: '20px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
                       </div>
                     )}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
@@ -444,13 +444,13 @@ export default function CommunityProfile() {
                     <div style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
                       <img src={author?.avatar || 'https://i.pravatar.cc/40'} alt={author?.name} style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
                       <div style={{ flex: 1 }}>
-                        <div style={{ fontWeight: 600, color: 'white', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
                           {author?.name || 'Community Leader'}
                           {post.text?.includes('💡 **SUGGESTION:**') && (
                             <span style={{ fontSize: '0.65rem', background: 'rgba(234,179,8,0.2)', color: 'var(--yellow-400)', padding: '2px 6px', borderRadius: '6px', fontWeight: 700, textTransform: 'uppercase' }}>Idea</span>
                           )}
                           {community.leader_id === author?.id && (
-                            <span style={{ fontSize: '0.65rem', background: 'var(--teal-500)', color: 'white', padding: '2px 6px', borderRadius: '6px', fontWeight: 700, textTransform: 'uppercase' }}>Leader</span>
+                            <span style={{ fontSize: '0.65rem', background: 'var(--teal-500)', color: 'var(--white)', padding: '2px 6px', borderRadius: '6px', fontWeight: 700, textTransform: 'uppercase' }}>Leader</span>
                           )}
                         </div>
                         <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>
@@ -560,7 +560,7 @@ export default function CommunityProfile() {
         {activeTab === 'suggestions' && (
           <>
             <div style={{ marginBottom: '24px' }}>
-              <h3 style={{ fontSize: '1.2rem', fontFamily: 'var(--font-heading)', color: 'white', margin: '0 0 8px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <h3 style={{ fontSize: '1.2rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: '0 0 8px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Sparkles size={18} color="var(--yellow-400)" /> Drawing Board
               </h3>
               <p style={{ color: 'var(--slate-400)', fontSize: '0.9rem', lineHeight: 1.5, marginBottom: '16px' }}>
@@ -581,7 +581,7 @@ export default function CommunityProfile() {
               {isMember ? (
                 <div style={{ marginBottom: '32px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                    <h4 style={{ fontSize: '1rem', color: 'white', margin: 0 }}>Browse Experiences to Pitch</h4>
+                    <h4 style={{ fontSize: '1rem', color: 'var(--white)', margin: 0 }}>Browse Experiences to Pitch</h4>
                     <button 
                       onClick={() => {
                         const idea = prompt('What is your custom idea?');
@@ -605,7 +605,7 @@ export default function CommunityProfile() {
               )}
             </div>
 
-            <h4 style={{ fontSize: '1rem', color: 'white', marginBottom: '16px' }}>Active Campaigns & Suggestions</h4>
+            <h4 style={{ fontSize: '1rem', color: 'var(--white)', marginBottom: '16px' }}>Active Campaigns & Suggestions</h4>
             {communityFeed.filter(p => p.text?.includes('💡 **SUGGESTION:**') || p.text?.includes('🚀 **CAMPAIGN:**')).length === 0 ? (
               <div style={{ padding: '32px', textAlign: 'center', background: 'rgba(255,255,255,0.02)', borderRadius: '16px' }}>
                 <p style={{ color: 'var(--slate-400)' }}>No active campaigns yet. Pitch an experience above!</p>
@@ -637,9 +637,9 @@ export default function CommunityProfile() {
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
                         <img src={author?.avatar || 'https://i.pravatar.cc/150'} alt="" style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }} />
                         <div>
-                          <div style={{ fontWeight: 600, color: 'white', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
                             {author?.name}
-                            {isCampaign && <span style={{ fontSize: '0.65rem', background: 'var(--teal-500)', color: 'white', padding: '2px 6px', borderRadius: '6px', fontWeight: 700, textTransform: 'uppercase' }}>Campaign</span>}
+                            {isCampaign && <span style={{ fontSize: '0.65rem', background: 'var(--teal-500)', color: 'var(--white)', padding: '2px 6px', borderRadius: '6px', fontWeight: 700, textTransform: 'uppercase' }}>Campaign</span>}
                           </div>
                           <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>
                             {(post.timestamp || post.createdAt || post.created_at) && !isNaN(new Date(post.timestamp || post.createdAt || post.created_at).getTime())
@@ -654,7 +654,7 @@ export default function CommunityProfile() {
                           <div style={{ display: 'flex', gap: '12px' }}>
                             <img src={campaignExp.image} alt="" style={{ width: '60px', height: '60px', borderRadius: '8px', objectFit: 'cover' }} />
                             <div>
-                              <div style={{ fontWeight: 700, color: 'white', fontSize: '1rem', marginBottom: '4px' }}>{campaignExp.title}</div>
+                              <div style={{ fontWeight: 700, color: 'var(--white)', fontSize: '1rem', marginBottom: '4px' }}>{campaignExp.title}</div>
                               <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)', display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 <span><MapPin size={12} style={{ display: 'inline', marginRight: '2px' }} /> {campaignExp.location}</span>
                               </div>
@@ -737,7 +737,7 @@ export default function CommunityProfile() {
           <>
             {/* Description */}
             <div style={{ marginBottom: '32px' }}>
-              <h3 style={{ fontSize: '1.3rem', fontFamily: 'var(--font-heading)', color: 'white', margin: '0 0 16px 0' }}>What we're about</h3>
+              <h3 style={{ fontSize: '1.3rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: '0 0 16px 0' }}>What we're about</h3>
               <p style={{ lineHeight: 1.8, color: 'var(--slate-200)', fontSize: '1rem', margin: 0 }}>
                 {community.description}
               </p>
@@ -770,7 +770,7 @@ export default function CommunityProfile() {
             {/* Next Event CTA */}
             {nextEvent && (
               <div style={{ marginBottom: '32px' }}>
-                <h3 style={{ fontSize: '1.1rem', fontFamily: 'var(--font-heading)', color: 'white', margin: '0 0 12px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <h3 style={{ fontSize: '1.1rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: '0 0 12px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <Sparkles size={18} color="var(--teal-400)" /> Next Event
                 </h3>
                 <div 
@@ -788,9 +788,9 @@ export default function CommunityProfile() {
                       <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Calendar size={14} /> {nextEvent.date}</span>
                       <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={14} /> {nextEvent.time}</span>
                     </div>
-                    <div style={{ fontWeight: 700, fontSize: '1.1rem', color: 'white', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div style={{ fontWeight: 700, fontSize: '1.1rem', color: 'var(--white)', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                       {nextEvent.title}
-                      {nextEvent.communityId !== communityId && <span style={{ fontSize: '0.65rem', background: 'var(--teal-500)', color: 'white', padding: '2px 6px', borderRadius: '6px', fontWeight: 700, textTransform: 'uppercase' }}>Collab</span>}
+                      {nextEvent.communityId !== communityId && <span style={{ fontSize: '0.65rem', background: 'var(--teal-500)', color: 'var(--white)', padding: '2px 6px', borderRadius: '6px', fontWeight: 700, textTransform: 'uppercase' }}>Collab</span>}
                     </div>
                     <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)', display: 'flex', alignItems: 'center', gap: '4px' }}><MapPin size={14} /> {nextEvent.location}</div>
                     <button 
@@ -808,7 +808,7 @@ export default function CommunityProfile() {
             {/* Promoted Experiences (Marketplace) */}
             {experiences && experiences.filter(exp => exp.promotedBy === community.id).length > 0 && (
               <div style={{ marginBottom: '32px' }}>
-                <h3 style={{ fontSize: '1.1rem', fontFamily: 'var(--font-heading)', color: 'white', margin: '0 0 12px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <h3 style={{ fontSize: '1.1rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: '0 0 12px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <Globe size={18} color="var(--teal-400)" /> Trips & Retreats
                 </h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -821,10 +821,10 @@ export default function CommunityProfile() {
                         </div>
                         <div style={{ padding: '12px', flex: 1 }}>
                           <div style={{ fontSize: '0.7rem', color: 'var(--teal-400)', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px' }}>{exp.category}</div>
-                          <div style={{ fontWeight: 600, color: 'white', fontSize: '0.95rem', marginBottom: '4px' }}>{exp.title}</div>
+                          <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.95rem', marginBottom: '4px' }}>{exp.title}</div>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '8px' }}>
                             <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)' }}><Clock size={12} style={{ display: 'inline', verticalAlign: '-2px' }} /> {exp.duration}</div>
-                            <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'white' }}>£{finalPrice}</div>
+                            <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--white)' }}>£{finalPrice}</div>
                           </div>
                         </div>
                       </div>
@@ -836,7 +836,7 @@ export default function CommunityProfile() {
 
             {/* Reviews */}
             <div style={{ marginBottom: '32px' }}>
-              <h3 style={{ fontSize: '1.1rem', fontFamily: 'var(--font-heading)', color: 'white', margin: '0 0 16px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <h3 style={{ fontSize: '1.1rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: '0 0 16px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Star size={18} color="var(--amber-400)" /> What members say
               </h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -845,7 +845,7 @@ export default function CommunityProfile() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
                       <img src={review.avatar} alt={review.name} style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }} />
                       <div>
-                        <div style={{ fontWeight: 600, color: 'white', fontSize: '0.9rem' }}>{review.name}</div>
+                        <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.9rem' }}>{review.name}</div>
                         <div style={{ display: 'flex', gap: '2px' }}>
                           {Array.from({ length: review.rating }).map((_, i) => (
                             <Star key={i} size={12} fill="var(--amber-400)" color="var(--amber-400)" />
@@ -861,7 +861,7 @@ export default function CommunityProfile() {
 
             {/* Contact & Links */}
             <div style={{ marginBottom: '32px' }}>
-              <h3 style={{ fontSize: '1.1rem', fontFamily: 'var(--font-heading)', color: 'white', margin: '0 0 12px 0' }}>Get in Touch</h3>
+              <h3 style={{ fontSize: '1.1rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: '0 0 12px 0' }}>Get in Touch</h3>
               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                 {community.contact_email && (
                   <a href={`mailto:${community.contact_email}`} className="btn btn-outline interactive-press" style={{ flex: 1, padding: '12px', fontSize: '0.85rem', display: 'flex', justifyContent: 'center', gap: '6px', borderRadius: '12px', minWidth: '120px' }}>
@@ -890,7 +890,7 @@ export default function CommunityProfile() {
                   width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                   padding: '14px 16px', background: 'rgba(255,255,255,0.03)',
                   border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px',
-                  color: 'white', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600,
+                  color: 'var(--white)', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600,
                 }}
               >
                 <span>📋 Community Guidelines</span>
@@ -919,7 +919,7 @@ export default function CommunityProfile() {
         {/* ===== EVENTS TAB ===== */}
         {activeTab === 'events' && (
           <>
-            <h3 style={{ fontSize: '1.3rem', fontFamily: 'var(--font-heading)', color: 'white', margin: '0 0 16px 0' }}>
+            <h3 style={{ fontSize: '1.3rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: '0 0 16px 0' }}>
               Upcoming Events ({communityEvents.length})
             </h3>
             {communityEvents.length > 0 ? (
@@ -931,15 +931,15 @@ export default function CommunityProfile() {
                       {event.image && (
                         <div style={{ height: '140px', background: `url(${event.image})`, backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative' }}>
                           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.6))' }}></div>
-                          <div style={{ position: 'absolute', bottom: '10px', left: '12px', background: 'rgba(20,184,166,0.9)', padding: '4px 10px', borderRadius: '6px', fontSize: '0.7rem', fontWeight: 700, color: 'white' }}>
+                          <div style={{ position: 'absolute', bottom: '10px', left: '12px', background: 'rgba(20,184,166,0.9)', padding: '4px 10px', borderRadius: '6px', fontSize: '0.7rem', fontWeight: 700, color: 'var(--white)' }}>
                             {event.date}
                           </div>
                         </div>
                       )}
                       <div style={{ padding: '16px' }}>
-                        <div style={{ fontWeight: 700, fontSize: '1.05rem', color: 'white', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{ fontWeight: 700, fontSize: '1.05rem', color: 'var(--white)', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                           {event.title}
-                          {event.communityId !== communityId && <span style={{ fontSize: '0.65rem', background: 'var(--teal-500)', color: 'white', padding: '2px 6px', borderRadius: '6px', fontWeight: 700, textTransform: 'uppercase' }}>Collab</span>}
+                          {event.communityId !== communityId && <span style={{ fontSize: '0.65rem', background: 'var(--teal-500)', color: 'var(--white)', padding: '2px 6px', borderRadius: '6px', fontWeight: 700, textTransform: 'uppercase' }}>Collab</span>}
                         </div>
                         <div style={{ display: 'flex', gap: '16px', fontSize: '0.8rem', color: 'var(--slate-400)', marginBottom: '8px' }}>
                           <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={14} /> {event.time}</span>
@@ -965,7 +965,7 @@ export default function CommunityProfile() {
                             <button 
                               onClick={(e) => { e.stopPropagation(); handleGenerateFomoReel(event); }} 
                               className="btn interactive-press" 
-                              style={{ marginTop: '12px', width: '100%', padding: '10px', borderRadius: '10px', fontSize: '0.85rem', display: 'flex', gap: '6px', justifyContent: 'center', background: 'linear-gradient(135deg, var(--teal-500), var(--teal-600))', color: 'white', border: 'none', fontWeight: 600 }}>
+                              style={{ marginTop: '12px', width: '100%', padding: '10px', borderRadius: '10px', fontSize: '0.85rem', display: 'flex', gap: '6px', justifyContent: 'center', background: 'linear-gradient(135deg, var(--teal-500), var(--teal-600))', color: 'var(--white)', border: 'none', fontWeight: 600 }}>
                               <Sparkles size={14} /> Generate FOMO Reel
                             </button>
                           )
@@ -994,7 +994,7 @@ export default function CommunityProfile() {
         {/* ===== PHOTOS TAB ===== */}
         {activeTab === 'photos' && (
           <>
-            <h3 style={{ fontSize: '1.3rem', fontFamily: 'var(--font-heading)', color: 'white', margin: '0 0 16px 0' }}>
+            <h3 style={{ fontSize: '1.3rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: '0 0 16px 0' }}>
               Photos & Moments
             </h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
@@ -1023,7 +1023,7 @@ export default function CommunityProfile() {
         {/* ===== SERVICES TAB ===== */}
         {activeTab === 'services' && (
           <>
-            <h3 style={{ fontSize: '1.3rem', fontFamily: 'var(--font-heading)', color: 'white', margin: '0 0 16px 0' }}>
+            <h3 style={{ fontSize: '1.3rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: '0 0 16px 0' }}>
               Services & Perks
             </h3>
             
@@ -1042,7 +1042,7 @@ export default function CommunityProfile() {
                         <div key={srv.id} style={{ background: 'var(--slate-800)', border: '1px solid var(--amber-500)', borderRadius: '12px', padding: '16px' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                             <div>
-                              <div style={{ fontWeight: 600, color: 'white', fontSize: '1rem' }}>{srv.title}</div>
+                              <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '1rem' }}>{srv.title}</div>
                               <div style={{ fontSize: '0.8rem', color: 'var(--amber-400)', marginBottom: '8px' }}>By {srvUser.name} • {srv.category} {srv.isPremium ? '• Requested Premium Placement' : ''}</div>
                               <p style={{ margin: '0 0 12px 0', fontSize: '0.9rem', color: 'var(--slate-300)' }}>{srv.description}</p>
                               {srv.perk && (
@@ -1053,7 +1053,7 @@ export default function CommunityProfile() {
                             </div>
                           </div>
                           <div style={{ display: 'flex', gap: '8px' }}>
-                            <button onClick={() => updateServiceStatus(srv.id, 'approved')} className="btn interactive-press" style={{ flex: 1, padding: '8px', borderRadius: '8px', background: 'var(--teal-500)', color: 'white', border: 'none', fontWeight: 600, display: 'flex', justifyContent: 'center', gap: '4px' }}>
+                            <button onClick={() => updateServiceStatus(srv.id, 'approved')} className="btn interactive-press" style={{ flex: 1, padding: '8px', borderRadius: '8px', background: 'var(--teal-500)', color: 'var(--white)', border: 'none', fontWeight: 600, display: 'flex', justifyContent: 'center', gap: '4px' }}>
                               <Check size={16} /> Approve
                             </button>
                             <button onClick={() => updateServiceStatus(srv.id, 'rejected')} className="btn interactive-press" style={{ flex: 1, padding: '8px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', color: 'var(--slate-300)', border: '1px solid rgba(255,255,255,0.1)', fontWeight: 600, display: 'flex', justifyContent: 'center', gap: '4px' }}>
@@ -1090,9 +1090,9 @@ export default function CommunityProfile() {
                         <img src={srvUser.avatar} alt={srvUser.name} style={{ width: '48px', height: '48px', borderRadius: '12px', objectFit: 'cover' }} />
                         <div style={{ flex: 1 }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                            <div style={{ fontWeight: 700, color: 'white', fontSize: '1.05rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <div style={{ fontWeight: 700, color: 'var(--white)', fontSize: '1.05rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
                               {srv.title}
-                              {srv.isPremium && <span style={{ fontSize: '0.65rem', background: 'var(--amber-500)', color: 'white', padding: '2px 6px', borderRadius: '6px', fontWeight: 700, textTransform: 'uppercase' }}>Featured</span>}
+                              {srv.isPremium && <span style={{ fontSize: '0.65rem', background: 'var(--amber-500)', color: 'var(--white)', padding: '2px 6px', borderRadius: '6px', fontWeight: 700, textTransform: 'uppercase' }}>Featured</span>}
                             </div>
                           </div>
                           <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)' }}>{srv.category} • {srvUser.name}</div>

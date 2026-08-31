@@ -85,7 +85,7 @@ export default function HomeFeed() {
       {/* Personalized Dynamic Header */}
       <div style={{ padding: '16px 20px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', background: 'linear-gradient(to bottom, var(--slate-900), var(--slate-950))' }}>
         <div>
-          <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.8rem', fontWeight: 800, color: 'white', margin: '0 0 4px 0' }}>
+          <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.8rem', fontWeight: 800, color: 'var(--white)', margin: '0 0 4px 0' }}>
             Good morning, {user?.name?.split(' ')[0] || 'there'}!
           </h1>
           <p style={{ color: 'var(--slate-400)', fontSize: '0.9rem', margin: 0 }}>
@@ -135,22 +135,22 @@ export default function HomeFeed() {
       <div style={{ padding: '20px', display: 'flex', gap: '12px', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
         {user?.isAdmin || user?.leaderOf ? (
           <>
-            <button onClick={() => router.push(user?.isAdmin ? '/admin?tab=users' : '/dashboard?tab=members')} className="btn interactive-press" style={{ flex: '0 0 auto', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px 16px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', color: 'white' }}>
+            <button onClick={() => router.push(user?.isAdmin ? '/admin?tab=users' : '/dashboard?tab=members')} className="btn interactive-press" style={{ flex: '0 0 auto', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px 16px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', color: 'var(--white)' }}>
               <Edit3 size={18} color="var(--teal-400)" /> Update Members
             </button>
-            <button onClick={() => router.push(user?.isAdmin ? '/admin?tab=events' : '/dashboard?tab=events')} className="btn interactive-press" style={{ flex: '0 0 auto', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px 16px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', color: 'white' }}>
+            <button onClick={() => router.push(user?.isAdmin ? '/admin?tab=events' : '/dashboard?tab=events')} className="btn interactive-press" style={{ flex: '0 0 auto', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px 16px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', color: 'var(--white)' }}>
               <Calendar size={18} color="var(--teal-400)" /> Host Event
             </button>
-            <button onClick={() => router.push(user?.isAdmin ? '/admin?tab=communications' : '/dashboard?tab=crm')} className="btn interactive-press" style={{ flex: '0 0 auto', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px 16px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', color: 'white' }}>
+            <button onClick={() => router.push(user?.isAdmin ? '/admin?tab=communications' : '/dashboard?tab=crm')} className="btn interactive-press" style={{ flex: '0 0 auto', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px 16px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', color: 'var(--white)' }}>
               <Megaphone size={18} color="var(--teal-400)" /> Broadcast
             </button>
           </>
         ) : (
           <>
-            <button onClick={() => router.push('/discover')} className="btn interactive-press" style={{ flex: 1, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px 16px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontSize: '0.9rem', color: 'white' }}>
+            <button onClick={() => router.push('/discover')} className="btn interactive-press" style={{ flex: 1, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px 16px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontSize: '0.9rem', color: 'var(--white)' }}>
               <Compass size={18} color="var(--teal-400)" /> Find Groups
             </button>
-            <button onClick={() => router.push('/chat')} className="btn interactive-press" style={{ flex: 1, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px 16px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontSize: '0.9rem', color: 'white' }}>
+            <button onClick={() => router.push('/chat')} className="btn interactive-press" style={{ flex: 1, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px 16px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontSize: '0.9rem', color: 'var(--white)' }}>
               <MessageCircle size={18} color="var(--teal-400)" /> Messages
             </button>
           </>
@@ -186,7 +186,7 @@ export default function HomeFeed() {
                 <div style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <img src={community?.image || community?.cover_image} alt={community?.name} loading="lazy" style={{ width: '48px', height: '48px', borderRadius: '12px', objectFit: 'cover', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.1)' }} onClick={() => router.push(`/community/${community?.id}`)} />
                   <div>
-                    <div style={{ fontWeight: 700, color: 'white', fontSize: '1rem', cursor: 'pointer' }} onClick={() => router.push(`/community/${community?.id}`)}>{community?.name}</div>
+                    <div style={{ fontWeight: 700, color: 'var(--white)', fontSize: '1rem', cursor: 'pointer' }} onClick={() => router.push(`/community/${community?.id}`)}>{community?.name}</div>
                     <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)' }}>
                       {author?.name || 'Community Leader'} • {post.timestamp && !isNaN(new Date(post.timestamp).getTime()) ? new Date(post.timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'Recently'}
                     </div>
@@ -249,13 +249,13 @@ export default function HomeFeed() {
                   );
                 })()}
                 <div style={{ padding: '16px', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', gap: '20px' }}>
-                  <button onClick={() => likeFeedPost(post.id)} className="interactive-press" style={{ background: 'rgba(255,255,255,0.05)', padding: '8px 16px', borderRadius: '20px', border: 'none', display: 'flex', alignItems: 'center', gap: '8px', color: 'white', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600 }}>
+                  <button onClick={() => likeFeedPost(post.id)} className="interactive-press" style={{ background: 'rgba(255,255,255,0.05)', padding: '8px 16px', borderRadius: '20px', border: 'none', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--white)', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600 }}>
                     <Heart size={18} fill={post.likes > 0 ? "var(--teal-400)" : "none"} color={post.likes > 0 ? "var(--teal-400)" : "white"} /> {post.likes || 0}
                   </button>
                   <button onClick={() => setExpandedComments(prev => ({...prev, [post.id]: !prev[post.id]}))} className="interactive-press" style={{ background: 'rgba(255,255,255,0.05)', padding: '8px 16px', borderRadius: '20px', border: 'none', display: 'flex', alignItems: 'center', gap: '8px', color: expandedComments[post.id] ? 'var(--teal-400)' : 'white', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600 }}>
                     <MessageCircle size={18} /> {post.comments || 0}
                   </button>
-                  <button className="interactive-press" style={{ background: 'rgba(255,255,255,0.05)', width: '38px', height: '38px', borderRadius: '50%', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', cursor: 'pointer', marginLeft: 'auto' }}>
+                  <button className="interactive-press" style={{ background: 'rgba(255,255,255,0.05)', width: '38px', height: '38px', borderRadius: '50%', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--white)', cursor: 'pointer', marginLeft: 'auto' }}>
                     <Share2 size={18} />
                   </button>
                 </div>
@@ -277,7 +277,7 @@ export default function HomeFeed() {
                   <button onClick={() => likeFeedPost(idea.id)} className="interactive-press" style={{ background: idea.liked ? 'var(--teal-500)' : 'rgba(255,255,255,0.1)', width: '40px', height: '40px', borderRadius: '12px', border: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: idea.liked ? 'white' : 'var(--slate-300)', cursor: 'pointer', fontWeight: 800 }}>
                     <ChevronUp size={20} strokeWidth={3} />
                   </button>
-                  <div style={{ marginTop: '8px', fontSize: '1.1rem', fontWeight: 800, color: 'white' }}>{idea.likes || 0}</div>
+                  <div style={{ marginTop: '8px', fontSize: '1.1rem', fontWeight: 800, color: 'var(--white)' }}>{idea.likes || 0}</div>
                   <div style={{ fontSize: '0.7rem', color: 'var(--slate-400)', textTransform: 'uppercase', fontWeight: 700, marginTop: '2px' }}>Votes</div>
                 </div>
                 <div style={{ flex: 1, padding: '16px' }}>
@@ -285,7 +285,7 @@ export default function HomeFeed() {
                      <span style={{ fontSize: '0.7rem', background: 'rgba(20,184,166,0.2)', color: 'var(--teal-300)', padding: '4px 8px', borderRadius: '6px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Suggestion</span>
                      <span style={{ fontSize: '0.8rem', color: 'var(--slate-400)' }}>by {author?.name || 'Member'} in {community?.name}</span>
                   </div>
-                  <div style={{ fontWeight: 800, color: 'white', fontSize: '1.2rem', marginBottom: '8px', lineHeight: 1.3 }}>{ideaData.title || idea.text}</div>
+                  <div style={{ fontWeight: 800, color: 'var(--white)', fontSize: '1.2rem', marginBottom: '8px', lineHeight: 1.3 }}>{ideaData.title || idea.text}</div>
                   {ideaData.location && (
                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.85rem', color: 'var(--slate-400)', marginBottom: '12px' }}>
                        <MapPin size={14} /> {ideaData.location}
@@ -299,7 +299,7 @@ export default function HomeFeed() {
                     <button onClick={() => setExpandedComments(prev => ({...prev, [idea.id]: !prev[idea.id]}))} className="btn btn-outline interactive-press" style={{ padding: '8px 16px', borderRadius: '12px', fontSize: '0.85rem', display: 'flex', gap: '6px', alignItems: 'center' }}>
                       <MessageCircle size={16} /> Discuss ({idea.comments || 0})
                     </button>
-                    <button className="interactive-press" style={{ background: 'rgba(255,255,255,0.05)', width: '38px', height: '38px', borderRadius: '50%', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', cursor: 'pointer', marginLeft: 'auto' }}>
+                    <button className="interactive-press" style={{ background: 'rgba(255,255,255,0.05)', width: '38px', height: '38px', borderRadius: '50%', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--white)', cursor: 'pointer', marginLeft: 'auto' }}>
                       <Share2 size={18} />
                     </button>
                   </div>
@@ -324,15 +324,15 @@ export default function HomeFeed() {
                   {event.image && (
                     <div style={{ height: '160px', background: `url(${event.image})`, backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative' }}>
                       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 40%, rgba(15,23,42,0.9))' }}></div>
-                      <div style={{ position: 'absolute', bottom: '16px', left: '16px', background: 'rgba(20,184,166,1)', padding: '6px 12px', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 800, color: 'white', boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }}>
+                      <div style={{ position: 'absolute', bottom: '16px', left: '16px', background: 'rgba(20,184,166,1)', padding: '6px 12px', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 800, color: 'var(--white)', boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }}>
                         {event.date}
                       </div>
                     </div>
                   )}
                   <div style={{ padding: '20px 16px' }}>
-                    <div style={{ fontWeight: 800, fontSize: '1.2rem', color: 'white', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div style={{ fontWeight: 800, fontSize: '1.2rem', color: 'var(--white)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                       {event.title}
-                      {event.collabCommunityIds?.length > 0 && <span style={{ fontSize: '0.65rem', background: 'var(--teal-500)', color: 'white', padding: '4px 8px', borderRadius: '6px', fontWeight: 800, textTransform: 'uppercase' }}>Collab</span>}
+                      {event.collabCommunityIds?.length > 0 && <span style={{ fontSize: '0.65rem', background: 'var(--teal-500)', color: 'var(--white)', padding: '4px 8px', borderRadius: '6px', fontWeight: 800, textTransform: 'uppercase' }}>Collab</span>}
                     </div>
                     <div style={{ display: 'flex', gap: '20px', fontSize: '0.85rem', color: 'var(--slate-300)', marginBottom: '12px', fontWeight: 500 }}>
                       <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Clock size={16} color="var(--slate-400)" /> {event.time}</span>
@@ -361,7 +361,7 @@ export default function HomeFeed() {
         }) : (
           <div style={{ padding: '60px 20px', textAlign: 'center', background: 'rgba(255,255,255,0.02)', borderRadius: '24px', border: '1px dashed rgba(255,255,255,0.1)' }}>
             <div style={{ fontSize: '3rem', marginBottom: '16px' }}>✨</div>
-            <h3 style={{ margin: '0 0 12px 0', color: 'white', fontFamily: 'var(--font-heading)', fontSize: '1.4rem' }}>Nothing to show yet</h3>
+            <h3 style={{ margin: '0 0 12px 0', color: 'var(--white)', fontFamily: 'var(--font-heading)', fontSize: '1.4rem' }}>Nothing to show yet</h3>
             <p style={{ color: 'var(--slate-400)', margin: '0 0 24px 0', fontSize: '0.95rem', lineHeight: 1.6 }}>
               {activeFeedTab === 'All' 
                 ? "Your feed is empty. Join some communities to see their updates and events here."

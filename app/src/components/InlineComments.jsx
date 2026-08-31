@@ -109,7 +109,7 @@ export default function InlineComments({ post }) {
                 <div style={{ flex: 1, background: 'rgba(255,255,255,0.03)', padding: '10px 14px', borderRadius: '16px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-                      <span style={{ fontWeight: '600', color: 'white', fontSize: '0.85rem' }}>{author.name}</span>
+                      <span style={{ fontWeight: '600', color: 'var(--white)', fontSize: '0.85rem' }}>{author.name}</span>
                       <span style={{ fontSize: '0.7rem', color: 'var(--slate-500)' }}>
                         {new Date(comment.created_at).toLocaleDateString()} at {comment.timestamp}
                       </span>
@@ -147,7 +147,7 @@ export default function InlineComments({ post }) {
         <div style={{ padding: '0 16px 8px' }}>
           <div style={{ position: 'relative', display: 'inline-block' }}>
             <img src={URL.createObjectURL(newCommentImage)} alt="Preview" style={{ height: '50px', borderRadius: '8px', objectFit: 'cover' }} />
-            <button onClick={() => setNewCommentImage(null)} style={{ position: 'absolute', top: '-6px', right: '-6px', background: 'var(--slate-800)', border: 'none', color: 'white', width: '18px', height: '18px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px' }}>✕</button>
+            <button onClick={() => setNewCommentImage(null)} style={{ position: 'absolute', top: '-6px', right: '-6px', background: 'var(--slate-800)', border: 'none', color: 'var(--white)', width: '18px', height: '18px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px' }}>✕</button>
           </div>
         </div>
       )}
@@ -189,7 +189,7 @@ export default function InlineComments({ post }) {
             border: '1px solid rgba(255,255,255,0.1)',
             borderRadius: '20px',
             padding: '8px 14px',
-            color: 'white',
+            color: 'var(--white)',
             outline: 'none',
             fontSize: '0.9rem'
           }}

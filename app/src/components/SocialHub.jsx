@@ -87,7 +87,7 @@ export default function SocialHub({ communityId }) {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '24px' }}>
           {/* Main Composer Area */}
           <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '24px', padding: '24px' }}>
-            <h3 style={{ margin: '0 0 16px 0', color: 'white', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <h3 style={{ margin: '0 0 16px 0', color: 'var(--white)', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Share2 size={20} color="var(--teal-400)" /> Omnichannel Broadcaster
             </h3>
             
@@ -124,7 +124,7 @@ export default function SocialHub({ communityId }) {
                 placeholder="What's happening in your community?"
                 style={{
                   width: '100%', minHeight: '140px', background: 'var(--slate-900)', border: '1px solid var(--slate-700)',
-                  borderRadius: '16px', padding: '16px', color: 'white', fontSize: '1.05rem', resize: 'vertical',
+                  borderRadius: '16px', padding: '16px', color: 'var(--white)', fontSize: '1.05rem', resize: 'vertical',
                   fontFamily: 'inherit', transition: 'border-color 0.2s'
                 }}
                 onFocus={e => e.target.style.borderColor = 'var(--teal-400)'}
@@ -141,7 +141,7 @@ export default function SocialHub({ communityId }) {
                 <img src={postMedia} alt="Preview" style={{ width: '100%', maxHeight: '200px', objectFit: 'cover' }} />
                 <button 
                   onClick={() => setPostMedia(null)}
-                  style={{ position: 'absolute', top: '8px', right: '8px', background: 'rgba(0,0,0,0.6)', border: 'none', color: 'white', borderRadius: '50%', width: '32px', height: '32px', cursor: 'pointer' }}
+                  style={{ position: 'absolute', top: '8px', right: '8px', background: 'rgba(0,0,0,0.6)', border: 'none', color: 'var(--white)', borderRadius: '50%', width: '32px', height: '32px', cursor: 'pointer' }}
                 >
                   ×
                 </button>
@@ -156,7 +156,7 @@ export default function SocialHub({ communityId }) {
                   if (url) setPostMedia(url);
                 }}
                 className="interactive-press"
-                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '12px 16px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
+                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--white)', padding: '12px 16px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
               >
                 <ImageIcon size={18} /> Add Media
               </button>
@@ -182,7 +182,7 @@ export default function SocialHub({ communityId }) {
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
                 <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--teal-500)' }}></div>
                 <div>
-                  <div style={{ fontWeight: 600, color: 'white', fontSize: '0.9rem' }}>You (Leader)</div>
+                  <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.9rem' }}>You (Leader)</div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--slate-500)' }}>Just now</div>
                 </div>
               </div>
@@ -202,14 +202,14 @@ export default function SocialHub({ communityId }) {
       {activeTab === 'calendar' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div style={{ background: 'rgba(255,255,255,0.03)', padding: '24px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)', textAlign: 'center' }}>
-            <h3 style={{ margin: '0 0 8px 0', color: 'white' }}>Content History</h3>
+            <h3 style={{ margin: '0 0 8px 0', color: 'var(--white)' }}>Content History</h3>
             <p style={{ color: 'var(--slate-400)', fontSize: '0.9rem', margin: 0 }}>View your past broadcasts across all platforms.</p>
           </div>
           
           <div style={{ background: 'rgba(20,184,166,0.05)', border: '1px solid rgba(20,184,166,0.2)', padding: '16px', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '16px' }}>
             <CheckCircle2 color="var(--teal-400)" size={32} />
             <div>
-              <div style={{ color: 'white', fontWeight: 600 }}>All systems operational</div>
+              <div style={{ color: 'var(--white)', fontWeight: 600 }}>All systems operational</div>
               <div style={{ color: 'var(--slate-400)', fontSize: '0.85rem' }}>Your last post was successfully syndicated.</div>
             </div>
           </div>
@@ -223,7 +223,7 @@ export default function SocialHub({ communityId }) {
       {activeTab === 'accounts' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div style={{ marginBottom: '16px' }}>
-            <h3 style={{ color: 'white', margin: '0 0 8px 0' }}>Connected Accounts</h3>
+            <h3 style={{ color: 'var(--white)', margin: '0 0 8px 0' }}>Connected Accounts</h3>
             <p style={{ color: 'var(--slate-400)', fontSize: '0.9rem', margin: 0 }}>Link your social media to broadcast updates seamlessly.</p>
           </div>
           
@@ -233,11 +233,11 @@ export default function SocialHub({ communityId }) {
             return (
               <div key={platform} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.03)', padding: '20px', borderRadius: '16px', border: `1px solid ${acc.connected ? color + '40' : 'rgba(255,255,255,0.05)'}` }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                  <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: acc.connected ? color : 'var(--slate-800)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '1.2rem', fontWeight: 800, textTransform: 'capitalize' }}>
+                  <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: acc.connected ? color : 'var(--slate-800)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--white)', fontSize: '1.2rem', fontWeight: 800, textTransform: 'capitalize' }}>
                     {platform[0]}
                   </div>
                   <div>
-                    <div style={{ color: 'white', fontWeight: 600, textTransform: 'capitalize', fontSize: '1.1rem' }}>{platform}</div>
+                    <div style={{ color: 'var(--white)', fontWeight: 600, textTransform: 'capitalize', fontSize: '1.1rem' }}>{platform}</div>
                     <div style={{ color: acc.connected ? 'var(--teal-400)' : 'var(--slate-500)', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
                       {acc.connected ? <><CheckCircle2 size={14} /> {acc.handle}</> : 'Not connected'}
                     </div>

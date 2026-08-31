@@ -29,7 +29,7 @@ export default function MyCommunities() {
             <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', color: 'var(--slate-400)' }}>
               <Users size={32} />
             </div>
-            <h3 style={{ fontFamily: 'var(--font-heading)', color: 'white', marginBottom: '8px' }}>No communities yet</h3>
+            <h3 style={{ fontFamily: 'var(--font-heading)', color: 'var(--white)', marginBottom: '8px' }}>No communities yet</h3>
             <p style={{ color: 'var(--slate-400)', fontSize: '0.9rem', marginBottom: '24px' }}>Join a community to see it here.</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'center' }}>
               <button onClick={() => navigate.back()} className="btn btn-primary" style={{ display: 'inline-flex', padding: '12px 24px', borderRadius: '99px' }}>
@@ -55,7 +55,7 @@ export default function MyCommunities() {
                 <div style={{ height: '120px', background: `url(${comm.image || FALLBACK_IMAGES.community})`, backgroundSize: 'cover', backgroundPosition: 'center' }}></div>
                 <div style={{ padding: '16px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                    <h3 style={{ margin: 0, fontFamily: 'var(--font-heading)', fontSize: '1.2rem', color: 'white' }}>{comm.name}</h3>
+                    <h3 style={{ margin: 0, fontFamily: 'var(--font-heading)', fontSize: '1.2rem', color: 'var(--white)' }}>{comm.name}</h3>
                     <div style={{ fontSize: '0.75rem', background: 'rgba(20,184,166,0.1)', color: 'var(--teal-400)', padding: '4px 8px', borderRadius: '4px', fontWeight: 600 }}>
                       {comm.category}
                     </div>

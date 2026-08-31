@@ -40,7 +40,7 @@ export default function HostExperienceModal({ experience, communities, user, onC
         animation: 'slideUp 0.3s ease-out'
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-          <h2 style={{ margin: 0, fontSize: '1.4rem', color: 'white', fontFamily: 'var(--font-heading)' }}>Host Experience</h2>
+          <h2 style={{ margin: 0, fontSize: '1.4rem', color: 'var(--white)', fontFamily: 'var(--font-heading)' }}>Host Experience</h2>
           <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: 'var(--slate-400)', cursor: 'pointer' }}>
             <X size={24} />
           </button>
@@ -53,7 +53,7 @@ export default function HostExperienceModal({ experience, communities, user, onC
             <select 
               value={communityId} 
               onChange={e => setCommunityId(e.target.value)}
-              style={{ width: '100%', padding: '12px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'white', fontSize: '1rem' }}
+              style={{ width: '100%', padding: '12px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'var(--white)', fontSize: '1rem' }}
             >
               {user.ledCommunities.map(id => {
                 const c = communities.find(comm => comm.id === id);
@@ -108,7 +108,7 @@ export default function HostExperienceModal({ experience, communities, user, onC
                   required
                   value={date} 
                   onChange={e => setDate(e.target.value)}
-                  style={{ width: '100%', padding: '12px 12px 12px 36px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'white', fontSize: '1rem', boxSizing: 'border-box' }}
+                  style={{ width: '100%', padding: '12px 12px 12px 36px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'var(--white)', fontSize: '1rem', boxSizing: 'border-box' }}
                 />
               </div>
             </div>
@@ -121,7 +121,7 @@ export default function HostExperienceModal({ experience, communities, user, onC
                   required
                   value={time} 
                   onChange={e => setTime(e.target.value)}
-                  style={{ width: '100%', padding: '12px 12px 12px 36px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'white', fontSize: '1rem', boxSizing: 'border-box' }}
+                  style={{ width: '100%', padding: '12px 12px 12px 36px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'var(--white)', fontSize: '1rem', boxSizing: 'border-box' }}
                 />
               </div>
             </div>
@@ -141,7 +141,7 @@ export default function HostExperienceModal({ experience, communities, user, onC
                     required
                     value={memberPrice} 
                     onChange={e => setMemberPrice(e.target.value === '' ? '' : Number(e.target.value))}
-                    style={{ width: '100%', padding: '12px 12px 12px 36px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'white', fontSize: '1rem', boxSizing: 'border-box' }}
+                    style={{ width: '100%', padding: '12px 12px 12px 36px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'var(--white)', fontSize: '1rem', boxSizing: 'border-box' }}
                   />
                 </div>
               </div>
@@ -155,7 +155,7 @@ export default function HostExperienceModal({ experience, communities, user, onC
                     required
                     value={nonMemberPrice} 
                     onChange={e => setNonMemberPrice(e.target.value === '' ? '' : Number(e.target.value))}
-                    style={{ width: '100%', padding: '12px 12px 12px 36px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'white', fontSize: '1rem', boxSizing: 'border-box' }}
+                    style={{ width: '100%', padding: '12px 12px 12px 36px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'var(--white)', fontSize: '1rem', boxSizing: 'border-box' }}
                   />
                 </div>
               </div>
@@ -172,7 +172,7 @@ export default function HostExperienceModal({ experience, communities, user, onC
               <button 
                 type="button"
                 onClick={() => setIsPublic(true)}
-                style={{ flex: 1, padding: '12px', borderRadius: '12px', border: isPublic ? '2px solid var(--teal-500)' : '1px solid var(--slate-700)', background: isPublic ? 'rgba(20,184,166,0.1)' : 'var(--slate-800)', color: 'white', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
+                style={{ flex: 1, padding: '12px', borderRadius: '12px', border: isPublic ? '2px solid var(--teal-500)' : '1px solid var(--slate-700)', background: isPublic ? 'rgba(20,184,166,0.1)' : 'var(--slate-800)', color: 'var(--white)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
               >
                 <Globe size={24} color={isPublic ? 'var(--teal-400)' : 'var(--slate-400)'} />
                 <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>Public</span>
@@ -181,7 +181,7 @@ export default function HostExperienceModal({ experience, communities, user, onC
               <button 
                 type="button"
                 onClick={() => setIsPublic(false)}
-                style={{ flex: 1, padding: '12px', borderRadius: '12px', border: !isPublic ? '2px solid var(--teal-500)' : '1px solid var(--slate-700)', background: !isPublic ? 'rgba(20,184,166,0.1)' : 'var(--slate-800)', color: 'white', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
+                style={{ flex: 1, padding: '12px', borderRadius: '12px', border: !isPublic ? '2px solid var(--teal-500)' : '1px solid var(--slate-700)', background: !isPublic ? 'rgba(20,184,166,0.1)' : 'var(--slate-800)', color: 'var(--white)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
               >
                 <Lock size={24} color={!isPublic ? 'var(--teal-400)' : 'var(--slate-400)'} />
                 <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>Private</span>
@@ -201,7 +201,7 @@ export default function HostExperienceModal({ experience, communities, user, onC
                 required
                 value={maxCapacity} 
                 onChange={e => setMaxCapacity(e.target.value === '' ? '' : Number(e.target.value))}
-                style={{ width: '100%', padding: '12px 12px 12px 36px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'white', fontSize: '1rem', boxSizing: 'border-box' }}
+                style={{ width: '100%', padding: '12px 12px 12px 36px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'var(--white)', fontSize: '1rem', boxSizing: 'border-box' }}
               />
             </div>
           </div>

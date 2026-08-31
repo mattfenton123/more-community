@@ -50,7 +50,7 @@ function InvitePage() {
 
   if (!prescription || !community) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'var(--slate-950)', color: 'white', padding: '24px', textAlign: 'center' }}>
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'var(--slate-950)', color: 'var(--white)', padding: '24px', textAlign: 'center' }}>
         <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(244,63,94,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '24px' }}>
           <HeartPulse size={32} color="#f43f5e" />
         </div>
@@ -80,7 +80,7 @@ function InvitePage() {
             <HeartPulse size={16} /> NHS Social Prescription
           </div>
           
-          <h1 style={{ fontSize: '2.2rem', fontFamily: 'var(--font-heading)', color: 'white', margin: '0 0 16px 0', lineHeight: 1.2 }}>
+          <h1 style={{ fontSize: '2.2rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: '0 0 16px 0', lineHeight: 1.2 }}>
             You've been invited to join <span style={{ color: 'var(--teal-400)' }}>{community.name}</span>
           </h1>
           

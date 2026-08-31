@@ -48,7 +48,7 @@ export default function CouncilDashboard() {
   };
 
   return (
-    <div className="dashboard-layout" style={{ minHeight: '100vh', background: 'var(--slate-950)', color: 'white' }}>
+    <div className="dashboard-layout" style={{ minHeight: '100vh', background: 'var(--slate-950)', color: 'var(--white)' }}>
       
       {/* ─── SIDEBAR (Desktop Only) ─── */}
       <div className="dashboard-sidebar desktop-only">
@@ -115,7 +115,7 @@ export default function CouncilDashboard() {
           </div>
           
           {activeTab === 'overview' && (
-            <button className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 16px', borderRadius: '8px', border: '1px solid var(--slate-700)', background: 'var(--slate-800)', color: 'white', cursor: 'pointer' }}>
+            <button className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 16px', borderRadius: '8px', border: '1px solid var(--slate-700)', background: 'var(--slate-800)', color: 'var(--white)', cursor: 'pointer' }}>
               <Download size={16} /> Export Report
             </button>
           )}
@@ -135,7 +135,7 @@ export default function CouncilDashboard() {
                     </div>
                     <span style={{ color: 'var(--slate-400)', fontSize: '0.9rem', fontWeight: 500 }}>Active Citizens</span>
                   </div>
-                  <div style={{ fontSize: '2.5rem', fontWeight: 700, fontFamily: 'var(--font-heading)', color: 'white' }}>
+                  <div style={{ fontSize: '2.5rem', fontWeight: 700, fontFamily: 'var(--font-heading)', color: 'var(--white)' }}>
                     {totalMembers.toLocaleString()}
                   </div>
                   <div style={{ color: 'var(--teal-400)', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '8px' }}>
@@ -150,7 +150,7 @@ export default function CouncilDashboard() {
                     </div>
                     <span style={{ color: 'var(--slate-400)', fontSize: '0.9rem', fontWeight: 500 }}>Communities</span>
                   </div>
-                  <div style={{ fontSize: '2.5rem', fontWeight: 700, fontFamily: 'var(--font-heading)', color: 'white' }}>
+                  <div style={{ fontSize: '2.5rem', fontWeight: 700, fontFamily: 'var(--font-heading)', color: 'var(--white)' }}>
                     {totalCommunities}
                   </div>
                 </div>
@@ -162,7 +162,7 @@ export default function CouncilDashboard() {
                     </div>
                     <span style={{ color: 'var(--slate-400)', fontSize: '0.9rem', fontWeight: 500 }}>Upcoming Events</span>
                   </div>
-                  <div style={{ fontSize: '2.5rem', fontWeight: 700, fontFamily: 'var(--font-heading)', color: 'white' }}>
+                  <div style={{ fontSize: '2.5rem', fontWeight: 700, fontFamily: 'var(--font-heading)', color: 'var(--white)' }}>
                     {upcomingEvents}
                   </div>
                 </div>
@@ -174,7 +174,7 @@ export default function CouncilDashboard() {
                     </div>
                     <span style={{ color: 'var(--slate-400)', fontSize: '0.9rem', fontWeight: 500 }}>NHS Prescriptions</span>
                   </div>
-                  <div style={{ fontSize: '2.5rem', fontWeight: 700, fontFamily: 'var(--font-heading)', color: 'white' }}>
+                  <div style={{ fontSize: '2.5rem', fontWeight: 700, fontFamily: 'var(--font-heading)', color: 'var(--white)' }}>
                     {prescribingLinks.reduce((acc, curr) => acc + curr.uses, 0)}
                   </div>
                   <div style={{ color: 'var(--slate-400)', fontSize: '0.85rem', marginTop: '8px' }}>
@@ -203,8 +203,8 @@ export default function CouncilDashboard() {
                       <XAxis dataKey="name" stroke="var(--slate-500)" axisLine={false} tickLine={false} />
                       <YAxis stroke="var(--slate-500)" axisLine={false} tickLine={false} />
                       <RechartsTooltip 
-                        contentStyle={{ background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '8px', color: 'white' }}
-                        itemStyle={{ color: 'white' }}
+                        contentStyle={{ background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '8px', color: 'var(--white)' }}
+                        itemStyle={{ color: 'var(--white)' }}
                       />
                       <Area type="monotone" dataKey="active" stroke="var(--teal-400)" strokeWidth={3} fillOpacity={1} fill="url(#colorActive)" name="Active Users" />
                       <Area type="monotone" dataKey="rsvps" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorRsvps)" name="Event RSVPs" />
@@ -238,12 +238,12 @@ export default function CouncilDashboard() {
                       value={newLinkName}
                       onChange={(e) => setNewLinkName(e.target.value)}
                       placeholder="e.g. Type-2 Diabetes Walking Group"
-                      style={{ width: '100%', padding: '14px', background: 'var(--slate-950)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'white', fontSize: '1rem' }}
+                      style={{ width: '100%', padding: '14px', background: 'var(--slate-950)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'var(--white)', fontSize: '1rem' }}
                     />
                   </div>
                   <button 
                     onClick={generateLink}
-                    style={{ padding: '14px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 600, fontSize: '1rem', cursor: 'pointer', marginTop: '8px' }}
+                    style={{ padding: '14px', background: '#3b82f6', color: 'var(--white)', border: 'none', borderRadius: '12px', fontWeight: 600, fontSize: '1rem', cursor: 'pointer', marginTop: '8px' }}
                   >
                     Generate Link
                   </button>
@@ -272,7 +272,7 @@ export default function CouncilDashboard() {
                             navigator.clipboard.writeText(`${window.location.origin}/invite?code=${link.id}`);
                             alert('Copied to clipboard!');
                           }}
-                          style={{ padding: '6px 12px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', color: 'white', borderRadius: '6px', cursor: 'pointer', fontSize: '0.8rem' }}
+                          style={{ padding: '6px 12px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', color: 'var(--white)', borderRadius: '6px', cursor: 'pointer', fontSize: '0.8rem' }}
                         >
                           Copy
                         </button>

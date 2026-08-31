@@ -50,14 +50,14 @@ export default function ExperiencesCatalog({ onPitchExperience }) {
           }}>
             <div style={{ position: 'relative', height: '140px' }}>
               <img src={exp.image} alt={exp.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              <div style={{ position: 'absolute', top: '12px', right: '12px', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', padding: '4px 8px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', color: 'white', fontWeight: 600 }}>
+              <div style={{ position: 'absolute', top: '12px', right: '12px', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', padding: '4px 8px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', color: 'var(--white)', fontWeight: 600 }}>
                 <Star size={12} fill="var(--yellow-400)" color="var(--yellow-400)" /> {exp.rating}
               </div>
             </div>
             
             <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', flex: 1 }}>
               <div style={{ fontSize: '0.75rem', color: 'var(--teal-400)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>{exp.provider}</div>
-              <h4 style={{ margin: '0 0 8px 0', color: 'white', fontSize: '1.05rem', lineHeight: 1.3 }}>{exp.title}</h4>
+              <h4 style={{ margin: '0 0 8px 0', color: 'var(--white)', fontSize: '1.05rem', lineHeight: 1.3 }}>{exp.title}</h4>
               
               <div style={{ display: 'flex', gap: '12px', fontSize: '0.75rem', color: 'var(--slate-400)', marginBottom: '12px' }}>
                 <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><MapPin size={12} /> {exp.location}</span>

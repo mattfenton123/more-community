@@ -82,7 +82,7 @@ export default function LocationPicker({ locationName, setLocationName }) {
           type="button"
           disabled={isSearching}
           className="btn btn-primary"
-          style={{ padding: '0 16px', borderRadius: '12px', background: '#3b82f6', color: 'white', border: 'none' }}
+          style={{ padding: '0 16px', borderRadius: '12px', background: '#3b82f6', color: 'var(--white)', border: 'none' }}
         >
           {isSearching ? '...' : <Search size={18} />}
         </button>

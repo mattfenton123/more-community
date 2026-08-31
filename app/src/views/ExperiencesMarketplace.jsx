@@ -157,7 +157,7 @@ export default function ExperiencesMarketplace() {
                     position: 'absolute', top: '0.6rem', right: '0.6rem',
                     background: 'rgba(239,68,68,0.85)', backdropFilter: 'blur(8px)',
                     borderRadius: '100px', padding: '0.25rem 0.65rem',
-                    fontSize: '0.62rem', fontWeight: 700, color: '#fff',
+                    fontSize: '0.62rem', fontWeight: 700, color: 'var(--white)',
                     fontFamily: "'Syne', sans-serif"
                   }}>
                     {exp.spotsLeft} spots left

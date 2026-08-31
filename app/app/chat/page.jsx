@@ -52,7 +52,7 @@ export default function ChatIndex() {
   if (isLoading) {
     return (
       <div style={{ padding: '24px', paddingBottom: '100px' }}>
-        <div style={{ fontSize: '1.4rem', fontWeight: 700, fontFamily: 'var(--font-heading)', color: 'white', marginBottom: '24px' }}>Chat</div>
+        <div style={{ fontSize: '1.4rem', fontWeight: 700, fontFamily: 'var(--font-heading)', color: 'var(--white)', marginBottom: '24px' }}>Chat</div>
         <div style={{ color: 'var(--slate-400)', textAlign: 'center', padding: '60px 0' }}>Loading...</div>
       </div>
     );
@@ -63,7 +63,7 @@ export default function ChatIndex() {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <MessageCircle size={24} color="var(--teal-400)" />
-          <div style={{ fontSize: '1.4rem', fontWeight: 700, fontFamily: 'var(--font-heading)', color: 'white' }}>Chat</div>
+          <div style={{ fontSize: '1.4rem', fontWeight: 700, fontFamily: 'var(--font-heading)', color: 'var(--white)' }}>Chat</div>
         </div>
         <button 
           onClick={() => setShowNewDM(true)}
@@ -117,7 +117,7 @@ export default function ChatIndex() {
                     style={{ width: '48px', height: '48px', borderRadius: '12px', objectFit: 'cover' }} 
                   />
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ color: 'white', fontWeight: 600, fontSize: '0.95rem', marginBottom: '2px' }}>{community.name}</div>
+                    <div style={{ color: 'var(--white)', fontWeight: 600, fontSize: '0.95rem', marginBottom: '2px' }}>{community.name}</div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--slate-400)', fontSize: '0.8rem' }}>
                       <Hash size={12} /> general
                     </div>
@@ -161,7 +161,7 @@ export default function ChatIndex() {
                     )}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ color: 'white', fontWeight: isUnread ? 700 : 600, fontSize: '0.95rem', marginBottom: '2px' }}>{partner.name}</div>
+                    <div style={{ color: 'var(--white)', fontWeight: isUnread ? 700 : 600, fontSize: '0.95rem', marginBottom: '2px' }}>{partner.name}</div>
                     {lastMessage && (
                       <div style={{ color: isUnread ? 'var(--slate-300)' : 'var(--slate-500)', fontSize: '0.8rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {lastMessage.senderId === user.id ? 'You: ' : ''}{lastMessage.text || '📷 Photo'}
@@ -183,7 +183,7 @@ export default function ChatIndex() {
         >
           <div style={{ width: '100%', maxWidth: '500px', maxHeight: '70vh', background: 'var(--slate-900)', borderRadius: '24px 24px 0 0', padding: '24px', overflow: 'auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <h3 style={{ margin: 0, fontFamily: 'var(--font-heading)', color: 'white' }}>New Message</h3>
+              <h3 style={{ margin: 0, fontFamily: 'var(--font-heading)', color: 'var(--white)' }}>New Message</h3>
               <button onClick={() => setShowNewDM(false)} style={{ background: 'transparent', border: 'none', color: 'var(--slate-400)', cursor: 'pointer', fontSize: '1.2rem' }}>✕</button>
             </div>
             
@@ -195,7 +195,7 @@ export default function ChatIndex() {
                 onChange={(e) => setSearchTerm(e.target.value)} 
                 placeholder="Search people..." 
                 autoFocus
-                style={{ width: '100%', padding: '12px 12px 12px 40px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: 'white', fontSize: '0.9rem' }}
+                style={{ width: '100%', padding: '12px 12px 12px 40px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: 'var(--white)', fontSize: '0.9rem' }}
               />
             </div>
 
@@ -213,7 +213,7 @@ export default function ChatIndex() {
                     style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }}
                   />
                   <div>
-                    <div style={{ fontWeight: 600, color: 'white', fontSize: '0.9rem' }}>{u.name}</div>
+                    <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.9rem' }}>{u.name}</div>
                     {u.bio && <div style={{ fontSize: '0.78rem', color: 'var(--slate-400)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '250px' }}>{u.bio}</div>}
                   </div>
                 </button>

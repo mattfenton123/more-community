@@ -60,7 +60,7 @@ export default function DirectMessage() {
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: 'var(--slate-950)' }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(20px)' }}>
-        <button onClick={() => router.push('/chat')} style={{ background: 'transparent', border: 'none', color: 'white', cursor: 'pointer', padding: 0 }}>
+        <button onClick={() => router.push('/chat')} style={{ background: 'transparent', border: 'none', color: 'var(--white)', cursor: 'pointer', padding: 0 }}>
           <ChevronLeft size={24} />
         </button>
         <img 
@@ -70,7 +70,7 @@ export default function DirectMessage() {
           style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover', cursor: 'pointer' }}
         />
         <div style={{ flex: 1 }}>
-          <div style={{ fontWeight: 600, color: 'white', fontSize: '0.95rem' }}>{targetUser.name}</div>
+          <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.95rem' }}>{targetUser.name}</div>
           <div style={{ fontSize: '0.75rem', color: 'var(--slate-500)' }}>Direct Message</div>
         </div>
       </div>
@@ -101,7 +101,7 @@ export default function DirectMessage() {
                 border: isOwn ? '1px solid rgba(20,184,166,0.3)' : '1px solid rgba(255,255,255,0.06)',
               }}>
                 {msg.image && <img src={msg.image} alt="" style={{ maxWidth: '100%', borderRadius: '8px', marginBottom: msg.text ? '8px' : 0 }} />}
-                {msg.text && <div style={{ color: 'white', fontSize: '0.9rem', lineHeight: 1.5, wordBreak: 'break-word' }}>{msg.text}</div>}
+                {msg.text && <div style={{ color: 'var(--white)', fontSize: '0.9rem', lineHeight: 1.5, wordBreak: 'break-word' }}>{msg.text}</div>}
                 <div style={{ fontSize: '0.65rem', color: 'var(--slate-600)', marginTop: '4px', textAlign: isOwn ? 'right' : 'left' }}>
                   {msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
                 </div>
@@ -124,7 +124,7 @@ export default function DirectMessage() {
           onChange={(e) => setInputText(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
           placeholder={`Message ${targetUser.name}...`}
-          style={{ flex: 1, padding: '10px 16px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: 'white', fontSize: '0.9rem', outline: 'none' }}
+          style={{ flex: 1, padding: '10px 16px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: 'var(--white)', fontSize: '0.9rem', outline: 'none' }}
         />
         {imageFile && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(20,184,166,0.1)', padding: '4px 8px', borderRadius: '8px', fontSize: '0.75rem', color: 'var(--teal-300)' }}>

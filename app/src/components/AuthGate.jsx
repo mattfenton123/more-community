@@ -19,7 +19,7 @@ export default function AuthGate({ children }) {
         alignItems: 'center',
         justifyContent: 'center',
         background: 'var(--slate-950)',
-        color: 'white',
+        color: 'var(--white)',
         gap: '16px',
       }}>
         <img src={`/images/logo.webp`} alt="more." style={{ height: '28px', opacity: 0.8 }} />

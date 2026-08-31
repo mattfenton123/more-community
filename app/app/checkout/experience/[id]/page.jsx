@@ -17,7 +17,7 @@ export default function ExperienceCheckout() {
 
   if (!exp) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--slate-950)', color: 'white' }}>
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--slate-950)', color: 'var(--white)' }}>
         Experience not found.
       </div>
     );
@@ -35,7 +35,7 @@ export default function ExperienceCheckout() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--slate-950)', color: 'white', position: 'relative' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--slate-950)', color: 'var(--white)', position: 'relative' }}>
       
       {/* Header */}
       <div style={{ position: 'sticky', top: 0, zIndex: 50, background: 'rgba(2,6,23,0.92)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '1rem 1.25rem', display: 'flex', alignItems: 'center' }}>

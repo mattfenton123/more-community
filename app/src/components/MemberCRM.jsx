@@ -114,7 +114,7 @@ export default function MemberCRM({ communityId }) {
           style={{
             width: '100%', minHeight: '80px', resize: 'vertical',
             background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)',
-            borderRadius: '10px', padding: '12px', color: 'white', fontSize: '0.9rem',
+            borderRadius: '10px', padding: '12px', color: 'var(--white)', fontSize: '0.9rem',
             fontFamily: 'inherit', lineHeight: 1.5
           }}
         />
@@ -157,7 +157,7 @@ export default function MemberCRM({ communityId }) {
           style={{
             width: '100%', background: 'rgba(255,255,255,0.05)',
             border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px',
-            padding: '12px 12px 12px 40px', color: 'white', fontSize: '0.9rem'
+            padding: '12px 12px 12px 40px', color: 'var(--white)', fontSize: '0.9rem'
           }}
         />
       </div>
@@ -171,7 +171,7 @@ export default function MemberCRM({ communityId }) {
               <img src={member.user.avatar} alt={member.user.name} style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ color: 'white', fontWeight: 600, fontSize: '0.95rem' }}>{member.user.name}</span>
+                  <span style={{ color: 'var(--white)', fontWeight: 600, fontSize: '0.95rem' }}>{member.user.name}</span>
                   {member.role === 'Leader' && (
                     <Star size={12} color="#f59e0b" fill="#f59e0b" />
                   )}

@@ -92,7 +92,7 @@ function TabBar() {
           {unreadChatCount > 0 && (
             <div style={{
               position: 'absolute', top: '-4px', right: '-6px',
-              background: 'var(--teal-500)', color: 'white',
+              background: 'var(--teal-500)', color: 'var(--white)',
               fontSize: '0.6rem', fontWeight: 700,
               width: '16px', height: '16px', borderRadius: '50%',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -110,7 +110,7 @@ function TabBar() {
           {unreadCount > 0 && (
             <div style={{
               position: 'absolute', top: '-4px', right: '-6px',
-              background: 'var(--rose-500)', color: 'white',
+              background: 'var(--rose-500)', color: 'var(--white)',
               fontSize: '0.6rem', fontWeight: 700,
               width: '16px', height: '16px', borderRadius: '50%',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -159,7 +159,7 @@ import { ErrorBoundary } from 'react-error-boundary';
 
 function ErrorFallback({ error }) {
   return (
-    <div style={{ padding: '40px', color: 'white', background: 'var(--slate-950)', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+    <div style={{ padding: '40px', color: 'var(--white)', background: 'var(--slate-950)', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
       <h2 style={{ color: 'var(--rose-500)', fontFamily: 'var(--font-heading)', marginBottom: '16px' }}>Something went wrong</h2>
       <p style={{ color: 'var(--slate-400)', marginBottom: '24px', textAlign: 'center' }}>
         We hit an unexpected problem. Our team has been notified. Please try reloading.

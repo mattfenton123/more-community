@@ -115,7 +115,7 @@ export default function SettingsScreen() {
               display: 'flex', alignItems: 'center', gap: '16px', padding: '16px',
               background: isInstalled ? 'rgba(20,184,166,0.05)' : 'rgba(255,255,255,0.02)',
               border: isInstalled ? '1px solid rgba(20,184,166,0.15)' : '1px solid rgba(255,255,255,0.05)',
-              borderRadius: '12px', color: 'white', width: '100%', cursor: 'pointer', textAlign: 'left',
+              borderRadius: '12px', color: 'var(--white)', width: '100%', cursor: 'pointer', textAlign: 'left',
             }}
           >
             <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(20,184,166,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--teal-400)' }}>
@@ -135,7 +135,7 @@ export default function SettingsScreen() {
             style={{
               display: 'flex', alignItems: 'center', gap: '16px', padding: '16px',
               background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)',
-              borderRadius: '12px', color: 'white', width: '100%', cursor: 'pointer', textAlign: 'left',
+              borderRadius: '12px', color: 'var(--white)', width: '100%', cursor: 'pointer', textAlign: 'left',
             }}
           >
             <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: notificationsEnabled ? 'rgba(20,184,166,0.1)' : 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: notificationsEnabled ? 'var(--teal-400)' : 'var(--slate-500)' }}>
@@ -171,7 +171,7 @@ export default function SettingsScreen() {
             style={{
               display: 'flex', alignItems: 'center', gap: '16px', padding: '16px',
               background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)',
-              borderRadius: '12px', color: 'white', width: '100%', cursor: 'pointer', textAlign: 'left',
+              borderRadius: '12px', color: 'var(--white)', width: '100%', cursor: 'pointer', textAlign: 'left',
             }}
           >
             <div style={{

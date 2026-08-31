@@ -119,14 +119,14 @@ export default function LoginScreen() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '14px' }}>
               {isSignUp && (
                 <div style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '14px', padding: '14px 16px', display: 'flex', alignItems: 'center', backdropFilter: 'blur(8px)' }}>
-                  <input type="text" placeholder="Full Name" value={name} onChange={e => setName(e.target.value)} style={{ flex: 1, background: 'transparent', border: 'none', color: 'white', fontSize: '1rem', outline: 'none' }} />
+                  <input type="text" placeholder="Full Name" value={name} onChange={e => setName(e.target.value)} style={{ flex: 1, background: 'transparent', border: 'none', color: 'var(--white)', fontSize: '1rem', outline: 'none' }} />
                 </div>
               )}
               <div style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '14px', padding: '14px 16px', display: 'flex', alignItems: 'center', backdropFilter: 'blur(8px)' }}>
-                <input type="email" placeholder="Email address" value={email} onChange={e => setEmail(e.target.value)} style={{ flex: 1, background: 'transparent', border: 'none', color: 'white', fontSize: '1rem', outline: 'none' }} />
+                <input type="email" placeholder="Email address" value={email} onChange={e => setEmail(e.target.value)} style={{ flex: 1, background: 'transparent', border: 'none', color: 'var(--white)', fontSize: '1rem', outline: 'none' }} />
               </div>
               <div style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '14px', padding: '14px 16px', display: 'flex', alignItems: 'center', backdropFilter: 'blur(8px)' }}>
-                <input type="password" placeholder="Password (min 6 chars)" value={password} onChange={e => setPassword(e.target.value)} style={{ flex: 1, background: 'transparent', border: 'none', color: 'white', fontSize: '1rem', outline: 'none' }} />
+                <input type="password" placeholder="Password (min 6 chars)" value={password} onChange={e => setPassword(e.target.value)} style={{ flex: 1, background: 'transparent', border: 'none', color: 'var(--white)', fontSize: '1rem', outline: 'none' }} />
               </div>
             </div>
 

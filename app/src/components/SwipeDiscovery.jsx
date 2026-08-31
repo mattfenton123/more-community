@@ -71,7 +71,7 @@ export default function SwipeDiscovery({ events, communities, onSave }) {
           <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(20,184,166,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '24px' }}>
             <Sparkles size={40} color="var(--teal-400)" />
           </div>
-          <h2 style={{ color: 'white', fontFamily: 'var(--font-heading)', fontSize: '2rem', marginBottom: '16px' }}>You're all caught up!</h2>
+          <h2 style={{ color: 'var(--white)', fontFamily: 'var(--font-heading)', fontSize: '2rem', marginBottom: '16px' }}>You're all caught up!</h2>
           <p style={{ color: 'var(--slate-400)', fontSize: '1rem', lineHeight: 1.6, marginBottom: '32px' }}>We've run out of new events to show you right now. Check back later for more.</p>
         </div>
       </div>
@@ -144,7 +144,7 @@ export default function SwipeDiscovery({ events, communities, onSave }) {
             pointerEvents: 'none'
           }}>
             <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 50%, rgba(15, 23, 42, 0.95) 100%)' }}></div>
-            <div style={{ position: 'absolute', top: '16px', right: '16px', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', color: 'white', padding: '6px 12px', borderRadius: '99px', fontSize: '0.8rem', fontWeight: 700 }}>
+            <div style={{ position: 'absolute', top: '16px', right: '16px', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', color: 'var(--white)', padding: '6px 12px', borderRadius: '99px', fontSize: '0.8rem', fontWeight: 700 }}>
               {currentEvent.ticketPrice > 0 ? `£${currentEvent.ticketPrice}` : 'FREE'}
             </div>
           </div>
@@ -153,7 +153,7 @@ export default function SwipeDiscovery({ events, communities, onSave }) {
             <div style={{ color: 'var(--teal-400)', fontSize: '0.85rem', fontWeight: 700, textTransform: 'uppercase', marginBottom: '8px' }}>
               {community?.name}
             </div>
-            <h3 style={{ fontSize: '2rem', fontFamily: 'var(--font-heading)', color: 'white', margin: '0 0 16px 0', lineHeight: 1.1 }}>
+            <h3 style={{ fontSize: '2rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: '0 0 16px 0', lineHeight: 1.1 }}>
               {currentEvent.title}
             </h3>
             
@@ -187,7 +187,7 @@ export default function SwipeDiscovery({ events, communities, onSave }) {
         <button 
           onClick={() => handleSwipe('right')}
           className="interactive-press"
-          style={{ width: '72px', height: '72px', borderRadius: '50%', background: 'var(--teal-500)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', cursor: 'pointer', boxShadow: '0 8px 32px rgba(20,184,166,0.4)' }}
+          style={{ width: '72px', height: '72px', borderRadius: '50%', background: 'var(--teal-500)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--white)', cursor: 'pointer', boxShadow: '0 8px 32px rgba(20,184,166,0.4)' }}
         >
           <Heart size={36} fill="currentColor" />
         </button>

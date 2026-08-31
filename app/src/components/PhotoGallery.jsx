@@ -139,7 +139,7 @@ export default function PhotoGallery({ photos = [], communityId, canUpload = tru
             style={{
               position: 'absolute', top: '20px', right: '20px',
               background: 'rgba(0,0,0,0.5)', border: 'none',
-              color: 'white', width: '40px', height: '40px',
+              color: 'var(--white)', width: '40px', height: '40px',
               borderRadius: '50%', display: 'flex',
               alignItems: 'center', justifyContent: 'center',
               cursor: 'pointer', zIndex: 10,
@@ -166,7 +166,7 @@ export default function PhotoGallery({ photos = [], communityId, canUpload = tru
               position: 'absolute', bottom: '40px',
               background: 'rgba(0,0,0,0.7)',
               padding: '8px 16px', borderRadius: '8px',
-              color: 'white', fontSize: '0.9rem',
+              color: 'var(--white)', fontSize: '0.9rem',
             }}>
               {photos[lightboxIndex].caption}
             </div>
@@ -178,7 +178,7 @@ export default function PhotoGallery({ photos = [], communityId, canUpload = tru
               onClick={e => { e.stopPropagation(); setLightboxIndex(lightboxIndex - 1); }}
               style={{
                 position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)',
-                background: 'rgba(0,0,0,0.5)', border: 'none', color: 'white',
+                background: 'rgba(0,0,0,0.5)', border: 'none', color: 'var(--white)',
                 width: '36px', height: '36px', borderRadius: '50%',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 cursor: 'pointer', fontSize: '1.2rem',
@@ -190,7 +190,7 @@ export default function PhotoGallery({ photos = [], communityId, canUpload = tru
               onClick={e => { e.stopPropagation(); setLightboxIndex(lightboxIndex + 1); }}
               style={{
                 position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)',
-                background: 'rgba(0,0,0,0.5)', border: 'none', color: 'white',
+                background: 'rgba(0,0,0,0.5)', border: 'none', color: 'var(--white)',
                 width: '36px', height: '36px', borderRadius: '50%',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 cursor: 'pointer', fontSize: '1.2rem',

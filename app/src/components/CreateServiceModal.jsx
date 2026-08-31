@@ -74,8 +74,8 @@ export default function CreateServiceModal({ isOpen, onClose, communityId }) {
         overflowY: 'auto'
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-          <h2 style={{ margin: 0, color: 'white', fontSize: '1.4rem', fontFamily: 'var(--font-heading)' }}>Pitch Your Service</h2>
-          <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: 'white', width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+          <h2 style={{ margin: 0, color: 'var(--white)', fontSize: '1.4rem', fontFamily: 'var(--font-heading)' }}>Pitch Your Service</h2>
+          <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: 'var(--white)', width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
             <X size={18} />
           </button>
         </div>
@@ -121,7 +121,7 @@ export default function CreateServiceModal({ isOpen, onClose, communityId }) {
               placeholder="e.g. Sarah's Graphic Design"
               value={title} 
               onChange={e => setTitle(e.target.value)}
-              style={{ width: '100%', padding: '14px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'white', fontSize: '1rem', boxSizing: 'border-box' }}
+              style={{ width: '100%', padding: '14px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'var(--white)', fontSize: '1rem', boxSizing: 'border-box' }}
             />
           </div>
           
@@ -132,7 +132,7 @@ export default function CreateServiceModal({ isOpen, onClose, communityId }) {
               placeholder="What do you do, and why should the community hire you?"
               value={description} 
               onChange={e => setDescription(e.target.value)}
-              style={{ width: '100%', padding: '14px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'white', fontSize: '1rem', boxSizing: 'border-box', minHeight: '100px', resize: 'vertical' }}
+              style={{ width: '100%', padding: '14px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'var(--white)', fontSize: '1rem', boxSizing: 'border-box', minHeight: '100px', resize: 'vertical' }}
             />
           </div>
 
@@ -143,7 +143,7 @@ export default function CreateServiceModal({ isOpen, onClose, communityId }) {
               placeholder="e.g. 15% off your first project with me"
               value={perk} 
               onChange={e => setPerk(e.target.value)}
-              style={{ width: '100%', padding: '14px', background: 'rgba(234,179,8,0.05)', border: '1px solid rgba(234,179,8,0.3)', borderRadius: '12px', color: 'white', fontSize: '1rem', boxSizing: 'border-box' }}
+              style={{ width: '100%', padding: '14px', background: 'rgba(234,179,8,0.05)', border: '1px solid rgba(234,179,8,0.3)', borderRadius: '12px', color: 'var(--white)', fontSize: '1rem', boxSizing: 'border-box' }}
             />
           </div>
 
@@ -156,8 +156,8 @@ export default function CreateServiceModal({ isOpen, onClose, communityId }) {
                 style={{ marginTop: '4px', width: '20px', height: '20px', accentColor: 'var(--teal-500)' }}
               />
               <div>
-                <div style={{ color: 'white', fontWeight: 600, fontSize: '1rem', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  Premium Placement <span style={{ fontSize: '0.7rem', background: 'var(--amber-500)', color: 'white', padding: '2px 6px', borderRadius: '6px', fontWeight: 700, textTransform: 'uppercase' }}>£15/mo</span>
+                <div style={{ color: 'var(--white)', fontWeight: 600, fontSize: '1rem', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  Premium Placement <span style={{ fontSize: '0.7rem', background: 'var(--amber-500)', color: 'var(--white)', padding: '2px 6px', borderRadius: '6px', fontWeight: 700, textTransform: 'uppercase' }}>£15/mo</span>
                 </div>
                 <div style={{ color: 'var(--slate-400)', fontSize: '0.85rem', lineHeight: 1.4 }}>
                   Pin your service to the top of the directory with a highlighted gold border to attract more clients. Cancel anytime.

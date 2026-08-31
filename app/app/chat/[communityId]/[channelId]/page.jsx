@@ -224,7 +224,7 @@ export default function Chat() {
             <div className="modal-content" style={{ flex: 1 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
                 <h2 style={{ fontFamily: 'var(--font-heading)', margin: 0 }}>New Channel</h2>
-                <button onClick={() => setShowCreateModal(false)} className="interactive-press" style={{ background: 'rgba(255,255,255,0.05)', border: 'none', color: 'white', cursor: 'pointer', width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <button onClick={() => setShowCreateModal(false)} className="interactive-press" style={{ background: 'rgba(255,255,255,0.05)', border: 'none', color: 'var(--white)', cursor: 'pointer', width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <X size={18} />
                 </button>
               </div>
@@ -235,7 +235,7 @@ export default function Chat() {
                 value={newChannelName}
                 onChange={e => setNewChannelName(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleCreateChannel()}
-                style={{ width: '100%', padding: '14px 16px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'white', fontSize: '1rem', marginBottom: '16px' }}
+                style={{ width: '100%', padding: '14px 16px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'var(--white)', fontSize: '1rem', marginBottom: '16px' }}
               />
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <button onClick={handleCreateChannel} className="btn btn-primary" style={{ display: 'flex', gap: '12px', justifyContent: 'center', padding: '16px', borderRadius: '12px' }}>
@@ -252,7 +252,7 @@ export default function Chat() {
             <div className="modal-content" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
                 <h2 style={{ fontFamily: 'var(--font-heading)', margin: 0 }}>Start a Chat</h2>
-                <button onClick={() => setShowNewChatModal(false)} className="interactive-press" style={{ background: 'rgba(255,255,255,0.05)', border: 'none', color: 'white', cursor: 'pointer', width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <button onClick={() => setShowNewChatModal(false)} className="interactive-press" style={{ background: 'rgba(255,255,255,0.05)', border: 'none', color: 'var(--white)', cursor: 'pointer', width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <X size={18} />
                 </button>
               </div>
@@ -261,7 +261,7 @@ export default function Chat() {
                 placeholder="Search community members..." 
                 value={userSearchTerm}
                 onChange={e => setUserSearchTerm(e.target.value)}
-                style={{ width: '100%', padding: '14px 16px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'white', fontSize: '1rem', marginBottom: '16px' }}
+                style={{ width: '100%', padding: '14px 16px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'var(--white)', fontSize: '1rem', marginBottom: '16px' }}
               />
               <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {users
@@ -281,7 +281,7 @@ export default function Chat() {
                     >
                       <img src={u.avatar} alt={u.name} style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
                       <div style={{ flex: 1 }}>
-                        <div style={{ fontWeight: 600, color: 'white' }}>{u.name}</div>
+                        <div style={{ fontWeight: 600, color: 'var(--white)' }}>{u.name}</div>
                         <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)' }}>{u.bio || 'Member'}</div>
                       </div>
                       <MessageCircle size={18} color="var(--teal-400)" />
@@ -346,7 +346,7 @@ export default function Chat() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#22c55e', fontSize: '0.85rem', fontWeight: 500 }}>
             <MessageCircle size={16} /> <span>This community is also on WhatsApp!</span>
           </div>
-          <a href={waConfig.groupLink} target="_blank" rel="noreferrer" className="interactive-press" style={{ background: '#22c55e', color: 'white', padding: '6px 12px', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
+          <a href={waConfig.groupLink} target="_blank" rel="noreferrer" className="interactive-press" style={{ background: '#22c55e', color: 'var(--white)', padding: '6px 12px', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
             Join Group
           </a>
         </div>
@@ -496,7 +496,7 @@ export default function Chat() {
                 <div style={{ width: '40px', height: '40px', borderRadius: '4px', background: 'var(--slate-800)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <ImageIcon size={16} color="var(--teal-400)" />
                 </div>
-                <button onClick={() => setImageFiles(Array.from(imageFiles).filter((_, idx) => idx !== i))} className="interactive-press" style={{ position: 'absolute', top: '-6px', right: '-6px', background: 'var(--slate-700)', border: 'none', color: 'white', borderRadius: '50%', padding: '2px', cursor: 'pointer' }}>
+                <button onClick={() => setImageFiles(Array.from(imageFiles).filter((_, idx) => idx !== i))} className="interactive-press" style={{ position: 'absolute', top: '-6px', right: '-6px', background: 'var(--slate-700)', border: 'none', color: 'var(--white)', borderRadius: '50%', padding: '2px', cursor: 'pointer' }}>
                   <X size={12} />
                 </button>
               </div>
@@ -527,7 +527,7 @@ export default function Chat() {
             onChange={(e) => setInputText(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
             placeholder={isDirectMessage ? 'Message...' : `Message #${channelId}...`}
-            style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '999px', padding: '12px 20px', color: 'white', outline: 'none', transition: 'border-color 0.2s' }}
+            style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '999px', padding: '12px 20px', color: 'var(--white)', outline: 'none', transition: 'border-color 0.2s' }}
             onFocus={e => e.target.style.borderColor = 'rgba(20,184,166,0.4)'}
             onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
           />

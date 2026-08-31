@@ -12,7 +12,7 @@ export default function CommunityProfile() {
   const community = communities.find(c => c.id === id);
   const isMember = user?.joinedCommunities?.includes(id);
 
-  if (!community) return <div style={{ color: 'white', padding: '40px', textAlign: 'center' }}>Loading...</div>;
+  if (!community) return <div style={{ color: 'var(--white)', padding: '40px', textAlign: 'center' }}>Loading...</div>;
 
   const leaderUser = users.find(u => u.id === community.leaderId);
   const memberList = users.filter(u => u.joinedCommunities?.includes(id));

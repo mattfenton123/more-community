@@ -134,7 +134,7 @@ export default function OnboardingFlow({ onComplete }) {
           style={{
             width: '100%', padding: '14px 16px',
             background: 'var(--slate-800)', border: '1px solid var(--slate-700)',
-            borderRadius: '12px', color: 'white', fontSize: '1rem',
+            borderRadius: '12px', color: 'var(--white)', fontSize: '1rem',
             transition: 'border-color 0.2s',
           }}
           onFocus={e => e.target.style.borderColor = 'rgba(20,184,166,0.4)'}
@@ -151,7 +151,7 @@ export default function OnboardingFlow({ onComplete }) {
           style={{
             width: '100%', padding: '14px 16px',
             background: 'var(--slate-800)', border: '1px solid var(--slate-700)',
-            borderRadius: '12px', color: 'white', fontSize: '0.95rem',
+            borderRadius: '12px', color: 'var(--white)', fontSize: '0.95rem',
             minHeight: '80px', resize: 'none', fontFamily: 'inherit',
             transition: 'border-color 0.2s',
           }}

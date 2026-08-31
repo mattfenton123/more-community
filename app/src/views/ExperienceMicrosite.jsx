@@ -18,7 +18,7 @@ export default function ExperienceMicrosite() {
   // No need for promoteCommunityId effect since it's handled in the modal
   if (!experience) {
     return (
-      <div style={{ padding: '40px 20px', textAlign: 'center', color: 'white' }}>
+      <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--white)' }}>
         <h2>Experience not found</h2>
         <button onClick={() => navigate.back()} className="btn btn-outline" style={{ marginTop: '20px' }}>Go Back</button>
       </div>
@@ -82,7 +82,7 @@ export default function ExperienceMicrosite() {
   });
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--slate-950)', color: 'white', paddingBottom: '100px' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--slate-950)', color: 'var(--white)', paddingBottom: '100px' }}>
       {/* Hero Section */}
       <div style={{ position: 'relative', height: '350px' }}>
         <img src={experience.image} alt={experience.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -91,10 +91,10 @@ export default function ExperienceMicrosite() {
         
         {/* Top Bar Actions */}
         <div style={{ position: 'absolute', top: '20px', left: '20px', right: '20px', display: 'flex', justifyContent: 'space-between' }}>
-          <button onClick={() => navigate.back()} className="interactive-press" style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(10px)', border: 'none', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <button onClick={() => navigate.back()} className="interactive-press" style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(10px)', border: 'none', color: 'var(--white)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <ArrowLeft size={20} />
           </button>
-          <button onClick={handleShare} className="interactive-press" style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(10px)', border: 'none', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <button onClick={handleShare} className="interactive-press" style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(10px)', border: 'none', color: 'var(--white)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Share2 size={20} />
           </button>
         </div>
@@ -106,7 +106,7 @@ export default function ExperienceMicrosite() {
       </div>
 
       <div style={{ padding: '0 24px 24px' }}>
-        <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem', lineHeight: 1.1, margin: '16px 0 12px', color: 'white' }}>
+        <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem', lineHeight: 1.1, margin: '16px 0 12px', color: 'var(--white)' }}>
           {experience.title}
         </h1>
 
@@ -129,7 +129,7 @@ export default function ExperienceMicrosite() {
             </div>
             <div>
               <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>Provider</div>
-              <div style={{ fontSize: '1rem', color: 'white', fontWeight: 500 }}>{experience.provider}</div>
+              <div style={{ fontSize: '1rem', color: 'var(--white)', fontWeight: 500 }}>{experience.provider}</div>
             </div>
           </div>
           <div style={{ height: '1px', background: 'rgba(255,255,255,0.1)', margin: '12px 0' }} />
@@ -149,7 +149,7 @@ export default function ExperienceMicrosite() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.9rem' }}>
                 <div style={{ color: 'var(--slate-400)' }}>Base Cost (to Provider)</div>
-                <div style={{ color: 'white', fontWeight: 600 }}>£{experience.basePrice}</div>
+                <div style={{ color: 'var(--white)', fontWeight: 600 }}>£{experience.basePrice}</div>
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.9rem' }}>
@@ -160,8 +160,8 @@ export default function ExperienceMicrosite() {
               <div style={{ height: '1px', background: 'rgba(255,255,255,0.1)', margin: '4px 0' }} />
 
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ fontSize: '0.95rem', color: 'white', fontWeight: 600 }}>Total Member Ticket Price</div>
-                <div style={{ fontSize: '1.3rem', fontWeight: 800, color: 'white' }}>£{getTotalPrice(experience)}</div>
+                <div style={{ fontSize: '0.95rem', color: 'var(--white)', fontWeight: 600 }}>Total Member Ticket Price</div>
+                <div style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--white)' }}>£{getTotalPrice(experience)}</div>
               </div>
             </div>
           </div>
@@ -170,7 +170,7 @@ export default function ExperienceMicrosite() {
         {/* Upcoming Community Trips Section */}
         {communityEvents.length > 0 && (
           <div style={{ padding: '24px', background: 'rgba(255,255,255,0.02)', borderRadius: '16px', border: '1px dashed rgba(255,255,255,0.1)', marginBottom: '24px' }}>
-            <h3 style={{ fontSize: '1.2rem', fontFamily: 'var(--font-heading)', color: 'white', margin: '0 0 16px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <h3 style={{ fontSize: '1.2rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: '0 0 16px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Users size={20} color="var(--teal-400)" /> Upcoming Community Trips
             </h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -194,7 +194,7 @@ export default function ExperienceMicrosite() {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                       <div>
                         <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>Hosted By</div>
-                        <div style={{ color: 'white', fontWeight: 700, fontSize: '1.1rem' }}>{comm?.name || 'A Community'}</div>
+                        <div style={{ color: 'var(--white)', fontWeight: 700, fontSize: '1.1rem' }}>{comm?.name || 'A Community'}</div>
                         <div style={{ fontSize: '0.9rem', color: 'var(--slate-300)', marginTop: '4px' }}><Calendar size={14} style={{ display: 'inline', marginRight: '4px' }} />{ev.date} at {ev.time}</div>
                       </div>
                       <button onClick={() => navigate.push(`/checkout/experience/${ev.id}`)} className="btn btn-primary interactive-press" style={{ padding: '8px 16px', borderRadius: '8px', fontSize: '0.9rem' }}>
@@ -205,7 +205,7 @@ export default function ExperienceMicrosite() {
                     <div style={{ display: 'flex', gap: '12px', marginTop: '4px' }}>
                       <div style={{ flex: 1, padding: '12px', background: 'rgba(255,255,255,0.03)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
                         <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', marginBottom: '4px' }}>Non-Member</div>
-                        <div style={{ fontSize: '1.1rem', color: 'white', fontWeight: 600 }}>£{nonMemberPrice}</div>
+                        <div style={{ fontSize: '1.1rem', color: 'var(--white)', fontWeight: 600 }}>£{nonMemberPrice}</div>
                       </div>
                       <div style={{ flex: 1, padding: '12px', background: 'rgba(20,184,166,0.05)', borderRadius: '8px', border: '1px solid rgba(20,184,166,0.2)' }}>
                         <div style={{ fontSize: '0.75rem', color: 'var(--teal-400)', marginBottom: '4px', fontWeight: 700 }}>Member Price</div>
@@ -228,7 +228,7 @@ export default function ExperienceMicrosite() {
         padding: '20px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', zIndex: 90
       }}>
         <div>
-          <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'white' }}>£{getTotalPrice(experience)}</div>
+          <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--white)' }}>£{getTotalPrice(experience)}</div>
           <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>per person</div>
         </div>
         

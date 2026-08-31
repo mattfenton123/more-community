@@ -53,8 +53,8 @@ export default function ReviewForm({ communityId, onClose }) {
     <div className="modal-overlay" style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
       <div className="modal-content" style={{ background: 'var(--slate-900)', width: '100%', maxWidth: '600px', borderTopLeftRadius: '24px', borderTopRightRadius: '24px', padding: '24px', animation: 'slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-          <h3 style={{ fontSize: '1.2rem', fontFamily: 'var(--font-heading)', color: 'white', margin: 0 }}>Leave a Review</h3>
-          <button onClick={onClose} className="interactive-press" style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: 'white', width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+          <h3 style={{ fontSize: '1.2rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: 0 }}>Leave a Review</h3>
+          <button onClick={onClose} className="interactive-press" style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: 'var(--white)', width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
             <X size={18} />
           </button>
         </div>
@@ -63,7 +63,7 @@ export default function ReviewForm({ communityId, onClose }) {
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px' }}>
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: '3rem', marginBottom: '8px' }}>🎉</div>
-              <h4 style={{ fontSize: '1.2rem', color: 'white', margin: '0 0 8px 0' }}>Review Published!</h4>
+              <h4 style={{ fontSize: '1.2rem', color: 'var(--white)', margin: '0 0 8px 0' }}>Review Published!</h4>
               <p style={{ color: 'var(--slate-400)', fontSize: '0.9rem', margin: 0 }}>
                 {rating === 5 
                   ? "Thank you for the 5-star rating! Your review has been posted to the community feed." 
@@ -80,7 +80,7 @@ export default function ReviewForm({ communityId, onClose }) {
                   <div style={{ display: 'flex', gap: '4px', color: 'var(--yellow-400)', marginBottom: '16px' }}>
                     {[1,2,3,4,5].map(i => <Star key={i} size={16} fill="currentColor" />)}
                   </div>
-                  <h3 style={{ fontSize: '1.4rem', fontFamily: 'var(--font-heading)', color: 'white', margin: '0 0 16px 0', lineHeight: 1.3 }}>
+                  <h3 style={{ fontSize: '1.4rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: '0 0 16px 0', lineHeight: 1.3 }}>
                     "{content}"
                   </h3>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -138,7 +138,7 @@ export default function ReviewForm({ communityId, onClose }) {
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 placeholder="What do you love about this community? What could be better?"
-                style={{ width: '100%', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '16px', color: 'white', minHeight: '120px', fontSize: '0.95rem', fontFamily: 'inherit', resize: 'none', outline: 'none' }}
+                style={{ width: '100%', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '16px', color: 'var(--white)', minHeight: '120px', fontSize: '0.95rem', fontFamily: 'inherit', resize: 'none', outline: 'none' }}
                 required
               />
             </div>

@@ -106,10 +106,10 @@ export default function GamificationPanel({ userId }) {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'linear-gradient(135deg, #f59e0b, #ef4444)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <span style={{ fontSize: '1rem', fontWeight: 800, color: 'white' }}>{level}</span>
+              <span style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--white)' }}>{level}</span>
             </div>
             <div>
-              <div style={{ fontWeight: 700, color: 'white', fontSize: '0.95rem' }}>Level {level}</div>
+              <div style={{ fontWeight: 700, color: 'var(--white)', fontSize: '0.95rem' }}>Level {level}</div>
               <div style={{ fontSize: '0.7rem', color: 'var(--slate-500)' }}>{xp} XP total</div>
             </div>
           </div>
@@ -157,7 +157,7 @@ export default function GamificationPanel({ userId }) {
                 <badge.icon size={16} color={badge.color} />
               </div>
               <div>
-                <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'white' }}>{badge.name}</div>
+                <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--white)' }}>{badge.name}</div>
                 <div style={{ fontSize: '0.65rem', color: 'var(--slate-500)' }}>{badge.description}</div>
               </div>
             </div>
@@ -220,7 +220,7 @@ export function CommunityLeaderboard({ communityId }) {
     <div style={{ background: 'var(--slate-800)', borderRadius: '16px', overflow: 'hidden', border: '1px solid var(--slate-700)', marginBottom: '24px' }}>
       <div style={{ padding: '16px', borderBottom: '1px solid var(--slate-700)', display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(255,255,255,0.02)' }}>
         <Trophy size={20} color="var(--teal-400)" />
-        <h3 style={{ margin: 0, color: 'white', fontFamily: 'var(--font-heading)', fontSize: '1.1rem' }}>Top Members</h3>
+        <h3 style={{ margin: 0, color: 'var(--white)', fontFamily: 'var(--font-heading)', fontSize: '1.1rem' }}>Top Members</h3>
       </div>
       <div>
         {leaderboard.map((m, i) => (
@@ -230,7 +230,7 @@ export function CommunityLeaderboard({ communityId }) {
             </div>
             <img src={m.user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(m.user?.name || 'U')}&background=14b8a6&color=fff`} alt="" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', border: i < 3 ? '2px solid var(--teal-500)' : 'none' }} />
             <div style={{ flex: 1 }}>
-              <div style={{ fontWeight: 600, color: 'white' }}>{m.user?.name || 'Unknown User'}</div>
+              <div style={{ fontWeight: 600, color: 'var(--white)' }}>{m.user?.name || 'Unknown User'}</div>
               <div style={{ fontSize: '0.75rem', color: 'var(--teal-300)' }}>Level {m.level} • {m.xp} XP</div>
             </div>
             {m.badges.length > 0 && (

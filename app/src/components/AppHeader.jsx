@@ -31,7 +31,7 @@ export default function AppHeader({ title, subtitle, rightElement, showBack = fa
         {unreadCount > 0 && (
           <div style={{
             position: 'absolute', top: '0px', right: '0px',
-            background: 'var(--rose-500)', color: 'white',
+            background: 'var(--rose-500)', color: 'var(--white)',
             fontSize: '0.6rem', fontWeight: 700,
             width: '16px', height: '16px', borderRadius: '50%',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -62,7 +62,7 @@ export default function AppHeader({ title, subtitle, rightElement, showBack = fa
             className="interactive-press"
             style={{ 
               width: '32px', height: '32px', borderRadius: '50%', 
-              background: 'rgba(255,255,255,0.05)', border: 'none', color: 'white', 
+              background: 'rgba(255,255,255,0.05)', border: 'none', color: 'var(--white)', 
               display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' 
             }}
           >
@@ -71,7 +71,7 @@ export default function AppHeader({ title, subtitle, rightElement, showBack = fa
         ) : null}
         
         <img 
-          src="/logo.png" 
+          src="/logo.png" className="theme-invert" 
           alt="more." 
           style={{ height: '24px', cursor: 'pointer' }} 
           onClick={() => navigate.push('/')} 
@@ -81,7 +81,7 @@ export default function AppHeader({ title, subtitle, rightElement, showBack = fa
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: '4px' }}>
             <span style={{ color: 'var(--slate-500)', fontSize: '1.2rem' }}>/</span>
             <div>
-              <h1 style={{ margin: 0, fontSize: '1.2rem', fontFamily: 'var(--font-heading)', color: 'white' }}>{title}</h1>
+              <h1 style={{ margin: 0, fontSize: '1.2rem', fontFamily: 'var(--font-heading)', color: 'var(--white)' }}>{title}</h1>
               {subtitle && <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', fontWeight: 500 }}>{subtitle}</div>}
             </div>
           </div>

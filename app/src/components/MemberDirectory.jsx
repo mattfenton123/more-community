@@ -25,7 +25,7 @@ function MemberRow({ member, communityId }) {
       <img src={user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=0D8B93&color=fff`} alt="" style={{ width: '38px', height: '38px', borderRadius: '50%', objectFit: 'cover' }} />
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
-          <span style={{ fontWeight: 600, color: 'white', fontSize: '0.85rem' }}>{user.name}</span>
+          <span style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.85rem' }}>{user.name}</span>
           {member.role === 'Leader' && <Crown size={13} color="#f59e0b" />}
         </div>
         <div style={{ display: 'flex', gap: '10px', fontSize: '0.7rem', color: 'var(--slate-500)' }}>
@@ -67,7 +67,7 @@ export default function MemberDirectory({ communityId, onClose }) {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <Users size={18} color="var(--teal-400)" />
-          <h3 style={{ margin: 0, color: 'white', fontSize: '1rem', fontFamily: 'var(--font-heading)' }}>{view === 'directory' ? `Members (${members.length})` : 'Leaderboard'}</h3>
+          <h3 style={{ margin: 0, color: 'var(--white)', fontSize: '1rem', fontFamily: 'var(--font-heading)' }}>{view === 'directory' ? `Members (${members.length})` : 'Leaderboard'}</h3>
         </div>
         <button onClick={() => setView(view === 'directory' ? 'leaderboard' : 'directory')} className="interactive-press"
           style={{ background: view === 'leaderboard' ? 'rgba(255,255,255,0.1)' : 'rgba(245,158,11,0.1)', border: view === 'leaderboard' ? '1px solid rgba(255,255,255,0.2)' : '1px solid rgba(245,158,11,0.2)', borderRadius: '8px', padding: '5px 10px', color: view === 'leaderboard' ? 'white' : '#f59e0b', fontSize: '0.7rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -84,7 +84,7 @@ export default function MemberDirectory({ communityId, onClose }) {
       <div style={{ position: 'relative', marginBottom: '10px' }}>
         <Search size={14} color="var(--slate-500)" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
         <input type="text" placeholder="Search members..." value={search} onChange={e => setSearch(e.target.value)}
-          style={{ width: '100%', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', padding: '10px 10px 10px 34px', color: 'white', fontSize: '0.85rem' }} />
+          style={{ width: '100%', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', padding: '10px 10px 10px 34px', color: 'var(--white)', fontSize: '0.85rem' }} />
       </div>
 
       {/* Filter */}

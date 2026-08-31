@@ -39,7 +39,7 @@ export default function PollCard({ poll, currentUserId, userVote, onVote }) {
       </div>
 
       {/* Question */}
-      <div style={{ fontWeight: 700, fontSize: '1.05rem', color: 'white', marginBottom: '16px', lineHeight: 1.4 }}>
+      <div style={{ fontWeight: 700, fontSize: '1.05rem', color: 'var(--white)', marginBottom: '16px', lineHeight: 1.4 }}>
         {poll.question}
       </div>
 
@@ -65,7 +65,7 @@ export default function PollCard({ poll, currentUserId, userVote, onVote }) {
                 background: isSelected ? 'rgba(20,184,166,0.12)' : 'rgba(255,255,255,0.03)',
                 border: isSelected ? '1px solid rgba(20,184,166,0.3)' : '1px solid rgba(255,255,255,0.06)',
                 borderRadius: '12px',
-                color: 'white',
+                color: 'var(--white)',
                 cursor: voted ? 'default' : 'pointer',
                 overflow: 'hidden',
                 width: '100%',

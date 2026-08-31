@@ -76,7 +76,7 @@ export default function ShareModal({ isOpen, onClose, title, text, url }) {
           <h2 style={{ fontFamily: 'var(--font-heading)', margin: 0, fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Share2 size={20} color="var(--teal-400)" /> Share
           </h2>
-          <button onClick={onClose} className="interactive-press" style={{ background: 'rgba(255,255,255,0.05)', border: 'none', color: 'white', cursor: 'pointer', width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <button onClick={onClose} className="interactive-press" style={{ background: 'rgba(255,255,255,0.05)', border: 'none', color: 'var(--white)', cursor: 'pointer', width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <X size={18} />
           </button>
         </div>

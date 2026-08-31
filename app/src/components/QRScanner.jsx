@@ -88,11 +88,11 @@ export default function QRScanner({ onScan, onClose }) {
     <div className="modal-overlay" style={{ display: 'flex', flexDirection: 'column', zIndex: 10001 }}>
       {/* Header */}
       <div style={{ padding: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'white' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--white)' }}>
           <Camera size={20} />
           <h2 style={{ margin: 0, fontSize: '1.1rem', fontFamily: 'var(--font-heading)' }}>Scan Ticket</h2>
         </div>
-        <button onClick={handleClose} className="interactive-press" style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: 'white', cursor: 'pointer', width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <button onClick={handleClose} className="interactive-press" style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: 'var(--white)', cursor: 'pointer', width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <X size={18} />
         </button>
       </div>
@@ -112,7 +112,7 @@ export default function QRScanner({ onScan, onClose }) {
               boxShadow: '0 0 0 9999px rgba(0,0,0,0.5)',
               position: 'relative'
             }}>
-              <div style={{ position: 'absolute', bottom: '-40px', left: '50%', transform: 'translateX(-50%)', color: 'white', fontSize: '0.85rem', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <div style={{ position: 'absolute', bottom: '-40px', left: '50%', transform: 'translateX(-50%)', color: 'var(--white)', fontSize: '0.85rem', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <ScanLine size={16} color="var(--teal-400)" /> Point at ticket QR code
               </div>
             </div>
@@ -123,7 +123,7 @@ export default function QRScanner({ onScan, onClose }) {
         {result && (
           <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px' }}>
             <CheckCircle2 size={64} color="var(--teal-400)" style={{ marginBottom: '16px' }} />
-            <h3 style={{ color: 'white', margin: '0 0 8px 0', fontFamily: 'var(--font-heading)', fontSize: '1.3rem' }}>Checked In!</h3>
+            <h3 style={{ color: 'var(--white)', margin: '0 0 8px 0', fontFamily: 'var(--font-heading)', fontSize: '1.3rem' }}>Checked In!</h3>
             <p style={{ color: 'var(--slate-300)', margin: '0 0 4px 0', fontSize: '1rem', fontWeight: 600 }}>{result.userName}</p>
             <p style={{ color: 'var(--slate-400)', margin: '0 0 24px 0', fontSize: '0.85rem' }}>{result.eventTitle}</p>
             <div style={{ display: 'flex', gap: '12px' }}>

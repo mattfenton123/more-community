@@ -45,7 +45,7 @@ export default function DigitalTicket({ event, user, onClose }) {
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--teal-400)', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '4px' }}>
               <Ticket size={14} /> Event Ticket
             </div>
-            <img src="/logo.png" alt="more." style={{ height: '16px' }} />
+            <img src="/logo.png" className="theme-invert" alt="more." style={{ height: '16px' }} />
           </div>
           <button onClick={onClose} className="interactive-press" style={{ background: 'rgba(255,255,255,0.05)', border: 'none', color: 'var(--slate-400)', cursor: 'pointer', width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <X size={16} />
@@ -54,7 +54,7 @@ export default function DigitalTicket({ event, user, onClose }) {
 
         {/* Event Info */}
         <div style={{ padding: '0 24px 20px' }}>
-          <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.4rem', color: 'white', margin: '0 0 16px 0', lineHeight: 1.2 }}>{event.title}</h2>
+          <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.4rem', color: 'var(--white)', margin: '0 0 16px 0', lineHeight: 1.2 }}>{event.title}</h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--slate-300)', fontSize: '0.9rem' }}>
               <Calendar size={16} color="var(--teal-400)" />
@@ -86,7 +86,7 @@ export default function DigitalTicket({ event, user, onClose }) {
             <canvas ref={canvasRef}></canvas>
           </div>
           <div style={{ textAlign: 'center' }}>
-            <div style={{ color: 'white', fontWeight: 600, fontSize: '0.95rem', marginBottom: '4px' }}>{user.name}</div>
+            <div style={{ color: 'var(--white)', fontWeight: 600, fontSize: '0.95rem', marginBottom: '4px' }}>{user.name}</div>
             <div style={{ color: 'var(--slate-500)', fontSize: '0.8rem' }}>Show this to the event organiser</div>
           </div>
         </div>

@@ -395,11 +395,11 @@ export default function EventFlyerGenerator({ event, community, onClose, uploadI
         flexShrink: 0,
       }}>
         <div>
-          <h2 style={{ margin: 0, fontSize: '1.1rem', fontFamily: 'var(--font-heading)', color: 'white' }}>Event Flyer</h2>
+          <h2 style={{ margin: 0, fontSize: '1.1rem', fontFamily: 'var(--font-heading)', color: 'var(--white)' }}>Event Flyer</h2>
           <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--slate-400)' }}>Customise and export your event flyer</p>
         </div>
         <button onClick={onClose} className="interactive-press" style={{
-          background: 'rgba(255,255,255,0.05)', border: 'none', color: 'white', cursor: 'pointer',
+          background: 'rgba(255,255,255,0.05)', border: 'none', color: 'var(--white)', cursor: 'pointer',
           width: '36px', height: '36px', borderRadius: '50%',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
@@ -556,7 +556,7 @@ export default function EventFlyerGenerator({ event, community, onClose, uploadI
               <button onClick={() => setShowFontDropdown(!showFontDropdown)} className="interactive-press" style={{
                 width: '100%', padding: '12px 16px', borderRadius: '10px',
                 background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
-                color: 'white', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600,
+                color: 'var(--white)', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600,
                 fontFamily: `"${font}", sans-serif`,
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center',
               }}>
@@ -678,19 +678,19 @@ export default function EventFlyerGenerator({ event, community, onClose, uploadI
             <div>
               <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: 600, color: 'var(--slate-500)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>Title</label>
               <input value={titleText} onChange={(e) => setTitleText(e.target.value)}
-                style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: 'white', fontSize: '0.85rem', fontWeight: 600, fontFamily: `"${font}", sans-serif` }}
+                style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: 'var(--white)', fontSize: '0.85rem', fontWeight: 600, fontFamily: `"${font}", sans-serif` }}
               />
             </div>
             <div>
               <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: 600, color: 'var(--slate-500)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>Subtitle</label>
               <input value={subtitleText} onChange={(e) => setSubtitleText(e.target.value)}
-                style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: 'white', fontSize: '0.85rem' }}
+                style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: 'var(--white)', fontSize: '0.85rem' }}
               />
             </div>
             <div>
               <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: 600, color: 'var(--slate-500)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>Description</label>
               <textarea value={bodyText} onChange={(e) => setBodyText(e.target.value)} rows={3}
-                style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: 'white', fontSize: '0.85rem', resize: 'none', fontFamily: 'inherit' }}
+                style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: 'var(--white)', fontSize: '0.85rem', resize: 'none', fontFamily: 'inherit' }}
               />
             </div>
           </div>

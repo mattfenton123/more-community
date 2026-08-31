@@ -414,7 +414,7 @@ export default function LeaderDashboard() {
             >
               <img src={exp.image} alt={exp.title} style={{ width: '80px', height: '80px', borderRadius: '8px', objectFit: 'cover' }} />
               <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: 600, color: 'white', marginBottom: '4px' }}>{exp.title}</div>
+                <div style={{ fontWeight: 600, color: 'var(--white)', marginBottom: '4px' }}>{exp.title}</div>
                 <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)', display: 'flex', alignItems: 'center', gap: '4px' }}><MapPin size={12} /> {exp.location}</div>
                 <div style={{ fontSize: '0.8rem', color: 'var(--teal-400)', marginTop: '4px', fontWeight: 600 }}>£{exp.basePrice} (Earn £{exp.leaderMarkup})</div>
               </div>
@@ -511,11 +511,11 @@ export default function LeaderDashboard() {
               <div style={{ fontSize: '0.65rem', fontWeight: 600, color: 'var(--slate-500)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' }}>Preview</div>
               <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
                 <div style={{ width: '44px', height: '48px', background: 'rgba(20,184,166,0.1)', borderRadius: '10px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'white', lineHeight: 1 }}>{eventForm.date ? new Date(eventForm.date + 'T00:00:00').getDate() : '—'}</div>
+                  <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--white)', lineHeight: 1 }}>{eventForm.date ? new Date(eventForm.date + 'T00:00:00').getDate() : '—'}</div>
                   <div style={{ fontSize: '0.6rem', color: 'var(--teal-400)', fontWeight: 600, textTransform: 'uppercase' }}>{eventForm.date ? new Date(eventForm.date + 'T00:00:00').toLocaleDateString('en-GB', { month: 'short' }) : ''}</div>
                 </div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 600, color: 'white', fontSize: '0.95rem', marginBottom: '2px' }}>{eventForm.title}</div>
+                  <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.95rem', marginBottom: '2px' }}>{eventForm.title}</div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                     {eventForm.time && <span>🕐 {eventForm.time}</span>}
                     {eventForm.location && <span>📍 {eventForm.location}</span>}
@@ -566,7 +566,7 @@ export default function LeaderDashboard() {
   return (
     <div className="view-dashboard" style={{ position: 'relative', minHeight: '100vh', display: 'flex', flexDirection: 'column', paddingBottom: '80px' }}>
       {!community ? (
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px', color: 'white', textAlign: 'center' }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px', color: 'var(--white)', textAlign: 'center' }}>
           <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem', marginBottom: '16px' }}>Lead a Community</h2>
           <p style={{ color: 'var(--slate-400)', marginBottom: '32px' }}>You do not lead any communities yet. Start one today!</p>
           <button onClick={() => setModalType('community')} className="btn btn-primary interactive-press" style={{ padding: '16px 32px', borderRadius: '16px', fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -583,7 +583,7 @@ export default function LeaderDashboard() {
                 <select 
                   value={communityIdLed} 
                   onChange={e => setActiveCommunityId(e.target.value)}
-                  style={{ background: 'rgba(255,255,255,0.05)', color: 'white', border: '1px solid rgba(255,255,255,0.1)', padding: '4px 8px', borderRadius: '6px', fontSize: '0.85rem', outline: 'none' }}
+                  style={{ background: 'rgba(255,255,255,0.05)', color: 'var(--white)', border: '1px solid rgba(255,255,255,0.1)', padding: '4px 8px', borderRadius: '6px', fontSize: '0.85rem', outline: 'none' }}
                 >
                   {user.ledCommunities.map(id => {
                     const c = communities.find(comm => comm.id === id);
@@ -591,7 +591,7 @@ export default function LeaderDashboard() {
                   })}
                 </select>
               ) : (
-                <span style={{ color: 'white', fontWeight: 600 }}>{community.name}</span>
+                <span style={{ color: 'var(--white)', fontWeight: 600 }}>{community.name}</span>
               )}
               <span style={{ marginLeft: '8px' }}>• Leader View</span>
             </div>
@@ -680,7 +680,7 @@ export default function LeaderDashboard() {
                           dy={10}
                         />
                         <RechartsTooltip 
-                          contentStyle={{ background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '8px', color: 'white', fontSize: '0.85rem' }}
+                          contentStyle={{ background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '8px', color: 'var(--white)', fontSize: '0.85rem' }}
                           itemStyle={{ color: 'var(--teal-400)', fontWeight: 700 }}
                           cursor={{ stroke: 'rgba(255,255,255,0.1)', strokeWidth: 1, strokeDasharray: '4 4' }}
                         />
@@ -713,14 +713,14 @@ export default function LeaderDashboard() {
                     }}
                   >
                     <div style={{ width: '56px', height: '60px', background: 'rgba(20,184,166,0.15)', borderRadius: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      <div style={{ fontSize: '1.4rem', fontWeight: 700, color: 'white', lineHeight: 1 }}>{parseDateParts(stats.nextEvent.date).day}</div>
+                      <div style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--white)', lineHeight: 1 }}>{parseDateParts(stats.nextEvent.date).day}</div>
                       <div style={{ fontSize: '0.65rem', color: 'var(--teal-400)', fontWeight: 600, textTransform: 'uppercase' }}>{parseDateParts(stats.nextEvent.date).month}</div>
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: '0.65rem', fontWeight: 600, color: 'var(--teal-400)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '2px' }}>
                         {stats.daysToNext === 0 ? '🔴 Happening Today' : stats.daysToNext === 1 ? '⏰ Tomorrow' : `Coming up in ${stats.daysToNext} days`}
                       </div>
-                      <div style={{ fontWeight: 600, color: 'white', fontSize: '1rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{stats.nextEvent.title}</div>
+                      <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '1rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{stats.nextEvent.title}</div>
                       <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', display: 'flex', gap: '8px', marginTop: '2px' }}>
                         <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}><Clock size={11} /> {stats.nextEvent.time}</span>
                         <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}><MapPin size={11} /> {stats.nextEvent.location}</span>
@@ -746,7 +746,7 @@ export default function LeaderDashboard() {
                     <div style={{ width: '52px', height: '52px', borderRadius: '50%', background: 'linear-gradient(135deg, var(--teal-500), #3b82f6)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}>
                       <Plus size={24} color="white" />
                     </div>
-                    <div style={{ fontWeight: 700, color: 'white', fontSize: '1.05rem', marginBottom: '4px', fontFamily: 'var(--font-heading)' }}>Create Your First Event</div>
+                    <div style={{ fontWeight: 700, color: 'var(--white)', fontSize: '1.05rem', marginBottom: '4px', fontFamily: 'var(--font-heading)' }}>Create Your First Event</div>
                     <div style={{ color: 'var(--slate-400)', fontSize: '0.8rem', lineHeight: 1.5 }}>Events bring your community together. Set up one in under a minute.</div>
                   </div>
                 </div>
@@ -800,7 +800,7 @@ export default function LeaderDashboard() {
           {activeTab === 'events' && (
             <div style={{ padding: '0 20px', marginBottom: '24px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                <h2 style={{ margin: 0, fontFamily: 'var(--font-heading)', fontSize: '1.1rem', color: 'white', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <h2 style={{ margin: 0, fontFamily: 'var(--font-heading)', fontSize: '1.1rem', color: 'var(--white)', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <Calendar size={18} color="var(--teal-400)" /> My Events
                 </h2>
                 <button onClick={() => openEventWizard()} className="btn btn-primary interactive-press" style={{ padding: '8px 14px', fontSize: '0.8rem', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -817,7 +817,7 @@ export default function LeaderDashboard() {
                   <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'linear-gradient(135deg, rgba(20,184,166,0.15), rgba(59,130,246,0.1))', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', border: '2px dashed rgba(20,184,166,0.3)' }}>
                     <Calendar size={28} color="var(--teal-400)" />
                   </div>
-                  <h3 style={{ fontFamily: 'var(--font-heading)', color: 'white', margin: '0 0 8px', fontSize: '1.15rem' }}>Create Your First Event</h3>
+                  <h3 style={{ fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: '0 0 8px', fontSize: '1.15rem' }}>Create Your First Event</h3>
                   <p style={{ color: 'var(--slate-400)', margin: '0 0 20px', fontSize: '0.85rem', lineHeight: 1.5 }}>
                     Events are the heartbeat of your community. Set one up in under a minute with our guided wizard.
                   </p>
@@ -839,14 +839,14 @@ export default function LeaderDashboard() {
                         <div style={{ display: 'flex', gap: '14px', padding: '14px' }}>
                           {/* Date block */}
                           <div style={{ width: '48px', height: '54px', background: 'rgba(20,184,166,0.1)', borderRadius: '10px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                            <div style={{ fontSize: '1.2rem', fontWeight: 700, color: 'white', lineHeight: 1 }}>{day}</div>
+                            <div style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--white)', lineHeight: 1 }}>{day}</div>
                             <div style={{ fontSize: '0.65rem', color: 'var(--teal-400)', fontWeight: 600, textTransform: 'uppercase' }}>{month}</div>
                           </div>
                           
                           {/* Info */}
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                              <h4 style={{ margin: 0, flex: 1, fontSize: '0.95rem', fontWeight: 600, color: 'white', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{event.title}</h4>
+                              <h4 style={{ margin: 0, flex: 1, fontSize: '0.95rem', fontWeight: 600, color: 'var(--white)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{event.title}</h4>
                               <span className={`status-badge ${event.status || 'published'}`}>{event.status || 'live'}</span>
                             </div>
                             
@@ -913,7 +913,7 @@ export default function LeaderDashboard() {
                               return (
                                 <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '6px 0' }}>
                                   <img src={attendee.avatar} alt={attendee.name} style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }} />
-                                  <span style={{ flex: 1, fontSize: '0.85rem', color: 'white' }}>{attendee.name}</span>
+                                  <span style={{ flex: 1, fontSize: '0.85rem', color: 'var(--white)' }}>{attendee.name}</span>
                                   <span style={{ fontSize: '0.7rem', padding: '2px 8px', borderRadius: '99px', fontWeight: 600, ...(rsvp.checkedIn ? { background: 'rgba(34,197,94,0.15)', color: '#22c55e' } : { background: 'rgba(255,255,255,0.05)', color: 'var(--slate-500)' }) }}>
                                     {rsvp.checkedIn ? '✓ Checked In' : 'Pending'}
                                   </span>
@@ -939,7 +939,7 @@ export default function LeaderDashboard() {
           {activeTab === 'network' && (
             <div style={{ padding: '0 20px', marginBottom: '24px' }}>
               <div style={{ marginBottom: '24px' }}>
-                <h2 style={{ margin: '0 0 8px 0', fontFamily: 'var(--font-heading)', fontSize: '1.2rem', color: 'white', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <h2 style={{ margin: '0 0 8px 0', fontFamily: 'var(--font-heading)', fontSize: '1.2rem', color: 'var(--white)', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <Map size={20} color="var(--teal-400)" /> Network Events
                 </h2>
                 <p style={{ color: 'var(--slate-400)', fontSize: '0.9rem', lineHeight: 1.5, margin: 0 }}>
@@ -961,7 +961,7 @@ export default function LeaderDashboard() {
                           </div>
                         )}
                         <div style={{ flex: 1 }}>
-                          <h4 style={{ margin: '0 0 4px 0', fontSize: '1.05rem', color: 'white', fontWeight: 600 }}>{event.title}</h4>
+                          <h4 style={{ margin: '0 0 4px 0', fontSize: '1.05rem', color: 'var(--white)', fontWeight: 600 }}>{event.title}</h4>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', color: 'var(--slate-400)', marginBottom: '8px' }}>
                             <span style={{ color: 'var(--teal-300)' }}>{sourceCommunity?.name || 'Another Community'}</span>
                             <span>•</span>
@@ -1036,7 +1036,7 @@ export default function LeaderDashboard() {
                   <input 
                     type="number" value={subscriptionPrice} onChange={e => setSubscriptionPrice(e.target.value)}
                     placeholder="0" min="0" step="1"
-                    style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '14px', color: 'white', fontSize: '1.1rem', fontWeight: 600 }}
+                    style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '14px', color: 'var(--white)', fontSize: '1.1rem', fontWeight: 600 }}
                   />
                   <span style={{ color: 'var(--slate-400)', fontSize: '0.85rem' }}>/ month</span>
                 </div>
@@ -1054,7 +1054,7 @@ export default function LeaderDashboard() {
                     return (
                       <div key={event.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px' }}>
                         <div style={{ flex: 1 }}>
-                          <div style={{ fontWeight: 600, fontSize: '0.9rem', color: 'white', marginBottom: '2px' }}>{event.title}</div>
+                          <div style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--white)', marginBottom: '2px' }}>{event.title}</div>
                           <div style={{ fontSize: '0.75rem', color: 'var(--slate-500)' }}>{ev.rsvpCount} tickets × £{ev.price}</div>
                         </div>
                         <div style={{ textAlign: 'right' }}>
@@ -1105,7 +1105,7 @@ export default function LeaderDashboard() {
           {/* ══════════════════════════════════════════════════════ */}
           {activeTab === 'members' && (
             <div style={{ padding: '0 20px', display: 'flex', flexDirection: 'column', gap: '8px', paddingBottom: '40px' }}>
-              <button onClick={() => setModalType('members')} className="interactive-press" style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', color: 'white', width: '100%', cursor: 'pointer', textAlign: 'left' }}>
+              <button onClick={() => setModalType('members')} className="interactive-press" style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', color: 'var(--white)', width: '100%', cursor: 'pointer', textAlign: 'left' }}>
                 <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(59,130,246,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3b82f6' }}>
                   <Users size={20} />
                 </div>
@@ -1113,7 +1113,7 @@ export default function LeaderDashboard() {
                 <span style={{ color: 'var(--slate-500)' }}>→</span>
               </button>
 
-              <button onClick={() => setModalType('coleader')} className="interactive-press" style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', color: 'white', width: '100%', cursor: 'pointer', textAlign: 'left' }}>
+              <button onClick={() => setModalType('coleader')} className="interactive-press" style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', color: 'var(--white)', width: '100%', cursor: 'pointer', textAlign: 'left' }}>
                 <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(139,92,246,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#a78bfa' }}>
                   <UserPlus size={20} />
                 </div>
@@ -1129,7 +1129,7 @@ export default function LeaderDashboard() {
           {activeTab === 'settings' && (
             <div style={{ padding: '0 20px', display: 'flex', flexDirection: 'column', gap: '8px', paddingBottom: '40px' }}>
               {/* Edit Profile */}
-              <button onClick={handleEditClick} className="interactive-press" style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', color: 'white', width: '100%', cursor: 'pointer', textAlign: 'left' }}>
+              <button onClick={handleEditClick} className="interactive-press" style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', color: 'var(--white)', width: '100%', cursor: 'pointer', textAlign: 'left' }}>
                 <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(236,72,153,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ec4899' }}>
                   <Edit3 size={20} />
                 </div>
@@ -1138,7 +1138,7 @@ export default function LeaderDashboard() {
               </button>
 
               {/* WhatsApp */}
-              <button onClick={() => { setWaConfig(whatsappSettings[community.id] || { businessConnected: false, groupLink: '' }); setModalType('whatsapp'); }} className="interactive-press" style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', color: 'white', width: '100%', cursor: 'pointer', textAlign: 'left' }}>
+              <button onClick={() => { setWaConfig(whatsappSettings[community.id] || { businessConnected: false, groupLink: '' }); setModalType('whatsapp'); }} className="interactive-press" style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', color: 'var(--white)', width: '100%', cursor: 'pointer', textAlign: 'left' }}>
                 <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(34,197,94,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#22c55e' }}>
                   <MessageCircle size={20} />
                 </div>
@@ -1152,7 +1152,7 @@ export default function LeaderDashboard() {
                   <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(59,130,246,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3b82f6' }}>
                     {communityVisibility === 'public' ? <Eye size={20} /> : <EyeOff size={20} />}
                   </div>
-                  <span style={{ fontWeight: 500, color: 'white' }}>Community Visibility</span>
+                  <span style={{ fontWeight: 500, color: 'var(--white)' }}>Community Visibility</span>
                 </div>
                 <div style={{ display: 'flex', gap: '6px' }}>
                   {['public', 'private', 'invite-only'].map(v => (
@@ -1178,7 +1178,7 @@ export default function LeaderDashboard() {
                   <Shield size={20} />
                 </div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 500, color: 'white', marginBottom: '2px' }}>Require Approval</div>
+                  <div style={{ fontWeight: 500, color: 'var(--white)', marginBottom: '2px' }}>Require Approval</div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--slate-500)' }}>New members must be approved</div>
                 </div>
                 <button onClick={() => { 
@@ -1196,7 +1196,7 @@ export default function LeaderDashboard() {
               </div>
 
               {/* Export Data */}
-              <button onClick={handleExportCSV} className="interactive-press" style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', color: 'white', width: '100%', cursor: 'pointer', textAlign: 'left' }}>
+              <button onClick={handleExportCSV} className="interactive-press" style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', color: 'var(--white)', width: '100%', cursor: 'pointer', textAlign: 'left' }}>
                 <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(20,184,166,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--teal-400)' }}>
                   <Download size={20} />
                 </div>
@@ -1232,14 +1232,14 @@ export default function LeaderDashboard() {
       {(isEditing || (modalType && modalType !== 'community')) && (
         <div className="modal-overlay" style={{ display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
           <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h2 style={{ margin: 0, fontSize: '1.2rem', fontFamily: 'var(--font-heading)', color: 'white' }}>
+            <h2 style={{ margin: 0, fontSize: '1.2rem', fontFamily: 'var(--font-heading)', color: 'var(--white)' }}>
               {isEditing ? 'Edit Profile' : 
                modalType === 'event' ? 'Create Event' : 
                modalType === 'edit-event' ? 'Edit Event' :
                modalType === 'members' ? 'Manage Members' : 
                modalType === 'whatsapp' ? 'WhatsApp Integration' : 'Promote Co-Leader'}
             </h2>
-            <button onClick={() => { setIsEditing(false); setModalType(null); setEditingEventId(null); setCoLeaderSearch(''); }} className="interactive-press" style={{ background: 'rgba(255,255,255,0.05)', border: 'none', color: 'white', cursor: 'pointer', width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <button onClick={() => { setIsEditing(false); setModalType(null); setEditingEventId(null); setCoLeaderSearch(''); }} className="interactive-press" style={{ background: 'rgba(255,255,255,0.05)', border: 'none', color: 'var(--white)', cursor: 'pointer', width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <X size={18} />
             </button>
           </div>
@@ -1250,11 +1250,11 @@ export default function LeaderDashboard() {
               <>
                 <div>
                   <label style={{ display: 'block', marginBottom: '8px', color: 'var(--slate-300)', fontSize: '0.9rem' }}>Community Description</label>
-                  <textarea value={editForm.description} onChange={(e) => setEditForm({...editForm, description: e.target.value})} style={{ width: '100%', padding: '12px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'white', minHeight: '120px', fontFamily: 'inherit', resize: 'none' }} />
+                  <textarea value={editForm.description} onChange={(e) => setEditForm({...editForm, description: e.target.value})} style={{ width: '100%', padding: '12px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'var(--white)', minHeight: '120px', fontFamily: 'inherit', resize: 'none' }} />
                 </div>
                 <div>
                   <label style={{ display: 'block', marginBottom: '8px', color: 'var(--slate-300)', fontSize: '0.9rem' }}>Vibe & Values Tags (comma separated)</label>
-                  <input type="text" value={editForm.tags} onChange={(e) => setEditForm({...editForm, tags: e.target.value})} style={{ width: '100%', padding: '12px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'white' }} />
+                  <input type="text" value={editForm.tags} onChange={(e) => setEditForm({...editForm, tags: e.target.value})} style={{ width: '100%', padding: '12px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'var(--white)' }} />
                 </div>
               </>
             )}
@@ -1264,7 +1264,7 @@ export default function LeaderDashboard() {
 
             {/* Members Modal */}
             {modalType === 'members' && (
-              <div style={{ color: 'white' }}>
+              <div style={{ color: 'var(--white)' }}>
                 <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <h3 style={{ margin: 0, fontSize: '1.1rem' }}>{memberList.length} Members</h3>
                 </div>
@@ -1277,7 +1277,7 @@ export default function LeaderDashboard() {
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                           <img src={memberUser.avatar} alt={memberUser.name} style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
                           <div>
-                            <div style={{ fontWeight: 600, color: 'white', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <div style={{ fontWeight: 600, color: 'var(--white)', display: 'flex', alignItems: 'center', gap: '8px' }}>
                               {memberUser.name}
                               {membership.role === 'Leader' && <span style={{ fontSize: '0.7rem', background: 'var(--teal-500)', padding: '2px 6px', borderRadius: '4px' }}>Leader</span>}
                               {membership.role === 'Co-Leader' && <span style={{ fontSize: '0.7rem', background: 'rgba(139,92,246,0.3)', color: '#a78bfa', padding: '2px 6px', borderRadius: '4px' }}>Co-Leader</span>}
@@ -1300,13 +1300,13 @@ export default function LeaderDashboard() {
 
             {/* Co-Leader Promotion — FIXED */}
             {modalType === 'coleader' && (
-              <div style={{ color: 'white' }}>
+              <div style={{ color: 'var(--white)' }}>
                 <p style={{ color: 'var(--slate-400)', marginBottom: '12px' }}>Search for a member to promote to Co-Leader.</p>
                 <input 
                   placeholder="Search members by name..." 
                   value={coLeaderSearch}
                   onChange={e => setCoLeaderSearch(e.target.value)}
-                  style={{ width: '100%', padding: '12px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'white', marginBottom: '16px' }}
+                  style={{ width: '100%', padding: '12px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'var(--white)', marginBottom: '16px' }}
                 />
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {memberList
@@ -1339,7 +1339,7 @@ export default function LeaderDashboard() {
 
             {/* WhatsApp Settings */}
             {modalType === 'whatsapp' && (
-              <div style={{ color: 'white' }}>
+              <div style={{ color: 'var(--white)' }}>
                 <p style={{ color: 'var(--slate-400)', marginBottom: '24px', fontSize: '0.9rem' }}>Bridge your community with WhatsApp. Enable the Business API for native chat sync, or provide a group link as a fallback.</p>
                 <div style={{ marginBottom: '24px', padding: '16px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
@@ -1352,7 +1352,7 @@ export default function LeaderDashboard() {
                 </div>
                 <div style={{ marginBottom: '16px' }}>
                   <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', fontWeight: 600 }}>Fallback Group Link</label>
-                  <input placeholder="https://chat.whatsapp.com/..." value={waConfig.groupLink} onChange={e => setWaConfig({...waConfig, groupLink: e.target.value})} style={{ width: '100%', padding: '12px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'white' }} />
+                  <input placeholder="https://chat.whatsapp.com/..." value={waConfig.groupLink} onChange={e => setWaConfig({...waConfig, groupLink: e.target.value})} style={{ width: '100%', padding: '12px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'var(--white)' }} />
                 </div>
               </div>
             )}

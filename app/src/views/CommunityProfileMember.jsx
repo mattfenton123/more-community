@@ -100,14 +100,14 @@ export default function CommunityProfile() {
     return (
       <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'var(--slate-950)' }}>
         <img src={`/images/logo.webp`} alt="more." style={{ height: '24px', opacity: 0.5, marginBottom: '24px', cursor: 'pointer' }} onClick={() => navigate.back()} />
-        <h2 style={{ color: 'white', fontFamily: 'var(--font-heading)' }}>Community not found</h2>
+        <h2 style={{ color: 'var(--white)', fontFamily: 'var(--font-heading)' }}>Community not found</h2>
         <button onClick={() => navigate.back()} className="btn btn-outline" style={{ marginTop: '16px' }}>Go Home</button>
       </div>
     );
   }
 
   if (!community) {
-    return <div style={{ padding: '40px', color: 'white', textAlign: 'center' }}>Loading...</div>;
+    return <div style={{ padding: '40px', color: 'var(--white)', textAlign: 'center' }}>Loading...</div>;
   }
 
   const isMember = user.joinedCommunities.includes(communityId);
@@ -205,13 +205,13 @@ export default function CommunityProfile() {
           {community.tags && community.tags.length > 0 && (
             <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '12px' }}>
               {community.tags.map(tag => (
-                <span key={tag} style={{ fontSize: '0.7rem', background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(4px)', color: 'white', padding: '4px 10px', borderRadius: '99px', fontWeight: 500 }}>{tag}</span>
+                <span key={tag} style={{ fontSize: '0.7rem', background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(4px)', color: 'var(--white)', padding: '4px 10px', borderRadius: '99px', fontWeight: 500 }}>{tag}</span>
               ))}
             </div>
           )}
           
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: '0 0 12px 0' }}>
-            <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2.4rem', color: 'white', margin: 0, lineHeight: 1.1 }}>
+            <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2.4rem', color: 'var(--white)', margin: 0, lineHeight: 1.1 }}>
               {community.name}
             </h1>
             {community.verified && <BadgeCheck size={28} color="#3b82f6" style={{ flexShrink: 0 }} />}
@@ -281,7 +281,7 @@ export default function CommunityProfile() {
           />
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: '0.75rem', color: 'var(--teal-400)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Organised by</div>
-            <div style={{ fontWeight: 700, color: 'white', fontSize: '1rem' }}>{leaderUser?.name || 'Community Team'}</div>
+            <div style={{ fontWeight: 700, color: 'var(--white)', fontSize: '1rem' }}>{leaderUser?.name || 'Community Team'}</div>
           </div>
           <button onClick={() => leaderUser && navigate.push(`/chat/dm/${leaderUser.id}`)} disabled={!leaderUser} className="btn btn-outline interactive-press" style={{ padding: '8px 14px', borderRadius: '10px', fontSize: '0.8rem', display: 'flex', gap: '4px', alignItems: 'center', opacity: leaderUser ? 1 : 0.5 }}>
             <MessageCircle size={14} /> Message
@@ -316,12 +316,12 @@ export default function CommunityProfile() {
         {activeTab === 'home' && (
           <>
             <div style={{ marginBottom: '24px', background: 'rgba(255,255,255,0.02)', padding: '16px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
-              <h3 style={{ fontSize: '1.1rem', fontFamily: 'var(--font-heading)', color: 'white', margin: '0 0 8px 0' }}>Community Info</h3>
+              <h3 style={{ fontSize: '1.1rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: '0 0 8px 0' }}>Community Info</h3>
               <p style={{ color: 'var(--slate-300)', fontSize: '0.95rem', lineHeight: 1.5, margin: 0 }}>{community.description}</p>
             </div>
             
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <h3 style={{ fontSize: '1.3rem', fontFamily: 'var(--font-heading)', color: 'white', margin: 0 }}>
+              <h3 style={{ fontSize: '1.3rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: 0 }}>
                 Discussion
               </h3>
               <button onClick={() => setIsIdeaModalOpen(true)} className="btn btn-outline interactive-press" style={{ padding: '6px 12px', borderRadius: '12px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--amber-400)', borderColor: 'rgba(251,191,36,0.3)', background: 'rgba(251,191,36,0.05)' }}>
@@ -334,7 +334,7 @@ export default function CommunityProfile() {
                 value={newPostText}
                 onChange={e => setNewPostText(e.target.value)}
                 placeholder="Share an update or ask a question..."
-                style={{ width: '100%', minHeight: '100px', padding: '16px', borderRadius: '16px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', color: 'white', fontSize: '1rem', resize: 'none', marginBottom: '8px' }}
+                style={{ width: '100%', minHeight: '100px', padding: '16px', borderRadius: '16px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', color: 'var(--white)', fontSize: '1rem', resize: 'none', marginBottom: '8px' }}
               />
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
                 <label style={{ cursor: 'pointer', color: 'var(--slate-400)', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem' }}>
@@ -367,7 +367,7 @@ export default function CommunityProfile() {
                         <button onClick={() => likeFeedPost(post.id)} className="interactive-press" style={{ background: post.liked ? 'var(--teal-500)' : 'rgba(255,255,255,0.1)', width: '40px', height: '40px', borderRadius: '12px', border: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: post.liked ? 'white' : 'var(--slate-300)', cursor: 'pointer', fontWeight: 800 }}>
                           <ChevronUp size={20} strokeWidth={3} />
                         </button>
-                        <div style={{ marginTop: '8px', fontSize: '1.1rem', fontWeight: 800, color: 'white' }}>{post.likes || 0}</div>
+                        <div style={{ marginTop: '8px', fontSize: '1.1rem', fontWeight: 800, color: 'var(--white)' }}>{post.likes || 0}</div>
                         <div style={{ fontSize: '0.7rem', color: 'var(--slate-400)', textTransform: 'uppercase', fontWeight: 700, marginTop: '2px' }}>Votes</div>
                       </div>
                       <div style={{ flex: 1, padding: '16px' }}>
@@ -375,7 +375,7 @@ export default function CommunityProfile() {
                            <span style={{ fontSize: '0.7rem', background: 'rgba(20,184,166,0.2)', color: 'var(--teal-300)', padding: '4px 8px', borderRadius: '6px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Suggestion</span>
                            <span style={{ fontSize: '0.8rem', color: 'var(--slate-400)' }}>by {author?.name || 'Member'}</span>
                         </div>
-                        <div style={{ fontWeight: 800, color: 'white', fontSize: '1.2rem', marginBottom: '8px', lineHeight: 1.3 }}>{ideaData.title || post.text}</div>
+                        <div style={{ fontWeight: 800, color: 'var(--white)', fontSize: '1.2rem', marginBottom: '8px', lineHeight: 1.3 }}>{ideaData.title || post.text}</div>
                         {ideaData.location && (
                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.85rem', color: 'var(--slate-400)', marginBottom: '12px' }}>
                              <MapPin size={14} /> {ideaData.location}
@@ -400,7 +400,7 @@ export default function CommunityProfile() {
                     <div style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
                       <img src={author?.avatar || 'https://i.pravatar.cc/40'} alt={author?.name} style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
                       <div>
-                        <div style={{ fontWeight: 600, color: 'white', fontSize: '0.95rem' }}>{author?.name || 'Community Leader'}</div>
+                        <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.95rem' }}>{author?.name || 'Community Leader'}</div>
                         <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>
                           {new Date(post.createdAt || post.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                         </div>
@@ -440,7 +440,7 @@ export default function CommunityProfile() {
         {/* ===== EVENTS TAB ===== */}
         {activeTab === 'events' && (
           <>
-            <h3 style={{ fontSize: '1.3rem', fontFamily: 'var(--font-heading)', color: 'white', margin: '0 0 16px 0' }}>
+            <h3 style={{ fontSize: '1.3rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: '0 0 16px 0' }}>
               Upcoming Events ({communityEvents.length})
             </h3>
             {communityEvents.length > 0 ? (
@@ -452,13 +452,13 @@ export default function CommunityProfile() {
                       {event.image && (
                         <div style={{ height: '140px', background: `url(${event.image})`, backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative' }}>
                           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.6))' }}></div>
-                          <div style={{ position: 'absolute', bottom: '10px', left: '12px', background: 'rgba(20,184,166,0.9)', padding: '4px 10px', borderRadius: '6px', fontSize: '0.7rem', fontWeight: 700, color: 'white' }}>
+                          <div style={{ position: 'absolute', bottom: '10px', left: '12px', background: 'rgba(20,184,166,0.9)', padding: '4px 10px', borderRadius: '6px', fontSize: '0.7rem', fontWeight: 700, color: 'var(--white)' }}>
                             {event.date}
                           </div>
                         </div>
                       )}
                       <div style={{ padding: '16px' }}>
-                        <div style={{ fontWeight: 700, fontSize: '1.05rem', color: 'white', marginBottom: '6px' }}>{event.title}</div>
+                        <div style={{ fontWeight: 700, fontSize: '1.05rem', color: 'var(--white)', marginBottom: '6px' }}>{event.title}</div>
                         <div style={{ display: 'flex', gap: '16px', fontSize: '0.8rem', color: 'var(--slate-400)', marginBottom: '8px' }}>
                           <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={14} /> {event.time}</span>
                           <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><MapPin size={14} /> {event.location}</span>
@@ -496,7 +496,7 @@ export default function CommunityProfile() {
           <>
             <MemberDirectory communityId={communityId} />
             
-            <h3 style={{ fontSize: '1.3rem', fontFamily: 'var(--font-heading)', color: 'white', margin: '24px 0 16px 0' }}>
+            <h3 style={{ fontSize: '1.3rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: '24px 0 16px 0' }}>
               Photos & Moments
             </h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
@@ -520,7 +520,7 @@ export default function CommunityProfile() {
         {/* ===== MARKETPLACE TAB ===== */}
         {activeTab === 'marketplace' && (
           <>
-            <h3 style={{ fontSize: '1.3rem', fontFamily: 'var(--font-heading)', color: 'white', margin: '0 0 16px 0' }}>
+            <h3 style={{ fontSize: '1.3rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: '0 0 16px 0' }}>
               Services & Perks
             </h3>
             
@@ -539,7 +539,7 @@ export default function CommunityProfile() {
                         <div key={srv.id} style={{ background: 'var(--slate-800)', border: '1px solid var(--amber-500)', borderRadius: '12px', padding: '16px' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                             <div>
-                              <div style={{ fontWeight: 600, color: 'white', fontSize: '1rem' }}>{srv.title}</div>
+                              <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '1rem' }}>{srv.title}</div>
                               <div style={{ fontSize: '0.8rem', color: 'var(--amber-400)', marginBottom: '8px' }}>By {srvUser.name} • {srv.category} {srv.isPremium ? '• Requested Premium Placement' : ''}</div>
                               <p style={{ margin: '0 0 12px 0', fontSize: '0.9rem', color: 'var(--slate-300)' }}>{srv.description}</p>
                               {srv.perk && (
@@ -550,7 +550,7 @@ export default function CommunityProfile() {
                             </div>
                           </div>
                           <div style={{ display: 'flex', gap: '8px' }}>
-                            <button onClick={() => updateServiceStatus(srv.id, 'approved')} className="btn interactive-press" style={{ flex: 1, padding: '8px', borderRadius: '8px', background: 'var(--teal-500)', color: 'white', border: 'none', fontWeight: 600, display: 'flex', justifyContent: 'center', gap: '4px' }}>
+                            <button onClick={() => updateServiceStatus(srv.id, 'approved')} className="btn interactive-press" style={{ flex: 1, padding: '8px', borderRadius: '8px', background: 'var(--teal-500)', color: 'var(--white)', border: 'none', fontWeight: 600, display: 'flex', justifyContent: 'center', gap: '4px' }}>
                               <Check size={16} /> Approve
                             </button>
                             <button onClick={() => updateServiceStatus(srv.id, 'rejected')} className="btn interactive-press" style={{ flex: 1, padding: '8px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', color: 'var(--slate-300)', border: '1px solid rgba(255,255,255,0.1)', fontWeight: 600, display: 'flex', justifyContent: 'center', gap: '4px' }}>
@@ -587,9 +587,9 @@ export default function CommunityProfile() {
                         <img src={srvUser.avatar} alt={srvUser.name} style={{ width: '48px', height: '48px', borderRadius: '12px', objectFit: 'cover' }} />
                         <div style={{ flex: 1 }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                            <div style={{ fontWeight: 700, color: 'white', fontSize: '1.05rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <div style={{ fontWeight: 700, color: 'var(--white)', fontSize: '1.05rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
                               {srv.title}
-                              {srv.isPremium && <span style={{ fontSize: '0.65rem', background: 'var(--amber-500)', color: 'white', padding: '2px 6px', borderRadius: '6px', fontWeight: 700, textTransform: 'uppercase' }}>Featured</span>}
+                              {srv.isPremium && <span style={{ fontSize: '0.65rem', background: 'var(--amber-500)', color: 'var(--white)', padding: '2px 6px', borderRadius: '6px', fontWeight: 700, textTransform: 'uppercase' }}>Featured</span>}
                             </div>
                           </div>
                           <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)' }}>{srv.category} • {srvUser.name}</div>
