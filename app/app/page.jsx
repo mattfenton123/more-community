@@ -38,7 +38,7 @@ export default function HomeFeed() {
     let items = [];
     if (feedPosts && user?.joinedCommunities) {
       feedPosts.forEach(post => {
-        if (user.joinedCommunities.includes(post.communityId)) {
+        if (user?.joinedCommunities?.includes(post.communityId)) {
           let isIdea = false;
           let ideaData = null;
           if (post.media) {
@@ -65,8 +65,8 @@ export default function HomeFeed() {
     }
     if (events && user?.joinedCommunities) {
       events.forEach(event => {
-        const isMemberOfPrimary = user.joinedCommunities.includes(event.communityId);
-        const isMemberOfCollab = event.collabCommunityIds?.some(id => user.joinedCommunities.includes(id));
+        const isMemberOfPrimary = user?.joinedCommunities?.includes(event.communityId);
+        const isMemberOfCollab = event.collabCommunityIds?.some(id => user?.joinedCommunities?.includes(id));
         
         if (isMemberOfPrimary || isMemberOfCollab) {
           if (activeFeedTab === 'Feed' || activeFeedTab === 'Events') {
@@ -76,7 +76,7 @@ export default function HomeFeed() {
       });
     }
     return items.sort((a, b) => b.timestamp - a.timestamp);
-  }, [feedPosts, events, user.joinedCommunities, activeFeedTab]);
+  }, [feedPosts, events, user?.joinedCommunities, activeFeedTab]);
 
   return (
     <div className="view-home" style={{ paddingBottom: '80px', background: 'var(--slate-950)', minHeight: '100dvh' }}>

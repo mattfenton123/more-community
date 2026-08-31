@@ -35,6 +35,7 @@ export function AppProvider({ children }) {
   ]);
   const [polls, setPolls] = useState([]);
   const [pollVotes, setPollVotes] = useState({});
+  const [savedItems, setSavedItems] = useState([]);
   
   // Sponsors (Mocked until DB tables are created via Supabase Dashboard)
   const [sponsors, setSponsors] = useState([
@@ -135,7 +136,7 @@ export function AppProvider({ children }) {
     interests: []
   };
 
-  const user = { ...dbUser, joinedCommunities: [], ledCommunities: [], isAdmin: false };
+  const user = { ...dbUser, joinedCommunities: [], ledCommunities: [], savedItems: savedItems, isAdmin: false };
     if (authUser?.email) {
       const email = authUser.email.toLowerCase();
       const ADMIN_EMAILS = [
@@ -538,6 +539,23 @@ export function AppProvider({ children }) {
   // Actions
   const toggleUserRole = () => {
     // Deprecated. Role is now derived from database.
+  };
+
+  const canManageCommunity = (communityId) => {
+    return user.ledCommunities?.includes(communityId) || user.isAdmin;
+  };
+
+  const saveItem = (itemId) => {
+    setSavedItems(prev => {
+      if (prev.includes(itemId)) return prev;
+      return [...prev, itemId];
+    });
+    // In a real app, you would also save this to the DB here.
+  };
+
+  const unsaveItem = (itemId) => {
+    setSavedItems(prev => prev.filter(id => id !== itemId));
+    // In a real app, you would also save this to the DB here.
   };
 
   const joinCommunity = async (communityId) => {
@@ -1189,15 +1207,18 @@ export function AppProvider({ children }) {
       markNotificationRead,
       feedPosts,
       experiences,
+      services,
       reviews,
-      addReview,
+      savedItems,
+      saveItem,
+      unsaveItem,
+      setReviews,
       connectedSocialAccounts,
       setConnectedSocialAccounts,
       createFeedPost,
       likeFeedPost,
       createFeedComment,
       whatsappSettings,
-      adminVerifyCommunity,
       broadcastNotification,
       platformBroadcast,
       checkInMember,

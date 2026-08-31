@@ -4,7 +4,7 @@ import { useRouter as useNavigate, useParams } from 'next/navigation';
 import { useAppContext } from '../../../src/context/AppContext';
 import { useChat } from '../../../src/context/ChatContext';
 import { useAuth } from '../../../src/context/AuthContext';
-import { ArrowLeft, Users, Calendar, MapPin, Settings, Camera, Check, X, MessageCircle, Edit3, Trophy, Flame, Plus, Compass, Star, LogOut, ChevronRight, Shield, BarChart2 } from 'lucide-react';
+import { ArrowLeft, Users, Calendar, MapPin, Settings, Camera, Check, X, MessageCircle, Edit3, Trophy, Flame, Plus, Compass, Star, LogOut, ChevronRight, Shield, BarChart2, Heart } from 'lucide-react';
 import AppHeader from '../../../src/components/AppHeader';
 import { useToast } from '../../../src/components/Toast';
 import GamificationPanel, { BadgeRow, useGamification } from '../../../src/components/Gamification';
@@ -13,7 +13,7 @@ import { FALLBACK_IMAGES } from '../../../src/lib/constants';
 export default function UserProfile() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { users, communities, communityMemberships, user: currentUser, updateUser, uploadImage, events, eventRsvps } = useAppContext();
+  const { users, communities, communityMemberships, user: currentUser, updateUser, uploadImage, events, experiences, eventRsvps, savedItems } = useAppContext();
   const { messages } = useChat();
   const { signOut } = useAuth();
   const { toast } = useToast();
@@ -283,7 +283,7 @@ export default function UserProfile() {
 
         {/* Tab Navigation */}
         <div style={{ display: 'flex', gap: '4px', marginBottom: '20px', background: 'rgba(255,255,255,0.03)', borderRadius: '10px', padding: '3px' }}>
-          {['badges', 'communities'].map(tab => (
+          {['badges', 'communities', ...(isOwnProfile ? ['saved'] : [])].map(tab => (
             <button key={tab} onClick={() => setActiveTab(tab)} style={{
               flex: 1, padding: '8px', borderRadius: '8px', border: 'none',
               background: activeTab === tab ? 'rgba(20,184,166,0.15)' : 'transparent',
@@ -317,6 +317,50 @@ export default function UserProfile() {
                     </div>
                     <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.9), transparent)', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '12px' }}>
                       <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.85rem', lineHeight: 1.2 }}>{comm.name}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Saved Tab */}
+        {activeTab === 'saved' && isOwnProfile && (
+          <div style={{ marginBottom: '24px' }}>
+            {(!savedItems || savedItems.length === 0) ? (
+              <div style={{ textAlign: 'center', padding: '32px', background: 'rgba(255,255,255,0.02)', borderRadius: '16px', border: '1px dashed rgba(255,255,255,0.1)' }}>
+                <div style={{ margin: '0 auto 16px', width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(236,72,153,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--pink-400)' }}>
+                  <Heart size={24} />
+                </div>
+                <p style={{ color: 'var(--slate-400)', fontSize: '0.9rem', margin: '0 0 16px 0' }}>You haven't saved any events or experiences yet.</p>
+                <button onClick={() => navigate.push('/events')} className="btn btn-primary interactive-press" style={{ borderRadius: '99px' }}>
+                  Discover Events
+                </button>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {events.filter(e => savedItems.includes(e.id)).map(event => (
+                  <div key={event.id} onClick={() => navigate.push(`/events/${event.id}`)} className="interactive-press" style={{ display: 'flex', gap: '12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '12px', cursor: 'pointer' }}>
+                    <div style={{ width: '60px', height: '60px', borderRadius: '8px', background: 'var(--slate-800)', flexShrink: 0, overflow: 'hidden' }}>
+                      <img src={event.image || FALLBACK_IMAGES.community} alt={event.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    </div>
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                      <div style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--white)', marginBottom: '4px' }}>{event.title}</div>
+                      <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)', display: 'flex', gap: '8px' }}>
+                        <span><Calendar size={12} style={{ display: 'inline', verticalAlign: '-2px' }}/> {event.date}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                {experiences?.filter(e => savedItems.includes(e.id)).map(exp => (
+                  <div key={exp.id} onClick={() => navigate.push(`/checkout/experience/${exp.id}`)} className="interactive-press" style={{ display: 'flex', gap: '12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '12px', cursor: 'pointer' }}>
+                    <div style={{ width: '60px', height: '60px', borderRadius: '8px', background: 'var(--slate-800)', flexShrink: 0, overflow: 'hidden' }}>
+                      <img src={exp.image || FALLBACK_IMAGES.community} alt={exp.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    </div>
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--amber-400)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '2px' }}>Experience</div>
+                      <div style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--white)', marginBottom: '4px' }}>{exp.title}</div>
                     </div>
                   </div>
                 ))}

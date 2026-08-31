@@ -7,17 +7,19 @@ import { SkeletonList, SkeletonEvent } from '../../src/components/SkeletonCard';
 import { useToast } from '../../src/components/Toast';
 import DigitalTicket from '../../src/components/DigitalTicket';
 import AppHeader from '../../src/components/AppHeader';
+import SwipeDiscovery from '../../src/components/SwipeDiscovery';
 
 export default function EventsHub() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('My Schedule');
-  const { events, communities, user, users, eventRsvps, rsvpToEvent, isLoading } = useAppContext();
+  const { events, communities, user, users, eventRsvps, rsvpToEvent, isLoading, saveItem } = useAppContext();
   const { toast } = useToast();
   
   const [checkoutState, setCheckoutState] = useState('idle');
   const [showTicket, setShowTicket] = useState(null);
   const [cardForm, setCardForm] = useState({ number: '', expiry: '', cvc: '', name: '' });
   const [showCalendarDropdown, setShowCalendarDropdown] = useState(false);
+  const [showSwipe, setShowSwipe] = useState(false);
 
   const myRsvpEventIds = Object.keys(eventRsvps).filter(eventId => 
     eventRsvps[eventId]?.some(r => r.userId === user.id)
@@ -265,7 +267,22 @@ export default function EventsHub() {
           </>
         ) : (
           <>
-            <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)', marginBottom: '12px', fontWeight: 600 }}>DISCOVER EVENTS IN TUNBRIDGE WELLS</div>
+          <>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+              <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)', fontWeight: 600 }}>DISCOVER EVENTS</div>
+              <button 
+                onClick={() => setShowSwipe(true)}
+                className="interactive-press"
+                style={{ 
+                  display: 'flex', alignItems: 'center', gap: '6px', 
+                  background: 'var(--teal-500)', color: 'white', border: 'none', 
+                  padding: '6px 12px', borderRadius: '12px', fontSize: '0.8rem', 
+                  fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 12px rgba(20,184,166,0.3)' 
+                }}
+              >
+                <Sparkles size={14} /> Swipe Events
+              </button>
+            </div>
             
             <div style={{ display: 'flex', gap: '10px', marginBottom: '16px' }}>
               <div style={{ flex: 1, position: 'relative' }}>
@@ -302,8 +319,16 @@ export default function EventsHub() {
         <DigitalTicket event={showTicket} user={user} onClose={() => setShowTicket(null)} />
       )}
 
-      {/* Event Details Modal removed - now uses dedicated page /events/[id] */}
-
+      {showSwipe && (
+        <SwipeDiscovery 
+          events={exploreEvents} 
+          communities={communities} 
+          onClose={() => setShowSwipe(false)} 
+          onSave={(item) => {
+            saveItem(item.id);
+          }}
+        />
+      )}
     </div>
   );
 }
