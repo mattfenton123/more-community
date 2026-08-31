@@ -162,10 +162,10 @@ export default function EventsHub() {
               display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: '42px', boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
             }}>
               <div style={{ background: 'var(--teal-500)', color: 'white', width: '100%', textAlign: 'center', fontSize: '0.65rem', fontWeight: 800, padding: '2px 0', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                {event.date ? event.date.split(' ')[0].substring(0,3) : 'TBA'}
+                {event.date ? (isNaN(new Date(event.date)) ? event.date.substring(0,3) : new Date(event.date).toLocaleDateString('en-GB', { month: 'short' })) : 'TBA'}
               </div>
               <div style={{ padding: '4px 8px', color: 'white', fontSize: '1.1rem', fontWeight: 800 }}>
-                {event.date ? (event.date.match(/\d+/) ? event.date.match(/\d+/)[0] : '—') : '—'}
+                {event.date ? (isNaN(new Date(event.date)) ? (event.date.match(/\d+/) ? event.date.match(/\d+/)[0] : '—') : new Date(event.date).getDate()) : '—'}
               </div>
             </div>
 
