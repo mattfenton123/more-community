@@ -218,7 +218,10 @@ export default function CommunityProfile() {
   };
 
   const handlePitchExperience = (experience) => {
-    const pitchText = `🚀 **CAMPAIGN:** [${experience.id}]\nLet's do "${experience.title}"!\n\n${experience.description}\n\n📍 Location: ${experience.location}\n⏱ Duration: ${experience.duration}\n💰 Price: £${experience.price_per_person}\n\n*Like this post to support the idea!*`;
+    const userMessage = prompt(`Add a message for pitching "${experience.title}":`, "I think this would be really fun for us!");
+    if (userMessage === null) return;
+    
+    const pitchText = `🚀 **CAMPAIGN:** [${experience.id}]\n${userMessage}\n\n📍 Location: ${experience.location}\n⏱ Duration: ${experience.duration}\n💰 Price: £${experience.price_per_person}\n\n*Click "I'm Interested" to support the idea!*`;
     handlePitchPost(pitchText, experience.image);
     setActiveTab('feed');
   };
@@ -479,6 +482,7 @@ export default function CommunityProfile() {
                       {(() => {
                         const isCampaign = post.text?.includes('🚀 **CAMPAIGN:**');
                         const isSuggestion = post.text?.includes('💡 **SUGGESTION:**');
+                        const isReview = post.text?.startsWith('⭐️⭐️⭐️⭐️⭐️');
                         let campaignExp = null;
                         let campaignText = post.text;
                         
@@ -490,6 +494,8 @@ export default function CommunityProfile() {
                           }
                         } else if (isSuggestion) {
                           campaignText = post.text.replace('💡 **SUGGESTION:**', '').trim();
+                        } else if (isReview) {
+                          campaignText = post.text.split('review: "')[1]?.slice(0, -1) || post.text;
                         }
                         
                         if (isCampaign && campaignExp) {
@@ -541,6 +547,15 @@ export default function CommunityProfile() {
                                 <Lightbulb size={16} /> Community Suggestion
                               </div>
                               <p style={{ color: 'var(--white)', fontSize: '1.05rem', lineHeight: 1.5, margin: 0, fontWeight: 500 }}>{campaignText}</p>
+                            </div>
+                          );
+                        } else if (isReview) {
+                          return (
+                            <div style={{ background: 'linear-gradient(135deg, var(--teal-900), var(--slate-900))', borderRadius: '12px', padding: '16px', marginBottom: '16px', border: '1px solid rgba(20,184,166,0.2)' }}>
+                              <div style={{ display: 'flex', gap: '4px', color: 'var(--yellow-400)', marginBottom: '12px' }}>
+                                {[1,2,3,4,5].map(i => <Star key={i} size={14} fill="currentColor" />)}
+                              </div>
+                              <p style={{ color: 'var(--white)', fontSize: '1.05rem', lineHeight: 1.5, margin: 0, fontStyle: 'italic' }}>"{campaignText}"</p>
                             </div>
                           );
                         } else {
@@ -718,7 +733,7 @@ export default function CommunityProfile() {
                     campaignText = post.text.replace('💡 **SUGGESTION:**', '').trim();
                   }
 
-                  const votes = post.likes?.length || 0;
+                  const votes = post.likes || 0;
                   const threshold = 10;
                   const progress = Math.min((votes / threshold) * 100, 100);
 
@@ -793,16 +808,16 @@ export default function CommunityProfile() {
                       <div style={{ display: 'flex', gap: '16px', marginTop: '12px' }}>
                         <button 
                           onClick={() => {
-                            const isLiked = (post.likes || []).includes(user.id);
+                            const isLiked = post.liked;
                             likeFeedPost(post.id);
                             if (isCampaign && !isLiked && votes + 1 === threshold) {
                               confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
                             }
                           }}
                           className="interactive-press" 
-                          style={{ background: (post.likes || []).includes(user.id) ? 'rgba(20,184,166,0.15)' : 'rgba(255,255,255,0.05)', padding: '6px 12px', borderRadius: '20px', border: '1px solid', borderColor: (post.likes || []).includes(user.id) ? 'rgba(20,184,166,0.3)' : 'transparent', display: 'flex', alignItems: 'center', gap: '6px', color: (post.likes || []).includes(user.id) ? 'var(--teal-400)' : 'white', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}
+                          style={{ background: post.liked ? 'rgba(20,184,166,0.15)' : 'rgba(255,255,255,0.05)', padding: '6px 12px', borderRadius: '20px', border: '1px solid', borderColor: post.liked ? 'rgba(20,184,166,0.3)' : 'transparent', display: 'flex', alignItems: 'center', gap: '6px', color: post.liked ? 'var(--teal-400)' : 'white', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}
                         >
-                          <Heart size={16} fill={(post.likes || []).includes(user.id) ? 'var(--teal-400)' : 'none'} />
+                          <Heart size={16} fill={post.liked ? 'var(--teal-400)' : 'none'} />
                           {isCampaign ? "I'm Interested" : "Upvote"} ({votes})
                         </button>
                         <button onClick={() => setExpandedComments(prev => ({...prev, [post.id]: !prev[post.id]}))} className="interactive-press" style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '6px', color: expandedComments[post.id] ? 'var(--teal-400)' : 'var(--slate-400)', cursor: 'pointer', fontSize: '0.85rem' }}>
@@ -1237,7 +1252,7 @@ export default function CommunityProfile() {
       </div>
       
       {isServiceModalOpen && (
-        <CreateServiceModal communityId={communityId} onClose={() => setIsServiceModalOpen(false)} />
+        <CreateServiceModal isOpen={true} communityId={communityId} onClose={() => setIsServiceModalOpen(false)} />
       )}
 
       <CreateIdeaModal 
