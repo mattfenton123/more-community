@@ -1,6 +1,6 @@
 "use client";
 import { useState, useRef } from 'react';
-import { ChevronLeft, Share2, Users, Calendar, Settings, ChevronDown, ChevronUp, Image as ImageIcon, ExternalLink, Camera, Mail, Activity, Sparkles, MapPin, Clock, Star, MessageCircle, Heart, BadgeCheck, Globe, Trash2, Flag, Search, Briefcase, Check, X } from 'lucide-react';
+import { ChevronLeft, Share2, Users, Calendar, Settings, ChevronDown, ChevronUp, Image as ImageIcon, ExternalLink, Camera, Mail, Activity, Sparkles, MapPin, Clock, Star, MessageCircle, Heart, BadgeCheck, Globe, Trash2, Flag, Search, Briefcase, Check, X, MessageSquare, Lightbulb, Info } from 'lucide-react';
 import { useRouter as useNavigate, useParams } from 'next/navigation';
 import { useAppContext } from '../../../src/context/AppContext';
 import { useFeed } from '../../../src/context/FeedContext';
@@ -327,23 +327,60 @@ export default function CommunityProfile() {
 
       {/* ===== TAB NAVIGATION ===== */}
       <div style={{ padding: '0 20px', marginBottom: '24px' }}>
-        <div style={{ display: 'flex', gap: '4px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', padding: '4px', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-          {['feed', 'services', 'suggestions', 'about', 'events', 'reviews', 'photos', 'members'].map(tab => (
+        <div style={{ 
+          display: 'flex', 
+          gap: '8px', 
+          overflowX: 'auto', 
+          WebkitOverflowScrolling: 'touch',
+          scrollbarWidth: 'none', // Firefox
+          msOverflowStyle: 'none', // IE and Edge
+          // Hide scrollbar for Chrome, Safari and Opera
+          paddingBottom: '8px',
+          margin: '0 -20px', // allow scroll to edge
+          padding: '4px 20px 8px 20px', // restore padding including edges
+        }} className="no-scrollbar">
+          {[
+            { id: 'feed', label: 'Feed', Icon: MessageSquare },
+            { id: 'services', label: 'Services', Icon: Briefcase },
+            { id: 'suggestions', label: 'Ideas', Icon: Lightbulb },
+            { id: 'about', label: 'About', Icon: Info },
+            { id: 'events', label: 'Events', Icon: Calendar },
+            { id: 'reviews', label: 'Reviews', Icon: Star },
+            { id: 'photos', label: 'Gallery', Icon: ImageIcon },
+            { id: 'members', label: 'Members', Icon: Users }
+          ].map(tab => (
             <button 
-              key={tab}
-              onClick={() => setActiveTab(tab)}
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className="interactive-press"
               style={{
-                flex: 1, padding: '10px 0', borderRadius: '10px', border: 'none',
-                background: activeTab === tab ? 'rgba(20,184,166,0.15)' : 'transparent',
-                color: activeTab === tab ? 'var(--teal-300)' : 'var(--slate-400)',
-                fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer', textTransform: 'capitalize',
-                transition: 'all 0.2s',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '10px 16px', 
+                borderRadius: '100px', 
+                border: '1px solid',
+                borderColor: activeTab === tab.id ? 'rgba(20,184,166,0.3)' : 'rgba(255,255,255,0.06)',
+                background: activeTab === tab.id ? 'rgba(20,184,166,0.15)' : 'rgba(255,255,255,0.03)',
+                color: activeTab === tab.id ? 'var(--teal-300)' : 'var(--slate-300)',
+                fontWeight: 600, 
+                fontSize: '0.85rem', 
+                cursor: 'pointer', 
+                whiteSpace: 'nowrap',
+                transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+                boxShadow: activeTab === tab.id ? '0 4px 12px rgba(20,184,166,0.1)' : 'none'
               }}
             >
-              {tab}
+              <tab.Icon size={16} style={{ opacity: activeTab === tab.id ? 1 : 0.7 }} />
+              {tab.label}
             </button>
           ))}
         </div>
+        <style dangerouslySetInnerHTML={{__html: `
+          .no-scrollbar::-webkit-scrollbar {
+            display: none;
+          }
+        `}} />
       </div>
 
       <div style={{ padding: '0 20px' }}>
