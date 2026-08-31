@@ -476,7 +476,77 @@ export default function CommunityProfile() {
                     </div>
                     
                     <div style={{ padding: '0 16px 12px', color: 'var(--slate-200)', fontSize: '0.95rem', lineHeight: 1.5 }}>
-                      {post.text}
+                      {(() => {
+                        const isCampaign = post.text?.includes('🚀 **CAMPAIGN:**');
+                        const isSuggestion = post.text?.includes('💡 **SUGGESTION:**');
+                        let campaignExp = null;
+                        let campaignText = post.text;
+                        
+                        if (isCampaign) {
+                          const match = post.text.match(/🚀 \*\*CAMPAIGN:\*\* \[([a-zA-Z0-9-]+)\]/);
+                          if (match) {
+                            campaignExp = experiences.find(e => e.id === match[1]);
+                            campaignText = post.text.replace(/🚀 \*\*CAMPAIGN:\*\* \[([a-zA-Z0-9-]+)\]\n/, '');
+                          }
+                        } else if (isSuggestion) {
+                          campaignText = post.text.replace('💡 **SUGGESTION:**', '').trim();
+                        }
+                        
+                        if (isCampaign && campaignExp) {
+                          const votes = post.likes || 0;
+                          const threshold = 20;
+                          const progress = Math.min((votes / threshold) * 100, 100);
+                          return (
+                            <div style={{ background: 'var(--slate-900)', borderRadius: '12px', padding: '12px', marginBottom: '16px', border: '1px solid rgba(20,184,166,0.2)' }}>
+                              <div style={{ display: 'flex', gap: '12px' }}>
+                                <img src={campaignExp.image} alt="" style={{ width: '60px', height: '60px', borderRadius: '8px', objectFit: 'cover' }} />
+                                <div>
+                                  <div style={{ fontWeight: 700, color: 'var(--white)', fontSize: '1rem', marginBottom: '4px' }}>{campaignExp.title}</div>
+                                  <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <span><MapPin size={12} style={{ display: 'inline', marginRight: '2px' }} /> {campaignExp.location}</span>
+                                  </div>
+                                </div>
+                              </div>
+                              <div style={{ marginTop: '16px' }}>
+                                <button onClick={() => navigate.push(`/experiences/${campaignExp.id}`)} className="interactive-press" style={{ width: '100%', marginBottom: '16px', padding: '8px', borderRadius: '8px', fontSize: '0.85rem', color: 'var(--teal-400)', background: 'rgba(20,184,166,0.1)', border: '1px solid rgba(20,184,166,0.3)', cursor: 'pointer', fontWeight: 600 }}>
+                                  View Experience Details
+                                </button>
+                                <p style={{ color: 'var(--slate-200)', fontSize: '0.95rem', lineHeight: 1.5, margin: '0 0 12px 0' }}>{campaignText}</p>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--slate-300)', marginBottom: '6px', fontWeight: 600 }}>
+                                  <span>Campaign Progress</span>
+                                  <span>{votes} / {threshold} Interested</span>
+                                </div>
+                                <div style={{ height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', overflow: 'hidden' }}>
+                                  <div style={{ width: `${progress}%`, height: '100%', background: 'var(--teal-500)', transition: 'width 0.5s ease' }} />
+                                </div>
+                                {progress >= 100 && (
+                                  <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                    <div style={{ fontSize: '0.8rem', color: 'var(--yellow-400)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                      <Sparkles size={14} /> Goal Reached! Waiting for Leader to schedule.
+                                    </div>
+                                    {isLeader && (
+                                      <button onClick={() => navigate.push(`/community/${communityId}/create-event?experienceId=${campaignExp.id}`)} className="btn btn-primary interactive-press" style={{ padding: '6px 12px', fontSize: '0.8rem', width: 'fit-content', borderRadius: '8px' }}>
+                                        Set Date & Schedule
+                                      </button>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        } else if (isSuggestion) {
+                          return (
+                            <div style={{ background: 'var(--slate-900)', borderRadius: '12px', padding: '16px', marginBottom: '16px', border: '1px solid rgba(245,158,11,0.2)', borderLeft: '4px solid var(--amber-500)' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px', color: 'var(--amber-400)', fontWeight: 700, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                <Lightbulb size={16} /> Community Suggestion
+                              </div>
+                              <p style={{ color: 'var(--white)', fontSize: '1.05rem', lineHeight: 1.5, margin: 0, fontWeight: 500 }}>{campaignText}</p>
+                            </div>
+                          );
+                        } else {
+                          return post.text;
+                        }
+                      })()}
                     </div>
 
                     {(() => {
