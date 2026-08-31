@@ -1,6 +1,6 @@
 "use client";
 import { useState, useRef, useEffect } from 'react';
-import { Send, Menu, MessageCircle, ChevronLeft, Plus, Users, Hash, Image as ImageIcon, X, Smile } from 'lucide-react';
+import { Send, Menu, MessageCircle, ChevronLeft, Plus, Users, Hash, Image as ImageIcon, X, Smile, Megaphone, Lock } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import AppHeader from '../components/AppHeader';
 import { useAppContext } from '../context/AppContext';
@@ -22,15 +22,17 @@ export default function Chat() {
   const fileInputRef = useRef(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [createMode, setCreateMode] = useState('menu'); // 'menu', 'dm', 'group', 'announcement'
+  
+  // Group creation state
   const [newChannelName, setNewChannelName] = useState('');
-  const [activeTab, setActiveTab] = useState('Communities');
   const [createChannelCommunityId, setCreateChannelCommunityId] = useState(null);
+  const [selectedMembers, setSelectedMembers] = useState([]);
+  const [userSearchTerm, setUserSearchTerm] = useState('');
   
   const { user, communities, users, communityMemberships, uploadImage, channels, createChannel, isLoading, whatsappSettings } = useAppContext();
-    const { messages, directMessages, sendMessage, sendDirectMessage, chatReadReceipts, markChatRead } = useChat();
+  const { messages, directMessages, sendMessage, sendDirectMessage, chatReadReceipts, markChatRead } = useChat();
   const { toast } = useToast();
-  const [showNewChatModal, setShowNewChatModal] = useState(false);
-  const [userSearchTerm, setUserSearchTerm] = useState('');
 
   const onEmojiClick = (emojiObject) => {
     setInputText(prev => prev + emojiObject.emoji);
@@ -55,78 +57,82 @@ export default function Chat() {
   // INBOX VIEW (If no params provided)
   if (!communityId && !channelId && !targetUserId) {
     const myCommunities = communities.filter(c => user.joinedCommunities.includes(c.id));
-    
-    // Build inbox items from real channels + fallback general
-    const communityInboxItems = [];
+    let inboxItems = [];
+
+    // Build unified inbox items
     myCommunities.forEach(c => {
       const communityChannels = channels.filter(ch => ch.community_id === c.id);
       if (communityChannels.length === 0) {
-        communityInboxItems.push({ comm: c, type: 'channel', name: 'general', id: 'general' });
+        inboxItems.push({ type: 'channel', channelType: 'text', comm: c, name: 'general', id: 'general' });
       } else {
         communityChannels.forEach(ch => {
-          communityInboxItems.push({ comm: c, type: 'channel', name: ch.name, id: ch.id });
+          // Check access for private groups
+          if (ch.member_ids && ch.member_ids.length > 0 && !ch.member_ids.includes(user.id) && !user.ledCommunities?.includes(c.id)) {
+            return;
+          }
+          inboxItems.push({ 
+            type: 'channel', 
+            channelType: ch.type || 'text', 
+            comm: c, 
+            name: ch.name, 
+            id: ch.id,
+            memberIds: ch.member_ids
+          });
         });
-      }
-      if (user.ledCommunities?.includes(c.id)) {
-        communityInboxItems.push({ comm: c, type: 'group', name: 'Organizers Group', id: 'organizers' });
       }
     });
 
-    // Build DM inbox items
-    const dmInboxItems = [];
     if (directMessages && user) {
       const dmUsers = new Set();
       directMessages.forEach(dm => {
         const otherUserId = dm.senderId === user.id ? dm.receiverId : dm.senderId;
         dmUsers.add(otherUserId);
       });
-      
       dmUsers.forEach(otherId => {
         const otherUserObj = users.find(u => u.id === otherId) || { id: otherId, name: 'Unknown User', avatar: 'https://i.pravatar.cc/150' };
-        dmInboxItems.push({
-          type: 'dm',
-          otherUser: otherUserObj,
-          id: otherId
-        });
+        inboxItems.push({ type: 'dm', otherUser: otherUserObj, id: otherId });
       });
     }
 
-    const itemsToRender = activeTab === 'Communities' ? communityInboxItems : dmInboxItems;
+    // Attach latest message for sorting and UI
+    inboxItems = inboxItems.map(item => {
+      let latestMsg = null;
+      let hasUnread = false;
+      if (item.type === 'dm') {
+        latestMsg = directMessages.filter(m => (m.senderId === item.id && m.receiverId === user.id) || (m.senderId === user.id && m.receiverId === item.id)).pop();
+        const dmReceipt = chatReadReceipts.find(r => !r.community_id && r.channel_id === item.id);
+        hasUnread = latestMsg && latestMsg.senderId !== user.id && (!dmReceipt || new Date(dmReceipt.last_read_at) < new Date(latestMsg.created_at || new Date().toISOString()));
+      } else {
+        latestMsg = messages.filter(m => m.communityId === item.comm.id && m.channel === item.id).pop();
+        const commReceipt = chatReadReceipts.find(r => r.community_id === item.comm.id && r.channel_id === item.id);
+        hasUnread = latestMsg && latestMsg.authorId !== user.id && (!commReceipt || new Date(commReceipt.last_read_at) < new Date(latestMsg.created_at || new Date().toISOString()));
+      }
+      return {
+        ...item,
+        latestMsg,
+        hasUnread,
+        sortTime: latestMsg?.created_at ? new Date(latestMsg.created_at).getTime() : 0
+      };
+    }).sort((a, b) => b.sortTime - a.sortTime);
 
-    const handleCreateChannel = async () => {
+    const handleCreateChannel = async (type = 'text', members = null) => {
       if (!newChannelName.trim()) return;
-      const leaderCommunity = createChannelCommunityId || user.ledCommunities?.[0];
-      if (!leaderCommunity) return;
-      await createChannel(leaderCommunity, newChannelName.trim());
-      toast.success('Channel created!', `#${newChannelName.trim()} is now live`);
+      const targetCommunity = createChannelCommunityId || user.ledCommunities?.[0] || myCommunities[0]?.id;
+      if (!targetCommunity) return;
+      
+      await createChannel(targetCommunity, newChannelName.trim(), type, members);
+      toast.success('Chat created!', `${newChannelName.trim()} is now live`);
+      
       setNewChannelName('');
+      setSelectedMembers([]);
       setShowCreateModal(false);
     };
 
     return (
       <div className="view-chat" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-        <AppHeader title="Inbox" />
-        <div style={{ padding: '16px 20px 8px' }}>
-          <div style={{ display: 'flex', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', padding: '4px', gap: '4px' }}>
-            {['Communities', 'Direct Messages'].map(tab => (
-              <button 
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className="interactive-press"
-                style={{ 
-                  flex: 1, background: activeTab === tab ? 'rgba(255,255,255,0.1)' : 'transparent', 
-                  border: '1px solid ' + (activeTab === tab ? 'rgba(255,255,255,0.1)' : 'transparent'),
-                  borderRadius: '8px', padding: '8px 0', fontSize: '0.85rem', cursor: 'pointer', fontWeight: 600,
-                  color: activeTab === tab ? 'white' : 'var(--slate-400)',
-                  transition: 'all 0.2s', boxShadow: activeTab === tab ? '0 4px 12px rgba(0,0,0,0.1)' : 'none'
-                }}>
-                {tab}
-              </button>
-            ))}
-          </div>
-        </div>
+        <AppHeader title="Chats" />
         
-        <div style={{ flex: 1, overflowY: 'auto', padding: '10px 0' }}>
+        <div style={{ flex: 1, overflowY: 'auto' }}>
           {isLoading ? (
             <div style={{ padding: '0 20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
               {[1,2,3,4].map(i => (
@@ -134,197 +140,192 @@ export default function Chat() {
                   <SkeletonAvatar size={48} round />
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     <SkeletonLine width="60%" height="14px" />
-                    <SkeletonLine width="35%" height="10px" />
                     <SkeletonLine width="80%" height="12px" />
                   </div>
                 </div>
               ))}
             </div>
-          ) : itemsToRender.length === 0 ? (
-            <p style={{ padding: '20px', color: 'var(--slate-400)', textAlign: 'center' }}>
-              {activeTab === 'Communities' ? 'You have no active community chats.' : 'You have no direct messages yet.'}
-            </p>
+          ) : inboxItems.length === 0 ? (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--slate-400)', gap: '16px' }}>
+              <MessageCircle size={48} opacity={0.5} />
+              <p>No messages yet. Start a new chat!</p>
+            </div>
           ) : (
-            itemsToRender.map((item, i) => {
-              if (item.type === 'dm') {
-                const latestDm = directMessages.filter(m => (m.senderId === item.id && m.receiverId === user.id) || (m.senderId === user.id && m.receiverId === item.id)).pop();
-                const dmReceipt = chatReadReceipts.find(r => !r.community_id && r.channel_id === item.id);
-                const hasUnread = latestDm && latestDm.senderId !== user.id && (!dmReceipt || new Date(dmReceipt.last_read_at) < new Date(latestDm.created_at || new Date().toISOString()));
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              {inboxItems.map((item, i) => {
+                const title = item.type === 'dm' ? item.otherUser.name : item.name;
+                const subtitle = item.type === 'channel' ? item.comm.name : 'Direct Message';
+                let avatar = item.type === 'dm' ? item.otherUser.avatar : (item.comm.image || FALLBACK_IMAGES.community);
+                
+                let Icon = Hash;
+                if (item.type === 'dm') Icon = MessageCircle;
+                else if (item.channelType === 'announcement') Icon = Megaphone;
+                else if (item.channelType === 'group' || item.memberIds) Icon = Lock;
                 
                 return (
                   <div 
-                    key={`dm-${i}`} 
-                    onClick={() => navigate.back()}
+                    key={`${item.type}-${item.id}-${i}`} 
+                    onClick={() => navigate.push(item.type === 'dm' ? `/chat/dm/${item.id}` : `/community/${item.comm.id}/chat/${item.id}`)}
                     className="stagger-item interactive-press"
-                    style={{ display: 'flex', gap: '16px', padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.05)', cursor: 'pointer', transition: 'background 0.2s', position: 'relative' }}
+                    style={{ display: 'flex', gap: '16px', padding: '16px 20px', cursor: 'pointer', transition: 'background 0.2s', position: 'relative' }}
                     onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
                     onMouseOut={e => e.currentTarget.style.background = 'transparent'}
                   >
-                    {hasUnread && <div style={{ position: 'absolute', top: '50%', transform: 'translateY(-50%)', left: '8px', width: '8px', height: '8px', borderRadius: '50%', background: 'var(--teal-400)', boxShadow: '0 0 10px rgba(45,212,191,0.8)' }} />}
-                    <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: `url(${item.otherUser.avatar})`, backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative' }}>
-                      <div style={{ position: 'absolute', bottom: '-4px', right: '-4px', background: 'var(--slate-800)', borderRadius: '50%', padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid var(--slate-950)' }}>
-                        <MessageCircle size={12} color="var(--teal-400)" />
+                    <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: `url(${avatar})`, backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative', flexShrink: 0 }}>
+                      <div style={{ position: 'absolute', bottom: '-2px', right: '-2px', background: 'var(--slate-800)', borderRadius: '50%', padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid var(--slate-950)' }}>
+                        <Icon size={12} color="var(--teal-400)" />
                       </div>
                     </div>
-                    <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                    
+                    <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', justifyContent: 'center', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '16px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '4px' }}>
-                        <div style={{ fontWeight: hasUnread ? 700 : 600, fontSize: '1rem', color: hasUnread ? 'white' : 'var(--slate-200)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.otherUser.name}</div>
-                        <div style={{ fontSize: '0.75rem', color: hasUnread ? 'var(--teal-400)' : 'var(--slate-500)', fontWeight: hasUnread ? 600 : 400 }}>{latestDm?.timestamp || ''}</div>
+                        <div style={{ fontWeight: item.hasUnread ? 700 : 600, fontSize: '1.05rem', color: item.hasUnread ? 'white' : 'var(--slate-200)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {title}
+                        </div>
+                        <div style={{ fontSize: '0.75rem', color: item.hasUnread ? 'var(--teal-400)' : 'var(--slate-500)', fontWeight: item.hasUnread ? 600 : 400 }}>
+                          {item.latestMsg?.timestamp?.split(' ')[0] || ''}
+                        </div>
                       </div>
-                      <div style={{ fontSize: '0.85rem', color: hasUnread ? 'var(--slate-300)' : 'var(--slate-400)', fontWeight: hasUnread ? 500 : 400, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {latestDm ? (latestDm.image ? '📸 Image' : `${latestDm.senderId === user.id ? 'You' : item.otherUser.name}: ${latestDm.text}`) : 'No messages yet...'}
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                        <div style={{ fontSize: '0.85rem', color: item.hasUnread ? 'var(--slate-300)' : 'var(--slate-400)', fontWeight: item.hasUnread ? 500 : 400, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flex: 1 }}>
+                          {item.latestMsg ? (
+                            <>
+                              {item.type !== 'dm' && <span style={{ color: 'var(--slate-500)' }}>{item.latestMsg.authorId === user.id ? 'You' : (users.find(u=>u.id===item.latestMsg.authorId)?.name || 'Someone')}: </span>}
+                              {item.latestMsg.image ? '📸 Image' : item.latestMsg.text}
+                            </>
+                          ) : <span style={{ fontStyle: 'italic', color: 'var(--slate-500)' }}>No messages yet</span>}
+                        </div>
+                        {item.hasUnread && <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: 'var(--teal-400)', flexShrink: 0 }} />}
                       </div>
                     </div>
                   </div>
                 );
-              }
-
-              // Normal community channel
-              const latestMsg = messages.filter(m => m.communityId === item.comm.id && m.channel === item.id).pop();
-              const commReceipt = chatReadReceipts.find(r => r.community_id === item.comm.id && r.channel_id === item.id);
-              const hasUnread = latestMsg && latestMsg.authorId !== user.id && (!commReceipt || new Date(commReceipt.last_read_at) < new Date(latestMsg.created_at || new Date().toISOString()));
-
-              return (
-                <div 
-                  key={`comm-${i}`} 
-                  onClick={() => navigate.back()}
-                  className="stagger-item interactive-press"
-                  style={{ display: 'flex', gap: '16px', padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.05)', cursor: 'pointer', transition: 'background 0.2s', position: 'relative' }}
-                  onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
-                  onMouseOut={e => e.currentTarget.style.background = 'transparent'}
-                >
-                  {hasUnread && <div style={{ position: 'absolute', top: '50%', transform: 'translateY(-50%)', left: '8px', width: '8px', height: '8px', borderRadius: '50%', background: 'var(--teal-400)', boxShadow: '0 0 10px rgba(45,212,191,0.8)' }} />}
-                  <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: `url(${item.comm.image || FALLBACK_IMAGES.community})`, backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative' }}>
-                    <div style={{ position: 'absolute', bottom: '-4px', right: '-4px', background: 'var(--slate-800)', borderRadius: '50%', padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid var(--slate-950)' }}>
-                      {item.type === 'channel' ? <Hash size={12} color="var(--teal-400)" /> : <Users size={12} color="var(--amber-400)" />}
-                    </div>
-                  </div>
-                  <div style={{ flex: 1, overflow: 'hidden' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '4px' }}>
-                      <div style={{ fontWeight: hasUnread ? 700 : 600, fontSize: '1rem', color: hasUnread ? 'white' : 'var(--slate-200)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.comm.name}</div>
-                      <div style={{ fontSize: '0.75rem', color: hasUnread ? 'var(--teal-400)' : 'var(--slate-500)', fontWeight: hasUnread ? 600 : 400 }}>{latestMsg?.timestamp || ''}</div>
-                    </div>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--teal-400)', fontWeight: 500, marginBottom: '2px' }}>{item.type === 'channel' ? '#' : ''}{item.name}</div>
-                    <div style={{ fontSize: '0.85rem', color: hasUnread ? 'var(--slate-300)' : 'var(--slate-400)', fontWeight: hasUnread ? 500 : 400, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      {latestMsg ? (latestMsg.image ? '📸 Image' : `${latestMsg.authorId === user.id ? 'You' : users.find(u=>u.id===latestMsg.authorId)?.name || 'Someone'}: ${latestMsg.text}`) : 'No messages yet...'}
-                    </div>
-                  </div>
-                </div>
-              );
-            })
+              })}
+            </div>
           )}
         </div>
 
-        {/* Create Channel Modal */}
+        {/* Floating Action Button */}
+        <div style={{ position: 'absolute', bottom: '24px', right: '24px', zIndex: 50 }}>
+          <button 
+            onClick={() => { setCreateMode('menu'); setShowCreateModal(true); }}
+            className="interactive-press"
+            style={{ background: 'var(--teal-500)', color: 'white', width: '56px', height: '56px', borderRadius: '28px', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 16px rgba(20,184,166,0.4)', cursor: 'pointer' }}
+          >
+            <Plus size={24} />
+          </button>
+        </div>
+
+        {/* New Chat Modal */}
         {showCreateModal && (
           <div className="modal-overlay" style={{ display: 'flex', flexDirection: 'column', padding: '20px' }}>
-            <div className="modal-content" style={{ flex: 1 }}>
+            <div className="modal-content" style={{ flex: 1, display: 'flex', flexDirection: 'column', maxHeight: '80vh', overflow: 'hidden' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                <h2 style={{ fontFamily: 'var(--font-heading)', margin: 0 }}>New Channel</h2>
+                <h2 style={{ fontFamily: 'var(--font-heading)', margin: 0 }}>
+                  {createMode === 'menu' && 'New Chat'}
+                  {createMode === 'dm' && 'New Direct Message'}
+                  {createMode === 'group' && 'New Group'}
+                  {createMode === 'announcement' && 'New Announcement'}
+                </h2>
                 <button onClick={() => setShowCreateModal(false)} className="interactive-press" style={{ background: 'rgba(255,255,255,0.05)', border: 'none', color: 'var(--white)', cursor: 'pointer', width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <X size={18} />
                 </button>
               </div>
-              <p style={{ color: 'var(--slate-400)', marginBottom: '24px' }}>Create a new channel for your community.</p>
-              <input 
-                type="text"
-                placeholder="Channel name (e.g. weekend-planning)" 
-                value={newChannelName}
-                onChange={e => setNewChannelName(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && handleCreateChannel()}
-                style={{ width: '100%', padding: '14px 16px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'var(--white)', fontSize: '1rem', marginBottom: '16px' }}
-              />
-              {user.ledCommunities?.length > 1 && (
-                <div style={{ marginBottom: '16px' }}>
-                  <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--slate-400)', marginBottom: '8px' }}>Select Community</label>
-                  <select 
-                    value={createChannelCommunityId || user.ledCommunities[0]}
-                    onChange={e => setCreateChannelCommunityId(e.target.value)}
-                    style={{ width: '100%', padding: '12px', background: 'var(--slate-800)', color: 'var(--white)', border: '1px solid var(--slate-700)', borderRadius: '8px', fontSize: '0.95rem' }}
-                  >
-                    {user.ledCommunities.map(id => {
-                      const c = communities.find(comm => comm.id === id);
-                      return <option key={id} value={id}>{c?.name || id}</option>;
-                    })}
-                  </select>
+
+              {/* Menu Mode */}
+              {createMode === 'menu' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <button onClick={() => setCreateMode('dm')} className="interactive-press" style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', color: 'white', cursor: 'pointer', textAlign: 'left' }}>
+                    <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(59,130,246,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <MessageCircle size={20} color="#3b82f6" />
+                    </div>
+                    <div>
+                      <div style={{ fontWeight: 600 }}>New Direct Message</div>
+                      <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)' }}>1-on-1 private chat</div>
+                    </div>
+                  </button>
+                  <button onClick={() => setCreateMode('group')} className="interactive-press" style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', color: 'white', cursor: 'pointer', textAlign: 'left' }}>
+                    <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(20,184,166,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Users size={20} color="var(--teal-400)" />
+                    </div>
+                    <div>
+                      <div style={{ fontWeight: 600 }}>New Group Chat</div>
+                      <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)' }}>Create a private group for an event or topic</div>
+                    </div>
+                  </button>
+                  {user.ledCommunities?.length > 0 && (
+                    <button onClick={() => setCreateMode('announcement')} className="interactive-press" style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.2)', borderRadius: '12px', color: 'white', cursor: 'pointer', textAlign: 'left' }}>
+                      <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(245,158,11,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Megaphone size={20} color="#f59e0b" />
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 600 }}>New Announcement</div>
+                        <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)' }}>Read-only broadcast channel for members</div>
+                      </div>
+                    </button>
+                  )}
                 </div>
               )}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <button onClick={handleCreateChannel} className="btn btn-primary" style={{ display: 'flex', gap: '12px', justifyContent: 'center', padding: '16px', borderRadius: '12px' }}>
-                  <Hash size={20} /> Create Channel
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
 
-        {/* Start New DM Modal */}
-        {showNewChatModal && (
-          <div className="modal-overlay" style={{ display: 'flex', flexDirection: 'column', padding: '20px' }}>
-            <div className="modal-content" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                <h2 style={{ fontFamily: 'var(--font-heading)', margin: 0 }}>Start a Chat</h2>
-                <button onClick={() => setShowNewChatModal(false)} className="interactive-press" style={{ background: 'rgba(255,255,255,0.05)', border: 'none', color: 'var(--white)', cursor: 'pointer', width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <X size={18} />
-                </button>
-              </div>
-              <input 
-                type="text"
-                placeholder="Search community members..." 
-                value={userSearchTerm}
-                onChange={e => setUserSearchTerm(e.target.value)}
-                style={{ width: '100%', padding: '14px 16px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'var(--white)', fontSize: '1rem', marginBottom: '16px' }}
-              />
-              <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {users
-                  .filter(u => u.id !== user.id)
-                  .filter(u => user.isAdmin || (user.joinedCommunities || []).some(cid => (communityMemberships[cid] || []).some(m => m.userId === u.id)))
-                  .filter(u => !userSearchTerm || u.name.toLowerCase().includes(userSearchTerm.toLowerCase()))
-                  .slice(0, 20)
-                  .map(u => (
-                    <div 
-                      key={u.id}
-                      onClick={() => {
-                        setShowNewChatModal(false);
-                        navigate.back();
-                      }}
-                      className="stagger-item interactive-press"
-                      style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', cursor: 'pointer' }}
-                    >
-                      <img src={u.avatar} alt={u.name} style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontWeight: 600, color: 'var(--white)' }}>{u.name}</div>
-                        <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)' }}>{u.bio || 'Member'}</div>
+              {/* DM / Contacts Mode */}
+              {createMode === 'dm' && (
+                <>
+                  <input type="text" placeholder="Search members..." value={userSearchTerm} onChange={e => setUserSearchTerm(e.target.value)} style={{ width: '100%', padding: '14px 16px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'var(--white)', fontSize: '1rem', marginBottom: '16px' }} />
+                  <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {users.filter(u => u.id !== user.id && (!userSearchTerm || u.name.toLowerCase().includes(userSearchTerm.toLowerCase()))).slice(0, 20).map(u => (
+                      <div key={u.id} onClick={() => { setShowCreateModal(false); navigate.push(`/chat/dm/${u.id}`); }} className="stagger-item interactive-press" style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', cursor: 'pointer' }}>
+                        <img src={u.avatar} alt={u.name} style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontWeight: 600, color: 'var(--white)' }}>{u.name}</div>
+                        </div>
                       </div>
-                      <MessageCircle size={18} color="var(--teal-400)" />
-                    </div>
-                  ))}
-              </div>
+                    ))}
+                  </div>
+                </>
+              )}
+
+              {/* Group / Announcement Mode */}
+              {(createMode === 'group' || createMode === 'announcement') && (
+                <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                  <input type="text" placeholder={createMode === 'group' ? "Group Name" : "Announcement Name"} value={newChannelName} onChange={e => setNewChannelName(e.target.value)} style={{ width: '100%', padding: '14px 16px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'var(--white)', fontSize: '1rem', marginBottom: '16px' }} />
+                  
+                  {myCommunities.length > 1 && (
+                    <select value={createChannelCommunityId || myCommunities[0]?.id} onChange={e => setCreateChannelCommunityId(e.target.value)} style={{ width: '100%', padding: '12px', background: 'var(--slate-800)', color: 'var(--white)', border: '1px solid var(--slate-700)', borderRadius: '8px', marginBottom: '16px' }}>
+                      {myCommunities.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                    </select>
+                  )}
+
+                  {createMode === 'group' && (
+                    <>
+                      <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)', marginBottom: '8px' }}>Select Members (Optional)</div>
+                      <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '4px', marginBottom: '16px' }}>
+                        {users.filter(u => u.id !== user.id).slice(0, 10).map(u => (
+                          <label key={u.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px', cursor: 'pointer' }}>
+                            <input type="checkbox" checked={selectedMembers.includes(u.id)} onChange={(e) => {
+                              if (e.target.checked) setSelectedMembers([...selectedMembers, u.id]);
+                              else setSelectedMembers(selectedMembers.filter(id => id !== u.id));
+                            }} />
+                            <img src={u.avatar} alt={u.name} style={{ width: '24px', height: '24px', borderRadius: '50%' }} />
+                            <span>{u.name}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </>
+                  )}
+
+                  <button 
+                    onClick={() => handleCreateChannel(createMode, selectedMembers.length > 0 ? [user.id, ...selectedMembers] : null)} 
+                    disabled={!newChannelName.trim()}
+                    className="btn btn-primary" 
+                    style={{ padding: '16px', borderRadius: '12px', opacity: !newChannelName.trim() ? 0.5 : 1 }}
+                  >
+                    Create {createMode === 'group' ? 'Group' : 'Announcement'}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         )}
-
-        {/* Floating Action Button */}
-        <div style={{ position: 'absolute', bottom: '24px', right: '24px', zIndex: 50, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '12px' }}>
-          {(user.ledCommunities?.length > 0 && activeTab === 'Communities') && (
-            <button 
-              onClick={() => setShowCreateModal(true)}
-              className="interactive-press"
-              style={{ background: 'var(--teal-500)', color: 'white', padding: '0 20px', height: '56px', borderRadius: '28px', border: 'none', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 16px rgba(20,184,166,0.4)', cursor: 'pointer', fontWeight: 600, fontSize: '0.95rem' }}
-            >
-              <Hash size={20} /> New Channel
-            </button>
-          )}
-          {activeTab === 'Direct Messages' && (
-            <button 
-              onClick={() => setShowNewChatModal(true)}
-              className="interactive-press"
-              style={{ background: 'var(--teal-500)', color: 'white', padding: '0 20px', height: '56px', borderRadius: '28px', border: 'none', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 16px rgba(20,184,166,0.4)', cursor: 'pointer', fontWeight: 600, fontSize: '0.95rem' }}
-            >
-              <Plus size={20} /> New Message
-            </button>
-          )}
-        </div>
       </div>
     );
   }
@@ -335,8 +336,12 @@ export default function Chat() {
   const targetUser = isDirectMessage ? users.find(u => u.id === targetUserId) : null;
   const waConfig = communityId ? whatsappSettings[communityId] : null;
   
+  const currentChannelObj = channels.find(c => c.id === channelId);
+  const isLeader = !isDirectMessage && communityMemberships[communityId]?.find(m => m.userId === user.id)?.role === 'Leader';
+  const isReadOnly = currentChannelObj?.type === 'announcement' && !isLeader;
+
   const handleSend = async () => {
-    if (!inputText.trim() && !imageFile) return;
+    if ((!inputText.trim() && !imageFile) || isReadOnly) return;
     
     setIsUploading(true);
     let imageUrl = '';
@@ -362,37 +367,19 @@ export default function Chat() {
 
   return (
     <div className="view-chat" style={{ height: '100%', display: 'flex', flexDirection: 'column', position: 'relative' }}>
-      
       <AppHeader 
-        title={isDirectMessage ? targetUser?.name : community?.name}
-        subtitle={isDirectMessage ? 'Direct Message' : `#${channelId}`}
+        title={isDirectMessage ? targetUser?.name : (currentChannelObj?.name || channelId)}
+        subtitle={isDirectMessage ? 'Direct Message' : community?.name}
         showBack={true}
         onBack={() => navigate.back()}
       />
 
-      {/* WhatsApp Banners */}
-      {waConfig?.groupLink && !waConfig?.businessConnected && !isDirectMessage && (
-        <div style={{ background: 'rgba(34,197,94,0.1)', borderBottom: '1px solid rgba(34,197,94,0.2)', padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#22c55e', fontSize: '0.85rem', fontWeight: 500 }}>
-            <MessageCircle size={16} /> <span>This community is also on WhatsApp!</span>
-          </div>
-          <a href={waConfig.groupLink} target="_blank" rel="noreferrer" className="interactive-press" style={{ background: '#22c55e', color: 'var(--white)', padding: '6px 12px', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
-            Join Group
-          </a>
-        </div>
-      )}
-      {waConfig?.businessConnected && !isDirectMessage && (
-        <div style={{ background: 'rgba(34,197,94,0.05)', borderBottom: '1px solid rgba(34,197,94,0.1)', padding: '8px 20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <MessageCircle size={14} color="#22c55e" />
-          <span style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>Messages here are officially synced to members' WhatsApp via the Business API.</span>
-        </div>
-      )}
-
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden', flexDirection: 'column' }}>
-        {/* Chat Feed */}
         <div style={{ flex: 1, padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px', overflowY: 'auto' }}>
           <div style={{ textAlign: 'center', margin: '20px 0', color: 'var(--slate-500)', fontSize: '0.8rem' }}>
-            {isDirectMessage ? `This is the start of your direct messages with ${targetUser?.name}.` : `This is the start of the #${channelId} chat for ${community?.name}.`}
+            {isDirectMessage ? `This is the start of your direct messages with ${targetUser?.name}.` : 
+             currentChannelObj?.type === 'announcement' ? `This is an announcement channel for ${community?.name}.` :
+             `This is the start of the ${currentChannelObj?.name} chat for ${community?.name}.`}
           </div>
 
           {isLoading ? (
@@ -403,10 +390,10 @@ export default function Chat() {
             </>
           ) : (
             activeMessages.map((msg, index) => {
-              const currentAuthorId = msg.senderId || msg.authorId; // Handle both schemas
+              const currentAuthorId = msg.senderId || msg.authorId; 
               const authorObj = users.find(u => u.id === currentAuthorId) || { name: 'Unknown', id: currentAuthorId, avatar: 'https://i.pravatar.cc/150' };
               const isMe = currentAuthorId === user.id;
-              const isLeader = !isDirectMessage && communityMemberships[communityId]?.find(m => m.userId === currentAuthorId)?.role === 'Leader';
+              const authorIsLeader = !isDirectMessage && communityMemberships[communityId]?.find(m => m.userId === currentAuthorId)?.role === 'Leader';
               
               const prevMsg = activeMessages[index - 1];
               const nextMsg = activeMessages[index + 1];
@@ -415,23 +402,21 @@ export default function Chat() {
               
               const isConsecutive = prevAuthorId === currentAuthorId;
               const isLastConsecutive = nextAuthorId !== currentAuthorId;
-
-              // Date separator (very basic logic for prototype)
               const showDate = index === 0 || (prevMsg && new Date(msg.created_at || new Date()).getDate() !== new Date(prevMsg.created_at || new Date()).getDate());
 
               return (
                 <div key={msg.id} style={{ display: 'flex', flexDirection: 'column' }}>
                   {showDate && (
                     <div style={{ textAlign: 'center', margin: '24px 0 16px 0', fontSize: '0.75rem', color: 'var(--slate-500)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px' }}>
-                      {msg.timestamp ? msg.timestamp.split(' ')[0] + ' Today' : 'Today'}
+                      {msg.timestamp ? msg.timestamp.split(' ')[0] : 'Today'}
                     </div>
                   )}
                   <div className="stagger-item" style={{ alignSelf: isMe ? 'flex-end' : 'flex-start', maxWidth: '85%', marginTop: isConsecutive ? '2px' : '16px' }}>
                     {!isMe && !isConsecutive && (
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px', marginLeft: '4px' }}>
-                        <img onClick={() => navigate.back()} src={authorObj.avatar} alt={authorObj.name} style={{ width: '24px', height: '24px', borderRadius: '50%', objectFit: 'cover', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.1)' }} />
-                        <div onClick={() => navigate.back()} style={{ fontSize: '0.8rem', color: isLeader ? 'var(--teal-400)' : 'var(--slate-400)', fontWeight: isLeader ? 600 : 500, cursor: 'pointer' }}>
-                          {authorObj.name} {isLeader && '👑'}
+                        <img onClick={() => navigate.push(isDirectMessage ? '#' : `/chat/dm/${authorObj.id}`)} src={authorObj.avatar} alt={authorObj.name} style={{ width: '24px', height: '24px', borderRadius: '50%', objectFit: 'cover', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.1)' }} />
+                        <div onClick={() => navigate.push(isDirectMessage ? '#' : `/chat/dm/${authorObj.id}`)} style={{ fontSize: '0.8rem', color: authorIsLeader ? 'var(--teal-400)' : 'var(--slate-400)', fontWeight: authorIsLeader ? 600 : 500, cursor: 'pointer' }}>
+                          {authorObj.name} {authorIsLeader && '👑'}
                         </div>
                       </div>
                     )}
@@ -448,19 +433,13 @@ export default function Chat() {
                       display: 'flex',
                       flexDirection: 'column',
                       gap: '8px',
-                      position: 'relative',
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
+                      position: 'relative'
                     }}>
                       {msg.image && <img src={msg.image} alt="Attachment" style={{ width: '100%', borderRadius: '8px', maxHeight: '250px', objectFit: 'cover' }} />}
                       {msg.text && <div>{msg.text}</div>}
                       {isLastConsecutive && (
                         <div style={{ fontSize: '0.65rem', alignSelf: 'flex-end', opacity: 0.7, marginTop: '2px' }}>
-                          {msg.timestamp || ''}
-                        </div>
-                      )}
-                      {waConfig?.businessConnected && !isDirectMessage && isLastConsecutive && (
-                        <div style={{ position: 'absolute', bottom: '-20px', right: isMe ? '0' : 'auto', left: isMe ? 'auto' : '0', color: 'var(--slate-500)', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.65rem' }}>
-                          <MessageCircle size={10} color="#22c55e" /> Synced
+                          {msg.timestamp?.split(' ')[1] || ''}
                         </div>
                       )}
                     </div>
@@ -473,46 +452,49 @@ export default function Chat() {
         </div>
       </div>
 
-      <div style={{ padding: '16px 20px', background: 'rgba(15, 23, 42, 0.75)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderTop: '1px solid rgba(255,255,255,0.08)', zIndex: 10, position: 'relative' }}>
-        {imageFile && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px 12px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', marginBottom: '8px' }}>
-            <ImageIcon size={16} color="var(--teal-400)" />
-            <span style={{ fontSize: '0.85rem', flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{imageFile.name}</span>
-            <button onClick={() => setImageFile(null)} className="interactive-press" style={{ background: 'none', border: 'none', color: 'var(--slate-400)', cursor: 'pointer' }}>
-              <X size={16} />
-            </button>
-          </div>
-        )}
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-          <input type="file" accept="image/*" ref={fileInputRef} onChange={e => setImageFile(e.target.files[0])} style={{ display: 'none' }} />
-          <button onClick={() => fileInputRef.current?.click()} className="interactive-press" style={{ background: 'none', border: 'none', color: 'var(--slate-400)', padding: '8px', cursor: 'pointer' }}>
-            <ImageIcon size={20} />
-          </button>
-          
-          <button onClick={() => setShowEmojiPicker(!showEmojiPicker)} className="interactive-press" style={{ background: 'none', border: 'none', color: showEmojiPicker ? 'var(--teal-400)' : 'var(--slate-400)', padding: '8px', cursor: 'pointer', display: 'flex' }}>
-            <Smile size={20} />
-          </button>
-          
-          {showEmojiPicker && (
-            <div style={{ position: 'absolute', bottom: '80px', left: '20px', zIndex: 100, maxWidth: 'calc(100vw - 40px)' }}>
-              <EmojiPicker onEmojiClick={onEmojiClick} theme="dark" width={Math.min(320, typeof window !== 'undefined' ? window.innerWidth - 40 : 320)} height={400} />
+      {!isReadOnly ? (
+        <div style={{ padding: '16px 20px', background: 'rgba(15, 23, 42, 0.75)', backdropFilter: 'blur(16px)', borderTop: '1px solid rgba(255,255,255,0.08)', zIndex: 10, position: 'relative' }}>
+          {imageFile && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px 12px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', marginBottom: '8px' }}>
+              <ImageIcon size={16} color="var(--teal-400)" />
+              <span style={{ fontSize: '0.85rem', flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{imageFile.name}</span>
+              <button onClick={() => setImageFile(null)} className="interactive-press" style={{ background: 'none', border: 'none', color: 'var(--slate-400)', cursor: 'pointer' }}>
+                <X size={16} />
+              </button>
             </div>
           )}
-          <input 
-            type="text" 
-            value={inputText}
-            onChange={(e) => setInputText(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-            placeholder={isDirectMessage ? 'Message...' : `Message #${channelId}...`}
-            style={{ flex: 1, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '999px', padding: '12px 20px', color: 'var(--white)', fontSize: '0.95rem', outline: 'none', transition: 'border-color 0.2s', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)' }}
-            onFocus={e => e.target.style.borderColor = 'rgba(20,184,166,0.5)'}
-            onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
-          />
-          <button disabled={isUploading} className="btn btn-primary interactive-press" onClick={handleSend} style={{ width: '44px', height: '44px', borderRadius: '50%', padding: 0, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: isUploading ? 0.5 : 1 }}>
-            <Send size={18} />
-          </button>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <input type="file" accept="image/*" ref={fileInputRef} onChange={e => setImageFile(e.target.files[0])} style={{ display: 'none' }} />
+            <button onClick={() => fileInputRef.current?.click()} className="interactive-press" style={{ background: 'none', border: 'none', color: 'var(--slate-400)', padding: '8px', cursor: 'pointer' }}>
+              <ImageIcon size={20} />
+            </button>
+            <button onClick={() => setShowEmojiPicker(!showEmojiPicker)} className="interactive-press" style={{ background: 'none', border: 'none', color: showEmojiPicker ? 'var(--teal-400)' : 'var(--slate-400)', padding: '8px', cursor: 'pointer', display: 'flex' }}>
+              <Smile size={20} />
+            </button>
+            {showEmojiPicker && (
+              <div style={{ position: 'absolute', bottom: '80px', left: '20px', zIndex: 100, maxWidth: 'calc(100vw - 40px)' }}>
+                <EmojiPicker onEmojiClick={onEmojiClick} theme="dark" width={Math.min(320, typeof window !== 'undefined' ? window.innerWidth - 40 : 320)} height={400} />
+              </div>
+            )}
+            <input 
+              type="text" 
+              value={inputText}
+              onChange={(e) => setInputText(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+              placeholder="Message..."
+              style={{ flex: 1, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '999px', padding: '12px 20px', color: 'var(--white)', fontSize: '0.95rem', outline: 'none' }}
+            />
+            <button disabled={isUploading || (!inputText.trim() && !imageFile)} className="btn btn-primary interactive-press" onClick={handleSend} style={{ width: '44px', height: '44px', borderRadius: '50%', padding: 0, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: (isUploading || (!inputText.trim() && !imageFile)) ? 0.5 : 1 }}>
+              <Send size={18} />
+            </button>
+          </div>
         </div>
-      </div>
+      ) : (
+        <div style={{ padding: '24px 20px', background: 'rgba(255,255,255,0.02)', borderTop: '1px solid rgba(255,255,255,0.05)', textAlign: 'center', color: 'var(--slate-400)', fontSize: '0.85rem' }}>
+          <Megaphone size={16} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '6px' }} />
+          Only community leaders can send messages to this announcement channel.
+        </div>
+      )}
     </div>
   );
 }

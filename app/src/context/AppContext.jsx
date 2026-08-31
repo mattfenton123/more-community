@@ -1034,13 +1034,13 @@ export function AppProvider({ children }) {
     return new Promise((resolve) => setTimeout(resolve, 1500));
   };
 
-  const createChannel = async (communityId, channelName) => {
+  const createChannel = async (communityId, channelName, type = 'text', memberIds = null) => {
     const newId = `ch_${Date.now()}`;
-    const newChannel = { id: newId, community_id: communityId, name: channelName, type: 'text' };
+    const newChannel = { id: newId, community_id: communityId, name: channelName, type, member_ids: memberIds };
     setChannels(prev => [...prev, newChannel]);
 
     try {
-      await createChannelAction({ id: newId, communityId, name: channelName, type: 'text' }, session?.access_token);
+      await createChannelAction({ id: newId, communityId, name: channelName, type, memberIds }, session?.access_token);
     } catch (err) {
       console.error(err);
       setChannels(prev => prev.filter(c => c.id !== newId));

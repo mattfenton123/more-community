@@ -317,7 +317,8 @@ export async function createChannelAction(channelData, token) {
     id: channelData.id,
     community_id: channelData.communityId,
     name: channelData.name,
-    type: channelData.type || 'text'
+    type: channelData.type || 'text',
+    member_ids: channelData.memberIds || null
   }).select().single();
   
   if (error) throw new Error(error.message);
