@@ -101,6 +101,10 @@ export function AppProvider({ children }) {
     setServices(prev => prev.map(s => s.id === serviceId ? { ...s, status: newStatus } : s));
   };
 
+  const addReview = useCallback((newReview) => {
+    setReviews(prev => [newReview, ...prev]);
+  }, []);
+
   const [connectedSocialAccounts, setConnectedSocialAccounts] = useState({
     instagram: { connected: true, handle: '@more.community' },
     x: { connected: false, handle: '' },
@@ -1060,6 +1064,7 @@ export function AppProvider({ children }) {
       feedPosts,
       experiences,
       reviews,
+      addReview,
       connectedSocialAccounts,
       setConnectedSocialAccounts,
       createFeedPost,
