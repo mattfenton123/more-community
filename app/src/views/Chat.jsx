@@ -405,6 +405,8 @@ export default function Chat() {
         imageUrl = await uploadImage(imageFile);
       } catch (err) {
         toast.error('Upload failed', 'Could not upload image');
+        setIsUploading(false);
+        return;
       }
     }
     
@@ -519,7 +521,17 @@ export default function Chat() {
           )}
           <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
             <label className="interactive-press" style={{ background: 'none', border: 'none', color: 'var(--slate-400)', padding: '8px', cursor: 'pointer', display: 'flex', margin: 0 }}>
-              <input type="file" accept="image/*" onChange={e => setImageFile(e.target.files[0])} style={{ display: 'none' }} />
+              <input 
+                type="file" 
+                accept="image/*" 
+                onChange={e => {
+                  if (e.target.files && e.target.files[0]) {
+                    setImageFile(e.target.files[0]);
+                  }
+                  e.target.value = null;
+                }} 
+                style={{ display: 'none' }} 
+              />
               <ImageIcon size={20} />
             </label>
             <button onClick={() => setShowEmojiPicker(!showEmojiPicker)} className="interactive-press" style={{ background: 'none', border: 'none', color: showEmojiPicker ? 'var(--teal-400)' : 'var(--slate-400)', padding: '8px', cursor: 'pointer', display: 'flex' }}>
