@@ -1059,16 +1059,39 @@ export function AppProvider({ children }) {
         fileType: "image/webp",
       };
       
-      let compressedFile = file;
-      if (file.type.startsWith('image/')) {
+      let fileToCompress = file;
+
+      // Handle HEIC/HEIF files from iOS
+      if (file.type === 'image/heic' || file.type === 'image/heif' || file.name.toLowerCase().endsWith('.heic') || file.name.toLowerCase().endsWith('.heif')) {
         try {
-          const result = await imageCompression(file, options);
+          // Dynamically import heic2any to avoid bloating the initial client bundle
+          const heic2any = (await import('heic2any')).default;
+          console.log("Converting HEIC to JPEG...");
+          const conversionResult = await heic2any({
+            blob: file,
+            toType: "image/jpeg",
+            quality: 0.8
+          });
+          
+          const jpegBlob = Array.isArray(conversionResult) ? conversionResult[0] : conversionResult;
+          const newName = file.name.replace(/\.[^/.]+$/, "") + ".jpeg";
+          fileToCompress = new File([jpegBlob], newName, { type: 'image/jpeg' });
+          console.log("Converted HEIC to JPEG successfully");
+        } catch (heicError) {
+          console.error("HEIC conversion failed:", heicError);
+        }
+      }
+
+      let compressedFile = fileToCompress;
+      if (fileToCompress.type.startsWith('image/')) {
+        try {
+          const result = await imageCompression(fileToCompress, options);
           
           // Rename the file to .webp to ensure the server action gets the correct extension
-          const newName = file.name.replace(/\.[^/.]+$/, "") + ".webp";
+          const newName = fileToCompress.name.replace(/\.[^/.]+$/, "") + ".webp";
           compressedFile = new File([result], newName, { type: 'image/webp' });
           
-          console.log(`Compressed image from ${file.size / 1024}KB to ${compressedFile.size / 1024}KB`);
+          console.log(`Compressed image from ${fileToCompress.size / 1024}KB to ${compressedFile.size / 1024}KB`);
         } catch (error) {
           console.error("Compression failed, using original file", error);
         }
