@@ -1109,7 +1109,15 @@ export function AppProvider({ children }) {
     setCommunities(prev => prev.map(c => c.id === communityId ? { ...c, ...updates } : c));
     
     try {
-      await updateCommunityAction(communityId, updates, session?.access_token);
+      const dbUpdates = { ...updates };
+      // Prevent throwing error for non-existent mock CRM columns
+      delete dbUpdates.autoWelcomeEnabled;
+      delete dbUpdates.autoRemindersEnabled;
+      delete dbUpdates.autoFeedbackEnabled;
+      
+      if (Object.keys(dbUpdates).length > 0) {
+        await updateCommunityAction(communityId, dbUpdates, session?.access_token);
+      }
     } catch (err) {
       console.error(err);
       // Revert optimistic update

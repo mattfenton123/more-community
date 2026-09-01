@@ -15,6 +15,7 @@ import DigitalTicket from '../components/DigitalTicket';
 import QRScanner from '../components/QRScanner';
 import CommunityOnboardingFlow from './CommunityOnboardingFlow';
 import EventFlyerGenerator from '../components/EventFlyerGenerator';
+import AutomatedTriggers from '../components/AutomatedTriggers';
 
 // ─── Stat Card Component ──────────────────────────────────
 const StatCard = ({ value, label, color, icon: Icon, accent }) => (
@@ -701,7 +702,7 @@ export default function LeaderDashboard() {
           {/* Tab Navigation */}
           <div style={{ padding: '0 20px', marginBottom: '24px' }}>
             <div style={{ display: 'flex', gap: '4px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', padding: '4px', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-              {['overview', 'events', 'network', 'monetisation', 'experiences', 'social hub', 'crm', 'members', 'settings'].map(tab => (
+              {['overview', 'events', 'network', 'monetisation', 'experiences', 'social hub', 'crm', 'automations', 'members', 'settings'].map(tab => (
                 <button 
                   key={tab} onClick={() => setActiveTab(tab)}
                   style={{
@@ -1225,6 +1226,13 @@ export default function LeaderDashboard() {
                 <span style={{ color: 'var(--slate-500)' }}>→</span>
               </button>
             </div>
+          )}
+
+          {/* ══════════════════════════════════════════════════════ */}
+          {/* TAB: AUTOMATIONS — Autopilot CRM                       */}
+          {/* ══════════════════════════════════════════════════════ */}
+          {activeTab === 'automations' && (
+            <AutomatedTriggers community={community} />
           )}
 
           {/* ══════════════════════════════════════════════════════ */}
