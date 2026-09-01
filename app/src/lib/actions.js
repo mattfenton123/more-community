@@ -112,11 +112,17 @@ export async function createCommunityAction(communityData, token) {
 
   // Automatically make the creator a leader
   if (communityData.creatorId) {
-    await supabaseAdmin.from('community_memberships').insert({
+    const { error: membershipError } = await supabaseAdmin.from('community_memberships').insert({
       community_id: data.id,
       user_id: communityData.creatorId,
       role: 'Leader'
     });
+    
+    if (membershipError) {
+      console.error("Failed to add creator as leader:", membershipError);
+      // We don't throw here to avoid failing the community creation entirely, 
+      // but in a production app we'd handle this more robustly.
+    }
   }
 
   return data;
@@ -440,7 +446,7 @@ export async function toggleFeedPostLikeAction(postId, userId, increment, token)
     await verifyUser(token, userId);
     const { data: post } = await supabaseAdmin.from('feed_posts').select('likes').eq('id', postId).single();
     if (post) {
-      const newLikes = Math.max(0, (post.likes || 0) + (increment ? 1 : -1));
+      const newLikes = Math.max(0, (post.likes || 0) + increment);
       await supabaseAdmin.from('feed_posts').update({ likes: newLikes }).eq('id', postId);
       return { liked: increment, likes: newLikes };
     }

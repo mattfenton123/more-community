@@ -9,8 +9,8 @@ import dynamic from 'next/dynamic';
 const EmojiPicker = dynamic(() => import('emoji-picker-react'), { ssr: false });
 
 export default function InlineComments({ post }) {
-  const { users, user, communities, createFeedComment, uploadImage } = useAppContext();
-  const { deleteComment } = useFeed();
+  const { users, user, communities, uploadImage } = useAppContext();
+  const { deleteComment, createFeedComment } = useFeed();
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
   const [newCommentImage, setNewCommentImage] = useState(null);
