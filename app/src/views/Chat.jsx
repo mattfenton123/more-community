@@ -212,8 +212,10 @@ export default function Chat() {
                   >
                     <div 
                       onClick={(e) => {
-                        if (item.type !== 'dm' && item.comm?.id) {
-                          e.stopPropagation();
+                        e.stopPropagation();
+                        if (item.type === 'dm') {
+                          navigate.push(`/profile/${item.otherUser.id}`);
+                        } else if (item.comm?.id) {
                           navigate.push(`/chat?communityId=${item.comm.id}`);
                         }
                       }}
@@ -428,6 +430,11 @@ export default function Chat() {
         subtitle={isDirectMessage ? 'Direct Message' : community?.name}
         showBack={true}
         onBack={() => navigate.back()}
+        avatar={isDirectMessage ? (targetUser?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(targetUser?.name || 'User')}&background=0D8B93&color=fff`) : community?.image}
+        onAvatarClick={() => {
+          if (isDirectMessage) navigate.push(`/profile/${targetUserId}`);
+          else if (communityId) navigate.push(`/chat?communityId=${communityId}`);
+        }}
       />
 
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden', flexDirection: 'column' }}>
@@ -470,8 +477,8 @@ export default function Chat() {
                   <div className="stagger-item" style={{ alignSelf: isMe ? 'flex-end' : 'flex-start', maxWidth: '85%', marginTop: isConsecutive ? '2px' : '16px' }}>
                     {!isMe && !isConsecutive && (
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px', marginLeft: '4px' }}>
-                        <img onClick={() => navigate.push(isDirectMessage ? '#' : `/chat/dm/${authorObj.id}`)} src={authorObj.avatar} alt={authorObj.name} style={{ width: '24px', height: '24px', borderRadius: '50%', objectFit: 'cover', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.1)' }} />
-                        <div onClick={() => navigate.push(isDirectMessage ? '#' : `/chat/dm/${authorObj.id}`)} style={{ fontSize: '0.8rem', color: authorIsLeader ? 'var(--teal-400)' : 'var(--slate-400)', fontWeight: authorIsLeader ? 600 : 500, cursor: 'pointer' }}>
+                        <img onClick={() => navigate.push(`/profile/${authorObj.id}`)} src={authorObj.avatar} alt={authorObj.name} style={{ width: '24px', height: '24px', borderRadius: '50%', objectFit: 'cover', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.1)' }} />
+                        <div onClick={() => navigate.push(`/profile/${authorObj.id}`)} style={{ fontSize: '0.8rem', color: authorIsLeader ? 'var(--teal-400)' : 'var(--slate-400)', fontWeight: authorIsLeader ? 600 : 500, cursor: 'pointer' }}>
                           {authorObj.name} {authorIsLeader && '👑'}
                         </div>
                       </div>

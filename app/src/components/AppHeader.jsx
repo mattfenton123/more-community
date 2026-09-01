@@ -3,7 +3,7 @@ import { useRouter as useNavigate } from 'next/navigation';
 import { ChevronLeft, Bell, Sun, Moon, Monitor } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 
-export default function AppHeader({ title, subtitle, rightElement, showBack = false, onBack }) {
+export default function AppHeader({ title, subtitle, rightElement, showBack = false, onBack, avatar, onAvatarClick }) {
   const navigate = useNavigate();
   const { user, notifications, theme, setTheme } = useAppContext();
   const unreadCount = notifications ? notifications.filter(n => !n.is_read).length : 0;
@@ -80,8 +80,16 @@ export default function AppHeader({ title, subtitle, rightElement, showBack = fa
         {title && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: '4px' }}>
             <span style={{ color: 'var(--slate-500)', fontSize: '1.2rem' }}>/</span>
+            {avatar && (
+              <img 
+                src={avatar} 
+                alt={title} 
+                onClick={onAvatarClick}
+                style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover', cursor: onAvatarClick ? 'pointer' : 'default', marginLeft: '4px' }} 
+              />
+            )}
             <div>
-              <h1 style={{ margin: 0, fontSize: '1.2rem', fontFamily: 'var(--font-heading)', color: 'var(--white)' }}>{title}</h1>
+              <h1 style={{ margin: 0, fontSize: '1.2rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', cursor: onAvatarClick ? 'pointer' : 'default' }} onClick={onAvatarClick}>{title}</h1>
               {subtitle && <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', fontWeight: 500 }}>{subtitle}</div>}
             </div>
           </div>
