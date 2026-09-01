@@ -49,6 +49,7 @@ export function ChatProvider({ children }) {
             senderId: dm.sender_id,
             receiverId: dm.receiver_id,
             text: dm.text,
+            image: dm.image,
             createdAt: dm.created_at
           })));
         }
