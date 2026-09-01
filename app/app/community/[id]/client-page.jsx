@@ -86,6 +86,7 @@ export default function CommunityProfile() {
   const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
   const [showIdeaModal, setShowIdeaModal] = useState(false);
   const [showReviewForm, setShowReviewForm] = useState(false);
+  const [showLeaveModal, setShowLeaveModal] = useState(false);
   const fileInputRef = useRef(null);
   
   const communityId = id || (user.joinedCommunities.length > 0 ? user.joinedCommunities[0] : 'tw-tech-meetup');
@@ -154,12 +155,21 @@ export default function CommunityProfile() {
   const handleJoinLeave = async () => {
     try {
       if (isMember) {
-        await leaveCommunity(community.id);
-        toast.info('Left community', `You've left ${community.name}`);
+        setShowLeaveModal(true);
       } else {
         await joinCommunity(community.id);
         toast.success('Welcome!', `You're now a member of ${community.name}`);
       }
+    } catch (err) {
+      toast.error('Error', err.message);
+    }
+  };
+
+  const confirmLeave = async () => {
+    try {
+      await leaveCommunity(community.id);
+      toast.info('Left community', `You've left ${community.name}`);
+      setShowLeaveModal(false);
     } catch (err) {
       toast.error('Error', err.message);
     }
@@ -1431,6 +1441,36 @@ export default function CommunityProfile() {
       
       {showReviewForm && (
         <ReviewForm communityId={communityId} onClose={() => setShowReviewForm(false)} />
+      )}
+
+      {showLeaveModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(2,6,23,0.85)', backdropFilter: 'blur(10px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+          <div style={{ background: 'var(--slate-900)', borderRadius: '24px', padding: '32px 24px', width: '100%', maxWidth: '400px', border: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>
+            <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(244,63,94,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px auto' }}>
+              <Heart size={32} color="var(--rose-400)" style={{ animation: 'pulse 2s infinite' }} />
+            </div>
+            <h3 style={{ margin: '0 0 12px 0', fontSize: '1.4rem', color: 'var(--white)', fontFamily: 'var(--font-heading)' }}>Leaving so soon?</h3>
+            <p style={{ margin: '0 0 24px 0', color: 'var(--slate-400)', fontSize: '0.95rem', lineHeight: 1.5 }}>
+              By leaving <strong>{community.name}</strong>, you'll miss out on future events, lively discussions, and real-life connections.
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <button 
+                onClick={() => setShowLeaveModal(false)}
+                className="btn btn-primary interactive-press" 
+                style={{ padding: '14px', borderRadius: '14px', fontSize: '1rem', fontWeight: 600, boxShadow: '0 8px 24px rgba(20,184,166,0.2)' }}
+              >
+                Actually, I'll stay
+              </button>
+              <button 
+                onClick={confirmLeave}
+                className="interactive-press" 
+                style={{ background: 'transparent', border: 'none', color: 'var(--slate-500)', padding: '14px', fontSize: '0.95rem', fontWeight: 500, cursor: 'pointer' }}
+              >
+                Yes, leave community
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
