@@ -91,6 +91,7 @@ export function ChatProvider({ children }) {
             senderId: payload.new.sender_id,
             receiverId: payload.new.receiver_id,
             text: payload.new.text,
+            image: payload.new.image,
             createdAt: payload.new.created_at
           }];
         });
@@ -157,7 +158,7 @@ export function ChatProvider({ children }) {
       const data = await sendDirectMessageAction(user.id, receiverId, text, image, token);
       setDirectMessages(prev => {
         if (prev.some(m => m.id === data.id && m.id !== tempId)) return prev.filter(m => m.id !== tempId);
-        return prev.map(m => m.id === tempId ? { id: data.id, senderId: data.sender_id, receiverId: data.receiver_id, text: data.text, createdAt: data.created_at } : m);
+        return prev.map(m => m.id === tempId ? { id: data.id, senderId: data.sender_id, receiverId: data.receiver_id, text: data.text, image: data.image, createdAt: data.created_at } : m);
       });
       markChatRead(null, receiverId);
     } catch (err) {

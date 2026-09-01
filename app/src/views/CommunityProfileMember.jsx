@@ -568,7 +568,17 @@ export default function CommunityProfile() {
                             </div>
                           </div>
                           <div style={{ display: 'flex', gap: '8px' }}>
-                            <button onClick={() => updateServiceStatus(srv.id, 'approved')} className="btn interactive-press" style={{ flex: 1, padding: '8px', borderRadius: '8px', background: 'var(--teal-500)', color: 'var(--white)', border: 'none', fontWeight: 600, display: 'flex', justifyContent: 'center', gap: '4px' }}>
+                            <button onClick={async () => {
+                              updateServiceStatus(srv.id, 'approved');
+                              try {
+                                const srvUser = users.find(u => u.id === srv.userId) || {};
+                                const feedText = `🌟 **New Service Available!**\n\n**${srv.title}** by ${srvUser.name || 'a member'}\n\n${srv.description}\n\n*Check out the Services tab to learn more!*`;
+                                await createFeedPost(communityId, feedText, null, false, false);
+                                toast.success('Service Approved', 'It has been published to the feed.');
+                              } catch (e) {
+                                console.error(e);
+                              }
+                            }} className="btn interactive-press" style={{ flex: 1, padding: '8px', borderRadius: '8px', background: 'var(--teal-500)', color: 'var(--white)', border: 'none', fontWeight: 600, display: 'flex', justifyContent: 'center', gap: '4px' }}>
                               <Check size={16} /> Approve
                             </button>
                             <button onClick={() => updateServiceStatus(srv.id, 'rejected')} className="btn interactive-press" style={{ flex: 1, padding: '8px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', color: 'var(--slate-300)', border: '1px solid rgba(255,255,255,0.1)', fontWeight: 600, display: 'flex', justifyContent: 'center', gap: '4px' }}>

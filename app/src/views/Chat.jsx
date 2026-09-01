@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 import AppHeader from '../components/AppHeader';
 import { useAppContext } from '../context/AppContext';
 import { useChat } from '../context/ChatContext';
-import { useRouter as useNavigate, useParams } from 'next/navigation';
+import { useRouter as useNavigate, useParams, useSearchParams } from 'next/navigation';
 import { SkeletonChatBubble, SkeletonLine, SkeletonAvatar } from '../components/SkeletonCard';
 import { useToast } from '../components/Toast';
 import { FALLBACK_IMAGES } from '../lib/constants';
@@ -15,6 +15,8 @@ const EmojiPicker = dynamic(() => import('emoji-picker-react'), { ssr: false });
 export default function Chat() {
   const { communityId, channelId, targetUserId } = useParams();
   const navigate = useNavigate();
+  const searchParams = useSearchParams();
+  const communityFilterId = searchParams?.get('communityId');
   const [inputText, setInputText] = useState('');
   const [imageFile, setImageFile] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -101,18 +103,25 @@ export default function Chat() {
       if (item.type === 'dm') {
         latestMsg = directMessages.filter(m => (m.senderId === item.id && m.receiverId === user.id) || (m.senderId === user.id && m.receiverId === item.id)).pop();
         const dmReceipt = chatReadReceipts.find(r => !r.community_id && r.channel_id === item.id);
-        hasUnread = latestMsg && latestMsg.senderId !== user.id && (!dmReceipt || new Date(dmReceipt.last_read_at) < new Date(latestMsg.created_at || new Date().toISOString()));
+        hasUnread = latestMsg && latestMsg.senderId !== user.id && (!dmReceipt || new Date(dmReceipt.last_read_at) < new Date(latestMsg.createdAt || latestMsg.created_at || new Date().toISOString()));
       } else {
-        latestMsg = messages.filter(m => m.communityId === item.comm.id && m.channel === item.id).pop();
+        latestMsg = messages.filter(m => m.communityId === item.comm.id && (m.channel === item.id || m.channelId === item.id)).pop();
         const commReceipt = chatReadReceipts.find(r => r.community_id === item.comm.id && r.channel_id === item.id);
-        hasUnread = latestMsg && latestMsg.authorId !== user.id && (!commReceipt || new Date(commReceipt.last_read_at) < new Date(latestMsg.created_at || new Date().toISOString()));
+        hasUnread = latestMsg && (latestMsg.authorId !== user.id && latestMsg.senderId !== user.id) && (!commReceipt || new Date(commReceipt.last_read_at) < new Date(latestMsg.createdAt || latestMsg.created_at || new Date().toISOString()));
       }
       return {
         ...item,
         latestMsg,
         hasUnread,
-        sortTime: latestMsg?.created_at ? new Date(latestMsg.created_at).getTime() : 0
+        sortTime: latestMsg?.createdAt 
+          ? new Date(latestMsg.createdAt).getTime() 
+          : (latestMsg?.created_at 
+              ? new Date(latestMsg.created_at).getTime() 
+              : (item.created_at ? new Date(item.created_at).getTime() : 0))
       };
+    }).filter(item => {
+      if (!communityFilterId) return true;
+      return item.comm?.id === communityFilterId;
     }).sort((a, b) => b.sortTime - a.sortTime);
 
     const handleCreateChannel = async (type = 'text', members = null) => {
@@ -132,7 +141,18 @@ export default function Chat() {
       <div className="view-chat" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
         <AppHeader title="Chats" />
         
-        <div style={{ flex: 1, overflowY: 'auto' }}>
+        {communityFilterId && (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 20px', background: 'rgba(20,184,166,0.1)', borderBottom: '1px solid rgba(20,184,166,0.2)' }}>
+            <div style={{ fontSize: '0.85rem', color: 'var(--teal-300)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Hash size={14} /> Showing filtered community chats
+            </div>
+            <button onClick={() => navigate.push('/chat')} style={{ background: 'transparent', border: 'none', color: 'var(--teal-400)', cursor: 'pointer', padding: '4px' }}>
+              <X size={16} />
+            </button>
+          </div>
+        )}
+
+        <div style={{ flex: 1, overflowY: 'auto', paddingBottom: '80px' }}>
           {isLoading ? (
             <div style={{ padding: '0 20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
               {[1,2,3,4].map(i => (
@@ -154,14 +174,33 @@ export default function Chat() {
             <div style={{ display: 'flex', flexDirection: 'column' }}>
               {inboxItems.map((item, i) => {
                 const title = item.type === 'dm' ? item.otherUser.name : item.name;
-                const subtitle = item.type === 'channel' ? item.comm.name : 'Direct Message';
-                let avatar = item.type === 'dm' ? item.otherUser.avatar : (item.comm.image || FALLBACK_IMAGES.community);
+                
+                let displayTitle = title;
+                let displaySubtitle = item.type !== 'dm' ? item.comm.name : null;
+
+                if (item.type !== 'dm' && title.toLowerCase() === 'general') {
+                  displayTitle = item.comm.name;
+                  displaySubtitle = 'General Chat';
+                }
+                
+                let avatar = item.type === 'dm' 
+                  ? (item.otherUser.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(item.otherUser.name)}&background=0D8B93&color=fff`)
+                  : `https://ui-avatars.com/api/?name=${encodeURIComponent(displayTitle)}&background=1e293b&color=2dd4bf`;
+                
+                if (item.type !== 'dm' && title.toLowerCase() === 'general') {
+                  avatar = item.comm.image || FALLBACK_IMAGES.community;
+                }
                 
                 let Icon = Hash;
                 if (item.type === 'dm') Icon = MessageCircle;
                 else if (item.channelType === 'announcement') Icon = Megaphone;
                 else if (item.channelType === 'group' || item.memberIds) Icon = Lock;
                 
+                const currentUserId = user?.id;
+                const msgAuthorId = item.latestMsg?.authorId || item.latestMsg?.senderId;
+                const isMe = msgAuthorId === currentUserId;
+                const authorName = users.find(u => u.id === msgAuthorId)?.name || 'Someone';
+
                 return (
                   <div 
                     key={`${item.type}-${item.id}-${i}`} 
@@ -171,7 +210,15 @@ export default function Chat() {
                     onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
                     onMouseOut={e => e.currentTarget.style.background = 'transparent'}
                   >
-                    <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: `url(${avatar})`, backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative', flexShrink: 0 }}>
+                    <div 
+                      onClick={(e) => {
+                        if (item.type !== 'dm' && item.comm?.id) {
+                          e.stopPropagation();
+                          navigate.push(`/chat?communityId=${item.comm.id}`);
+                        }
+                      }}
+                      style={{ width: '56px', height: '56px', borderRadius: '50%', background: `url(${avatar})`, backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative', flexShrink: 0 }}
+                    >
                       <div style={{ position: 'absolute', bottom: '-2px', right: '-2px', background: 'var(--slate-800)', borderRadius: '50%', padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid var(--slate-950)' }}>
                         <Icon size={12} color="var(--teal-400)" />
                       </div>
@@ -179,8 +226,15 @@ export default function Chat() {
                     
                     <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', justifyContent: 'center', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '16px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '4px' }}>
-                        <div style={{ fontWeight: item.hasUnread ? 700 : 600, fontSize: '1.05rem', color: item.hasUnread ? 'white' : 'var(--slate-200)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                          {title}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden' }}>
+                          <div style={{ fontWeight: item.hasUnread ? 700 : 600, fontSize: '1.05rem', color: item.hasUnread ? 'white' : 'var(--slate-200)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {displayTitle}
+                          </div>
+                          {displaySubtitle && (
+                            <div style={{ fontSize: '0.75rem', color: 'var(--slate-500)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              {displaySubtitle}
+                            </div>
+                          )}
                         </div>
                         <div style={{ fontSize: '0.75rem', color: item.hasUnread ? 'var(--teal-400)' : 'var(--slate-500)', fontWeight: item.hasUnread ? 600 : 400 }}>
                           {item.latestMsg?.timestamp?.split(' ')[0] || ''}
@@ -190,7 +244,7 @@ export default function Chat() {
                         <div style={{ fontSize: '0.85rem', color: item.hasUnread ? 'var(--slate-300)' : 'var(--slate-400)', fontWeight: item.hasUnread ? 500 : 400, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flex: 1 }}>
                           {item.latestMsg ? (
                             <>
-                              {item.type !== 'dm' && <span style={{ color: 'var(--slate-500)' }}>{item.latestMsg.authorId === user.id ? 'You' : (users.find(u=>u.id===item.latestMsg.authorId)?.name || 'Someone')}: </span>}
+                              {item.type !== 'dm' && <span style={{ color: 'var(--slate-500)' }}>{isMe ? 'You' : authorName}: </span>}
                               {item.latestMsg.image ? '📸 Image' : item.latestMsg.text}
                             </>
                           ) : <span style={{ fontStyle: 'italic', color: 'var(--slate-500)' }}>No messages yet</span>}
@@ -453,7 +507,7 @@ export default function Chat() {
       </div>
 
       {!isReadOnly ? (
-        <div style={{ padding: '16px 20px', background: 'rgba(15, 23, 42, 0.75)', backdropFilter: 'blur(16px)', borderTop: '1px solid rgba(255,255,255,0.08)', zIndex: 10, position: 'relative' }}>
+        <div style={{ padding: '12px 16px', background: 'rgba(15, 23, 42, 0.75)', backdropFilter: 'blur(16px)', borderTop: '1px solid rgba(255,255,255,0.08)', zIndex: 10, position: 'relative' }}>
           {imageFile && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px 12px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', marginBottom: '8px' }}>
               <ImageIcon size={16} color="var(--teal-400)" />
@@ -463,17 +517,19 @@ export default function Chat() {
               </button>
             </div>
           )}
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-            <input type="file" accept="image/*" ref={fileInputRef} onChange={e => setImageFile(e.target.files[0])} style={{ display: 'none' }} />
-            <button onClick={() => fileInputRef.current?.click()} className="interactive-press" style={{ background: 'none', border: 'none', color: 'var(--slate-400)', padding: '8px', cursor: 'pointer' }}>
+          <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+            <label className="interactive-press" style={{ background: 'none', border: 'none', color: 'var(--slate-400)', padding: '8px', cursor: 'pointer', display: 'flex', margin: 0 }}>
+              <input type="file" accept="image/*" onChange={e => setImageFile(e.target.files[0])} style={{ display: 'none' }} />
               <ImageIcon size={20} />
-            </button>
+            </label>
             <button onClick={() => setShowEmojiPicker(!showEmojiPicker)} className="interactive-press" style={{ background: 'none', border: 'none', color: showEmojiPicker ? 'var(--teal-400)' : 'var(--slate-400)', padding: '8px', cursor: 'pointer', display: 'flex' }}>
               <Smile size={20} />
             </button>
             {showEmojiPicker && (
-              <div style={{ position: 'absolute', bottom: '80px', left: '20px', zIndex: 100, maxWidth: 'calc(100vw - 40px)' }}>
-                <EmojiPicker onEmojiClick={onEmojiClick} theme="dark" width={Math.min(320, typeof window !== 'undefined' ? window.innerWidth - 40 : 320)} height={400} />
+              <div style={{ position: 'absolute', bottom: '100%', left: '0', zIndex: 100, width: '100%', padding: '0 10px 10px 10px' }}>
+                <div style={{ maxWidth: '350px', width: '100%', margin: '0 auto', background: 'var(--slate-900)', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.5)' }}>
+                  <EmojiPicker onEmojiClick={onEmojiClick} theme="dark" width="100%" height={320} />
+                </div>
               </div>
             )}
             <input 
@@ -482,7 +538,7 @@ export default function Chat() {
               onChange={(e) => setInputText(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSend()}
               placeholder="Message..."
-              style={{ flex: 1, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '999px', padding: '12px 20px', color: 'var(--white)', fontSize: '0.95rem', outline: 'none' }}
+              style={{ flex: 1, minWidth: 0, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '999px', padding: '12px 16px', color: 'var(--white)', fontSize: '0.95rem', outline: 'none' }}
             />
             <button disabled={isUploading || (!inputText.trim() && !imageFile)} className="btn btn-primary interactive-press" onClick={handleSend} style={{ width: '44px', height: '44px', borderRadius: '50%', padding: 0, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: (isUploading || (!inputText.trim() && !imageFile)) ? 0.5 : 1 }}>
               <Send size={18} />

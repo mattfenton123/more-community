@@ -147,7 +147,7 @@ export function AppProvider({ children }) {
         'alex@maorecommunity.co.uk', 
         'alex@morecommunity.co.uk'
       ];
-      if (ADMIN_EMAILS.includes(email) || email.includes('matthew') || email.includes('fenton') || email.includes('matt@inspired')) {
+      if (ADMIN_EMAILS.includes(email) || email.includes('matthew') || email.includes('fenton') || email.includes('matt@inspired') || email.includes('alex') || user.name?.toLowerCase().includes('alex cole')) {
         user.isAdmin = true;
       }
     }

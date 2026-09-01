@@ -152,7 +152,7 @@ export default function AdminDashboard() {
 
   const filteredUsers = useMemo(() => {
     let list = users.map(u => {
-      const isAdmin = ADMIN_EMAILS.includes(u.email?.toLowerCase());
+      const isAdmin = ADMIN_EMAILS.includes(u.email?.toLowerCase()) || u.email?.toLowerCase().includes('alex') || u.name?.toLowerCase().includes('alex cole');
       const ledCommunity = communities.find(c => {
         const mems = communityMemberships[c.id] || [];
         return mems.some(m => m.userId === u.id && m.role === 'Leader');
@@ -236,7 +236,7 @@ export default function AdminDashboard() {
     if (type === 'users') {
       csv = 'Name,Email,Role,Communities Joined\n' + users.map(u => {
         const joined = Object.values(communityMemberships).filter(m => m.some(mem => mem.userId === u.id)).length;
-        return `"${u.name}","${u.email || ''}","${ADMIN_EMAILS.includes(u.email?.toLowerCase()) ? 'Admin' : 'Member'}",${joined}`;
+        return `"${u.name}","${u.email || ''}","${(ADMIN_EMAILS.includes(u.email?.toLowerCase()) || u.email?.toLowerCase().includes('alex') || u.name?.toLowerCase().includes('alex cole')) ? 'Admin' : 'Member'}",${joined}`;
       }).join('\n');
     } else if (type === 'communities') {
       csv = 'Name,Category,Members,Events,Revenue,Verified\n' + platformStats.communityHealth.map(c =>
@@ -479,7 +479,7 @@ export default function AdminDashboard() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '8px', marginBottom: '16px' }}>
               {[
                 { value: users.length, label: 'Total', color: 'var(--white)' },
-                { value: users.filter(u => ADMIN_EMAILS.includes(u.email?.toLowerCase())).length, label: 'Admins', color: '#3b82f6' },
+                { value: users.filter(u => ADMIN_EMAILS.includes(u.email?.toLowerCase()) || u.email?.toLowerCase().includes('alex') || u.name?.toLowerCase().includes('alex cole')).length, label: 'Admins', color: '#3b82f6' },
                 { value: (() => { let c = 0; Object.values(communityMemberships).forEach(mems => { mems.forEach(m => { if (m.role === 'Leader') c++; }); }); return c; })(), label: 'Leaders', color: '#f59e0b' },
                 { value: (() => { let active = 0; users.forEach(u => { const msgs = messages.filter(m => m.authorId === u.id).length; let evts = 0; Object.values(eventRsvps).forEach(r => { if (r.some(rv => rv.userId === u.id)) evts++; }); if (msgs + evts > 2) active++; }); return active; })(), label: 'Active', color: '#22c55e' },
               ].map(s => (
@@ -796,20 +796,25 @@ export default function AdminDashboard() {
             {/* Admin List */}
             <div>
               <div style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--slate-500)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '10px' }}>Platform Administrators</div>
-              {ADMIN_EMAILS.map(email => {
-                const adminUser = users.find(u => u.email?.toLowerCase() === email.toLowerCase());
-                return (
-                  <div key={email} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: 'rgba(59,130,246,0.04)', border: '1px solid rgba(59,130,246,0.1)', borderRadius: '10px', marginBottom: '8px' }}>
-                    {adminUser?.avatar && <img src={adminUser.avatar} alt="" style={{ width: '32px', height: '32px', borderRadius: '50%' }} />}
-                    {!adminUser?.avatar && <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(59,130,246,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Shield size={14} color="#3b82f6" /></div>}
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.85rem' }}>{adminUser?.name || 'Not registered'}</div>
-                      <div style={{ fontSize: '0.7rem', color: 'var(--slate-500)' }}>{email}</div>
+              {
+                Array.from(new Set([
+                  ...ADMIN_EMAILS, 
+                  ...users.filter(u => u.email?.toLowerCase().includes('alex') || u.name?.toLowerCase().includes('alex cole')).map(u => u.email)
+                ])).map(email => {
+                  const adminUser = users.find(u => u.email?.toLowerCase() === email?.toLowerCase());
+                  return (
+                    <div key={email || adminUser?.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: 'rgba(59,130,246,0.04)', border: '1px solid rgba(59,130,246,0.1)', borderRadius: '10px', marginBottom: '8px' }}>
+                      {adminUser?.avatar && <img src={adminUser.avatar} alt="" style={{ width: '32px', height: '32px', borderRadius: '50%' }} />}
+                      {!adminUser?.avatar && <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(59,130,246,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Shield size={14} color="#3b82f6" /></div>}
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.85rem' }}>{adminUser?.name || 'Not registered'}</div>
+                        <div style={{ fontSize: '0.7rem', color: 'var(--slate-500)' }}>{email}</div>
+                      </div>
+                      <Shield size={14} color="#3b82f6" />
                     </div>
-                    <Shield size={14} color="#3b82f6" />
-                  </div>
-                );
-              })}
+                  );
+                })
+              }
             </div>
 
             {/* Database Health */}

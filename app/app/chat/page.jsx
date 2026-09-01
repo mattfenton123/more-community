@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useAppContext } from '../../src/context/AppContext';
 import { useChat } from '../../src/context/ChatContext';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { MessageCircle, Users, ChevronRight, Hash, Search, Plus, User, Megaphone, Lock, X } from 'lucide-react';
 import AppHeader from '../../src/components/AppHeader';
 import { FALLBACK_IMAGES } from '../../src/lib/constants';
@@ -12,6 +12,8 @@ export default function ChatIndex() {
   const { communities, user, users, isLoading, channels, createChannel } = useAppContext();
   const { directMessages, chatReadReceipts, messages } = useChat();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const communityFilterId = searchParams.get('communityId');
   const { toast } = useToast();
   
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -86,8 +88,11 @@ export default function ChatIndex() {
         ? new Date(latestMsg.createdAt).getTime() 
         : (latestMsg?.created_at 
             ? new Date(latestMsg.created_at).getTime() 
-            : (item.created_at ? new Date(item.created_at).getTime() : Date.now()))
+            : (item.created_at ? new Date(item.created_at).getTime() : 0))
     };
+  }).filter(item => {
+    if (!communityFilterId) return true;
+    return item.comm?.id === communityFilterId;
   }).sort((a, b) => b.sortTime - a.sortTime);
 
   const handleCreateChannel = async (type = 'text', members = null) => {
@@ -118,6 +123,17 @@ export default function ChatIndex() {
     <div className="view-chat" style={{ paddingBottom: '100px', display: 'flex', flexDirection: 'column', height: '100vh' }}>
       <AppHeader title="Chats" />
       
+      {communityFilterId && (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 20px', background: 'rgba(20,184,166,0.1)', borderBottom: '1px solid rgba(20,184,166,0.2)' }}>
+          <div style={{ fontSize: '0.85rem', color: 'var(--teal-300)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Hash size={14} /> Showing filtered community chats
+          </div>
+          <button onClick={() => router.push('/chat')} style={{ background: 'transparent', border: 'none', color: 'var(--teal-400)', cursor: 'pointer', padding: '4px' }}>
+            <X size={16} />
+          </button>
+        </div>
+      )}
+
       <div style={{ flex: 1, overflowY: 'auto', padding: '0 0 80px 0' }}>
         {inboxItems.length === 0 ? (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60vh', color: 'var(--slate-400)', gap: '16px' }}>
@@ -167,7 +183,15 @@ export default function ChatIndex() {
                   onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
                   onMouseOut={e => e.currentTarget.style.background = 'transparent'}
                 >
-                  <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: `url(${avatar})`, backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative', flexShrink: 0 }}>
+                  <div 
+                    onClick={(e) => {
+                      if (item.type !== 'dm' && item.comm?.id) {
+                        e.stopPropagation();
+                        router.push(`/chat?communityId=${item.comm.id}`);
+                      }
+                    }}
+                    style={{ width: '56px', height: '56px', borderRadius: '50%', background: `url(${avatar})`, backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative', flexShrink: 0 }}
+                  >
                     <div style={{ position: 'absolute', bottom: '-2px', right: '-2px', background: 'var(--slate-800)', borderRadius: '50%', padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid var(--slate-950)' }}>
                       <Icon size={12} color="var(--teal-400)" />
                     </div>
