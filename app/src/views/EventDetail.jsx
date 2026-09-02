@@ -249,9 +249,9 @@ export default function EventsHub() {
 
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
                     {(eventRsvps[selectedEvent.id] || []).map((rsvp, idx) => {
-                      const u = users.find(u => u.id === rsvp.userId);
+                      const u = users.find(usr => usr.id === rsvp.userId);
                       if (!u) return null;
-                      return <img key={idx} src={u.avatar} alt={u.name} title={u.name} style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--slate-800)' }} />;
+                      return <img onClick={() => navigate.push(`/profile/${u.id}`)} key={idx} src={u.avatar} alt={u.name} title={u.name} style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--slate-800)', cursor: 'pointer' }} />;
                     })}
                     {(!eventRsvps[selectedEvent.id] || eventRsvps[selectedEvent.id].length === 0) && (
                       <span style={{ fontSize: '0.8rem', color: 'var(--slate-500)' }}>Be the first to RSVP!</span>

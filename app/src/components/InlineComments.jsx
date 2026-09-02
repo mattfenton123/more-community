@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Send, Trash2, Flag, Image as ImageIcon, Smile } from 'lucide-react';
+import { useRouter as useNavigate } from 'next/navigation';
 import { supabase } from '../lib/supabaseClient';
 import { useAppContext } from '../context/AppContext';
 import { useFeed } from '../context/FeedContext';
@@ -9,6 +10,7 @@ import dynamic from 'next/dynamic';
 const EmojiPicker = dynamic(() => import('emoji-picker-react'), { ssr: false });
 
 export default function InlineComments({ post }) {
+  const navigate = useNavigate();
   const { users, user, communities, uploadImage } = useAppContext();
   const { deleteComment, createFeedComment } = useFeed();
   const [comments, setComments] = useState([]);
@@ -105,11 +107,11 @@ export default function InlineComments({ post }) {
             const author = users.find(u => u.id === comment.author_id) || { name: 'Unknown User', avatar: 'https://ui-avatars.com/api/?name=U' };
             return (
               <div key={comment.id} style={{ display: 'flex', gap: '10px' }}>
-                <img src={author.avatar} alt="" style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover', marginTop: '2px' }} />
+                <img onClick={() => navigate.push(`/profile/${author.id}`)} src={author.avatar} alt="" style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover', marginTop: '2px', cursor: 'pointer' }} />
                 <div style={{ flex: 1, background: 'rgba(255,255,255,0.03)', padding: '10px 14px', borderRadius: '16px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-                      <span style={{ fontWeight: '600', color: 'var(--white)', fontSize: '0.85rem' }}>{author.name}</span>
+                      <span onClick={() => navigate.push(`/profile/${author.id}`)} style={{ fontWeight: '600', color: 'var(--white)', fontSize: '0.85rem', cursor: 'pointer' }}>{author.name}</span>
                       <span style={{ fontSize: '0.7rem', color: 'var(--slate-500)' }}>
                         {new Date(comment.created_at).toLocaleDateString()} at {comment.timestamp}
                       </span>
