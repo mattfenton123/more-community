@@ -12,7 +12,7 @@ const CATEGORIES = [
 ];
 
 export default function CreateServiceModal({ isOpen, onClose, communityId }) {
-  const { pitchService, user } = useAppContext();
+  const { pitchService, user, notifyCommunityLeaders } = useAppContext();
   const { toast } = useToast();
   
   const [category, setCategory] = useState('');
@@ -44,6 +44,10 @@ export default function CreateServiceModal({ isOpen, onClose, communityId }) {
         perk,
         isPremium
       });
+      
+      if (notifyCommunityLeaders) {
+        notifyCommunityLeaders(communityId, '🛍️ New Service Pitch', `${user?.name || 'A member'} has pitched a new service: ${title}`, `/community/${communityId}/admin`);
+      }
       
       setIsSubmitting(false);
       toast.success('Pitch Submitted!', 'The community leader will review your service shortly.');

@@ -331,6 +331,12 @@ export default function LeaderDashboard() {
   const handlePromote = async (memberUser) => {
     await promoteMember(community.id, memberUser.id, 'Co-Leader');
   };
+  
+  const handleDemote = async (memberUser) => {
+    await promoteMember(community.id, memberUser.id, 'Member');
+    toast.success('Demoted', `${memberUser.name} is now a regular Member`);
+  };
+
   const handleRemove = async (memberUser) => {
     await removeMember(community.id, memberUser.id);
     toast.info('Member removed', `${memberUser.name} has been removed from the community`);
@@ -1542,9 +1548,9 @@ export default function LeaderDashboard() {
                     return (
                       <div key={memberUser.id} className="stagger-item" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                          <img src={memberUser.avatar} alt={memberUser.name} style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
+                          <img onClick={() => { router.push(`/profile/${memberUser.id}`); setModalType(null); }} src={memberUser.avatar} alt={memberUser.name} style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', cursor: 'pointer' }} />
                           <div>
-                            <div style={{ fontWeight: 600, color: 'var(--white)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <div onClick={() => { router.push(`/profile/${memberUser.id}`); setModalType(null); }} style={{ fontWeight: 600, color: 'var(--white)', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
                               {memberUser.name}
                               {membership.role === 'Leader' && <span style={{ fontSize: '0.7rem', background: 'var(--teal-500)', padding: '2px 6px', borderRadius: '4px' }}>Leader</span>}
                               {membership.role === 'Co-Leader' && <span style={{ fontSize: '0.7rem', background: 'rgba(139,92,246,0.3)', color: '#a78bfa', padding: '2px 6px', borderRadius: '4px' }}>Co-Leader</span>}
@@ -1554,7 +1560,11 @@ export default function LeaderDashboard() {
                         </div>
                         {membership.role !== 'Leader' && (
                           <div style={{ display: 'flex', gap: '8px' }}>
-                            <button onClick={() => handlePromote(memberUser)} className="btn btn-outline interactive-press" style={{ padding: '6px 12px', fontSize: '0.8rem' }}>Promote</button>
+                            {membership.role === 'Co-Leader' ? (
+                              <button onClick={() => handleDemote(memberUser)} className="btn btn-outline interactive-press" style={{ padding: '6px 12px', fontSize: '0.8rem' }}>Demote</button>
+                            ) : (
+                              <button onClick={() => handlePromote(memberUser)} className="btn btn-outline interactive-press" style={{ padding: '6px 12px', fontSize: '0.8rem' }}>Promote</button>
+                            )}
                             <button onClick={() => handleRemove(memberUser)} className="btn btn-danger interactive-press" style={{ padding: '6px 12px', fontSize: '0.8rem' }}>Remove</button>
                           </div>
                         )}
@@ -1588,8 +1598,8 @@ export default function LeaderDashboard() {
                       return (
                         <div key={memberUser.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                            <img src={memberUser.avatar} alt={memberUser.name} style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover' }} />
-                            <span style={{ fontWeight: 500 }}>{memberUser.name}</span>
+                            <img onClick={() => { router.push(`/profile/${memberUser.id}`); setModalType(null); }} src={memberUser.avatar} alt={memberUser.name} style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover', cursor: 'pointer' }} />
+                            <span onClick={() => { router.push(`/profile/${memberUser.id}`); setModalType(null); }} style={{ fontWeight: 500, cursor: 'pointer' }}>{memberUser.name}</span>
                           </div>
                           <button onClick={() => { handlePromote(memberUser); setModalType(null); setCoLeaderSearch(''); }} className="btn btn-primary interactive-press" style={{ padding: '8px 16px', fontSize: '0.8rem', borderRadius: '8px' }}>
                             <Crown size={12} style={{ marginRight: '4px' }} /> Promote

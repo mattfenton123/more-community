@@ -878,6 +878,26 @@ export function AppProvider({ children }) {
     }
   };
 
+  const notifyCommunityLeaders = async (communityId, title, message, link = `/community/${communityId}`) => {
+    const leaders = (communityMemberships[communityId] || []).filter(m => m.role === 'Leader' || m.role === 'Co-Leader');
+    const notifications = leaders.map(l => ({
+      user_id: l.userId,
+      type: 'alert',
+      title: title,
+      message: message,
+      link: link,
+      is_read: false
+    }));
+    
+    if (notifications.length === 0) return;
+    
+    try {
+      await broadcastNotificationAction(notifications, session?.access_token);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const platformBroadcast = async (title, message) => {
     const notifications = users.map(u => ({
       user_id: u.id,
@@ -1224,6 +1244,8 @@ export function AppProvider({ children }) {
       sendDirectMessage,
       updateCommunityProfile,
       adminVerifyCommunity,
+      broadcastNotification,
+      notifyCommunityLeaders,
       createEvent,
       updateEvent,
       cancelEvent,

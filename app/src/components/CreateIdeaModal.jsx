@@ -9,7 +9,7 @@ export default function CreateIdeaModal({ isOpen, onClose, communityId }) {
   const [location, setLocation] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { createFeedPost } = useFeed();
-  const { user } = useAppContext();
+  const { user, broadcastNotification } = useAppContext();
 
   if (!isOpen) return null;
 
@@ -26,6 +26,10 @@ export default function CreateIdeaModal({ isOpen, onClose, communityId }) {
       };
       
       await createFeedPost(communityId, description.trim(), JSON.stringify(ideaData));
+      if (broadcastNotification) {
+        broadcastNotification(communityId, `💡 New Idea: ${title.trim()}`, `${user?.name || 'A member'} suggested a new idea! Check it out and vote.`);
+      }
+      
       setTitle('');
       setDescription('');
       setLocation('');
