@@ -519,9 +519,9 @@ export default function CommunityProfile() {
                       </div>
                     )}
                     <div style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <img src={author?.avatar || 'https://i.pravatar.cc/40'} alt={author?.name} style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
+                      <img onClick={() => author && navigate(`/profile/${author.id}`)} src={author?.avatar || 'https://i.pravatar.cc/40'} alt={author?.name} style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', cursor: author ? 'pointer' : 'default' }} />
                       <div style={{ flex: 1 }}>
-                        <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <div onClick={() => author && navigate(`/profile/${author.id}`)} style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '6px', cursor: author ? 'pointer' : 'default' }}>
                           {author?.name || 'Community Leader'}
                           {post.text?.includes('💡 **SUGGESTION:**') && (
                             <span style={{ fontSize: '0.65rem', background: 'rgba(234,179,8,0.2)', color: 'var(--yellow-400)', padding: '2px 6px', borderRadius: '6px', fontWeight: 700, textTransform: 'uppercase' }}>Idea</span>
