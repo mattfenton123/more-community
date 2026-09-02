@@ -6,6 +6,7 @@ import { useChat } from '../../../src/context/ChatContext';
 import { useAuth } from '../../../src/context/AuthContext';
 import { ArrowLeft, Users, Calendar, MapPin, Settings, Camera, Check, X, MessageCircle, Edit3, Trophy, Flame, Plus, Compass, Star, LogOut, ChevronRight, Shield, BarChart2, Heart } from 'lucide-react';
 import AppHeader from '../../../src/components/AppHeader';
+import BottomNav from '../../../src/components/BottomNav';
 import { useToast } from '../../../src/components/Toast';
 import GamificationPanel, { BadgeRow, useGamification } from '../../../src/components/Gamification';
 import { FALLBACK_IMAGES } from '../../../src/lib/constants';
@@ -369,6 +370,7 @@ export default function UserProfile() {
           </div>
         )}
       </div>
+      <BottomNav />
     </div>
   );
 }

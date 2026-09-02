@@ -416,8 +416,8 @@ export default function CommunityProfile() {
                 return (
                   <div key={post.id} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', overflow: 'hidden' }}>
                     <div style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <img src={author?.avatar || 'https://i.pravatar.cc/40'} alt={author?.name} style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
-                      <div>
+                      <img onClick={() => author && navigate.push(`/profile/${author.id}`)} src={author?.avatar || 'https://i.pravatar.cc/40'} alt={author?.name} style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', cursor: author ? 'pointer' : 'default' }} />
+                      <div onClick={() => author && navigate.push(`/profile/${author.id}`)} style={{ cursor: author ? 'pointer' : 'default' }}>
                         <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.95rem' }}>{author?.name || 'Community Leader'}</div>
                         <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>
                           {new Date(post.createdAt || post.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
@@ -489,7 +489,7 @@ export default function CommunityProfile() {
                             <div style={{ display: 'flex' }}>
                               {rsvps.slice(0, 3).map((r, i) => {
                                 const ru = users.find(u => u.id === r.userId);
-                                return <img key={i} src={ru?.avatar || 'https://i.pravatar.cc/24'} alt="" style={{ width: '22px', height: '22px', borderRadius: '50%', border: '2px solid var(--slate-950)', marginLeft: i > 0 ? '-6px' : 0, objectFit: 'cover' }} />;
+                                return <img onClick={(e) => { e.stopPropagation(); navigate.push(`/profile/${r.userId}`); }} key={i} src={ru?.avatar || 'https://i.pravatar.cc/24'} alt="" style={{ width: '22px', height: '22px', borderRadius: '50%', border: '2px solid var(--slate-950)', marginLeft: i > 0 ? '-6px' : 0, objectFit: 'cover', cursor: 'pointer' }} />;
                               })}
                             </div>
                             {rsvps.length} going
