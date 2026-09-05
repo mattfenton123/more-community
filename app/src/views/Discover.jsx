@@ -13,7 +13,7 @@ import AppHeader from '../components/AppHeader';
 import SwipeDiscovery from '../components/SwipeDiscovery';
 
 export default function Discover() {
-  const { communities, user, users, communityMemberships, joinCommunity, isLoading, events } = useAppContext();
+  const { communities, user, users, communityMemberships, joinCommunity, isLoading, events, getAffinityScore } = useAppContext();
   // Default to 'For You' for users with interests but no communities yet
   const defaultPill = (user?.interests?.length > 0 && (!user?.joinedCommunities || user.joinedCommunities.length === 0)) ? 'For You' : 'All';
   const [activePill, setActivePill] = useState(defaultPill);
@@ -78,6 +78,7 @@ export default function Discover() {
   // Recommendation Engine
   const getRecommendedCommunities = () => {
     if (!user || !user.interests) return [];
+    const passedIds = user?.affinityProfile?.passedCommunityIds || [];
     
     // 1. Find similar users based on shared interests
     const similarUsers = users.filter(u => 
@@ -86,28 +87,34 @@ export default function Discover() {
     );
 
     // 2. Score communities
-    const scoredCommunities = communities.map(c => {
-      let score = 0;
+    const scoredCommunities = communities
+      .filter(c => !passedIds.includes(c.id)) // Suppress passed communities
+      .map(c => {
+        let score = 0;
       
-      // Direct interest match (+2 points)
-      const matchesInterest = c.tags?.some(tag => user.interests.includes(tag));
-      if (matchesInterest) score += 2;
+        // Direct interest match (+2 points)
+        const matchesInterest = c.tags?.some(tag => user.interests.includes(tag));
+        if (matchesInterest) score += 2;
 
-      // Collaborative filtering: similar users joined (+1 point per user)
-      const membershipsForCommunity = communityMemberships[c.id] || [];
-      const similarUsersJoined = membershipsForCommunity.filter(m => 
-        similarUsers.some(su => su.id === m.userId)
-      ).length;
+        // Collaborative filtering: similar users joined (+1 point per user)
+        const membershipsForCommunity = communityMemberships[c.id] || [];
+        const similarUsersJoined = membershipsForCommunity.filter(m => 
+          similarUsers.some(su => su.id === m.userId)
+        ).length;
       
-      score += similarUsersJoined;
+        score += similarUsersJoined;
 
-      // Bonus text match against user bio (+1 point)
-      if (user.bio && c.description?.toLowerCase().includes(user.bio.toLowerCase().split(' ')[0])) {
-        score += 1;
-      }
+        // Bonus text match against user bio (+1 point)
+        if (user.bio && c.description?.toLowerCase().includes(user.bio.toLowerCase().split(' ')[0])) {
+          score += 1;
+        }
 
-      return { ...c, score };
-    });
+        // Affinity score from swipe profiling (weighted 1.5x)
+        const affinityBoost = getAffinityScore(c);
+        score += affinityBoost * 1.5;
+
+        return { ...c, score };
+      });
 
     // Return communities with score > 0, sorted by score descending
     return scoredCommunities.filter(c => c.score > 0).sort((a, b) => b.score - a.score);

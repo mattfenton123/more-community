@@ -133,7 +133,8 @@ export function AppProvider({ children }) {
     bio: 'New here.',
     joined: new Date().toISOString(),
     onboarded: false,
-    interests: []
+    interests: [],
+    affinityProfile: { tagScores: {}, likedCommunityIds: [], passedCommunityIds: [] }
   };
 
   const user = { ...dbUser, joinedCommunities: [], ledCommunities: [], savedItems: savedItems, isAdmin: false };
@@ -1289,7 +1290,29 @@ export function AppProvider({ children }) {
       theme, setTheme,
       highContrast, setHighContrast,
       largeText, setLargeText,
-      reduceMotion, setReduceMotion
+      reduceMotion, setReduceMotion,
+      getAffinityScore: (community) => {
+        if (!user?.affinityProfile && !user?.interests) return 0;
+        const ap = user?.affinityProfile || { tagScores: {}, likedCommunityIds: [], passedCommunityIds: [] };
+        const userInterests = user?.interests || [];
+        const communityTags = community?.tags || [];
+        // Tag overlap score (broad categories)
+        const tagOverlap = communityTags.filter(tag => 
+          userInterests.some(interest => interest.toLowerCase().includes(tag.toLowerCase()) || tag.toLowerCase().includes(interest.toLowerCase()))
+        ).length;
+        // Swipe affinity score (behavioural signal, weighted higher)
+        const swipeScore = communityTags.reduce((sum, tag) => {
+          const tagLower = tag.toLowerCase();
+          return sum + Object.entries(ap.tagScores || {}).reduce((s, [k, v]) => {
+            return tagLower.includes(k.toLowerCase()) || k.toLowerCase().includes(tagLower) ? s + v : s;
+          }, 0);
+        }, 0);
+        // Liked community bonus
+        const likedBonus = (ap.likedCommunityIds || []).includes(community?.id) ? 5 : 0;
+        // Passed community penalty
+        const passedPenalty = (ap.passedCommunityIds || []).includes(community?.id) ? -3 : 0;
+        return (tagOverlap * 1.0) + (swipeScore * 1.5) + likedBonus + passedPenalty;
+      }
     }}>
       {children}
     </AppContext.Provider>

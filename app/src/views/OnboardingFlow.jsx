@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { ArrowRight, Camera, Check, Users, Calendar, MessageCircle, Eye, Type, Moon, Sun, Monitor, Activity } from 'lucide-react';
+import { ArrowRight, Camera, Check, Users, Calendar, MessageCircle, Eye, Type, Moon, Sun, Monitor, Activity, Heart, X as XIcon, MapPin, Sparkles } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useAppContext } from '../context/AppContext';
 import { useToast } from '../components/Toast';
@@ -20,7 +20,7 @@ const STEP_VIDEOS = [
 
 export default function OnboardingFlow({ onComplete }) {
   const { authUser, signOut } = useAuth();
-  const { user, updateUser, uploadImage, theme, setTheme, highContrast, setHighContrast, largeText, setLargeText, reduceMotion, setReduceMotion } = useAppContext();
+  const { user, updateUser, uploadImage, communities, theme, setTheme, highContrast, setHighContrast, largeText, setLargeText, reduceMotion, setReduceMotion } = useAppContext();
   const [step, setStep] = useState(0);
   const [name, setName] = useState(user?.name || '');
   const [bio, setBio] = useState('');
@@ -30,6 +30,85 @@ export default function OnboardingFlow({ onComplete }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const fileInputRef = useRef(null);
+
+  // Swipe state for community matching
+  const [swipeIndex, setSwipeIndex] = useState(0);
+  const [swipeOffset, setSwipeOffset] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStartX, setDragStartX] = useState(0);
+  const [swipedLiked, setSwipedLiked] = useState([]);
+  const [swipedPassed, setSwipedPassed] = useState([]);
+  const [swipeLeaveDir, setSwipeLeaveDir] = useState(null);
+
+  // Filter communities by selected interests for the swipe step
+  const matchingCommunities = communities.filter(c => {
+    if (!c.tags || c.tags.length === 0) return false;
+    return c.tags.some(tag => 
+      interests.some(interest => interest.toLowerCase().includes(tag.toLowerCase()) || tag.toLowerCase().includes(interest.toLowerCase()))
+    );
+  }).slice(0, 10);
+
+  const currentSwipeCommunity = matchingCommunities[swipeIndex];
+
+  const handleSwipePointerDown = (e) => {
+    setIsDragging(true);
+    setDragStartX(e.clientX || (e.touches && e.touches[0].clientX) || 0);
+  };
+
+  const handleSwipePointerMove = (e) => {
+    if (!isDragging) return;
+    const currentX = e.clientX || (e.touches && e.touches[0].clientX) || 0;
+    setSwipeOffset(currentX - dragStartX);
+  };
+
+  const handleSwipePointerUp = () => {
+    setIsDragging(false);
+    if (swipeOffset > 80) {
+      doSwipe('right');
+    } else if (swipeOffset < -80) {
+      doSwipe('left');
+    } else {
+      setSwipeOffset(0);
+    }
+  };
+
+  const doSwipe = (direction) => {
+    const c = currentSwipeCommunity;
+    setSwipeLeaveDir(direction);
+    setSwipeOffset(direction === 'right' ? 500 : -500);
+    setTimeout(() => {
+      if (direction === 'right' && c) {
+        setSwipedLiked(prev => [...prev, c]);
+      } else if (direction === 'left' && c) {
+        setSwipedPassed(prev => [...prev, c]);
+      }
+      setSwipeIndex(prev => prev + 1);
+      setSwipeOffset(0);
+      setSwipeLeaveDir(null);
+    }, 250);
+  };
+
+  // Build affinityProfile from swipe data
+  const buildAffinityProfile = () => {
+    const tagScores = {};
+    swipedLiked.forEach(c => {
+      (c.tags || []).forEach(tag => {
+        const key = tag.toLowerCase();
+        tagScores[key] = (tagScores[key] || 0) + 1;
+      });
+    });
+    swipedPassed.forEach(c => {
+      (c.tags || []).forEach(tag => {
+        const key = tag.toLowerCase();
+        tagScores[key] = (tagScores[key] || 0) - 0.5;
+      });
+    });
+    return {
+      tagScores,
+      likedCommunityIds: swipedLiked.map(c => c.id),
+      passedCommunityIds: swipedPassed.map(c => c.id)
+    };
+  };
 
   const toggleInterest = (interest) => {
     setInterests(prev =>
@@ -67,6 +146,7 @@ export default function OnboardingFlow({ onComplete }) {
         name: name.trim(),
         bio: bio.trim(),
         interests: interests,
+        affinityProfile: buildAffinityProfile(),
         avatar: avatarUrl || user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=14b8a6&color=fff`,
         onboarded: true,
       };
@@ -136,6 +216,94 @@ export default function OnboardingFlow({ onComplete }) {
       <p style={{ textAlign: 'center', color: 'var(--slate-500)', fontSize: '0.8rem' }}>
         {interests.length === 0 ? 'Select at least one' : `${interests.length} selected`}
       </p>
+    </div>,
+
+    // Step 1: Community Swipe Matching
+    <div key="swipe" className="page-wrapper" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      <div style={{ textAlign: 'center' }}>
+        <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.6rem', margin: '0 0 8px 0' }}>Communities for you</h2>
+        <p style={{ color: 'var(--slate-400)', fontSize: '0.9rem', margin: 0 }}>Swipe right on groups that look like your vibe</p>
+      </div>
+
+      <div style={{ position: 'relative', width: '100%', height: '320px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        {currentSwipeCommunity ? (
+          <>
+            {/* Background card (next) */}
+            {matchingCommunities[swipeIndex + 1] && (
+              <div style={{ position: 'absolute', width: '90%', height: '300px', borderRadius: '20px', background: 'var(--slate-800)', border: '1px solid rgba(255,255,255,0.06)', transform: 'scale(0.95)', opacity: 0.5 }}></div>
+            )}
+            {/* Active card */}
+            <div
+              onMouseDown={handleSwipePointerDown}
+              onMouseMove={handleSwipePointerMove}
+              onMouseUp={handleSwipePointerUp}
+              onTouchStart={handleSwipePointerDown}
+              onTouchMove={handleSwipePointerMove}
+              onTouchEnd={handleSwipePointerUp}
+              style={{
+                position: 'absolute', width: '90%', height: '300px',
+                borderRadius: '20px', overflow: 'hidden',
+                background: 'var(--slate-900)', border: '1px solid rgba(255,255,255,0.08)',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+                transform: `translateX(${swipeOffset}px) rotate(${swipeOffset * 0.03}deg)`,
+                transition: isDragging ? 'none' : 'transform 0.25s ease, opacity 0.25s ease',
+                cursor: 'grab', userSelect: 'none',
+              }}
+            >
+              <div style={{ height: '55%', background: `url(${currentSwipeCommunity.image || 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=400'})`, backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative' }}>
+                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.9))' }}></div>
+                {/* Like/Nope indicators */}
+                {swipeOffset > 40 && (
+                  <div style={{ position: 'absolute', top: '20px', left: '20px', padding: '8px 20px', border: '3px solid #22c55e', borderRadius: '8px', color: '#22c55e', fontWeight: 800, fontSize: '1.4rem', transform: 'rotate(-15deg)' }}>LIKE</div>
+                )}
+                {swipeOffset < -40 && (
+                  <div style={{ position: 'absolute', top: '20px', right: '20px', padding: '8px 20px', border: '3px solid #ef4444', borderRadius: '8px', color: '#ef4444', fontWeight: 800, fontSize: '1.4rem', transform: 'rotate(15deg)' }}>NOPE</div>
+                )}
+                <div style={{ position: 'absolute', bottom: '14px', left: '16px', right: '16px' }}>
+                  <div style={{ fontWeight: 800, fontSize: '1.3rem', color: 'var(--white)' }}>{currentSwipeCommunity.name}</div>
+                  <div style={{ fontSize: '0.8rem', color: 'var(--slate-300)', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px' }}>
+                    <MapPin size={12} /> {currentSwipeCommunity.location || 'Local community'}
+                  </div>
+                </div>
+              </div>
+              <div style={{ padding: '14px 16px' }}>
+                <p style={{ color: 'var(--slate-300)', fontSize: '0.85rem', lineHeight: 1.5, margin: '0 0 10px 0', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{currentSwipeCommunity.description || 'A community near you'}</p>
+                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                  {(currentSwipeCommunity.tags || []).slice(0, 4).map(tag => (
+                    <span key={tag} style={{ padding: '3px 10px', borderRadius: '99px', background: 'rgba(20,184,166,0.1)', color: 'var(--teal-300)', fontSize: '0.7rem', fontWeight: 600 }}>{tag}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Swipe buttons */}
+            <div style={{ position: 'absolute', bottom: '-10px', display: 'flex', gap: '24px', justifyContent: 'center', width: '100%' }}>
+              <button onClick={() => doSwipe('left')} className="interactive-press" style={{ width: '52px', height: '52px', borderRadius: '50%', background: 'rgba(239,68,68,0.1)', border: '2px solid rgba(239,68,68,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#ef4444' }}>
+                <XIcon size={24} />
+              </button>
+              <button onClick={() => doSwipe('right')} className="interactive-press" style={{ width: '52px', height: '52px', borderRadius: '50%', background: 'rgba(34,197,94,0.1)', border: '2px solid rgba(34,197,94,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#22c55e' }}>
+                <Heart size={24} />
+              </button>
+            </div>
+          </>
+        ) : (
+          <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+            <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(20,184,166,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+              <Sparkles size={28} color="var(--teal-400)" />
+            </div>
+            <h3 style={{ color: 'var(--white)', margin: '0 0 8px 0', fontSize: '1.2rem' }}>All done!</h3>
+            <p style={{ color: 'var(--slate-400)', fontSize: '0.85rem', margin: 0 }}>
+              {swipedLiked.length > 0 ? `You liked ${swipedLiked.length} communities — we'll use this to personalise your feed.` : 'Tap Continue to set up your profile.'}
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* Progress indicator */}
+      <div style={{ textAlign: 'center', fontSize: '0.8rem', color: 'var(--slate-500)' }}>
+        {currentSwipeCommunity ? `${swipeIndex + 1} of ${matchingCommunities.length}` : ''}
+        {swipedLiked.length > 0 && <span style={{ color: 'var(--teal-400)', marginLeft: '8px' }}>💚 {swipedLiked.length} liked</span>}
+      </div>
     </div>,
 
     // Step 1: Name, Bio & Avatar
@@ -297,7 +465,7 @@ export default function OnboardingFlow({ onComplete }) {
     </div>,
   ];
 
-  const canProceed = step === 0 ? interests.length > 0 : step === 1 ? name.trim().length > 0 : true;
+  const canProceed = step === 0 ? interests.length > 0 : step === 1 ? true : step === 2 ? name.trim().length > 0 : true;
 
   return (
     <div style={{
@@ -325,7 +493,7 @@ export default function OnboardingFlow({ onComplete }) {
         </div>
         <div>
           <div style={{ display: 'flex', gap: '8px' }}>
-            {[0, 1, 2, 3].map(i => (
+            {[0, 1, 2, 3, 4].map(i => (
               <div
                 key={i}
                 style={{
@@ -339,7 +507,7 @@ export default function OnboardingFlow({ onComplete }) {
             ))}
           </div>
           <div style={{ fontSize: '0.75rem', color: 'var(--slate-500)', marginTop: '12px' }}>
-            Step {step + 1} of 4
+            Step {step + 1} of 5
           </div>
         </div>
       </div>
@@ -353,7 +521,7 @@ export default function OnboardingFlow({ onComplete }) {
       <div style={{ padding: '16px 24px 32px' }}>
         <button
           onClick={() => {
-            if (step < 3) setStep(step + 1);
+            if (step < 4) setStep(step + 1);
             else handleFinish();
           }}
           disabled={!canProceed || isSubmitting}
@@ -370,7 +538,7 @@ export default function OnboardingFlow({ onComplete }) {
             opacity: canProceed && !isSubmitting ? 1 : 0.4,
           }}
         >
-          {isSubmitting ? 'Setting up...' : step < 3 ? (
+          {isSubmitting ? 'Setting up...' : step < 4 ? (
             <>Continue <ArrowRight size={18} /></>
           ) : (
             <>Let's Go! <ArrowRight size={18} /></>

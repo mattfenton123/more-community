@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Calendar as CalIcon, MapPin, Search, X, CheckCircle2, CreditCard, Check, Ticket, Users, QrCode, Share, Sparkles } from 'lucide-react';
+import { Calendar as CalIcon, MapPin, Search, X, CheckCircle2, CreditCard, Check, Ticket, Users, QrCode, Share, Sparkles, Navigation, ChevronRight } from 'lucide-react';
 import { useAppContext } from '../../src/context/AppContext';
 import { SkeletonList, SkeletonEvent } from '../../src/components/SkeletonCard';
 import { useToast } from '../../src/components/Toast';
@@ -12,7 +12,7 @@ import SwipeDiscovery from '../../src/components/SwipeDiscovery';
 export default function EventsHub() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('My Schedule');
-  const { events, communities, user, users, eventRsvps, rsvpToEvent, isLoading, saveItem } = useAppContext();
+  const { events, communities, user, users, eventRsvps, rsvpToEvent, isLoading, saveItem, getAffinityScore } = useAppContext();
   const { toast } = useToast();
   
   const [checkoutState, setCheckoutState] = useState('idle');
@@ -20,34 +20,52 @@ export default function EventsHub() {
   const [cardForm, setCardForm] = useState({ number: '', expiry: '', cvc: '', name: '' });
   const [showCalendarDropdown, setShowCalendarDropdown] = useState(false);
   const [showSwipe, setShowSwipe] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Sort events chronologically (soonest first, past at end)
+  const sortByDate = (list) => {
+    const now = new Date();
+    return [...list].sort((a, b) => {
+      const da = new Date(a.date + 'T00:00:00');
+      const db = new Date(b.date + 'T00:00:00');
+      const aFuture = da >= now;
+      const bFuture = db >= now;
+      if (aFuture && !bFuture) return -1;
+      if (!aFuture && bFuture) return 1;
+      return da - db;
+    });
+  };
+
+  // Global search filter
+  const filterBySearch = (list) => {
+    if (!searchQuery.trim()) return list;
+    const q = searchQuery.toLowerCase();
+    return list.filter(e => {
+      const community = communities.find(c => c.id === e.communityId);
+      return (
+        e.title?.toLowerCase().includes(q) ||
+        e.location?.toLowerCase().includes(q) ||
+        e.description?.toLowerCase().includes(q) ||
+        community?.name?.toLowerCase().includes(q)
+      );
+    });
+  };
 
   const myRsvpEventIds = Object.keys(eventRsvps).filter(eventId => 
     eventRsvps[eventId]?.some(r => r.userId === user?.id)
   );
-  const userEvents = events.filter(e => myRsvpEventIds.includes(e.id) || user?.joinedCommunities?.includes(e.communityId));
-  const exploreEvents = events.filter(e => !user?.joinedCommunities?.includes(e.communityId));
-  
-  const [exploreSearchQuery, setExploreSearchQuery] = useState('');
-  const [exploreDateFilter, setExploreDateFilter] = useState('');
-  
-  const filteredExploreEvents = exploreEvents.filter(e => {
-    let matchesSearch = true;
-    let matchesDate = true;
-    if (exploreSearchQuery) {
-      const q = exploreSearchQuery.toLowerCase();
-      matchesSearch = e.title.toLowerCase().includes(q) || (e.location && e.location.toLowerCase().includes(q));
-    }
-    if (exploreDateFilter) {
-      matchesDate = e.date === exploreDateFilter;
-    }
-    return matchesSearch && matchesDate;
-  });
+  const userEvents = sortByDate(filterBySearch(events.filter(e => myRsvpEventIds.includes(e.id) || user?.joinedCommunities?.includes(e.communityId))));
+  const exploreEvents = sortByDate(filterBySearch(events.filter(e => !user?.joinedCommunities?.includes(e.communityId))));
 
-  const recommendedEvents = exploreEvents.filter(e => {
+  const recommendedEvents = sortByDate(filterBySearch(exploreEvents.filter(e => {
     if (!user || !user.interests) return false;
     const community = communities.find(c => c.id === e.communityId);
     if (!community || !community.tags) return false;
-    return community.tags.some(tag => user.interests.includes(tag));
+    return community.tags.some(tag => user.interests.includes(tag)) || getAffinityScore(community) > 0;
+  }))).sort((a, b) => {
+    const ca = communities.find(c => c.id === a.communityId);
+    const cb = communities.find(c => c.id === b.communityId);
+    return (getAffinityScore(cb) || 0) - (getAffinityScore(ca) || 0);
   });
 
   const [selectedEvent, setSelectedEvent] = useState(null);
@@ -215,7 +233,43 @@ export default function EventsHub() {
     <div className="view-events" style={{ paddingBottom: '80px' }}>
       <AppHeader title="Events" />
 
-      <div style={{ padding: '16px 20px 8px' }}>
+      {/* Global Search Bar */}
+      <div style={{ padding: '12px 20px 0' }}>
+        <div style={{ position: 'relative' }}>
+          <Search size={18} color="var(--slate-400)" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)' }} />
+          <input
+            type="text"
+            placeholder="Search events, locations, communities..."
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            style={{
+              width: '100%', padding: '12px 44px 12px 42px',
+              background: 'rgba(255,255,255,0.04)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              borderRadius: '14px', color: 'var(--white)',
+              fontSize: '0.9rem', outline: 'none',
+              fontFamily: 'inherit',
+            }}
+          />
+          {searchQuery ? (
+            <button
+              onClick={() => setSearchQuery('')}
+              style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--slate-300)' }}
+            >
+              <X size={12} />
+            </button>
+          ) : (
+            <button
+              className="interactive-press"
+              style={{ position: 'absolute', right: '6px', top: '50%', transform: 'translateY(-50%)', width: '32px', height: '32px', borderRadius: '50%', background: 'var(--teal-500)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+            >
+              <ChevronRight size={18} color="#0f172a" />
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div style={{ padding: '12px 20px 8px' }}>
         <div style={{ display: 'flex', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', padding: '4px', gap: '4px' }}>
           {['My Schedule', 'Recommended', 'Explore'].map(tab => (
             <button key={tab} onClick={() => setActiveTab(tab)} className="interactive-press" style={{
@@ -234,7 +288,7 @@ export default function EventsHub() {
       <div style={{ padding: '10px 20px' }}>
         {activeTab === 'My Schedule' ? (
           <>
-            <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)', marginBottom: '12px', fontWeight: 600 }}>UPCOMING THIS WEEK</div>
+            <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)', marginBottom: '12px', fontWeight: 600 }}>UPCOMING • SOONEST FIRST</div>
             {isLoading ? (
               <SkeletonList count={3} Component={SkeletonEvent} />
             ) : userEvents.length > 0 ? userEvents.map((e, i) => renderEvent(e, i)) : (
@@ -258,7 +312,7 @@ export default function EventsHub() {
           </>
         ) : activeTab === 'Recommended' ? (
           <>
-            <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)', marginBottom: '12px', fontWeight: 600 }}>MATCHING YOUR INTERESTS</div>
+            <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)', marginBottom: '12px', fontWeight: 600 }}>MATCHING YOUR INTERESTS • SOONEST FIRST</div>
             {isLoading ? (
               <SkeletonList count={3} Component={SkeletonEvent} />
             ) : recommendedEvents.length > 0 ? recommendedEvents.map((e, i) => renderEvent(e, i)) : (
@@ -268,7 +322,7 @@ export default function EventsHub() {
         ) : (
           <>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-              <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)', fontWeight: 600 }}>DISCOVER EVENTS</div>
+              <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)', fontWeight: 600 }}>DISCOVER EVENTS • SOONEST FIRST</div>
               <button 
                 onClick={() => setShowSwipe(true)}
                 className="interactive-press"
@@ -282,31 +336,12 @@ export default function EventsHub() {
                 <Sparkles size={14} /> Swipe Events
               </button>
             </div>
-            
-            <div style={{ display: 'flex', gap: '10px', marginBottom: '16px' }}>
-              <div style={{ flex: 1, position: 'relative' }}>
-                <Search size={16} color="var(--slate-400)" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
-                <input 
-                  type="text" 
-                  placeholder="Search events or locations..." 
-                  value={exploreSearchQuery}
-                  onChange={(e) => setExploreSearchQuery(e.target.value)}
-                  style={{ width: '100%', padding: '12px 12px 12px 36px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: 'var(--white)', fontSize: '0.9rem' }}
-                />
-              </div>
-              <input 
-                type="date"
-                value={exploreDateFilter}
-                onChange={(e) => setExploreDateFilter(e.target.value)}
-                style={{ padding: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: 'var(--white)', fontSize: '0.9rem', outline: 'none' }}
-              />
-            </div>
 
             {isLoading ? (
               <SkeletonList count={3} Component={SkeletonEvent} />
-            ) : filteredExploreEvents.length > 0 ? filteredExploreEvents.map((e, i) => renderEvent(e, i)) : (
+            ) : exploreEvents.length > 0 ? exploreEvents.map((e, i) => renderEvent(e, i)) : (
               <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--slate-400)' }}>
-                No events found matching your search.
+                {searchQuery ? 'No events match your search.' : 'No events to explore right now.'}
               </div>
             )}
           </>
