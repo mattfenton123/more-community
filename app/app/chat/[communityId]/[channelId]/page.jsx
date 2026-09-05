@@ -25,10 +25,16 @@ export default function Chat() {
   const [newChannelName, setNewChannelName] = useState('');
   const [activeTab, setActiveTab] = useState('Communities');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [reactionMsgId, setReactionMsgId] = useState(null);
   
   const onEmojiClick = (emojiObject) => {
-    setInputText(prev => prev + emojiObject.emoji);
-    setShowEmojiPicker(false);
+    if (reactionMsgId) {
+      reactToMessage(reactionMsgId, emojiObject.emoji);
+      setReactionMsgId(null);
+    } else {
+      setInputText(prev => prev + emojiObject.emoji);
+      setShowEmojiPicker(false);
+    }
   };
   
   const { user, communities, users, communityMemberships, uploadImage, channels, createChannel, isLoading, whatsappSettings } = useAppContext();
@@ -454,6 +460,16 @@ export default function Chat() {
                               {e}
                             </button>
                           ))}
+                          <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                            <button onClick={() => setReactionMsgId(reactionMsgId === msg.id ? null : msg.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center', transition: 'transform 0.1s' }} onMouseEnter={ev => ev.currentTarget.style.transform='scale(1.2)'} onMouseLeave={ev => ev.currentTarget.style.transform='scale(1)'}>
+                              <Plus size={14} color="var(--slate-400)" />
+                            </button>
+                            {reactionMsgId === msg.id && (
+                              <div style={{ position: 'absolute', bottom: '100%', right: '0', zIndex: 100, paddingBottom: '8px' }}>
+                                <EmojiPicker onEmojiClick={onEmojiClick} theme="dark" width={300} height={400} />
+                              </div>
+                            )}
+                          </div>
                         </div>
                       )}
 

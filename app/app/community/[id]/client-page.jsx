@@ -1,6 +1,6 @@
 "use client";
 import { useState, useRef, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Share2, Users, Calendar, Settings, ChevronDown, ChevronUp, Image as ImageIcon, ExternalLink, Camera, Mail, Activity, Sparkles, MapPin, Clock, Star, MessageCircle, Heart, BadgeCheck, Globe, Trash2, Flag, Search, Briefcase, Check, X, MessageSquare, Lightbulb, Info, Megaphone, Video, Plus, Shield, Play } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Share2, Users, Calendar, Settings, ChevronDown, ChevronUp, Image as ImageIcon, ExternalLink, Camera, Mail, Activity, Sparkles, MapPin, Clock, Star, MessageCircle, Heart, BadgeCheck, Globe, Trash2, Flag, Search, Briefcase, Check, X, MessageSquare, Lightbulb, Info, Megaphone, Video, Plus, Shield, Play, Smile } from 'lucide-react';
 import { useRouter as useNavigate, useParams } from 'next/navigation';
 import { useAppContext } from '../../../src/context/AppContext';
 import { useFeed } from '../../../src/context/FeedContext';
@@ -18,7 +18,7 @@ import dynamic from 'next/dynamic';
 import { downloadIcs } from '../../../src/lib/calendar';
 
 const VideoUploader = dynamic(() => import('../../../src/components/VideoUploader'), { ssr: false });
-
+const EmojiPicker = dynamic(() => import('emoji-picker-react'), { ssr: false });
 import confetti from 'canvas-confetti';
 
 // Category-specific gallery photos (generated unique images)
@@ -95,6 +95,7 @@ export default function CommunityProfile() {
   const [showFullDesc, setShowFullDesc] = useState(false);
   const [showReelViewer, setShowReelViewer] = useState(null);
   const [showUploader, setShowUploader] = useState(false);
+  const [showPostEmojiPicker, setShowPostEmojiPicker] = useState(false);
   const fileInputRef = useRef(null);
   
   const communityId = id || (user.joinedCommunities.length > 0 ? user.joinedCommunities[0] : 'tw-tech-meetup');
@@ -503,6 +504,16 @@ export default function CommunityProfile() {
                           <input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => setNewPostImage(e.target.files[0])} />
                           <ImageIcon size={16} /> Add Media
                         </label>
+                        <div style={{ position: 'relative', display: 'flex' }}>
+                          <button onClick={() => setShowPostEmojiPicker(!showPostEmojiPicker)} className="interactive-press" style={{ background: 'none', border: 'none', color: showPostEmojiPicker ? 'var(--teal-400)' : 'var(--slate-400)', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', cursor: 'pointer' }}>
+                            <Smile size={16} /> Emojis
+                          </button>
+                          {showPostEmojiPicker && (
+                            <div style={{ position: 'absolute', top: '100%', left: '0', zIndex: 100, paddingTop: '8px' }}>
+                              <EmojiPicker onEmojiClick={(e) => { setNewPostText(prev => prev + e.emoji); setShowPostEmojiPicker(false); }} theme="dark" width={300} height={400} />
+                            </div>
+                          )}
+                        </div>
                         {isLeader && (
                           <>
                             <label style={{ cursor: 'pointer', color: isAnnouncement ? 'var(--amber-400)' : 'var(--slate-400)', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', transition: 'color 0.2s' }}>
