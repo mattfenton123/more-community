@@ -210,7 +210,7 @@ export default function CommunityProfile() {
     toast.info('Generating FOMO Reel...', 'Pulling photos & attendees');
     
     // Pick 5 random photos from the gallery
-    const allPhotos = [...localPhotos, ...galleryPhotos];
+    const allPhotos = [...(community?.gallery_photos || [])];
     const shuffledPhotos = allPhotos.sort(() => 0.5 - Math.random());
     const selectedPhotos = shuffledPhotos.slice(0, 5);
     

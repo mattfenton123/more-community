@@ -220,15 +220,28 @@ export default function Discover() {
           <h2 style={{ margin: 0, fontFamily: 'var(--font-heading)', fontSize: '1.4rem' }}>Tunbridge Wells, UK</h2>
         </div>
         
-        <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '999px', padding: '12px 20px', display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--slate-400)', border: '1px solid rgba(255,255,255,0.1)', transition: 'border-color 0.2s' }}>
+        <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '999px', padding: '6px 6px 6px 20px', display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--slate-400)', border: '1px solid rgba(255,255,255,0.1)', transition: 'border-color 0.2s' }}>
           <Search size={18} />
           <input 
             type="text" 
             placeholder="Search communities..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && e.target.blur()}
             style={{ background: 'transparent', border: 'none', color: 'var(--white)', outline: 'none', flex: 1, fontSize: '0.9rem' }}
           />
+          <button
+            onClick={() => {}}
+            className="interactive-press"
+            style={{
+              width: '36px', height: '36px', borderRadius: '50%',
+              background: 'var(--teal-500)', border: 'none',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer', flexShrink: 0,
+            }}
+          >
+            <ChevronRight size={20} color="#0f172a" />
+          </button>
         </div>
       </div>
 

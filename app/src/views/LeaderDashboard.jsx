@@ -1,6 +1,6 @@
 "use client";
 import { useState, useRef, useMemo } from 'react';
-import { Users, Calendar, MessageCircle, TrendingUp, Search, Plus, MapPin, Image as ImageIcon, CreditCard, ChevronRight, Download, Activity, Globe, Heart, Crown, Info, X, Map, Zap, Mail, Trash2, UserCheck, Ban, ChevronDown, ChevronUp, Settings, Megaphone, QrCode, BarChart3, Ticket, ScanLine, UserPlus, DollarSign, Clock, Edit3, Check, Eye, EyeOff, Shield } from 'lucide-react';
+import { Users, Calendar, MessageCircle, TrendingUp, Search, Plus, MapPin, Image as ImageIcon, CreditCard, ChevronRight, Download, Activity, Globe, Heart, Crown, Info, X, Map, Zap, Mail, Trash2, UserCheck, Ban, ChevronDown, ChevronUp, Settings, Megaphone, QrCode, BarChart3, Ticket, ScanLine, UserPlus, DollarSign, Clock, Edit3, Check, Eye, EyeOff, Shield, Video, List } from 'lucide-react';
 import AppHeader from '../components/AppHeader';
 import dynamic from 'next/dynamic';
 const LocationPicker = dynamic(() => import('../components/LocationPicker'), { ssr: false });
@@ -87,7 +87,7 @@ export default function LeaderDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
   const [activeCommunityId, setActiveCommunityId] = useState(user?.ledCommunities?.[0] || null);
   
-  const emptyEventForm = { title: '', description: '', date: '', time: '', location: '', meetingPoint: '', itinerary: '', whatToBring: '', activityLevel: 'All Levels', maxCapacity: '', ticketPrice: '', collabCommunityIds: [], profitShareEnabled: false, profitShareAmount: '' };
+  const emptyEventForm = { title: '', description: '', date: '', time: '', location: '', meetingPoint: '', itinerary: '', whatToBring: '', activityLevel: 'All Levels', maxCapacity: '', minCapacity: '', ticketPrice: '', collabCommunityIds: [], profitShareEnabled: false, profitShareAmount: '', videoUrl: '', instructions: '', suitableFor: '', galleryImages: [] };
   const [eventForm, setEventForm] = useState(emptyEventForm);
   const [editingEventId, setEditingEventId] = useState(null);
   const [broadcastText, setBroadcastText] = useState('');
@@ -267,11 +267,16 @@ export default function LeaderDashboard() {
     await createEvent(community.id, {
       ...eventForm,
       maxCapacity: eventForm.maxCapacity ? parseInt(eventForm.maxCapacity, 10) : null,
+      minCapacity: eventForm.minCapacity ? parseInt(eventForm.minCapacity, 10) : null,
       ticketPrice: eventForm.ticketPrice ? parseFloat(eventForm.ticketPrice) : 0,
       image: imageUrl,
       collabCommunityIds: eventForm.collabCommunityIds || [],
       profitShareEnabled: eventForm.profitShareEnabled || false,
-      profitShareAmount: eventForm.profitShareAmount ? parseFloat(eventForm.profitShareAmount) : 0
+      profitShareAmount: eventForm.profitShareAmount ? parseFloat(eventForm.profitShareAmount) : 0,
+      videoUrl: eventForm.videoUrl || '',
+      instructions: eventForm.instructions || '',
+      suitableFor: eventForm.suitableFor || '',
+      galleryImages: eventForm.galleryImages || []
     });
     setIsUploading(false);
     setModalType(null);
@@ -292,10 +297,15 @@ export default function LeaderDashboard() {
       whatToBring: event.whatToBring || '',
       activityLevel: event.activityLevel || 'All Levels',
       maxCapacity: event.maxCapacity ? event.maxCapacity.toString() : '',
+      minCapacity: event.minCapacity ? event.minCapacity.toString() : '',
       ticketPrice: event.ticketPrice ? event.ticketPrice.toString() : '',
       collabCommunityIds: event.collabCommunityIds || [],
       profitShareEnabled: event.profitShareEnabled || false,
-      profitShareAmount: event.profitShareAmount ? event.profitShareAmount.toString() : ''
+      profitShareAmount: event.profitShareAmount ? event.profitShareAmount.toString() : '',
+      videoUrl: event.videoUrl || '',
+      instructions: event.instructions || '',
+      suitableFor: event.suitableFor || '',
+      galleryImages: event.galleryImages || []
     });
     setImageFile(null);
     setModalType('edit-event');
@@ -541,6 +551,18 @@ export default function LeaderDashboard() {
               </select>
             </div>
           </div>
+          <div className="form-group">
+            <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Users size={14} color="#a78bfa" /> Who Is This For?</label>
+            <input className="form-input" placeholder="e.g. All ages, Beginners welcome, 18+" value={eventForm.suitableFor} onChange={e => setEventForm({...eventForm, suitableFor: e.target.value})} style={{ padding: '14px 16px' }} />
+          </div>
+          <div className="form-group">
+            <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><List size={14} color="#a78bfa" /> Instructions for Attendees</label>
+            <textarea className="form-input" placeholder="Any specific instructions, rules, or preparation needed..." value={eventForm.instructions} onChange={e => setEventForm({...eventForm, instructions: e.target.value})} rows={3} style={{ lineHeight: 1.5 }} />
+          </div>
+          <div className="form-group">
+            <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Video size={14} color="#a78bfa" /> Video URL (Optional)</label>
+            <input className="form-input" placeholder="YouTube or Vimeo link" value={eventForm.videoUrl} onChange={e => setEventForm({...eventForm, videoUrl: e.target.value})} style={{ padding: '14px 16px' }} />
+          </div>
         </>
       )}
 
@@ -555,6 +577,10 @@ export default function LeaderDashboard() {
             <div className="form-group">
               <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Users size={14} color="#f59e0b" /> Max Capacity</label>
               <input type="number" className="form-input" placeholder="Unlimited" value={eventForm.maxCapacity} onChange={e => setEventForm({...eventForm, maxCapacity: e.target.value})} min="1" style={{ padding: '14px 16px' }} />
+            </div>
+            <div className="form-group">
+              <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Users size={14} color="#f59e0b" /> Min to Go Ahead</label>
+              <input type="number" className="form-input" placeholder="No minimum" value={eventForm.minCapacity} onChange={e => setEventForm({...eventForm, minCapacity: e.target.value})} min="1" style={{ padding: '14px 16px' }} />
             </div>
             <div className="form-group">
               <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><CreditCard size={14} color="#f59e0b" /> Ticket Price (£)</label>

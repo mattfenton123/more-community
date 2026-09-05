@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ChevronLeft, Share, MapPin, Calendar, Clock, Users, CheckCircle2, Info, List, Activity, Check, Map, Ticket, DollarSign, Copy, ExternalLink, Navigation } from 'lucide-react';
+import { ChevronLeft, Share, MapPin, Calendar, Clock, Users, CheckCircle2, Info, List, Activity, Check, Map, Ticket, DollarSign, Copy, ExternalLink, Navigation, Video, AlertTriangle, Image as ImageIcon } from 'lucide-react';
 import { useAppContext } from '../../../src/context/AppContext';
 import { useToast } from '../../../src/components/Toast';
 import DigitalTicket from '../../../src/components/DigitalTicket';
@@ -337,6 +337,98 @@ export default function EventClient({ id }) {
             {event.description}
           </p>
         </div>
+
+        {/* Video Embed */}
+        {event.videoUrl && (
+          <div style={{ marginBottom: '32px' }}>
+            <h3 style={{ fontSize: '1.2rem', margin: '0 0 12px 0', color: 'var(--white)', fontFamily: 'var(--font-heading)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Video size={20} color="var(--teal-400)" /> Watch
+            </h3>
+            <div style={{ borderRadius: '16px', overflow: 'hidden', aspectRatio: '16/9', background: 'var(--slate-900)', border: '1px solid rgba(255,255,255,0.06)' }}>
+              {event.videoUrl.includes('youtube') || event.videoUrl.includes('youtu.be') ? (
+                <iframe
+                  src={event.videoUrl.replace('watch?v=', 'embed/').replace('youtu.be/', 'youtube.com/embed/')}
+                  style={{ width: '100%', height: '100%', border: 'none' }}
+                  allowFullScreen
+                  title="Event video"
+                />
+              ) : event.videoUrl.includes('vimeo') ? (
+                <iframe
+                  src={event.videoUrl.replace('vimeo.com/', 'player.vimeo.com/video/')}
+                  style={{ width: '100%', height: '100%', border: 'none' }}
+                  allowFullScreen
+                  title="Event video"
+                />
+              ) : (
+                <video src={event.videoUrl} controls style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Who Is This For */}
+        {event.suitableFor && (
+          <div style={{ marginBottom: '32px' }}>
+            <h3 style={{ fontSize: '1.2rem', margin: '0 0 12px 0', color: 'var(--white)', fontFamily: 'var(--font-heading)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Users size={20} color="var(--teal-400)" /> Who is this for?
+            </h3>
+            <div style={{ background: 'rgba(20,184,166,0.06)', border: '1px solid rgba(20,184,166,0.15)', borderRadius: '14px', padding: '16px' }}>
+              <p style={{ color: 'var(--slate-200)', fontSize: '0.95rem', lineHeight: 1.6, margin: 0 }}>{event.suitableFor}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Instructions */}
+        {event.instructions && (
+          <div style={{ marginBottom: '32px' }}>
+            <h3 style={{ fontSize: '1.2rem', margin: '0 0 12px 0', color: 'var(--white)', fontFamily: 'var(--font-heading)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Info size={20} color="var(--amber-400)" /> Instructions
+            </h3>
+            <div style={{ background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.15)', borderRadius: '14px', padding: '16px' }}>
+              <p style={{ color: 'var(--slate-200)', fontSize: '0.95rem', lineHeight: 1.6, margin: 0, whiteSpace: 'pre-wrap' }}>{event.instructions}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Gallery Images */}
+        {event.galleryImages && event.galleryImages.length > 0 && (
+          <div style={{ marginBottom: '32px' }}>
+            <h3 style={{ fontSize: '1.2rem', margin: '0 0 12px 0', color: 'var(--white)', fontFamily: 'var(--font-heading)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <ImageIcon size={20} color="var(--teal-400)" /> Gallery
+            </h3>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
+              {event.galleryImages.map((img, idx) => (
+                <img key={idx} src={img} alt={`Event gallery ${idx + 1}`} style={{ width: '100%', height: '140px', objectFit: 'cover', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Capacity Info */}
+        {(event.maxCapacity || event.minCapacity) && (
+          <div style={{ display: 'flex', gap: '12px', marginBottom: '32px', flexWrap: 'wrap' }}>
+            {event.maxCapacity && (
+              <div style={{ flex: 1, minWidth: '140px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px', padding: '16px', textAlign: 'center' }}>
+                <div style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--white)' }}>{event.maxCapacity}</div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)', marginTop: '4px' }}>Max capacity</div>
+                {spotsLeft !== null && <div style={{ fontSize: '0.85rem', color: spotsLeft < 5 ? 'var(--rose-400)' : 'var(--teal-400)', fontWeight: 600, marginTop: '6px' }}>{spotsLeft === 0 ? 'Sold out' : `${spotsLeft} spots left`}</div>}
+              </div>
+            )}
+            {event.minCapacity && (
+              <div style={{ flex: 1, minWidth: '140px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px', padding: '16px', textAlign: 'center' }}>
+                <div style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--white)' }}>{event.minCapacity}</div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)', marginTop: '4px' }}>Min to go ahead</div>
+                {(() => {
+                  const goingCount = rsvps.filter(r => r.status === 'going').length;
+                  const needed = event.minCapacity - goingCount;
+                  return needed > 0
+                    ? <div style={{ fontSize: '0.85rem', color: 'var(--amber-400)', fontWeight: 600, marginTop: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}><AlertTriangle size={14} /> {needed} more needed</div>
+                    : <div style={{ fontSize: '0.85rem', color: 'var(--teal-400)', fontWeight: 600, marginTop: '6px' }}>✓ Confirmed!</div>;
+                })()}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Location Map */}
         {event.location && (
