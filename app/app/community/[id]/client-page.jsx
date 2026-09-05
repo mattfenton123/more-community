@@ -1,6 +1,6 @@
 "use client";
 import { useState, useRef, useEffect } from 'react';
-import { ChevronLeft, Share2, Users, Calendar, Settings, ChevronDown, ChevronUp, Image as ImageIcon, ExternalLink, Camera, Mail, Activity, Sparkles, MapPin, Clock, Star, MessageCircle, Heart, BadgeCheck, Globe, Trash2, Flag, Search, Briefcase, Check, X, MessageSquare, Lightbulb, Info, Megaphone, Video, Plus, Shield } from 'lucide-react';
+import { ChevronLeft, Share2, Users, Calendar, Settings, ChevronDown, ChevronUp, Image as ImageIcon, ExternalLink, Camera, Mail, Activity, Sparkles, MapPin, Clock, Star, MessageCircle, Heart, BadgeCheck, Globe, Trash2, Flag, Search, Briefcase, Check, X, MessageSquare, Lightbulb, Info, Megaphone, Video, Plus, Shield, Play } from 'lucide-react';
 import { useRouter as useNavigate, useParams } from 'next/navigation';
 import { useAppContext } from '../../../src/context/AppContext';
 import { useFeed } from '../../../src/context/FeedContext';
@@ -14,8 +14,11 @@ import CreateIdeaModal from '../../../src/components/CreateIdeaModal';
 import ReviewsList from '../../../src/components/ReviewsList';
 import ReviewForm from '../../../src/components/ReviewForm';
 import ReelViewer from '../../../src/components/ReelViewer';
-import VideoUploader from '../../../src/components/VideoUploader';
+import dynamic from 'next/dynamic';
 import { downloadIcs } from '../../../src/lib/calendar';
+
+const VideoUploader = dynamic(() => import('../../../src/components/VideoUploader'), { ssr: false });
+
 import confetti from 'canvas-confetti';
 
 // Category-specific gallery photos (generated unique images)
