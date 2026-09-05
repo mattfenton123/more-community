@@ -9,7 +9,7 @@ import InlineComments from '../components/InlineComments';
 import AppHeader from '../components/AppHeader';
 
 export default function HomeFeed() {
-  const { user, communities, events, users, eventRsvps, isLoading, notifications } = useAppContext();
+  const { user, communities, events, users, eventRsvps, isLoading, notifications, sponsors, sponsorshipAssignments } = useAppContext();
   const { feedPosts, likeFeedPost } = useFeed();
   const router = useRouter();
   const [expandedComments, setExpandedComments] = useState({});
@@ -167,7 +167,43 @@ export default function HomeFeed() {
           </div>
         )}
       </div>
-</div>
+
+      {/* Sponsored Spotlight */}
+      {(() => {
+        // Pick a random Community Supporter or Headline Sponsor to spotlight
+        const spotlightSponsor = sponsors && sponsors.length > 0 
+          ? sponsors[Math.floor(Math.random() * sponsors.length)] 
+          : null;
+          
+        if (spotlightSponsor) {
+          return (
+            <div style={{ padding: '0 20px 32px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                <div style={{ fontSize: '0.75rem', color: 'var(--teal-400)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Sponsored Spotlight</div>
+              </div>
+              <div onClick={() => router.push(`/sponsors/${spotlightSponsor.id}`)} className="interactive-press" style={{ background: 'linear-gradient(to bottom, rgba(255,255,255,0.05), rgba(255,255,255,0.02))', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '20px', cursor: 'pointer', boxShadow: '0 8px 30px rgba(0,0,0,0.2)' }}>
+                <div style={{ display: 'flex', gap: '16px', alignItems: 'center', marginBottom: '16px' }}>
+                  <div style={{ width: '56px', height: '56px', borderRadius: '12px', background: 'white', padding: '4px', flexShrink: 0 }}>
+                    <img src={spotlightSponsor.logo} alt={spotlightSponsor.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                  </div>
+                  <div>
+                    <h4 style={{ margin: '0 0 4px 0', fontSize: '1.1rem', color: 'var(--white)' }}>{spotlightSponsor.name}</h4>
+                    <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--slate-400)' }}>Supporting local communities</p>
+                  </div>
+                </div>
+                <p style={{ color: 'var(--slate-200)', fontSize: '0.9rem', lineHeight: 1.5, margin: 0 }}>
+                  {spotlightSponsor.bio}
+                </p>
+                <div style={{ marginTop: '16px', fontSize: '0.85rem', color: 'var(--teal-400)', fontWeight: 600 }}>
+                  Read their community story &rarr;
+                </div>
+              </div>
+            </div>
+          );
+        }
+        return null;
+      })()}
+      </div>
     </div>
   );
 }

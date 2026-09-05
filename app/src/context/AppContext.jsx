@@ -44,28 +44,44 @@ export function AppProvider({ children }) {
       name: 'Gusto Coffee Roasters',
       logo: 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=400&q=80',
       url: 'https://example.com/gusto',
-      tier: 'Headline'
+      tier: 'Headline',
+      industry: 'Food & Beverage',
+      location: 'Tunbridge Wells High Street',
+      bio: 'Gusto Coffee Roasters is an independent, family-run coffee shop and roastery in the heart of Tunbridge Wells, passionate about ethically sourced beans and bringing people together over a great cup of coffee.',
+      communitySupportStatement: 'We believe that great communities start with great conversations. We are proud to sponsor local groups that encourage people to get out, meet one another, and build real-life connections. As a Headline Sponsor, we offer free space for community meetings and discounted coffee for members.',
+      heroImage: 'https://images.unsplash.com/photo-1497935586351-b67a49e012bf?auto=format&fit=crop&w=1200&q=80'
     },
     {
       id: '22222222-2222-2222-2222-222222222222',
       name: 'Kent Outdoors',
       logo: 'https://images.unsplash.com/photo-1542204165-65bf26472b9b?w=400&q=80',
       url: 'https://example.com/kent-outdoors',
-      tier: 'Community'
+      tier: 'Community',
+      industry: 'Retail & Leisure',
+      location: 'Royal Victoria Place',
+      bio: 'Kent Outdoors is the premier destination for hiking, camping, and outdoor gear in the South East, outfitting adventurers since 1998.',
+      communitySupportStatement: 'Getting outside is essential for physical and mental wellbeing. We support local walking, running, and adventure communities by providing gear discounts and funding their events, ensuring everyone has access to the great outdoors.',
+      heroImage: 'https://images.unsplash.com/photo-1551632811-561732d1e306?auto=format&fit=crop&w=1200&q=80'
     }
   ]);
   const [sponsorshipAssignments, setSponsorshipAssignments] = useState([
     {
       id: 'a1',
       sponsor_id: '11111111-1111-1111-1111-111111111111',
-      target_id: 'yentw',
+      target_id: 'c_mumclub_tw', // Updated to match a real seeded community
       target_type: 'community'
     },
     {
       id: 'a2',
       sponsor_id: '22222222-2222-2222-2222-222222222222',
-      target_id: 'tw-ramblers',
+      target_id: 'c_parkrun_tw', // Updated to match a real seeded community
       target_type: 'community'
+    },
+    {
+      id: 'a3',
+      sponsor_id: '11111111-1111-1111-1111-111111111111',
+      target_id: 'REGION_TW', // Global regional sponsor mapping
+      target_type: 'region'
     }
   ]);
 
@@ -1293,6 +1309,15 @@ export function AppProvider({ children }) {
       reduceMotion, setReduceMotion,
       getAffinityScore: (community) => {
         if (!user?.affinityProfile && !user?.interests) return 0;
+
+        if (user?.gender === 'Male') {
+          const name = community?.name?.toLowerCase() || '';
+          const desc = community?.description?.toLowerCase() || '';
+          if (name.includes('mum') || name.includes('women') || desc.includes('women only') || desc.includes('for mums') || desc.includes('mothers')) {
+            return -100;
+          }
+        }
+
         const ap = user?.affinityProfile || { tagScores: {}, likedCommunityIds: [], passedCommunityIds: [] };
         const userInterests = user?.interests || [];
         const communityTags = community?.tags || [];

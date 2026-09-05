@@ -72,7 +72,7 @@ function getGalleryType(tags) {
 export default function CommunityProfile() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user, communities, events, communityMemberships, users, eventRsvps, uploadImage, joinCommunity, leaveCommunity, experiences, services, updateServiceStatus, reviews, updateCommunity } = useAppContext();
+  const { user, communities, events, communityMemberships, users, eventRsvps, uploadImage, joinCommunity, leaveCommunity, experiences, services, updateServiceStatus, reviews, updateCommunity, sponsors, sponsorshipAssignments } = useAppContext();
   const { feedPosts, createFeedPost, likeFeedPost, deleteFeedPost } = useFeed();
   const { toast } = useToast();
   const [showRules, setShowRules] = useState(false);
@@ -958,6 +958,36 @@ export default function CommunityProfile() {
                 <div style={{ color: 'var(--slate-400)', fontSize: '0.85rem' }}>Introduce yourself and welcome new members.</div>
               </div>
             ) : null}
+
+            {/* Community Supporters */}
+            {(() => {
+              const supporters = sponsorshipAssignments
+                .filter(a => a.target_id === communityId && a.target_type === 'community')
+                .map(a => sponsors.find(s => s.id === a.sponsor_id))
+                .filter(Boolean);
+                
+              if (supporters.length > 0) {
+                return (
+                  <div style={{ marginBottom: '32px' }}>
+                    <h3 style={{ fontSize: '1.3rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: '0 0 16px 0' }}>Community Supporters</h3>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '12px' }}>
+                      {supporters.map(sponsor => (
+                        <div key={sponsor.id} onClick={() => navigate.push(`/sponsors/${sponsor.id}`)} className="interactive-press" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '16px', display: 'flex', alignItems: 'center', gap: '16px', cursor: 'pointer' }}>
+                          <div style={{ width: '60px', height: '60px', borderRadius: '12px', background: 'white', overflow: 'hidden', padding: '4px', flexShrink: 0 }}>
+                            <img src={sponsor.logo} alt={sponsor.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                          </div>
+                          <div>
+                            <div style={{ fontSize: '0.75rem', color: 'var(--teal-400)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.5px', marginBottom: '2px' }}>{sponsor.tier === 'Headline' ? 'Headline Sponsor' : 'Community Supporter'}</div>
+                            <div style={{ fontSize: '1.1rem', color: 'var(--white)', fontWeight: 700 }}>{sponsor.name}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              }
+              return null;
+            })()}
 
             {/* Description */}
             <div style={{ marginBottom: '32px' }}>

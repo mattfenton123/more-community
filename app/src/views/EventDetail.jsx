@@ -34,7 +34,7 @@ function sortByDate(events) {
 
 export default function EventsHub() {
   const [activeTab, setActiveTab] = useState('My Schedule');
-  const { events, communities, user, users, eventRsvps, rsvpToEvent, isLoading } = useAppContext();
+  const { events, communities, user, users, eventRsvps, rsvpToEvent, isLoading, sponsors, sponsorshipAssignments } = useAppContext();
   const { toast } = useToast();
   const router = useRouter();
   
@@ -318,6 +318,27 @@ export default function EventsHub() {
                 <div style={{ fontSize: '0.85rem', color: 'var(--teal-400)', fontWeight: 600, textTransform: 'uppercase', marginBottom: '8px' }}>{selectedEvent.communityName}</div>
                 <h3 style={{ fontSize: '1.5rem', fontFamily: 'var(--font-heading)', marginBottom: '16px', color: 'var(--white)', paddingRight: '60px' }}>{selectedEvent.title}</h3>
                 
+                {(() => {
+                  const assignment = sponsorshipAssignments.find(a => a.target_id === selectedEvent.communityId && a.target_type === 'community');
+                  if (assignment) {
+                    const sponsor = sponsors.find(s => s.id === assignment.sponsor_id);
+                    if (sponsor) {
+                      return (
+                        <div onClick={() => router.push(`/sponsors/${sponsor.id}`)} className="interactive-press" style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '12px', marginBottom: '20px', cursor: 'pointer' }}>
+                          <div style={{ width: '40px', height: '40px', borderRadius: '8px', background: 'white', overflow: 'hidden', flexShrink: 0, padding: '2px' }}>
+                            <img src={sponsor.logo} alt={sponsor.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                          </div>
+                          <div>
+                            <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.5px' }}>Event Partner</div>
+                            <div style={{ fontSize: '0.95rem', color: 'var(--white)', fontWeight: 600 }}>{sponsor.name}</div>
+                          </div>
+                        </div>
+                      );
+                    }
+                  }
+                  return null;
+                })()}
+
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '24px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--slate-300)' }}>
                     <CalIcon size={18} color="var(--slate-400)" />

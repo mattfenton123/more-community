@@ -22,6 +22,7 @@ export default function OnboardingFlow({ onComplete }) {
   const { authUser, signOut } = useAuth();
   const { user, updateUser, uploadImage, communities, theme, setTheme, highContrast, setHighContrast, largeText, setLargeText, reduceMotion, setReduceMotion } = useAppContext();
   const [step, setStep] = useState(0);
+  const [gender, setGender] = useState(user?.gender || '');
   const [name, setName] = useState(user?.name || '');
   const [bio, setBio] = useState('');
   const [interests, setInterests] = useState([]);
@@ -43,6 +44,15 @@ export default function OnboardingFlow({ onComplete }) {
   // Filter communities by selected interests for the swipe step
   const matchingCommunities = communities.filter(c => {
     if (!c.tags || c.tags.length === 0) return false;
+    
+    if (gender === 'Male') {
+      const name = c.name?.toLowerCase() || '';
+      const desc = c.description?.toLowerCase() || '';
+      if (name.includes('mum') || name.includes('women') || desc.includes('women only') || desc.includes('for mums') || desc.includes('mothers')) {
+        return false;
+      }
+    }
+
     return c.tags.some(tag => 
       interests.some(interest => interest.toLowerCase().includes(tag.toLowerCase()) || tag.toLowerCase().includes(interest.toLowerCase()))
     );
@@ -145,6 +155,7 @@ export default function OnboardingFlow({ onComplete }) {
       const updates = {
         name: name.trim(),
         bio: bio.trim(),
+        gender: gender,
         interests: interests,
         affinityProfile: buildAffinityProfile(),
         avatar: avatarUrl || user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=14b8a6&color=fff`,
@@ -182,6 +193,29 @@ export default function OnboardingFlow({ onComplete }) {
       </div>
 
       <div style={{ textAlign: 'center' }}>
+        <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.6rem', margin: '0 0 8px 0' }}>How do you identify?</h2>
+        <p style={{ color: 'var(--slate-400)', fontSize: '0.9rem', margin: '0 0 16px 0' }}>This helps us tailor your experience</p>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center', marginBottom: '32px' }}>
+          {['Female', 'Male', 'Non-binary', 'Prefer not to say'].map(g => (
+            <button
+              key={g}
+              onClick={() => setGender(g)}
+              className="interactive-press"
+              style={{
+                padding: '8px 16px',
+                borderRadius: '12px',
+                border: gender === g ? '1px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.1)',
+                background: gender === g ? 'rgba(20,184,166,0.12)' : 'var(--slate-800)',
+                color: gender === g ? 'var(--teal-300)' : 'var(--slate-400)',
+                fontSize: '0.85rem',
+                cursor: 'pointer'
+              }}
+            >
+              {g}
+            </button>
+          ))}
+        </div>
+
         <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.6rem', margin: '0 0 8px 0' }}>What are you into?</h2>
         <p style={{ color: 'var(--slate-400)', fontSize: '0.9rem', margin: 0 }}>Pick a few interests to personalise your feed</p>
       </div>
@@ -448,7 +482,7 @@ export default function OnboardingFlow({ onComplete }) {
     // Step 3: Welcome
     <div key="welcome" className="page-wrapper" style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
       {/* Embedded explainer */}
-      <div style={{ borderRadius: '16px', overflow: 'hidden', width: '100%', aspectRatio: '4/3', background: 'var(--slate-900)', border: '1px solid rgba(255,255,255,0.06)' }}>
+      <div style={{ borderRadius: '16px', overflow: 'hidden', width: '100%', aspectRatio: '16/9', background: 'var(--slate-900)', border: '1px solid rgba(255,255,255,0.06)' }}>
         <iframe
           src="/explainer.html"
           style={{ width: '100%', height: '100%', border: 'none' }}
@@ -465,7 +499,7 @@ export default function OnboardingFlow({ onComplete }) {
     </div>,
   ];
 
-  const canProceed = step === 0 ? interests.length > 0 : step === 1 ? true : step === 2 ? name.trim().length > 0 : true;
+  const canProceed = step === 0 ? (interests.length > 0 && gender !== '') : step === 1 ? true : step === 2 ? name.trim().length > 0 : true;
 
   return (
     <div style={{

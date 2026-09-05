@@ -12,7 +12,7 @@ import SwipeDiscovery from '../../src/components/SwipeDiscovery';
 export default function EventsHub() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('My Schedule');
-  const { events, communities, user, users, eventRsvps, rsvpToEvent, isLoading, saveItem, getAffinityScore } = useAppContext();
+  const { events, communities, user, users, eventRsvps, rsvpToEvent, isLoading, saveItem, getAffinityScore, sponsors, sponsorshipAssignments } = useAppContext();
   const { toast } = useToast();
   
   const [checkoutState, setCheckoutState] = useState('idle');
@@ -180,6 +180,11 @@ export default function EventsHub() {
     const eventImage = event.image || community?.image;
     const price = getEventPrice(event);
     const hasRsvp = eventRsvps[event.id]?.some(r => r.userId === user.id);
+    
+    // Check for sponsor
+    const sponsorAssignment = sponsorshipAssignments.find(a => a.target_id === event.communityId && a.target_type === 'community');
+    const sponsor = sponsorAssignment ? sponsors.find(s => s.id === sponsorAssignment.sponsor_id) : null;
+    
     return (
       <div 
         key={event.id} 
@@ -218,7 +223,14 @@ export default function EventsHub() {
           </div>
         )}
         <div style={{ padding: '16px' }}>
-          <div style={{ fontSize: '0.75rem', color: 'var(--teal-400)', fontWeight: 600, marginBottom: '4px', textTransform: 'uppercase' }}>{community?.name}</div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '4px' }}>
+            <div style={{ fontSize: '0.75rem', color: 'var(--teal-400)', fontWeight: 600, textTransform: 'uppercase' }}>{community?.name}</div>
+            {sponsor && (
+              <div style={{ fontSize: '0.65rem', color: 'var(--slate-400)', background: 'rgba(255,255,255,0.05)', padding: '2px 6px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                Supported by {sponsor.name}
+              </div>
+            )}
+          </div>
           <h3 style={{ margin: '0 0 8px 0', fontSize: '1.1rem', fontWeight: 700 }}>{event.title}</h3>
           <div style={{ display: 'flex', gap: '16px', fontSize: '0.85rem', color: 'var(--slate-400)' }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><CalIcon size={14} /> {event.date}</span>

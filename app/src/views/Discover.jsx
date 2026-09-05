@@ -13,7 +13,7 @@ import AppHeader from '../components/AppHeader';
 import SwipeDiscovery from '../components/SwipeDiscovery';
 
 export default function Discover() {
-  const { communities, user, users, communityMemberships, joinCommunity, isLoading, events, getAffinityScore } = useAppContext();
+  const { communities, user, users, communityMemberships, joinCommunity, isLoading, events, getAffinityScore, sponsors, sponsorshipAssignments } = useAppContext();
   // Default to 'For You' for users with interests but no communities yet
   const defaultPill = (user?.interests?.length > 0 && (!user?.joinedCommunities || user.joinedCommunities.length === 0)) ? 'For You' : 'All';
   const [activePill, setActivePill] = useState(defaultPill);
@@ -250,6 +250,30 @@ export default function Discover() {
             <ChevronRight size={20} color="#0f172a" />
           </button>
         </div>
+        
+        {/* Regional Headline Sponsor */}
+        {(() => {
+          const assignment = sponsorshipAssignments.find(a => a.target_type === 'region');
+          if (assignment) {
+            const sponsor = sponsors.find(s => s.id === assignment.sponsor_id);
+            if (sponsor) {
+              return (
+                <div onClick={() => navigate.push(`/sponsors/${sponsor.id}`)} className="interactive-press" style={{ background: 'rgba(234,179,8,0.05)', border: '1px solid rgba(234,179,8,0.2)', borderRadius: '16px', padding: '16px', display: 'flex', alignItems: 'center', gap: '16px', marginTop: '16px', cursor: 'pointer' }}>
+                  <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'white', overflow: 'hidden', padding: '4px', flexShrink: 0 }}>
+                    <img src={sponsor.logo} alt={sponsor.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '0.75rem', color: '#facc15', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.5px', marginBottom: '2px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <BadgeCheck size={14} /> Regional Partner
+                    </div>
+                    <div style={{ fontSize: '0.95rem', color: 'var(--white)', fontWeight: 600 }}>{sponsor.name}</div>
+                  </div>
+                </div>
+              );
+            }
+          }
+          return null;
+        })()}
       </div>
 
       <div style={{ padding: '10px 20px', display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '16px' }} className="hide-scrollbar">
