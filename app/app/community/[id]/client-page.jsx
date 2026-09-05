@@ -93,6 +93,8 @@ export default function CommunityProfile() {
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [showLeaveModal, setShowLeaveModal] = useState(false);
   const [showFullDesc, setShowFullDesc] = useState(false);
+  const [showReelViewer, setShowReelViewer] = useState(null);
+  const [showUploader, setShowUploader] = useState(false);
   const fileInputRef = useRef(null);
   
   const communityId = id || (user.joinedCommunities.length > 0 ? user.joinedCommunities[0] : 'tw-tech-meetup');
