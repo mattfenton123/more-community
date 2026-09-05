@@ -5,8 +5,9 @@ import { useRouter as useNavigate } from 'next/navigation';
 import { useAppContext } from '../context/AppContext';
 import { useChat } from '../context/ChatContext';
 import { BadgeRow, useGamification, CommunityLeaderboard } from './Gamification';
+import { Shield, CheckCircle } from 'lucide-react';
 
-function MemberRow({ member, communityId }) {
+function MemberRow({ member, communityId, isCurrentUserLeader, onUpgradeClick }) {
   const navigate = useNavigate();
   const { users, eventRsvps, events } = useAppContext();
     const { messages } = useChat();
@@ -27,27 +28,43 @@ function MemberRow({ member, communityId }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
           <span style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.85rem' }}>{user.name}</span>
           {member.role === 'Leader' && <Crown size={13} color="#f59e0b" />}
+          {member.role === 'co-founder' && <Shield size={13} color="var(--teal-400)" />}
         </div>
         <div style={{ display: 'flex', gap: '10px', fontSize: '0.7rem', color: 'var(--slate-500)' }}>
           <span>{messageCount} msgs</span>
           <span>{eventsAttended} events</span>
           {member.role === 'Leader' && <span style={{ color: '#f59e0b', fontWeight: 600 }}>Leader</span>}
+          {member.role === 'co-founder' && <span style={{ color: 'var(--teal-400)', fontWeight: 600 }}>Co-founder</span>}
         </div>
       </div>
-      <ChevronRight size={14} color="var(--slate-600)" />
+      
+      {isCurrentUserLeader && member.role !== 'Leader' && member.role !== 'co-founder' && (
+        <button 
+          onClick={(e) => { e.stopPropagation(); onUpgradeClick(member); }}
+          className="btn interactive-press"
+          style={{ background: 'rgba(20,184,166,0.1)', color: 'var(--teal-400)', border: '1px solid rgba(20,184,166,0.2)', padding: '6px 10px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 600 }}
+        >
+          Upgrade Role
+        </button>
+      )}
+      
+      {!isCurrentUserLeader && <ChevronRight size={14} color="var(--slate-600)" />}
+      {isCurrentUserLeader && (member.role === 'Leader' || member.role === 'co-founder') && <ChevronRight size={14} color="var(--slate-600)" />}
     </div>
   );
 }
 
 export default function MemberDirectory({ communityId, onClose }) {
-  const { communityMemberships, users, communities } = useAppContext();
+  const { communityMemberships, users, communities, user: currentUser } = useAppContext();
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('all');
   const [view, setView] = useState('directory'); // 'directory' | 'leaderboard'
+  const [upgradeMember, setUpgradeMember] = useState(null);
 
   const community = communities.find(c => c.id === communityId);
   const members = communityMemberships[communityId] || [];
+  const isLeader = community?.leader_id === currentUser?.id || currentUser?.ledCommunities?.includes(communityId);
 
   const filteredMembers = useMemo(() => {
     let list = members.filter(m => {
@@ -105,11 +122,58 @@ export default function MemberDirectory({ communityId, onClose }) {
       {/* Member List */}
       <div>
         {filteredMembers.map(m => (
-          <MemberRow key={m.userId} member={m} communityId={communityId} />
+          <MemberRow 
+            key={m.userId} 
+            member={m} 
+            communityId={communityId} 
+            isCurrentUserLeader={isLeader}
+            onUpgradeClick={(member) => setUpgradeMember(member)}
+          />
         ))}
         {filteredMembers.length === 0 && <div style={{ textAlign: 'center', padding: '24px', color: 'var(--slate-500)', fontSize: '0.85rem' }}>No members found.</div>}
       </div>
       </>)}
+
+      {/* Upgrade Modal */}
+      {upgradeMember && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(2,6,23,0.85)', backdropFilter: 'blur(10px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+          <div style={{ background: 'var(--slate-900)', borderRadius: '24px', padding: '24px', width: '100%', maxWidth: '400px', border: '1px solid rgba(255,255,255,0.1)' }}>
+            <h3 style={{ fontSize: '1.3rem', color: 'var(--white)', margin: '0 0 16px 0', fontFamily: 'var(--font-heading)' }}>Upgrade Role</h3>
+            <p style={{ color: 'var(--slate-300)', fontSize: '0.9rem', marginBottom: '24px', lineHeight: 1.5 }}>
+              You are about to promote this member to a <strong>Co-founder</strong>. They will be granted the following permissions:
+            </p>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '32px' }}>
+              {[
+                'Edit the community profile (bio, pricing, links)',
+                'Add and manage the Welcome Video',
+                'Approve or reject Service Pitches',
+                'Create and manage official community Events',
+              ].map((perm, idx) => (
+                <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255,255,255,0.02)', padding: '12px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                  <CheckCircle size={18} color="var(--teal-400)" style={{ flexShrink: 0 }} />
+                  <span style={{ color: 'var(--slate-200)', fontSize: '0.85rem', lineHeight: 1.4 }}>{perm}</span>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button onClick={() => setUpgradeMember(null)} className="btn interactive-press" style={{ flex: 1, padding: '14px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', color: 'var(--white)', border: 'none', fontWeight: 600 }}>Cancel</button>
+              <button 
+                onClick={() => {
+                  // In a real app, this would call an API to update the role
+                  alert('Member upgraded to Co-founder!');
+                  setUpgradeMember(null);
+                }} 
+                className="btn btn-primary interactive-press" 
+                style={{ flex: 1, padding: '14px', borderRadius: '12px', fontWeight: 600 }}
+              >
+                Confirm Upgrade
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

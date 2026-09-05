@@ -284,7 +284,7 @@ export default function OnboardingFlow({ onComplete }) {
                 cursor: 'grab', userSelect: 'none',
               }}
             >
-              <div style={{ height: '55%', background: `url(${currentSwipeCommunity.image || 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=400'})`, backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative' }}>
+              <div style={{ height: '55%', backgroundImage: `url(${currentSwipeCommunity.image || 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=400'})`, backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative' }}>
                 <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.9))' }}></div>
                 {/* Like/Nope indicators */}
                 {swipeOffset > 40 && (

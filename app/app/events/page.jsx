@@ -21,6 +21,7 @@ export default function EventsHub() {
   const [showCalendarDropdown, setShowCalendarDropdown] = useState(false);
   const [showSwipe, setShowSwipe] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [dateFilter, setDateFilter] = useState('all');
 
   // Sort events chronologically (soonest first, past at end)
   const sortByDate = (list) => {
@@ -51,11 +52,33 @@ export default function EventsHub() {
     });
   };
 
+  const filterByDate = (list) => {
+    if (dateFilter === 'all') return list;
+    const now = new Date();
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    return list.filter(e => {
+      const d = new Date(e.date + 'T00:00:00');
+      if (dateFilter === 'today') {
+        return d.getTime() === startOfToday.getTime();
+      }
+      if (dateFilter === 'this_week') {
+        const nextWeek = new Date(startOfToday);
+        nextWeek.setDate(startOfToday.getDate() + 7);
+        return d >= startOfToday && d <= nextWeek;
+      }
+      if (dateFilter === 'this_weekend') {
+        const day = d.getDay();
+        return (day === 0 || day === 6) && (d.getTime() - startOfToday.getTime()) < 14 * 24 * 60 * 60 * 1000;
+      }
+      return true;
+    });
+  };
+
   const myRsvpEventIds = Object.keys(eventRsvps).filter(eventId => 
     eventRsvps[eventId]?.some(r => r.userId === user?.id)
   );
-  const userEvents = sortByDate(filterBySearch(events.filter(e => myRsvpEventIds.includes(e.id) || user?.joinedCommunities?.includes(e.communityId))));
-  const exploreEvents = sortByDate(filterBySearch(events.filter(e => !user?.joinedCommunities?.includes(e.communityId))));
+  const userEvents = sortByDate(filterByDate(filterBySearch(events.filter(e => myRsvpEventIds.includes(e.id) || user?.joinedCommunities?.includes(e.communityId)))));
+  const exploreEvents = sortByDate(filterByDate(filterBySearch(events.filter(e => !user?.joinedCommunities?.includes(e.communityId)))));
 
   const recommendedEvents = sortByDate(filterBySearch(exploreEvents.filter(e => {
     if (!user || !user.interests) return false;
@@ -275,9 +298,37 @@ export default function EventsHub() {
             className="interactive-press"
             style={{ position: 'absolute', right: '6px', top: '50%', transform: 'translateY(-50%)', width: '32px', height: '32px', borderRadius: '50%', background: 'var(--teal-500)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
           >
-            <ChevronRight size={18} color="#0f172a" />
+            <span style={{ fontFamily: 'var(--font-heading)', fontSize: '18px', fontWeight: 900, color: '#0f172a', lineHeight: 1, marginTop: '-2px' }}>o</span>
           </button>
         </div>
+      </div>
+
+      {/* Date Filter Chips */}
+      <div style={{ padding: '12px 20px 4px', display: 'flex', gap: '8px', overflowX: 'auto', WebkitOverflowScrolling: 'touch', msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
+        {[
+          { id: 'all', label: 'All Dates' },
+          { id: 'today', label: 'Today' },
+          { id: 'this_week', label: 'This Week' },
+          { id: 'this_weekend', label: 'This Weekend' },
+        ].map(filter => (
+          <button
+            key={filter.id}
+            onClick={() => setDateFilter(filter.id)}
+            className="interactive-press"
+            style={{
+              padding: '6px 12px',
+              borderRadius: '20px',
+              border: dateFilter === filter.id ? '1px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.1)',
+              background: dateFilter === filter.id ? 'rgba(20,184,166,0.1)' : 'rgba(255,255,255,0.02)',
+              color: dateFilter === filter.id ? 'var(--teal-400)' : 'var(--slate-300)',
+              fontSize: '0.8rem',
+              fontWeight: 600,
+              whiteSpace: 'nowrap'
+            }}
+          >
+            {filter.label}
+          </button>
+        ))}
       </div>
 
       <div style={{ padding: '12px 20px 8px' }}>

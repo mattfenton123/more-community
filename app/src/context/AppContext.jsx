@@ -1157,8 +1157,11 @@ export function AppProvider({ children }) {
       return [...prev, { id: userId, ...updates }];
     });
     
+    // Strip frontend-only mock fields before sending to db
+    const { affinityProfile, ...dbUpdates } = updates;
+    
     try {
-      await updateUserAction(userId, updates, session?.access_token);
+      await updateUserAction(userId, dbUpdates, session?.access_token);
     } catch (err) {
       console.error('User update failed (ignoring for prototype):', err);
     }

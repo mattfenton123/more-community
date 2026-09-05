@@ -87,6 +87,7 @@ export default function CommunityProfile() {
   const [showIdeaModal, setShowIdeaModal] = useState(false);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [showLeaveModal, setShowLeaveModal] = useState(false);
+  const [showFullDesc, setShowFullDesc] = useState(false);
   const fileInputRef = useRef(null);
   
   const communityId = id || (user.joinedCommunities.length > 0 ? user.joinedCommunities[0] : 'tw-tech-meetup');
@@ -97,7 +98,9 @@ export default function CommunityProfile() {
   }
 
   const isMember = user.joinedCommunities.includes(communityId);
-  const isLeader = user.ledCommunities?.includes(communityId);
+  const isLeader = community.leader_id === user?.id || 
+                   user?.ledCommunities?.includes(communityId) || 
+                   (communityMemberships[communityId] || []).some(m => (m.userId === user?.id || m.user_id === user?.id) && (m.role === 'co-founder' || m.role === 'Leader'));
   const communityEvents = events.filter(e => e.communityId === communityId || e.collabCommunityIds?.includes(communityId));
   const upcomingEvents = communityEvents.filter(e => {
     try { return new Date(e.date) >= new Date(); } catch { return true; }
@@ -989,16 +992,55 @@ export default function CommunityProfile() {
               return null;
             })()}
 
-            {/* Description */}
+            {/* Description & Accordion */}
             <div style={{ marginBottom: '32px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                <h3 style={{ fontSize: '1.3rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: 0 }}>What we're about</h3>
+              <h3 style={{ fontSize: '1.3rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: '0 0 16px 0' }}>What we're about</h3>
+              
+              {/* Vibe Check */}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '16px' }}>
+                <span style={{ padding: '6px 12px', borderRadius: '8px', background: 'rgba(236,72,153,0.1)', color: 'var(--pink-400)', fontSize: '0.8rem', fontWeight: 600 }}>✨ {community.activity_level === 'Very Active' ? 'High Energy' : 'Chill Vibes'}</span>
+                {community.tags?.slice(0, 2).map((tag, idx) => (
+                   <span key={idx} style={{ padding: '6px 12px', borderRadius: '8px', background: 'rgba(59,130,246,0.1)', color: 'var(--blue-400)', fontSize: '0.8rem', fontWeight: 600 }}>🔥 {tag}</span>
+                ))}
               </div>
-              <div style={{ lineHeight: 1.8, color: 'var(--slate-200)', fontSize: '1rem', margin: 0 }}>
+
+              <div style={{ 
+                position: 'relative', 
+                lineHeight: 1.8, 
+                color: 'var(--slate-200)', 
+                fontSize: '1rem',
+                maxHeight: showFullDesc ? 'none' : '150px',
+                overflow: 'hidden',
+                transition: 'max-height 0.3s ease'
+              }}>
                 {community.description?.split('\n').map((line, i) => (
                   <p key={i} style={{ margin: '0 0 12px 0', minHeight: line.trim() === '' ? '12px' : 'auto' }}>{line}</p>
                 ))}
+                
+                {!showFullDesc && (
+                  <div style={{ 
+                    position: 'absolute', bottom: 0, left: 0, right: 0, height: '80px', 
+                    background: 'linear-gradient(to bottom, transparent, var(--slate-950))',
+                    display: 'flex', alignItems: 'flex-end', justifyContent: 'center', paddingBottom: '8px'
+                  }}>
+                  </div>
+                )}
               </div>
+              
+              <button 
+                onClick={() => setShowFullDesc(!showFullDesc)}
+                className="interactive-press"
+                style={{ 
+                  marginTop: '8px', width: '100%', padding: '12px', borderRadius: '12px', 
+                  background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)',
+                  color: 'var(--teal-400)', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer',
+                  display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px'
+                }}
+              >
+                {showFullDesc ? 'Show Less' : (
+                  <>Show <img src="/images/logo.webp" alt="more." style={{ height: '14px', filter: 'brightness(0) invert(1)', opacity: 0.8 }} /></>
+                )}
+              </button>
             </div>
 
             {/* Key Info Cards */}
@@ -1067,40 +1109,82 @@ export default function CommunityProfile() {
               </div>
             )}
 
-            {/* Next Event CTA */}
-            {nextEvent && (
+            {/* Upcoming Events List */}
+            {upcomingEvents.length > 0 && (
               <div style={{ marginBottom: '32px' }}>
-                <h3 style={{ fontSize: '1.1rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: '0 0 12px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Sparkles size={18} color="var(--teal-400)" /> Next Event
+                <h3 style={{ fontSize: '1.3rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: '0 0 16px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Calendar size={20} color="var(--teal-400)" /> Upcoming Events
                 </h3>
-                <div 
-                  onClick={() => navigate.push(`/events/${nextEvent.id}`)} 
-                  className="interactive-press"
-                  style={{ borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(20,184,166,0.2)', background: 'rgba(20,184,166,0.05)', cursor: 'pointer' }}
-                >
-                  {nextEvent.image && (
-                    <div style={{ height: '120px', background: `url(${nextEvent.image})`, backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative' }}>
-                      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.6))' }}></div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {upcomingEvents.map(evt => (
+                    <div 
+                      key={evt.id}
+                      onClick={() => navigate.push(`/events/${evt.id}`)} 
+                      className="interactive-press"
+                      style={{ borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.02)', cursor: 'pointer', display: 'flex' }}
+                    >
+                      {evt.image && (
+                        <div style={{ width: '100px', flexShrink: 0, background: `url(${evt.image})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
+                        </div>
+                      )}
+                      <div style={{ padding: '16px', flex: 1 }}>
+                        <div style={{ display: 'flex', gap: '8px', fontSize: '0.8rem', color: 'var(--teal-300)', fontWeight: 600, marginBottom: '6px' }}>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Calendar size={14} /> {evt.date}</span>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={14} /> {evt.time}</span>
+                        </div>
+                        <div style={{ fontWeight: 700, fontSize: '1.05rem', color: 'var(--white)', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          {evt.title}
+                          {evt.communityId !== communityId && <span style={{ fontSize: '0.65rem', background: 'var(--teal-500)', color: 'var(--white)', padding: '2px 6px', borderRadius: '6px', fontWeight: 700, textTransform: 'uppercase' }}>Collab</span>}
+                        </div>
+                        <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)', display: 'flex', alignItems: 'center', gap: '4px' }}><MapPin size={14} /> {evt.location}</div>
+                      </div>
                     </div>
-                  )}
-                  <div style={{ padding: '16px' }}>
-                    <div style={{ display: 'flex', gap: '8px', fontSize: '0.8rem', color: 'var(--teal-300)', fontWeight: 600, marginBottom: '6px' }}>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Calendar size={14} /> {nextEvent.date}</span>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={14} /> {nextEvent.time}</span>
-                    </div>
-                    <div style={{ fontWeight: 700, fontSize: '1.1rem', color: 'var(--white)', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      {nextEvent.title}
-                      {nextEvent.communityId !== communityId && <span style={{ fontSize: '0.65rem', background: 'var(--teal-500)', color: 'var(--white)', padding: '2px 6px', borderRadius: '6px', fontWeight: 700, textTransform: 'uppercase' }}>Collab</span>}
-                    </div>
-                    <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)', display: 'flex', alignItems: 'center', gap: '4px' }}><MapPin size={14} /> {nextEvent.location}</div>
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); downloadIcs(nextEvent, community.name); }} 
-                      className="btn btn-outline interactive-press" 
-                      style={{ marginTop: '12px', width: '100%', padding: '10px', borderRadius: '10px', fontSize: '0.85rem', display: 'flex', gap: '6px', justifyContent: 'center' }}>
-                      <Calendar size={14} /> Add to Calendar
-                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* What Members Say */}
+            {topReviews.length > 0 && (
+              <div style={{ marginBottom: '32px' }}>
+                <h3 style={{ fontSize: '1.3rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: '0 0 16px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <MessageCircle size={20} color="var(--teal-400)" /> What Members Say
+                </h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {topReviews.map(review => {
+                    const author = users.find(u => u.id === review.user_id) || {};
+                    return (
+                      <div key={review.id} style={{ padding: '16px', background: 'rgba(255,255,255,0.03)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                        <div style={{ color: 'var(--white)', fontSize: '0.95rem', lineHeight: 1.5, marginBottom: '12px', fontStyle: 'italic' }}>"{review.content}"</div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <img src={author.avatar || `https://ui-avatars.com/api/?name=${author.name}&background=random`} alt="" style={{ width: '24px', height: '24px', borderRadius: '50%' }} />
+                          <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)', fontWeight: 500 }}>{author.name}</div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Get In Touch */}
+            {leaderUser && (
+              <div style={{ marginBottom: '32px', padding: '20px', background: 'rgba(20,184,166,0.05)', borderRadius: '16px', border: '1px solid rgba(20,184,166,0.2)' }}>
+                <h3 style={{ fontSize: '1.2rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: '0 0 16px 0' }}>Get in Touch</h3>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                  <img src={leaderUser.avatar || `https://ui-avatars.com/api/?name=${leaderUser.name}&background=0D8B93&color=fff`} alt="" style={{ width: '56px', height: '56px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--slate-800)' }} />
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: 700, fontSize: '1.05rem', color: 'var(--white)' }}>{leaderUser.name}</div>
+                    <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)' }}>Community Organiser</div>
                   </div>
                 </div>
+                <button 
+                  onClick={() => navigate.push(`/chat/dm/${leaderUser.id}`)}
+                  className="btn btn-primary interactive-press"
+                  style={{ width: '100%', marginTop: '16px', padding: '12px', borderRadius: '12px', fontSize: '0.95rem', fontWeight: 600, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}
+                >
+                  <MessageCircle size={18} /> Message Organiser
+                </button>
               </div>
             )}
 
