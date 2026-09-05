@@ -199,6 +199,12 @@ export default function Discover() {
             onChange={(e) => setSearchQuery(e.target.value)}
             style={{ background: 'transparent', border: 'none', color: 'var(--white)', outline: 'none', flex: 1, fontSize: '0.9rem' }}
           />
+          <button
+            className="interactive-press"
+            style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--teal-500)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}
+          >
+            <img src="/images/o-logo.webp" alt="Go" style={{ height: '14px', filter: 'brightness(0) invert(0)' }} />
+          </button>
         </div>
       </div>
 
