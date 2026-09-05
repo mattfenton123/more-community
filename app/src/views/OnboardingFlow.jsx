@@ -155,7 +155,6 @@ export default function OnboardingFlow({ onComplete }) {
       const updates = {
         name: name.trim(),
         bio: bio.trim(),
-        gender: gender,
         interests: interests,
         affinityProfile: buildAffinityProfile(),
         avatar: avatarUrl || user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=14b8a6&color=fff`,
