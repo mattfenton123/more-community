@@ -243,7 +243,7 @@ export default function EventsHub() {
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             style={{
-              width: '100%', padding: '12px 44px 12px 42px',
+              width: '100%', padding: searchQuery ? '12px 80px 12px 42px' : '12px 44px 12px 42px',
               background: 'rgba(255,255,255,0.04)',
               border: '1px solid rgba(255,255,255,0.08)',
               borderRadius: '14px', color: 'var(--white)',
@@ -251,21 +251,20 @@ export default function EventsHub() {
               fontFamily: 'inherit',
             }}
           />
-          {searchQuery ? (
+          {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
-              style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--slate-300)' }}
+              style={{ position: 'absolute', right: '44px', top: '50%', transform: 'translateY(-50%)', background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--slate-300)' }}
             >
               <X size={12} />
             </button>
-          ) : (
-            <button
-              className="interactive-press"
-              style={{ position: 'absolute', right: '6px', top: '50%', transform: 'translateY(-50%)', width: '32px', height: '32px', borderRadius: '50%', background: 'var(--teal-500)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-            >
-              <ChevronRight size={18} color="#0f172a" />
-            </button>
           )}
+          <button
+            className="interactive-press"
+            style={{ position: 'absolute', right: '6px', top: '50%', transform: 'translateY(-50%)', width: '32px', height: '32px', borderRadius: '50%', background: 'var(--teal-500)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+          >
+            <ChevronRight size={18} color="#0f172a" />
+          </button>
         </div>
       </div>
 
