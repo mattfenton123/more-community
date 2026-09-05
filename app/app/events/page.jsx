@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Calendar as CalIcon, MapPin, Search, X, CheckCircle2, CreditCard, Check, Ticket, Users, QrCode, Share, Sparkles, Navigation, ChevronRight } from 'lucide-react';
+import { Calendar as CalIcon, MapPin, Search, X, CheckCircle2, CreditCard, Check, Ticket, Users, QrCode, Share, Sparkles, Navigation, ChevronRight, ChevronsRight } from 'lucide-react';
 import { useAppContext } from '../../src/context/AppContext';
 import { SkeletonList, SkeletonEvent } from '../../src/components/SkeletonCard';
 import { useToast } from '../../src/components/Toast';
@@ -301,10 +301,11 @@ export default function EventsHub() {
             </button>
           )}
           <button
+            onClick={() => {}}
             className="interactive-press"
             style={{ position: 'absolute', right: '6px', top: '50%', transform: 'translateY(-50%)', width: '32px', height: '32px', borderRadius: '50%', background: 'var(--teal-500)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
           >
-            <img src="/images/o-logo.webp" alt="O" style={{ height: '14px', filter: 'brightness(0) invert(0)' }} />
+            <ChevronsRight size={16} strokeWidth={3} color="#0f172a" />
           </button>
         </div>
       </div>

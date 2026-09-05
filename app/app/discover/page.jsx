@@ -1,6 +1,6 @@
 "use client";
 import { useState, useMemo } from 'react';
-import { Compass, Users, MapPin, Search, Calendar, ChevronRight, X, List, Map as MapIcon, Sparkles, BadgeCheck, TrendingUp, Activity, Zap, Sun, Moon } from 'lucide-react';
+import { Compass, Users, MapPin, Search, Calendar, ChevronRight, X, List, Map as MapIcon, Sparkles, BadgeCheck, TrendingUp, Activity, Zap, Sun, Moon, ChevronsRight } from 'lucide-react';
 import { useRouter as useNavigate } from 'next/navigation';
 import { useAppContext } from '../../src/context/AppContext';
 import { useChat } from '../../src/context/ChatContext';
@@ -203,7 +203,7 @@ export default function Discover() {
             className="interactive-press"
             style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--teal-500)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}
           >
-            <img src="/images/o-logo.webp" alt="Go" style={{ height: '14px', filter: 'brightness(0) invert(0)' }} />
+            <ChevronsRight size={16} strokeWidth={3} color="#0f172a" />
           </button>
         </div>
       </div>

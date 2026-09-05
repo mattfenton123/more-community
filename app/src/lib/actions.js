@@ -271,6 +271,38 @@ export async function uploadImageAction(formData, token) {
   return publicData.publicUrl;
 }
 
+export async function uploadVideoAction(formData, token) {
+  await verifyUser(token);
+  
+  const file = formData.get('file');
+  const userId = formData.get('userId');
+  
+  if (!file) throw new Error("No file provided");
+  
+  const filename = file.name || 'video.mp4';
+  const fileExt = filename.split('.').pop();
+  const fileName = `${userId}/videos/${Date.now()}.${fileExt}`;
+  
+  const arrayBuffer = await file.arrayBuffer();
+  const buffer = Buffer.from(arrayBuffer);
+  
+  const { data, error } = await supabaseAdmin.storage
+    .from('uploads')
+    .upload(fileName, buffer, {
+      contentType: file.type,
+      cacheControl: '3600',
+      upsert: false
+    });
+    
+  if (error) throw new Error(error.message);
+  
+  const { data: publicData } = supabaseAdmin.storage
+    .from('uploads')
+    .getPublicUrl(fileName);
+    
+  return publicData.publicUrl;
+}
+
 export async function updateEventAction(eventId, updates, token) {
   await verifyUser(token);
   

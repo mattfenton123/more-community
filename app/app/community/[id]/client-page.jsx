@@ -1,6 +1,6 @@
 "use client";
 import { useState, useRef, useEffect } from 'react';
-import { ChevronLeft, Share2, Users, Calendar, Settings, ChevronDown, ChevronUp, Image as ImageIcon, ExternalLink, Camera, Mail, Activity, Sparkles, MapPin, Clock, Star, MessageCircle, Heart, BadgeCheck, Globe, Trash2, Flag, Search, Briefcase, Check, X, MessageSquare, Lightbulb, Info, Megaphone } from 'lucide-react';
+import { ChevronLeft, Share2, Users, Calendar, Settings, ChevronDown, ChevronUp, Image as ImageIcon, ExternalLink, Camera, Mail, Activity, Sparkles, MapPin, Clock, Star, MessageCircle, Heart, BadgeCheck, Globe, Trash2, Flag, Search, Briefcase, Check, X, MessageSquare, Lightbulb, Info, Megaphone, Video, Plus } from 'lucide-react';
 import { useRouter as useNavigate, useParams } from 'next/navigation';
 import { useAppContext } from '../../../src/context/AppContext';
 import { useFeed } from '../../../src/context/FeedContext';
@@ -13,6 +13,8 @@ import CreateServiceModal from '../../../src/components/CreateServiceModal';
 import CreateIdeaModal from '../../../src/components/CreateIdeaModal';
 import ReviewsList from '../../../src/components/ReviewsList';
 import ReviewForm from '../../../src/components/ReviewForm';
+import ReelViewer from '../../../src/components/ReelViewer';
+import VideoUploader from '../../../src/components/VideoUploader';
 import { downloadIcs } from '../../../src/lib/calendar';
 import confetti from 'canvas-confetti';
 
@@ -72,7 +74,7 @@ function getGalleryType(tags) {
 export default function CommunityProfile() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user, communities, events, communityMemberships, users, eventRsvps, uploadImage, joinCommunity, leaveCommunity, experiences, services, updateServiceStatus, reviews, updateCommunity, sponsors, sponsorshipAssignments } = useAppContext();
+  const { user, communities, events, communityMemberships, users, eventRsvps, uploadImage, joinCommunity, leaveCommunity, experiences, services, updateServiceStatus, reviews, updateCommunity, sponsors, sponsorshipAssignments, addCommunityHighlight } = useAppContext();
   const { feedPosts, createFeedPost, likeFeedPost, deleteFeedPost } = useFeed();
   const { toast } = useToast();
   const [showRules, setShowRules] = useState(false);
@@ -438,6 +440,34 @@ export default function CommunityProfile() {
             display: none;
           }
         `}} />
+      </div>
+
+      {/* ===== HIGHLIGHTS STORY RINGS ===== */}
+      <div style={{ padding: '0 20px 24px 20px', display: 'flex', gap: '16px', overflowX: 'auto', scrollSnapType: 'x mandatory' }} className="no-scrollbar">
+        {/* Upload Button */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', cursor: 'pointer', flexShrink: 0 }} onClick={() => setShowUploader(true)}>
+          <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', border: '2px dashed rgba(20,184,166,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+            <Plus size={24} color="var(--teal-400)" />
+            <div style={{ position: 'absolute', bottom: '-4px', right: '-4px', background: 'var(--teal-500)', borderRadius: '50%', padding: '4px', border: '2px solid var(--slate-950)' }}>
+              <Video size={10} color="#000" />
+            </div>
+          </div>
+          <span style={{ fontSize: '0.75rem', color: 'var(--slate-300)', fontWeight: 500 }}>Add</span>
+        </div>
+
+        {/* Highlight Rings */}
+        {community?.highlights?.map((highlight, idx) => (
+          <div key={highlight.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', cursor: 'pointer', flexShrink: 0 }} onClick={() => setShowReelViewer(idx)}>
+            <div style={{ width: '64px', height: '64px', borderRadius: '50%', padding: '2px', background: 'linear-gradient(45deg, var(--teal-400), var(--blue-500))' }}>
+              <div style={{ width: '100%', height: '100%', borderRadius: '50%', overflow: 'hidden', border: '2px solid var(--slate-950)', background: '#000', position: 'relative' }}>
+                <video src={highlight.url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} muted playsInline />
+                <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.2)' }} />
+                <Play size={16} color="rgba(255,255,255,0.8)" style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }} />
+              </div>
+            </div>
+            <span style={{ fontSize: '0.75rem', color: 'var(--slate-300)', fontWeight: 500, maxWidth: '64px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{highlight.title || 'Highlight'}</span>
+          </div>
+        ))}
       </div>
 
       <div style={{ padding: '0 20px' }}>
@@ -1586,6 +1616,33 @@ export default function CommunityProfile() {
           </div>
         </div>
       )}
+      {/* Reel Viewer */}
+      {showReelViewer !== null && (
+        <ReelViewer 
+          highlights={community.highlights || []}
+          initialIndex={showReelViewer}
+          onClose={() => setShowReelViewer(null)}
+          isLeader={isLeader}
+          onDeleteHighlight={async (id) => {
+            const updated = (community.highlights || []).filter(h => h.id !== id);
+            await updateCommunity(communityId, { highlights: updated });
+            if (updated.length === 0) setShowReelViewer(null);
+          }}
+        />
+      )}
+
+      {/* Video Uploader */}
+      {showUploader && (
+        <VideoUploader 
+          user={user}
+          onCancel={() => setShowUploader(false)}
+          onUploadComplete={async (url) => {
+            await addCommunityHighlight(communityId, url, 'New Highlight');
+            setShowUploader(false);
+          }}
+        />
+      )}
+      
     </div>
   );
 }

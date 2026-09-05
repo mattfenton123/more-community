@@ -279,13 +279,22 @@ export function AppProvider({ children }) {
           ensureLeadersNetworkAction().catch(e => console.error("Error ensuring leaders network:", e));
         }
 
-        setCommunities(comms.map(c => ({
+        const stockVideos = [
+          'https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_1MB.mp4',
+          'https://test-videos.co.uk/vids/sintel/mp4/h264/360/Sintel_360_10s_1MB.mp4'
+        ];
+
+        setCommunities(comms.map((c, i) => ({
           ...c, // pass through ALL columns from Supabase
           tags: c.tags || [],
           image: c.image || c.cover_image, // support both column names
           category: (c.tags && c.tags.length > 0) ? c.tags[0] : 'All',
           metrics: { members: 1, cost: c.cost || 'Free', eventsRun: 0 },
-          colors: ['#3b82f6', '#14b8a6'] // fallback gradient
+          colors: ['#3b82f6', '#14b8a6'], // fallback gradient
+          highlights: c.highlights || [
+            { id: `h1_${c.id}`, url: stockVideos[i % stockVideos.length], title: 'Community Vibe', uploaderName: 'more. team', timestamp: '2d ago' },
+            { id: `h2_${c.id}`, url: stockVideos[(i+1) % stockVideos.length], title: 'Event Highlight', uploaderName: 'more. team', timestamp: '1w ago' }
+          ]
         })));
       }
 
@@ -1188,6 +1197,32 @@ export function AppProvider({ children }) {
     }
   };
 
+  const addCommunityHighlight = async (communityId, highlightUrl, title = 'New Highlight') => {
+    const community = communities.find(c => c.id === communityId);
+    if (!community) throw new Error("Community not found");
+    
+    const newHighlight = {
+      id: `h_${Date.now()}`,
+      url: highlightUrl,
+      title,
+      uploaderName: user?.name || 'Member',
+      uploaderAvatar: user?.avatar || '',
+      timestamp: 'Just now'
+    };
+    
+    const currentHighlights = community.highlights || [];
+    const updatedHighlights = [newHighlight, ...currentHighlights];
+    
+    // Attempt to persist to Supabase if a highlights JSONB column exists, otherwise just update state
+    try {
+      await supabase.from('communities').update({ highlights: updatedHighlights }).eq('id', communityId);
+    } catch (e) {
+      console.warn("Could not persist highlights to DB (schema missing), updating local state only");
+    }
+    
+    setCommunities(prev => prev.map(c => c.id === communityId ? { ...c, highlights: updatedHighlights } : c));
+  };
+
   const subscribeToPushNotifications = async () => {
     if (!user?.id) return false;
     try {
@@ -1273,6 +1308,7 @@ export function AppProvider({ children }) {
       createCommunity,
       createChannel,
       uploadImage,
+      addCommunityHighlight,
       updateUser,
       updateCommunity,
       toggleUserRole,
