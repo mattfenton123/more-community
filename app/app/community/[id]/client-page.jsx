@@ -1,6 +1,6 @@
 "use client";
 import { useState, useRef, useEffect } from 'react';
-import { ChevronLeft, Share2, Users, Calendar, Settings, ChevronDown, ChevronUp, Image as ImageIcon, ExternalLink, Camera, Mail, Activity, Sparkles, MapPin, Clock, Star, MessageCircle, Heart, BadgeCheck, Globe, Trash2, Flag, Search, Briefcase, Check, X, MessageSquare, Lightbulb, Info, Megaphone, Video, Plus, Shield, Play } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Share2, Users, Calendar, Settings, ChevronDown, ChevronUp, Image as ImageIcon, ExternalLink, Camera, Mail, Activity, Sparkles, MapPin, Clock, Star, MessageCircle, Heart, BadgeCheck, Globe, Trash2, Flag, Search, Briefcase, Check, X, MessageSquare, Lightbulb, Info, Megaphone, Video, Plus, Shield, Play } from 'lucide-react';
 import { useRouter as useNavigate, useParams } from 'next/navigation';
 import { useAppContext } from '../../../src/context/AppContext';
 import { useFeed } from '../../../src/context/FeedContext';
