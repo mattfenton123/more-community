@@ -55,7 +55,7 @@ function MemberRow({ member, communityId, isCurrentUserLeader, onUpgradeClick })
 }
 
 export default function MemberDirectory({ communityId, onClose }) {
-  const { communityMemberships, users, communities, user: currentUser } = useAppContext();
+  const { communityMemberships, users, communities, user: currentUser, promoteMember } = useAppContext();
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('all');
@@ -160,10 +160,16 @@ export default function MemberDirectory({ communityId, onClose }) {
             <div style={{ display: 'flex', gap: '12px' }}>
               <button onClick={() => setUpgradeMember(null)} className="btn interactive-press" style={{ flex: 1, padding: '14px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', color: 'var(--white)', border: 'none', fontWeight: 600 }}>Cancel</button>
               <button 
-                onClick={() => {
-                  // In a real app, this would call an API to update the role
-                  alert('Member upgraded to Co-founder!');
-                  setUpgradeMember(null);
+                onClick={async () => {
+                  try {
+                    if (promoteMember) {
+                      await promoteMember(communityId, upgradeMember.userId, 'co-founder');
+                    }
+                    setUpgradeMember(null);
+                  } catch (err) {
+                    console.error("Failed to upgrade role:", err);
+                    alert("Failed to upgrade role. Please try again.");
+                  }
                 }} 
                 className="btn btn-primary interactive-press" 
                 style={{ flex: 1, padding: '14px', borderRadius: '12px', fontWeight: 600 }}

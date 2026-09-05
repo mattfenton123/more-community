@@ -302,9 +302,11 @@ export default function EventsHub() {
           )}
           <button
             className="interactive-press"
-            style={{ position: 'absolute', right: '6px', top: '50%', transform: 'translateY(-50%)', width: '32px', height: '32px', borderRadius: '50%', background: 'var(--teal-500)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+            style={{ position: 'absolute', right: '6px', top: '50%', transform: 'translateY(-50%)', width: '32px', height: '32px', borderRadius: '50%', background: 'var(--teal-500)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', overflow: 'hidden' }}
           >
-            <span style={{ fontFamily: 'var(--font-heading)', fontSize: '18px', fontWeight: 900, color: '#0f172a', lineHeight: 1, marginTop: '-2px' }}>o</span>
+            <div style={{ width: '14px', height: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', borderRadius: '50%' }}>
+              <img src="/images/logo.webp" alt="O" style={{ height: '14px', width: 'auto', objectFit: 'none', objectPosition: '22% 50%', filter: 'brightness(0) invert(0)' }} />
+            </div>
           </button>
         </div>
       </div>

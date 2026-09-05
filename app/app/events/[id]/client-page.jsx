@@ -297,7 +297,11 @@ export default function EventClient({ id }) {
         
         {/* Title & Host */}
         <div style={{ marginBottom: '24px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+          <div 
+            onClick={() => router.push(`/community/${community.id}`)}
+            className="interactive-press"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', marginBottom: '12px', cursor: 'pointer' }}
+          >
             <img src={community.image} alt={community.name} style={{ width: '24px', height: '24px', borderRadius: '50%', objectFit: 'cover' }} />
             <span style={{ fontSize: '0.9rem', color: 'var(--slate-300)', fontWeight: 500 }}>Hosted by <span style={{ color: 'var(--teal-400)' }}>{community.name}</span></span>
           </div>
