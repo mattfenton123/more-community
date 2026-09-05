@@ -1,6 +1,6 @@
 "use client";
-import { useState, useMemo } from 'react';
-import { Compass, Users, MapPin, Search, Calendar, ChevronRight, X, List, Map as MapIcon, Sparkles, BadgeCheck, TrendingUp, Activity, Zap } from 'lucide-react';
+import { useState, useMemo, useEffect } from 'react';
+import { Compass, Users, MapPin, Search, Calendar, ChevronRight, X, List, Map as MapIcon, Sparkles, BadgeCheck, TrendingUp, Activity, Zap, Navigation } from 'lucide-react';
 import { useRouter as useNavigate } from 'next/navigation';
 import { useAppContext } from '../context/AppContext';
 import { useChat } from '../context/ChatContext';
@@ -13,15 +13,54 @@ import AppHeader from '../components/AppHeader';
 import SwipeDiscovery from '../components/SwipeDiscovery';
 
 export default function Discover() {
-  const [activePill, setActivePill] = useState('All');
+  const { communities, user, users, communityMemberships, joinCommunity, isLoading, events } = useAppContext();
+  // Default to 'For You' for users with interests but no communities yet
+  const defaultPill = (user?.interests?.length > 0 && (!user?.joinedCommunities || user.joinedCommunities.length === 0)) ? 'For You' : 'All';
+  const [activePill, setActivePill] = useState(defaultPill);
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState('list'); // 'list' | 'map' | 'swipe'
   const [sortBy, setSortBy] = useState('trending');
   const pills = ['All', 'For You', '🔥 Trending', '🚶 Walking', '🏃 Running', '🧘 Wellness', '⛰️ Adventure', '🤝 Volunteering', '🎨 Creative', '💼 Business'];
-  const { communities, user, users, communityMemberships, joinCommunity, isLoading, events } = useAppContext();
     const { messages } = useChat();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [userLocation, setUserLocation] = useState(null);
+  const [locationStatus, setLocationStatus] = useState('idle');
+  const RADIUS_MILES = 18;
+
+  // Haversine distance in miles
+  function getDistanceMiles(lat1, lon1, lat2, lon2) {
+    const R = 3958.8;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  }
+
+  // Request geolocation on mount
+  useEffect(() => {
+    if (!navigator.geolocation) return;
+    setLocationStatus('requesting');
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setLocationStatus('granted');
+      },
+      () => {
+        setLocationStatus('denied');
+        setUserLocation({ lat: 51.1322, lng: 0.2637 });
+      },
+      { enableHighAccuracy: false, timeout: 8000, maximumAge: 300000 }
+    );
+  }, []);
+
+  const filterByDistance = (list) => {
+    if (!userLocation) return list;
+    return list.filter(c => {
+      if (!c.lat || !c.lng) return true;
+      return getDistanceMiles(userLocation.lat, userLocation.lng, c.lat, c.lng) <= RADIUS_MILES;
+    });
+  };
 
   // Compute activity & trending data for each community
   const enrichedCommunities = useMemo(() => {
@@ -86,12 +125,14 @@ export default function Discover() {
         return true;
       });
     }
+    // Apply geolocation filter
+    list = filterByDistance(list);
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       list = list.filter(c => c.name?.toLowerCase().includes(q) || c.description?.toLowerCase().includes(q) || c.tags?.some(t => t.toLowerCase().includes(q)));
     }
     return list;
-  }, [activePill, enrichedCommunities, searchQuery]);
+  }, [activePill, enrichedCommunities, searchQuery, userLocation]);
 
   const getMemberCount = (communityId) => {
     const c = enrichedCommunities.find(ec => ec.id === communityId);

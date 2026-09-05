@@ -7,6 +7,7 @@ import { Heart, MessageCircle, Share2, Calendar, MapPin, Clock, Compass, Plus, M
 import { SkeletonList, SkeletonCard } from '../src/components/SkeletonCard';
 import InlineComments from '../src/components/InlineComments';
 import AppHeader from '../src/components/AppHeader';
+import GettingStarted from '../src/views/GettingStarted';
 
 export default function HomeFeed() {
   const { user, communities, events, users, eventRsvps, isLoading, notifications } = useAppContext();
@@ -17,6 +18,11 @@ export default function HomeFeed() {
 
   const unreadCount = notifications ? notifications.filter(n => !n.is_read).length : 0;
   const joinedCommunities = communities?.filter(c => user?.joinedCommunities?.includes(c.id)) || [];
+
+  // Show Getting Started screen for users with no communities
+  if (!isLoading && user?.onboarded && joinedCommunities.length === 0) {
+    return <GettingStarted />;
+  }
 
   // Determine Daily Briefing
   const todayEvents = events?.filter(e => {
@@ -98,38 +104,51 @@ export default function HomeFeed() {
         </div>
       </div>
 
-      {/* Stories Carousel */}
-      <div style={{ padding: '0 0 16px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-        <div style={{ display: 'flex', overflowX: 'auto', gap: '20px', padding: '0 20px', WebkitOverflowScrolling: 'touch' }}>
-          
-          <div onClick={() => router.push('/discover')} className="interactive-press" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', cursor: 'pointer', minWidth: '72px' }}>
-            <div style={{ width: '72px', height: '72px', borderRadius: '50%', border: '2px dashed var(--slate-600)', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.02)' }}>
-              <Compass size={28} color="var(--slate-400)" />
-            </div>
-            <span style={{ fontSize: '0.75rem', color: 'var(--slate-400)', fontWeight: 600 }}>Discover</span>
+      {/* Your Communities Grid */}
+      {joinedCommunities.length > 0 && (
+        <div style={{ padding: '0 20px 16px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+            <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.1rem', color: 'var(--white)', margin: 0 }}>Your Communities</h2>
+            <button onClick={() => router.push('/discover')} style={{ background: 'none', border: 'none', color: 'var(--teal-400)', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <Compass size={14} /> Discover more
+            </button>
           </div>
-
-          {joinedCommunities.map((community, index) => {
-            // Mock random unread status for the demo (first 2 communities have "new stories")
-            const hasUnread = index < 2;
-            
-            return (
-              <div key={community.id} onClick={() => router.push(`/community/${community.id}`)} className="interactive-press" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', cursor: 'pointer', minWidth: '72px' }}>
-                <div style={{ 
-                  width: '72px', height: '72px', borderRadius: '50%', padding: '3px', 
-                  background: hasUnread ? 'linear-gradient(45deg, var(--teal-500), #3b82f6)' : 'var(--slate-700)',
-                  boxShadow: hasUnread ? '0 4px 12px rgba(20,184,166,0.3)' : 'none'
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
+            {joinedCommunities.map((community) => (
+              <div
+                key={community.id}
+                onClick={() => router.push(`/community/${community.id}`)}
+                className="interactive-press"
+                style={{
+                  borderRadius: '14px',
+                  overflow: 'hidden',
+                  cursor: 'pointer',
+                  background: 'rgba(255,255,255,0.03)',
+                  border: '1px solid rgba(255,255,255,0.06)',
+                }}
+              >
+                <div style={{
+                  height: '90px',
+                  background: `url(${community.image || community.cover_image})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  position: 'relative',
                 }}>
-                  <img src={community.image || community.cover_image} alt={community.name} loading="lazy" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover', border: '3px solid var(--slate-950)' }} />
+                  <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 30%, rgba(15,23,42,0.9))' }} />
                 </div>
-                <span style={{ fontSize: '0.75rem', color: hasUnread ? 'white' : 'var(--slate-300)', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '72px', textAlign: 'center' }}>
-                  {community.name.substring(0, 12)}{community.name.length > 12 ? '...' : ''}
-                </span>
+                <div style={{ padding: '10px 12px' }}>
+                  <div style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--white)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {community.name}
+                  </div>
+                  <div style={{ fontSize: '0.7rem', color: 'var(--slate-400)', marginTop: '2px' }}>
+                    {community.members || '—'} members
+                  </div>
+                </div>
               </div>
-            );
-          })}
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Quick Action Hub */}
       <div style={{ padding: '20px', display: 'flex', gap: '12px', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>

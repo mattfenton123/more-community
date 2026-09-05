@@ -6,7 +6,7 @@ export default function OnboardingPage() {
   const router = useRouter();
 
   const handleComplete = () => {
-    router.push('/');
+    router.push('/discover');
   };
 
   return <OnboardingFlow onComplete={handleComplete} />;

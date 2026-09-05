@@ -1,13 +1,37 @@
 "use client";
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Calendar as CalIcon, MapPin, Search, X, CheckCircle2, CreditCard, Check, Ticket, Users, QrCode, Image as ImageIcon } from 'lucide-react';
+import { Calendar as CalIcon, MapPin, Search, X, CheckCircle2, CreditCard, Check, Ticket, Users, QrCode, Image as ImageIcon, Navigation } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { SkeletonList, SkeletonEvent } from '../components/SkeletonCard';
 import { useToast } from '../components/Toast';
 import DigitalTicket from '../components/DigitalTicket';
 import ShareModal from '../components/ShareModal';
 import { Share2 } from 'lucide-react';
+
+// Haversine distance in miles
+function getDistanceMiles(lat1, lon1, lat2, lon2) {
+  const R = 3958.8; // Earth radius in miles
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+// Sort events chronologically (soonest first), with past events at end
+function sortByDate(events) {
+  const now = new Date();
+  return [...events].sort((a, b) => {
+    const da = new Date(a.date + 'T00:00:00');
+    const db = new Date(b.date + 'T00:00:00');
+    const aFuture = da >= now;
+    const bFuture = db >= now;
+    if (aFuture && !bFuture) return -1;
+    if (!aFuture && bFuture) return 1;
+    return da - db;
+  });
+}
+
 export default function EventsHub() {
   const [activeTab, setActiveTab] = useState('My Schedule');
   const { events, communities, user, users, eventRsvps, rsvpToEvent, isLoading } = useAppContext();
@@ -19,19 +43,66 @@ export default function EventsHub() {
   const [showShareModal, setShowShareModal] = useState(false);
   const [hasUploadedMemory, setHasUploadedMemory] = useState(false);
   const [cardForm, setCardForm] = useState({ number: '', expiry: '', cvc: '', name: '' });
+  const [searchQuery, setSearchQuery] = useState('');
+  const [userLocation, setUserLocation] = useState(null);
+  const [locationStatus, setLocationStatus] = useState('idle'); // 'idle' | 'requesting' | 'granted' | 'denied'
+  const RADIUS_MILES = 18;
+
+  // Request geolocation on mount
+  useEffect(() => {
+    if (!navigator.geolocation) return;
+    setLocationStatus('requesting');
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setLocationStatus('granted');
+      },
+      () => {
+        setLocationStatus('denied');
+        // Default to Tunbridge Wells
+        setUserLocation({ lat: 51.1322, lng: 0.2637 });
+      },
+      { enableHighAccuracy: false, timeout: 8000, maximumAge: 300000 }
+    );
+  }, []);
+
+  // Filter events by distance if location is available
+  const filterByDistance = (eventList) => {
+    if (!userLocation) return eventList;
+    return eventList.filter(e => {
+      const community = communities.find(c => c.id === e.communityId);
+      if (!community?.lat || !community?.lng) return true; // Include if no geo data
+      return getDistanceMiles(userLocation.lat, userLocation.lng, community.lat, community.lng) <= RADIUS_MILES;
+    });
+  };
+
+  // Filter events by search query
+  const filterBySearch = (eventList) => {
+    if (!searchQuery.trim()) return eventList;
+    const q = searchQuery.toLowerCase();
+    return eventList.filter(e => {
+      const community = communities.find(c => c.id === e.communityId);
+      return (
+        e.title?.toLowerCase().includes(q) ||
+        e.location?.toLowerCase().includes(q) ||
+        e.description?.toLowerCase().includes(q) ||
+        community?.name?.toLowerCase().includes(q)
+      );
+    });
+  };
 
   const myRsvpEventIds = Object.keys(eventRsvps).filter(eventId => 
     eventRsvps[eventId]?.some(r => r.userId === user.id)
   );
-  const userEvents = events.filter(e => myRsvpEventIds.includes(e.id) || user.joinedCommunities.includes(e.communityId));
-  const exploreEvents = events.filter(e => !user.joinedCommunities.includes(e.communityId));
+  const userEvents = sortByDate(filterBySearch(events.filter(e => myRsvpEventIds.includes(e.id) || user.joinedCommunities.includes(e.communityId))));
+  const exploreEvents = sortByDate(filterBySearch(filterByDistance(events.filter(e => !user.joinedCommunities.includes(e.communityId)))));
 
-  const recommendedEvents = exploreEvents.filter(e => {
+  const recommendedEvents = sortByDate(filterBySearch(filterByDistance(exploreEvents.filter(e => {
     if (!user || !user.interests) return false;
     const community = communities.find(c => c.id === e.communityId);
     if (!community || !community.tags) return false;
     return community.tags.some(tag => user.interests.includes(tag));
-  });
+  }))));
 
   const [selectedEvent, setSelectedEvent] = useState(null);
 
@@ -131,6 +202,40 @@ export default function EventsHub() {
     <div className="view-events" style={{ paddingBottom: '80px' }}>
       <div style={{ padding: '20px 20px 0' }}>
         <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem', fontWeight: 800, margin: '0 0 16px 0' }}>Events</h1>
+        
+        {/* Search Bar */}
+        <div style={{ position: 'relative', marginBottom: '16px' }}>
+          <Search size={18} color="var(--slate-400)" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)' }} />
+          <input
+            type="text"
+            placeholder="Search events, locations, communities..."
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            style={{
+              width: '100%', padding: '12px 40px 12px 42px',
+              background: 'rgba(255,255,255,0.04)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              borderRadius: '12px', color: 'var(--white)',
+              fontSize: '0.9rem', outline: 'none',
+              fontFamily: 'inherit',
+            }}
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '50%', width: '22px', height: '22px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--slate-300)' }}
+            >
+              <X size={12} />
+            </button>
+          )}
+        </div>
+
+        {/* Location status badge */}
+        {locationStatus === 'granted' && userLocation && (
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '6px 12px', background: 'rgba(20,184,166,0.08)', border: '1px solid rgba(20,184,166,0.15)', borderRadius: '99px', fontSize: '0.75rem', color: 'var(--teal-400)', fontWeight: 600, marginBottom: '12px' }}>
+            <Navigation size={12} /> Showing events within {RADIUS_MILES} miles
+          </div>
+        )}
       </div>
 
       <div style={{ display: 'flex', gap: '12px', padding: '0 20px', borderBottom: '1px solid rgba(255,255,255,0.05)', marginBottom: '10px' }}>
@@ -149,29 +254,29 @@ export default function EventsHub() {
       <div style={{ padding: '10px 20px' }}>
         {activeTab === 'My Schedule' ? (
           <>
-            <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)', marginBottom: '12px', fontWeight: 600 }}>UPCOMING THIS WEEK</div>
+            <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)', marginBottom: '12px', fontWeight: 600 }}>UPCOMING • SOONEST FIRST</div>
             {isLoading ? (
               <SkeletonList count={3} Component={SkeletonEvent} />
             ) : userEvents.length > 0 ? userEvents.map((e, i) => renderEvent(e, i)) : (
-              <p style={{ color: 'var(--slate-400)' }}>You have no upcoming events. Join some communities to fill your schedule!</p>
+              <p style={{ color: 'var(--slate-400)' }}>{searchQuery ? 'No events match your search.' : 'You have no upcoming events. Join some communities to fill your schedule!'}</p>
             )}
           </>
         ) : activeTab === 'Recommended' ? (
           <>
-            <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)', marginBottom: '12px', fontWeight: 600 }}>MATCHING YOUR INTERESTS</div>
+            <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)', marginBottom: '12px', fontWeight: 600 }}>MATCHING YOUR INTERESTS • SOONEST FIRST</div>
             {isLoading ? (
               <SkeletonList count={3} Component={SkeletonEvent} />
             ) : recommendedEvents.length > 0 ? recommendedEvents.map((e, i) => renderEvent(e, i)) : (
-              <p style={{ color: 'var(--slate-400)' }}>No recommended events right now based on your interests.</p>
+              <p style={{ color: 'var(--slate-400)' }}>{searchQuery ? 'No events match your search.' : 'No recommended events right now based on your interests.'}</p>
             )}
           </>
         ) : (
           <>
-            <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)', marginBottom: '12px', fontWeight: 600 }}>DISCOVER EVENTS IN TUNBRIDGE WELLS</div>
+            <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)', marginBottom: '12px', fontWeight: 600 }}>DISCOVER EVENTS NEAR YOU • SOONEST FIRST</div>
             {isLoading ? (
               <SkeletonList count={3} Component={SkeletonEvent} />
             ) : exploreEvents.length > 0 ? exploreEvents.map((e, i) => renderEvent(e, i)) : (
-              <p style={{ color: 'var(--slate-400)' }}>No other public events right now.</p>
+              <p style={{ color: 'var(--slate-400)' }}>{searchQuery ? 'No events match your search.' : 'No other public events right now.'}</p>
             )}
           </>
         )}

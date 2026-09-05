@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>more. — How It Works</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #020617;
+    color: #fff;
+    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+  }
+
+  .explainer {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Ambient background glow */
+  .bg-glow {
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    filter: blur(120px);
+    opacity: 0.15;
+    animation: floatGlow 8s ease-in-out infinite;
+  }
+  .bg-glow-1 { background: #14b8a6; top: 10%; left: 10%; animation-delay: 0s; }
+  .bg-glow-2 { background: #3b82f6; bottom: 10%; right: 10%; animation-delay: 4s; }
+
+  @keyframes floatGlow {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(20px, -20px) scale(1.2); }
+  }
+
+  /* Slide container */
+  .slide {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 32px;
+    opacity: 0;
+    transform: translateY(20px) scale(0.97);
+    transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    pointer-events: none;
+  }
+  .slide.active {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+  }
+
+  .slide-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    margin-bottom: 28px;
+    position: relative;
+  }
+  .slide-icon::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 28px;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .slide-title {
+    font-size: 1.6rem;
+    font-weight: 800;
+    text-align: center;
+    margin-bottom: 12px;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+  }
+
+  .slide-body {
+    font-size: 1rem;
+    color: #94a3b8;
+    text-align: center;
+    line-height: 1.6;
+    max-width: 320px;
+  }
+
+  .highlight { color: #14b8a6; font-weight: 700; }
+
+  /* Progress dots */
+  .progress {
+    position: absolute;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+  }
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.12);
+    transition: all 0.4s ease;
+  }
+  .dot.active {
+    background: #14b8a6;
+    width: 24px;
+    border-radius: 4px;
+  }
+
+  /* Logo watermark */
+  .watermark {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: rgba(255,255,255,0.15);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  /* Step counter */
+  .step-label {
+    position: absolute;
+    top: 20px;
+    right: 24px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: rgba(255,255,255,0.25);
+    letter-spacing: 0.05em;
+  }
+</style>
+</head>
+<body>
+<div class="explainer">
+  <div class="bg-glow bg-glow-1"></div>
+  <div class="bg-glow bg-glow-2"></div>
+  <div class="watermark">more.</div>
+  <div class="step-label" id="stepLabel"></div>
+
+  <!-- Slide 0: Intro -->
+  <div class="slide active" id="slide-0">
+    <div class="slide-icon" style="background: rgba(20,184,166,0.12);">👋</div>
+    <div class="slide-title">Welcome to <span class="highlight">more.</span></div>
+    <div class="slide-body">Your local community app for Tunbridge Wells. Here's how it works.</div>
+  </div>
+
+  <!-- Slide 1: Join Communities -->
+  <div class="slide" id="slide-1">
+    <div class="slide-icon" style="background: rgba(59,130,246,0.12);">🤝</div>
+    <div class="slide-title">Find your <span class="highlight">community</span></div>
+    <div class="slide-body">Browse and join local groups that match your interests — from running clubs to creative collectives, all in one place.</div>
+  </div>
+
+  <!-- Slide 2: Events -->
+  <div class="slide" id="slide-2">
+    <div class="slide-icon" style="background: rgba(168,85,247,0.12);">📅</div>
+    <div class="slide-title">Discover <span class="highlight">events</span></div>
+    <div class="slide-body">See what's happening near you. RSVP to events, get reminders, and never miss out on the things you love.</div>
+  </div>
+
+  <!-- Slide 3: Chat -->
+  <div class="slide" id="slide-3">
+    <div class="slide-icon" style="background: rgba(236,72,153,0.12);">💬</div>
+    <div class="slide-title">Chat with your <span class="highlight">neighbours</span></div>
+    <div class="slide-body">Message your community, share updates, and stay in the loop — all conversations happen right here.</div>
+  </div>
+
+  <!-- Slide 4: Ideas -->
+  <div class="slide" id="slide-4">
+    <div class="slide-icon" style="background: rgba(245,158,11,0.12);">💡</div>
+    <div class="slide-title">Share <span class="highlight">ideas</span></div>
+    <div class="slide-body">Got a suggestion? Propose activities, vote on ideas, and help shape what your community does next.</div>
+  </div>
+
+  <!-- Slide 5: Get Started -->
+  <div class="slide" id="slide-5">
+    <div class="slide-icon" style="background: rgba(20,184,166,0.12);">🚀</div>
+    <div class="slide-title">Ready to get <span class="highlight">started</span>?</div>
+    <div class="slide-body">Tap "Let's Go" and we'll match you with communities based on the interests you picked. It's that simple.</div>
+  </div>
+
+  <!-- Progress dots -->
+  <div class="progress" id="progress"></div>
+</div>
+
+<script>
+  const TOTAL_SLIDES = 6;
+  const INTERVAL = 3500;
+  let current = 0;
+
+  // Create dots
+  const progress = document.getElementById('progress');
+  for (let i = 0; i < TOTAL_SLIDES; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'dot' + (i === 0 ? ' active' : '');
+    dot.id = 'dot-' + i;
+    progress.appendChild(dot);
+  }
+
+  function updateLabel() {
+    document.getElementById('stepLabel').textContent = `${current + 1} / ${TOTAL_SLIDES}`;
+  }
+  updateLabel();
+
+  function goTo(n) {
+    document.getElementById('slide-' + current).classList.remove('active');
+    document.getElementById('dot-' + current).classList.remove('active');
+    current = n % TOTAL_SLIDES;
+    document.getElementById('slide-' + current).classList.add('active');
+    document.getElementById('dot-' + current).classList.add('active');
+    updateLabel();
+  }
+
+  setInterval(() => goTo(current + 1), INTERVAL);
+</script>
+</body>
+</html>

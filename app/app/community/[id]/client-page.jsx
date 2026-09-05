@@ -76,7 +76,7 @@ export default function CommunityProfile() {
   const { feedPosts, createFeedPost, likeFeedPost, deleteFeedPost } = useFeed();
   const { toast } = useToast();
   const [showRules, setShowRules] = useState(false);
-  const [activeTab, setActiveTab] = useState('feed');
+  const [activeTab, setActiveTab] = useState('about');
   const [expandedComments, setExpandedComments] = useState({});
   const [newPostText, setNewPostText] = useState('');
   const [newPostImage, setNewPostImage] = useState(null);
@@ -394,13 +394,13 @@ export default function CommunityProfile() {
           padding: '4px 20px 8px 20px', // restore padding including edges
         }} className="no-scrollbar">
           {[
-            { id: 'feed', label: 'Feed', Icon: MessageSquare },
-            { id: 'services', label: 'Services', Icon: Briefcase },
-            { id: 'suggestions', label: 'Ideas', Icon: Lightbulb },
             { id: 'about', label: 'About', Icon: Info },
             { id: 'events', label: 'Events', Icon: Calendar },
             { id: 'reviews', label: 'Reviews', Icon: Star },
             { id: 'photos', label: 'Gallery', Icon: ImageIcon },
+            { id: 'feed', label: 'Feed', Icon: MessageSquare },
+            { id: 'services', label: 'Services', Icon: Briefcase },
+            { id: 'suggestions', label: 'Ideas', Icon: Lightbulb },
             { id: 'members', label: 'Members', Icon: Users }
           ].map(tab => (
             <button 

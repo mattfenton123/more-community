@@ -1,10 +1,182 @@
 "use client";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ChevronLeft, Share, MapPin, Calendar, Clock, Users, CheckCircle2, Info, List, Activity, Check, Map, Ticket, DollarSign, Copy } from 'lucide-react';
+import { ChevronLeft, Share, MapPin, Calendar, Clock, Users, CheckCircle2, Info, List, Activity, Check, Map, Ticket, DollarSign, Copy, ExternalLink, Navigation } from 'lucide-react';
 import { useAppContext } from '../../../src/context/AppContext';
 import { useToast } from '../../../src/components/Toast';
 import DigitalTicket from '../../../src/components/DigitalTicket';
+
+// Well-known Tunbridge Wells locations for instant lookup
+const KNOWN_LOCATIONS = {
+  'dunorlan park': { lat: 51.1345, lng: 0.2710 },
+  'calverley grounds': { lat: 51.1355, lng: 0.2605 },
+  'the pantiles': { lat: 51.1280, lng: 0.2620 },
+  'tunbridge wells': { lat: 51.1322, lng: 0.2637 },
+  'camden road': { lat: 51.1330, lng: 0.2630 },
+  'the forum': { lat: 51.1310, lng: 0.2650 },
+  'trinity arts centre': { lat: 51.1315, lng: 0.2640 },
+  'the assembly hall': { lat: 51.1340, lng: 0.2625 },
+  'grosvenor park': { lat: 51.1280, lng: 0.2680 },
+  'hawkenbury recreation ground': { lat: 51.1400, lng: 0.2770 },
+  'st johns park': { lat: 51.1370, lng: 0.2560 },
+};
+
+function EventLocationMap({ location }) {
+  const mapRef = useRef(null);
+  const mapInstanceRef = useRef(null);
+  const [coords, setCoords] = useState(null);
+  const [geocodeError, setGeocodeError] = useState(false);
+
+  useEffect(() => {
+    if (!location) return;
+
+    // Try known locations first
+    const locLower = location.toLowerCase().trim();
+    for (const [key, value] of Object.entries(KNOWN_LOCATIONS)) {
+      if (locLower.includes(key)) {
+        setCoords(value);
+        return;
+      }
+    }
+
+    // Fallback: geocode via Nominatim
+    const controller = new AbortController();
+    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(location + ', Tunbridge Wells, UK')}&limit=1`, {
+      signal: controller.signal,
+      headers: { 'Accept': 'application/json' },
+    })
+      .then(r => r.json())
+      .then(data => {
+        if (data && data.length > 0) {
+          setCoords({ lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) });
+        } else {
+          // Default to Tunbridge Wells center
+          setCoords({ lat: 51.1322, lng: 0.2637 });
+        }
+      })
+      .catch(() => {
+        setCoords({ lat: 51.1322, lng: 0.2637 });
+      });
+
+    return () => controller.abort();
+  }, [location]);
+
+  useEffect(() => {
+    if (!coords || !mapRef.current) return;
+
+    // Dynamic import of Leaflet (client-side only)
+    import('leaflet').then(L => {
+      import('leaflet/dist/leaflet.css');
+
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+      }
+
+      const map = L.map(mapRef.current, {
+        center: [coords.lat, coords.lng],
+        zoom: 15,
+        zoomControl: false,
+        attributionControl: false,
+        dragging: true,
+        scrollWheelZoom: false,
+      });
+
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        maxZoom: 19,
+      }).addTo(map);
+
+      // Custom teal marker
+      const markerIcon = L.divIcon({
+        html: `<div style="
+          width: 36px; height: 36px; border-radius: 50%;
+          background: rgba(20,184,166,0.9);
+          border: 3px solid rgba(20,184,166,0.3);
+          display: flex; align-items: center; justify-content: center;
+          box-shadow: 0 4px 16px rgba(20,184,166,0.4), 0 0 0 8px rgba(20,184,166,0.1);
+          animation: pulseMarker 2s ease-in-out infinite;
+        "><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>`,
+        iconSize: [36, 36],
+        iconAnchor: [18, 18],
+        className: '',
+      });
+
+      L.marker([coords.lat, coords.lng], { icon: markerIcon }).addTo(map);
+
+      mapInstanceRef.current = map;
+    });
+
+    return () => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+      }
+    };
+  }, [coords]);
+
+  const googleMapsUrl = coords
+    ? `https://www.google.com/maps/search/?api=1&query=${coords.lat},${coords.lng}`
+    : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`;
+
+  const appleMapsUrl = coords
+    ? `https://maps.apple.com/?q=${coords.lat},${coords.lng}`
+    : `https://maps.apple.com/?q=${encodeURIComponent(location)}`;
+
+  return (
+    <div style={{ marginBottom: '32px' }}>
+      <h3 style={{ fontSize: '1.2rem', margin: '0 0 12px 0', color: 'var(--white)', fontFamily: 'var(--font-heading)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <MapPin size={20} color="var(--teal-400)" /> Location
+      </h3>
+
+      {/* Map container */}
+      <div style={{
+        borderRadius: '16px', overflow: 'hidden',
+        border: '1px solid rgba(255,255,255,0.06)',
+        background: 'var(--slate-900)',
+        marginBottom: '12px',
+      }}>
+        <div ref={mapRef} style={{ width: '100%', height: '200px' }} />
+      </div>
+
+      {/* Location name + directions buttons */}
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        background: 'rgba(255,255,255,0.03)',
+        border: '1px solid rgba(255,255,255,0.06)',
+        borderRadius: '12px', padding: '12px 16px',
+      }}>
+        <div>
+          <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.95rem' }}>{location}</div>
+          <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)', marginTop: '2px' }}>Tap to get directions</div>
+        </div>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <a
+            href={googleMapsUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="interactive-press"
+            style={{
+              display: 'flex', alignItems: 'center', gap: '6px',
+              padding: '8px 14px', borderRadius: '10px',
+              background: 'rgba(20,184,166,0.1)',
+              border: '1px solid rgba(20,184,166,0.25)',
+              color: 'var(--teal-400)', fontSize: '0.8rem', fontWeight: 600,
+              textDecoration: 'none', cursor: 'pointer',
+            }}
+          >
+            <Navigation size={14} /> Directions
+          </a>
+        </div>
+      </div>
+
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes pulseMarker {
+          0%, 100% { box-shadow: 0 4px 16px rgba(20,184,166,0.4), 0 0 0 8px rgba(20,184,166,0.1); }
+          50% { box-shadow: 0 4px 20px rgba(20,184,166,0.6), 0 0 0 16px rgba(20,184,166,0.05); }
+        }
+      `}} />
+    </div>
+  );
+}
 
 export default function EventClient({ id }) {
   const router = useRouter();
@@ -165,6 +337,11 @@ export default function EventClient({ id }) {
             {event.description}
           </p>
         </div>
+
+        {/* Location Map */}
+        {event.location && (
+          <EventLocationMap location={event.location} />
+        )}
 
         {/* Deep Dive Grid */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px', marginBottom: '32px' }}>

@@ -92,7 +92,53 @@ export default function OnboardingFlow({ onComplete }) {
   };
 
   const steps = [
-    // Step 0: Name, Bio & Avatar
+    // Step 0: Interests
+    <div key="interests" className="page-wrapper" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      {/* Hero video strip */}
+      <div style={{ borderRadius: '16px', overflow: 'hidden', height: '120px', marginBottom: '8px', position: 'relative' }}>
+        <video src={STEP_VIDEOS[1]} autoPlay loop muted playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent, rgba(2,6,23,0.8))' }}></div>
+        <div style={{ position: 'absolute', bottom: '12px', left: '16px', fontSize: '0.8rem', color: 'var(--teal-300)', fontWeight: 600 }}>We'll match you to the right groups ✨</div>
+      </div>
+
+      <div style={{ textAlign: 'center' }}>
+        <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.6rem', margin: '0 0 8px 0' }}>What are you into?</h2>
+        <p style={{ color: 'var(--slate-400)', fontSize: '0.9rem', margin: 0 }}>Pick a few interests to personalise your feed</p>
+      </div>
+
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'center' }}>
+        {INTEREST_PILLS.map(interest => {
+          const selected = interests.includes(interest);
+          return (
+            <button
+              key={interest}
+              onClick={() => toggleInterest(interest)}
+              className="interactive-press"
+              style={{
+                padding: '10px 18px',
+                borderRadius: '999px',
+                border: selected ? '1px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.1)',
+                background: selected ? 'rgba(20,184,166,0.12)' : 'transparent',
+                color: selected ? 'var(--teal-300)' : 'var(--slate-300)',
+                fontWeight: selected ? 600 : 400,
+                fontSize: '0.9rem',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+              }}
+            >
+              {interest}
+              {selected && <Check size={14} style={{ marginLeft: '6px', verticalAlign: 'middle' }} />}
+            </button>
+          );
+        })}
+      </div>
+
+      <p style={{ textAlign: 'center', color: 'var(--slate-500)', fontSize: '0.8rem' }}>
+        {interests.length === 0 ? 'Select at least one' : `${interests.length} selected`}
+      </p>
+    </div>,
+
+    // Step 1: Name, Bio & Avatar
     <div key="name" className="page-wrapper" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       {/* Hero video strip */}
       <div style={{ borderRadius: '16px', overflow: 'hidden', height: '120px', marginBottom: '8px', position: 'relative' }}>
@@ -171,52 +217,6 @@ export default function OnboardingFlow({ onComplete }) {
       </div>
     </div>,
 
-    // Step 1: Interests
-    <div key="interests" className="page-wrapper" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-      {/* Hero video strip */}
-      <div style={{ borderRadius: '16px', overflow: 'hidden', height: '120px', marginBottom: '8px', position: 'relative' }}>
-        <video src={STEP_VIDEOS[1]} autoPlay loop muted playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent, rgba(2,6,23,0.8))' }}></div>
-        <div style={{ position: 'absolute', bottom: '12px', left: '16px', fontSize: '0.8rem', color: 'var(--teal-300)', fontWeight: 600 }}>We'll match you to the right groups ✨</div>
-      </div>
-
-      <div style={{ textAlign: 'center' }}>
-        <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.6rem', margin: '0 0 8px 0' }}>What are you into?</h2>
-        <p style={{ color: 'var(--slate-400)', fontSize: '0.9rem', margin: 0 }}>Pick a few interests to personalise your feed</p>
-      </div>
-
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'center' }}>
-        {INTEREST_PILLS.map(interest => {
-          const selected = interests.includes(interest);
-          return (
-            <button
-              key={interest}
-              onClick={() => toggleInterest(interest)}
-              className="interactive-press"
-              style={{
-                padding: '10px 18px',
-                borderRadius: '999px',
-                border: selected ? '1px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.1)',
-                background: selected ? 'rgba(20,184,166,0.12)' : 'transparent',
-                color: selected ? 'var(--teal-300)' : 'var(--slate-300)',
-                fontWeight: selected ? 600 : 400,
-                fontSize: '0.9rem',
-                cursor: 'pointer',
-                transition: 'all 0.2s',
-              }}
-            >
-              {interest}
-              {selected && <Check size={14} style={{ marginLeft: '6px', verticalAlign: 'middle' }} />}
-            </button>
-          );
-        })}
-      </div>
-
-      <p style={{ textAlign: 'center', color: 'var(--slate-500)', fontSize: '0.8rem' }}>
-        {interests.length === 0 ? 'Select at least one' : `${interests.length} selected`}
-      </p>
-    </div>,
-
     // Step 2: App Experience
     <div key="experience" className="page-wrapper" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       <div style={{ textAlign: 'center', marginBottom: '8px' }}>
@@ -278,47 +278,26 @@ export default function OnboardingFlow({ onComplete }) {
     </div>,
 
     // Step 3: Welcome
-    <div key="welcome" className="page-wrapper" style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px' }}>
-      {/* Hero video strip */}
-      <div style={{ borderRadius: '16px', overflow: 'hidden', height: '160px', width: '100%', position: 'relative' }}>
-        <video src={STEP_VIDEOS[2]} autoPlay loop muted playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent, rgba(2,6,23,0.8))' }}></div>
+    <div key="welcome" className="page-wrapper" style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
+      {/* Embedded explainer */}
+      <div style={{ borderRadius: '16px', overflow: 'hidden', width: '100%', aspectRatio: '4/3', background: 'var(--slate-900)', border: '1px solid rgba(255,255,255,0.06)' }}>
+        <iframe
+          src="/explainer.html"
+          style={{ width: '100%', height: '100%', border: 'none' }}
+          title="How more. works"
+        />
       </div>
 
-      <div style={{
-        width: '80px', height: '80px', borderRadius: '50%',
-        background: 'rgba(20,184,166,0.12)', border: '1px solid rgba(20,184,166,0.25)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: '2.5rem',
-      }}>
-        🎉
-      </div>
-      <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem', margin: 0 }}>
+      <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.8rem', margin: 0, lineHeight: 1.15 }}>
         Welcome, {name || 'friend'}!
       </h2>
-      <p style={{ color: 'var(--slate-400)', fontSize: '1rem', margin: 0, lineHeight: 1.5, maxWidth: '300px' }}>
-        You're all set. Let's discover communities in Tunbridge Wells that match your vibe.
+      <p style={{ color: 'var(--slate-400)', fontSize: '0.95rem', margin: 0, lineHeight: 1.6, maxWidth: '300px' }}>
+        You're all set. We'll now show you communities that match your interests — join the ones you like and start connecting.
       </p>
-
-      {/* Preview of what's coming */}
-      <div style={{ display: 'flex', gap: '12px', width: '100%', marginTop: '8px' }}>
-        <div style={{ flex: 1, padding: '8px', textAlign: 'center' }}>
-          <Users size={24} color="var(--teal-400)" style={{ marginBottom: '8px' }} />
-          <div style={{ fontSize: '0.8rem', color: 'var(--slate-300)', fontWeight: 500 }}>Discover Groups</div>
-        </div>
-        <div style={{ flex: 1, padding: '8px', textAlign: 'center' }}>
-          <Calendar size={24} color="var(--teal-400)" style={{ marginBottom: '8px' }} />
-          <div style={{ fontSize: '0.8rem', color: 'var(--slate-300)', fontWeight: 500 }}>Find Events</div>
-        </div>
-        <div style={{ flex: 1, padding: '8px', textAlign: 'center' }}>
-          <MessageCircle size={24} color="var(--teal-400)" style={{ marginBottom: '8px' }} />
-          <div style={{ fontSize: '0.8rem', color: 'var(--slate-300)', fontWeight: 500 }}>Chat Locally</div>
-        </div>
-      </div>
     </div>,
   ];
 
-  const canProceed = step === 0 ? name.trim().length > 0 : step === 1 ? interests.length > 0 : true;
+  const canProceed = step === 0 ? interests.length > 0 : step === 1 ? name.trim().length > 0 : true;
 
   return (
     <div style={{
