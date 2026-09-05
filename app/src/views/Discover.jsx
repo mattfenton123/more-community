@@ -477,14 +477,16 @@ export default function Discover() {
 
               {/* Create CTA */}
               <div 
-                onClick={() => navigate.back()}
+                onClick={() => navigate.push('/dashboard')}
                 className="interactive-press"
                 style={{ margin: '8px 20px 24px', padding: '20px', border: '1px dashed rgba(20,184,166,0.3)', background: 'rgba(20,184,166,0.03)', borderRadius: '16px', textAlign: 'center', cursor: 'pointer', transition: 'background 0.2s' }}
                 onMouseOver={e => e.currentTarget.style.background = 'rgba(20,184,166,0.08)'}
                 onMouseOut={e => e.currentTarget.style.background = 'rgba(20,184,166,0.03)'}
               >
                 <div style={{ fontSize: '0.95rem', color: 'var(--teal-400)', fontWeight: 600, marginBottom: '4px' }}>Don't see your group?</div>
-                <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)' }}>Start your own community on more.</div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                  Start your own community on <img src="/images/logo.webp" alt="more." style={{ height: '12px', filter: 'brightness(0) invert(1)', opacity: 0.7 }} />
+                </div>
               </div>
             </>
           )}

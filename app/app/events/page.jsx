@@ -54,6 +54,12 @@ export default function EventsHub() {
 
   const filterByDate = (list) => {
     if (dateFilter === 'all') return list;
+    
+    // Handle exact custom dates from calendar input (YYYY-MM-DD)
+    if (dateFilter && dateFilter.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      return list.filter(e => e.date === dateFilter);
+    }
+    
     const now = new Date();
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     return list.filter(e => {
@@ -329,6 +335,28 @@ export default function EventsHub() {
             {filter.label}
           </button>
         ))}
+        {/* Calendar Input */}
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+          <input 
+            type="date"
+            value={!['all', 'today', 'this_week', 'this_weekend'].includes(dateFilter) ? dateFilter : ''}
+            onChange={(e) => setDateFilter(e.target.value)}
+            className="interactive-press"
+            style={{
+              padding: '4px 12px',
+              borderRadius: '20px',
+              border: (!['all', 'today', 'this_week', 'this_weekend'].includes(dateFilter)) ? '1px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.1)',
+              background: (!['all', 'today', 'this_week', 'this_weekend'].includes(dateFilter)) ? 'rgba(20,184,166,0.1)' : 'rgba(255,255,255,0.02)',
+              color: (!['all', 'today', 'this_week', 'this_weekend'].includes(dateFilter)) ? 'var(--teal-400)' : 'var(--slate-300)',
+              fontSize: '0.8rem',
+              fontWeight: 600,
+              fontFamily: 'inherit',
+              cursor: 'pointer',
+              outline: 'none',
+              minWidth: '130px'
+            }}
+          />
+        </div>
       </div>
 
       <div style={{ padding: '12px 20px 8px' }}>
