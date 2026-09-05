@@ -45,7 +45,6 @@
     50% { transform: translate(20px, -20px) scale(1.2); }
   }
 
-  /* Slide container */
   .slide {
     position: absolute;
     inset: 0;
@@ -53,7 +52,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 40px 32px;
+    padding: 40px 32px 64px;
     opacity: 0;
     transform: translateY(20px) scale(0.97);
     transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
@@ -106,7 +105,7 @@
   /* Progress dots */
   .progress {
     position: absolute;
-    bottom: 32px;
+    bottom: 12px;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
@@ -125,19 +124,6 @@
     border-radius: 4px;
   }
 
-  /* Logo watermark */
-  .watermark {
-    position: absolute;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 0.85rem;
-    font-weight: 800;
-    color: rgba(255,255,255,0.15);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-  }
-
   /* Step counter */
   .step-label {
     position: absolute;
@@ -154,7 +140,6 @@
 <div class="explainer">
   <div class="bg-glow bg-glow-1"></div>
   <div class="bg-glow bg-glow-2"></div>
-  <div class="watermark">more.</div>
   <div class="step-label" id="stepLabel"></div>
 
   <!-- Slide 0: Intro -->
