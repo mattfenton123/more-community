@@ -20,4 +20,5 @@ ADD COLUMN IF NOT EXISTS what_to_bring TEXT;
 -- 3. Update the 'communities' table for the reporting/flagging feature
 ALTER TABLE communities
 ADD COLUMN IF NOT EXISTS is_flagged BOOLEAN DEFAULT false,
-ADD COLUMN IF NOT EXISTS flag_reason TEXT;
+ADD COLUMN IF NOT EXISTS flag_reason TEXT,
+ADD COLUMN IF NOT EXISTS guidelines TEXT[];

@@ -81,6 +81,9 @@ export default function CommunityProfile() {
   const { feedPosts, createFeedPost, likeFeedPost, deleteFeedPost } = useFeed();
   const { toast } = useToast();
   const [showRules, setShowRules] = useState(false);
+  const [editingGuidelines, setEditingGuidelines] = useState(false);
+  const [guidelinesDraft, setGuidelinesDraft] = useState([]);
+  const [newGuideline, setNewGuideline] = useState('');
   const [activeTab, setActiveTab] = useState('about');
   const [expandedComments, setExpandedComments] = useState({});
   const [newPostText, setNewPostText] = useState('');
@@ -1368,13 +1371,90 @@ export default function CommunityProfile() {
                   border: '1px solid rgba(255,255,255,0.05)',
                   fontSize: '0.9rem', color: 'var(--slate-300)', lineHeight: 1.6,
                 }}>
-                  <ol style={{ margin: 0, paddingLeft: '18px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    <li><strong>Be respectful</strong> and inclusive to all members.</li>
-                    <li><strong>No spam</strong>, self-promotion, or irrelevant content.</li>
-                    <li><strong>Keep conversations positive</strong> and constructive.</li>
-                    <li><strong>Attend events</strong> you RSVP to, or cancel in advance.</li>
-                    <li><strong>Follow the leader's guidance</strong> during group activities.</li>
-                  </ol>
+                  {/* Display guidelines */}
+                  {!editingGuidelines ? (
+                    <>
+                      <ol style={{ margin: 0, paddingLeft: '18px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        {(community.guidelines && community.guidelines.length > 0 ? community.guidelines : [
+                          'Be respectful and inclusive to all members.',
+                          'No spam, self-promotion, or irrelevant content.',
+                          'Keep conversations positive and constructive.',
+                          'Attend events you RSVP to, or cancel in advance.',
+                          "Follow the leader's guidance during group activities."
+                        ]).map((g, i) => (
+                          <li key={i}>{g}</li>
+                        ))}
+                      </ol>
+                      {isLeader && (
+                        <button
+                          onClick={() => {
+                            setGuidelinesDraft(community.guidelines && community.guidelines.length > 0 ? [...community.guidelines] : [
+                              'Be respectful and inclusive to all members.',
+                              'No spam, self-promotion, or irrelevant content.',
+                              'Keep conversations positive and constructive.',
+                              'Attend events you RSVP to, or cancel in advance.',
+                              "Follow the leader's guidance during group activities."
+                            ]);
+                            setEditingGuidelines(true);
+                          }}
+                          className="interactive-press"
+                          style={{ marginTop: '14px', padding: '8px 16px', background: 'rgba(20,184,166,0.1)', border: '1px solid rgba(20,184,166,0.3)', borderRadius: '8px', color: 'var(--teal-400)', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer' }}
+                        >
+                          ✏️ Edit Guidelines
+                        </button>
+                      )}
+                    </>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      {guidelinesDraft.map((g, i) => (
+                        <div key={i} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                          <span style={{ color: 'var(--slate-500)', fontSize: '0.8rem', minWidth: '20px' }}>{i + 1}.</span>
+                          <input
+                            value={g}
+                            onChange={e => setGuidelinesDraft(prev => prev.map((item, idx) => idx === i ? e.target.value : item))}
+                            style={{ flex: 1, padding: '8px 12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'var(--white)', fontSize: '0.85rem' }}
+                          />
+                          <button
+                            onClick={() => setGuidelinesDraft(prev => prev.filter((_, idx) => idx !== i))}
+                            style={{ background: 'none', border: 'none', color: 'var(--rose-400)', cursor: 'pointer', padding: '4px', fontSize: '1rem' }}
+                          >✕</button>
+                        </div>
+                      ))}
+                      <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+                        <input
+                          value={newGuideline}
+                          onChange={e => setNewGuideline(e.target.value)}
+                          placeholder="Add a new guideline..."
+                          onKeyDown={e => { if (e.key === 'Enter' && newGuideline.trim()) { setGuidelinesDraft(prev => [...prev, newGuideline.trim()]); setNewGuideline(''); } }}
+                          style={{ flex: 1, padding: '8px 12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'var(--white)', fontSize: '0.85rem' }}
+                        />
+                        <button
+                          onClick={() => { if (newGuideline.trim()) { setGuidelinesDraft(prev => [...prev, newGuideline.trim()]); setNewGuideline(''); } }}
+                          style={{ padding: '8px 12px', background: 'rgba(20,184,166,0.15)', border: '1px solid rgba(20,184,166,0.3)', borderRadius: '8px', color: 'var(--teal-400)', fontWeight: 700, cursor: 'pointer', fontSize: '0.85rem' }}
+                        >+ Add</button>
+                      </div>
+                      <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                        <button
+                          onClick={async () => {
+                            try {
+                              await updateCommunity(community.id, { guidelines: guidelinesDraft });
+                              toast.success('Guidelines saved!', 'Your community guidelines have been updated.');
+                              setEditingGuidelines(false);
+                            } catch (err) {
+                              toast.error('Could not save', 'Please try again.');
+                            }
+                          }}
+                          className="btn btn-primary interactive-press"
+                          style={{ flex: 1, padding: '10px', borderRadius: '8px', fontSize: '0.85rem' }}
+                        >Save Guidelines</button>
+                        <button
+                          onClick={() => setEditingGuidelines(false)}
+                          className="interactive-press"
+                          style={{ padding: '10px 16px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'var(--slate-300)', cursor: 'pointer', fontSize: '0.85rem' }}
+                        >Cancel</button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
