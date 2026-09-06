@@ -7,7 +7,7 @@ import './CommunityOnboardingFlow.css';
 
 const PREDEFINED_TAGS = [
   '🏃 Running', '🚶 Walking', '🧘 Wellness', '⛰️ Adventure',
-  '🤝 Volunteering', '🎨 Creative', '💼 Business', '🎵 Music',
+  '🤝 Volunteering', '🎨 Creative', '✂️ Arts & Crafts', '💼 Business', '🎵 Music',
   '📚 Book Club', '🍳 Cooking', '🌱 Gardening', '👶 Parenting',
   '🎓 Learning', '🎮 Gaming', '⚽ Sports'
 ];
