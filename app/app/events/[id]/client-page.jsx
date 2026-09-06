@@ -580,6 +580,7 @@ export default function EventClient({ id }) {
              !isMember ? 'Join Community to ' + (event.ticketPrice > 0 ? 'Buy Ticket' : 'RSVP') :
              event.ticketPrice > 0 ? 'Buy Ticket' : 'RSVP'}
           </button>
+          </div>
         </div>
       </div>
 
