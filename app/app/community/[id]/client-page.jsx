@@ -168,6 +168,7 @@ export default function CommunityProfile() {
     } catch (err) {
       toast.error('Post failed', 'Could not publish your post. Please try again.');
     }
+  };
 
   const handleJoinLeave = async () => {
     try {
