@@ -9,7 +9,7 @@ const INTEREST_PILLS = [
   '🤝 Volunteering', '🎨 Creative', '💼 Professional', '🎵 Music',
   '📚 Book Club', '🍳 Cooking', '🌱 Gardening', '👶 Parenting',
   '🎓 Learning', '🎮 Gaming', '🎭 Theatre & Arts', '🎸 Gigs & Live Music',
-  '🍸 Singles & Social'
+  '🍸 Singles & Social', '🧩 Quizzing'
 ];
 
 // Background videos for each step

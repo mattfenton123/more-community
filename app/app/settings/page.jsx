@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from 'react';
-import { Bell, BellOff, Smartphone, Download, User, Shield, Info, ChevronRight, LogOut, Sun, Monitor } from 'lucide-react';
+import { Bell, BellOff, Smartphone, Download, User, Shield, Info, ChevronRight, LogOut, Sun, Monitor, Heart, Check } from 'lucide-react';
 import AppHeader from '../../src/components/AppHeader';
 import { useRouter as useNavigate } from 'next/navigation';
 import { useAuth } from '../../src/context/AuthContext';
@@ -11,8 +11,10 @@ import { useToast } from '../../src/components/Toast';
 export default function SettingsScreen() {
   const navigate = useNavigate();
   const { signOut, authUser } = useAuth();
-  const { user, theme, setTheme, highContrast, setHighContrast, largeText, setLargeText } = useAppContext();
+  const { user, updateUser, theme, setTheme, highContrast, setHighContrast, largeText, setLargeText } = useAppContext();
   const { toast } = useToast();
+  const [showInterestsEditor, setShowInterestsEditor] = useState(false);
+  const [selectedInterests, setSelectedInterests] = useState(user?.interests || []);
   const [notificationsEnabled, setNotificationsEnabled] = useState(() => {
     return typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted';
   });
@@ -143,8 +145,58 @@ export default function SettingsScreen() {
           <h3 style={{ color: 'var(--slate-400)', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px', paddingLeft: '4px' }}>Account</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
             <MenuItem icon={<User size={20} />} label="Edit Profile" color="#3b82f6" onClick={() => navigate.push('/profile')} />
+            <MenuItem icon={<Heart size={20} />} label="My Interests" subtext={`${user?.interests?.length || 0} selected`} color="#f43f5e" onClick={() => setShowInterestsEditor(!showInterestsEditor)} />
             <MenuItem icon={<Shield size={20} />} label="Privacy & Security" subtext="Profile visibility and data" color="#a78bfa" onClick={() => navigate.push('/settings/security')} />
           </div>
+
+          {showInterestsEditor && (
+            <div style={{ marginTop: '12px', padding: '16px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px' }}>
+              <div style={{ fontSize: '0.85rem', color: 'var(--slate-300)', fontWeight: 600, marginBottom: '12px' }}>Tap to toggle your interests</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                {[
+                  '🏃 Fitness', '🚶 Walking', '🧘 Wellness', '⛰️ Outdoors',
+                  '🤝 Volunteering', '🎨 Creative', '💼 Professional', '🎵 Music',
+                  '📚 Book Club', '🍳 Cooking', '🌱 Gardening', '👶 Parenting',
+                  '🎓 Learning', '🎮 Gaming', '🎭 Theatre & Arts', '🎸 Gigs & Live Music',
+                  '🍸 Singles & Social', '🧩 Quizzing'
+                ].map(pill => {
+                  const isSelected = selectedInterests.includes(pill);
+                  return (
+                    <button
+                      key={pill}
+                      onClick={() => setSelectedInterests(prev => isSelected ? prev.filter(p => p !== pill) : [...prev, pill])}
+                      className="interactive-press"
+                      style={{
+                        padding: '8px 14px', borderRadius: '99px', fontSize: '0.85rem',
+                        background: isSelected ? 'rgba(20,184,166,0.15)' : 'rgba(255,255,255,0.04)',
+                        border: `1px solid ${isSelected ? 'rgba(20,184,166,0.4)' : 'rgba(255,255,255,0.08)'}`,
+                        color: isSelected ? 'var(--teal-400)' : 'var(--slate-300)',
+                        cursor: 'pointer', transition: 'all 0.2s',
+                      }}
+                    >
+                      {isSelected && <Check size={14} style={{ marginRight: '4px', verticalAlign: 'middle' }} />}
+                      {pill}
+                    </button>
+                  );
+                })}
+              </div>
+              <button
+                onClick={async () => {
+                  try {
+                    await updateUser({ interests: selectedInterests });
+                    toast.success('Interests updated!', 'Your feed and recommendations will update accordingly.');
+                    setShowInterestsEditor(false);
+                  } catch (e) {
+                    toast.error('Failed to save', e.message);
+                  }
+                }}
+                className="btn btn-primary interactive-press"
+                style={{ marginTop: '16px', width: '100%', padding: '12px', borderRadius: '10px', fontSize: '0.9rem' }}
+              >
+                Save Interests
+              </button>
+            </div>
+          )
         </section>
 
         {/* Preferences & Accessibility */}
