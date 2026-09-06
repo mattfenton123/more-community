@@ -242,6 +242,18 @@ export async function leaveCommunityAction(userId, communityId, token) {
   }
 }
 
+export async function flagCommunityAction(communityId, reason, token) {
+  await verifyUser(token);
+  
+  const { error } = await supabaseAdmin.from('communities').update({
+    is_flagged: true,
+    flag_reason: reason || 'Flagged by user'
+  }).eq('id', communityId);
+  
+  if (error) throw new Error(error.message);
+  return true;
+}
+
 export async function rsvpToEventAction(userId, eventId, status, ticketType, referredBy, token) {
   if (!userId || !eventId) throw new Error("Missing data");
   await verifyUser(token, userId);

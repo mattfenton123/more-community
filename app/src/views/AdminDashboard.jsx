@@ -399,6 +399,7 @@ export default function AdminDashboard() {
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
                           <h3 style={{ margin: 0, color: 'var(--white)', fontSize: '0.9rem', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.name}</h3>
                           {c.verified && <BadgeCheck size={14} color="#3b82f6" />}
+                          {c.is_flagged && <span style={{ fontSize: '0.65rem', background: 'rgba(244,63,94,0.1)', color: 'var(--rose-400)', padding: '2px 6px', borderRadius: '4px', fontWeight: 700 }}>FLAGGED</span>}
                         </div>
                         <div style={{ display: 'flex', gap: '10px', fontSize: '0.7rem', color: 'var(--slate-500)' }}>
                           <span>{c.members} members</span>

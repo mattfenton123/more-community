@@ -9,7 +9,17 @@ import { FeedProvider } from '../src/context/FeedContext';
 import { AuthProvider, useAuth } from '../src/context/AuthContext';
 import { ToastProvider } from '../src/components/Toast';
 import BottomNav from '../src/components/BottomNav';
+import { ErrorBoundary } from 'react-error-boundary';
 
+function ErrorFallback({ error }) {
+  return (
+    <div style={{ padding: '20px', color: 'red', background: '#222', minHeight: '100vh' }}>
+      <h2>Application Runtime Error</h2>
+      <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>{error.message}</pre>
+      <pre style={{ fontSize: '0.8rem', opacity: 0.8, whiteSpace: 'pre-wrap', marginTop: '10px' }}>{error.stack}</pre>
+    </div>
+  );
+}
 
 function MainLayout({ children }) {
   const currentPath = usePathname();
@@ -55,10 +65,15 @@ function MainLayout({ children }) {
       <FeedProvider user={user}>
 
       <div className="app-content" style={hideTabBar ? { paddingBottom: 0 } : {}}>
-
-        {children}
-            </div>
-      {!hideTabBar && <BottomNav />}
+        <ErrorBoundary FallbackComponent={ErrorFallback}>
+          {children}
+        </ErrorBoundary>
+      </div>
+      {!hideTabBar && (
+        <ErrorBoundary FallbackComponent={ErrorFallback}>
+          <BottomNav />
+        </ErrorBoundary>
+      )}
           </FeedProvider>
     </ChatProvider>
     </div>

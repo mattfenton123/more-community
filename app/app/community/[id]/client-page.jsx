@@ -291,7 +291,22 @@ export default function CommunityProfile() {
             <img src="/logo.png" alt="more." style={{ height: '20px' }} />
           </div>
           <div style={{ display: 'flex', gap: '8px' }}>
-
+            <button 
+              onClick={() => {
+                if (window.confirm('Are you sure you want to flag this community for review?')) {
+                  import('../../../src/lib/actions').then(m => {
+                    m.flagCommunityAction(community.id).then(() => {
+                      toast.success('Community Flagged', 'Our moderation team will review this community.');
+                    }).catch(err => toast.error('Error', err.message));
+                  });
+                }
+              }} 
+              className="interactive-press" 
+              style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(244,63,94,0.1)', border: '1px solid rgba(244,63,94,0.2)', backdropFilter: 'blur(10px)', color: 'var(--rose-400)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }} 
+              title="Report Community"
+            >
+              <Flag size={18} />
+            </button>
             {isLeader && (
               <button className="interactive-press" style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(20,184,166,0.2)', border: '1px solid rgba(20,184,166,0.4)', backdropFilter: 'blur(10px)', color: 'var(--teal-400)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }} onClick={() => navigate.push('/dashboard')}>
                 <Settings size={18} />
