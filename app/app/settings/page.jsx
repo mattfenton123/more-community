@@ -7,6 +7,7 @@ import { useAuth } from '../../src/context/AuthContext';
 import { useAppContext } from '../../src/context/AppContext';
 import { useChat } from '../../src/context/ChatContext';
 import { useToast } from '../../src/components/Toast';
+import PushNotificationManager from '../../src/components/PushNotificationManager';
 
 export default function SettingsScreen() {
   const navigate = useNavigate();
@@ -221,35 +222,7 @@ export default function SettingsScreen() {
               onClick={handleInstallApp} 
             />
 
-            <button
-              onClick={handleToggleNotifications}
-              className="interactive-press"
-              style={{
-                display: 'flex', alignItems: 'center', gap: '16px', padding: '16px',
-                background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)',
-                borderRadius: '12px', color: 'var(--white)', width: '100%', cursor: 'pointer', textAlign: 'left',
-              }}
-            >
-              <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: notificationsEnabled ? 'rgba(20,184,166,0.1)' : 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: notificationsEnabled ? 'var(--teal-400)' : 'var(--slate-500)' }}>
-                {notificationsEnabled ? <Bell size={20} /> : <BellOff size={20} />}
-              </div>
-              <div style={{ flex: 1 }}>
-                <span style={{ fontWeight: 500, display: 'block' }}>Push Notifications</span>
-                <span style={{ fontSize: '0.75rem', color: 'var(--slate-500)' }}>{notificationsEnabled ? 'Enabled — you\'ll get alerts' : 'Tap to enable alerts'}</span>
-              </div>
-              <div style={{
-                width: '44px', height: '24px', borderRadius: '99px',
-                background: notificationsEnabled ? 'var(--teal-500)' : 'rgba(255,255,255,0.1)',
-                position: 'relative', transition: 'background 0.2s'
-              }}>
-                <div style={{
-                  width: '20px', height: '20px', borderRadius: '50%', background: 'white',
-                  position: 'absolute', top: '2px',
-                  left: notificationsEnabled ? '22px' : '2px',
-                  transition: 'left 0.2s'
-                }}></div>
-              </div>
-            </button>
+            <PushNotificationManager />
             
           </div>
         </section>

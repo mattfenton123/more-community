@@ -1,10 +1,11 @@
 "use client";
 import { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ChevronLeft, Share, MapPin, Calendar, Clock, Users, CheckCircle2, Info, List, Activity, Check, Map, Ticket, DollarSign, Copy, ExternalLink, Navigation, Video, AlertTriangle, Image as ImageIcon } from 'lucide-react';
+import { ChevronLeft, Share, MapPin, Calendar, Clock, Users, CheckCircle2, Info, List, Activity, Check, Map, Ticket, DollarSign, Copy, ExternalLink, Navigation, Video, AlertTriangle, Image as ImageIcon, ScanLine } from 'lucide-react';
 import { useAppContext } from '../../../src/context/AppContext';
 import { useToast } from '../../../src/components/Toast';
 import DigitalTicket from '../../../src/components/DigitalTicket';
+import QRScanner from '../../../src/components/QRScanner';
 
 // Well-known Tunbridge Wells locations for instant lookup
 const KNOWN_LOCATIONS = {
@@ -188,6 +189,24 @@ export default function EventClient({ id }) {
   
   const [checkoutState, setCheckoutState] = useState('idle');
   const [showTicket, setShowTicket] = useState(null);
+  const [showScanner, setShowScanner] = useState(false);
+
+  const isLeader = user?.ledCommunities?.includes(event?.communityId) || user?.isAdmin;
+
+  const handleScan = async (payload) => {
+    let scannedUserId = payload;
+    if (typeof payload === 'object' && payload.userId) {
+      scannedUserId = payload.userId;
+    }
+    try {
+      if (typeof checkInMember === 'function') {
+        await checkInMember(event.id, scannedUserId);
+      }
+      toast.success('Ticket Scanned!', 'Member checked in successfully.');
+    } catch(e) {
+      toast.error('Scan Failed', 'Could not verify ticket.');
+    }
+  };
 
   useEffect(() => {
     if (events && communities) {
@@ -523,7 +542,24 @@ export default function EventClient({ id }) {
               </div>
             )}
           </div>
-          <button 
+          <div style={{ display: 'flex', gap: '8px' }}>
+            {isLeader && (
+              <button 
+                onClick={() => setShowScanner(true)}
+                className="interactive-press"
+                style={{ 
+                  background: 'rgba(255,255,255,0.1)', 
+                  color: 'var(--white)', 
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  padding: '12px 16px', borderRadius: '99px', fontSize: '1rem', fontWeight: 700, 
+                  cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', gap: '8px',
+                }}
+              >
+                <ScanLine size={18} /> Scan
+              </button>
+            )}
+            <button  
             onClick={!isMember && !isGoing ? handleJoinAndRSVP : handleRSVP}
             disabled={checkoutState === 'processing' || (spotsLeft === 0 && !isGoing)}
             className="interactive-press"
@@ -554,6 +590,14 @@ export default function EventClient({ id }) {
           community={communities.find(c => c.id === showTicket.communityId)}
           userName={user.name} 
           onClose={() => setShowTicket(null)} 
+        />
+      )}
+
+      {/* QR Scanner */}
+      {showScanner && (
+        <QRScanner 
+          onScan={handleScan}
+          onClose={() => setShowScanner(false)}
         />
       )}
     </div>

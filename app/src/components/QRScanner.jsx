@@ -1,148 +1,125 @@
-"use client";
-import { useEffect, useRef, useState } from 'react';
-import { X, Camera, CheckCircle2, AlertCircle, ScanLine } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
 import jsQR from 'jsqr';
+import { Camera, X, AlertTriangle } from 'lucide-react';
 
 export default function QRScanner({ onScan, onClose }) {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
-  const [scanning, setScanning] = useState(true);
-  const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
-  const streamRef = useRef(null);
+  const [scanning, setScanning] = useState(true);
 
   useEffect(() => {
-    let animationId;
-    
+    let stream = null;
+    let requestAnimationId = null;
+
     const startCamera = async () => {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ 
-          video: { facingMode: 'environment', width: { ideal: 640 }, height: { ideal: 480 } } 
-        });
-        streamRef.current = stream;
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
+          videoRef.current.setAttribute('playsinline', true);
           videoRef.current.play();
+          requestAnimationId = requestAnimationFrame(tick);
         }
       } catch (err) {
-        setError('Camera access denied. Please enable camera permissions.');
+        console.error('Camera error:', err);
+        setError('Unable to access camera. Please check permissions.');
       }
     };
 
-    const scanFrame = () => {
-      if (!videoRef.current || !canvasRef.current || !scanning) return;
+    const tick = () => {
+      if (!scanning) return;
       
       const video = videoRef.current;
       const canvas = canvasRef.current;
-      const ctx = canvas.getContext('2d');
       
-      if (video.readyState === video.HAVE_ENOUGH_DATA) {
-        canvas.width = video.videoWidth;
+      if (video && video.readyState === video.HAVE_ENOUGH_DATA && canvas) {
         canvas.height = video.videoHeight;
+        canvas.width = video.videoWidth;
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
         
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const code = jsQR(imageData.data, imageData.width, imageData.height);
-        
+        const code = jsQR(imageData.data, imageData.width, imageData.height, {
+          inversionAttempts: "dontInvert",
+        });
+
         if (code) {
-          setScanning(false);
+          setScanning(false); // Stop scanning momentarily
+          
+          // Try to parse JSON if the QR contains it, otherwise send raw data
+          let payload = code.data;
           try {
-            const data = JSON.parse(code.data);
-            if (data.type === 'more_ticket') {
-              setResult(data);
-              if (onScan) onScan(data);
-            } else {
-              setError('Invalid ticket QR code');
-              setTimeout(() => { setError(null); setScanning(true); }, 2000);
-            }
-          } catch {
-            setError('Could not read QR code');
-            setTimeout(() => { setError(null); setScanning(true); }, 2000);
-          }
+            payload = JSON.parse(code.data);
+          } catch(e) {}
+          
+          onScan(payload);
+          
+          // Resume scanning after 2 seconds
+          setTimeout(() => setScanning(true), 2000);
         }
       }
       
-      animationId = requestAnimationFrame(scanFrame);
+      if (scanning) {
+        requestAnimationId = requestAnimationFrame(tick);
+      }
     };
 
-    startCamera().then(() => {
-      animationId = requestAnimationFrame(scanFrame);
-    });
+    startCamera();
 
     return () => {
-      if (animationId) cancelAnimationFrame(animationId);
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop());
+      setScanning(false);
+      if (requestAnimationId) cancelAnimationFrame(requestAnimationId);
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
       }
     };
   }, [scanning, onScan]);
 
-  const handleClose = () => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop());
-    }
-    onClose();
-  };
-
   return (
-    <div className="modal-overlay" style={{ display: 'flex', flexDirection: 'column', zIndex: 10001 }}>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'var(--slate-950)', display: 'flex', flexDirection: 'column' }}>
       {/* Header */}
-      <div style={{ padding: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--white)' }}>
-          <Camera size={20} />
-          <h2 style={{ margin: 0, fontSize: '1.1rem', fontFamily: 'var(--font-heading)' }}>Scan Ticket</h2>
-        </div>
-        <button onClick={handleClose} className="interactive-press" style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: 'var(--white)', cursor: 'pointer', width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <X size={18} />
+      <div style={{ padding: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(0,0,0,0.5)', position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 }}>
+        <h2 style={{ margin: 0, color: 'white', fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Camera size={20} /> Scan Ticket
+        </h2>
+        <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', cursor: 'pointer' }}>
+          <X size={24} />
         </button>
       </div>
 
-      {/* Camera Feed */}
+      {/* Camera Viewport */}
       <div style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-        <video ref={videoRef} style={{ width: '100%', height: '100%', objectFit: 'cover' }} playsInline muted />
-        <canvas ref={canvasRef} style={{ display: 'none' }} />
-        
-        {/* Scanner overlay */}
-        {scanning && !error && (
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        {error ? (
+          <div style={{ padding: '24px', textAlign: 'center', color: '#ef4444' }}>
+            <AlertTriangle size={48} style={{ margin: '0 auto 16px' }} />
+            <p>{error}</p>
+          </div>
+        ) : (
+          <>
+            <video ref={videoRef} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            <canvas ref={canvasRef} style={{ display: 'none' }} />
+            
+            {/* Target Overlay */}
             <div style={{ 
-              width: '240px', height: '240px', 
-              border: '3px solid var(--teal-400)', 
+              position: 'absolute', 
+              width: '250px', 
+              height: '250px', 
+              border: '2px dashed rgba(255,255,255,0.5)', 
               borderRadius: '24px',
-              boxShadow: '0 0 0 9999px rgba(0,0,0,0.5)',
-              position: 'relative'
+              boxShadow: '0 0 0 4000px rgba(0,0,0,0.6)'
             }}>
-              <div style={{ position: 'absolute', bottom: '-40px', left: '50%', transform: 'translateX(-50%)', color: 'var(--white)', fontSize: '0.85rem', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <ScanLine size={16} color="var(--teal-400)" /> Point at ticket QR code
-              </div>
+              {!scanning && (
+                <div style={{ position: 'absolute', inset: 0, background: 'rgba(34,197,94,0.3)', borderRadius: '22px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <span style={{ color: 'white', fontWeight: 'bold', background: '#22c55e', padding: '4px 12px', borderRadius: '99px' }}>Scanned!</span>
+                </div>
+              )}
             </div>
-          </div>
-        )}
-
-        {/* Success overlay */}
-        {result && (
-          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px' }}>
-            <CheckCircle2 size={64} color="var(--teal-400)" style={{ marginBottom: '16px' }} />
-            <h3 style={{ color: 'var(--white)', margin: '0 0 8px 0', fontFamily: 'var(--font-heading)', fontSize: '1.3rem' }}>Checked In!</h3>
-            <p style={{ color: 'var(--slate-300)', margin: '0 0 4px 0', fontSize: '1rem', fontWeight: 600 }}>{result.userName}</p>
-            <p style={{ color: 'var(--slate-400)', margin: '0 0 24px 0', fontSize: '0.85rem' }}>{result.eventTitle}</p>
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <button onClick={() => { setResult(null); setScanning(true); }} className="btn btn-primary interactive-press" style={{ padding: '12px 24px', borderRadius: '10px' }}>
-                Scan Next
-              </button>
-              <button onClick={handleClose} className="btn btn-outline interactive-press" style={{ padding: '12px 24px', borderRadius: '10px' }}>
-                Done
-              </button>
+            
+            <div style={{ position: 'absolute', bottom: '40px', color: 'rgba(255,255,255,0.8)', fontSize: '0.9rem', background: 'rgba(0,0,0,0.5)', padding: '8px 16px', borderRadius: '99px' }}>
+              Align QR Code within the frame
             </div>
-          </div>
-        )}
-
-        {/* Error overlay */}
-        {error && (
-          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px' }}>
-            <AlertCircle size={48} color="var(--rose-500)" style={{ marginBottom: '16px' }} />
-            <p style={{ color: 'var(--slate-300)', textAlign: 'center', margin: 0 }}>{error}</p>
-          </div>
+          </>
         )}
       </div>
     </div>

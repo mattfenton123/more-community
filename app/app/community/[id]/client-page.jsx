@@ -1027,6 +1027,28 @@ export default function CommunityProfile() {
               </div>
             )}
 
+            {/* Organizer Spotlight */}
+            <div style={{ marginBottom: '32px', background: 'linear-gradient(135deg, rgba(20,184,166,0.05), rgba(15,23,42,1))', border: '1px solid rgba(20,184,166,0.2)', borderRadius: '16px', padding: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }}>
+              <img 
+                src={leaderUser?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(community.name)}&background=0D8B93&color=fff`} 
+                alt="Organiser" 
+                onClick={() => leaderUser && navigate.push(`/profile/${leaderUser.id}`)}
+                style={{ width: '88px', height: '88px', borderRadius: '50%', objectFit: 'cover', border: '3px solid var(--teal-500)', cursor: leaderUser ? 'pointer' : 'default', marginBottom: '16px', boxShadow: '0 4px 12px rgba(20,184,166,0.2)' }} 
+              />
+              <div style={{ fontSize: '0.75rem', color: 'var(--teal-400)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '4px' }}>Community Leader</div>
+              <div style={{ fontWeight: 800, color: 'var(--white)', fontSize: '1.4rem', fontFamily: 'var(--font-heading)', marginBottom: '8px' }}>{leaderUser?.name || 'Community Team'}</div>
+              <p style={{ color: 'var(--slate-300)', fontSize: '0.95rem', marginBottom: '20px', maxWidth: '400px', lineHeight: 1.5 }}>
+                {leaderUser?.bio || `Hey! I'm the organizer for ${community.name}. Feel free to drop me a message if you have any questions before joining!`}
+              </p>
+              <button 
+                onClick={() => leaderUser && navigate.push(`/chat/dm/${leaderUser.id}`)} 
+                className="btn btn-primary interactive-press" 
+                style={{ width: '100%', maxWidth: '280px', padding: '14px', borderRadius: '12px', fontSize: '1rem', display: 'flex', gap: '8px', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}
+              >
+                <MessageCircle size={18} /> Message Organizer
+              </button>
+            </div>
+
             {/* Welcome Video */}
             {community.welcome_video_url ? (
               <div style={{ marginBottom: '32px', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
@@ -1129,6 +1151,23 @@ export default function CommunityProfile() {
                 )}
               </button>
             </div>
+
+            {/* Gallery Peek */}
+            {galleryPhotos.length > 0 && (
+              <div style={{ marginBottom: '32px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                  <h3 style={{ fontSize: '1.3rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <ImageIcon size={20} color="var(--teal-400)" /> Past Events
+                  </h3>
+                  <button onClick={() => setActiveTab('photos')} className="interactive-press" style={{ background: 'none', border: 'none', color: 'var(--teal-400)', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}>View All</button>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', borderRadius: '16px', overflow: 'hidden' }}>
+                  {galleryPhotos.slice(0, 3).map((photo, i) => (
+                    <img key={i} src={typeof photo === 'string' ? photo : photo.url} alt="Gallery peek" style={{ width: '100%', height: i === 0 ? '200px' : '96px', objectFit: 'cover', gridColumn: i === 0 ? 'span 3' : 'span 1' }} />
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Key Info Cards */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '32px' }}>
