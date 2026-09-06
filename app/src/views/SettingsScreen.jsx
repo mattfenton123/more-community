@@ -62,11 +62,15 @@ export default function SettingsScreen() {
       if (permission === 'granted') {
         setNotificationsEnabled(true);
         toast.success('Notifications enabled!', 'You\'ll be notified about new messages and events');
-        // Send a test notification
-        try { new Notification('more. community', {
-          body: 'Notifications are now enabled! 🎉',
-          icon: '/portal/favicon.svg'
-        }); } catch(e) { /* Notification constructor not supported */ }
+        // Send a test notification via Service Worker
+        try {
+          if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+            const registration = await navigator.serviceWorker.ready;
+            await registration.showNotification('more. community', { body: 'Notifications are now enabled! 🎉', icon: '/logo.png', badge: '/logo.png' });
+          } else {
+            new Notification('more. community', { body: 'Notifications are now enabled! 🎉', icon: '/logo.png' });
+          }
+        } catch(e) { /* Notification not supported */ }
       } else {
         toast.error('Permission denied', 'Please enable notifications in your browser settings');
       }

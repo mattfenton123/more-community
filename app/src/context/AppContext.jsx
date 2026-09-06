@@ -401,6 +401,18 @@ export function AppProvider({ children }) {
 
     fetchAllData();
 
+    // Safe notification helper — uses Service Worker on mobile, falls back to Notification API
+    const showSafeNotification = async (title, options = {}) => {
+      try {
+        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+          const registration = await navigator.serviceWorker.ready;
+          await registration.showNotification(title, { icon: '/logo.png', badge: '/logo.png', ...options });
+        } else {
+          new Notification(title, { icon: '/logo.png', ...options });
+        }
+      } catch (e) { /* Notification not supported */ }
+    };
+
     // Push Notifications & Event Reminders
     const setupNotifications = () => {
       if ('Notification' in window) {
@@ -424,10 +436,9 @@ export function AppProvider({ children }) {
                       if (isGoing && timeDiff > 0 && timeDiff <= 24 * 60 * 60 * 1000) {
                         const notifKey = `reminded_${e.id}`;
                         if (!localStorage.getItem(notifKey)) {
-                          try { new Notification(`Reminder: ${e.title} is tomorrow!`, {
+                          showSafeNotification(`Reminder: ${e.title} is tomorrow!`, {
                             body: 'Get ready for your upcoming event.',
-                            icon: '/portal/favicon.svg'
-                          }); } catch(notifErr) { console.log('Notification API not supported'); }
+                          });
                           localStorage.setItem(notifKey, 'true');
                         }
                       }
@@ -451,12 +462,9 @@ export function AppProvider({ children }) {
           if (prev.find(m => m.id === payload.new.id)) return prev;
           // Fire browser notification if message is from someone else
           if (payload.new.author_id !== authUser?.id && 'Notification' in window && Notification.permission === 'granted') {
-            try {
-              new Notification('New message in more.', {
-                body: payload.new.text?.substring(0, 100) || 'New message',
-                icon: '/portal/favicon.svg'
-              });
-            } catch (e) { /* silent */ }
+            showSafeNotification('New message in more.', {
+              body: payload.new.text?.substring(0, 100) || 'New message',
+            });
           }
           return [...prev, {
             id: payload.new.id,
@@ -535,7 +543,7 @@ export function AppProvider({ children }) {
         setNotifications(prev => {
           if (prev.find(n => n.id === payload.new.id)) return prev;
           if ('Notification' in window && Notification.permission === 'granted') {
-            try { new Notification(payload.new.title, { body: payload.new.message, icon: '/portal/favicon.svg' }); } catch(e) { /* silent */ }
+            showSafeNotification(payload.new.title, { body: payload.new.message });
           }
           return [payload.new, ...prev];
         });

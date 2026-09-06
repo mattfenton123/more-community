@@ -10,6 +10,8 @@ import { useFeed } from '../context/FeedContext';
 import { useChat } from '../context/ChatContext';
 import { useToast } from '../components/Toast';
 import { useRouter as useNavigate } from 'next/navigation';
+import { dismissFlagAction, banCommunityAction, unbanCommunityAction } from '../lib/actions';
+import { supabase } from '../lib/supabaseClient';
 
 // ─── Shared Components ────────────────────────────────────
 const StatCard = ({ value, label, icon: Icon, color, accent }) => (
@@ -262,6 +264,7 @@ export default function AdminDashboard() {
   const tabs = [
     { key: 'overview', label: 'Overview', icon: BarChart3 },
     { key: 'communities', label: 'Communities', icon: Globe },
+    { key: 'moderation', label: `Moderation${communities.filter(c => c.is_flagged).length > 0 ? ` (${communities.filter(c => c.is_flagged).length})` : ''}`, icon: AlertTriangle },
     { key: 'users', label: 'Users', icon: Users },
     { key: 'events', label: 'Events', icon: Calendar },
     { key: 'revenue', label: 'Revenue', icon: DollarSign },
@@ -365,6 +368,46 @@ export default function AdminDashboard() {
                     <span style={{ fontSize: '0.65rem', color: 'var(--slate-600)' }}>{a.time}</span>
                   </div>
                 ))}
+              </div>
+            </div>
+
+            {/* Engagement Leaderboard */}
+            <div>
+              <div style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--slate-500)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' }}>Top Communities by Engagement</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                {platformStats.communityHealth.sort((a, b) => b.members - a.members).slice(0, 5).map((c, i) => {
+                  const maxMembers = Math.max(...platformStats.communityHealth.map(x => x.members), 1);
+                  return (
+                    <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 10px', background: 'rgba(255,255,255,0.015)', borderRadius: '8px' }}>
+                      <span style={{ fontSize: '0.75rem', fontWeight: 700, color: i === 0 ? '#f59e0b' : 'var(--slate-500)', minWidth: '18px' }}>#{i + 1}</span>
+                      <span style={{ flex: 1, fontSize: '0.8rem', color: 'var(--white)', fontWeight: 500 }}>{c.name}</span>
+                      <div style={{ width: '60px', height: '6px', background: 'rgba(255,255,255,0.05)', borderRadius: '99px', overflow: 'hidden' }}>
+                        <div style={{ width: `${(c.members / maxMembers) * 100}%`, height: '100%', background: 'var(--teal-400)', borderRadius: '99px' }}></div>
+                      </div>
+                      <span style={{ fontSize: '0.7rem', color: 'var(--slate-500)', minWidth: '50px', textAlign: 'right' }}>{c.members} mbrs</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Key Metrics */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+              <div className="glass-panel" style={{ padding: '14px' }}>
+                <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#22c55e', fontFamily: 'var(--font-heading)' }}>{messages.length}</div>
+                <div style={{ fontSize: '0.65rem', color: 'var(--slate-500)', fontWeight: 600, textTransform: 'uppercase' }}>Total Messages</div>
+              </div>
+              <div className="glass-panel" style={{ padding: '14px' }}>
+                <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#a78bfa', fontFamily: 'var(--font-heading)' }}>{feedPosts.length}</div>
+                <div style={{ fontSize: '0.65rem', color: 'var(--slate-500)', fontWeight: 600, textTransform: 'uppercase' }}>Feed Posts</div>
+              </div>
+              <div className="glass-panel" style={{ padding: '14px' }}>
+                <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#f43f5e', fontFamily: 'var(--font-heading)' }}>{communities.filter(c => c.is_flagged).length}</div>
+                <div style={{ fontSize: '0.65rem', color: 'var(--slate-500)', fontWeight: 600, textTransform: 'uppercase' }}>Flagged</div>
+              </div>
+              <div className="glass-panel" style={{ padding: '14px' }}>
+                <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#ef4444', fontFamily: 'var(--font-heading)' }}>{communities.filter(c => c.is_banned).length}</div>
+                <div style={{ fontSize: '0.65rem', color: 'var(--slate-500)', fontWeight: 600, textTransform: 'uppercase' }}>Banned</div>
               </div>
             </div>
           </div>
@@ -792,6 +835,103 @@ export default function AdminDashboard() {
         {/* ═══════════════════════════════════════════════════ */}
         {/* TAB 7: CONFIG                                      */}
         {/* ═══════════════════════════════════════════════════ */}
+        {/* ═══════════════════════════════════════════════════ */}
+        {/* TAB: MODERATION                                    */}
+        {/* ═══════════════════════════════════════════════════ */}
+        {activeTab === 'moderation' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {/* Flagged Communities */}
+            <div>
+              <div style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--slate-500)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '10px' }}>🚩 Flagged Communities</div>
+              {communities.filter(c => c.is_flagged).length === 0 ? (
+                <div style={{ padding: '32px', textAlign: 'center', background: 'rgba(34,197,94,0.04)', border: '1px solid rgba(34,197,94,0.1)', borderRadius: '12px' }}>
+                  <CheckCircle size={28} color="#22c55e" style={{ marginBottom: '8px' }} />
+                  <div style={{ color: 'var(--slate-300)', fontSize: '0.9rem', fontWeight: 600 }}>No flagged communities</div>
+                  <div style={{ color: 'var(--slate-500)', fontSize: '0.75rem', marginTop: '4px' }}>All clear! The platform is healthy.</div>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {communities.filter(c => c.is_flagged).map(c => (
+                    <div key={c.id} style={{ padding: '14px', background: 'rgba(239,68,68,0.04)', border: '1px solid rgba(239,68,68,0.15)', borderRadius: '12px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+                        <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'var(--slate-800)', overflow: 'hidden', flexShrink: 0 }}>
+                          {c.image ? <img src={c.image} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Globe size={14} color="var(--slate-600)" /></div>}
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.9rem' }}>{c.name}</div>
+                          <div style={{ fontSize: '0.7rem', color: 'var(--slate-500)' }}>{(communityMemberships[c.id] || []).length} members</div>
+                        </div>
+                        <Flag size={16} color="#ef4444" />
+                      </div>
+                      {c.flag_reason && (
+                        <div style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.03)', borderRadius: '8px', fontSize: '0.8rem', color: 'var(--slate-300)', marginBottom: '10px', fontStyle: 'italic' }}>
+                          "{c.flag_reason}"
+                        </div>
+                      )}
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button
+                          onClick={async () => {
+                            try {
+                              const sess = await supabase.auth.getSession();
+                              await dismissFlagAction(c.id, sess.data.session?.access_token);
+                              await updateCommunity(c.id, { is_flagged: false, flag_reason: null });
+                              toast.success('Flag dismissed', `${c.name} has been cleared.`);
+                            } catch (err) { toast.error('Failed', err.message); }
+                          }}
+                          className="interactive-press"
+                          style={{ flex: 1, padding: '10px', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '8px', color: '#22c55e', fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer' }}
+                        >✓ Dismiss Flag</button>
+                        <button
+                          onClick={async () => {
+                            if (!window.confirm(`Are you sure you want to ban "${c.name}"? This will hide it from all users.`)) return;
+                            try {
+                              const sess = await supabase.auth.getSession();
+                              await banCommunityAction(c.id, sess.data.session?.access_token);
+                              await updateCommunity(c.id, { is_banned: true, is_flagged: false, flag_reason: null });
+                              toast.success('Community banned', `${c.name} has been removed from the platform.`);
+                            } catch (err) { toast.error('Failed', err.message); }
+                          }}
+                          className="interactive-press"
+                          style={{ flex: 1, padding: '10px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '8px', color: '#ef4444', fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer' }}
+                        >✕ Ban Community</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Banned Communities */}
+            <div>
+              <div style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--slate-500)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '10px' }}>🚫 Banned Communities</div>
+              {communities.filter(c => c.is_banned).length === 0 ? (
+                <div style={{ padding: '20px', textAlign: 'center', background: 'rgba(255,255,255,0.02)', borderRadius: '10px', fontSize: '0.8rem', color: 'var(--slate-500)' }}>No banned communities</div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  {communities.filter(c => c.is_banned).map(c => (
+                    <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px' }}>
+                      <Ban size={16} color="#ef4444" />
+                      <span style={{ flex: 1, fontSize: '0.85rem', color: 'var(--slate-400)', textDecoration: 'line-through' }}>{c.name}</span>
+                      <button
+                        onClick={async () => {
+                          try {
+                            const sess = await supabase.auth.getSession();
+                            await unbanCommunityAction(c.id, sess.data.session?.access_token);
+                            await updateCommunity(c.id, { is_banned: false });
+                            toast.success('Unbanned', `${c.name} is back on the platform.`);
+                          } catch (err) { toast.error('Failed', err.message); }
+                        }}
+                        className="interactive-press"
+                        style={{ padding: '6px 12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'var(--slate-300)', fontSize: '0.75rem', cursor: 'pointer' }}
+                      >Unban</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {activeTab === 'config' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             {/* Admin List */}

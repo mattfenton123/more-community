@@ -740,3 +740,24 @@ export async function submitReviewAction(userId, targetId, targetType, rating, c
   return data;
 }
 
+// ─── Admin Moderation Actions ─────────────────────────────
+export async function dismissFlagAction(communityId, token) {
+  await verifyUser(token);
+  const { error } = await supabaseAdmin.from('communities').update({ is_flagged: false, flag_reason: null }).eq('id', communityId);
+  if (error) throw new Error(error.message);
+  return true;
+}
+
+export async function banCommunityAction(communityId, token) {
+  await verifyUser(token);
+  const { error } = await supabaseAdmin.from('communities').update({ is_banned: true, is_flagged: false, flag_reason: null }).eq('id', communityId);
+  if (error) throw new Error(error.message);
+  return true;
+}
+
+export async function unbanCommunityAction(communityId, token) {
+  await verifyUser(token);
+  const { error } = await supabaseAdmin.from('communities').update({ is_banned: false }).eq('id', communityId);
+  if (error) throw new Error(error.message);
+  return true;
+}
