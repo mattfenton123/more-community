@@ -196,7 +196,7 @@ export default function SettingsScreen() {
                 Save Interests
               </button>
             </div>
-          )
+          )}
         </section>
 
         {/* Preferences & Accessibility */}
