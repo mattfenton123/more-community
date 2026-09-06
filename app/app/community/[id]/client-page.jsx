@@ -153,15 +153,18 @@ export default function CommunityProfile() {
       }
     }
     
-    await createFeedPost(communityId, textToPost, mediaUrl, isAnnouncement, isPinned);
-    if (overrideText === null) {
-      setNewPostText('');
-      setNewPostImage(null);
-      setIsAnnouncement(false);
-      setIsPinned(false);
+    try {
+      await createFeedPost(communityId, textToPost, mediaUrl, isAnnouncement, isPinned);
+      if (overrideText === null) {
+        setNewPostText('');
+        setNewPostImage(null);
+        setIsAnnouncement(false);
+        setIsPinned(false);
+      }
+      toast.success('Posted!', 'Your update is now live.');
+    } catch (err) {
+      toast.error('Post failed', 'Could not publish your post. Please try again.');
     }
-    toast.success('Posted!', 'Your update is now live.');
-  };
 
   const handleJoinLeave = async () => {
     try {
@@ -172,7 +175,7 @@ export default function CommunityProfile() {
         toast.success('Welcome!', `You're now a member of ${community.name}`);
       }
     } catch (err) {
-      toast.error('Error', err.message);
+      toast.error('Could not join', 'Something went wrong. Please try again.');
     }
   };
 
@@ -182,7 +185,7 @@ export default function CommunityProfile() {
       toast.info('Left community', `You've left ${community.name}`);
       setShowLeaveModal(false);
     } catch (err) {
-      toast.error('Error', err.message);
+      toast.error('Could not leave', 'Something went wrong. Please try again.');
     }
   };
 
