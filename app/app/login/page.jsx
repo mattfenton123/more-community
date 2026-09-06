@@ -215,7 +215,7 @@ export default function LoginScreen() {
           </div>
 
           <p style={{ textAlign: 'center', color: 'var(--slate-600)', fontSize: '0.7rem', marginTop: '12px', lineHeight: 1.5 }}>
-            By signing in, you agree to our Terms of Service and Privacy Policy
+            By signing in, you agree to our <span onClick={() => router.push('/legal/terms')} style={{ textDecoration: 'underline', cursor: 'pointer' }}>Terms of Service</span>, <span onClick={() => router.push('/legal/privacy')} style={{ textDecoration: 'underline', cursor: 'pointer' }}>Privacy Policy</span> and <span onClick={() => router.push('/legal/cookies')} style={{ textDecoration: 'underline', cursor: 'pointer' }}>Cookies Policy</span>
           </p>
         </div>
       </div>
