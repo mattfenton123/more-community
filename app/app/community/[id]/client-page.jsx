@@ -6,6 +6,8 @@ import { useAppContext } from '../../../src/context/AppContext';
 import { useFeed } from '../../../src/context/FeedContext';
 import { useToast } from '../../../src/components/Toast';
 import PhotoGallery from '../../../src/components/PhotoGallery';
+import ReactMarkdown from 'react-markdown';
+import SwipeDiscovery from '../../src/components/SwipeDiscovery';
 import MemberDirectory from '../../../src/components/MemberDirectory';
 import InlineComments from '../../../src/components/InlineComments';
 import ExperiencesCatalog from '../../../src/components/ExperiencesCatalog';
@@ -509,11 +511,12 @@ export default function CommunityProfile() {
                   <img src={user?.avatar || 'https://i.pravatar.cc/150'} alt="You" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
                   <div style={{ flex: 1 }}>
                     <textarea 
-                      placeholder="Share an update with the community..." 
+                      placeholder="Share something with the community..." 
                       value={newPostText}
                       onChange={e => setNewPostText(e.target.value)}
                       style={{ width: '100%', background: 'transparent', border: 'none', color: 'var(--white)', resize: 'none', outline: 'none', minHeight: '60px', fontFamily: 'inherit', fontSize: '0.95rem' }}
                     />
+                    <div style={{ fontSize: '0.7rem', color: 'var(--slate-500)', marginBottom: '12px' }}>Supports **bold**, *italics*, and [links](http...)</div>
                     {newPostImage && (
                       <div style={{ position: 'relative', marginTop: '8px', display: 'inline-block' }}>
                         <img src={URL.createObjectURL(newPostImage)} alt="Preview" style={{ height: '80px', borderRadius: '8px' }} />
@@ -699,7 +702,16 @@ export default function CommunityProfile() {
                             </div>
                           );
                         } else {
-                          return post.text;
+                          return (
+                            <ReactMarkdown 
+                              components={{
+                                a: ({node, ...props}) => <a style={{ color: 'var(--teal-400)', textDecoration: 'underline' }} {...props} />,
+                                p: ({node, ...props}) => <p style={{ margin: 0, padding: 0 }} {...props} />
+                              }}
+                            >
+                              {post.text}
+                            </ReactMarkdown>
+                          );
                         }
                       })()}
                     </div>

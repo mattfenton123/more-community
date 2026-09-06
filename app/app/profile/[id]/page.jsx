@@ -233,6 +233,37 @@ export default function UserProfile() {
           </div>
         </div>
 
+        {/* Message Action (other profile only) */}
+        {!isOwnProfile && (
+          <div style={{ marginBottom: '24px' }}>
+            {(() => {
+              const sharedUserIds = new Set();
+              currentUser?.joinedCommunities?.forEach(communityId => {
+                const members = communityMemberships[communityId] || [];
+                members.forEach(m => sharedUserIds.add(m.userId));
+              });
+              
+              if (sharedUserIds.has(targetId)) {
+                return (
+                  <button 
+                    onClick={() => navigate.push(`/chat/dm/${targetId}`)} 
+                    className="btn btn-primary interactive-press" 
+                    style={{ width: '100%', padding: '16px', borderRadius: '16px', fontSize: '1.05rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                  >
+                    <MessageCircle size={20} /> Message {profileUser.name.split(' ')[0]}
+                  </button>
+                );
+              } else {
+                return (
+                  <div style={{ textAlign: 'center', padding: '16px', background: 'rgba(255,255,255,0.02)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', color: 'var(--slate-400)', fontSize: '0.9rem' }}>
+                    Join a shared community to message {profileUser.name.split(' ')[0]}
+                  </div>
+                );
+              }
+            })()}
+          </div>
+        )}
+
         {/* Quick Actions (own profile only) */}
         {isOwnProfile && !isEditing && (
           <div style={{ marginBottom: '24px' }}>

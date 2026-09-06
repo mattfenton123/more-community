@@ -9,7 +9,7 @@ import { FALLBACK_IMAGES } from '../../src/lib/constants';
 import { useToast } from '../../src/components/Toast';
 
 export default function ChatIndex() {
-  const { communities, user, users, isLoading, channels, createChannel } = useAppContext();
+  const { communities, user, users, isLoading, channels, createChannel, communityMemberships } = useAppContext();
   const { directMessages, chatReadReceipts, messages } = useChat();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -287,7 +287,17 @@ export default function ChatIndex() {
               <>
                 <input type="text" placeholder="Search members..." value={userSearchTerm} onChange={e => setUserSearchTerm(e.target.value)} style={{ width: '100%', padding: '14px 16px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'var(--white)', fontSize: '1rem', marginBottom: '16px' }} />
                 <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {users.filter(u => u.id !== user?.id && (!userSearchTerm || u.name.toLowerCase().includes(userSearchTerm.toLowerCase()))).slice(0, 20).map(u => (
+                  {(() => {
+                    const sharedUserIds = new Set();
+                    user?.joinedCommunities?.forEach(communityId => {
+                      const members = communityMemberships?.[communityId] || [];
+                      members.forEach(m => sharedUserIds.add(m.userId));
+                    });
+                    return users
+                      .filter(u => u.id !== user?.id && sharedUserIds.has(u.id))
+                      .filter(u => !userSearchTerm || u.name.toLowerCase().includes(userSearchTerm.toLowerCase()))
+                      .slice(0, 20);
+                  })().map(u => (
                     <div key={u.id} onClick={() => { setShowCreateModal(false); router.push(`/chat/dm/${u.id}`); }} className="stagger-item interactive-press" style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', cursor: 'pointer' }}>
                       <img src={u.avatar} alt={u.name} style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
                       <div style={{ flex: 1 }}>
@@ -314,7 +324,16 @@ export default function ChatIndex() {
                   <>
                     <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)', marginBottom: '8px' }}>Select Members (Optional)</div>
                     <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '4px', marginBottom: '16px' }}>
-                      {users.filter(u => u.id !== user?.id).slice(0, 10).map(u => (
+                      {(() => {
+                        const sharedUserIds = new Set();
+                        user?.joinedCommunities?.forEach(communityId => {
+                          const members = communityMemberships?.[communityId] || [];
+                          members.forEach(m => sharedUserIds.add(m.userId));
+                        });
+                        return users
+                          .filter(u => u.id !== user?.id && sharedUserIds.has(u.id))
+                          .slice(0, 10);
+                      })().map(u => (
                         <label key={u.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px', cursor: 'pointer' }}>
                           <input type="checkbox" checked={selectedMembers.includes(u.id)} onChange={(e) => {
                             if (e.target.checked) setSelectedMembers([...selectedMembers, u.id]);

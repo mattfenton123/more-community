@@ -18,7 +18,7 @@ export default function Discover() {
   const [viewMode, setViewMode] = useState('list'); // 'list' or 'map'
   const [sortBy, setSortBy] = useState('trending');
   const [showSwipe, setShowSwipe] = useState(false);
-  const pills = ['All', 'For You', '🔥 Trending', '🚶 Walking', '🏃 Running', '🧘 Wellness', '⛰️ Adventure', '🤝 Volunteering', '🎨 Creative', '💼 Business'];
+  const pills = ['All', 'For You', '📍 Nearby', '🔥 Trending', '🚶 Walking', '🏃 Running', '🧘 Wellness', '⛰️ Adventure', '🤝 Volunteering', '🎨 Creative', '💼 Business'];
   const { communities, user, users, communityMemberships, joinCommunity, isLoading, events, theme, setTheme } = useAppContext();
     const { messages } = useChat();
   const { toast } = useToast();
@@ -81,18 +81,36 @@ export default function Discover() {
       list = getRecommendedCommunities();
     } else if (activePill === '🔥 Trending') {
       list = [...enrichedCommunities].sort((a, b) => b.activityScore - a.activityScore);
+    } else if (activePill === '📍 Nearby') {
+      const userLoc = (user?.location || '').toLowerCase().trim();
+      list = enrichedCommunities.filter(c => {
+        const commLoc = (c.location || '').toLowerCase();
+        return commLoc.includes(userLoc) || userLoc.includes(commLoc) || 
+               (commLoc && userLoc && commLoc.split(',')[0]?.trim() === userLoc.split(',')[0]?.trim());
+      });
     } else {
       list = enrichedCommunities.filter(c => {
         if (activePill !== 'All' && c.category !== activePill) return false;
         return true;
       });
     }
+    
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       list = list.filter(c => c.name?.toLowerCase().includes(q) || c.description?.toLowerCase().includes(q) || c.tags?.some(t => t.toLowerCase().includes(q)));
     }
+
+    // Apply sorting
+    if (sortBy === 'trending') {
+      list = list.sort((a, b) => b.activityScore - a.activityScore);
+    } else if (sortBy === 'newest') {
+      list = list.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    } else if (sortBy === 'active') {
+      list = list.sort((a, b) => b.memberCount - a.memberCount);
+    }
+
     return list;
-  }, [activePill, enrichedCommunities, searchQuery]);
+  }, [activePill, enrichedCommunities, searchQuery, user, sortBy]);
 
   const getMemberCount = (communityId) => {
     const c = enrichedCommunities.find(ec => ec.id === communityId);
@@ -186,7 +204,7 @@ export default function Discover() {
             background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
             borderRadius: '999px', padding: '12px 20px', display: 'flex', alignItems: 'center', gap: '12px', 
             color: 'var(--slate-400)', border: '1px solid rgba(255,255,255,0.1)', transition: 'all 0.3s',
-            boxShadow: '0 4px 24px rgba(0,0,0,0.2)' 
+            boxShadow: '0 4px 24px rgba(0,0,0,0.2)', marginBottom: '12px'
           }}
           onFocus={(e) => { e.currentTarget.style.borderColor = 'var(--teal-400)'; e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; }}
           onBlur={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; }}
@@ -199,12 +217,35 @@ export default function Discover() {
             onChange={(e) => setSearchQuery(e.target.value)}
             style={{ background: 'transparent', border: 'none', color: 'var(--white)', outline: 'none', flex: 1, fontSize: '0.9rem' }}
           />
-          <button
-            className="interactive-press"
-            style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--teal-500)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              style={{ background: 'none', border: 'none', color: 'var(--slate-400)', cursor: 'pointer', padding: '4px' }}
+            >
+              <X size={16} />
+            </button>
+          )}
+        </div>
+
+        {/* Sort By Dropdown */}
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '8px' }}>
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: 'var(--slate-400)',
+              fontSize: '0.8rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+              outline: 'none',
+            }}
           >
-            <ChevronsRight size={16} strokeWidth={3} color="#0f172a" />
-          </button>
+            <option value="trending" style={{ color: 'black' }}>🔥 Trending</option>
+            <option value="newest" style={{ color: 'black' }}>✨ Newest</option>
+            <option value="active" style={{ color: 'black' }}>👥 Most Active</option>
+          </select>
         </div>
       </div>
 

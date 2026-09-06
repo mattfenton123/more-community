@@ -733,7 +733,7 @@ export default function LeaderDashboard() {
           {/* Tab Navigation */}
           <div style={{ padding: '0 20px', marginBottom: '24px' }}>
             <div style={{ display: 'flex', gap: '4px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', padding: '4px', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-              {['overview', 'events', 'network', 'monetisation', 'experiences', 'social hub', 'crm', 'automations', 'members', 'settings'].map(tab => (
+              {['overview', 'analytics', 'events', 'network', 'monetisation', 'experiences', 'social hub', 'crm', 'automations', 'members', 'settings'].map(tab => (
                 <button 
                   key={tab} onClick={() => setActiveTab(tab)}
                   style={{
@@ -925,6 +925,34 @@ export default function LeaderDashboard() {
                 </div>
               </div>
             </>
+          )}
+
+          {/* ══════════════════════════════════════════════════════ */}
+          {/* TAB: ANALYTICS                                       */}
+          {/* ══════════════════════════════════════════════════════ */}
+          {activeTab === 'analytics' && (
+            <div style={{ padding: '0 20px', marginBottom: '24px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
+                <BarChart3 size={20} color="var(--teal-400)" />
+                <h2 style={{ margin: 0, fontFamily: 'var(--font-heading)', fontSize: '1.2rem', color: 'var(--white)' }}>Analytics</h2>
+              </div>
+              
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px', marginBottom: '24px' }}>
+                <StatCard value={(communityMemberships[activeCommunityId] || []).length} label="Total Members" icon={Users} color="#3b82f6" accent="#3b82f6" />
+                <StatCard value={events.filter(e => e.communityId === activeCommunityId && e.status !== 'cancelled').length} label="Total Events" icon={Calendar} color="#10b981" accent="#10b981" />
+                <StatCard value={messages.filter(m => m.communityId === activeCommunityId).length} label="Total Messages" icon={MessageCircle} color="#a78bfa" accent="#a78bfa" />
+                <StatCard value={events.filter(e => e.communityId === activeCommunityId && new Date(e.date + 'T00:00:00') >= new Date()).length} label="Upcoming" icon={TrendingUp} color="#f59e0b" accent="#f59e0b" />
+              </div>
+
+              <div className="glass-panel" style={{ padding: '20px', borderRadius: '16px' }}>
+                <h3 style={{ margin: '0 0 16px 0', fontSize: '1rem', color: 'var(--white)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Activity size={16} color="var(--teal-400)" /> Engagement Snapshot
+                </h3>
+                <p style={{ color: 'var(--slate-400)', fontSize: '0.9rem', lineHeight: 1.5, margin: 0 }}>
+                  Your community is active! Keep members engaged by posting regular updates to the Social Hub and scheduling events at least 2 weeks in advance.
+                </p>
+              </div>
+            </div>
           )}
 
           {/* ══════════════════════════════════════════════════════ */}
