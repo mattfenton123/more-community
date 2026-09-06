@@ -18,13 +18,36 @@ export async function generateMetadata({ params }) {
     };
   }
   
+  // Construct dynamic OG image URL
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://morecommunity.co.uk';
+  const ogUrl = new URL(`${baseUrl}/api/og`);
+  ogUrl.searchParams.set('title', community.name);
+  ogUrl.searchParams.set('community', 'more community.');
+  const image = community.image || community.cover_image;
+  if (image) {
+    ogUrl.searchParams.set('image', image.startsWith('http') ? image : `${baseUrl}${image}`);
+  }
+
   return {
     title: `${community.name} | more.`,
     description: community.description,
     openGraph: {
       title: `${community.name} | more.`,
       description: community.description,
-      images: [community.image || community.cover_image || 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=1200&q=80'],
+      images: [
+        {
+          url: ogUrl.toString(),
+          width: 1200,
+          height: 630,
+          alt: community.name,
+        }
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: community.name,
+      description: community.description,
+      images: [ogUrl.toString()],
     }
   };
 }

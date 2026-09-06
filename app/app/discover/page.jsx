@@ -37,23 +37,32 @@ export default function Discover() {
     });
   }, [communities, communityMemberships, events, messages]);
 
+  const calculateDistance = (loc1, loc2) => {
+    if (!loc1 || !loc2) return 50; 
+    const l1 = loc1.toLowerCase();
+    const l2 = loc2.toLowerCase();
+    if (l1 === l2) return 0;
+    if (l1.includes(l2) || l2.includes(l1)) return 5;
+    return 20;
+  };
+
   // Recommendation Engine
   const getRecommendedCommunities = () => {
-    if (!user || !user.interests) return [];
+    if (!user) return [];
     
     // 1. Find similar users based on shared interests
     const similarUsers = users.filter(u => 
       u.id !== user.id && 
-      u.interests?.some(interest => user.interests.includes(interest))
+      (u.interests || []).some(interest => (user.interests || []).includes(interest))
     );
 
     // 2. Score communities
     const scoredCommunities = communities.map(c => {
       let score = 0;
       
-      // Direct interest match (+2 points)
-      const matchesInterest = c.tags?.some(tag => user.interests.includes(tag));
-      if (matchesInterest) score += 2;
+      // Direct interest match (+3 points)
+      const matchesInterest = c.tags?.some(tag => (user.interests || []).includes(tag));
+      if (matchesInterest) score += 3;
 
       // Collaborative filtering: similar users joined (+1 point per user)
       const membershipsForCommunity = communityMemberships[c.id] || [];
@@ -62,6 +71,10 @@ export default function Discover() {
       ).length;
       
       score += similarUsersJoined;
+
+      // Location match (+4 points for proximity)
+      const dist = calculateDistance(user.location, c.location);
+      if (dist < 10) score += 4;
 
       // Bonus text match against user bio (+1 point)
       if (user.bio && c.description?.toLowerCase().includes(user.bio.toLowerCase().split(' ')[0])) {
@@ -189,14 +202,6 @@ export default function Discover() {
         <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--slate-400)' }}>Local communities in</p>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '4px 0 16px 0' }}>
           <h2 style={{ margin: 0, fontFamily: 'var(--font-heading)', fontSize: '1.4rem' }}>Tunbridge Wells, UK</h2>
-          <button onClick={() => setShowSwipe(true)} className="interactive-press" style={{ 
-            background: 'linear-gradient(135deg, var(--teal-400), var(--teal-600))', 
-            border: 'none', color: 'var(--white)', padding: '6px 14px', borderRadius: '99px', 
-            fontSize: '0.8rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px', 
-            cursor: 'pointer', boxShadow: '0 4px 16px rgba(45,212,191,0.4)', textShadow: '0 1px 2px rgba(0,0,0,0.2)' 
-          }}>
-            <Sparkles size={14} /> Find Communities
-          </button>
         </div>
         
         <div 
@@ -326,10 +331,21 @@ export default function Discover() {
             {activePill === 'For You' ? 'Recommended for You' : 'Trending near you'}
           </h2>
           
-          {activePill === 'For You' && user?.interests?.length > 0 && (
-            <div style={{ margin: '0 20px 16px', fontSize: '0.85rem', color: 'var(--teal-400)', background: 'rgba(20,184,166,0.1)', padding: '8px 12px', borderRadius: '8px', border: '1px solid rgba(20,184,166,0.2)' }}>
-              Based on your interests and similar users in Tunbridge Wells.
-            </div>
+          {activePill === 'For You' && (
+            <>
+              <div style={{ margin: '0 20px 16px', fontSize: '0.85rem', color: 'var(--teal-400)', background: 'rgba(20,184,166,0.1)', padding: '8px 12px', borderRadius: '8px', border: '1px solid rgba(20,184,166,0.2)' }}>
+                Based on your interests, location, and similar users in your area.
+              </div>
+              <SwipeDiscovery 
+                inline={true}
+                events={events.filter(e => e.status !== 'cancelled' && new Date(e.date + 'T00:00:00') >= new Date())} 
+                communities={communities} 
+                onClose={() => {}} 
+                onSave={(item) => {
+                  console.log('Saved item:', item.title);
+                }}
+              />
+            </>
           )}
           
           {isLoading ? (
@@ -457,16 +473,6 @@ export default function Discover() {
             </>
           )}
         </>
-      )}
-      {showSwipe && (
-        <SwipeDiscovery 
-          events={events} 
-          communities={communities} 
-          onClose={() => setShowSwipe(false)} 
-          onSave={(item) => {
-            // Already handled in SwipeDiscovery via toast, but could sync to backend here
-          }}
-        />
       )}
     </div>
   );

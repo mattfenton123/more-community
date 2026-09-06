@@ -3,7 +3,7 @@ import { useRouter } from 'next/navigation';
 import { X, Heart, X as XIcon, MapPin, Calendar, Sparkles, Info } from 'lucide-react';
 import { useToast } from './Toast';
 
-export default function SwipeDiscovery({ events, communities, onClose, onSave }) {
+export default function SwipeDiscovery({ events, communities, onClose, onSave, inline = false }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [offset, setOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -68,7 +68,15 @@ export default function SwipeDiscovery({ events, communities, onClose, onSave })
   };
 
   if (!currentEvent) {
-    return (
+    return inline ? (
+      <div style={{ width: '100%', maxWidth: '440px', margin: '0 auto', display: 'flex', flexDirection: 'column', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '24px', overflow: 'hidden', padding: '40px 20px', textAlign: 'center', marginBottom: '24px' }}>
+        <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(20,184,166,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+          <Sparkles size={32} color="var(--teal-400)" />
+        </div>
+        <h2 style={{ color: 'var(--white)', fontFamily: 'var(--font-heading)', fontSize: '1.5rem', marginBottom: '12px' }}>You're all caught up!</h2>
+        <p style={{ color: 'var(--slate-400)', fontSize: '0.9rem', lineHeight: 1.5 }}>We've run out of new events to show you right now. Check back later for more matches.</p>
+      </div>
+    ) : (
       <div className="modal-overlay" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '20px', zIndex: 2000 }}>
         <div style={{ height: 'calc(100dvh - 120px)', width: '100%', maxWidth: '440px', margin: '0 auto', display: 'flex', flexDirection: 'column', background: 'var(--slate-950)', borderRadius: '24px', overflow: 'hidden', position: 'relative', boxShadow: '0 24px 64px rgba(0,0,0,0.5)' }}>
           <button onClick={onClose} className="interactive-press" style={{ position: 'absolute', top: '16px', right: '16px', width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--white)', cursor: 'pointer', zIndex: 100 }}>
@@ -90,13 +98,23 @@ export default function SwipeDiscovery({ events, communities, onClose, onSave })
   const community = communities.find(c => c.id === currentEvent.communityId);
   const rotation = (offset / window.innerWidth) * 30; // Max 30 deg rotation
 
+  const wrapperStyle = inline 
+    ? { width: '100%', maxWidth: '440px', margin: '0 auto 24px', display: 'flex', flexDirection: 'column', position: 'relative' }
+    : { display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '20px', zIndex: 2000, position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)' };
+
+  const containerStyle = inline 
+    ? { height: '500px', width: '100%', display: 'flex', flexDirection: 'column', background: 'var(--slate-900)', borderRadius: '24px', overflow: 'hidden', position: 'relative', border: '1px solid rgba(255,255,255,0.06)', boxShadow: '0 12px 32px rgba(0,0,0,0.3)' }
+    : { height: 'calc(100dvh - 120px)', width: '100%', maxWidth: '440px', margin: '0 auto', display: 'flex', flexDirection: 'column', background: 'var(--slate-950)', borderRadius: '24px', overflow: 'hidden', position: 'relative', boxShadow: '0 24px 64px rgba(0,0,0,0.5)' };
+
   return (
-    <div className="modal-overlay" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '20px', zIndex: 2000 }}>
-      <div style={{ height: 'calc(100dvh - 120px)', width: '100%', maxWidth: '440px', margin: '0 auto', display: 'flex', flexDirection: 'column', background: 'var(--slate-950)', borderRadius: '24px', overflow: 'hidden', position: 'relative', boxShadow: '0 24px 64px rgba(0,0,0,0.5)' }}>
+    <div className={inline ? "" : "modal-overlay"} style={wrapperStyle}>
+      <div style={containerStyle}>
         
-        <button onClick={onClose} className="interactive-press" style={{ position: 'absolute', top: '16px', right: '16px', width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(10px)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--white)', cursor: 'pointer', zIndex: 100 }}>
-          <X size={20} />
-        </button>
+        {!inline && (
+          <button onClick={onClose} className="interactive-press" style={{ position: 'absolute', top: '16px', right: '16px', width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(10px)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--white)', cursor: 'pointer', zIndex: 100 }}>
+            <X size={20} />
+          </button>
+        )}
 
         <div style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', overflow: 'hidden' }}>
           
