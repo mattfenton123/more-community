@@ -2,23 +2,64 @@
 
 import '../src/index.css';
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, Component } from 'react';
 import { AppProvider, useAppContext } from '../src/context/AppContext';
 import { useChat, ChatProvider } from '../src/context/ChatContext';
 import { FeedProvider } from '../src/context/FeedContext';
 import { AuthProvider, useAuth } from '../src/context/AuthContext';
 import { ToastProvider } from '../src/components/Toast';
 import BottomNav from '../src/components/BottomNav';
-import { ErrorBoundary } from 'react-error-boundary';
 
-function ErrorFallback({ error }) {
-  return (
-    <div style={{ padding: '20px', color: 'red', background: '#222', minHeight: '100vh' }}>
-      <h2>Application Runtime Error</h2>
-      <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>{error.message}</pre>
-      <pre style={{ fontSize: '0.8rem', opacity: 0.8, whiteSpace: 'pre-wrap', marginTop: '10px' }}>{error.stack}</pre>
-    </div>
-  );
+// Custom Error Boundary that catches ALL errors including in providers
+class GlobalErrorBoundary extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error, errorInfo) {
+    console.error('GlobalErrorBoundary caught:', error, errorInfo);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <html lang="en">
+          <body style={{ background: '#0f172a', color: '#f8fafc', fontFamily: 'system-ui, sans-serif', padding: '40px 20px', minHeight: '100vh' }}>
+            <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+              <h1 style={{ color: '#f43f5e', fontSize: '1.5rem', marginBottom: '12px' }}>⚠️ Something went wrong</h1>
+              <p style={{ color: '#94a3b8', marginBottom: '20px' }}>The app encountered an error. Please try refreshing.</p>
+              <div style={{ background: '#1e293b', borderRadius: '12px', padding: '16px', border: '1px solid #334155' }}>
+                <pre style={{ color: '#fb7185', whiteSpace: 'pre-wrap', wordBreak: 'break-all', fontSize: '0.85rem', margin: 0 }}>
+                  {this.state.error?.message}
+                </pre>
+                <pre style={{ color: '#64748b', whiteSpace: 'pre-wrap', wordBreak: 'break-all', fontSize: '0.75rem', marginTop: '12px' }}>
+                  {this.state.error?.stack}
+                </pre>
+              </div>
+              <button 
+                onClick={() => window.location.reload()} 
+                style={{ marginTop: '20px', padding: '12px 24px', background: '#14b8a6', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '0.9rem', cursor: 'pointer' }}
+              >
+                Reload App
+              </button>
+            </div>
+          </body>
+        </html>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+function SafeBottomNav() {
+  try {
+    return <BottomNav />;
+  } catch (e) {
+    console.error('BottomNav crashed:', e);
+    return null;
+  }
 }
 
 function MainLayout({ children }) {
@@ -65,15 +106,9 @@ function MainLayout({ children }) {
       <FeedProvider user={user}>
 
       <div className="app-content" style={hideTabBar ? { paddingBottom: 0 } : {}}>
-        <ErrorBoundary FallbackComponent={ErrorFallback}>
-          {children}
-        </ErrorBoundary>
+        {children}
       </div>
-      {!hideTabBar && (
-        <ErrorBoundary FallbackComponent={ErrorFallback}>
-          <BottomNav />
-        </ErrorBoundary>
-      )}
+      {!hideTabBar && <SafeBottomNav />}
           </FeedProvider>
     </ChatProvider>
     </div>
@@ -82,6 +117,7 @@ function MainLayout({ children }) {
 
 export default function RootLayout({ children }) {
   return (
+    <GlobalErrorBoundary>
     <html lang="en">
       <head>
         <meta charSet="utf-8" />
@@ -105,5 +141,6 @@ export default function RootLayout({ children }) {
         </AuthProvider>
       </body>
     </html>
+    </GlobalErrorBoundary>
   );
 }
