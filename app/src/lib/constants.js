@@ -1,8 +1,8 @@
 export const FALLBACK_IMAGES = {
-  community: 'https://images.unsplash.com/photo-1542831371-29b0f74f9713?w=800&q=80',
-  user: 'https://images.unsplash.com/photo-1511367461989-f85a21fda167?w=400&q=80',
-  event: 'https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=800&q=80',
-  general: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=800&q=80'
+  community: 'https://images.unsplash.com/photo-1543269865-cbf427effbad?w=800&q=80',
+  user: 'https://images.unsplash.com/photo-1531384441138-2736e62e0919?w=400&q=80',
+  event: 'https://images.unsplash.com/photo-1523580494112-071dcb849be5?w=800&q=80',
+  general: 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=800&q=80'
 };
 
 export const initialExperiences = [

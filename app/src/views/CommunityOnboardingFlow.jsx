@@ -249,8 +249,8 @@ function StepVerification({ instagram, setInstagram, whatsapp, setWhatsapp }) {
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         <div className="input-group">
-          <label className="input-label input-label-icon">
-            <LinkIcon size={16} /> Instagram Handle
+          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', color: 'var(--slate-300)', fontSize: '0.9rem', fontWeight: 600 }}>
+            <LinkIcon size={16} /> Instagram Handle <span style={{ color: 'var(--slate-500)', fontWeight: 400 }}>(Optional)</span>
           </label>
           <input
             type="text"

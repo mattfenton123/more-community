@@ -8,7 +8,8 @@ const INTEREST_PILLS = [
   '🏃 Fitness', '🚶 Walking', '🧘 Wellness', '⛰️ Outdoors',
   '🤝 Volunteering', '🎨 Creative', '💼 Professional', '🎵 Music',
   '📚 Book Club', '🍳 Cooking', '🌱 Gardening', '👶 Parenting',
-  '🎓 Learning', '🎮 Gaming'
+  '🎓 Learning', '🎮 Gaming', '🎭 Theatre & Arts', '🎸 Gigs & Live Music',
+  '🍸 Singles & Social'
 ];
 
 // Background videos for each step
@@ -25,6 +26,8 @@ export default function OnboardingFlow({ onComplete }) {
   const [gender, setGender] = useState(user?.gender || '');
   const [name, setName] = useState(user?.name || '');
   const [bio, setBio] = useState('');
+  const [dob, setDob] = useState('');
+  const [location, setLocation] = useState('');
   const [interests, setInterests] = useState([]);
   const [avatarPreview, setAvatarPreview] = useState(null);
   const [avatarFile, setAvatarFile] = useState(null);
@@ -49,6 +52,15 @@ export default function OnboardingFlow({ onComplete }) {
       const name = c.name?.toLowerCase() || '';
       const desc = c.description?.toLowerCase() || '';
       if (name.includes('mum') || name.includes('women') || desc.includes('women only') || desc.includes('for mums') || desc.includes('mothers')) {
+        return false;
+      }
+    }
+    
+    // Strict filter: exclude parenting/mum/dad communities if user didn't select Parenting
+    if (!interests.some(i => i.toLowerCase().includes('parenting'))) {
+      const name = c.name?.toLowerCase() || '';
+      const desc = c.description?.toLowerCase() || '';
+      if (name.includes('mum') || name.includes('dad') || name.includes('parent') || desc.includes('parent') || desc.includes('mum') || desc.includes('dad')) {
         return false;
       }
     }
@@ -155,6 +167,8 @@ export default function OnboardingFlow({ onComplete }) {
       const updates = {
         name: name.trim(),
         bio: bio.trim(),
+        dob: dob,
+        location: location.trim(),
         interests: interests,
         affinityProfile: buildAffinityProfile(),
         avatar: avatarUrl || user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=14b8a6&color=fff`,
@@ -355,7 +369,7 @@ export default function OnboardingFlow({ onComplete }) {
           className="interactive-press"
           style={{
             width: '100px', height: '100px', borderRadius: '50%',
-            background: avatarPreview ? `url(${avatarPreview})` : 'rgba(255,255,255,0.04)',
+            background: avatarPreview ? `url("${avatarPreview}")` : 'rgba(255,255,255,0.04)',
             backgroundSize: 'cover', backgroundPosition: 'center',
             border: avatarPreview ? '3px solid var(--teal-500)' : '2px dashed rgba(255,255,255,0.15)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -410,11 +424,47 @@ export default function OnboardingFlow({ onComplete }) {
             background: 'var(--slate-800)', border: '1px solid var(--slate-700)',
             borderRadius: '12px', color: 'var(--white)', fontSize: '0.95rem',
             minHeight: '80px', resize: 'none', fontFamily: 'inherit',
-            transition: 'border-color 0.2s',
+            transition: 'border-color 0.2s', marginBottom: '16px'
           }}
           onFocus={e => e.target.style.borderColor = 'rgba(20,184,166,0.4)'}
           onBlur={e => e.target.style.borderColor = 'var(--slate-700)'}
         />
+      </div>
+
+      <div style={{ display: 'flex', gap: '12px' }}>
+        <div style={{ flex: 1 }}>
+          <label style={{ display: 'block', marginBottom: '8px', color: 'var(--slate-300)', fontSize: '0.85rem', fontWeight: 500 }}>Location</label>
+          <input
+            type="text"
+            placeholder="e.g. Tunbridge Wells"
+            value={location}
+            onChange={e => setLocation(e.target.value)}
+            style={{
+              width: '100%', padding: '14px 16px',
+              background: 'var(--slate-800)', border: '1px solid var(--slate-700)',
+              borderRadius: '12px', color: 'var(--white)', fontSize: '1rem',
+              transition: 'border-color 0.2s',
+            }}
+            onFocus={e => e.target.style.borderColor = 'rgba(20,184,166,0.4)'}
+            onBlur={e => e.target.style.borderColor = 'var(--slate-700)'}
+          />
+        </div>
+        <div style={{ flex: 1 }}>
+          <label style={{ display: 'block', marginBottom: '8px', color: 'var(--slate-300)', fontSize: '0.85rem', fontWeight: 500 }}>Date of Birth</label>
+          <input
+            type="date"
+            value={dob}
+            onChange={e => setDob(e.target.value)}
+            style={{
+              width: '100%', padding: '14px 16px',
+              background: 'var(--slate-800)', border: '1px solid var(--slate-700)',
+              borderRadius: '12px', color: 'var(--white)', fontSize: '1rem',
+              transition: 'border-color 0.2s', fontFamily: 'inherit'
+            }}
+            onFocus={e => e.target.style.borderColor = 'rgba(20,184,166,0.4)'}
+            onBlur={e => e.target.style.borderColor = 'var(--slate-700)'}
+          />
+        </div>
       </div>
     </div>,
 

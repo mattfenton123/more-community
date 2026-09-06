@@ -219,22 +219,22 @@ export default function UserProfile() {
 
         {/* Quick Stats */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginBottom: '24px' }}>
-          <div style={{ textAlign: 'center', padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.04)' }}>
+          <button onClick={() => { setActiveTab('communities'); document.getElementById('profile-tabs')?.scrollIntoView({ behavior: 'smooth' }); }} className="interactive-press" style={{ textAlign: 'center', padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.04)', cursor: 'pointer', outline: 'none' }}>
             <div style={{ fontSize: '1.3rem', fontWeight: 700, color: '#3b82f6' }}>{joinedCommunities.length}</div>
             <div style={{ fontSize: '0.65rem', color: 'var(--slate-500)', fontWeight: 600, textTransform: 'uppercase' }}>Communities</div>
-          </div>
+          </button>
           <div style={{ textAlign: 'center', padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.04)' }}>
             <div style={{ fontSize: '1.3rem', fontWeight: 700, color: 'var(--teal-400)' }}>{eventsAttended}</div>
             <div style={{ fontSize: '0.65rem', color: 'var(--slate-500)', fontWeight: 600, textTransform: 'uppercase' }}>Events</div>
           </div>
-          <div style={{ textAlign: 'center', padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.04)' }}>
+          <button onClick={() => { setActiveTab('badges'); document.getElementById('profile-tabs')?.scrollIntoView({ behavior: 'smooth' }); }} className="interactive-press" style={{ textAlign: 'center', padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.04)', cursor: 'pointer', outline: 'none' }}>
             <div style={{ fontSize: '1.3rem', fontWeight: 700, color: '#22c55e' }}>{earnedBadges.length}</div>
             <div style={{ fontSize: '0.65rem', color: 'var(--slate-500)', fontWeight: 600, textTransform: 'uppercase' }}>Badges</div>
-          </div>
+          </button>
         </div>
 
         {/* Tab Navigation */}
-        <div style={{ display: 'flex', gap: '4px', marginBottom: '20px', background: 'rgba(255,255,255,0.03)', borderRadius: '10px', padding: '3px' }}>
+        <div id="profile-tabs" style={{ display: 'flex', gap: '4px', marginBottom: '20px', background: 'rgba(255,255,255,0.03)', borderRadius: '10px', padding: '3px' }}>
           {(isOwnProfile ? ['badges', 'communities', 'earnings'] : ['badges', 'communities']).map(tab => (
             <button key={tab} onClick={() => setActiveTab(tab)} style={{
               flex: 1, padding: '8px', borderRadius: '8px', border: 'none',
