@@ -63,10 +63,10 @@ export default function SettingsScreen() {
         setNotificationsEnabled(true);
         toast.success('Notifications enabled!', 'You\'ll be notified about new messages and events');
         // Send a test notification
-        new Notification('more. community', {
+        try { new Notification('more. community', {
           body: 'Notifications are now enabled! 🎉',
           icon: '/portal/favicon.svg'
-        });
+        }); } catch(e) { /* Notification constructor not supported */ }
       } else {
         toast.error('Permission denied', 'Please enable notifications in your browser settings');
       }

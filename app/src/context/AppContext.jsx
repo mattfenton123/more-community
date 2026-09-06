@@ -424,10 +424,10 @@ export function AppProvider({ children }) {
                       if (isGoing && timeDiff > 0 && timeDiff <= 24 * 60 * 60 * 1000) {
                         const notifKey = `reminded_${e.id}`;
                         if (!localStorage.getItem(notifKey)) {
-                          new Notification(`Reminder: ${e.title} is tomorrow!`, {
+                          try { new Notification(`Reminder: ${e.title} is tomorrow!`, {
                             body: 'Get ready for your upcoming event.',
                             icon: '/portal/favicon.svg'
-                          });
+                          }); } catch(notifErr) { console.log('Notification API not supported'); }
                           localStorage.setItem(notifKey, 'true');
                         }
                       }
@@ -535,7 +535,7 @@ export function AppProvider({ children }) {
         setNotifications(prev => {
           if (prev.find(n => n.id === payload.new.id)) return prev;
           if ('Notification' in window && Notification.permission === 'granted') {
-            new Notification(payload.new.title, { body: payload.new.message, icon: '/portal/favicon.svg' });
+            try { new Notification(payload.new.title, { body: payload.new.message, icon: '/portal/favicon.svg' }); } catch(e) { /* silent */ }
           }
           return [payload.new, ...prev];
         });
