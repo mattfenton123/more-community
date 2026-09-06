@@ -196,31 +196,8 @@ export async function createEventAction(eventData, token) {
   }).select().single();
 
   if (error) {
-    console.error('Event creation failed in DB, returning mock event:', error);
-    return {
-      id: eventData.id || crypto.randomUUID(),
-      community_id: eventData.communityId,
-      title: eventData.title,
-      date: eventData.date,
-      time: eventData.time,
-      location: eventData.location,
-      image: eventData.image,
-      attendees: eventData.attendees || 0,
-      description: eventData.description || '',
-      status: eventData.status || 'published',
-      max_capacity: eventData.maxCapacity || null,
-      ticket_price: eventData.ticketPrice || 0,
-      meeting_point: eventData.meetingPoint || '',
-      itinerary: eventData.itinerary || '',
-      what_to_bring: eventData.whatToBring || '',
-      activity_level: eventData.activityLevel || 'All Levels',
-      cohost_community_ids: eventData.collabCommunityIds || [],
-      profit_share_enabled: eventData.profitShareEnabled || false,
-      profit_share_amount: eventData.profitShareAmount || 0,
-      auto_reminders_enabled: eventData.autoReminders !== false,
-      auto_feedback_enabled: eventData.autoFeedback !== false,
-      created_at: new Date().toISOString()
-    };
+    console.error('Event creation failed:', error);
+    throw new Error(error.message);
   }
   return data;
 }
@@ -415,16 +392,10 @@ export async function markNotificationReadAction(notificationId, token) {
 export async function updateUserAction(userId, updates, token) {
   await verifyUser(token, userId);
   
-  const dbUpdates = { ...updates };
-  // Remove fields that do not exist in the current Supabase schema
-  delete dbUpdates.dob;
-  delete dbUpdates.location;
-  delete dbUpdates.affinityProfile;
-  
-  const { error } = await supabaseAdmin.from('users').update(dbUpdates).eq('id', userId);
+  const { error } = await supabaseAdmin.from('users').update(updates).eq('id', userId);
   if (error) {
-    console.error('User update failed in DB, returning mock success:', error);
-    return true; // Graceful fallback
+    console.error('User update failed:', error);
+    throw new Error(error.message);
   }
   return true;
 }
