@@ -12,12 +12,7 @@ const INTEREST_PILLS = [
   '🍸 Singles & Social', '🧩 Quizzing'
 ];
 
-// Background videos for each step
-const STEP_VIDEOS = [
-  'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4', // TODO: Replace with your actual community video 1
-  'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4', // TODO: Replace with your actual community video 2
-  'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4', // TODO: Replace with your actual community video 3
-];
+
 
 export default function OnboardingFlow({ onComplete }) {
   const { authUser, signOut } = useAuth();

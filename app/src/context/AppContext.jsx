@@ -1287,7 +1287,8 @@ export function AppProvider({ children }) {
   return (
     <AppContext.Provider value={{
       user,
-      communities,
+      communities: communities.filter(c => !c.is_banned),
+      allCommunities: communities,
       events,
       messages,
       channels,

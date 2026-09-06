@@ -15,6 +15,29 @@ export default function HomeFeed() {
   const router = useRouter();
   const [expandedComments, setExpandedComments] = useState({});
   const [activeFeedTab, setActiveFeedTab] = useState('Feed');
+  const [installPrompt, setInstallPrompt] = useState(null);
+  const [showInstallBanner, setShowInstallBanner] = useState(() => typeof window !== 'undefined' && !localStorage.getItem('pwa-dismissed'));
+
+  // Capture PWA install prompt
+  useState(() => {
+    if (typeof window === 'undefined') return;
+    const handler = (e) => { e.preventDefault(); setInstallPrompt(e); };
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  });
+
+  // Location-based community recommendations
+  const nearYouCommunities = useMemo(() => {
+    if (!user?.location) return [];
+    const userLoc = user.location.toLowerCase().trim();
+    return communities.filter(c => {
+      if (user?.joinedCommunities?.includes(c.id)) return false;
+      const commLoc = (c.location || '').toLowerCase();
+      // Match by city/region substring
+      return commLoc.includes(userLoc) || userLoc.includes(commLoc) || 
+             (commLoc && userLoc && commLoc.split(',')[0]?.trim() === userLoc.split(',')[0]?.trim());
+    }).slice(0, 6);
+  }, [user, communities]);
 
   const unreadCount = notifications ? notifications.filter(n => !n.is_read).length : 0;
   const joinedCommunities = communities?.filter(c => user?.joinedCommunities?.includes(c.id)) || [];
@@ -147,6 +170,48 @@ export default function HomeFeed() {
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* Near You — Location-based recommendations */}
+      {nearYouCommunities.length > 0 && (
+        <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '12px' }}>
+            <MapPin size={15} color="var(--teal-400)" />
+            <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1rem', color: 'var(--white)', margin: 0 }}>Near You</h2>
+            <span style={{ fontSize: '0.7rem', color: 'var(--slate-500)', marginLeft: 'auto' }}>{user?.location}</span>
+          </div>
+          <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', WebkitOverflowScrolling: 'touch', paddingBottom: '4px' }}>
+            {nearYouCommunities.map(c => (
+              <div key={c.id} onClick={() => router.push(`/community/${c.id}`)} className="interactive-press"
+                style={{ flex: '0 0 140px', borderRadius: '12px', overflow: 'hidden', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', cursor: 'pointer' }}>
+                <div style={{ height: '75px', background: `url(${c.image || c.cover_image}) center/cover`, position: 'relative' }}>
+                  <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 40%, rgba(15,23,42,0.9))' }} />
+                </div>
+                <div style={{ padding: '8px 10px' }}>
+                  <div style={{ fontWeight: 700, fontSize: '0.75rem', color: 'var(--white)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.name}</div>
+                  <div style={{ fontSize: '0.65rem', color: 'var(--slate-500)', marginTop: '2px' }}>{c.members || '—'} members</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* PWA Install Banner */}
+      {installPrompt && showInstallBanner && (
+        <div style={{ margin: '0 20px 0', padding: '14px 16px', background: 'linear-gradient(135deg, rgba(20,184,166,0.12) 0%, rgba(59,130,246,0.08) 100%)', border: '1px solid rgba(20,184,166,0.2)', borderRadius: '14px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <img src="/logo.png" alt="more." style={{ width: '36px', height: '36px', borderRadius: '10px' }} className="theme-invert" />
+          <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--white)' }}>Install more.</div>
+            <div style={{ fontSize: '0.7rem', color: 'var(--slate-400)' }}>Add to your home screen for the best experience</div>
+          </div>
+          <button onClick={async () => { installPrompt.prompt(); const result = await installPrompt.userChoice; if (result.outcome === 'accepted') { setShowInstallBanner(false); localStorage.setItem('pwa-dismissed', 'true'); } }}
+            className="btn btn-primary interactive-press" style={{ padding: '8px 16px', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 700, whiteSpace: 'nowrap' }}>
+            Install
+          </button>
+          <button onClick={() => { setShowInstallBanner(false); localStorage.setItem('pwa-dismissed', 'true'); }}
+            style={{ background: 'none', border: 'none', color: 'var(--slate-500)', cursor: 'pointer', padding: '4px', fontSize: '1.1rem' }}>×</button>
         </div>
       )}
 

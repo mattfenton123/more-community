@@ -33,7 +33,7 @@ function getEngagementStatus(score) {
 }
 
 export default function MemberCRM({ communityId }) {
-  const { users, communityMemberships, events, eventRsvps, broadcastNotification } = useAppContext();
+  const { users, communityMemberships, events, eventRsvps, broadcastNotification, promoteMember } = useAppContext();
     const { messages } = useChat();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
@@ -175,18 +175,37 @@ export default function MemberCRM({ communityId }) {
                   {member.role === 'Leader' && (
                     <Star size={12} color="#f59e0b" fill="#f59e0b" />
                   )}
+                  {member.role === 'Moderator' && (
+                    <span style={{ fontSize: '0.6rem', fontWeight: 700, background: 'rgba(59,130,246,0.15)', color: '#3b82f6', padding: '2px 6px', borderRadius: '4px' }}>MOD</span>
+                  )}
                 </div>
                 <div style={{ fontSize: '0.75rem', color: 'var(--slate-500)', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
                   <Zap size={10} /> Score: {member.score}
                 </div>
               </div>
-              <div style={{
-                display: 'flex', alignItems: 'center', gap: '4px',
-                background: member.status.bg, color: member.status.color,
-                padding: '4px 10px', borderRadius: '99px', fontSize: '0.7rem', fontWeight: 700
-              }}>
-                <StatusIcon size={12} />
-                {member.status.label}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                {member.role !== 'Leader' && (
+                  <button
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      const newRole = member.role === 'Moderator' ? 'Member' : 'Moderator';
+                      try {
+                        await promoteMember(communityId, member.userId, newRole);
+                        toast.success(newRole === 'Moderator' ? 'Promoted!' : 'Demoted', `${member.user.name} is now a ${newRole}.`);
+                      } catch (err) { toast.error('Failed', 'Could not update role.'); }
+                    }}
+                    className="interactive-press"
+                    style={{ padding: '4px 8px', background: member.role === 'Moderator' ? 'rgba(239,68,68,0.08)' : 'rgba(59,130,246,0.08)', border: `1px solid ${member.role === 'Moderator' ? 'rgba(239,68,68,0.2)' : 'rgba(59,130,246,0.2)'}`, borderRadius: '6px', color: member.role === 'Moderator' ? '#ef4444' : '#3b82f6', fontSize: '0.65rem', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}
+                  >{member.role === 'Moderator' ? 'Demote' : 'Promote'}</button>
+                )}
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: '4px',
+                  background: member.status.bg, color: member.status.color,
+                  padding: '4px 10px', borderRadius: '99px', fontSize: '0.7rem', fontWeight: 700
+                }}>
+                  <StatusIcon size={12} />
+                  {member.status.label}
+                </div>
               </div>
             </div>
           );

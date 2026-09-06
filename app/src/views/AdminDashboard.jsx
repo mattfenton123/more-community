@@ -69,7 +69,7 @@ function getEngagementScore(member, events, eventRsvps, messages, communityId) {
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
-  const { user, communities, users, events, communityMemberships, eventRsvps, adminVerifyCommunity, notifications, broadcastNotification, toggleUserRole, updateCommunity } = useAppContext();
+  const { user, allCommunities: communities, users, events, communityMemberships, eventRsvps, adminVerifyCommunity, notifications, broadcastNotification, toggleUserRole, updateCommunity } = useAppContext();
     const { feedPosts } = useFeed();
     const { messages } = useChat();
   const { toast } = useToast();
