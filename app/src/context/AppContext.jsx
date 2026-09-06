@@ -5,6 +5,7 @@ import { useAuth } from './AuthContext';
 import { initialExperiences } from '../lib/constants';
 import imageCompression from 'browser-image-compression';
 import { createEventAction, joinCommunityAction, leaveCommunityAction, rsvpToEventAction, createCommunityAction, uploadImageAction, updateEventAction, updateCommunityAction, createChannelAction, markNotificationReadAction, updateUserAction, adminVerifyCommunityAction, broadcastNotificationAction, promoteMemberAction, removeMemberAction, subscribeToPushNotificationsAction, ensureLeadersNetworkAction } from '../lib/actions';
+import { Capacitor } from '@capacitor/core';
 
 const AppContext = createContext();
 
@@ -186,6 +187,52 @@ export function AppProvider({ children }) {
     user.ledCommunities.push(targetComm.id);
     if (!user.joinedCommunities.includes(targetComm.id)) user.joinedCommunities.push(targetComm.id);
   }
+
+  const [waConfig, setWaConfig] = useState(null);
+
+  // Initialize Push Notifications on Native platforms
+  useEffect(() => {
+    if (Capacitor.isNativePlatform() && user?.id) {
+      const initPush = async () => {
+        try {
+          const { PushNotifications } = await import('@capacitor/push-notifications');
+          
+          const permStatus = await PushNotifications.requestPermissions();
+          if (permStatus.receive === 'granted') {
+            await PushNotifications.register();
+          }
+
+          PushNotifications.addListener('registration', async (token) => {
+            console.log('Push registration success, token: ' + token.value);
+            // Save token to DB
+            if (session?.access_token) {
+              try {
+                await subscribeToPushNotificationsAction(user.id, token.value, session.access_token);
+              } catch (e) {
+                console.error("Failed to save push token", e);
+              }
+            }
+          });
+
+          PushNotifications.addListener('registrationError', (error) => {
+            console.error('Error on registration: ' + JSON.stringify(error));
+          });
+
+          PushNotifications.addListener('pushNotificationReceived', (notification) => {
+            console.log('Push received: ' + JSON.stringify(notification));
+          });
+
+          PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
+            console.log('Push action performed: ' + JSON.stringify(notification));
+          });
+        } catch (e) {
+          console.error("Push Notifications init failed", e);
+        }
+      };
+      
+      initPush();
+    }
+  }, [user?.id, session?.access_token]);
 
   // Load accessibility preferences from local storage and apply to DOM
   useEffect(() => {
