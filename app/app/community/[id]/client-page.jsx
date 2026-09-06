@@ -519,14 +519,18 @@ export default function CommunityProfile() {
                     <div style={{ fontSize: '0.7rem', color: 'var(--slate-500)', marginBottom: '12px' }}>Supports **bold**, *italics*, and [links](http...)</div>
                     {newPostImage && (
                       <div style={{ position: 'relative', marginTop: '8px', display: 'inline-block' }}>
-                        <img src={URL.createObjectURL(newPostImage)} alt="Preview" style={{ height: '80px', borderRadius: '8px' }} />
+                        {newPostImage.type.startsWith('video/') ? (
+                          <video src={URL.createObjectURL(newPostImage)} style={{ height: '80px', borderRadius: '8px', objectFit: 'cover' }} />
+                        ) : (
+                          <img src={URL.createObjectURL(newPostImage)} alt="Preview" style={{ height: '80px', borderRadius: '8px' }} />
+                        )}
                         <button onClick={() => setNewPostImage(null)} style={{ position: 'absolute', top: '-8px', right: '-8px', background: 'var(--slate-800)', border: 'none', color: 'var(--white)', width: '20px', height: '20px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
                       </div>
                     )}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
                       <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
                         <label style={{ cursor: 'pointer', color: 'var(--slate-400)', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem' }}>
-                          <input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => setNewPostImage(e.target.files[0])} />
+                          <input type="file" accept="image/*,video/*" style={{ display: 'none' }} onChange={e => setNewPostImage(e.target.files[0])} />
                           <ImageIcon size={16} /> Add Media
                         </label>
                         <div style={{ position: 'relative', display: 'flex' }}>
@@ -764,10 +768,13 @@ export default function CommunityProfile() {
                         );
                       }
                       
-                      // Render Single Image
-                      return (
+                      return post.media && !post.media.startsWith('{') && !post.media.startsWith('[') && (
                         <div style={{ width: '100%', background: 'var(--slate-900)' }}>
-                          <img src={mediaArr[0]} alt="Post media" style={{ width: '100%', maxHeight: '400px', objectFit: 'cover' }} />
+                          {post.media.match(/\.(mp4|mov|webm)(\?.*)?$/i) ? (
+                            <video src={post.media} controls style={{ width: '100%', maxHeight: '400px', objectFit: 'contain' }} />
+                          ) : (
+                            <img src={post.media} alt="Post media" style={{ width: '100%', maxHeight: '400px', objectFit: 'cover' }} />
+                          )}
                         </div>
                       );
                     })()}

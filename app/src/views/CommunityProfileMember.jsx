@@ -356,9 +356,19 @@ export default function CommunityProfile() {
               />
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
                 <label style={{ cursor: 'pointer', color: 'var(--slate-400)', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem' }}>
-                  <input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => setNewPostImage(e.target.files[0])} />
+                  <input type="file" accept="image/*,video/*" style={{ display: 'none' }} onChange={e => setNewPostImage(e.target.files[0])} />
                   <ImageIcon size={16} /> Add Media
                 </label>
+                {newPostImage && (
+                  <div style={{ position: 'relative', marginTop: '8px', display: 'inline-block' }}>
+                    {newPostImage.type.startsWith('video/') ? (
+                      <video src={URL.createObjectURL(newPostImage)} style={{ height: '40px', borderRadius: '4px', objectFit: 'cover' }} />
+                    ) : (
+                      <img src={URL.createObjectURL(newPostImage)} alt="Preview" style={{ height: '40px', borderRadius: '4px' }} />
+                    )}
+                    <button onClick={(e) => { e.preventDefault(); setNewPostImage(null); }} style={{ position: 'absolute', top: '-8px', right: '-8px', background: 'var(--slate-800)', border: 'none', color: 'var(--white)', width: '20px', height: '20px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
+                  </div>
+                )}
                 <button type="submit" disabled={!newPostText.trim() && !newPostImage} className="btn btn-primary interactive-press" style={{ padding: '8px 20px', borderRadius: '20px', fontSize: '0.9rem', fontWeight: 600 }}>Post</button>
               </div>
             </form>
@@ -431,7 +441,11 @@ export default function CommunityProfile() {
 
                     {post.media && !post.media.startsWith('{') && !post.media.startsWith('[') && (
                       <div style={{ width: '100%', background: 'var(--slate-900)' }}>
-                        <img src={post.media} alt="Post media" style={{ width: '100%', maxHeight: '400px', objectFit: 'cover' }} />
+                        {post.media.match(/\.(mp4|mov|webm)(\?.*)?$/i) ? (
+                          <video src={post.media} controls style={{ width: '100%', maxHeight: '400px', objectFit: 'contain' }} />
+                        ) : (
+                          <img src={post.media} alt="Post media" style={{ width: '100%', maxHeight: '400px', objectFit: 'cover' }} />
+                        )}
                       </div>
                     )}
 

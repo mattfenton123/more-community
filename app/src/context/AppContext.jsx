@@ -1105,7 +1105,15 @@ export function AppProvider({ children }) {
 
   const uploadImage = async (file) => {
     try {
-      // Compress the image before uploading
+      if (!file) throw new Error("No file provided");
+
+      // 50MB limit check
+      const maxSizeInBytes = 50 * 1024 * 1024;
+      if (file.size > maxSizeInBytes) {
+        throw new Error("File exceeds the 50MB limit. Please choose a smaller file.");
+      }
+
+      // Compress the image before uploading (Skip for videos)
       const options = {
         maxSizeMB: 0.8,
         maxWidthOrHeight: 1200,
@@ -1136,23 +1144,25 @@ export function AppProvider({ children }) {
         }
       }
 
-      let compressedFile = fileToCompress;
+      let finalFile = fileToCompress;
       if (fileToCompress.type.startsWith('image/')) {
         try {
           const result = await imageCompression(fileToCompress, options);
           
           // Rename the file to .webp to ensure the server action gets the correct extension
           const newName = fileToCompress.name.replace(/\.[^/.]+$/, "") + ".webp";
-          compressedFile = new File([result], newName, { type: 'image/webp' });
+          finalFile = new File([result], newName, { type: 'image/webp' });
           
-          console.log(`Compressed image from ${fileToCompress.size / 1024}KB to ${compressedFile.size / 1024}KB`);
+          console.log(`Compressed image from ${fileToCompress.size / 1024}KB to ${finalFile.size / 1024}KB`);
         } catch (error) {
           console.error("Compression failed, using original file", error);
         }
+      } else if (fileToCompress.type.startsWith('video/')) {
+        console.log(`Uploading raw video: ${finalFile.size / 1024 / 1024} MB`);
       }
 
       const formData = new FormData();
-      formData.append('file', compressedFile);
+      formData.append('file', finalFile);
       formData.append('userId', user.id);
       
       const sessionResponse = await supabase.auth.getSession();

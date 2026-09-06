@@ -475,7 +475,12 @@ export default function Chat() {
 
                       {msgImages.length > 0 && (
                         <div style={{ display: 'grid', gridTemplateColumns: msgImages.length > 1 ? '1fr 1fr' : '1fr', gap: '4px', borderRadius: '8px', overflow: 'hidden' }}>
-                          {msgImages.map((img, i) => <img key={i} src={img} alt="Attachment" style={{ width: '100%', height: msgImages.length > 1 ? '120px' : 'auto', maxHeight: '250px', objectFit: 'cover' }} />)}
+                          {msgImages.map((img, i) => {
+                            if (img.match(/\.(mp4|mov|webm)(\?.*)?$/i)) {
+                              return <video key={i} src={img} controls style={{ width: '100%', height: msgImages.length > 1 ? '120px' : 'auto', maxHeight: '250px', objectFit: 'contain', background: 'black' }} />;
+                            }
+                            return <img key={i} src={img} alt="Attachment" style={{ width: '100%', height: msgImages.length > 1 ? '120px' : 'auto', maxHeight: '250px', objectFit: 'cover' }} />;
+                          })}
                         </div>
                       )}
                       
@@ -526,7 +531,7 @@ export default function Chat() {
             </div>
           )}
           <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-            <input type="file" accept="image/*" multiple ref={fileInputRef} onChange={e => {
+            <input type="file" accept="image/*,video/*" multiple ref={fileInputRef} onChange={e => {
               const files = Array.from(e.target.files);
               setImageFiles(prev => [...prev, ...files]);
             }} style={{ display: 'none' }} />

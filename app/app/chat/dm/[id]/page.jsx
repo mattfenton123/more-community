@@ -100,7 +100,13 @@ export default function DirectMessage() {
                 background: isOwn ? 'var(--teal-600)' : 'var(--slate-800)',
                 border: isOwn ? 'none' : '1px solid var(--slate-700)',
               }}>
-                {msg.image && <img src={msg.image} alt="" style={{ maxWidth: '100%', borderRadius: '8px', marginBottom: msg.text ? '8px' : 0 }} />}
+                {msg.image && (
+                  msg.image.match(/\.(mp4|mov|webm)(\?.*)?$/i) ? (
+                    <video src={msg.image} controls style={{ maxWidth: '100%', borderRadius: '8px', marginBottom: msg.text ? '8px' : 0, background: 'black' }} />
+                  ) : (
+                    <img src={msg.image} alt="" style={{ maxWidth: '100%', borderRadius: '8px', marginBottom: msg.text ? '8px' : 0 }} />
+                  )
+                )}
                 {msg.text && <div style={{ color: isOwn ? 'white' : 'var(--slate-200)', fontSize: '0.9rem', lineHeight: 1.5, wordBreak: 'break-word' }}>{msg.text}</div>}
                 <div style={{ fontSize: '0.65rem', color: 'var(--slate-600)', marginTop: '4px', textAlign: isOwn ? 'right' : 'left' }}>
                   {msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
@@ -114,7 +120,7 @@ export default function DirectMessage() {
 
       {/* Input */}
       <div style={{ padding: '12px 16px', borderTop: '1px solid var(--slate-800)', background: 'var(--slate-900)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <input type="file" ref={fileInputRef} accept="image/*" style={{ display: 'none' }} onChange={(e) => setImageFile(e.target.files[0])} />
+        <input type="file" ref={fileInputRef} accept="image/*,video/*" style={{ display: 'none' }} onChange={(e) => setImageFile(e.target.files[0])} />
         <button onClick={() => fileInputRef.current?.click()} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '8px' }}>
           <ImageIcon size={20} color="var(--slate-400)" />
         </button>
