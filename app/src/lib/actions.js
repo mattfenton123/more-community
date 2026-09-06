@@ -191,8 +191,7 @@ export async function createEventAction(eventData, token) {
     cohost_community_ids: eventData.collabCommunityIds || [],
     profit_share_enabled: eventData.profitShareEnabled || false,
     profit_share_amount: eventData.profitShareAmount || 0,
-    auto_reminders_enabled: eventData.autoReminders !== false,
-    auto_feedback_enabled: eventData.autoFeedback !== false
+    auto_reminders_enabled: eventData.autoReminders !== false
   }).select().single();
 
   if (error) {
