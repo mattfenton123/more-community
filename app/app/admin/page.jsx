@@ -10,6 +10,10 @@ import { useFeed } from '../../src/context/FeedContext';
 import { useChat } from '../../src/context/ChatContext';
 import { useToast } from '../../src/components/Toast';
 import { useRouter as useNavigate, useSearchParams } from 'next/navigation';
+import LeaderCRM from '../../src/components/admin/LeaderCRM';
+import OperationsMap from '../../src/components/admin/OperationsMap';
+import Commercials from '../../src/components/admin/Commercials';
+import ModerationQueue from '../../src/components/admin/ModerationQueue';
 
 // ─── Shared Components ────────────────────────────────────
 const StatCard = ({ value, label, icon: Icon, color, accent }) => (
@@ -259,10 +263,13 @@ export default function AdminDashboard() {
   // ═════════════════════════════════════════════════════════
   const tabs = [
     { key: 'overview', label: 'Overview', icon: BarChart3 },
+    { key: 'crm', label: 'Leader CRM', icon: UserCheck },
+    { key: 'map', label: 'Ops Map', icon: Map },
     { key: 'communities', label: 'Communities', icon: Globe },
     { key: 'users', label: 'Users', icon: Users },
     { key: 'events', label: 'Events', icon: Calendar },
-    { key: 'revenue', label: 'Revenue', icon: DollarSign },
+    { key: 'revenue', label: 'Commercials', icon: DollarSign },
+    { key: 'moderation', label: 'Moderation', icon: Shield },
     { key: 'content', label: 'Content', icon: MessageCircle },
     { key: 'config', label: 'Config', icon: Settings },
   ];
@@ -365,6 +372,24 @@ export default function AdminDashboard() {
                 ))}
               </div>
             </div>
+
+            {/* Health Interventions */}
+            {platformStats.communityHealth.filter(c => c.health === 'dormant').length > 0 && (
+              <div>
+                <div style={{ fontSize: '0.7rem', fontWeight: 600, color: '#ef4444', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <AlertTriangle size={12} /> Dormant Communities Action Required
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  {platformStats.communityHealth.filter(c => c.health === 'dormant').map(c => (
+                    <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px', background: 'rgba(239,68,68,0.05)', borderRadius: '10px', border: '1px solid rgba(239,68,68,0.1)' }}>
+                      <span style={{ flex: 1, fontSize: '0.85rem', color: 'var(--white)', fontWeight: 500 }}>{c.name}</span>
+                      <a href={`mailto:?subject=Checking in on ${c.name}&body=Hi there, we noticed it's been a while since your last event...`} className="btn interactive-press" style={{ padding: '4px 10px', background: 'rgba(239,68,68,0.1)', color: '#ef4444', borderRadius: '6px', fontSize: '0.75rem', textDecoration: 'none' }}>Email Leader</a>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
           </div>
         )}
 
@@ -682,55 +707,10 @@ export default function AdminDashboard() {
         {/* ═══════════════════════════════════════════════════ */}
         {/* TAB 5: REVENUE                                     */}
         {/* ═══════════════════════════════════════════════════ */}
-        {activeTab === 'revenue' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-              <StatCard value={`£${platformStats.totalRevenue}`} label="All-Time Revenue" icon={DollarSign} color="#f59e0b" accent="#f59e0b" />
-              <StatCard value={`£${platformStats.monthRevenue}`} label="This Month" icon={TrendingUp} color="#22c55e" accent="#22c55e" />
-            </div>
-
-            {/* Revenue by Community */}
-            <div>
-              <div style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--slate-500)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '10px' }}>Revenue by Community</div>
-              {revenueByComm.length > 0 ? revenueByComm.map(c => (
-                <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.04)', marginBottom: '8px' }}>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.9rem' }}>{c.name}</div>
-                    <div style={{ fontSize: '0.7rem', color: 'var(--slate-500)' }}>{c.cEvents} events • {c.members} members</div>
-                  </div>
-                  <div style={{ fontWeight: 700, color: '#f59e0b', fontSize: '1.1rem' }}>£{c.cRevenue}</div>
-                </div>
-              )) : (
-                <div style={{ padding: '24px', textAlign: 'center', color: 'var(--slate-500)', fontSize: '0.85rem' }}>No revenue recorded yet. Communities need paid events to generate revenue.</div>
-              )}
-            </div>
-
-            {/* Subscription Communities */}
-            <div>
-              <div style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--slate-500)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '10px' }}>Paid Subscriptions</div>
-              {communities.filter(c => (c.subscription_price || c.subscriptionPrice || 0) > 0).length > 0 ? (
-                communities.filter(c => (c.subscription_price || c.subscriptionPrice || 0) > 0).map(c => (
-                  <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: 'rgba(245,158,11,0.04)', borderRadius: '10px', border: '1px solid rgba(245,158,11,0.1)', marginBottom: '8px' }}>
-                    <Crown size={16} color="#f59e0b" />
-                    <span style={{ flex: 1, fontWeight: 500, color: 'var(--white)', fontSize: '0.9rem' }}>{c.name}</span>
-                    <span style={{ fontWeight: 700, color: '#f59e0b' }}>£{c.subscription_price || c.subscriptionPrice}/mo</span>
-                  </div>
-                ))
-              ) : (
-                <div style={{ padding: '20px', textAlign: 'center', color: 'var(--slate-500)', fontSize: '0.8rem', background: 'rgba(255,255,255,0.02)', borderRadius: '10px', border: '1px dashed rgba(255,255,255,0.08)' }}>No communities have subscriptions set up yet.</div>
-              )}
-            </div>
-
-            {/* Payout Placeholder */}
-            <div className="glass-panel" style={{ padding: '18px', borderStyle: 'dashed' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                <DollarSign size={14} color="var(--slate-500)" />
-                <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--slate-400)' }}>Stripe Payouts</span>
-              </div>
-              <p style={{ fontSize: '0.75rem', color: 'var(--slate-500)', margin: 0, lineHeight: 1.5 }}>Connect your Stripe account to manage payouts. Revenue from event tickets and subscriptions will be processed automatically.</p>
-            </div>
-          </div>
-        )}
+        {activeTab === 'crm' && <LeaderCRM toast={toast} />}
+        {activeTab === 'map' && <OperationsMap platformStats={platformStats} />}
+        {activeTab === 'revenue' && <Commercials platformStats={platformStats} handleExportCSV={handleExportCSV} revenueByComm={revenueByComm} />}
+        {activeTab === 'moderation' && <ModerationQueue />}
 
         {/* ═══════════════════════════════════════════════════ */}
         {/* TAB 6: CONTENT                                     */}

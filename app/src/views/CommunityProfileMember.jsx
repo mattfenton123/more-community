@@ -667,7 +667,7 @@ export default function CommunityProfile() {
                 <Briefcase size={18} /> Pitch a Service or Perk
               </button>
             )}
-          </div>
+          </>
         )}
 
         {/* ===== POLLS TAB ===== */}
