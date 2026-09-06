@@ -7,7 +7,7 @@ import { useFeed } from '../../../src/context/FeedContext';
 import { useToast } from '../../../src/components/Toast';
 import PhotoGallery from '../../../src/components/PhotoGallery';
 import ReactMarkdown from 'react-markdown';
-import SwipeDiscovery from '../../src/components/SwipeDiscovery';
+import SwipeDiscovery from '../../../src/components/SwipeDiscovery';
 import MemberDirectory from '../../../src/components/MemberDirectory';
 import InlineComments from '../../../src/components/InlineComments';
 import ExperiencesCatalog from '../../../src/components/ExperiencesCatalog';
