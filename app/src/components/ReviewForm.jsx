@@ -36,9 +36,13 @@ export default function ReviewForm({ communityId, onClose }) {
         created_at: new Date().toISOString()
       });
 
-      // Virality Mechanic: Auto-post 5-star reviews to the feed
+      // Virality Mechanic: Auto-post 5-star reviews to the feed (non-blocking)
       if (rating === 5) {
-        await createFeedPost(communityId, `⭐️⭐️⭐️⭐️⭐️\n\nJust left a 5-star review: "${content}"`);
+        try {
+          await createFeedPost(communityId, `⭐️⭐️⭐️⭐️⭐️\n\nJust left a 5-star review: "${content}"`);
+        } catch (feedErr) {
+          console.warn('Could not auto-post review to feed:', feedErr);
+        }
       }
 
       toast.success('Review published!', 'Thank you for your feedback.');

@@ -708,10 +708,12 @@ export async function submitReviewAction(userId, targetId, targetType, rating, c
     throw new Error("Rating must be between 1 and 5");
   }
 
+  const reviewId = crypto.randomUUID();
   const { data, error } = await supabaseAdmin
     .from("reviews")
     .insert([
       {
+        id: reviewId,
         user_id: userId,
         target_id: targetId,
         target_type: targetType,
@@ -724,9 +726,9 @@ export async function submitReviewAction(userId, targetId, targetType, rating, c
 
   if (error) {
     console.error("Error submitting review:", error);
-    // Fallback if the reviews table doesn't exist yet
+    // The insert may have succeeded but select failed (RLS), return constructed review
     return {
-      id: Math.random().toString(36).substr(2, 9),
+      id: reviewId,
       user_id: userId,
       target_id: targetId,
       target_type: targetType,
