@@ -11,7 +11,8 @@ import { useChat } from '../../src/context/ChatContext';
 import { useToast } from '../../src/components/Toast';
 import { useRouter as useNavigate, useSearchParams } from 'next/navigation';
 import LeaderCRM from '../../src/components/admin/LeaderCRM';
-import OperationsMap from '../../src/components/admin/OperationsMap';
+import dynamic from 'next/dynamic';
+const OperationsMap = dynamic(() => import('../../src/components/admin/OperationsMap'), { ssr: false });
 import Commercials from '../../src/components/admin/Commercials';
 import ModerationQueue from '../../src/components/admin/ModerationQueue';
 
