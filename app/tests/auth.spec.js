@@ -22,6 +22,6 @@ test.describe('Authentication', () => {
     }
 
     // Verify we are logged in by checking for a user-specific element
-    await expect(page.locator('text=Good morning')).toBeVisible();
+    await expect(page.locator('text=/Good (morning|afternoon|evening)/i')).toBeVisible();
   });
 });

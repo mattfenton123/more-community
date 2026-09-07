@@ -115,7 +115,7 @@ export default function HomeFeed() {
       <div style={{ padding: '16px 20px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', background: 'linear-gradient(to bottom, var(--slate-900), var(--slate-950))' }}>
         <div>
           <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.8rem', fontWeight: 800, color: 'var(--white)', margin: '0 0 4px 0' }}>
-            Good morning, {user?.name?.split(' ')[0] || 'there'}!
+            {new Date().getHours() < 12 ? 'Good morning' : new Date().getHours() < 18 ? 'Good afternoon' : 'Good evening'}, {user?.name?.split(' ')[0] || 'there'}!
           </h1>
           <p style={{ color: 'var(--slate-400)', fontSize: '0.9rem', margin: 0 }}>
             {todayEvents.length > 0 
