@@ -115,7 +115,7 @@ export default function UserProfile() {
   ];
 
   return (
-    <div className="view-profile" style={{ paddingBottom: '80px', overflowY: 'auto', height: '100%', background: 'var(--slate-950)' }}>
+    <div className="view-profile" style={{ paddingBottom: '100px', minHeight: '100dvh', background: 'var(--slate-950)' }}>
       <AppHeader 
         title={isOwnProfile ? "Profile" : profileUser?.name} 
         showBack={true}

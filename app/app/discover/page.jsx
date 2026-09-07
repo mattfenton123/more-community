@@ -18,8 +18,8 @@ export default function Discover() {
   const [viewMode, setViewMode] = useState('list'); // 'list' or 'map'
   const [sortBy, setSortBy] = useState('trending');
   const [showSwipe, setShowSwipe] = useState(false);
-  const pills = ['All', 'For You', '📍 Nearby', '🔥 Trending', '🚶 Walking', '🏃 Running', '🧘 Wellness', '⛰️ Adventure', '🤝 Volunteering', '🎨 Creative', '💼 Business'];
-  const { communities, user, users, communityMemberships, joinCommunity, isLoading, events, theme, setTheme } = useAppContext();
+  const pills = ['All', 'For You', '❤️ Saved', '📍 Nearby', '🔥 Trending', '🚶 Walking', '🏃 Running', '🧘 Wellness', '⛰️ Adventure', '🤝 Volunteering', '🎨 Creative', '💼 Business'];
+  const { communities, user, users, communityMemberships, joinCommunity, isLoading, events, theme, setTheme, saveItem, savedItems, unsaveItem } = useAppContext();
     const { messages } = useChat();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -338,14 +338,46 @@ export default function Discover() {
               </div>
               <SwipeDiscovery 
                 inline={true}
-                events={events.filter(e => e.status !== 'cancelled' && new Date(e.date + 'T00:00:00') >= new Date())} 
+                events={events.filter(e => e.status !== 'cancelled' && new Date(e.date + 'T00:00:00') >= new Date() && !savedItems.some(si => si.id === e.id))} 
                 communities={communities} 
                 onClose={() => {}} 
                 onSave={(item) => {
-                  console.log('Saved item:', item.title);
+                  saveItem(item);
+                  toast.success('Saved!', 'Added to your ❤️ Saved list.');
                 }}
               />
             </>
+          )}
+
+          {activePill === '❤️ Saved' && (
+            <div style={{ padding: '0 20px 24px' }}>
+              {savedItems.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--slate-400)' }}>
+                  <Heart size={48} color="var(--slate-700)" style={{ marginBottom: '16px' }} />
+                  <h3 style={{ fontFamily: 'var(--font-heading)', color: 'var(--white)', marginBottom: '8px' }}>No saved events</h3>
+                  <p style={{ fontSize: '0.9rem' }}>Swipe right on the "For You" tab to save events here.</p>
+                </div>
+              ) : (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '16px' }}>
+                  {savedItems.map(item => {
+                    const community = communities.find(c => c.id === item.communityId);
+                    return (
+                      <div key={item.id} className="interactive-press" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', overflow: 'hidden', display: 'flex', gap: '12px', cursor: 'pointer' }} onClick={() => navigate.push(`/events/${item.id}`)}>
+                        <img src={item.image || community?.image} alt={item.title} style={{ width: '100px', height: '100%', objectFit: 'cover' }} />
+                        <div style={{ padding: '12px', flex: 1 }}>
+                          <div style={{ color: 'var(--teal-400)', fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>{community?.name}</div>
+                          <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '1rem', lineHeight: 1.2, marginBottom: '6px' }}>{item.title}</div>
+                          <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)', display: 'flex', alignItems: 'center', gap: '4px' }}><Calendar size={12} /> {item.date}</div>
+                        </div>
+                        <div style={{ padding: '12px' }}>
+                          <button onClick={(e) => { e.stopPropagation(); unsaveItem(item.id); }} style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer' }}><Heart size={20} fill="#ef4444" /></button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           )}
           
           {isLoading ? (

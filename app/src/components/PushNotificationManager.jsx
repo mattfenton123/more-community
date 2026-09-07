@@ -100,7 +100,7 @@ export default function PushNotificationManager() {
         </div>
       </div>
       
-      {permission !== 'granted' && (
+      {permission !== 'granted' ? (
         <button 
           onClick={subscribeToNotifications}
           disabled={isSubscribing}
@@ -108,6 +108,14 @@ export default function PushNotificationManager() {
           style={{ padding: '8px 16px', background: 'var(--white)', color: 'var(--slate-950)', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}
         >
           {isSubscribing ? <><Loader2 size={16} className="spin" /> Enabling</> : 'Enable'}
+        </button>
+      ) : (
+        <button 
+          onClick={() => toast.info('To disable notifications, please click the lock icon in your browser address bar and change the site settings.')}
+          className="btn interactive-press"
+          style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.1)', color: 'var(--slate-300)', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}
+        >
+          Manage
         </button>
       )}
     </div>

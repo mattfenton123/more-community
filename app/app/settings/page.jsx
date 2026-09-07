@@ -231,7 +231,7 @@ export default function SettingsScreen() {
         <section>
           <h3 style={{ color: 'var(--slate-400)', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px', paddingLeft: '4px' }}>About & Legal</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-            <MenuItem icon={<Info size={20} />} label="About more." color="#6366f1" onClick={() => toast.info('more. v1.0.0', 'Built with ❤️ in Tunbridge Wells')} />
+            <MenuItem icon={<Info size={20} />} label="About more." color="#6366f1" onClick={() => navigate.push('/legal/about')} />
             <MenuItem icon={<Shield size={20} />} label="Terms of Use" color="#a78bfa" onClick={() => navigate.push('/legal/terms')} />
             <MenuItem icon={<Shield size={20} />} label="Privacy Policy" color="#3b82f6" onClick={() => navigate.push('/legal/privacy')} />
             <MenuItem icon={<Shield size={20} />} label="Cookies Policy" color="#f59e0b" onClick={() => navigate.push('/legal/cookies')} />
