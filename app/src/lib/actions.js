@@ -41,7 +41,8 @@ export async function sendMessageAction(messageData, token) {
     author_id: messageData.authorId,
     text: messageData.text,
     timestamp: new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),
-    image: messageData.image || null
+    image: messageData.image || null,
+    parent_id: messageData.parentId || null
   }).select().single();
   
   if (error) throw new Error(error.message);
@@ -460,10 +461,10 @@ export async function removeMemberAction(communityId, memberId, token) {
 
 
 
-export async function sendDirectMessageAction(senderId, receiverId, text, image, token) {
+export async function sendDirectMessageAction(senderId, receiverId, text, image, parentId, token) {
   await verifyUser(token, senderId);
   const { data, error } = await supabaseAdmin.from('direct_messages').insert([{
-    sender_id: senderId, receiver_id: receiverId, text, image
+    sender_id: senderId, receiver_id: receiverId, text, image, parent_id: parentId || null
   }]).select().single();
   
   if (error) throw new Error(error.message);
@@ -758,6 +759,37 @@ export async function banCommunityAction(communityId, token) {
 export async function unbanCommunityAction(communityId, token) {
   await verifyUser(token);
   const { error } = await supabaseAdmin.from('communities').update({ is_banned: false }).eq('id', communityId);
+  if (error) throw new Error(error.message);
+  return true;
+}
+
+export async function addReactionAction(messageId, isDirectMessage, emoji, userId, token) {
+  await verifyUser(token, userId);
+  const table = isDirectMessage ? 'direct_message_reactions' : 'message_reactions';
+  
+  const { data, error } = await supabaseAdmin.from(table).insert({
+    message_id: messageId,
+    user_id: userId,
+    emoji: emoji
+  }).select().single();
+  
+  if (error) {
+    if (error.code === '23505') return { success: true }; // already reacted
+    throw new Error(error.message);
+  }
+  return data;
+}
+
+export async function removeReactionAction(messageId, isDirectMessage, emoji, userId, token) {
+  await verifyUser(token, userId);
+  const table = isDirectMessage ? 'direct_message_reactions' : 'message_reactions';
+  
+  const { error } = await supabaseAdmin.from(table)
+    .delete()
+    .eq('message_id', messageId)
+    .eq('user_id', userId)
+    .eq('emoji', emoji);
+    
   if (error) throw new Error(error.message);
   return true;
 }

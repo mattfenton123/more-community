@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabaseClient';
 import { useAuth } from './AuthContext';
 import { useAppContext } from './AppContext';
 import { useToast } from '../components/Toast';
-import { sendMessageAction, sendDirectMessageAction, updateMessageAction } from '../lib/actions';
+import { sendMessageAction, sendDirectMessageAction, updateMessageAction, addReactionAction, removeReactionAction } from '../lib/actions';
 
 const ChatContext = createContext({});
 
@@ -31,6 +31,14 @@ export function ChatProvider({ children }) {
           supabase.from('chat_read_receipts').select('*').eq('user_id', authUser.id),
         ]);
 
+        const msgIds = msgRes.data ? msgRes.data.map(m => m.id) : [];
+        const dmIds = dmRes.data ? dmRes.data.map(m => m.id) : [];
+
+        const [msgReactRes, dmReactRes] = await Promise.all([
+          msgIds.length > 0 ? supabase.from('message_reactions').select('*').in('message_id', msgIds) : { data: [] },
+          dmIds.length > 0 ? supabase.from('direct_message_reactions').select('*').in('message_id', dmIds) : { data: [] }
+        ]);
+
         if (msgRes.data) {
           setMessages(msgRes.data.reverse().map(msg => ({
             id: msg.id,
@@ -40,6 +48,8 @@ export function ChatProvider({ children }) {
             text: msg.text,
             image: msg.image,
             createdAt: msg.created_at,
+            parentId: msg.parent_id || null,
+            reactions: msgReactRes.data ? msgReactRes.data.filter(r => r.message_id === msg.id) : []
           })));
         }
 
@@ -50,7 +60,9 @@ export function ChatProvider({ children }) {
             receiverId: dm.receiver_id,
             text: dm.text,
             image: dm.image,
-            createdAt: dm.created_at
+            createdAt: dm.created_at,
+            parentId: dm.parent_id || null,
+            reactions: dmReactRes.data ? dmReactRes.data.filter(r => r.message_id === dm.id) : []
           })));
         }
 
@@ -79,6 +91,8 @@ export function ChatProvider({ children }) {
             text: payload.new.text,
             image: payload.new.image,
             createdAt: payload.new.created_at,
+            parentId: payload.new.parent_id || null,
+            reactions: []
           }];
         });
       }).subscribe();
@@ -93,9 +107,27 @@ export function ChatProvider({ children }) {
             receiverId: payload.new.receiver_id,
             text: payload.new.text,
             image: payload.new.image,
-            createdAt: payload.new.created_at
+            createdAt: payload.new.created_at,
+            parentId: payload.new.parent_id || null,
+            reactions: []
           }];
         });
+      }).subscribe();
+
+    const subMsgReactions = supabase.channel('chat:message_reactions')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'message_reactions' }, payload => {
+        setMessages(prev => prev.map(m => m.id === payload.new.message_id ? { ...m, reactions: [...(m.reactions || []), payload.new] } : m));
+      })
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'message_reactions' }, payload => {
+        setMessages(prev => prev.map(m => m.id === payload.old.message_id ? { ...m, reactions: (m.reactions || []).filter(r => r.id !== payload.old.id) } : m));
+      }).subscribe();
+
+    const subDMReactions = supabase.channel('chat:dm_reactions')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'direct_message_reactions' }, payload => {
+        setDirectMessages(prev => prev.map(m => m.id === payload.new.message_id ? { ...m, reactions: [...(m.reactions || []), payload.new] } : m));
+      })
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'direct_message_reactions' }, payload => {
+        setDirectMessages(prev => prev.map(m => m.id === payload.old.message_id ? { ...m, reactions: (m.reactions || []).filter(r => r.id !== payload.old.id) } : m));
       }).subscribe();
       
     const subReads = supabase.channel('chat:read_receipts')
@@ -112,14 +144,16 @@ export function ChatProvider({ children }) {
     return () => {
       supabase.removeChannel(subMessages);
       supabase.removeChannel(subDMs);
+      supabase.removeChannel(subMsgReactions);
+      supabase.removeChannel(subDMReactions);
       supabase.removeChannel(subReads);
     };
   }, [authUser, user]);
 
-  const sendMessage = async (communityId, channel, text, image = '') => {
+  const sendMessage = async (communityId, channel, text, image = '', parentId = null) => {
     if (!user.id) return;
     const tempId = 'temp-' + Date.now();
-    const newMessage = { id: tempId, communityId, channel, senderId: user.id, text, image, createdAt: new Date().toISOString() };
+    const newMessage = { id: tempId, communityId, channel, senderId: user.id, text, image, createdAt: new Date().toISOString(), parentId, reactions: [] };
     setMessages(prev => [...prev, newMessage]);
 
     try {
@@ -131,12 +165,13 @@ export function ChatProvider({ children }) {
         channel,
         authorId: user.id,
         text,
-        image
+        image,
+        parentId
       }, token);
       
       setMessages(prev => {
         if (prev.some(m => m.id === data.id && m.id !== tempId)) return prev.filter(m => m.id !== tempId);
-        return prev.map(m => m.id === tempId ? { id: data.id, communityId: data.community_id, channel: data.channel, senderId: data.author_id, text: data.text, image: data.image, createdAt: data.created_at } : m);
+        return prev.map(m => m.id === tempId ? { id: data.id, communityId: data.community_id, channel: data.channel, senderId: data.author_id, text: data.text, image: data.image, createdAt: data.created_at, parentId: data.parent_id || null, reactions: [] } : m);
       });
       markChatRead(communityId, channel);
     } catch (err) {
@@ -146,20 +181,20 @@ export function ChatProvider({ children }) {
     }
   };
 
-  const sendDirectMessage = async (receiverId, text, image) => {
+  const sendDirectMessage = async (receiverId, text, image, parentId = null) => {
     if (!user.id) return;
     const tempId = 'temp-' + Date.now();
-    const newMessage = { id: tempId, senderId: user.id, receiverId, text, image, createdAt: new Date().toISOString() };
+    const newMessage = { id: tempId, senderId: user.id, receiverId, text, image, createdAt: new Date().toISOString(), parentId, reactions: [] };
     setDirectMessages(prev => [...prev, newMessage]);
 
     try {
       const sessionResponse = await supabase.auth.getSession();
       const token = sessionResponse.data.session?.access_token;
       
-      const data = await sendDirectMessageAction(user.id, receiverId, text, image, token);
+      const data = await sendDirectMessageAction(user.id, receiverId, text, image, parentId, token);
       setDirectMessages(prev => {
         if (prev.some(m => m.id === data.id && m.id !== tempId)) return prev.filter(m => m.id !== tempId);
-        return prev.map(m => m.id === tempId ? { id: data.id, senderId: data.sender_id, receiverId: data.receiver_id, text: data.text, image: data.image, createdAt: data.created_at } : m);
+        return prev.map(m => m.id === tempId ? { id: data.id, senderId: data.sender_id, receiverId: data.receiver_id, text: data.text, image: data.image, createdAt: data.created_at, parentId: data.parent_id || null, reactions: [] } : m);
       });
       markChatRead(null, receiverId);
     } catch (err) {
@@ -186,47 +221,43 @@ export function ChatProvider({ children }) {
     }
   };
 
-  const reactToMessage = async (messageId, emoji) => {
+  const reactToMessage = async (messageId, emoji, isDirectMessage = false) => {
     if (!user.id) return;
-    const msg = messages.find(m => m.id === messageId);
+    
+    const collection = isDirectMessage ? directMessages : messages;
+    const msg = collection.find(m => m.id === messageId);
     if (!msg) return;
 
-    // Parse existing reactions if any
-    let currentText = msg.text || '';
-    let rawReactions = {};
-    const metaMatch = currentText.match(/<!--REACTIONS:(.*?)-->/);
-    if (metaMatch && metaMatch[1]) {
-      try {
-        rawReactions = JSON.parse(metaMatch[1]);
-        currentText = currentText.replace(metaMatch[0], '');
-      } catch (e) {}
-    }
+    const existingReaction = (msg.reactions || []).find(r => r.user_id === user.id && r.emoji === emoji);
 
-    // Toggle reaction logic
-    if (!rawReactions[emoji]) {
-      rawReactions[emoji] = [];
-    }
-    const userIndex = rawReactions[emoji].indexOf(user.id);
-    if (userIndex > -1) {
-      rawReactions[emoji].splice(userIndex, 1);
-      if (rawReactions[emoji].length === 0) delete rawReactions[emoji];
-    } else {
-      rawReactions[emoji].push(user.id);
-    }
-
-    const newText = `${currentText}<!--REACTIONS:${JSON.stringify(rawReactions)}-->`;
-
-    // Optimistic UI update
-    setMessages(prev => prev.map(m => m.id === messageId ? { ...m, text: newText } : m));
+    const updater = prev => prev.map(m => {
+      if (m.id !== messageId) return m;
+      let newReactions = m.reactions || [];
+      if (existingReaction) {
+        newReactions = newReactions.filter(r => !(r.user_id === user.id && r.emoji === emoji));
+      } else {
+        newReactions = [...newReactions, { id: 'temp-' + Date.now(), message_id: messageId, user_id: user.id, emoji }];
+      }
+      return { ...m, reactions: newReactions };
+    });
+    
+    if (isDirectMessage) setDirectMessages(updater);
+    else setMessages(updater);
 
     try {
       const sessionResponse = await supabase.auth.getSession();
       const token = sessionResponse.data.session?.access_token;
-      await updateMessageAction(messageId, { text: newText }, token);
+      
+      if (existingReaction) {
+        await removeReactionAction(messageId, isDirectMessage, emoji, user.id, token);
+      } else {
+        await addReactionAction(messageId, isDirectMessage, emoji, user.id, token);
+      }
     } catch (err) {
       console.error('Reaction failed:', err);
-      // Revert optimism
-      setMessages(prev => prev.map(m => m.id === messageId ? { ...m, text: msg.text } : m));
+      const reverter = prev => prev.map(m => m.id === messageId ? { ...m, reactions: msg.reactions || [] } : m);
+      if (isDirectMessage) setDirectMessages(reverter);
+      else setMessages(reverter);
     }
   };
 

@@ -16,6 +16,7 @@ export default function Chat() {
   const { communityId, channelId, targetUserId } = useParams();
   const navigate = useNavigate();
   const [inputText, setInputText] = useState('');
+  const [threadInputText, setThreadInputText] = useState('');
   const [imageFiles, setImageFiles] = useState([]);
   const [hoveredMsgId, setHoveredMsgId] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -26,10 +27,11 @@ export default function Chat() {
   const [activeTab, setActiveTab] = useState('Communities');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [reactionMsgId, setReactionMsgId] = useState(null);
+  const [activeThreadId, setActiveThreadId] = useState(null);
   
   const onEmojiClick = (emojiObject) => {
     if (reactionMsgId) {
-      reactToMessage(reactionMsgId, emojiObject.emoji);
+      reactToMessage(reactionMsgId, emojiObject.emoji, isDirectMessage);
       setReactionMsgId(null);
     } else {
       setInputText(prev => prev + emojiObject.emoji);
@@ -369,7 +371,8 @@ export default function Chat() {
         </div>
       )}
 
-      <div style={{ flex: 1, display: 'flex', overflow: 'hidden', flexDirection: 'column' }}>
+      <div style={{ flex: 1, display: 'flex', overflow: 'hidden', flexDirection: 'row' }}>
+        <div style={{ flex: 1, display: 'flex', overflow: 'hidden', flexDirection: 'column' }}>
         {/* Chat Feed */}
         <div style={{ flex: 1, padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px', overflowY: 'auto' }}>
           <div style={{ textAlign: 'center', margin: '20px 0', color: 'var(--slate-500)', fontSize: '0.8rem' }}>
@@ -383,14 +386,14 @@ export default function Chat() {
               <SkeletonChatBubble align="left" />
             </>
           ) : (
-            activeMessages.map((msg, index) => {
+            activeMessages.filter(m => !m.parentId).map((msg, index, topLevelMessages) => {
               const currentAuthorId = msg.senderId || msg.authorId; // Handle both schemas
               const authorObj = users.find(u => u.id === currentAuthorId) || { name: 'Unknown', id: currentAuthorId, avatar: 'https://i.pravatar.cc/150' };
               const isMe = currentAuthorId === user.id;
               const isLeader = !isDirectMessage && communityMemberships[communityId]?.find(m => m.userId === currentAuthorId)?.role === 'Leader';
               
-              const prevMsg = activeMessages[index - 1];
-              const nextMsg = activeMessages[index + 1];
+              const prevMsg = topLevelMessages[index - 1];
+              const nextMsg = topLevelMessages[index + 1];
               const prevAuthorId = prevMsg ? (prevMsg.senderId || prevMsg.authorId) : null;
               const nextAuthorId = nextMsg ? (nextMsg.senderId || nextMsg.authorId) : null;
               
@@ -411,15 +414,14 @@ export default function Chat() {
                 }
               }
 
-              // Parse reactions
+              // Group relational reactions by emoji
               let cleanText = msg.text || '';
-              let reactions = {};
-              const metaMatch = cleanText.match(/<!--REACTIONS:(.*?)-->/);
-              if (metaMatch && metaMatch[1]) {
-                try {
-                  reactions = JSON.parse(metaMatch[1]);
-                  cleanText = cleanText.replace(metaMatch[0], '');
-                } catch(e) {}
+              let reactionsMap = {};
+              if (msg.reactions) {
+                msg.reactions.forEach(r => {
+                  if (!reactionsMap[r.emoji]) reactionsMap[r.emoji] = [];
+                  reactionsMap[r.emoji].push(r.user_id);
+                });
               }
 
               return (
@@ -456,10 +458,13 @@ export default function Chat() {
                       {hoveredMsgId === msg.id && (
                         <div style={{ position: 'absolute', top: '-16px', right: isMe ? '16px' : (msgImages.length ? '-16px' : 'auto'), left: isMe ? 'auto' : (msgImages.length ? 'auto' : '-16px'), background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '99px', padding: '4px', display: 'flex', gap: '4px', zIndex: 10, boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }}>
                           {['❤️', '👍', '😂', '🔥', '🎉'].map(e => (
-                            <button key={e} onClick={() => reactToMessage(msg.id, e)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem', padding: '2px 4px', transition: 'transform 0.1s' }} onMouseEnter={ev => ev.currentTarget.style.transform='scale(1.2)'} onMouseLeave={ev => ev.currentTarget.style.transform='scale(1)'}>
+                            <button key={e} onClick={() => reactToMessage(msg.id, e, isDirectMessage)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem', padding: '2px 4px', transition: 'transform 0.1s' }} onMouseEnter={ev => ev.currentTarget.style.transform='scale(1.2)'} onMouseLeave={ev => ev.currentTarget.style.transform='scale(1)'}>
                               {e}
                             </button>
                           ))}
+                          <button onClick={() => setActiveThreadId(msg.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center', transition: 'transform 0.1s' }} onMouseEnter={ev => ev.currentTarget.style.transform='scale(1.2)'} onMouseLeave={ev => ev.currentTarget.style.transform='scale(1)'}>
+                            <MessageCircle size={14} color="var(--slate-400)" />
+                          </button>
                           <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                             <button onClick={() => setReactionMsgId(reactionMsgId === msg.id ? null : msg.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center', transition: 'transform 0.1s' }} onMouseEnter={ev => ev.currentTarget.style.transform='scale(1.2)'} onMouseLeave={ev => ev.currentTarget.style.transform='scale(1)'}>
                               <Plus size={14} color="var(--slate-400)" />
@@ -486,15 +491,26 @@ export default function Chat() {
                       
                       {cleanText && <div>{cleanText}</div>}
                       
-                      {Object.keys(reactions).length > 0 && (
+                      {Object.keys(reactionsMap).length > 0 && (
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '4px' }}>
-                          {Object.entries(reactions).map(([emoji, usersArr]) => (
-                            <div key={emoji} onClick={() => reactToMessage(msg.id, emoji)} style={{ background: usersArr.includes(user.id) ? (isMe ? 'rgba(255,255,255,0.2)' : 'var(--teal-600)') : 'rgba(255,255,255,0.1)', padding: '2px 6px', borderRadius: '12px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.05)' }}>
+                          {Object.entries(reactionsMap).map(([emoji, usersArr]) => (
+                            <div key={emoji} onClick={() => reactToMessage(msg.id, emoji, isDirectMessage)} style={{ background: usersArr.includes(user.id) ? (isMe ? 'rgba(255,255,255,0.2)' : 'var(--teal-600)') : 'rgba(255,255,255,0.1)', padding: '2px 6px', borderRadius: '12px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.05)' }}>
                               {emoji} <span style={{ opacity: 0.9 }}>{usersArr.length}</span>
                             </div>
                           ))}
                         </div>
                       )}
+                      
+                      {/* Thread Reply Count */}
+                      {(() => {
+                        const replyCount = activeMessages.filter(m => m.parentId === msg.id).length;
+                        if (replyCount === 0) return null;
+                        return (
+                          <div onClick={() => setActiveThreadId(msg.id)} style={{ marginTop: '4px', fontSize: '0.75rem', color: 'var(--teal-400)', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <MessageCircle size={12} /> {replyCount} repl{replyCount === 1 ? 'y' : 'ies'}
+                          </div>
+                        );
+                      })()}
 
                       <div style={{ fontSize: '0.65rem', alignSelf: 'flex-end', opacity: 0.7, marginTop: '2px' }}>
                         {msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : (msg.timestamp ? (String(msg.timestamp).includes('T') ? new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : msg.timestamp) : '')}
@@ -569,6 +585,86 @@ export default function Chat() {
           Only community leaders can send messages to this announcement channel.
         </div>
       )}
+      </div>
+
+      {activeThreadId && (
+        <div style={{ width: '350px', borderLeft: '1px solid var(--slate-800)', background: 'var(--slate-900)', display: 'flex', flexDirection: 'column', zIndex: 20 }}>
+          <div style={{ padding: '16px', borderBottom: '1px solid var(--slate-800)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h3 style={{ margin: 0, fontSize: '1rem', color: 'var(--white)' }}>Thread</h3>
+            <button onClick={() => setActiveThreadId(null)} className="interactive-press" style={{ background: 'none', border: 'none', color: 'var(--slate-400)', cursor: 'pointer', padding: '4px' }}><X size={18} /></button>
+          </div>
+          <div style={{ flex: 1, overflowY: 'auto', padding: '16px' }}>
+            {(() => {
+              const threadParent = activeMessages.find(m => m.id === activeThreadId);
+              const threadReplies = activeMessages.filter(m => m.parentId === activeThreadId);
+              if (!threadParent) return null;
+              const authorObj = users.find(u => u.id === (threadParent.senderId || threadParent.authorId)) || { name: 'Unknown', avatar: 'https://i.pravatar.cc/150' };
+              return (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  {/* Thread Parent */}
+                  <div style={{ display: 'flex', gap: '12px', paddingBottom: '16px', borderBottom: '1px solid var(--slate-800)' }}>
+                    <img src={authorObj.avatar} style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover' }} />
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                        <span style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--white)' }}>{authorObj.name}</span>
+                        <span style={{ fontSize: '0.7rem', color: 'var(--slate-500)' }}>{threadParent.createdAt ? new Date(threadParent.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}</span>
+                      </div>
+                      <div style={{ fontSize: '0.9rem', marginTop: '6px', color: 'var(--slate-200)', lineHeight: 1.4 }}>{threadParent.text}</div>
+                    </div>
+                  </div>
+                  {/* Replies */}
+                  <div style={{ fontSize: '0.8rem', color: 'var(--slate-500)', fontWeight: 600, marginBottom: '-8px' }}>{threadReplies.length} {threadReplies.length === 1 ? 'Reply' : 'Replies'}</div>
+                  {threadReplies.map(reply => {
+                    const repAuth = users.find(u => u.id === (reply.senderId || reply.authorId)) || { name: 'Unknown', avatar: 'https://i.pravatar.cc/150' };
+                    return (
+                      <div key={reply.id} style={{ display: 'flex', gap: '10px' }}>
+                        <img src={repAuth.avatar} style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }} />
+                        <div style={{ flex: 1 }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                            <span style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--slate-200)' }}>{repAuth.name}</span>
+                            <span style={{ fontSize: '0.65rem', color: 'var(--slate-500)' }}>{reply.createdAt ? new Date(reply.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}</span>
+                          </div>
+                          <div style={{ fontSize: '0.85rem', marginTop: '4px', color: 'var(--slate-300)', lineHeight: 1.4 }}>{reply.text}</div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
+          </div>
+          <div style={{ padding: '16px', borderTop: '1px solid var(--slate-800)', background: 'var(--slate-900)' }}>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <input 
+                type="text" 
+                value={threadInputText}
+                onChange={(e) => setThreadInputText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && threadInputText.trim()) {
+                    if (isDirectMessage) sendDirectMessage(targetUserId, threadInputText, '', activeThreadId);
+                    else sendMessage(communityId, channelId, threadInputText, '', activeThreadId);
+                    setThreadInputText('');
+                  }
+                }}
+                placeholder="Reply in thread..."
+                style={{ flex: 1, background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '999px', padding: '10px 16px', color: 'var(--white)', fontSize: '0.9rem', outline: 'none' }}
+                onFocus={e => e.target.style.borderColor = 'rgba(20,184,166,0.4)'}
+                onBlur={e => e.target.style.borderColor = 'var(--slate-700)'}
+              />
+              <button disabled={!threadInputText.trim()} onClick={() => {
+                if (threadInputText.trim()) {
+                  if (isDirectMessage) sendDirectMessage(targetUserId, threadInputText, '', activeThreadId);
+                  else sendMessage(communityId, channelId, threadInputText, '', activeThreadId);
+                  setThreadInputText('');
+                }
+              }} className="interactive-press" style={{ background: 'var(--teal-600)', border: 'none', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', cursor: 'pointer', opacity: threadInputText.trim() ? 1 : 0.5 }}>
+                <Send size={16} />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      </div>
     </div>
   );
 }
