@@ -54,7 +54,7 @@ export default function AppHeader({ title, subtitle, rightElement, showBack = fa
   );
 
   return (
-    <div className="app-header" style={{ padding: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--slate-900)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+    <div className="app-header">
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
         {showBack ? (
           <button 

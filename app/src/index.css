@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
   --teal-700: #0d6660;
@@ -26,9 +26,9 @@
   --slate-50: #f8fafc;
   --white: #ffffff;
 
-  --font-body: 'Plus Jakarta Sans', sans-serif;
-  --font-heading: 'Syne', sans-serif;
-  --font-display: 'Instrument Serif', serif;
+  --font-body: 'Inter', sans-serif;
+  --font-heading: 'Outfit', sans-serif;
+  --font-display: 'Outfit', sans-serif;
 
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -520,6 +520,7 @@ html, body {
 
 .bottom-nav-item.active {
   color: var(--teal-400);
+  text-shadow: 0 0 12px rgba(45, 212, 191, 0.5);
 }
 
 .icon-wrapper {
@@ -716,20 +717,20 @@ html, body {
   align-items: center;
   justify-content: center;
   padding: 10px 16px;
-  border-radius: var(--radius-md);
+  border-radius: 12px;
   font-family: var(--font-heading);
   font-weight: 600;
   font-size: 0.9rem;
   cursor: pointer;
   border: none;
   text-decoration: none;
-  transition: all var(--transition-fast) ease-out;
+  transition: all var(--transition-fast) var(--ease-spring);
   position: relative;
   overflow: hidden;
 }
 
 .btn:active {
-  transform: scale(0.96);
+  transform: scale(0.97);
 }
 
 .btn-primary {
@@ -739,7 +740,7 @@ html, body {
 
 .btn-primary:hover {
   background: var(--teal-500);
-  box-shadow: 0 4px 16px rgba(20, 184, 166, 0.25);
+  box-shadow: 0 4px 15px rgba(20, 184, 166, 0.4);
 }
 
 .btn-primary:active {
@@ -798,11 +799,11 @@ html, body {
    ============================================================ */
 
 .interactive-press {
-  transition: transform var(--transition-fast) ease-out;
+  transition: transform var(--transition-fast) var(--ease-spring);
 }
 
 .interactive-press:active {
-  transform: scale(0.96);
+  transform: scale(0.97);
 }
 
 .interactive-hover {

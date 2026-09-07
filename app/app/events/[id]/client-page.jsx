@@ -525,8 +525,9 @@ export default function EventClient({ id }) {
       {/* Sticky RSVP Footer */}
       <div style={{ 
         position: 'fixed', bottom: 0, left: 0, right: 0, 
-        padding: '16px 20px', background: 'rgba(2, 6, 23, 0.85)', 
-        backdropFilter: 'blur(20px)', borderTop: '1px solid rgba(255,255,255,0.1)', 
+        padding: '16px 20px', background: 'rgba(2, 6, 23, 0.65)', 
+        backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', borderTop: '1px solid rgba(255,255,255,0.1)', 
+        boxShadow: '0 -8px 32px rgba(0,0,0,0.4)',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         zIndex: 100,
         paddingBottom: 'max(16px, env(safe-area-inset-bottom))'

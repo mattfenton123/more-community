@@ -362,7 +362,7 @@ export default function Discover() {
                   {events.filter(e => savedItems.includes(e.id)).map(event => {
                     const community = communities.find(c => c.id === event.communityId);
                     return (
-                      <div key={event.id} className="interactive-press" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', overflow: 'hidden', display: 'flex', gap: '12px', cursor: 'pointer' }} onClick={() => navigate.push(`/events/${event.id}`)}>
+                      <div key={event.id} className="interactive-press" style={{ background: 'rgba(255,255,255,0.02)', backdropFilter: 'blur(10px)', boxShadow: '0 8px 24px rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', overflow: 'hidden', display: 'flex', gap: '12px', cursor: 'pointer' }} onClick={() => navigate.push(`/events/${event.id}`)}>
                         <img src={event.image || community?.image} alt={event.title} style={{ width: '100px', height: '100%', objectFit: 'cover' }} />
                         <div style={{ padding: '12px', flex: 1 }}>
                           <div style={{ color: 'var(--teal-400)', fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>{community?.name}</div>
@@ -420,10 +420,10 @@ export default function Discover() {
                 const memberCount = getMemberCount(community.id);
                 
                 return (
-                  <div 
-                    key={community.id} 
-                    className="stagger-item interactive-press" 
-                    style={{ margin: '0 20px 16px', borderRadius: '16px', overflow: 'hidden', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', transition: 'all 0.3s', cursor: 'pointer' }}
+                    <div 
+                      key={community.id} 
+                      className="stagger-item interactive-press" 
+                      style={{ margin: '0 20px 16px', borderRadius: '16px', overflow: 'hidden', background: 'rgba(255,255,255,0.02)', backdropFilter: 'blur(10px)', boxShadow: '0 4px 16px rgba(0,0,0,0.1)', border: '1px solid rgba(255,255,255,0.06)', transition: 'all 0.3s', cursor: 'pointer' }}
                     onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'; e.currentTarget.style.transform = 'scale(1.02)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.2)'; }}
                     onMouseOut={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)'; e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = 'none'; }}
                   >
