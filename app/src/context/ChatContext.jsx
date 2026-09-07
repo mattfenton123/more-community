@@ -173,7 +173,7 @@ export function ChatProvider({ children }) {
     if (!user.id) return;
     setChatReadReceipts(prev => {
       const exists = prev.find(r => r.community_id === communityId && r.channel_id === channelId);
-      if (exists) return prev.map(r => r.id === exists.id ? { ...r, last_read_at: new Date().toISOString() } : r);
+      if (exists) return prev.map(r => (r.community_id === communityId && r.channel_id === channelId) ? { ...r, last_read_at: new Date().toISOString() } : r);
       return [...prev, { user_id: user.id, community_id: communityId, channel_id: channelId, last_read_at: new Date().toISOString() }];
     });
     try {
