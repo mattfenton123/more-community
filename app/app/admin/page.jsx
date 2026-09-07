@@ -87,8 +87,13 @@ export default function AdminDashboard() {
   const [broadcastText, setBroadcastText] = useState('');
   const [isSending, setIsSending] = useState(false);
 
+  React.useEffect(() => {
+    if (!user || !user.isAdmin) {
+      navigate.push('/');
+    }
+  }, [user, navigate]);
+
   if (!user || !user.isAdmin) {
-    if (typeof window !== 'undefined') navigate.push('/');
     return null;
   }
 

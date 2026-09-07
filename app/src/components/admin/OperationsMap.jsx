@@ -61,7 +61,7 @@ export default function OperationsMap({ platformStats }) {
         <p style={{ color: 'var(--slate-400)', fontSize: '0.85rem', margin: 0 }}>Live tracking of community health and density across the UK.</p>
       </div>
 
-      <div style={{ flex: 1, minHeight: '500px', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.08)' }}>
+      <div style={{ width: '100%', height: '500px', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.08)' }}>
         <MapContainer center={center} zoom={zoom} scrollWheelZoom={false} style={{ height: '100%', width: '100%' }}>
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'

@@ -12,6 +12,10 @@ const INTEREST_PILLS = [
   '🍸 Singles & Social', '🧩 Quizzing'
 ];
 
+const STEP_VIDEOS = [
+  'https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_1MB.mp4',
+  'https://test-videos.co.uk/vids/sintel/mp4/h264/360/Sintel_360_10s_1MB.mp4'
+];
 
 
 export default function OnboardingFlow({ onComplete }) {
