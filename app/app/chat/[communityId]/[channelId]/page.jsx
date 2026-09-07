@@ -465,16 +465,9 @@ export default function Chat() {
                           <button onClick={() => setActiveThreadId(msg.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center', transition: 'transform 0.1s' }} onMouseEnter={ev => ev.currentTarget.style.transform='scale(1.2)'} onMouseLeave={ev => ev.currentTarget.style.transform='scale(1)'}>
                             <MessageCircle size={14} color="var(--slate-400)" />
                           </button>
-                          <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                            <button onClick={() => setReactionMsgId(reactionMsgId === msg.id ? null : msg.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center', transition: 'transform 0.1s' }} onMouseEnter={ev => ev.currentTarget.style.transform='scale(1.2)'} onMouseLeave={ev => ev.currentTarget.style.transform='scale(1)'}>
-                              <Plus size={14} color="var(--slate-400)" />
-                            </button>
-                            {reactionMsgId === msg.id && (
-                              <div style={{ position: 'absolute', bottom: '100%', right: '0', zIndex: 100, paddingBottom: '8px' }}>
-                                <EmojiPicker onEmojiClick={onEmojiClick} theme="dark" width={300} height={400} />
-                              </div>
-                            )}
-                          </div>
+                          <button onClick={() => setReactionMsgId(reactionMsgId === msg.id ? null : msg.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center', transition: 'transform 0.1s' }} onMouseEnter={ev => ev.currentTarget.style.transform='scale(1.2)'} onMouseLeave={ev => ev.currentTarget.style.transform='scale(1)'}>
+                            <Plus size={14} color="var(--slate-400)" />
+                          </button>
                         </div>
                       )}
 
@@ -665,6 +658,17 @@ export default function Chat() {
         </div>
       )}
       </div>
+      {/* Global Emoji Modal for Reactions */}
+      {reactionMsgId && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setReactionMsgId(null)}>
+          <div onClick={e => e.stopPropagation()} style={{ position: 'relative', animation: 'scaleUp 0.2s ease-out' }}>
+            <button onClick={() => setReactionMsgId(null)} className="interactive-press" style={{ position: 'absolute', top: '-12px', right: '-12px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '50%', padding: '4px', cursor: 'pointer', zIndex: 10000 }}>
+              <X size={16} color="var(--slate-400)" />
+            </button>
+            <EmojiPicker onEmojiClick={onEmojiClick} theme="dark" width={320} height={450} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

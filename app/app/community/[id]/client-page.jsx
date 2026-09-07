@@ -1270,28 +1270,6 @@ export default function CommunityProfile() {
               </div>
             )}
 
-            {/* What Members Say */}
-            {topReviews.length > 0 && (
-              <div style={{ marginBottom: '32px' }}>
-                <h3 style={{ fontSize: '1.3rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: '0 0 16px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <MessageCircle size={20} color="var(--teal-400)" /> What Members Say
-                </h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  {topReviews.map(review => {
-                    const author = users.find(u => u.id === review.user_id) || {};
-                    return (
-                      <div key={review.id} style={{ padding: '16px', background: 'rgba(255,255,255,0.03)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                        <div style={{ color: 'var(--white)', fontSize: '0.95rem', lineHeight: 1.5, marginBottom: '12px', fontStyle: 'italic' }}>"{review.content}"</div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <img src={author.avatar || `https://ui-avatars.com/api/?name=${author.name}&background=random`} alt="" style={{ width: '24px', height: '24px', borderRadius: '50%' }} />
-                          <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)', fontWeight: 500 }}>{author.name}</div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
 
             {/* Get In Touch */}
             {leaderUser && (
