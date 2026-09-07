@@ -234,7 +234,7 @@ export function AppProvider({ children }) {
     }
   }, [user?.id, session?.access_token]);
 
-  // Load accessibility preferences from local storage and apply to DOM
+  // Load accessibility and user preferences from local storage and apply to DOM
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const savedTheme = localStorage.getItem('more_theme') || 'dark';
@@ -246,6 +246,13 @@ export function AppProvider({ children }) {
       setHighContrast(savedHighContrast);
       setLargeText(savedLargeText);
       setReduceMotion(savedReduceMotion);
+
+      const localSavedItems = localStorage.getItem('more_saved_items');
+      if (localSavedItems) {
+        try {
+          setSavedItems(JSON.parse(localSavedItems));
+        } catch(e) {}
+      }
     }
   }, []);
 
@@ -629,13 +636,19 @@ export function AppProvider({ children }) {
   const saveItem = (itemId) => {
     setSavedItems(prev => {
       if (prev.includes(itemId)) return prev;
-      return [...prev, itemId];
+      const next = [...prev, itemId];
+      if (typeof window !== 'undefined') localStorage.setItem('more_saved_items', JSON.stringify(next));
+      return next;
     });
     // In a real app, you would also save this to the DB here.
   };
 
   const unsaveItem = (itemId) => {
-    setSavedItems(prev => prev.filter(id => id !== itemId));
+    setSavedItems(prev => {
+      const next = prev.filter(id => id !== itemId);
+      if (typeof window !== 'undefined') localStorage.setItem('more_saved_items', JSON.stringify(next));
+      return next;
+    });
     // In a real app, you would also save this to the DB here.
   };
 
