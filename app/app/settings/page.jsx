@@ -184,7 +184,7 @@ export default function SettingsScreen() {
               <button
                 onClick={async () => {
                   try {
-                    await updateUser({ interests: selectedInterests });
+                    await updateUser(user.id, { interests: selectedInterests });
                     toast.success('Interests updated!', 'Your feed and recommendations will update accordingly.');
                     setShowInterestsEditor(false);
                   } catch (e) {

@@ -1341,32 +1341,7 @@ export function AppProvider({ children }) {
     }
   };
 
-  const updateUser = async (updates) => {
-    try {
-      setUsers(prev => prev.map(u => u.id === user.id ? { ...u, ...updates } : u));
-      const { data: { session: freshSession } } = await supabase.auth.getSession();
-      const token = freshSession?.access_token || session?.access_token;
-      if (token) {
-        const { updateUserAction } = await import('../lib/actions');
-        await updateUserAction(user.id, updates, token);
-      }
-    } catch (err) {
-      console.error('Failed to update user', err);
-    }
-  };
 
-  const saveItem = (item) => {
-    setSavedItems(prev => {
-      if (!prev.some(i => i.id === item.id)) {
-        return [...prev, item];
-      }
-      return prev;
-    });
-  };
-
-  const unsaveItem = (itemId) => {
-    setSavedItems(prev => prev.filter(i => i.id !== itemId));
-  };
 
   return (
     <AppContext.Provider value={{

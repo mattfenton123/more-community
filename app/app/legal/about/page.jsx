@@ -1,5 +1,5 @@
 "use client";
-import AppHeader from '../../../../src/components/AppHeader';
+import AppHeader from '../../../src/components/AppHeader';
 
 export default function AboutPage() {
   return (

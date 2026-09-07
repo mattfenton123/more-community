@@ -338,11 +338,11 @@ export default function Discover() {
               </div>
               <SwipeDiscovery 
                 inline={true}
-                events={events.filter(e => e.status !== 'cancelled' && new Date(e.date + 'T00:00:00') >= new Date() && !savedItems.some(si => si.id === e.id))} 
+                events={events.filter(e => e.status !== 'cancelled' && new Date(e.date + 'T00:00:00') >= new Date() && !savedItems.includes(e.id))} 
                 communities={communities} 
                 onClose={() => {}} 
                 onSave={(item) => {
-                  saveItem(item);
+                  saveItem(item.id);
                   toast.success('Saved!', 'Added to your ❤️ Saved list.');
                 }}
               />
@@ -359,18 +359,18 @@ export default function Discover() {
                 </div>
               ) : (
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '16px' }}>
-                  {savedItems.map(item => {
-                    const community = communities.find(c => c.id === item.communityId);
+                  {events.filter(e => savedItems.includes(e.id)).map(event => {
+                    const community = communities.find(c => c.id === event.communityId);
                     return (
-                      <div key={item.id} className="interactive-press" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', overflow: 'hidden', display: 'flex', gap: '12px', cursor: 'pointer' }} onClick={() => navigate.push(`/events/${item.id}`)}>
-                        <img src={item.image || community?.image} alt={item.title} style={{ width: '100px', height: '100%', objectFit: 'cover' }} />
+                      <div key={event.id} className="interactive-press" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', overflow: 'hidden', display: 'flex', gap: '12px', cursor: 'pointer' }} onClick={() => navigate.push(`/events/${event.id}`)}>
+                        <img src={event.image || community?.image} alt={event.title} style={{ width: '100px', height: '100%', objectFit: 'cover' }} />
                         <div style={{ padding: '12px', flex: 1 }}>
                           <div style={{ color: 'var(--teal-400)', fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>{community?.name}</div>
-                          <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '1rem', lineHeight: 1.2, marginBottom: '6px' }}>{item.title}</div>
-                          <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)', display: 'flex', alignItems: 'center', gap: '4px' }}><Calendar size={12} /> {item.date}</div>
+                          <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '1rem', lineHeight: 1.2, marginBottom: '6px' }}>{event.title}</div>
+                          <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)', display: 'flex', alignItems: 'center', gap: '4px' }}><Calendar size={12} /> {event.date}</div>
                         </div>
                         <div style={{ padding: '12px' }}>
-                          <button onClick={(e) => { e.stopPropagation(); unsaveItem(item.id); }} style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer' }}><Heart size={20} fill="#ef4444" /></button>
+                          <button onClick={(e) => { e.stopPropagation(); unsaveItem(event.id); }} style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer' }}><Heart size={20} fill="#ef4444" /></button>
                         </div>
                       </div>
                     );
