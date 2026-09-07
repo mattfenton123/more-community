@@ -17,7 +17,6 @@ export default function BottomNav() {
                      currentPath.match(/^\/community\/[^/]+$/) || 
                      currentPath.match(/^\/chat\/[^/]+\/[^/]+$/) || 
                      currentPath.match(/^\/chat\/dm\/[^/]+$/) ||
-                     currentPath.match(/^\/profile\/[^/]+$/) ||
                      currentPath === '/settings';
   
   const hideBottomNav = currentPath === '/login' || currentPath === '/onboarding' || isDeepPage;
