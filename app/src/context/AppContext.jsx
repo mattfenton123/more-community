@@ -248,13 +248,22 @@ export function AppProvider({ children }) {
       setReduceMotion(savedReduceMotion);
 
       const localSavedItems = localStorage.getItem('more_saved_items');
+      let initialSaved = [];
       if (localSavedItems) {
         try {
-          setSavedItems(JSON.parse(localSavedItems));
+          initialSaved = JSON.parse(localSavedItems);
         } catch(e) {}
       }
+      
+      // Merge with DB saved items if available
+      const dbSavedItems = user?.affinityProfile?.savedEventIds || [];
+      const mergedSavedItems = [...new Set([...initialSaved, ...dbSavedItems])];
+      setSavedItems(mergedSavedItems);
+      if (mergedSavedItems.length > 0) {
+        localStorage.setItem('more_saved_items', JSON.stringify(mergedSavedItems));
+      }
     }
-  }, []);
+  }, [user?.id]);
 
   useEffect(() => {
     if (typeof document !== 'undefined') {
@@ -633,23 +642,44 @@ export function AppProvider({ children }) {
     return user.ledCommunities?.includes(communityId) || user.isAdmin;
   };
 
-  const saveItem = (itemId) => {
+  const saveItem = async (itemId) => {
+    let next = [];
     setSavedItems(prev => {
-      if (prev.includes(itemId)) return prev;
-      const next = [...prev, itemId];
+      if (prev.includes(itemId)) {
+        next = prev;
+        return prev;
+      }
+      next = [...prev, itemId];
       if (typeof window !== 'undefined') localStorage.setItem('more_saved_items', JSON.stringify(next));
       return next;
     });
-    // In a real app, you would also save this to the DB here.
+    
+    if (user?.id && next.includes(itemId)) {
+      const currentAp = user.affinityProfile || { tagScores: {}, likedCommunityIds: [], passedCommunityIds: [] };
+      const newAp = { ...currentAp, savedEventIds: next };
+      try {
+        const { updateUserAction } = await import('../lib/actions');
+        await updateUserAction(user.id, { affinityProfile: newAp }, session?.access_token);
+      } catch(e) { console.error("Failed to sync saved items to DB", e); }
+    }
   };
 
-  const unsaveItem = (itemId) => {
+  const unsaveItem = async (itemId) => {
+    let next = [];
     setSavedItems(prev => {
-      const next = prev.filter(id => id !== itemId);
+      next = prev.filter(id => id !== itemId);
       if (typeof window !== 'undefined') localStorage.setItem('more_saved_items', JSON.stringify(next));
       return next;
     });
-    // In a real app, you would also save this to the DB here.
+    
+    if (user?.id) {
+      const currentAp = user.affinityProfile || { tagScores: {}, likedCommunityIds: [], passedCommunityIds: [] };
+      const newAp = { ...currentAp, savedEventIds: next };
+      try {
+        const { updateUserAction } = await import('../lib/actions');
+        await updateUserAction(user.id, { affinityProfile: newAp }, session?.access_token);
+      } catch(e) { console.error("Failed to sync unsaved items to DB", e); }
+    }
   };
 
   const joinCommunity = async (communityId) => {

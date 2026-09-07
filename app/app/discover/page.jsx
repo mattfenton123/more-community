@@ -367,7 +367,14 @@ export default function Discover() {
                         <div style={{ padding: '12px', flex: 1 }}>
                           <div style={{ color: 'var(--teal-400)', fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>{community?.name}</div>
                           <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '1rem', lineHeight: 1.2, marginBottom: '6px' }}>{event.title}</div>
-                          <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)', display: 'flex', alignItems: 'center', gap: '4px' }}><Calendar size={12} /> {event.date}</div>
+                          <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '12px' }}><Calendar size={12} /> {event.date}</div>
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); navigate.push(`/events/${event.id}`); }} 
+                            className="btn btn-primary interactive-press"
+                            style={{ padding: '6px 16px', fontSize: '0.85rem', borderRadius: '8px', background: 'var(--teal-500)', color: '#0f172a', fontWeight: 700, border: 'none', cursor: 'pointer' }}
+                          >
+                            Join Event
+                          </button>
                         </div>
                         <div style={{ padding: '12px' }}>
                           <button onClick={(e) => { e.stopPropagation(); unsaveItem(event.id); }} style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer' }}><Heart size={20} fill="#ef4444" /></button>
