@@ -229,11 +229,17 @@ export default function Discover() {
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
-              style={{ background: 'none', border: 'none', color: 'var(--slate-400)', cursor: 'pointer', padding: '4px' }}
+              style={{ background: 'none', border: 'none', color: 'var(--slate-400)', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center' }}
             >
               <X size={16} />
             </button>
           )}
+          <button
+            className="interactive-press"
+            style={{ background: 'var(--teal-500)', border: 'none', color: '#0f172a', cursor: 'pointer', padding: '6px 16px', borderRadius: '99px', fontSize: '0.8rem', fontWeight: 700, marginLeft: '4px' }}
+          >
+            Go
+          </button>
         </div>
 
         {/* Sort By Dropdown */}
