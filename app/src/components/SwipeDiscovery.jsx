@@ -58,7 +58,6 @@ export default function SwipeDiscovery({ events, communities, onClose, onSave, i
     setTimeout(() => {
       if (direction === 'right') {
         onSave(currentEvent);
-        toast.success('Saved!', 'Added to your interested list.');
       }
       
       setCurrentIndex(prev => prev + 1);
