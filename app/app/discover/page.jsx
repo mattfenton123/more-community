@@ -101,6 +101,10 @@ export default function Discover() {
         return commLoc.includes(userLoc) || userLoc.includes(commLoc) || 
                (commLoc && userLoc && commLoc.split(',')[0]?.trim() === userLoc.split(',')[0]?.trim());
       });
+    } else if (activePill === '❤️ Saved') {
+      list = enrichedCommunities.filter(c => 
+        savedItems.some(id => events.find(e => e.id === id)?.communityId === c.id)
+      );
     } else {
       list = enrichedCommunities.filter(c => {
         if (activePill !== 'All' && c.category !== activePill) return false;
@@ -328,7 +332,7 @@ export default function Discover() {
           )}
 
           <h2 className="section-title" style={{ fontFamily: 'var(--font-display)', fontStyle: 'italic', fontWeight: 400, marginTop: '8px' }}>
-            {activePill === 'For You' ? 'Recommended for You' : 'Trending near you'}
+            {activePill === 'For You' ? 'Recommended for You' : activePill === '❤️ Saved' ? 'Your shortlisted communities' : 'Trending near you'}
           </h2>
           
           {activePill === 'For You' && (
