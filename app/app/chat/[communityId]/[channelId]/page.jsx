@@ -528,7 +528,7 @@ export default function Chat() {
           )}
           <div ref={messagesEndRef} />
         </div>
-      </div>
+
 
       {!isReadOnly ? (
         <div style={{ padding: '16px 20px', background: 'var(--slate-900)', borderTop: '1px solid var(--slate-800)', zIndex: 10 }}>
