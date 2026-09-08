@@ -19,7 +19,7 @@ export default function Discover() {
   const [sortBy, setSortBy] = useState('trending');
   const [showSwipe, setShowSwipe] = useState(false);
   const pills = ['All', 'For You', '❤️ Saved', '📍 Nearby', '🔥 Trending', '🚶 Walking', '🏃 Running', '🧘 Wellness', '⛰️ Adventure', '🤝 Volunteering', '🎨 Creative', '💼 Business'];
-  const { communities, user, users, communityMemberships, joinCommunity, isLoading, events, theme, setTheme, saveItem, savedItems, unsaveItem } = useAppContext();
+  const { communities, user, users, communityMemberships, joinCommunity, isLoading, events, theme, setTheme, saveItem, savedItems, unsaveItem, sponsors, sponsorshipAssignments } = useAppContext();
     const { messages } = useChat();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -436,9 +436,50 @@ export default function Discover() {
                 const isMember = user.joinedCommunities.includes(community.id);
                 const memberCount = getMemberCount(community.id);
                 
+                // Identify if a global sponsor should be injected here
+                const globalAssignment = sponsorshipAssignments?.find(a => a.target_type === 'global');
+                const globalSponsor = globalAssignment ? sponsors?.find(s => s.id === globalAssignment.sponsor_id) : null;
+                
+                const injectSponsor = index === 1 && globalSponsor; // Inject after the first organic community
+                
                 return (
+                  <React.Fragment key={community.id}>
+                    {injectSponsor && (
+                      <div 
+                        onClick={() => navigate.push('/sponsors/' + globalSponsor.id)} 
+                        className="stagger-item interactive-press" 
+                        style={{ margin: '0 20px 16px', borderRadius: '16px', overflow: 'hidden', background: 'rgba(234,179,8,0.05)', backdropFilter: 'blur(10px)', boxShadow: '0 4px 16px rgba(0,0,0,0.1)', border: '1px solid rgba(234,179,8,0.3)', transition: 'all 0.3s', cursor: 'pointer', position: 'relative' }}
+                        onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(234,179,8,0.6)'; e.currentTarget.style.transform = 'scale(1.02)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.2)'; }}
+                        onMouseOut={e => { e.currentTarget.style.borderColor = 'rgba(234,179,8,0.3)'; e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.1)'; }}
+                      >
+                        {/* Cover Image */}
+                        <div style={{ height: '140px', background: `url(${globalSponsor.heroImage})`, backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative' }}>
+                          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.6) 100%)' }}></div>
+                          <div style={{ position: 'absolute', top: '12px', right: '12px', background: 'rgba(234,179,8,0.2)', backdropFilter: 'blur(8px)', border: '1px solid rgba(234,179,8,0.5)', padding: '4px 10px', borderRadius: '99px', fontSize: '0.7rem', fontWeight: 700, color: '#fde047', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <BadgeCheck size={12} /> Sponsored
+                          </div>
+                          <div style={{ position: 'absolute', bottom: '-20px', left: '16px', width: '50px', height: '50px', borderRadius: '12px', background: 'white', border: '2px solid var(--slate-900)', overflow: 'hidden', boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }}>
+                            <img src={globalSponsor.logo} alt={globalSponsor.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          </div>
+                        </div>
+                        
+                        {/* Content */}
+                        <div style={{ padding: '24px 16px 16px 16px' }}>
+                          <h3 style={{ margin: '0 0 4px 0', fontFamily: 'var(--font-heading)', fontSize: '1.1rem', color: '#fef08a' }}>{globalSponsor.name}</h3>
+                          <p style={{ margin: '0 0 12px 0', fontSize: '0.85rem', color: 'var(--slate-300)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: 1.4 }}>
+                            {globalSponsor.bio}
+                          </p>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>Supporting local communities</span>
+                            <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--teal-400)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              Learn More <ChevronRight size={14} />
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     <div 
-                      key={community.id} 
                       className="stagger-item interactive-press" 
                       style={{ margin: '0 20px 16px', borderRadius: '16px', overflow: 'hidden', background: 'rgba(255,255,255,0.02)', backdropFilter: 'blur(10px)', boxShadow: '0 4px 16px rgba(0,0,0,0.1)', border: '1px solid rgba(255,255,255,0.06)', transition: 'all 0.3s', cursor: 'pointer' }}
                     onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'; e.currentTarget.style.transform = 'scale(1.02)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.2)'; }}
@@ -496,7 +537,7 @@ export default function Discover() {
                         </button>
                       </div>
                     </div>
-                  </div>
+                  </React.Fragment>
                 );
               })}
 

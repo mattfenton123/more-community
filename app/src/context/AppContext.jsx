@@ -63,26 +63,44 @@ export function AppProvider({ children }) {
       bio: 'Kent Outdoors is the premier destination for hiking, camping, and outdoor gear in the South East, outfitting adventurers since 1998.',
       communitySupportStatement: 'Getting outside is essential for physical and mental wellbeing. We support local walking, running, and adventure communities by providing gear discounts and funding their events, ensuring everyone has access to the great outdoors.',
       heroImage: 'https://images.unsplash.com/photo-1551632811-561732d1e306?auto=format&fit=crop&w=1200&q=80'
+    },
+    {
+      id: '33333333-3333-3333-3333-333333333333',
+      name: 'TWPT',
+      logo: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=400&q=80',
+      url: 'https://twpt.co.uk',
+      tier: 'Headline',
+      industry: 'Health & Fitness',
+      location: 'Tunbridge Wells',
+      bio: 'The Wellness & Personal Training (TWPT) is the leading personal training studio in Tunbridge Wells. We specialize in transforming lives through tailored fitness, nutrition, and lifestyle coaching.',
+      communitySupportStatement: 'We are incredibly proud to support the local communities of Tunbridge Wells. We believe that health and fitness should be accessible to everyone, and we are committed to keeping local community groups active and thriving.',
+      heroImage: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&w=1200&q=80'
     }
   ]);
   const [sponsorshipAssignments, setSponsorshipAssignments] = useState([
     {
       id: 'a1',
       sponsor_id: '11111111-1111-1111-1111-111111111111',
-      target_id: 'c_mumclub_tw', // Updated to match a real seeded community
+      target_id: 'c_mumclub_tw',
       target_type: 'community'
     },
     {
       id: 'a2',
       sponsor_id: '22222222-2222-2222-2222-222222222222',
-      target_id: 'c_parkrun_tw', // Updated to match a real seeded community
+      target_id: 'c_parkrun_tw',
       target_type: 'community'
     },
     {
       id: 'a3',
       sponsor_id: '11111111-1111-1111-1111-111111111111',
-      target_id: 'REGION_TW', // Global regional sponsor mapping
+      target_id: 'REGION_TW',
       target_type: 'region'
+    },
+    {
+      id: 'a4',
+      sponsor_id: '33333333-3333-3333-3333-333333333333',
+      target_id: 'GLOBAL',
+      target_type: 'global'
     }
   ]);
 

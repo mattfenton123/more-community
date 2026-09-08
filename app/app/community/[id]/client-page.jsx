@@ -1074,7 +1074,7 @@ export default function CommunityProfile() {
             {/* Community Supporters */}
             {(() => {
               const supporters = sponsorshipAssignments
-                .filter(a => a.target_id === communityId && a.target_type === 'community')
+                .filter(a => (a.target_id === communityId && a.target_type === 'community') || a.target_type === 'global')
                 .map(a => sponsors.find(s => s.id === a.sponsor_id))
                 .filter(Boolean);
                 
