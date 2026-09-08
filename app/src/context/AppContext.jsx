@@ -72,9 +72,17 @@ export function AppProvider({ children }) {
       tier: 'Headline',
       industry: 'Health & Fitness',
       location: 'Tunbridge Wells',
-      bio: 'The Wellness & Personal Training (TWPT) is the leading personal training studio in Tunbridge Wells. We specialize in transforming lives through tailored fitness, nutrition, and lifestyle coaching.',
-      communitySupportStatement: 'We are incredibly proud to support the local communities of Tunbridge Wells. We believe that health and fitness should be accessible to everyone, and we are committed to keeping local community groups active and thriving.',
-      heroImage: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&w=1200&q=80'
+      bio: 'The Wellness & Personal Training (TWPT) is the leading personal training studio in Tunbridge Wells. We specialize in transforming lives through tailored fitness, nutrition, and lifestyle coaching. Founded on the belief that a healthy community is a strong community, TWPT offers a holistic approach to wellbeing, integrating movement, nutrition, and mental resilience into every program.',
+      communitySupportStatement: 'We are incredibly proud to support the local communities of Tunbridge Wells. We believe that health and fitness should be accessible to everyone, and we are committed to keeping local community groups active and thriving. By partnering with More., we are providing local groups with expert-led fitness sessions, subsidized wellness workshops, and community events designed to bring people together through the power of movement.',
+      alignmentDetails: 'More. and TWPT share a core belief: real-life connection is the foundation of wellbeing. While More. builds the digital infrastructure to bring people together in the real world, TWPT provides the physical spaces, expertise, and community-driven energy to help those groups thrive. Our partnership is built on a mutual commitment to combating loneliness, promoting physical activity, and fostering genuine relationships within Tunbridge Wells. Together, we are creating a healthier, more connected town where everyone has a place to belong.',
+      heroImage: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&w=1200&q=80',
+      videoUrl: 'https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_1MB.mp4',
+      imageGallery: [
+        'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=800&q=80'
+      ]
     }
   ]);
   const [sponsorshipAssignments, setSponsorshipAssignments] = useState([

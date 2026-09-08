@@ -87,6 +87,30 @@ export default function SponsorProfile() {
           </p>
         </div>
 
+        {/* Alignment Details */}
+        {sponsor.alignmentDetails && (
+          <div>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 700, margin: '0 0 12px 0', color: 'var(--white)' }}>Why We Align</h3>
+            <p style={{ color: 'var(--slate-300)', fontSize: '0.95rem', lineHeight: 1.6, margin: 0 }}>
+              {sponsor.alignmentDetails}
+            </p>
+          </div>
+        )}
+
+        {/* Image Gallery */}
+        {sponsor.imageGallery && sponsor.imageGallery.length > 0 && (
+          <div>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 700, margin: '0 0 16px 0', color: 'var(--white)' }}>Gallery</h3>
+            <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', WebkitOverflowScrolling: 'touch', paddingBottom: '8px' }}>
+              {sponsor.imageGallery.map((img, idx) => (
+                <div key={idx} style={{ flex: '0 0 240px', height: '160px', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}>
+                  <img src={img} alt={`${sponsor.name} gallery ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Supported Communities */}
         {sponsoredCommunities.length > 0 && (
           <div>

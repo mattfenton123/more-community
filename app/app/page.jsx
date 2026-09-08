@@ -104,8 +104,33 @@ export default function HomeFeed() {
         }
       });
     }
-    return items.sort((a, b) => b.timestamp - a.timestamp);
-  }, [feedPosts, events, user?.joinedCommunities, activeFeedTab]);
+    
+    let sortedItems = items.sort((a, b) => b.timestamp - a.timestamp);
+    
+    const globalAssignment = sponsorshipAssignments?.find(a => a.target_type === 'global');
+    const globalSponsor = globalAssignment ? sponsors?.find(s => s.id === globalAssignment.sponsor_id) : null;
+    
+    if (globalSponsor && activeFeedTab === 'Feed') {
+      const sponsoredPost = {
+        type: 'sponsored_post',
+        id: `sponsored-${globalSponsor.id}`,
+        data: {
+          text: `We are incredibly proud to support more. and help local communities thrive. Check out our story to see why we believe real-life connection is the foundation of wellbeing.`,
+          media: globalSponsor.videoUrl,
+        },
+        sponsor: globalSponsor,
+        timestamp: new Date().getTime()
+      };
+      
+      if (sortedItems.length > 0) {
+         sortedItems.splice(1, 0, sponsoredPost);
+      } else {
+         sortedItems.push(sponsoredPost);
+      }
+    }
+    
+    return sortedItems;
+  }, [feedPosts, events, user?.joinedCommunities, activeFeedTab, sponsors, sponsorshipAssignments]);
 
   return (
     <div className="view-home" style={{ paddingBottom: '80px', background: 'var(--slate-950)', minHeight: '100dvh' }}>
@@ -270,6 +295,33 @@ export default function HomeFeed() {
         {isLoading ? (
           <SkeletonList count={4} Component={SkeletonCard} />
         ) : feedItems.length > 0 ? feedItems.map(item => {
+          if (item.type === 'sponsored_post') {
+            const post = item.data;
+            const sponsor = item.sponsor;
+            return (
+              <div key={item.id} style={{ background: 'linear-gradient(to bottom right, rgba(234,179,8,0.05), rgba(15,23,42,1))', border: '1px solid rgba(234,179,8,0.3)', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 8px 24px rgba(234,179,8,0.05)', position: 'relative', marginBottom: '8px' }}>
+                <div style={{ position: 'absolute', top: '12px', right: '12px', background: 'rgba(234,179,8,0.2)', backdropFilter: 'blur(8px)', border: '1px solid rgba(234,179,8,0.5)', padding: '4px 10px', borderRadius: '99px', fontSize: '0.7rem', fontWeight: 700, color: '#fde047', zIndex: 10 }}>Sponsored</div>
+                <div style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <img src={sponsor.logo} alt={sponsor.name} loading="lazy" style={{ width: '48px', height: '48px', borderRadius: '12px', objectFit: 'contain', background: 'white', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.1)' }} onClick={() => router.push(`/sponsors/${sponsor.id}`)} />
+                  <div>
+                    <div style={{ fontWeight: 700, color: '#fef08a', fontSize: '1rem', cursor: 'pointer' }} onClick={() => router.push(`/sponsors/${sponsor.id}`)}>{sponsor.name}</div>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)' }}>Supporting local communities</div>
+                  </div>
+                </div>
+                <div style={{ padding: '0 16px 16px', color: 'var(--slate-200)', fontSize: '0.95rem', lineHeight: 1.6 }}>{post.text}</div>
+                {post.media && (
+                   <div style={{ width: '100%', background: 'black', position: 'relative' }}>
+                     <video src={post.media} controls autoPlay muted loop playsInline style={{ width: '100%', maxHeight: '400px', objectFit: 'cover', display: 'block' }} />
+                   </div>
+                )}
+                <div style={{ padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(234,179,8,0.1)' }}>
+                  <button onClick={() => router.push(`/sponsors/${sponsor.id}`)} className="btn interactive-press" style={{ background: 'rgba(234,179,8,0.15)', color: '#fef08a', border: '1px solid rgba(234,179,8,0.4)', padding: '10px 24px', borderRadius: '12px', fontSize: '0.9rem', width: '100%', fontWeight: 700, transition: 'all 0.2s' }}>
+                     Learn More About {sponsor.name}
+                  </button>
+                </div>
+              </div>
+            );
+          }
           if (item.type === 'post') {
             const post = item.data;
             const author = users?.find(u => u.id === post.authorId);
