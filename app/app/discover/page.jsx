@@ -537,6 +537,7 @@ export default function Discover() {
                         </button>
                       </div>
                     </div>
+                  </div>
                   </React.Fragment>
                 );
               })}
