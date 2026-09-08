@@ -10,7 +10,7 @@ import AppHeader from '../src/components/AppHeader';
 import GettingStarted from '../src/views/GettingStarted';
 
 export default function HomeFeed() {
-  const { user, communities, events, users, eventRsvps, isLoading, notifications } = useAppContext();
+  const { user, communities, events, users, eventRsvps, isLoading, notifications, sponsors, sponsorshipAssignments } = useAppContext();
   const { feedPosts, likeFeedPost } = useFeed();
   const router = useRouter();
   const [expandedComments, setExpandedComments] = useState({});
