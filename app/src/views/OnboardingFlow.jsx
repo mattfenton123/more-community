@@ -268,7 +268,8 @@ export default function OnboardingFlow({ onComplete }) {
     <div key="swipe" className="page-wrapper" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       <div style={{ textAlign: 'center' }}>
         <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.6rem', margin: '0 0 8px 0' }}>Communities for you</h2>
-        <p style={{ color: 'var(--slate-400)', fontSize: '0.9rem', margin: 0 }}>Swipe right on groups that look like your vibe</p>
+        <p style={{ color: 'var(--slate-400)', fontSize: '0.9rem', margin: '0 0 8px 0' }}>Swipe right to save to your short list, swipe left to discard.</p>
+        <p style={{ color: 'var(--slate-500)', fontSize: '0.8rem', margin: 0, fontStyle: 'italic' }}>Like Tinder, but for community! 💚</p>
       </div>
 
       <div style={{ position: 'relative', width: '100%', height: '320px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
