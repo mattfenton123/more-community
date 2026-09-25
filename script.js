@@ -38,7 +38,7 @@ if (menuToggle && navLinks) {
     // Close mobile menu on link click (except dropdown toggle)
     navLinks.querySelectorAll('a').forEach(link => {
         link.addEventListener('click', (e) => {
-            if (window.innerWidth <= 768) {
+            if (window.innerWidth <= 992) {
                 // If it's the dropdown toggle, don't close the menu
                 if (link.closest('.nav-dropdown') && link.nextElementSibling && link.nextElementSibling.classList.contains('nav-dropdown-menu')) {
                     return;
@@ -56,7 +56,7 @@ if (menuToggle && navLinks) {
 const venturesToggle = document.getElementById('venturesDropdownToggle');
 if (venturesToggle) {
     venturesToggle.addEventListener('click', (e) => {
-        if (window.innerWidth <= 768) {
+        if (window.innerWidth <= 992) {
             e.preventDefault();
             const dropdown = venturesToggle.closest('.nav-dropdown');
             if (dropdown) {
