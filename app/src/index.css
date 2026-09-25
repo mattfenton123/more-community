@@ -1014,147 +1014,20 @@ textarea.form-input {
 }
 
 
-/* Desktop Dashboard Overrides */
-@media (min-width: 1024px) {
-  .app-container.desktop-mode {
-    max-width: 100% !important;
-    background-color: var(--slate-950);
-  }
-  
-  .app-container.desktop-mode .app-content {
-    margin-left: 80px;
-    padding-bottom: 0 !important;
-  }
-
-  /* Convert BottomNav to Global Left Sidebar */
-  .bottom-nav {
-    top: 0 !important;
-    left: 0 !important;
-    bottom: auto !important;
-    width: 80px !important;
-    height: 100dvh !important;
-    max-width: none !important;
-    flex-direction: column !important;
-    justify-content: flex-start !important;
-    padding: 32px 0 !important;
-    border-radius: 0 !important;
-    background: var(--slate-950) !important;
-    border: none !important;
-    border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
-    transform: none !important;
-    box-shadow: none !important;
-    gap: 16px !important;
-  }
-  .bottom-nav-item {
-    flex-direction: column !important;
-    height: 64px !important;
-    justify-content: center !important;
-    flex: none !important;
-    border-radius: 12px !important;
-    width: 64px !important;
-    margin: 0 auto !important;
-  }
-  .bottom-nav-item:hover {
-    background: rgba(255, 255, 255, 0.05) !important;
-  }
-  .bottom-nav-item.active {
-    background: rgba(20, 184, 166, 0.1) !important;
-  }
-  
-  /* Dashboard layout wrapper */
-  .dashboard-layout {
-    display: flex;
-    min-height: 100dvh;
-    width: 100%;
-  }
-
-  /* Sidebar */
-  .dashboard-sidebar {
-    width: 280px;
-    flex-shrink: 0;
-    background: var(--slate-900);
-    border-right: 1px solid rgba(255,255,255,0.05);
-    display: flex;
-    flex-direction: column;
-    position: sticky;
-    top: 0;
-    height: 100dvh;
-    padding: 24px 0;
-    overflow-y: auto;
-  }
-
-  .dashboard-sidebar-header {
-    padding: 0 24px 24px;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
-    margin-bottom: 16px;
-  }
-
-  .dashboard-nav-item {
-    padding: 12px 24px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    color: var(--slate-400);
-    text-decoration: none;
-    font-weight: 500;
-    font-size: 0.95rem;
-    transition: all 0.2s;
-    cursor: pointer;
-    background: transparent;
-    border: none;
-    width: 100%;
-    text-align: left;
-  }
-
-  .dashboard-nav-item:hover {
-    background: rgba(255,255,255,0.03);
-    color: var(--white);
-  }
-
-  .dashboard-nav-item.active {
-    background: rgba(20,184,166,0.1);
-    color: var(--teal-400);
-    border-right: 3px solid var(--teal-400);
-  }
-
-  /* Main Content Area */
-  .dashboard-main {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .dashboard-content-scroll {
-    flex: 1;
-    overflow-y: auto;
-    padding: 32px 48px;
-    max-width: 1200px;
-    margin: 0 auto;
-    width: 100%;
-  }
-
-  /* Hide mobile elements on desktop */
-  .mobile-only {
-    display: none !important;
-  }
+/* Dashboard layout wrapper (Mobile style forced on Desktop) */
+.desktop-only {
+  display: none !important;
 }
-
-@media (max-width: 1023px) {
-  .desktop-only {
-    display: none !important;
-  }
-  .dashboard-layout {
-    display: flex;
-    flex-direction: column;
-    min-height: 100dvh;
-  }
-  .dashboard-sidebar {
-    display: none;
-  }
-  .dashboard-main {
-    flex: 1;
-  }
+.dashboard-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+.dashboard-sidebar {
+  display: none;
+}
+.dashboard-main {
+  flex: 1;
 }
 /* Microsite Desktop Layout */
 @media (min-width: 1024px) {
