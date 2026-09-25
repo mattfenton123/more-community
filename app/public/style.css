@@ -213,6 +213,7 @@ strong { color: var(--white); }
     color: var(--slate-300); font-weight: 500; font-size: 0.88rem;
     padding: 0.5rem 0.9rem; border-radius: var(--radius-sm);
     transition: 0.2s ease;
+    white-space: nowrap;
 }
 .nav-links a:hover, .nav-links a.active {
     color: var(--white); background: rgba(255,255,255,0.06);
@@ -223,6 +224,7 @@ strong { color: var(--white); }
     padding: 0.5rem 1.4rem;
     border-radius: var(--radius-full);
     font-weight: 600; margin-left: 0.5rem;
+    white-space: nowrap;
 }
 .nav-links .btn-nav:hover { box-shadow: 0 4px 15px rgba(15,118,110,0.4); }
 
@@ -1237,7 +1239,7 @@ strong { color: var(--white); }
     .leaders-teaser-image { max-width: 500px; }
     .tw-highlights { gap: 1.5rem; }
 }
-@media (max-width: 768px) {
+@media (max-width: 992px) {
     .section { padding: 4.5rem 0; }
     .nav-links {
         position: fixed; top: 0; right: -100%;

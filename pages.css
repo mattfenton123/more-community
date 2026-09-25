@@ -894,10 +894,10 @@
 
 .page-hero-immersive {
     position: relative;
-    height: 100vh;
-    min-height: 700px;
+    min-height: 85vh;
     display: flex;
     align-items: flex-end;
+    padding-top: clamp(8rem, 14vh, 11rem);
     padding-bottom: 5rem;
     overflow: hidden;
     background-size: cover;

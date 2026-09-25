@@ -13,7 +13,7 @@
 </head>
 <body class="yentw-theme">
     <div class="menu-overlay" id="menuOverlay"></div>
-    <nav id="navbar" class="navbar scrolled">
+    <nav id="navbar" class="navbar">
         <div class="nav-container">
             <a href="index.html" class="nav-brand"><img src="images/logo.png" alt="more community"></a>
             <ul class="nav-links" id="navLinks">
@@ -22,30 +22,33 @@
                 <li><a href="about.html">Our Story</a></li>
                 <li><a href="tunbridge-wells.html" class="active">Tunbridge Wells</a></li>
                 <li class="nav-dropdown"><a href="#" id="venturesDropdownToggle">Ventures ▾</a><div class="nav-dropdown-menu"><a href="yentw.html">YENTW</a><a href="accelerator.html">Accelerator</a><a href="hackathons.html">Hackathons</a><a href="sponsorship.html">Sponsorship</a></div></li>
-                <li><a href="/portal/" class="btn-nav">Open App</a></li>
+                <li><a href="/app" class="btn-nav">Open the App</a></li>
             </ul>
             <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
         </div>
     </nav>
 
-    <!-- TW Hero -->
-    <section class="tw-page-hero">
-        <div class="tw-bg-wrap">
-            <img src="images/tunbridge-wells.png" alt="The Pantiles, Tunbridge Wells" class="tw-bg-img">
-        </div>
-        <div class="tw-overlay"></div>
-        <div class="container">
-            <div class="tw-hero-content">
-                <p class="eyebrow">First City</p>
-                <h1 class="editorial-title" style="font-size: clamp(2rem, 5vw, 3.5rem);"><span class="text-logo">more</span> in<br><em>Tunbridge Wells.</em></h1>
-                <p style="color: var(--slate-300); font-size: 1.1rem; line-height: 1.8; margin-bottom: 2rem;">We're starting where it matters — in a town already rich with community spirit. Over 20 active groups. One platform to connect them all.</p>
-                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-                    <a href="/portal/" class="btn btn-white">Open App</a>
-                    <a href="leaders.html" class="btn btn-ghost">List Your Community</a>
-                </div>
+    <!-- ====== HERO ====== -->
+    <header class="page-hero-immersive" style="background-image: url('images/tunbridge-wells.png');">
+        <div class="container" style="padding-bottom: 2.5rem;">
+            <span class="microsite-eyebrow">Launch Town</span>
+            <h1 class="microsite-title reveal-text" style="font-size: clamp(2.8rem, 6.5vw, 5.5rem); line-height: 1.15; padding-bottom: 0.3em;">
+                Community starts in<br>
+                <em>Tunbridge Wells.</em>
+            </h1>
+            <p class="microsite-desc reveal-text delay-1" style="max-width: 620px; font-size: 1.15rem; line-height: 1.8; color: var(--slate-300);">
+                We're starting where it matters — in a town already rich with community spirit. Over 20 active groups. One platform to connect them all.
+            </p>
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 2rem;" class="reveal-text delay-2">
+                <a href="/app" class="btn" style="background: var(--teal-500); color: white; border: none; box-shadow: 0 0 25px rgba(20,184,166,0.35); padding: 0.85rem 2rem; border-radius: var(--radius-full); font-weight: 700;">Open the App</a>
+                <a href="leaders.html" class="btn btn-outline" style="padding: 0.85rem 2rem; border-radius: var(--radius-full); font-weight: 600;">List Your Community</a>
             </div>
         </div>
-    </section>
+        <div class="hero-scroll-hint" style="z-index: 10;">
+            <span>Scroll</span>
+            <div class="scroll-line"></div>
+        </div>
+    </header>
 
     <!-- Why TW -->
     <section class="section">
