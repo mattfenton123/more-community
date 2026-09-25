@@ -44,7 +44,7 @@ export default function OnboardingFlow({ onComplete }) {
   const [swipeLeaveDir, setSwipeLeaveDir] = useState(null);
 
   // Filter communities by selected interests for the swipe step
-  const matchingCommunities = communities.filter(c => {
+  const matchingCommunities = (communities || []).filter(c => {
     if (!c.tags || c.tags.length === 0) return false;
     
     if (gender === 'Male') {
