@@ -93,10 +93,6 @@ export default function AdminDashboard() {
     }
   }, [user, navigate]);
 
-  if (!user || !user.isAdmin) {
-    return null;
-  }
-
   const ADMIN_EMAILS = ['msf199@hotmail.com', 'alex@maorecommunity.co.uk', 'alex@morecommunity.co.uk'];
 
   // ─── Platform-wide computed stats ─────────────────────────
@@ -279,6 +275,9 @@ export default function AdminDashboard() {
     { key: 'content', label: 'Content', icon: MessageCircle },
     { key: 'config', label: 'Config', icon: Settings },
   ];
+  if (!user || !user.isAdmin) {
+    return null;
+  }
 
   return (
     <div style={{ paddingBottom: '80px', minHeight: '100dvh', background: 'var(--slate-950)' }}>
