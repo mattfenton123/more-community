@@ -33,7 +33,7 @@ export default function LoginScreen() {
     if (authError) {
       setError(authError.message);
     } else {
-      router.push('/');
+      router.push('/app');
     }
     setIsLoading(false);
   };
@@ -44,7 +44,7 @@ export default function LoginScreen() {
     if (authError) {
       setError(authError.message);
     } else {
-      router.push('/');
+      router.push('/app');
     }
     setIsLoading(false);
   };
@@ -175,34 +175,7 @@ export default function LoginScreen() {
             </p>
           )}
 
-          {/* Divider */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px' }}>
-            <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.08)' }} />
-            <span style={{ color: 'var(--slate-500)', fontSize: '0.8rem', fontWeight: 500 }}>Quick Demo</span>
-            <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.08)' }} />
-          </div>
 
-          {/* Developer Demo Login */}
-          <button
-            onClick={handleDemo}
-            disabled={isLoading}
-            className="btn btn-outline interactive-press"
-            style={{
-              width: '100%',
-              padding: '14px',
-              borderRadius: '14px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '12px',
-              fontSize: '0.95rem',
-              opacity: isLoading ? 0.5 : 1,
-              marginBottom: '16px',
-            }}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"></path></svg>
-            1-Click Demo Login
-          </button>
 
           {/* Social proof */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px 0' }}>

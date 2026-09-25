@@ -76,7 +76,7 @@ export function AppProvider({ children }) {
       communitySupportStatement: 'We are incredibly proud to support the local communities of Tunbridge Wells. We believe that health and fitness should be accessible to everyone, and we are committed to keeping local community groups active and thriving. By partnering with More., we are providing local groups with expert-led fitness sessions, subsidized wellness workshops, and community events designed to bring people together through the power of movement.',
       alignmentDetails: 'More. and TWPT share a core belief: real-life connection is the foundation of wellbeing. While More. builds the digital infrastructure to bring people together in the real world, TWPT provides the physical spaces, expertise, and community-driven energy to help those groups thrive. Our partnership is built on a mutual commitment to combating loneliness, promoting physical activity, and fostering genuine relationships within Tunbridge Wells. Together, we are creating a healthier, more connected town where everyone has a place to belong.',
       heroImage: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&w=1200&q=80',
-      videoUrl: 'https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_1MB.mp4',
+      videoUrl: 'https://videos.pexels.com/video-files/853889/853889-hd_1920_1080_25fps.mp4',
       imageGallery: [
         'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=800&q=80',
         'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=800&q=80',
@@ -199,10 +199,20 @@ export function AppProvider({ children }) {
   if (user.id) {
     Object.keys(communityMemberships).forEach(communityId => {
       const mems = communityMemberships[communityId];
-      const myMem = mems.find(m => m.userId === user.id);
+      const myMem = mems.find(m => m.userId === user.id || m.user_id === user.id);
       if (myMem) {
-        user.joinedCommunities.push(communityId);
-        if (myMem.role === 'Leader' || myMem.role === 'Co-Leader') user.ledCommunities.push(communityId);
+        if (!user.joinedCommunities.includes(communityId)) user.joinedCommunities.push(communityId);
+        if (myMem.role === 'Leader' || myMem.role === 'Co-Leader') {
+          if (!user.ledCommunities.includes(communityId)) user.ledCommunities.push(communityId);
+        }
+      }
+    });
+
+    // Ensure any communities created by or led by this user are included
+    communities.forEach(c => {
+      if (c.leader_id === user.id || c.creator_id === user.id || c.creatorId === user.id) {
+        if (!user.ledCommunities.includes(c.id)) user.ledCommunities.push(c.id);
+        if (!user.joinedCommunities.includes(c.id)) user.joinedCommunities.push(c.id);
       }
     });
   }
@@ -369,8 +379,8 @@ export function AppProvider({ children }) {
         }
 
         const stockVideos = [
-          'https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_1MB.mp4',
-          'https://test-videos.co.uk/vids/sintel/mp4/h264/360/Sintel_360_10s_1MB.mp4'
+          'https://videos.pexels.com/video-files/853889/853889-hd_1920_1080_25fps.mp4',
+          'https://videos.pexels.com/video-files/3195394/3195394-uhd_2560_1440_25fps.mp4'
         ];
 
         setCommunities(comms.map((c, i) => ({

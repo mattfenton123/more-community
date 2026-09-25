@@ -11,6 +11,7 @@ export default function BottomNav() {
   const currentPath = usePathname();
   const { user } = useAppContext();
   const { directMessages, chatReadReceipts } = useChat();
+  const isLeader = user?.ledCommunities?.length > 0;
 
   // Hide bottom nav on specific pages, particularly deep pages where fixed footers or chat inputs shouldn't be obscured
   const isDeepPage = currentPath.match(/^\/events\/[^/]+$/) || 
@@ -42,18 +43,19 @@ export default function BottomNav() {
   }
 
   const navItems = [
-    { id: 'home', label: 'Home', icon: Activity, href: '/' },
+    { id: 'home', label: 'Home', icon: Activity, href: '/app' },
     { id: 'discover', label: 'Discover', icon: Compass, href: '/discover' },
     { id: 'events', label: 'Events', icon: Calendar, href: '/events' },
     { id: 'chat', label: 'Chat', icon: MessageCircle, href: '/chat', badge: unreadChatCount },
-    ...(user?.isAdmin || user?.leaderOf ? [{ id: 'admin', label: 'Admin', icon: Shield, href: '/admin' }] : []),
+    ...(user?.isAdmin ? [{ id: 'admin', label: 'Admin', icon: Shield, href: '/admin' }] : []),
+    ...(!user?.isAdmin && isLeader ? [{ id: 'dashboard', label: 'Leader', icon: Shield, href: '/dashboard' }] : []),
     { id: 'profile', label: 'Profile', icon: User, href: `/profile/${user?.id || ''}` },
   ];
 
   return (
     <div className="bottom-nav">
       {navItems.map(item => {
-        const isActive = currentPath === item.href || (item.id === 'chat' && currentPath?.startsWith('/chat'));
+        const isActive = currentPath === item.href || (item.id === 'home' && (currentPath === '/app' || currentPath === '/')) || (item.id === 'chat' && currentPath?.startsWith('/chat'));
         const Icon = item.icon;
         
         return (

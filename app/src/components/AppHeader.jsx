@@ -74,7 +74,7 @@ export default function AppHeader({ title, subtitle, rightElement, showBack = fa
           src="/logo.png" className="theme-invert" 
           alt="more." 
           style={{ height: '24px', cursor: 'pointer' }} 
-          onClick={() => navigate.push('/')} 
+          onClick={() => navigate.push('/app')} 
         />
         
         {title && (

@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>More Community — Commercials & Competitor Analysis 2026</title>
+<meta name="description" content="More Community: In-depth commercial analysis, competitor deep-dive, unit economics and 5-year financial projections.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Syne:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --teal-700:#0d6660;--teal-600:#0f766e;--teal-500:#14b8a6;--teal-400:#2dd4bf;--teal-300:#5eead4;
+  --amber-500:#f59e0b;--amber-400:#fbbf24;--amber-300:#fcd34d;
+  --rose-500:#f43f5e;--rose-400:#fb7185;
+  --slate-950:#020617;--slate-900:#0f172a;--slate-800:#1e293b;--slate-700:#334155;
+  --slate-600:#475569;--slate-500:#64748b;--slate-400:#94a3b8;--slate-300:#cbd5e1;
+  --slate-200:#e2e8f0;--slate-100:#f1f5f9;--white:#ffffff;
+  --font-heading:'Syne',sans-serif;
+  --font-body:'Plus Jakarta Sans',sans-serif;
+  --font-display:'Instrument Serif',serif;
+}
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { -webkit-font-smoothing: antialiased; }
+body {
+  font-family: var(--font-body);
+  background: var(--slate-950);
+  color: var(--slate-300);
+  line-height: 1.7;
+  font-weight: 300;
+}
+
+/* ── PAGE LAYOUT ── */
+.page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 60px 48px;
+}
+@media print {
+  html, body { background: #020617 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; height: auto !important; }
+  .page { max-width: 100%; padding: 0 !important; }
+  .page-break { page-break-before: always; }
+  
+  h1, h2, h3, h4, h5, .section-label {
+    break-after: avoid !important;
+    page-break-after: avoid !important;
+  }
+  p, li, .stat-grid, .stat-card, table, tr, .comp-grid, .comp-card, .callout {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+}
+
+/* ── COVER ── */
+.cover {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  text-align: center;
+  padding: 80px 48px;
+  background: radial-gradient(ellipse at 50% 40%, rgba(20,184,166,0.08) 0%, transparent 60%);
+}
+.cover-logo { height: 48px; margin-bottom: 32px; opacity: 0.9; }
+.cover-title {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 3.2rem;
+  line-height: 1.15;
+  color: var(--white);
+  margin-bottom: 12px;
+}
+.cover-sub {
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--slate-400);
+  max-width: 480px;
+  margin-bottom: 40px;
+}
+.cover-divider {
+  width: 60px; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--teal-400), transparent);
+  margin: 0 auto 28px;
+}
+.cover-meta {
+  display: flex; gap: 32px; justify-content: center;
+  font-family: var(--font-heading); font-size: 0.7rem;
+  font-weight: 600; color: var(--slate-500);
+  text-transform: uppercase; letter-spacing: 2px;
+}
+
+/* ── SECTION HEADERS ── */
+.section-label {
+  font-family: var(--font-heading);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--teal-400);
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 12px;
+}
+.section-label::before {
+  content: ''; width: 20px; height: 2px;
+  background: linear-gradient(90deg, var(--teal-400), var(--amber-400));
+  border-radius: 2px;
+}
+.section-num {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px; border-radius: 6px;
+  background: rgba(20,184,166,0.12); color: var(--teal-400);
+  font-size: 0.65rem; font-weight: 700; margin-right: 6px;
+}
+h1 {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 2.2rem;
+  line-height: 1.2;
+  color: var(--white);
+  margin-bottom: 16px;
+}
+h2 {
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--white);
+  margin: 32px 0 12px;
+  letter-spacing: -0.02em;
+}
+h3 {
+  font-family: var(--font-heading);
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--teal-300);
+  margin: 20px 0 8px;
+}
+p { margin-bottom: 16px; font-size: 0.88rem; }
+
+/* ── GRADIENT TEXT ── */
+.grad {
+  background: linear-gradient(135deg, var(--teal-400), var(--amber-400));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── TABLES ── */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0 28px;
+  font-size: 0.8rem;
+}
+th {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--slate-500);
+  text-align: left;
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+td {
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  color: var(--slate-300);
+  vertical-align: top;
+}
+tr:hover td { background: rgba(255,255,255,0.01); }
+.highlight-row td { color: var(--white); font-weight: 600; background: rgba(20,184,166,0.04); }
+.total-row td { color: var(--white); font-weight: 700; border-top: 2px solid rgba(20,184,166,0.3); border-bottom: none; font-size: 0.85rem; }
+.positive { color: var(--teal-400) !important; font-weight: 600; }
+.negative { color: var(--rose-400) !important; font-weight: 600; }
+
+/* ── STAT CARDS ── */
+.stat-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 12px; margin: 24px 0;
+}
+.stat-card {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 12px; padding: 18px;
+}
+.stat-card-value {
+  font-family: var(--font-heading);
+  font-weight: 800; font-size: 1.6rem;
+  letter-spacing: -0.04em; line-height: 1;
+  margin-bottom: 4px;
+}
+.stat-card-label {
+  font-family: var(--font-heading);
+  font-size: 0.65rem; font-weight: 600;
+  color: var(--slate-500);
+  text-transform: uppercase; letter-spacing: 1px;
+}
+
+/* ── COMPETITOR CARDS ── */
+.comp-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 14px; margin: 20px 0;
+}
+.comp-card {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 14px; padding: 20px;
+  position: relative;
+}
+.comp-card-header {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 10px;
+}
+.comp-name {
+  font-family: var(--font-heading);
+  font-size: 0.95rem; font-weight: 700;
+  color: var(--white);
+}
+.comp-category {
+  font-size: 0.6rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 1.5px;
+  color: var(--teal-400);
+}
+.comp-body { font-size: 0.78rem; color: var(--slate-400); line-height: 1.5; margin-bottom: 10px; }
+.comp-pricing {
+  font-size: 0.75rem; color: var(--amber-400);
+  font-weight: 500; padding-top: 10px;
+  border-top: 1px dashed rgba(255,255,255,0.08);
+}
+.comp-edge {
+  font-size: 0.72rem; color: var(--teal-300);
+  font-weight: 500; margin-top: 6px;
+}
+.comp-badge {
+  position: absolute; top: 12px; right: 12px;
+  font-family: var(--font-heading);
+  font-size: 0.55rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 1px;
+  padding: 3px 8px; border-radius: 6px;
+}
+.badge-direct { background: rgba(239,68,68,0.12); color: var(--rose-400); }
+.badge-adjacent { background: rgba(245,158,11,0.12); color: var(--amber-400); }
+.badge-indirect { background: rgba(100,116,139,0.15); color: var(--slate-400); }
+
+/* ── FEATURE MATRIX ── */
+.matrix-table th { font-size: 0.6rem; text-align: center; padding: 10px 8px; }
+.matrix-table td { text-align: center; font-size: 0.75rem; padding: 10px 8px; }
+.matrix-table td:first-child { text-align: left; color: var(--white); font-weight: 500; }
+.check { color: var(--teal-400); font-weight: 700; }
+.cross { color: var(--slate-600); }
+.partial { color: var(--amber-400); }
+
+/* ── CALLOUTS ── */
+.callout {
+  border-radius: 12px; padding: 18px 20px;
+  margin: 20px 0; font-size: 0.85rem;
+}
+.callout-teal {
+  background: rgba(20,184,166,0.06);
+  border: 1px solid rgba(20,184,166,0.15);
+  color: var(--teal-300);
+}
+.callout-amber {
+  background: rgba(245,158,11,0.06);
+  border: 1px solid rgba(245,158,11,0.15);
+  color: var(--amber-300);
+}
+.callout-label {
+  font-family: var(--font-heading);
+  font-size: 0.7rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 1.5px;
+  margin-bottom: 8px;
+}
+
+/* ── PULL QUOTE ── */
+.pull-quote {
+  border-left: 3px solid var(--teal-400);
+  padding: 8px 0 8px 20px;
+  font-family: var(--font-display);
+  font-style: italic; font-size: 1.15rem;
+  color: var(--teal-300); line-height: 1.5;
+  margin: 24px 0;
+}
+
+/* ── UNIT ECON TABLE ── */
+.unit-table td:not(:first-child) { text-align: right; font-variant-numeric: tabular-nums; }
+.unit-table th:not(:first-child) { text-align: right; }
+
+/* ── TAM/SAM/SOM ── */
+.tam-stack {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 8px; margin: 28px 0;
+}
+.tam-ring {
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 16px; text-align: center; padding: 20px 40px;
+  font-family: var(--font-heading); font-weight: 700;
+}
+.tam-ring.tam { width: 100%; background: rgba(20,184,166,0.04); border: 1px solid rgba(20,184,166,0.12); color: var(--teal-300); font-size: 1.1rem; }
+.tam-ring.sam { width: 75%; background: rgba(245,158,11,0.04); border: 1px solid rgba(245,158,11,0.12); color: var(--amber-300); font-size: 1rem; }
+.tam-ring.som { width: 50%; background: rgba(20,184,166,0.08); border: 1px solid rgba(20,184,166,0.2); color: var(--teal-400); font-size: 0.95rem; }
+.tam-label { font-size: 0.55rem; font-weight: 600; text-transform: uppercase; letter-spacing: 2px; color: var(--slate-500); display: block; margin-top: 4px; }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════════
+     COVER
+     ══════════════════════════════════════════════════════════════ -->
+<div class="cover">
+  <img src="images/more-logo-white.webp" alt="More Community" class="cover-logo" onerror="this.style.display='none'">
+  <div class="cover-title">Commercials &<br><span class="grad">Competitor Analysis</span></div>
+  <div class="cover-sub">In-depth commercial breakdown, competitive landscape, unit economics and 5-year financial projections.</div>
+  <div class="cover-divider"></div>
+  <div class="cover-meta">
+    <span>August 2026</span>
+    <span>Confidential</span>
+    <span>V1.0</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     1 — EXECUTIVE SUMMARY
+     ══════════════════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="section-label"><span class="section-num">01</span>Executive Summary</div>
+  <h1>The commercial case for <span class="grad">community infrastructure.</span></h1>
+
+  <p>More Community is the platform layer for real-life, in-person community across the United Kingdom. Free for community leaders. Monetised through the ecosystem of local sponsorship, enterprise NHS/council contracts, premium SaaS tools and data insights.</p>
+
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="stat-card-value grad">£14.3M</div>
+      <div class="stat-card-label">Year 5 Revenue</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-value" style="color: var(--teal-400)">78%</div>
+      <div class="stat-card-label">Year 5 Margin</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-value" style="color: var(--amber-400)">Year 2</div>
+      <div class="stat-card-label">Profitability</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-value" style="color: var(--white)">500</div>
+      <div class="stat-card-label">Towns by Year 5</div>
+    </div>
+  </div>
+
+  <div class="callout callout-teal">
+    <div class="callout-label">Key Thesis</div>
+    Community infrastructure is an emerging category. Unlike platforms that charge the people building communities (Meetup, Mighty Networks), More Community monetises the commercial ecosystem around those communities — keeping the platform free and maximising network effects.
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     2 — REVENUE MODEL BREAKDOWN
+     ══════════════════════════════════════════════════════════════ -->
+<div class="page page-break">
+  <div class="section-label"><span class="section-num">02</span>Revenue Model</div>
+  <h1>Seven revenue streams. <span class="grad">Zero charged to leaders.</span></h1>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Revenue Stream</th>
+        <th>Unit Value</th>
+        <th>Driver</th>
+        <th>Yr 1</th>
+        <th>Yr 2</th>
+        <th>Yr 3</th>
+        <th>Yr 5</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="color:var(--white);font-weight:500">Local Sponsorship</td>
+        <td>£13k/town</td>
+        <td>Towns live</td>
+        <td>£39k</td>
+        <td>£195k</td>
+        <td>£1.04M</td>
+        <td>£6.5M</td>
+      </tr>
+      <tr>
+        <td style="color:var(--white);font-weight:500">NHS/Council Contracts</td>
+        <td>£50k/contract</td>
+        <td>Active contracts</td>
+        <td>£0</td>
+        <td>£50k</td>
+        <td>£200k</td>
+        <td>£1.5M</td>
+      </tr>
+      <tr>
+        <td style="color:var(--white);font-weight:500">Strategic Partnerships</td>
+        <td>£60k/partner</td>
+        <td>Brand partners</td>
+        <td>£0</td>
+        <td>£60k</td>
+        <td>£180k</td>
+        <td>£900k</td>
+      </tr>
+      <tr>
+        <td style="color:var(--white);font-weight:500">Premium Leader Tools</td>
+        <td>£800/town</td>
+        <td>~25% adoption</td>
+        <td>£2.4k</td>
+        <td>£12k</td>
+        <td>£64k</td>
+        <td>£400k</td>
+      </tr>
+      <tr>
+        <td style="color:var(--white);font-weight:500">Ticketing & Events</td>
+        <td>£2k/town</td>
+        <td>Platform fees</td>
+        <td>£6k</td>
+        <td>£30k</td>
+        <td>£160k</td>
+        <td>£1M</td>
+      </tr>
+      <tr>
+        <td style="color:var(--white);font-weight:500">Data Insights & API</td>
+        <td>£5k/town</td>
+        <td>Yr 3+ councils</td>
+        <td>£0</td>
+        <td>£0</td>
+        <td>£400k</td>
+        <td>£2.5M</td>
+      </tr>
+      <tr>
+        <td style="color:var(--white);font-weight:500">Experiences Marketplace</td>
+        <td>£3k/town</td>
+        <td>Leader-curated</td>
+        <td>£1.5k</td>
+        <td>£15k</td>
+        <td>£160k</td>
+        <td>£1.5M</td>
+      </tr>
+      <tr class="total-row">
+        <td>TOTAL REVENUE</td>
+        <td></td>
+        <td></td>
+        <td>£49k</td>
+        <td>£362k</td>
+        <td>£2.2M</td>
+        <td>£14.3M</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Revenue Stream Analysis</h2>
+
+  <h3>Local Sponsorship (Core — 45% of Yr5 Revenue)</h3>
+  <p>Each town generates ~£13,000/year from 3-4 local business sponsors across tiered packages (Headline £5-6k, Support £2-3k). This is priced well below the average UK SME annual marketing budget of £38,000 (Statista 2025). Sponsors receive branded presence across community events, the local microsite, and in-app placements. This stream scales linearly with town count and is the commercial backbone of the model.</p>
+
+  <h3>NHS & Council Contracts (Enterprise — 10% of Yr5)</h3>
+  <p>The NHS Long Term Plan mandates social prescribing across all 42 Integrated Care Systems (ICSs). More Community provides the digital infrastructure for these programmes — connecting link workers to community activities. At £50k per contract (below typical NHS SaaS procurement), this is a high-margin, sticky B2G revenue stream with multi-year renewal rates.</p>
+
+  <h3>Council Performance Dashboard (Growth — 17% of Yr5)</h3>
+  <p>From Year 3, we provide local authorities with a real-time community health and engagement dashboard. Councils currently pay £10k–£20k for static, manual community audit reports; More Community replaces this with live, anonymised data on local connection and wellbeing for £5k per town per year. This represents high-margin recurring revenue that grows with the network without incremental sales effort.</p>
+
+  <h3>Experiences Marketplace (New — 10% of Yr5)</h3>
+  <p>Community leaders curate and promote day experiences — skydiving, retreats, away days, theatre, wellness — to their groups. More Community earns a 10–15% base commission (industry standard for experience aggregators like Viator/GetYourGuide), while leaders choose their own markup (typically 5–20%), creating a direct earning opportunity that incentivises promotion. Year 1 focuses on single-day experiences; Year 2 expands to multi-day packages. At scale, this stream generates approximately £3,000 per town per year.</p>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     3 — 5-YEAR P&L
+     ══════════════════════════════════════════════════════════════ -->
+<div class="page page-break">
+  <div class="section-label"><span class="section-num">03</span>5-Year P&L</div>
+  <h1>Profitable from <span class="grad">Year 2.</span></h1>
+
+  <table>
+    <thead>
+      <tr>
+        <th></th>
+        <th>Year 1</th>
+        <th>Year 2</th>
+        <th>Year 3</th>
+        <th>Year 4</th>
+        <th>Year 5</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td colspan="6" style="color:var(--white);font-weight:700;padding-top:20px;border-bottom:none">REVENUE</td></tr>
+      <tr>
+        <td>Local Sponsorships</td>
+        <td>£39,000</td><td>£195,000</td><td>£1,040,000</td><td>£2,600,000</td><td>£6,500,000</td>
+      </tr>
+      <tr>
+        <td>NHS/Council Contracts</td>
+        <td>£0</td><td>£50,000</td><td>£200,000</td><td>£600,000</td><td>£1,500,000</td>
+      </tr>
+      <tr>
+        <td>Strategic Partnerships</td>
+        <td>£0</td><td>£60,000</td><td>£180,000</td><td>£480,000</td><td>£900,000</td>
+      </tr>
+      <tr>
+        <td>Premium Leader Tools</td>
+        <td>£2,400</td><td>£12,000</td><td>£64,000</td><td>£160,000</td><td>£400,000</td>
+      </tr>
+      <tr>
+        <td>Ticketing & Events</td>
+        <td>£6,000</td><td>£30,000</td><td>£160,000</td><td>£400,000</td><td>£1,000,000</td>
+      </tr>
+      <tr>
+        <td>Data Insights & API</td>
+        <td>£0</td><td>£0</td><td>£400,000</td><td>£1,000,000</td><td>£2,500,000</td>
+      </tr>
+      <tr>
+        <td>Experiences Marketplace</td>
+        <td>£1,500</td><td>£15,000</td><td>£160,000</td><td>£500,000</td><td>£1,500,000</td>
+      </tr>
+      <tr class="highlight-row">
+        <td>TOTAL REVENUE</td>
+        <td>£48,900</td><td>£362,000</td><td>£2,204,000</td><td>£5,740,000</td><td>£14,300,000</td>
+      </tr>
+
+      <tr><td colspan="6" style="color:var(--white);font-weight:700;padding-top:24px;border-bottom:none">COSTS</td></tr>
+      <tr>
+        <td>Total Payroll</td>
+        <td>£136,000</td><td>£249,000</td><td>£630,000</td><td>£1,249,000</td><td>£2,620,000</td>
+      </tr>
+      <tr>
+        <td>Marketing & Local Activation</td>
+        <td>£4,500</td><td>£15,000</td><td>£64,000</td><td>£120,000</td><td>£250,000</td>
+      </tr>
+      <tr>
+        <td>Infrastructure & Hosting</td>
+        <td>£600</td><td>£3,000</td><td>£16,000</td><td>£40,000</td><td>£100,000</td>
+      </tr>
+      <tr>
+        <td>Legal, Ops & Office</td>
+        <td>£15,000</td><td>£25,000</td><td>£40,000</td><td>£80,000</td><td>£150,000</td>
+      </tr>
+      <tr class="highlight-row">
+        <td>TOTAL COSTS</td>
+        <td>£156,100</td><td>£332,000</td><td>£730,000</td><td>£1,509,000</td><td>£3,200,000</td>
+      </tr>
+
+      <tr><td colspan="6" style="padding-top:16px;border-bottom:none"></td></tr>
+      <tr class="total-row">
+        <td style="font-size:0.95rem">EBITDA</td>
+        <td class="negative">-£107k</td>
+        <td class="positive">+£30k</td>
+        <td class="positive">+£1.47M</td>
+        <td class="positive">+£4.23M</td>
+        <td class="positive" style="font-size:1rem">+£11.1M</td>
+      </tr>
+      <tr>
+        <td style="color:var(--slate-500)">EBITDA Margin</td>
+        <td class="negative">-219%</td>
+        <td class="positive">8%</td>
+        <td class="positive">67%</td>
+        <td class="positive">74%</td>
+        <td class="positive">78%</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-teal">
+    <div class="callout-label">Path to Profitability</div>
+    Year 1 is an investment year (£107k burn, covered by seed). Year 2 crosses break-even at 15 towns — validating unit economics before aggressive scaling. By Year 3 the business generates £1.47M EBITDA at 67% margin. The model's capital efficiency comes from community leaders doing the activation work — More Community provides the tools, sponsors fund the ecosystem.
+  </div>
+
+  <div class="callout callout-amber" style="margin-top: 1rem;">
+    <div class="callout-label">Churn Modelling Note</div>
+    Financial projections include a net town churn of 5% per year, and a community leader churn of 15% per year. To achieve 500 active towns in Year 5, the model assumes launching ~525 towns to account for attrition.
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     4 — UNIT ECONOMICS
+     ══════════════════════════════════════════════════════════════ -->
+<div class="page page-break">
+  <div class="section-label"><span class="section-num">04</span>Unit Economics</div>
+  <h1>Per-town <span class="grad">contribution margin.</span></h1>
+
+  <p>Each town operates as a micro-economy. The marginal cost of adding a new town is minimal once the platform and playbook exist — the primary cost is marketing activation and community manager support.</p>
+
+  <table class="unit-table">
+    <thead>
+      <tr>
+        <th>Metric</th>
+        <th>Year 2 (15 towns)</th>
+        <th>Year 3 (80 towns)</th>
+        <th>Year 5 (500 towns)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="color:var(--white);font-weight:500">Revenue per Town</td>
+        <td>£23,133</td>
+        <td>£25,550</td>
+        <td>£25,600</td>
+      </tr>
+      <tr>
+        <td style="color:var(--white);font-weight:500">Direct Cost per Town</td>
+        <td>~£3,200</td>
+        <td>~£1,800</td>
+        <td>~£1,200</td>
+      </tr>
+      <tr class="highlight-row">
+        <td>Gross Margin per Town</td>
+        <td>£19,933 (86%)</td>
+        <td>£23,750 (93%)</td>
+        <td>£24,400 (95%)</td>
+      </tr>
+      <tr>
+        <td style="color:var(--white);font-weight:500">Community Activation Cost</td>
+        <td>~£1,500</td>
+        <td>~£800</td>
+        <td>~£500</td>
+      </tr>
+      <tr>
+        <td style="color:var(--white);font-weight:500">Estimated LTV (5yr)</td>
+        <td colspan="3" style="text-align:center;color:var(--teal-400);font-weight:700;font-size:1rem">~£120,000</td>
+      </tr>
+      <tr>
+        <td style="color:var(--white);font-weight:500">CAC (Customer Acquisition)</td>
+        <td colspan="3" style="text-align:center;color:var(--amber-400);font-weight:600">~£2,500</td>
+      </tr>
+      <tr class="total-row">
+        <td>LTV:CAC Ratio</td>
+        <td colspan="3" style="text-align:center;font-size:1.2rem"><span class="grad">48:1</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="pull-quote">
+    "Once a town is live and active, the economics are extraordinary — 95% gross margin with £24k revenue per town per year."
+  </div>
+
+  <h2>Headcount Model</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Role</th>
+        <th>Yr 1</th>
+        <th>Yr 2</th>
+        <th>Yr 3</th>
+        <th>Yr 4</th>
+        <th>Yr 5</th>
+        <th>Avg Salary</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="color:var(--white);font-weight:500">Founders / Execs</td>
+        <td>1</td><td>1</td><td>2</td><td>3</td><td>5</td><td>£60k</td>
+      </tr>
+      <tr>
+        <td style="color:var(--white);font-weight:500">Community Managers</td>
+        <td>0.5</td><td>2</td><td>5</td><td>12</td><td>30</td><td>£32k</td>
+      </tr>
+      <tr>
+        <td style="color:var(--white);font-weight:500">Sales / Enterprise</td>
+        <td>0</td><td>1</td><td>2</td><td>5</td><td>12</td><td>£45k</td>
+      </tr>
+      <tr>
+        <td style="color:var(--white);font-weight:500">Developers / Tech</td>
+        <td>1</td><td>2</td><td>4</td><td>8</td><td>15</td><td>£60k</td>
+      </tr>
+      <tr class="highlight-row">
+        <td>Total FTEs</td>
+        <td>2.5</td><td>6</td><td>13</td><td>28</td><td>62</td><td></td>
+      </tr>
+      <tr class="total-row">
+        <td>Payroll Cost</td>
+        <td>£136k</td><td>£249k</td><td>£630k</td><td>£1.25M</td><td>£2.62M</td><td></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     5 — COMPETITOR DEEP-DIVE
+     ══════════════════════════════════════════════════════════════ -->
+<div class="page page-break">
+  <div class="section-label"><span class="section-num">05</span>Competitive Landscape</div>
+  <h1>No platform does <span class="grad">what we do.</span></h1>
+
+  <p>The competitive landscape is fragmented. Existing platforms address individual elements of community — event management, social networking, communication — but none combine founder tools, local discovery and real-world community infrastructure in a single free platform. Below is an in-depth analysis of eight key competitors.</p>
+
+  <div class="comp-grid">
+    <!-- Nextdoor -->
+    <div class="comp-card" style="border-top: 3px solid var(--rose-400);">
+      <span class="comp-badge badge-direct">Direct</span>
+      <div class="comp-card-header">
+        <div>
+          <div class="comp-name">Nextdoor</div>
+          <div class="comp-category">Hyperlocal Social Network</div>
+        </div>
+      </div>
+      <div class="comp-body">The largest neighbourhood network globally. Verified-residency model creates trust but the platform is advertising-driven, creating a cluttered, Facebook-like experience. Limited community tools — no event ticketing, no leader analytics, no community creation workflow.</div>
+      <div class="comp-pricing">💰 Revenue: Advertising-led. Neighbourhood Ads, sponsored posts. Users are the product. Recently achieved profitability through AI-powered ad optimisation.</div>
+      <div class="comp-edge">🎯 Our edge: Community-first not ad-first. Purpose-built founder tools. Free for leaders. No advertising clutter.</div>
+    </div>
+
+    <!-- Meetup -->
+    <div class="comp-card" style="border-top: 3px solid var(--rose-400);">
+      <span class="comp-badge badge-direct">Direct</span>
+      <div class="comp-card-header">
+        <div>
+          <div class="comp-name">Meetup</div>
+          <div class="comp-category">Event Discovery Platform</div>
+        </div>
+      </div>
+      <div class="comp-body">Once the go-to for in-person groups, now suffering from aggressive monetisation since its 2024 Bending Spoons acquisition. Organisers pay subscriptions, members pay ~$2 per RSVP or $5/mo for access. Many organisers are actively seeking alternatives.</div>
+      <div class="comp-pricing">💰 Revenue: Double paywall. Organiser subscriptions ($22-35/mo) + member RSVP fees ($2/event) or Meetup+ ($5/mo). Event-first, not community-first.</div>
+      <div class="comp-edge">🎯 Our edge: Always free for leaders. Community-first not event-first. Built for ongoing relationships, not one-off meetups.</div>
+    </div>
+
+    <!-- Mighty Networks -->
+    <div class="comp-card" style="border-top: 3px solid var(--amber-400);">
+      <span class="comp-badge badge-adjacent">Adjacent</span>
+      <div class="comp-card-header">
+        <div>
+          <div class="comp-name">Mighty Networks</div>
+          <div class="comp-category">Online Community Platform</div>
+        </div>
+      </div>
+      <div class="comp-body">White-label platform for creators building paid online communities. Strong for courses and digital content, but designed for virtual-first communities. No local discovery, no geo features, no real-world event infrastructure.</div>
+      <div class="comp-pricing">💰 Revenue: SaaS subscriptions. Community Plan $41/mo, Business $119/mo, Path-to-Pro $360/mo. Plus transaction fees on member payments.</div>
+      <div class="comp-edge">🎯 Our edge: Built for in-person communities, not online courses. Free for leaders. Local-first discovery. Integrated event ticketing.</div>
+    </div>
+
+    <!-- Circle -->
+    <div class="comp-card" style="border-top: 3px solid var(--amber-400);">
+      <span class="comp-badge badge-adjacent">Adjacent</span>
+      <div class="comp-card-header">
+        <div>
+          <div class="comp-name">Circle</div>
+          <div class="comp-category">Community Platform for Creators</div>
+        </div>
+      </div>
+      <div class="comp-body">Modern community platform popular with SaaS companies and creators. Excellent discussion and content features, but fundamentally an online platform. No local community features, no geographic discovery, no event ticketing system.</div>
+      <div class="comp-pricing">💰 Revenue: SaaS tiers. Basic $89/mo, Professional $199/mo, Business $399/mo, Enterprise custom. No free tier for community leaders.</div>
+      <div class="comp-edge">🎯 Our edge: Designed for real-world groups, not online forums. Free for community leaders. Location-based discovery that connects people locally.</div>
+    </div>
+
+    <!-- Discord -->
+    <div class="comp-card" style="border-top: 3px solid var(--slate-500);">
+      <span class="comp-badge badge-indirect">Indirect</span>
+      <div class="comp-card-header">
+        <div>
+          <div class="comp-name">Discord</div>
+          <div class="comp-category">Communication Platform</div>
+        </div>
+      </div>
+      <div class="comp-body">Originally for gamers, now widely used for online communities. Powerful chat and voice features but overwhelming for non-technical users. No local discovery, no event management, no member analytics. Users are anonymous, not verified.</div>
+      <div class="comp-pricing">💰 Revenue: Nitro subscriptions ($9.99/mo), server boosts, and recently app marketplace. Free tier is generous but lacks community management tools.</div>
+      <div class="comp-edge">🎯 Our edge: Simple UX for all ages. Real identity. Local discovery. Integrated event management and CRM. Purpose-built for real-world communities.</div>
+    </div>
+
+    <!-- Hivebrite -->
+    <div class="comp-card" style="border-top: 3px solid var(--amber-400);">
+      <span class="comp-badge badge-adjacent">Adjacent</span>
+      <div class="comp-card-header">
+        <div>
+          <div class="comp-name">Hivebrite</div>
+          <div class="comp-category">Enterprise Community Management</div>
+        </div>
+      </div>
+      <div class="comp-body">White-label enterprise solution for alumni networks, associations and non-profits. Powerful features but prohibitively expensive for grassroots groups. Implementation timelines of 3-6 months. Not designed for hyperlocal communities.</div>
+      <div class="comp-pricing">💰 Revenue: Enterprise SaaS. Starting at ~$895/mo (Connect), with Scale and Enterprise tiers at custom pricing. Plus implementation/setup fees of £5-15k.</div>
+      <div class="comp-edge">🎯 Our edge: Free and instant setup. Built for grassroots community leaders, not enterprise admins. Hyperlocal discovery and sponsorship tools included.</div>
+    </div>
+
+    <!-- Eventbrite -->
+    <div class="comp-card" style="border-top: 3px solid var(--slate-500);">
+      <span class="comp-badge badge-indirect">Indirect</span>
+      <div class="comp-card-header">
+        <div>
+          <div class="comp-name">Eventbrite</div>
+          <div class="comp-category">Event Management & Ticketing</div>
+        </div>
+      </div>
+      <div class="comp-body">The dominant event ticketing platform. Strong for one-off events but purely transactional — no community layer, no member relationships, no ongoing engagement tools. Each event is isolated with no continuity between them.</div>
+      <div class="comp-pricing">💰 Revenue: Transaction fees. 3.7% + £0.79 per paid ticket (UK). Free events are free to list. No community features, analytics or CRM at any tier.</div>
+      <div class="comp-edge">🎯 Our edge: Community layer that creates ongoing member relationships. Free event ticketing with integrated CRM. Leaders keep attendees, not just ticket sales.</div>
+    </div>
+
+    <!-- Facebook Groups -->
+    <div class="comp-card" style="border-top: 3px solid var(--rose-400);">
+      <span class="comp-badge badge-direct">Direct</span>
+      <div class="comp-card-header">
+        <div>
+          <div class="comp-name">Facebook Groups</div>
+          <div class="comp-category">Social Network Feature</div>
+        </div>
+      </div>
+      <div class="comp-body">Still the default for many UK community groups, but rapidly declining among under-35s. Cluttered UX, algorithmic feed manipulation, no dedicated founder tools, no event ticketing, no analytics, and growing privacy concerns.</div>
+      <div class="comp-pricing">💰 Revenue: Indirect — Facebook Groups are a retention feature for Meta's advertising platform. Groups admin tools are minimal and underfunded.</div>
+      <div class="comp-edge">🎯 Our edge: Purpose-built for founders with analytics, CRM, flyer gen. Clean UX. No ads. No algorithmic interference. Real local discovery.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     6 — FEATURE COMPARISON MATRIX
+     ══════════════════════════════════════════════════════════════ -->
+<div class="page page-break">
+  <div class="section-label"><span class="section-num">06</span>Feature Comparison</div>
+  <h1>Competitive <span class="grad">positioning matrix.</span></h1>
+
+  <table class="matrix-table">
+    <thead>
+      <tr>
+        <th style="text-align:left">Feature</th>
+        <th>More.</th>
+        <th>Nextdoor</th>
+        <th>Meetup</th>
+        <th>Mighty N.</th>
+        <th>Circle</th>
+        <th>Discord</th>
+        <th>Eventbrite</th>
+        <th>FB Groups</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Free for leaders</td>
+        <td class="check">✓</td><td class="check">✓</td><td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td><td class="check">✓</td><td class="partial">~</td><td class="check">✓</td>
+      </tr>
+      <tr>
+        <td>Local community discovery</td>
+        <td class="check">✓</td><td class="partial">~</td><td class="check">✓</td><td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td><td class="check">✓</td><td class="cross">✗</td>
+      </tr>
+      <tr>
+        <td>Event ticketing</td>
+        <td class="check">✓</td><td class="cross">✗</td><td class="partial">~</td><td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td><td class="check">✓</td><td class="cross">✗</td>
+      </tr>
+      <tr>
+        <td>Member CRM & analytics</td>
+        <td class="check">✓</td><td class="cross">✗</td><td class="cross">✗</td><td class="partial">~</td><td class="check">✓</td><td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td>
+      </tr>
+      <tr>
+        <td>QR check-in system</td>
+        <td class="check">✓</td><td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td><td class="partial">~</td><td class="cross">✗</td>
+      </tr>
+      <tr>
+        <td>Community microsite</td>
+        <td class="check">✓</td><td class="cross">✗</td><td class="cross">✗</td><td class="check">✓</td><td class="check">✓</td><td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td>
+      </tr>
+      <tr>
+        <td>In-person focused</td>
+        <td class="check">✓</td><td class="partial">~</td><td class="check">✓</td><td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td><td class="check">✓</td><td class="partial">~</td>
+      </tr>
+      <tr>
+        <td>Gamification & leaderboard</td>
+        <td class="check">✓</td><td class="cross">✗</td><td class="cross">✗</td><td class="partial">~</td><td class="cross">✗</td><td class="partial">~</td><td class="cross">✗</td><td class="cross">✗</td>
+      </tr>
+      <tr>
+        <td>Broadcast & notifications</td>
+        <td class="check">✓</td><td class="partial">~</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="partial">~</td><td class="partial">~</td>
+      </tr>
+      <tr>
+        <td>WhatsApp integration</td>
+        <td class="check">✓</td><td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td>
+      </tr>
+      <tr>
+        <td>Local sponsorship tools</td>
+        <td class="check">✓</td><td class="partial">~</td><td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td>
+      </tr>
+      <tr>
+        <td>No ads / clean UX</td>
+        <td class="check">✓</td><td class="cross">✗</td><td class="partial">~</td><td class="check">✓</td><td class="check">✓</td><td class="partial">~</td><td class="partial">~</td><td class="cross">✗</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-amber">
+    <div class="callout-label">Key: ✓ Full support &nbsp;&nbsp; ~ Partial &nbsp;&nbsp; ✗ Not available</div>
+    More Community is the only platform that scores ✓ across all 12 features. The closest competitor (Nextdoor) scores 3/12 with full support. This is because no other platform was designed from the ground up for grassroots, in-person community leaders.
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     7 — MARKET SIZE
+     ══════════════════════════════════════════════════════════════ -->
+<div class="page page-break">
+  <div class="section-label"><span class="section-num">07</span>Market Size</div>
+  <h1>The market for <span class="grad">real-world community.</span></h1>
+
+  <div class="tam-stack">
+    <div class="tam-ring tam">
+      £4.2B <span class="tam-label">TAM — Global Community Platform Market (2026)</span>
+    </div>
+    <div class="tam-ring sam">
+      £680M <span class="tam-label">SAM — UK Local Community & Social Prescribing</span>
+    </div>
+    <div class="tam-ring som">
+      £14.3M <span class="tam-label">SOM — 500 UK Towns × £28.6k Revenue Target</span>
+    </div>
+  </div>
+
+  <h2>Market Breakdown</h2>
+
+  <h3>TAM — £4.2B</h3>
+  <p>The global community platform market is projected at $5.3B (£4.2B) in 2026, growing at 13.7% CAGR (Grand View Research). This includes enterprise community platforms, event management, and social prescribing infrastructure across developed markets.</p>
+
+  <h3>SAM — £680M</h3>
+  <p>Our serviceable market is the UK local community infrastructure segment: ~1,800 towns with 10,000+ population, 42 NHS ICSs requiring social prescribing platforms, ~5.5M small businesses spending on local marketing, and the emerging council data insights market.</p>
+
+  <h3>SOM — £14.3M</h3>
+  <p>Our initial achievable market is 500 towns within 5 years, each generating ~£28.6k revenue from sponsorship, ticketing, SaaS and data. At 500 towns this represents £14.3M revenue — roughly 30% of SOM, with significant room for pricing uplift and new revenue streams.</p>
+
+  <div class="callout callout-teal">
+    <div class="callout-label">Why This Market Is Defensible</div>
+    Community infrastructure has a powerful network effect: each active community in a town attracts more members, which attracts more communities, which attracts more sponsors. Once a town is "live" with 10+ communities, switching costs become very high. This creates a natural geographic monopoly — the same dynamic that made Nextdoor dominant in neighbourhood social networking.
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     8 — PRICING STRATEGY
+     ══════════════════════════════════════════════════════════════ -->
+<div class="page page-break">
+  <div class="section-label"><span class="section-num">08</span>Pricing Strategy</div>
+  <h1>Freemium <span class="grad">done right.</span></h1>
+
+  <p>Our pricing philosophy is simple: the people who create communities never pay. Revenue comes from the ecosystem around those communities. This maximises supply-side growth (more leaders → more communities → more members → more sponsor value).</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Tier</th>
+        <th>Price</th>
+        <th>Audience</th>
+        <th>Features</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="color:var(--white);font-weight:600">Free (Core)</td>
+        <td style="color:var(--teal-400);font-weight:700">£0 forever</td>
+        <td>All community leaders</td>
+        <td>Community creation, events, chat, member management, QR check-in, flyer generator, basic analytics, microsite</td>
+      </tr>
+      <tr>
+        <td style="color:var(--white);font-weight:600">Pro Leader</td>
+        <td style="color:var(--amber-400);font-weight:700">£49/mo</td>
+        <td>Power users, large groups</td>
+        <td>Advanced CRM, engagement scoring, export tools, priority event promotion, custom branding, multi-admin, A/B testing on events</td>
+      </tr>
+      <tr>
+        <td style="color:var(--white);font-weight:600">Enterprise</td>
+        <td style="color:var(--white);font-weight:600">Custom</td>
+        <td>NHS, councils, charities</td>
+        <td>Social prescribing integration, reporting dashboards, API access, data insights, dedicated account manager, SLA</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Sponsorship Tiers (Per Town)</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Tier</th>
+        <th>Price</th>
+        <th>Inclusions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="color:var(--white);font-weight:600">Headline Sponsor</td>
+        <td style="color:var(--amber-400);font-weight:700">£5,000/yr</td>
+        <td>Logo on all events, featured in-app placement, microsite branding, community newsletter sponsor, event naming rights</td>
+      </tr>
+      <tr>
+        <td style="color:var(--white);font-weight:600">Community Supporter</td>
+        <td style="color:var(--teal-400);font-weight:600">£2,500/yr</td>
+        <td>In-app logo, event page presence, local directory listing, quarterly impact report</td>
+      </tr>
+      <tr>
+        <td style="color:var(--white);font-weight:600">Event Partner</td>
+        <td style="color:var(--slate-300);font-weight:500">£1,000/yr</td>
+        <td>Sponsored event badge, event page logo, attendee reach data</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-teal" style="margin-top: 32px;">
+    <div class="callout-label">Blended Sponsorship = £13k per Town</div>
+    A typical town achieves: 1× Headline (£5k) + 2× Supporter (£5k) + 3× Event Partner (£3k) = <strong>£13,000/year</strong>. This is well within the average UK SME marketing budget of £38k/year (Statista 2025) and delivers measurable local reach that social media advertising cannot replicate.
+  </div>
+
+  <div class="pull-quote" style="margin-top: 28px;">
+    "We don't sell ads — we sell authentic community connection. Sponsors become part of the community, not interruptions to it."
+  </div>
+</div>
+
+</body>
+</html>

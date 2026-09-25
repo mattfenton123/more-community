@@ -56,8 +56,8 @@ function InvitePage() {
         </div>
         <h1 style={{ fontSize: '1.8rem', fontFamily: 'var(--font-heading)', marginBottom: '16px' }}>Invalid or Expired Link</h1>
         <p style={{ color: 'var(--slate-400)', maxWidth: '400px', lineHeight: 1.6 }}>We couldn't find a social prescription matching this link. Please check with your healthcare provider or link worker.</p>
-        <button onClick={() => router.push('/')} className="btn btn-primary" style={{ marginTop: '32px', padding: '12px 24px' }}>
-          Return Home
+        <button onClick={() => router.push('/app')} className="btn btn-primary" style={{ marginTop: '32px', padding: '12px 24px' }}>
+          Return to App
         </button>
       </div>
     );

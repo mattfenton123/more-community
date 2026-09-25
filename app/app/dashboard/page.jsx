@@ -120,7 +120,10 @@ export default function LeaderDashboard() {
   const fileInputRef = useRef(null);
 
   // ─── Derived Data ─────────────────────────────────────────
-  const communityIdLed = activeCommunityId || user?.ledCommunities?.[0];
+  const availableCommunities = user?.isAdmin 
+    ? communities 
+    : (user?.ledCommunities || []).map(id => communities.find(comm => comm.id === id)).filter(Boolean);
+  const communityIdLed = activeCommunityId || user?.ledCommunities?.[0] || (user?.isAdmin && communities.length > 0 ? communities[0].id : null);
   const community = communities.find(c => c.id === communityIdLed);
   const memberList = community ? (communityMemberships[community.id] || []) : [];
   const communityEvents = community ? events.filter(e => e.communityId === community.id).sort((a, b) => new Date(a.date) - new Date(b.date)) : [];
@@ -714,22 +717,28 @@ export default function LeaderDashboard() {
         <div className="dashboard-sidebar desktop-only">
           <div className="dashboard-sidebar-header">
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%' }}>
-              {user?.ledCommunities?.length > 1 ? (
+              {availableCommunities.length > 1 ? (
                 <select 
                   value={communityIdLed} 
                   onChange={e => setActiveCommunityId(e.target.value)}
                   style={{ background: 'rgba(255,255,255,0.05)', color: 'var(--white)', border: '1px solid rgba(255,255,255,0.1)', padding: '6px 8px', borderRadius: '8px', fontSize: '1.1rem', fontFamily: 'var(--font-heading)', outline: 'none', width: '100%', marginBottom: '4px' }}
                 >
-                  {user.ledCommunities.map(id => {
-                    const c = communities.find(comm => comm.id === id);
-                    return <option key={id} value={id}>{c?.name || id}</option>;
-                  })}
+                  {availableCommunities.map(c => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
                 </select>
               ) : (
                 <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.2rem', color: 'var(--white)', margin: '0 0 4px' }}>{community.name}</h2>
               )}
             </div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>Leader View</div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' }}>
+              <span style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>Leader View</span>
+              {user?.isAdmin && (
+                <button onClick={() => router.push('/admin')} style={{ background: 'none', border: 'none', color: '#3b82f6', fontSize: '0.75rem', cursor: 'pointer', padding: 0, fontWeight: 600 }}>
+                  Admin View →
+                </button>
+              )}
+            </div>
           </div>
           <div style={{ flex: 1 }}>
             {[
@@ -771,24 +780,32 @@ export default function LeaderDashboard() {
         <>
           <div className="mobile-only">
             <AppHeader title="Dashboard" />
-            <div style={{ padding: '0 20px 20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)' }}>
-                {user?.ledCommunities?.length > 1 ? (
+            <div style={{ padding: '0 20px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                {availableCommunities.length > 1 ? (
                   <select 
                     value={communityIdLed} 
                     onChange={e => setActiveCommunityId(e.target.value)}
                     style={{ background: 'rgba(255,255,255,0.05)', color: 'var(--white)', border: '1px solid rgba(255,255,255,0.1)', padding: '4px 8px', borderRadius: '6px', fontSize: '0.85rem', outline: 'none' }}
                   >
-                    {user.ledCommunities.map(id => {
-                      const c = communities.find(comm => comm.id === id);
-                      return <option key={id} value={id}>{c?.name || id}</option>;
-                    })}
+                    {availableCommunities.map(c => (
+                      <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
                   </select>
                 ) : (
                   <span style={{ color: 'var(--white)', fontWeight: 600 }}>{community.name}</span>
                 )}
-                <span style={{ marginLeft: '8px' }}>• Leader View</span>
+                <span>• Leader View</span>
               </div>
+              {user?.isAdmin && (
+                <button 
+                  onClick={() => router.push('/admin')} 
+                  className="btn btn-outline interactive-press"
+                  style={{ padding: '6px 12px', borderRadius: '8px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px', borderColor: '#3b82f6', color: '#3b82f6' }}
+                >
+                  <Shield size={12} /> Admin
+                </button>
+              )}
             </div>
           </div>
 

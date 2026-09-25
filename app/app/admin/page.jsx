@@ -89,7 +89,7 @@ export default function AdminDashboard() {
 
   React.useEffect(() => {
     if (!user || !user.isAdmin) {
-      navigate.push('/');
+      navigate.push('/app');
     }
   }, [user, navigate]);
 
@@ -283,14 +283,23 @@ export default function AdminDashboard() {
     <div style={{ paddingBottom: '80px', minHeight: '100dvh', background: 'var(--slate-950)' }}>
       {/* ═══ HEADER ═══ */}
       <div style={{ padding: '28px 20px 20px', background: 'linear-gradient(180deg, rgba(59,130,246,0.12) 0%, transparent 100%)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '4px' }}>
-          <div style={{ width: '44px', height: '44px', borderRadius: '14px', background: 'rgba(59,130,246,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3b82f6' }}>
-            <Shield size={22} />
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '4px' }}>
+            <div style={{ width: '44px', height: '44px', borderRadius: '14px', background: 'rgba(59,130,246,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3b82f6' }}>
+              <Shield size={22} />
+            </div>
+            <div>
+              <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--white)', margin: 0, fontFamily: 'var(--font-heading)' }}>Platform Admin</h1>
+              <p style={{ color: 'var(--slate-500)', margin: 0, fontSize: '0.8rem' }}>Global Oversight & Control Centre</p>
+            </div>
           </div>
-          <div>
-            <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--white)', margin: 0, fontFamily: 'var(--font-heading)' }}>Platform Admin</h1>
-            <p style={{ color: 'var(--slate-500)', margin: 0, fontSize: '0.8rem' }}>Global Oversight & Control Centre</p>
-          </div>
+          <button 
+            onClick={() => navigate.push('/dashboard')}
+            className="btn btn-outline interactive-press"
+            style={{ padding: '8px 14px', borderRadius: '10px', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '6px', borderColor: 'var(--teal-500)', color: 'var(--teal-400)' }}
+          >
+            <Crown size={14} /> Leader View →
+          </button>
         </div>
       </div>
 

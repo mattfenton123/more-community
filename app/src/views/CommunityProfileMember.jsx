@@ -294,7 +294,7 @@ export default function CommunityProfile() {
           <img 
             src={leaderUser?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(community.name)}&background=0D8B93&color=fff`} 
             alt="Organiser" 
-            onClick={() => leaderUser && navigate.back()}
+            onClick={() => leaderUser && navigate.push(`/profile/${leaderUser.id}`)}
             style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--teal-500)', cursor: leaderUser ? 'pointer' : 'default' }} 
           />
           <div style={{ flex: 1 }}>
@@ -480,7 +480,7 @@ export default function CommunityProfile() {
                 {communityEvents.map(event => {
                   const rsvps = eventRsvps[event.id] || [];
                   return (
-                    <div key={event.id} onClick={() => navigate.back()} className="interactive-press" style={{ borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)', cursor: 'pointer' }}>
+                    <div key={event.id} onClick={() => navigate.push(`/events/${event.id}`)} className="interactive-press" style={{ borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)', cursor: 'pointer' }}>
                       {event.image && (
                         <div style={{ height: '140px', background: `url(${event.image})`, backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative' }}>
                           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.6))' }}></div>

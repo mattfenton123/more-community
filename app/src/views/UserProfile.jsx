@@ -260,7 +260,7 @@ export default function UserProfile() {
             ) : (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '12px' }}>
                 {joinedCommunities.map(comm => (
-                  <div key={comm.id} onClick={() => navigate.back()} className="interactive-press" style={{ position: 'relative', height: '120px', borderRadius: '12px', overflow: 'hidden', cursor: 'pointer' }}>
+                  <div key={comm.id} onClick={() => navigate.push(`/community/${comm.id}`)} className="interactive-press" style={{ position: 'relative', height: '120px', borderRadius: '12px', overflow: 'hidden', cursor: 'pointer' }}>
                     <div style={{ height: '100px', background: 'var(--slate-800)' }}>
                       <img src={comm.image || FALLBACK_IMAGES.community} alt={comm.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     </div>

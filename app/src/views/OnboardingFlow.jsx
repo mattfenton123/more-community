@@ -13,8 +13,8 @@ const INTEREST_PILLS = [
 ];
 
 const STEP_VIDEOS = [
-  'https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_1MB.mp4',
-  'https://test-videos.co.uk/vids/sintel/mp4/h264/360/Sintel_360_10s_1MB.mp4'
+  'https://videos.pexels.com/video-files/853889/853889-hd_1920_1080_25fps.mp4',
+  'https://videos.pexels.com/video-files/3195394/3195394-uhd_2560_1440_25fps.mp4'
 ];
 
 
@@ -165,6 +165,7 @@ export default function OnboardingFlow({ onComplete }) {
 
       const updates = {
         name: name.trim(),
+        gender: gender,
         bio: bio.trim(),
         dob: dob,
         location: location.trim(),

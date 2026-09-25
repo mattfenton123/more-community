@@ -74,7 +74,7 @@ function TabBar() {
 
   return (
     <div className="tab-bar">
-      <Link href="/" className={`tab-item ${currentPath === '/' ? 'active' : ''}`}>
+      <Link href="/app" className={`tab-item ${currentPath === '/app' || currentPath === '/' ? 'active' : ''}`}>
         <Home size={22} />
         <span className="tab-label">Home</span>
       </Link>

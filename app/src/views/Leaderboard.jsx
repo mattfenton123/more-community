@@ -22,7 +22,7 @@ function UserLeaderboardRow({ userId, rank }) {
 
   return (
     <div 
-      onClick={() => navigate.back()}
+      onClick={() => navigate.push(`/profile/${user.id}`)}
       className="interactive-press"
       style={{ 
         display: 'flex', alignItems: 'center', gap: '12px', padding: '14px',
@@ -131,7 +131,7 @@ export default function Leaderboard() {
             const heights = { 0: '80px', 1: '60px', 2: '50px' };
             const colors = { 0: '#f59e0b', 1: '#94a3b8', 2: '#b45309' };
             return (
-              <div key={idx} onClick={() => navigate.back()} className="interactive-press" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer', flex: 1, maxWidth: '110px' }}>
+              <div key={idx} onClick={() => navigate.push(`/profile/${u.id}`)} className="interactive-press" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer', flex: 1, maxWidth: '110px' }}>
                 <img src={u.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}`} alt="" style={{ width: isFirst ? '56px' : '44px', height: isFirst ? '56px' : '44px', borderRadius: '50%', objectFit: 'cover', border: `3px solid ${colors[idx]}`, marginBottom: '6px' }} />
                 <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.75rem', textAlign: 'center', marginBottom: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}>{u.name}</div>
                 <div style={{ fontSize: '0.65rem', color: colors[idx], fontWeight: 700, marginBottom: '6px' }}>{ru.xp} XP</div>

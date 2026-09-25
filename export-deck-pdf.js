@@ -18,7 +18,6 @@ const http        = require('http');
 
 // ── Config ────────────────────────────────────────────────
 const PORT         = 8056;           // fresh port to avoid conflicts
-const TOTAL_SLIDES = 17;
 const OUT_PDF      = path.join(__dirname, 'more-community-investor-deck.pdf');
 const TMP_DIR      = path.join(__dirname, '_pdf_frames');
 
@@ -129,10 +128,11 @@ async function main() {
   // Allow fonts + hero images to fully paint
   await sleep(2500);
 
+  const totalSlides = await page.evaluate(() => document.querySelectorAll('.slide').length);
   const screenshotPaths = [];
-  console.log(`\n→ Capturing ${TOTAL_SLIDES} slides…\n`);
+  console.log(`\n→ Capturing ${totalSlides} slides…\n`);
 
-  for (let i = 0; i < TOTAL_SLIDES; i++) {
+  for (let i = 0; i < totalSlides; i++) {
     // Activate the target slide directly via JS — no animation delay
     await page.evaluate((index) => {
       const slides = document.querySelectorAll('.slide');
@@ -156,7 +156,7 @@ async function main() {
     });
 
     screenshotPaths.push(imgPath);
-    process.stdout.write(`  ✓ Slide ${String(i + 1).padStart(2, ' ')} / ${TOTAL_SLIDES}\n`);
+    process.stdout.write(`  ✓ Slide ${String(i + 1).padStart(2, ' ')} / ${totalSlides}\n`);
   }
 
   await browser.close();
@@ -190,7 +190,7 @@ async function main() {
     });
     // Stretch the high-res screenshot to fill the page exactly — edge to edge
     doc.image(screenshotPaths[i], 0, 0, { width: PDF_W, height: PDF_H });
-    process.stdout.write(`  ✓ Page  ${String(i + 1).padStart(2, ' ')} / ${TOTAL_SLIDES}\n`);
+    process.stdout.write(`  ✓ Page  ${String(i + 1).padStart(2, ' ')} / ${totalSlides}\n`);
   }
 
   doc.end();
@@ -207,7 +207,7 @@ async function main() {
   const size = (fs.statSync(OUT_PDF).size / 1024 / 1024).toFixed(1);
   console.log(`\n✅  Done!`);
   console.log(`   📄 ${OUT_PDF}`);
-  console.log(`   📦 ${size} MB  ·  ${TOTAL_SLIDES} pages  ·  16:9 widescreen (${PDF_W} × ${PDF_H} pt)\n`);
+  console.log(`   📦 ${size} MB  ·  ${totalSlides} pages  ·  16:9 widescreen (${PDF_W} × ${PDF_H} pt)\n`);
 }
 
 main().catch((err) => {
