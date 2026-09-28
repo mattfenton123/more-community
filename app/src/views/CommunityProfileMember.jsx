@@ -54,12 +54,7 @@ const GALLERY_PHOTOS = {
   ]
 };
 
-// Mock reviews per community type
-const MOCK_REVIEWS = [
-  { name: 'Sarah C.', avatar: 'https://i.pravatar.cc/40?img=5', text: "Absolutely brilliant group! I've made genuine friendships here and look forward to every meetup.", rating: 5 },
-  { name: 'James W.', avatar: 'https://i.pravatar.cc/40?img=11', text: "Well organised with a really welcoming atmosphere. Perfect for newcomers to the area.", rating: 5 },
-  { name: 'Emma J.', avatar: 'https://i.pravatar.cc/40?img=26', text: "Joined 3 months ago and it's completely changed my weekends. Highly recommend!", rating: 4 },
-];
+
 
 function getGalleryType(tags) {
   const tagStr = (tags || []).join(' ').toLowerCase();

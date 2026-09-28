@@ -49,15 +49,12 @@ export async function sendMessageAction(messageData, token) {
   
   // --- WhatsApp Broadcast (Outbound Sync) ---
   try {
-    // 1. Fetch community details to check for linked WhatsApp group
-    // In a real app, you would query the `whatsapp_group_id` from the community settings
-    // const { data: community } = await supabaseAdmin.from('communities').select('whatsapp_group_id').eq('id', messageData.communityId).single();
+    const { data: community } = await supabaseAdmin.from('communities').select('whatsapp_group_id').eq('id', messageData.communityId).single();
     
-    // For MVP, simulate that 'yentw' community has a linked WhatsApp group
-    if (messageData.communityId === 'yentw' && process.env.WHATSAPP_ACCESS_TOKEN) {
+    if (community?.whatsapp_group_id && process.env.WHATSAPP_ACCESS_TOKEN) {
       const WHATSAPP_PHONE_NUMBER_ID = process.env.WHATSAPP_PHONE_NUMBER_ID;
       const WHATSAPP_ACCESS_TOKEN = process.env.WHATSAPP_ACCESS_TOKEN;
-      const targetGroupId = 'MOCK_WHATSAPP_GROUP_ID'; // Replace with community.whatsapp_group_id
+      const targetGroupId = community.whatsapp_group_id;
 
       // 2. Fetch the sender's name to attribute the message
       const { data: user } = await supabaseAdmin.from('users').select('name').eq('id', messageData.authorId).single();

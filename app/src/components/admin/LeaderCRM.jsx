@@ -2,12 +2,7 @@ import React, { useState } from 'react';
 import { Mail, Calendar, Plus, Search } from 'lucide-react';
 
 // Mock leads data for the MVP
-const INITIAL_LEADS = [
-  { id: 'L1', name: 'Sarah Jenkins', niche: 'Yoga & Wellness', handle: '@sarahj_wellness', status: 'In Talks', lastContact: '2026-09-02', email: 'sarah@example.com' },
-  { id: 'L2', name: 'Marcus RunClub', niche: 'Urban Running', handle: '@marcus_runs_ldn', status: 'Prospect', lastContact: '2026-08-28', email: 'marcus@example.com' },
-  { id: 'L3', name: 'Emma Climbs', niche: 'Bouldering', handle: '@emma_boulders', status: 'Pitched', lastContact: '2026-09-04', email: 'emma@example.com' },
-  { id: 'L4', name: 'Tom Hikes', niche: 'Hiking', handle: '@tomhikesuk', status: 'Onboarding', lastContact: '2026-09-05', email: 'tom@example.com' },
-];
+const INITIAL_LEADS = [];
 
 const STATUS_COLORS = {
   'Prospect': { bg: 'rgba(148, 163, 184, 0.1)', color: '#94a3b8' },

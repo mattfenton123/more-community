@@ -76,29 +76,6 @@ export function AuthProvider({ children }) {
     return { error };
   };
 
-  const signInWithDemo = async () => {
-    // Generate a random demo email so it works multiple times
-    const randomNum = Math.floor(Math.random() * 10000);
-    const demoEmail = `demo${randomNum}@morecommunity.app`;
-    const password = 'DemoPassword123!';
-    
-    let { error } = await supabase.auth.signUp({
-      email: demoEmail,
-      password,
-    });
-    
-    // Explicitly sign in just in case signUp didn't auto-login
-    if (!error) {
-      const { error: signInErr } = await supabase.auth.signInWithPassword({
-        email: demoEmail,
-        password,
-      });
-      error = signInErr;
-    }
-
-    return { error, demoEmail };
-  };
-
   const signOut = async () => {
     await supabase.auth.signOut();
     setSession(null);
@@ -115,7 +92,6 @@ export function AuthProvider({ children }) {
       signInWithGoogle,
       signInWithApple,
       signInWithFacebook,
-      signInWithDemo,
       signOut,
     }}>
       {children}
@@ -130,3 +106,4 @@ export function useAuth() {
   }
   return context;
 }
+

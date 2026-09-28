@@ -1,5 +1,5 @@
 // Service Worker for more. community PWA
-const CACHE_NAME = 'more-community-v2';
+const CACHE_NAME = 'more-community-v3';
 const OFFLINE_URL = '/';
 
 // Assets to pre-cache
@@ -34,6 +34,12 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   // Skip non-GET requests
   if (event.request.method !== 'GET') return;
+
+  // Never intercept during local development
+  if (self.location.hostname === 'localhost' || self.location.hostname === '127.0.0.1') return;
+
+  // Never cache Next.js bundles, chunks, or HMR assets
+  if (event.request.url.includes('/_next/')) return;
 
   // Skip Supabase API calls (always go to network)
   if (event.request.url.includes('supabase')) return;
