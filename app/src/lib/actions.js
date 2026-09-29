@@ -166,18 +166,26 @@ export async function joinCommunityAction(userId, communityId, token) {
 }
 
 export async function ensureLeadersNetworkAction() {
+  const ALEX_USER_ID = 'a31edbf0-db87-4a32-b108-c13d365adbf8';
   const { error } = await supabaseAdmin.from('communities').upsert([{
     id: 'more-leaders-network',
     name: 'The more. Leaders Network',
     description: 'A private space for more. leaders to collaborate, share tips, and organize cross-community events.',
     tags: ['leadership', 'network'],
-    leader_id: null,
+    leader_id: ALEX_USER_ID,
     image: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1200&q=80',
     activity_level: 'Active',
     location_name: 'Global',
     cost: 'Free for Leaders'
   }], { onConflict: 'id' });
   if (error) console.error('Failed to ensure Leaders Network:', error);
+
+  // Ensure Alex is listed as Leader in community_memberships
+  await supabaseAdmin.from('community_memberships').upsert([{
+    community_id: 'more-leaders-network',
+    user_id: ALEX_USER_ID,
+    role: 'Leader'
+  }], { onConflict: 'community_id,user_id' });
 }
 
 export async function createEventAction(eventData, token) {

@@ -101,6 +101,10 @@ export function AppProvider({ children }) {
       if (ADMIN_EMAILS.includes(email)) {
         user.isAdmin = true;
       }
+      if (email === 'alex@morecommunity.app' || email === 'alex@morecommunity.co.uk') {
+        if (!user.ledCommunities.includes('more-leaders-network')) user.ledCommunities.push('more-leaders-network');
+        if (!user.joinedCommunities.includes('more-leaders-network')) user.joinedCommunities.push('more-leaders-network');
+      }
     }
 
   if (user.id) {
@@ -249,7 +253,31 @@ export function AppProvider({ children }) {
         ]);
 
       // Process results
-      if (usersRes.data) setUsers(usersRes.data);
+      if (usersRes.data) {
+        const ALEX_ID = 'a31edbf0-db87-4a32-b108-c13d365adbf8';
+        const processedUsers = usersRes.data.map(u => {
+          if (u.id === ALEX_ID) {
+            return {
+              ...u,
+              name: (u.name === 'alex@morecommunity.app' || !u.name) ? 'Alex' : u.name,
+              avatar: u.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+              role: 'Leader'
+            };
+          }
+          return u;
+        });
+        if (!processedUsers.some(u => u.id === ALEX_ID)) {
+          processedUsers.push({
+            id: ALEX_ID,
+            name: 'Alex',
+            role: 'Leader',
+            avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+            bio: 'Community Leader & Founder at more.',
+            onboarded: true
+          });
+        }
+        setUsers(processedUsers);
+      }
       if (revRes && revRes.data) setReviews(revRes.data);
       if (pollsRes && pollsRes.data) setPolls(pollsRes.data);
       if (pollVotesRes && pollVotesRes.data) {
@@ -262,7 +290,17 @@ export function AppProvider({ children }) {
       }
 
       if (commsRes.data) {
-        let comms = [...commsRes.data];
+        const ALEX_ID = 'a31edbf0-db87-4a32-b108-c13d365adbf8';
+        let comms = commsRes.data.map(c => {
+          if (c.id === 'more-leaders-network') {
+            return {
+              ...c,
+              leader_id: c.leader_id || ALEX_ID
+            };
+          }
+          return c;
+        });
+
         // Ensure Leaders Network is in state (and seed DB if missing)
         if (!comms.find(c => c.id === 'more-leaders-network')) {
           const leadersComm = {
@@ -272,7 +310,7 @@ export function AppProvider({ children }) {
              tags: ['leadership', 'network'],
              image: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1200&q=80',
              category: 'leadership',
-             leader_id: null,
+             leader_id: ALEX_ID,
              is_private: true
           };
           comms.push(leadersComm);
@@ -340,6 +378,13 @@ export function AppProvider({ children }) {
           if (!memMap[m.community_id]) memMap[m.community_id] = [];
           memMap[m.community_id].push({ userId: m.user_id, role: m.role });
         });
+
+        // Ensure Alex is always registered as Leader in more-leaders-network
+        const ALEX_ID = 'a31edbf0-db87-4a32-b108-c13d365adbf8';
+        if (!memMap['more-leaders-network']) memMap['more-leaders-network'] = [];
+        if (!memMap['more-leaders-network'].some(m => m.userId === ALEX_ID)) {
+          memMap['more-leaders-network'].push({ userId: ALEX_ID, role: 'Leader' });
+        }
 
         // --- Leaders Network Auto-Join Logic ---
         if (authUser?.id && user?.ledCommunities?.length > 0) {
