@@ -1139,8 +1139,14 @@ export function AppProvider({ children }) {
         name: communityData.name,
         description: communityData.description,
         tags: communityData.tags || [],
-        cover_image: communityData.image || null,
-        creatorId: user.id
+        cover_image: communityData.image || communityData.cover_image || null,
+        creatorId: user.id,
+        whatsapp_group: communityData.whatsapp_group || null,
+        instagram_handle: communityData.instagram_handle || null,
+        cost: communityData.cost || 'Free',
+        target_audience: communityData.target_audience || null,
+        location_name: communityData.location_name || null,
+        activity_level: communityData.activity_level || 'Active'
       }, session?.access_token);
       
       return newId;

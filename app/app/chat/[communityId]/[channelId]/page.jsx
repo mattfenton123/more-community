@@ -354,16 +354,21 @@ export default function Chat() {
       />
 
       {/* WhatsApp Banners */}
-      {waConfig?.groupLink && !waConfig?.businessConnected && !isDirectMessage && (
-        <div style={{ background: 'rgba(34,197,94,0.1)', borderBottom: '1px solid rgba(34,197,94,0.2)', padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#22c55e', fontSize: '0.85rem', fontWeight: 500 }}>
-            <MessageCircle size={16} /> <span>This community is also on WhatsApp!</span>
+      {(() => {
+        const waGroupLink = community?.whatsapp_group || waConfig?.groupLink;
+        if (!waGroupLink || waConfig?.businessConnected || isDirectMessage) return null;
+        const normalizedLink = waGroupLink.startsWith('http') ? waGroupLink : `https://${waGroupLink}`;
+        return (
+          <div style={{ background: 'rgba(34,197,94,0.1)', borderBottom: '1px solid rgba(34,197,94,0.2)', padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#22c55e', fontSize: '0.85rem', fontWeight: 500 }}>
+              <MessageCircle size={16} /> <span>This community is also on WhatsApp!</span>
+            </div>
+            <a href={normalizedLink} target="_blank" rel="noreferrer" className="interactive-press" style={{ background: '#22c55e', color: 'var(--white)', padding: '6px 12px', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
+              Join Group
+            </a>
           </div>
-          <a href={waConfig.groupLink} target="_blank" rel="noreferrer" className="interactive-press" style={{ background: '#22c55e', color: 'var(--white)', padding: '6px 12px', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
-            Join Group
-          </a>
-        </div>
-      )}
+        );
+      })()}
       {waConfig?.businessConnected && !isDirectMessage && (
         <div style={{ background: 'rgba(34,197,94,0.05)', borderBottom: '1px solid rgba(34,197,94,0.1)', padding: '8px 20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
           <MessageCircle size={14} color="#22c55e" />

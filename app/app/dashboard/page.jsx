@@ -237,16 +237,32 @@ export default function LeaderDashboard() {
   // ─── Handlers ─────────────────────────────────────────────
   const handleEditClick = () => {
     if (community) {
-      setEditForm({ description: community.description || '', tags: community.tags ? community.tags.join(', ') : '' });
+      setEditForm({ 
+        description: community.description || '', 
+        tags: community.tags ? community.tags.join(', ') : '',
+        whatsapp_group: community.whatsapp_group || '',
+        instagram_handle: community.instagram_handle || ''
+      });
       setSubscriptionPrice(community.subscriptionPrice || community.subscription_price || '');
     }
     setIsEditing(true);
   };
 
   const handleSave = () => {
+    let wa = (editForm.whatsapp_group || '').trim();
+    if (wa && !wa.startsWith('http://') && !wa.startsWith('https://')) {
+      wa = `https://${wa}`;
+    }
+    let ig = (editForm.instagram_handle || '').trim();
+    if (ig && !ig.startsWith('@') && !ig.includes('instagram.com')) {
+      ig = `@${ig}`;
+    }
+
     updateCommunity(community.id, {
       description: editForm.description,
-      tags: editForm.tags.split(',').map(t => t.trim()).filter(Boolean)
+      tags: editForm.tags.split(',').map(t => t.trim()).filter(Boolean),
+      whatsapp_group: wa,
+      instagram_handle: ig
     });
     toast.success('Profile updated!', 'Your community microsite has been saved');
     setIsEditing(false);
@@ -1441,7 +1457,7 @@ export default function LeaderDashboard() {
               </button>
 
               {/* WhatsApp */}
-              <button onClick={() => { setWaConfig(whatsappSettings[community.id] || { businessConnected: false, groupLink: '' }); setModalType('whatsapp'); }} className="interactive-press" style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', color: 'var(--white)', width: '100%', cursor: 'pointer', textAlign: 'left' }}>
+              <button onClick={() => { setWaConfig(whatsappSettings[community.id] || { businessConnected: false, groupLink: community.whatsapp_group || '' }); setModalType('whatsapp'); }} className="interactive-press" style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', color: 'var(--white)', width: '100%', cursor: 'pointer', textAlign: 'left' }}>
                 <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(34,197,94,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#22c55e' }}>
                   <MessageCircle size={20} />
                 </div>
@@ -1561,6 +1577,14 @@ export default function LeaderDashboard() {
                   <label style={{ display: 'block', marginBottom: '8px', color: 'var(--slate-300)', fontSize: '0.9rem' }}>Vibe & Values Tags (comma separated)</label>
                   <input type="text" value={editForm.tags} onChange={(e) => setEditForm({...editForm, tags: e.target.value})} style={{ width: '100%', padding: '12px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'var(--white)' }} />
                 </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', color: 'var(--slate-300)', fontSize: '0.9rem' }}>WhatsApp Group Link (for 1-tap member onboarding)</label>
+                  <input type="url" placeholder="https://chat.whatsapp.com/..." value={editForm.whatsapp_group} onChange={(e) => setEditForm({...editForm, whatsapp_group: e.target.value})} style={{ width: '100%', padding: '12px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'var(--white)' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', color: 'var(--slate-300)', fontSize: '0.9rem' }}>Instagram Handle</label>
+                  <input type="text" placeholder="@your.community" value={editForm.instagram_handle} onChange={(e) => setEditForm({...editForm, instagram_handle: e.target.value})} style={{ width: '100%', padding: '12px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'var(--white)' }} />
+                </div>
               </>
             )}
 
@@ -1674,7 +1698,13 @@ export default function LeaderDashboard() {
                 onClick={() => { 
                   if(isEditing) handleSave(); 
                   else if (modalType === 'whatsapp') {
-                    setWhatsappSettings(prev => ({...prev, [community.id]: waConfig}));
+                    let link = (waConfig.groupLink || '').trim();
+                    if (link && !link.startsWith('http://') && !link.startsWith('https://')) {
+                      link = `https://${link}`;
+                    }
+                    const updatedConfig = { ...waConfig, groupLink: link };
+                    setWhatsappSettings(prev => ({...prev, [community.id]: updatedConfig}));
+                    updateCommunity(community.id, { whatsapp_group: link });
                     toast.success('WhatsApp Settings Saved', 'Your community chat integration has been updated.');
                     setModalType(null);
                   }

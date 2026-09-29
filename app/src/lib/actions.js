@@ -110,15 +110,17 @@ export async function createCommunityAction(communityData, token) {
     id: communityData.id,
     name: communityData.name,
     description: communityData.description,
-    tags: communityData.tags,
+    tags: communityData.tags || [],
     image: communityData.cover_image || communityData.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(communityData.name)}&background=0D8B93&color=fff&size=512`,
     lat: communityData.lat || null,
     lng: communityData.lng || null,
-    target_audience: communityData.target_audience,
-    location_name: communityData.location_name,
-    cost: communityData.cost,
-    activity_level: communityData.activity_level,
-    leader_id: communityData.creatorId
+    target_audience: communityData.target_audience || null,
+    location_name: communityData.location_name || null,
+    cost: communityData.cost || 'Free',
+    activity_level: communityData.activity_level || 'Active',
+    leader_id: communityData.creatorId || null,
+    whatsapp_group: communityData.whatsapp_group || null,
+    instagram_handle: communityData.instagram_handle || null
   }).select().single();
 
   if (error) throw new Error(error.message);
@@ -374,12 +376,25 @@ export async function updateCommunityAction(communityId, updates, token) {
   if (updates.name !== undefined) dbUpdates.name = updates.name;
   if (updates.description !== undefined) dbUpdates.description = updates.description;
   if (updates.image !== undefined) dbUpdates.cover_image = updates.image;
+  if (updates.cover_image !== undefined) dbUpdates.cover_image = updates.cover_image;
   if (updates.tags !== undefined) dbUpdates.tags = updates.tags;
   if (updates.subscription_price !== undefined) dbUpdates.subscription_price = updates.subscription_price;
   if (updates.visibility !== undefined) dbUpdates.visibility = updates.visibility;
   if (updates.require_approval !== undefined) dbUpdates.require_approval = updates.require_approval;
   if (updates.external_links !== undefined) dbUpdates.external_links = updates.external_links;
   if (updates.gallery_photos !== undefined) dbUpdates.gallery_photos = updates.gallery_photos;
+  if (updates.whatsapp_group !== undefined) dbUpdates.whatsapp_group = updates.whatsapp_group;
+  if (updates.instagram_handle !== undefined) dbUpdates.instagram_handle = updates.instagram_handle;
+  if (updates.location_name !== undefined) dbUpdates.location_name = updates.location_name;
+  if (updates.cost !== undefined) dbUpdates.cost = updates.cost;
+  if (updates.activity_level !== undefined) dbUpdates.activity_level = updates.activity_level;
+  if (updates.guidelines !== undefined) dbUpdates.guidelines = updates.guidelines;
+  if (updates.highlights !== undefined) dbUpdates.highlights = updates.highlights;
+  if (updates.welcome_video_url !== undefined) dbUpdates.welcome_video_url = updates.welcome_video_url;
+  if (updates.is_flagged !== undefined) dbUpdates.is_flagged = updates.is_flagged;
+  if (updates.flag_reason !== undefined) dbUpdates.flag_reason = updates.flag_reason;
+  if (updates.is_banned !== undefined) dbUpdates.is_banned = updates.is_banned;
+  if (updates.verified !== undefined) dbUpdates.verified = updates.verified;
   
   const { data, error } = await supabaseAdmin.from('communities').update(dbUpdates).eq('id', communityId).select().single();
   if (error) throw new Error(error.message);

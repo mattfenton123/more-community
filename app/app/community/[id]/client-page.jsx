@@ -179,7 +179,9 @@ export default function CommunityProfile() {
         setShowLeaveModal(true);
       } else {
         await joinCommunity(community.id);
-        toast.success('Welcome!', `You're now a member of ${community.name}`);
+        toast.success('Welcome!', community.whatsapp_group 
+          ? `You're in! Tap "Join WhatsApp Group" to chat with members.` 
+          : `You're now a member of ${community.name}`);
       }
     } catch (err) {
       toast.error('Could not join', 'Something went wrong. Please try again.');
@@ -360,7 +362,24 @@ export default function CommunityProfile() {
               <>
                 {isMember ? (
                   <div style={{ textAlign: 'center' }}>
-                    <div style={{ width: '100%', padding: '16px', fontSize: '1.05rem', fontWeight: 700, borderRadius: '14px', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--slate-300)', background: 'rgba(255,255,255,0.05)', marginBottom: '8px' }}>
+                    {community.whatsapp_group && (
+                      <a 
+                        href={community.whatsapp_group.startsWith('http') ? community.whatsapp_group : `https://${community.whatsapp_group}`}
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="interactive-press" 
+                        style={{ 
+                          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', 
+                          width: '100%', padding: '14px', borderRadius: '14px', 
+                          background: '#25D366', color: '#ffffff', fontWeight: 700, fontSize: '1rem', 
+                          textDecoration: 'none', marginBottom: '10px', boxShadow: '0 4px 16px rgba(37,211,102,0.35)',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        <MessageCircle size={20} /> Join WhatsApp Group
+                      </a>
+                    )}
+                    <div style={{ width: '100%', padding: '14px', fontSize: '1rem', fontWeight: 600, borderRadius: '14px', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--slate-300)', background: 'rgba(255,255,255,0.05)', marginBottom: '8px' }}>
                       ✓ You're a Member
                     </div>
                     <button 
@@ -1214,14 +1233,58 @@ export default function CommunityProfile() {
               </div>
             </div>
 
-            {/* External Links */}
-            {community.external_links && community.external_links.length > 0 && (
+            {/* Socials & Group Chats */}
+            {(community.whatsapp_group || community.instagram_handle || (community.external_links && community.external_links.length > 0)) && (
               <div style={{ marginBottom: '32px' }}>
                 <h3 style={{ fontSize: '1.1rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: '0 0 16px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Globe size={18} color="var(--teal-400)" /> Community Links
+                  <MessageCircle size={18} color="var(--teal-400)" /> Socials & Group Chats
                 </h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  {community.external_links.map((link, idx) => {
+                  {/* WhatsApp Group */}
+                  {community.whatsapp_group && (
+                    <a 
+                      href={community.whatsapp_group.startsWith('http') ? community.whatsapp_group : `https://${community.whatsapp_group}`} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="interactive-press" 
+                      style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', background: 'rgba(37,211,102,0.06)', border: '1px solid rgba(37,211,102,0.25)', borderRadius: '16px', textDecoration: 'none', color: 'var(--white)' }}
+                    >
+                      <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: '#25D366', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff', flexShrink: 0 }}>
+                        <MessageCircle size={22} />
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: 700, fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          Official WhatsApp Group
+                          <span style={{ fontSize: '0.65rem', background: '#25D366', color: '#000', fontWeight: 800, padding: '2px 6px', borderRadius: '6px', textTransform: 'uppercase' }}>Join Chat</span>
+                        </div>
+                        <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)', marginTop: '2px' }}>Seamless 1-tap onboarding for members</div>
+                      </div>
+                      <ExternalLink size={18} color="var(--slate-400)" />
+                    </a>
+                  )}
+
+                  {/* Instagram Handle */}
+                  {community.instagram_handle && (
+                    <a 
+                      href={community.instagram_handle.startsWith('http') ? community.instagram_handle : `https://instagram.com/${community.instagram_handle.replace('@', '')}`} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="interactive-press" 
+                      style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', background: 'rgba(236,72,153,0.06)', border: '1px solid rgba(236,72,153,0.25)', borderRadius: '16px', textDecoration: 'none', color: 'var(--white)' }}
+                    >
+                      <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: 'linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff', flexShrink: 0 }}>
+                        <Camera size={22} />
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: 700, fontSize: '1rem' }}>Instagram</div>
+                        <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)', marginTop: '2px' }}>{community.instagram_handle.startsWith('@') ? community.instagram_handle : `@${community.instagram_handle}`}</div>
+                      </div>
+                      <ExternalLink size={18} color="var(--slate-400)" />
+                    </a>
+                  )}
+
+                  {/* External Links */}
+                  {community.external_links && community.external_links.map((link, idx) => {
                      let IconComponent = Globe;
                      const titleLower = (link.title || '').toLowerCase();
                      const urlLower = (link.url || '').toLowerCase();
@@ -1233,7 +1296,7 @@ export default function CommunityProfile() {
 
                      return (
                         <a key={idx} href={link.url} target="_blank" rel="noopener noreferrer" className="interactive-press" style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', textDecoration: 'none', color: 'var(--white)' }}>
-                          <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(20,184,166,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--teal-400)' }}>
+                          <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: 'rgba(20,184,166,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--teal-400)', flexShrink: 0 }}>
                             <IconComponent size={20} />
                           </div>
                           <div style={{ flex: 1 }}>
@@ -1242,7 +1305,7 @@ export default function CommunityProfile() {
                           </div>
                           <ChevronRight size={18} color="var(--slate-500)" />
                         </a>
-                     )
+                     );
                   })}
                 </div>
               </div>

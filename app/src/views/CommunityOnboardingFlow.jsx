@@ -344,6 +344,16 @@ export default function CommunityOnboardingFlow({ onComplete }) {
         }
       }
 
+      let formattedWhatsapp = whatsapp.trim();
+      if (formattedWhatsapp && !formattedWhatsapp.startsWith('http://') && !formattedWhatsapp.startsWith('https://')) {
+        formattedWhatsapp = `https://${formattedWhatsapp}`;
+      }
+
+      let formattedInstagram = instagram.trim();
+      if (formattedInstagram && !formattedInstagram.startsWith('@') && !formattedInstagram.includes('instagram.com')) {
+        formattedInstagram = `@${formattedInstagram}`;
+      }
+
       // Verified is now false by default
       const communityData = {
         name: name.trim(),
@@ -351,8 +361,8 @@ export default function CommunityOnboardingFlow({ onComplete }) {
         tags: tags,
         image: imageUrl,
         verified: false,
-        instagram_handle: instagram.trim(),
-        whatsapp_group: whatsapp.trim(),
+        instagram_handle: formattedInstagram,
+        whatsapp_group: formattedWhatsapp,
         activity_level: activityLevel,
         cost: cost.trim(),
         target_audience: targetAudience.trim(),

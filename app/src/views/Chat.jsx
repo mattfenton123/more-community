@@ -437,6 +437,31 @@ export default function Chat() {
         }}
       />
 
+      {/* WhatsApp Bridge Banner */}
+      {!isDirectMessage && (community?.whatsapp_group || waConfig?.groupLink) && (
+        <a 
+          href={(community?.whatsapp_group || waConfig?.groupLink).startsWith('http') ? (community?.whatsapp_group || waConfig?.groupLink) : `https://${community?.whatsapp_group || waConfig?.groupLink}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="interactive-press"
+          style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            padding: '10px 16px', background: 'rgba(37,211,102,0.12)', borderBottom: '1px solid rgba(37,211,102,0.25)',
+            textDecoration: 'none', color: 'var(--white)', fontSize: '0.85rem'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '24px', height: '24px', borderRadius: '50%', background: '#25D366', color: '#fff' }}>
+              <MessageCircle size={15} />
+            </span>
+            <span>Prefer WhatsApp? <strong>Join the community group chat</strong></span>
+          </div>
+          <span style={{ color: '#25D366', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '2px', fontSize: '0.8rem' }}>
+            Open ↗
+          </span>
+        </a>
+      )}
+
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden', flexDirection: 'column' }}>
         <div style={{ flex: 1, padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px', overflowY: 'auto' }}>
           <div style={{ textAlign: 'center', margin: '20px 0', color: 'var(--slate-500)', fontSize: '0.8rem' }}>

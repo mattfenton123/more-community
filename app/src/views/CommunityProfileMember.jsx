@@ -247,7 +247,24 @@ export default function CommunityProfile() {
                   </button>
                 ) : isMember ? (
                   <div style={{ textAlign: 'center' }}>
-                    <div style={{ width: '100%', padding: '16px', fontSize: '1.05rem', fontWeight: 700, borderRadius: '14px', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--slate-300)', background: 'rgba(255,255,255,0.05)', marginBottom: '8px' }}>
+                    {community.whatsapp_group && (
+                      <a 
+                        href={community.whatsapp_group.startsWith('http') ? community.whatsapp_group : `https://${community.whatsapp_group}`}
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="interactive-press" 
+                        style={{ 
+                          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', 
+                          width: '100%', padding: '14px', borderRadius: '14px', 
+                          background: '#25D366', color: '#ffffff', fontWeight: 700, fontSize: '1rem', 
+                          textDecoration: 'none', marginBottom: '10px', boxShadow: '0 4px 16px rgba(37,211,102,0.35)',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        <MessageCircle size={20} /> Join WhatsApp Group
+                      </a>
+                    )}
+                    <div style={{ width: '100%', padding: '14px', fontSize: '1rem', fontWeight: 600, borderRadius: '14px', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--slate-300)', background: 'rgba(255,255,255,0.05)', marginBottom: '8px' }}>
                       ✓ You're a Member
                     </div>
                     <button 
