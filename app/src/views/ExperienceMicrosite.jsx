@@ -1,17 +1,21 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter as useNavigate } from 'next/navigation';
-import { MapPin, Clock, Users, ArrowLeft, Share2, Star, Sparkles, Calendar, Check, ExternalLink, Loader2 } from 'lucide-react';
+import { MapPin, Clock, Users, ArrowLeft, Share2, Star, Sparkles, Calendar, Check, ExternalLink, Loader2, Vote, MessageCircle } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { useToast } from '../components/Toast';
 import HostExperienceModal from '../components/HostExperienceModal';
+import PitchExperienceModal from '../components/PitchExperienceModal';
+import EventCreatedShareModal from '../components/EventCreatedShareModal';
 
 export default function ExperienceMicrosite() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { experiences, communities, user, createEvent, events } = useAppContext();
+  const { experiences, communities, user, createEvent, events, createPoll } = useAppContext();
   const { toast } = useToast();
   const [showHostModal, setShowHostModal] = useState(false);
+  const [showPitchModal, setShowPitchModal] = useState(false);
+  const [createdEvent, setCreatedEvent] = useState(null);
   const [singleExp, setSingleExp] = useState(null);
   const [isLoadingSingle, setIsLoadingSingle] = useState(false);
 
@@ -61,6 +65,12 @@ export default function ExperienceMicrosite() {
 
   const isLeader = user?.ledCommunities?.length > 0;
 
+  const handlePitchSubmit = async (data) => {
+    if (createPoll) {
+      await createPoll(data.communityId, data.question, data.options);
+    }
+  };
+
   const handleHostSubmit = async (data) => {
     setShowHostModal(false);
     try {
@@ -85,7 +95,8 @@ export default function ExperienceMicrosite() {
         isExperience: true,
         baseExperienceId: experience.id
       };
-      await createEvent(data.communityId, newEvent);
+      const created = await createEvent(data.communityId, newEvent);
+      setCreatedEvent({ ...newEvent, id: created?.id || `ev-${Date.now()}` });
       toast.success('Experience Hosted!', `${experience.title} added to your community events.`);
     } catch (err) {
       toast.error('Error', 'Failed to host experience.');
@@ -198,12 +209,12 @@ export default function ExperienceMicrosite() {
           </div>
         )}
 
-        {/* LEADER VIEW: Transparent Pricing Breakdown */}
+        {/* LEADER VIEW: Transparent Pricing Breakdown & 2-Step Actions */}
         {isLeader && (
           <div style={{ padding: '24px', background: 'linear-gradient(to right, rgba(45,212,191,0.05), rgba(59,130,246,0.05))', borderRadius: '16px', border: '1px solid rgba(45,212,191,0.2)', marginBottom: '24px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
               <Sparkles size={18} color="var(--teal-400)" />
-              <span style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--teal-300)' }}>Leader Tools & Profit</span>
+              <span style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--teal-300)' }}>Leader Tools & Profit Margin</span>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -223,6 +234,24 @@ export default function ExperienceMicrosite() {
                 <div style={{ fontSize: '0.95rem', color: 'var(--white)', fontWeight: 600 }}>Total Member Ticket Price</div>
                 <div style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--white)' }}>£{getTotalPrice(experience)}</div>
               </div>
+            </div>
+
+            {/* Quick 2-Step Leader Actions */}
+            <div style={{ marginTop: '16px', paddingTop: '14px', borderTop: '1px solid rgba(45,212,191,0.2)', display: 'flex', gap: '10px' }}>
+              <button 
+                onClick={() => setShowPitchModal(true)} 
+                className="btn btn-outline interactive-press" 
+                style={{ flex: 1, padding: '10px 12px', fontSize: '0.82rem', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+              >
+                <Vote size={14} color="var(--teal-400)" /> 1. Pitch & Poll Dates
+              </button>
+              <button 
+                onClick={() => setShowHostModal(true)} 
+                className="btn btn-primary interactive-press" 
+                style={{ flex: 1, padding: '10px 12px', fontSize: '0.82rem', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+              >
+                <Sparkles size={14} /> 2. Host & Get Link
+              </button>
             </div>
           </div>
         )}
@@ -293,23 +322,19 @@ export default function ExperienceMicrosite() {
         
         {isLeader ? (
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-            {experience.productUrl && (
-              <a
-                href={experience.productUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn btn-outline interactive-press"
-                style={{ padding: '10px 16px', borderRadius: '99px', fontSize: '0.85rem', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}
-              >
-                Viator <ExternalLink size={12} />
-              </a>
-            )}
+            <button 
+              onClick={() => setShowPitchModal(true)} 
+              className="btn btn-outline interactive-press" 
+              style={{ padding: '10px 16px', borderRadius: '99px', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}
+            >
+              <Vote size={14} color="var(--teal-400)" /> Pitch & Poll
+            </button>
             <button 
               onClick={() => setShowHostModal(true)} 
               className="btn btn-primary interactive-press" 
               style={{ padding: '10px 20px', borderRadius: '99px', fontSize: '0.9rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}
             >
-              <Sparkles size={15} /> Host for Community
+              <Sparkles size={15} /> Host Trip
             </button>
           </div>
         ) : (
@@ -317,8 +342,8 @@ export default function ExperienceMicrosite() {
             {experience.productUrl ? (
               <>
                 <a 
-                  href={experience.productUrl}
-                  target="_blank"
+                  href={experience.productUrl} 
+                  target="_blank" 
                   rel="noopener noreferrer"
                   className="btn btn-primary interactive-press" 
                   style={{ padding: '10px 22px', borderRadius: '99px', fontSize: '0.92rem', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}
@@ -353,6 +378,24 @@ export default function ExperienceMicrosite() {
           user={user}
           onClose={() => setShowHostModal(false)}
           onHost={handleHostSubmit}
+        />
+      )}
+
+      {showPitchModal && (
+        <PitchExperienceModal
+          experience={experience}
+          communities={communities}
+          user={user}
+          onClose={() => setShowPitchModal(false)}
+          onPitch={handlePitchSubmit}
+        />
+      )}
+
+      {createdEvent && (
+        <EventCreatedShareModal
+          event={createdEvent}
+          experience={experience}
+          onClose={() => setCreatedEvent(null)}
         />
       )}
     </div>
