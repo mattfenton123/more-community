@@ -14,11 +14,7 @@ const GALLERY_PHOTOS = {
   default: [`${IMG}/parkrun.webp`, `${IMG}/good-neighbours.webp`, `${IMG}/gallery-adventure-1.webp`]
 };
 
-const MOCK_REVIEWS = [
-  { name: 'Sarah C.', avatar: 'https://i.pravatar.cc/40?img=5', text: "Absolutely brilliant group! I've made genuine friendships here and look forward to every meetup.", rating: 5 },
-  { name: 'James W.', avatar: 'https://i.pravatar.cc/40?img=11', text: "Well organised with a really welcoming atmosphere. Perfect for newcomers to the area.", rating: 5 },
-  { name: 'Emma J.', avatar: 'https://i.pravatar.cc/40?img=26', text: "Joined 3 months ago and it's completely changed my weekends. Highly recommend!", rating: 4 },
-];
+
 
 function getGalleryType(tags) {
   const tagStr = (tags || []).join(' ').toLowerCase();
@@ -140,30 +136,7 @@ export default function CommunityProfileNonMember({
           </div>
         )}
 
-        {/* Reviews */}
-        <div>
-          <h2 style={{ fontSize: '1.4rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: '0 0 16px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Star size={22} color="var(--amber-400)" fill="var(--amber-400)" /> What members say
-          </h2>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {MOCK_REVIEWS.map((review, idx) => (
-              <div key={idx} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '16px', padding: '20px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-                  <img src={review.avatar} alt={review.name} style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
-                  <div>
-                    <div style={{ fontWeight: 700, color: 'var(--white)', fontSize: '1rem' }}>{review.name}</div>
-                    <div style={{ display: 'flex', gap: '2px', marginTop: '2px' }}>
-                      {Array.from({ length: review.rating }).map((_, i) => (
-                        <Star key={i} size={12} fill="var(--amber-400)" color="var(--amber-400)" />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-                <p style={{ margin: 0, color: 'var(--slate-300)', fontSize: '1rem', lineHeight: 1.6, fontStyle: 'italic' }}>"{review.text}"</p>
-              </div>
-            ))}
-          </div>
-        </div>
+
 
       </div>
 

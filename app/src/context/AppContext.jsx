@@ -38,106 +38,11 @@ export function AppProvider({ children }) {
   const [pollVotes, setPollVotes] = useState({});
   const [savedItems, setSavedItems] = useState([]);
   
-  // Sponsors (Mocked until DB tables are created via Supabase Dashboard)
-  const [sponsors, setSponsors] = useState([
-    {
-      id: '11111111-1111-1111-1111-111111111111',
-      name: 'Gusto Coffee Roasters',
-      logo: 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=400&q=80',
-      url: 'https://example.com/gusto',
-      tier: 'Headline',
-      industry: 'Food & Beverage',
-      location: 'Tunbridge Wells High Street',
-      bio: 'Gusto Coffee Roasters is an independent, family-run coffee shop and roastery in the heart of Tunbridge Wells, passionate about ethically sourced beans and bringing people together over a great cup of coffee.',
-      communitySupportStatement: 'We believe that great communities start with great conversations. We are proud to sponsor local groups that encourage people to get out, meet one another, and build real-life connections. As a Headline Sponsor, we offer free space for community meetings and discounted coffee for members.',
-      heroImage: 'https://images.unsplash.com/photo-1497935586351-b67a49e012bf?auto=format&fit=crop&w=1200&q=80'
-    },
-    {
-      id: '22222222-2222-2222-2222-222222222222',
-      name: 'Kent Outdoors',
-      logo: 'https://images.unsplash.com/photo-1542204165-65bf26472b9b?w=400&q=80',
-      url: 'https://example.com/kent-outdoors',
-      tier: 'Community',
-      industry: 'Retail & Leisure',
-      location: 'Royal Victoria Place',
-      bio: 'Kent Outdoors is the premier destination for hiking, camping, and outdoor gear in the South East, outfitting adventurers since 1998.',
-      communitySupportStatement: 'Getting outside is essential for physical and mental wellbeing. We support local walking, running, and adventure communities by providing gear discounts and funding their events, ensuring everyone has access to the great outdoors.',
-      heroImage: 'https://images.unsplash.com/photo-1551632811-561732d1e306?auto=format&fit=crop&w=1200&q=80'
-    },
-    {
-      id: '33333333-3333-3333-3333-333333333333',
-      name: 'TWPT',
-      logo: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=400&q=80',
-      url: 'https://twpt.co.uk',
-      tier: 'Headline',
-      industry: 'Health & Fitness',
-      location: 'Tunbridge Wells',
-      bio: 'The Wellness & Personal Training (TWPT) is the leading personal training studio in Tunbridge Wells. We specialize in transforming lives through tailored fitness, nutrition, and lifestyle coaching. Founded on the belief that a healthy community is a strong community, TWPT offers a holistic approach to wellbeing, integrating movement, nutrition, and mental resilience into every program.',
-      communitySupportStatement: 'We are incredibly proud to support the local communities of Tunbridge Wells. We believe that health and fitness should be accessible to everyone, and we are committed to keeping local community groups active and thriving. By partnering with More., we are providing local groups with expert-led fitness sessions, subsidized wellness workshops, and community events designed to bring people together through the power of movement.',
-      alignmentDetails: 'More. and TWPT share a core belief: real-life connection is the foundation of wellbeing. While More. builds the digital infrastructure to bring people together in the real world, TWPT provides the physical spaces, expertise, and community-driven energy to help those groups thrive. Our partnership is built on a mutual commitment to combating loneliness, promoting physical activity, and fostering genuine relationships within Tunbridge Wells. Together, we are creating a healthier, more connected town where everyone has a place to belong.',
-      heroImage: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&w=1200&q=80',
-      videoUrl: 'https://videos.pexels.com/video-files/853889/853889-hd_1920_1080_25fps.mp4',
-      imageGallery: [
-        'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=800&q=80',
-        'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=800&q=80',
-        'https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&w=800&q=80',
-        'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=800&q=80'
-      ]
-    }
-  ]);
-  const [sponsorshipAssignments, setSponsorshipAssignments] = useState([
-    {
-      id: 'a1',
-      sponsor_id: '11111111-1111-1111-1111-111111111111',
-      target_id: 'c_mumclub_tw',
-      target_type: 'community'
-    },
-    {
-      id: 'a2',
-      sponsor_id: '22222222-2222-2222-2222-222222222222',
-      target_id: 'c_parkrun_tw',
-      target_type: 'community'
-    },
-    {
-      id: 'a3',
-      sponsor_id: '11111111-1111-1111-1111-111111111111',
-      target_id: 'REGION_TW',
-      target_type: 'region'
-    },
-    {
-      id: 'a4',
-      sponsor_id: '33333333-3333-3333-3333-333333333333',
-      target_id: 'GLOBAL',
-      target_type: 'global'
-    }
-  ]);
+  // Sponsors
+  const [sponsors, setSponsors] = useState([]);
+  const [sponsorshipAssignments, setSponsorshipAssignments] = useState([]);
 
-  const [services, setServices] = useState([
-    {
-      id: 'srv-1',
-      communityId: 'yentw',
-      userId: 'demo-user-id',
-      category: 'Freelance',
-      title: 'Graphic Design for Startups',
-      description: 'I design amazing logos and pitch decks for startups in Tunbridge Wells.',
-      perk: '20% off for YENTW members!',
-      isPremium: true,
-      status: 'approved',
-      createdAt: new Date().toISOString()
-    },
-    {
-      id: 'srv-2',
-      communityId: 'yentw',
-      userId: 'demo-user-id-2',
-      category: 'F&B',
-      title: 'The Daily Grind Cafe',
-      description: 'Best coffee in town. A great place for members to co-work.',
-      perk: 'Free pastry with every large coffee.',
-      isPremium: false,
-      status: 'approved',
-      createdAt: new Date().toISOString()
-    }
-  ]);
+  const [services, setServices] = useState([]);
 
   const pitchService = (serviceData) => {
     const newService = {
@@ -189,9 +94,11 @@ export function AppProvider({ children }) {
         'matthewfenton123@gmail.com', 
         'matt@inspiredventures.co.uk',
         'alex@maorecommunity.co.uk', 
-        'alex@morecommunity.co.uk'
+        'alex@morecommunity.co.uk',
+        'matt@morecommunity.app',
+        'alex@morecommunity.app'
       ];
-      if (ADMIN_EMAILS.includes(email) || email.includes('matthew') || email.includes('fenton') || email.includes('matt@inspired') || email.includes('alex') || user.name?.toLowerCase().includes('alex cole')) {
+      if (ADMIN_EMAILS.includes(email)) {
         user.isAdmin = true;
       }
     }
@@ -217,12 +124,6 @@ export function AppProvider({ children }) {
     });
   }
 
-  // Force demo users to be a leader of the first community (so they can test leader features)
-  if (authUser?.email?.includes('demo') && communities.length > 0 && user.ledCommunities.length === 0) {
-    const targetComm = communities[0];
-    user.ledCommunities.push(targetComm.id);
-    if (!user.joinedCommunities.includes(targetComm.id)) user.joinedCommunities.push(targetComm.id);
-  }
 
   const [waConfig, setWaConfig] = useState(null);
 
@@ -492,8 +393,19 @@ export function AppProvider({ children }) {
         }
       }
 
-      // Experiences are client-side mock data for now (no DB table yet)
-      setExperiences(initialExperiences);
+      // Fetch live Viator experiences (with fallback to curated defaults)
+      try {
+        const expRes = await fetch('/api/experiences/discover?q=Tunbridge%20Wells');
+        const expJson = await expRes.json();
+        if (expJson.status === 'success' && expJson.data && expJson.data.length > 0) {
+          setExperiences(expJson.data);
+        } else {
+          setExperiences(initialExperiences);
+        }
+      } catch (err) {
+        console.warn('Viator fetch fallback:', err);
+        setExperiences(initialExperiences);
+      }
 
       setIsLoading(false);
     };
@@ -1465,6 +1377,7 @@ export function AppProvider({ children }) {
       markNotificationRead,
       feedPosts,
       experiences,
+      setExperiences,
       services,
       reviews,
       savedItems,

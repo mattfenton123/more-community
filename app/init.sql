@@ -1,6 +1,6 @@
 -- Paste this entirely into the Supabase SQL Editor and hit "Run"
 
-CREATE TABLE public.messages (
+CREATE TABLE IF NOT EXISTS public.messages (
   id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
   community_id text NOT NULL,
   channel text NOT NULL,

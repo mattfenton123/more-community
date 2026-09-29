@@ -18,14 +18,14 @@ CREATE TABLE IF NOT EXISTS public.feed_post_comments (
 -- 3. RLS Policies for feed_post_likes
 ALTER TABLE public.feed_post_likes ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can see all feed post likes" ON public.feed_post_likes FOR SELECT USING (true);
-CREATE POLICY "Users can like posts" ON public.feed_post_likes FOR INSERT WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "Users can unlike posts" ON public.feed_post_likes FOR DELETE USING (auth.uid() = user_id);
+CREATE POLICY "Users can like posts" ON public.feed_post_likes FOR INSERT WITH CHECK (auth.uid()::text = user_id);
+CREATE POLICY "Users can unlike posts" ON public.feed_post_likes FOR DELETE USING (auth.uid()::text = user_id);
 
 -- 4. RLS Policies for feed_post_comments
 ALTER TABLE public.feed_post_comments ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can see all feed post comments" ON public.feed_post_comments FOR SELECT USING (true);
-CREATE POLICY "Users can comment on posts" ON public.feed_post_comments FOR INSERT WITH CHECK (auth.uid() = author_id);
-CREATE POLICY "Users can delete own comments" ON public.feed_post_comments FOR DELETE USING (auth.uid() = author_id);
+CREATE POLICY "Users can comment on posts" ON public.feed_post_comments FOR INSERT WITH CHECK (auth.uid()::text = author_id);
+CREATE POLICY "Users can delete own comments" ON public.feed_post_comments FOR DELETE USING (auth.uid()::text = author_id);
 
 -- 5. Add to realtime publication
 begin;

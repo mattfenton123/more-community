@@ -16,18 +16,33 @@ if (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
 }
 
 // Instantiate Supabase client using Service Role Key (bypasses RLS)
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://nkyithbhufwgwnbxvqqu.supabase.co';
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://xasaxxjxxkdruuqbrcmf.supabase.co';
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 const supabaseAdmin = createClient(supabaseUrl, supabaseKey, {
   auth: { autoRefreshToken: false, persistSession: false }
 });
 
+const ADMIN_EMAILS = [
+  'matt@morecommunity.app',
+  'alex@morecommunity.app',
+  'msf199@hotmail.com',
+  'alex@morecommunity.co.uk'
+];
+
 async function verifyUser(token, expectedUserId) {
   if (!token) throw new Error("Missing authentication token");
   const { data: { user }, error } = await supabaseAdmin.auth.getUser(token);
   if (error || !user) throw new Error("Invalid or expired token");
   if (expectedUserId && user.id !== expectedUserId) throw new Error("Unauthorized: User ID mismatch");
+  return user;
+}
+
+async function verifyAdmin(token) {
+  const user = await verifyUser(token);
+  if (!user.email || !ADMIN_EMAILS.includes(user.email.toLowerCase())) {
+    throw new Error("Forbidden: Admin access required");
+  }
   return user;
 }
 
@@ -49,15 +64,12 @@ export async function sendMessageAction(messageData, token) {
   
   // --- WhatsApp Broadcast (Outbound Sync) ---
   try {
-    // 1. Fetch community details to check for linked WhatsApp group
-    // In a real app, you would query the `whatsapp_group_id` from the community settings
-    // const { data: community } = await supabaseAdmin.from('communities').select('whatsapp_group_id').eq('id', messageData.communityId).single();
+    const { data: community } = await supabaseAdmin.from('communities').select('whatsapp_group_id').eq('id', messageData.communityId).single();
     
-    // For MVP, simulate that 'yentw' community has a linked WhatsApp group
-    if (messageData.communityId === 'yentw' && process.env.WHATSAPP_ACCESS_TOKEN) {
+    if (community?.whatsapp_group_id && process.env.WHATSAPP_ACCESS_TOKEN) {
       const WHATSAPP_PHONE_NUMBER_ID = process.env.WHATSAPP_PHONE_NUMBER_ID;
       const WHATSAPP_ACCESS_TOKEN = process.env.WHATSAPP_ACCESS_TOKEN;
-      const targetGroupId = 'MOCK_WHATSAPP_GROUP_ID'; // Replace with community.whatsapp_group_id
+      const targetGroupId = community.whatsapp_group_id;
 
       // 2. Fetch the sender's name to attribute the message
       const { data: user } = await supabaseAdmin.from('users').select('name').eq('id', messageData.authorId).single();
@@ -401,7 +413,7 @@ export async function updateUserAction(userId, updates, token) {
 }
 
 export async function adminVerifyCommunityAction(communityId, verified, token) {
-  await verifyUser(token);
+  await verifyAdmin(token);
   
   const { error } = await supabaseAdmin.from('communities').update({ verified }).eq('id', communityId);
   if (error) throw new Error(error.message);
@@ -409,7 +421,7 @@ export async function adminVerifyCommunityAction(communityId, verified, token) {
 }
 
 export async function broadcastNotificationAction(notifications, token) {
-  await verifyUser(token);
+  await verifyAdmin(token);
   const { error } = await supabaseAdmin.from('notifications').insert(notifications);
   if (error) throw new Error(error.message);
   return true;

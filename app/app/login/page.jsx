@@ -12,7 +12,7 @@ export default function LoginScreen() {
   const [isSignUp, setIsSignUp] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const { signInWithEmail, signUpWithEmail, signInWithDemo } = useAuth();
+  const { signInWithEmail, signUpWithEmail } = useAuth();
   const router = useRouter();
 
   const handleAuth = async (e) => {
@@ -38,16 +38,7 @@ export default function LoginScreen() {
     setIsLoading(false);
   };
 
-  const handleDemo = async () => {
-    setIsLoading(true);
-    const { error: authError } = await signInWithDemo();
-    if (authError) {
-      setError(authError.message);
-    } else {
-      router.push('/app');
-    }
-    setIsLoading(false);
-  };
+
 
   return (
     <div style={{

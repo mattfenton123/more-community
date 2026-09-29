@@ -90,11 +90,26 @@ ALTER TABLE public.sponsors ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.sponsorship_assignments ENABLE ROW LEVEL SECURITY;
 
 -- Create SELECT-only policies (Read-only for clients, mutations handled by Server Actions)
+DROP POLICY IF EXISTS "Allow public read access on messages" ON public.messages;
 CREATE POLICY "Allow public read access on messages" ON public.messages FOR SELECT TO public USING (true);
+
+DROP POLICY IF EXISTS "Allow public read access on users" ON public.users;
 CREATE POLICY "Allow public read access on users" ON public.users FOR SELECT TO public USING (true);
+
+DROP POLICY IF EXISTS "Allow public read access on communities" ON public.communities;
 CREATE POLICY "Allow public read access on communities" ON public.communities FOR SELECT TO public USING (true);
+
+DROP POLICY IF EXISTS "Allow public read access on events" ON public.events;
 CREATE POLICY "Allow public read access on events" ON public.events FOR SELECT TO public USING (true);
+
+DROP POLICY IF EXISTS "Allow public read access on channels" ON public.channels;
 CREATE POLICY "Allow public read access on channels" ON public.channels FOR SELECT TO public USING (true);
+
+DROP POLICY IF EXISTS "Allow public read access on community_memberships" ON public.community_memberships;
 CREATE POLICY "Allow public read access on community_memberships" ON public.community_memberships FOR SELECT TO public USING (true);
+
+DROP POLICY IF EXISTS "Allow public read access on sponsors" ON public.sponsors;
 CREATE POLICY "Allow public read access on sponsors" ON public.sponsors FOR SELECT TO public USING (true);
+
+DROP POLICY IF EXISTS "Allow public read access on sponsorship_assignments" ON public.sponsorship_assignments;
 CREATE POLICY "Allow public read access on sponsorship_assignments" ON public.sponsorship_assignments FOR SELECT TO public USING (true);

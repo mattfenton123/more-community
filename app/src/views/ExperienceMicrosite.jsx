@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter as useNavigate } from 'next/navigation';
-import { MapPin, Clock, Users, ArrowLeft, Share2, Star, Sparkles, Calendar } from 'lucide-react';
+import { MapPin, Clock, Users, ArrowLeft, Share2, Star, Sparkles, Calendar, Check, ExternalLink, Loader2 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { useToast } from '../components/Toast';
 import HostExperienceModal from '../components/HostExperienceModal';
@@ -9,24 +9,54 @@ import HostExperienceModal from '../components/HostExperienceModal';
 export default function ExperienceMicrosite() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { experiences, communities, user, createEvent } = useAppContext();
+  const { experiences, communities, user, createEvent, events } = useAppContext();
   const { toast } = useToast();
   const [showHostModal, setShowHostModal] = useState(false);
+  const [singleExp, setSingleExp] = useState(null);
+  const [isLoadingSingle, setIsLoadingSingle] = useState(false);
 
-  const experience = experiences.find(e => e.id === id);
+  const experience = experiences?.find(e => e.id === id || e.productCode === id) || singleExp;
 
-  // No need for promoteCommunityId effect since it's handled in the modal
+  useEffect(() => {
+    if (!experience && id) {
+      setIsLoadingSingle(true);
+      fetch(`/api/experiences/discover?code=${id}&provider=viator`)
+        .then(r => r.json())
+        .then(data => {
+          if (data.status === 'success' && data.data) {
+            setSingleExp(data.data);
+          }
+        })
+        .catch(console.error)
+        .finally(() => setIsLoadingSingle(false));
+    }
+  }, [id, experience]);
+
+  if (isLoadingSingle) {
+    return (
+      <div style={{ minHeight: '100dvh', background: 'var(--slate-950)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
+          <Loader2 size={32} className="animate-spin" style={{ color: 'var(--teal-400)' }} />
+          <div style={{ color: 'var(--slate-400)', fontSize: '0.9rem', fontFamily: "'Syne', sans-serif" }}>Loading experience details...</div>
+        </div>
+      </div>
+    );
+  }
+
   if (!experience) {
     return (
-      <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--white)' }}>
+      <div style={{ padding: '60px 20px', textAlign: 'center', color: 'var(--white)', minHeight: '100dvh', background: 'var(--slate-950)' }}>
         <h2>Experience not found</h2>
-        <button onClick={() => navigate.back()} className="btn btn-outline" style={{ marginTop: '20px' }}>Go Back</button>
+        <p style={{ color: 'var(--slate-400)', marginTop: '8px' }}>This experience may no longer be available.</p>
+        <button onClick={() => navigate.push('/experiences')} className="btn btn-outline" style={{ marginTop: '20px' }}>
+          Browse All Experiences
+        </button>
       </div>
     );
   }
 
   const getTotalPrice = (exp) => {
-    return Math.round(exp.basePrice * (1 + exp.leaderMarkup / 100));
+    return Math.round((exp.basePrice || 25) * (1 + (exp.leaderMarkup || 15) / 100));
   };
 
   const isLeader = user?.ledCommunities?.length > 0;
@@ -75,44 +105,44 @@ export default function ExperienceMicrosite() {
     }
   };
 
-  const communityEvents = useAppContext().events.filter(ev => {
+  const communityEvents = (events || []).filter(ev => {
     if (ev.title === experience.title) return true;
     if (ev.description && ev.description.includes(`"baseExperienceId":"${experience.id}"`)) return true;
     return false;
   });
 
   return (
-    <div style={{ minHeight: '100dvh', background: 'var(--slate-950)', color: 'var(--white)', paddingBottom: '100px' }}>
+    <div style={{ minHeight: '100dvh', background: 'var(--slate-950)', color: 'var(--white)', paddingBottom: '120px' }}>
       {/* Hero Section */}
       <div style={{ position: 'relative', height: '350px' }}>
         <img src={experience.image} alt={experience.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '100px', background: 'linear-gradient(to bottom, rgba(0,0,0,0.6), transparent)' }}></div>
-        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '150px', background: 'linear-gradient(to top, var(--slate-950), transparent)' }}></div>
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '100px', background: 'linear-gradient(to bottom, rgba(0,0,0,0.6), transparent)' }} />
+        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '150px', background: 'linear-gradient(to top, var(--slate-950), transparent)' }} />
         
         {/* Top Bar Actions */}
-        <div style={{ position: 'absolute', top: '20px', left: '20px', right: '20px', display: 'flex', justifyContent: 'space-between' }}>
-          <button onClick={() => navigate.back()} className="interactive-press" style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(10px)', border: 'none', color: 'var(--white)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ position: 'absolute', top: '20px', left: '20px', right: '20px', display: 'flex', justifyContent: 'space-between', zIndex: 10 }}>
+          <button onClick={() => navigate.back()} className="interactive-press" style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(10px)', border: 'none', color: 'var(--white)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
             <ArrowLeft size={20} />
           </button>
-          <button onClick={handleShare} className="interactive-press" style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(10px)', border: 'none', color: 'var(--white)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <button onClick={handleShare} className="interactive-press" style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(10px)', border: 'none', color: 'var(--white)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
             <Share2 size={20} />
           </button>
         </div>
 
         {/* Category Pill */}
-        <div style={{ position: 'absolute', bottom: '20px', left: '20px', background: 'rgba(45,212,191,0.2)', border: '1px solid rgba(45,212,191,0.4)', color: 'var(--teal-300)', padding: '6px 12px', borderRadius: '99px', fontSize: '0.8rem', fontWeight: 700 }}>
+        <div style={{ position: 'absolute', bottom: '20px', left: '20px', background: 'rgba(45,212,191,0.2)', border: '1px solid rgba(45,212,191,0.4)', color: 'var(--teal-300)', padding: '6px 14px', borderRadius: '99px', fontSize: '0.8rem', fontWeight: 700 }}>
           {experience.category}
         </div>
       </div>
 
       <div style={{ padding: '0 24px 24px' }}>
-        <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem', lineHeight: 1.1, margin: '16px 0 12px', color: 'var(--white)' }}>
+        <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.85rem', lineHeight: 1.2, margin: '16px 0 12px', color: 'var(--white)' }}>
           {experience.title}
         </h1>
 
         <div style={{ display: 'flex', gap: '16px', marginBottom: '24px', flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--amber-400)', fontSize: '0.9rem', fontWeight: 600 }}>
-            <Star size={16} fill="currentColor" /> {experience.rating}
+            <Star size={16} fill="currentColor" /> {experience.rating} {experience.reviewsCount ? `(${experience.reviewsCount} reviews)` : ''}
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--slate-400)', fontSize: '0.9rem' }}>
             <MapPin size={16} /> {experience.location}
@@ -122,21 +152,51 @@ export default function ExperienceMicrosite() {
           </div>
         </div>
 
+        {/* Provider Box */}
         <div style={{ padding: '20px', background: 'rgba(255,255,255,0.03)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.06)', marginBottom: '24px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-            <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--slate-800)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Users size={20} color="var(--teal-400)" />
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--slate-800)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Users size={20} color="var(--teal-400)" />
+              </div>
+              <div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>Partner Provider</div>
+                <div style={{ fontSize: '1rem', color: 'var(--white)', fontWeight: 600 }}>{experience.provider}</div>
+              </div>
             </div>
-            <div>
-              <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>Provider</div>
-              <div style={{ fontSize: '1rem', color: 'var(--white)', fontWeight: 500 }}>{experience.provider}</div>
-            </div>
+            {experience.productUrl && (
+              <a 
+                href={experience.productUrl} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                style={{ fontSize: '0.75rem', color: 'var(--teal-400)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 600 }}
+              >
+                Viator Partner <ExternalLink size={12} />
+              </a>
+            )}
           </div>
-          <div style={{ height: '1px', background: 'rgba(255,255,255,0.1)', margin: '12px 0' }} />
-          <p style={{ color: 'var(--slate-300)', fontSize: '0.95rem', lineHeight: 1.6, margin: 0 }}>
+          <div style={{ height: '1px', background: 'rgba(255,255,255,0.06)', margin: '12px 0' }} />
+          <p style={{ color: 'var(--slate-300)', fontSize: '0.92rem', lineHeight: 1.6, margin: 0, whiteSpace: 'pre-line' }}>
             {experience.description}
           </p>
         </div>
+
+        {/* Inclusions if present */}
+        {experience.inclusions && experience.inclusions.length > 0 && (
+          <div style={{ padding: '20px', background: 'rgba(255,255,255,0.02)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', marginBottom: '24px' }}>
+            <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--white)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+              What&apos;s Included
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {experience.inclusions.map((inc, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', color: 'var(--slate-300)' }}>
+                  <Check size={14} color="var(--teal-400)" style={{ flexShrink: 0 }} />
+                  <span>{inc.otherDescription || inc.typeDescription || inc.categoryDescription}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* LEADER VIEW: Transparent Pricing Breakdown */}
         {isLeader && (
@@ -153,8 +213,8 @@ export default function ExperienceMicrosite() {
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.9rem' }}>
-                <div style={{ color: 'var(--teal-400)' }}>Your Profit ({experience.leaderMarkup}% markup)</div>
-                <div style={{ color: 'var(--teal-300)', fontWeight: 600 }}>+£{Math.round(experience.basePrice * (experience.leaderMarkup / 100))}</div>
+                <div style={{ color: 'var(--teal-400)' }}>Your Profit ({experience.leaderMarkup || 15}% markup)</div>
+                <div style={{ color: 'var(--teal-300)', fontWeight: 600 }}>+£{Math.round((experience.basePrice || 25) * ((experience.leaderMarkup || 15) / 100))}</div>
               </div>
 
               <div style={{ height: '1px', background: 'rgba(255,255,255,0.1)', margin: '4px 0' }} />
@@ -175,10 +235,9 @@ export default function ExperienceMicrosite() {
             </h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {communityEvents.map(ev => {
-                const comm = communities.find(c => c.id === ev.communityId);
+                const comm = communities?.find(c => c.id === ev.communityId);
                 
-                // Parse metadata if present
-                let nonMemberPrice = ev.ticketPrice + 25; // default fallback
+                let nonMemberPrice = (ev.ticketPrice || 0) + 25;
                 if (ev.description?.includes('<!--META:')) {
                   try {
                     const match = ev.description.match(/<!--META:(.*?)-->/);
@@ -225,29 +284,65 @@ export default function ExperienceMicrosite() {
         position: 'fixed', bottom: 'calc(80px + env(safe-area-inset-bottom))', left: 0, right: 0,
         background: 'rgba(2,6,23,0.95)', backdropFilter: 'blur(20px)',
         borderTop: '1px solid rgba(255,255,255,0.1)',
-        padding: '20px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', zIndex: 90
+        padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', zIndex: 90
       }}>
         <div>
-          <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--white)' }}>£{getTotalPrice(experience)}</div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>per person</div>
+          <div style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--white)' }}>£{getTotalPrice(experience)}</div>
+          <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)' }}>per person</div>
         </div>
         
         {isLeader ? (
-          <button 
-            onClick={() => setShowHostModal(true)} 
-            className="btn btn-primary interactive-press" 
-            style={{ padding: '14px 28px', borderRadius: '99px', fontSize: '1rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}
-          >
-            <Sparkles size={16} /> Host for my Community
-          </button>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            {experience.productUrl && (
+              <a
+                href={experience.productUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn-outline interactive-press"
+                style={{ padding: '10px 16px', borderRadius: '99px', fontSize: '0.85rem', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}
+              >
+                Viator <ExternalLink size={12} />
+              </a>
+            )}
+            <button 
+              onClick={() => setShowHostModal(true)} 
+              className="btn btn-primary interactive-press" 
+              style={{ padding: '10px 20px', borderRadius: '99px', fontSize: '0.9rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}
+            >
+              <Sparkles size={15} /> Host for Community
+            </button>
+          </div>
         ) : (
-          <button 
-            onClick={() => toast.success('Interest registered!', 'The leader will contact you to confirm your ticket.')}
-            className="btn btn-primary interactive-press" 
-            style={{ padding: '14px 28px', borderRadius: '99px', fontSize: '1rem', fontWeight: 600 }}
-          >
-            Register Interest
-          </button>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            {experience.productUrl ? (
+              <>
+                <a 
+                  href={experience.productUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-primary interactive-press" 
+                  style={{ padding: '10px 22px', borderRadius: '99px', fontSize: '0.92rem', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}
+                >
+                  Book on Viator <ExternalLink size={13} />
+                </a>
+                <button 
+                  onClick={() => toast.success('Interest registered!', 'The leader will contact you to coordinate a group trip.')}
+                  className="btn btn-outline interactive-press" 
+                  style={{ padding: '10px 16px', borderRadius: '99px', fontSize: '0.85rem', fontWeight: 600 }}
+                >
+                  Group Trip
+                </button>
+              </>
+            ) : (
+              <button 
+                onClick={() => toast.success('Interest registered!', 'The leader will contact you to confirm your ticket.')}
+                className="btn btn-primary interactive-press" 
+                style={{ padding: '12px 24px', borderRadius: '99px', fontSize: '0.95rem', fontWeight: 600 }}
+              >
+                Register Interest
+              </button>
+            )}
+          </div>
         )}
       </div>
 

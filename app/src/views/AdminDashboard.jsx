@@ -88,7 +88,7 @@ export default function AdminDashboard() {
     return null;
   }
 
-  const ADMIN_EMAILS = ['msf199@hotmail.com', 'alex@maorecommunity.co.uk', 'alex@morecommunity.co.uk'];
+  const ADMIN_EMAILS = ['msf199@hotmail.com', 'alex@maorecommunity.co.uk', 'alex@morecommunity.co.uk', 'matt@morecommunity.app', 'alex@morecommunity.app'];
 
   // ─── Platform-wide computed stats ─────────────────────────
   const platformStats = useMemo(() => {
