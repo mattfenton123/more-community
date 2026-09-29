@@ -1,6 +1,6 @@
 "use client";
 import { useState, useMemo } from 'react';
-import { MapPin, Clock, Star, Users, ChevronRight, Search, X, ArrowLeft, Sparkles } from 'lucide-react';
+import { MapPin, Clock, Star, Users, Search, X, ArrowLeft, Sparkles, Loader2, ExternalLink } from 'lucide-react';
 import { useRouter as useNavigate } from 'next/navigation';
 import { useAppContext } from '../context/AppContext';
 import { useToast } from '../components/Toast';
@@ -8,34 +8,57 @@ import { useToast } from '../components/Toast';
 export default function ExperiencesMarketplace() {
   const [activePill, setActivePill] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
+  const [isSearchingViator, setIsSearchingViator] = useState(false);
   const pills = ['All', '⛰️ Adventure', '🧘 Wellness', '🎭 Culture', '🍷 Food & Drink', '🎨 Creative'];
-  const { experiences, communities, user, createEvent } = useAppContext();
+  const { experiences, setExperiences, communities, user } = useAppContext();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  const handleViatorSearch = async (term) => {
+    const q = (term || searchQuery).trim();
+    if (!q) return;
+    setIsSearchingViator(true);
+    try {
+      const res = await fetch(`/api/experiences/discover?q=${encodeURIComponent(q)}&provider=viator`);
+      const result = await res.json();
+      if (result.status === 'success' && result.data?.length > 0) {
+        if (setExperiences) setExperiences(result.data);
+        toast.success(`Found ${result.data.length} experiences`, `Showing live activities for "${q}"`);
+      } else {
+        toast.info('No direct matches found', `Try searching a town or city name like "London" or "Kent"`);
+      }
+    } catch (err) {
+      toast.error('Search failed', 'Could not query Viator API.');
+    } finally {
+      setIsSearchingViator(false);
+    }
+  };
 
   const filteredExperiences = useMemo(() => {
     let list = experiences || [];
     if (activePill !== 'All') {
       list = list.filter(e => e.category === activePill);
     }
-    if (searchQuery.trim()) {
+    if (searchQuery.trim() && !isSearchingViator) {
       const q = searchQuery.toLowerCase();
-      list = list.filter(e =>
-        e.title.toLowerCase().includes(q) ||
-        e.description.toLowerCase().includes(q) ||
-        e.location.toLowerCase().includes(q)
+      // First try filtering local list
+      const matched = list.filter(e =>
+        e.title?.toLowerCase().includes(q) ||
+        e.description?.toLowerCase().includes(q) ||
+        e.location?.toLowerCase().includes(q)
       );
+      if (matched.length > 0) return matched;
     }
     return list;
-  }, [experiences, activePill, searchQuery]);
+  }, [experiences, activePill, searchQuery, isSearchingViator]);
 
   const getCommunityName = (communityId) => {
-    const c = communities.find(c => c.id === communityId);
-    return c ? c.name : 'A community leader';
+    const c = communities?.find(c => c.id === communityId);
+    return c ? c.name : 'More Community';
   };
 
   const getTotalPrice = (exp) => {
-    return Math.round(exp.basePrice * (1 + exp.leaderMarkup / 100));
+    return Math.round((exp.basePrice || 25) * (1 + (exp.leaderMarkup || 15) / 100));
   };
 
   return (
@@ -55,14 +78,29 @@ export default function ExperiencesMarketplace() {
             <ArrowLeft size={20} />
           </button>
           <div>
-            <h1 style={{
-              fontFamily: "'Syne', sans-serif", fontSize: '1.15rem', fontWeight: 700,
-              color: 'var(--white)', letterSpacing: '-0.02em'
-            }}>
-              Experiences
-            </h1>
-            <p style={{ fontSize: '0.72rem', color: 'var(--slate-500)', marginTop: '2px' }}>
-              Curated by your community leaders
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <h1 style={{
+                fontFamily: "'Syne', sans-serif", fontSize: '1.15rem', fontWeight: 700,
+                color: 'var(--white)', letterSpacing: '-0.02em', margin: 0
+              }}>
+                Experiences
+              </h1>
+              <span style={{
+                background: 'rgba(20,184,166,0.15)',
+                border: '1px solid rgba(20,184,166,0.3)',
+                color: 'var(--teal-300)',
+                fontSize: '0.62rem',
+                fontWeight: 700,
+                padding: '2px 8px',
+                borderRadius: '99px',
+                letterSpacing: '0.04em',
+                textTransform: 'uppercase'
+              }}>
+                Viator Live
+              </span>
+            </div>
+            <p style={{ fontSize: '0.72rem', color: 'var(--slate-500)', marginTop: '2px', margin: 0 }}>
+              Curated days out & group experiences
             </p>
           </div>
           <Sparkles size={16} style={{ color: 'var(--amber-400)', marginLeft: 'auto' }} />
@@ -72,12 +110,23 @@ export default function ExperiencesMarketplace() {
         <div style={{
           display: 'flex', alignItems: 'center', gap: '8px',
           background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
-          borderRadius: '10px', padding: '0.55rem 0.85rem', marginBottom: '0.65rem'
+          borderRadius: '10px', padding: '0.45rem 0.75rem', marginBottom: '0.65rem'
         }}>
-          <Search size={15} style={{ color: 'var(--slate-500)', flexShrink: 0 }} />
+          {isSearchingViator ? (
+            <Loader2 size={15} className="animate-spin" style={{ color: 'var(--teal-400)', flexShrink: 0 }} />
+          ) : (
+            <Search size={15} style={{ color: 'var(--slate-500)', flexShrink: 0 }} />
+          )}
           <input
-            type="text" placeholder="Search experiences..."
-            value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+            type="text" 
+            placeholder="Search town, city or activity (Press Enter)..."
+            value={searchQuery} 
+            onChange={e => setSearchQuery(e.target.value)}
+            onKeyDown={e => {
+              if (e.key === 'Enter') {
+                handleViatorSearch(searchQuery);
+              }
+            }}
             style={{
               flex: 1, background: 'none', border: 'none', outline: 'none',
               color: 'var(--white)', fontSize: '0.82rem', fontFamily: "'Plus Jakarta Sans', sans-serif"
@@ -91,6 +140,22 @@ export default function ExperiencesMarketplace() {
               <X size={14} />
             </button>
           )}
+          <button 
+            onClick={() => handleViatorSearch(searchQuery)}
+            disabled={isSearchingViator}
+            style={{
+              background: 'var(--teal-500)',
+              border: 'none',
+              color: 'var(--slate-950)',
+              fontSize: '0.72rem',
+              fontWeight: 700,
+              padding: '4px 10px',
+              borderRadius: '6px',
+              cursor: 'pointer'
+            }}
+          >
+            Search
+          </button>
         </div>
 
         {/* Filter Pills */}
@@ -118,7 +183,14 @@ export default function ExperiencesMarketplace() {
             textAlign: 'center', padding: '3rem 1rem',
             color: 'var(--slate-500)', fontSize: '0.85rem'
           }}>
-            No experiences found. Try a different filter.
+            <p>No experiences found matching this filter.</p>
+            <button 
+              onClick={() => handleViatorSearch('Tunbridge Wells')}
+              className="btn btn-outline"
+              style={{ marginTop: '12px', fontSize: '0.8rem', padding: '8px 16px' }}
+            >
+              Reset to Tunbridge Wells & Kent
+            </button>
           </div>
         ) : (
           filteredExperiences.map(exp => (
@@ -152,15 +224,16 @@ export default function ExperiencesMarketplace() {
                 }}>
                   {exp.category}
                 </div>
-                {exp.spotsLeft <= 6 && (
+                {exp.provider && (
                   <div style={{
                     position: 'absolute', top: '0.6rem', right: '0.6rem',
-                    background: 'rgba(239,68,68,0.85)', backdropFilter: 'blur(8px)',
+                    background: 'rgba(15,23,42,0.85)', backdropFilter: 'blur(8px)',
+                    border: '1px solid rgba(255,255,255,0.1)',
                     borderRadius: '100px', padding: '0.25rem 0.65rem',
-                    fontSize: '0.62rem', fontWeight: 700, color: 'var(--white)',
+                    fontSize: '0.62rem', fontWeight: 700, color: 'var(--slate-300)',
                     fontFamily: "'Syne', sans-serif"
                   }}>
-                    {exp.spotsLeft} spots left
+                    {exp.provider}
                   </div>
                 )}
                 <div style={{
@@ -172,7 +245,7 @@ export default function ExperiencesMarketplace() {
               {/* Content */}
               <div style={{ padding: '1rem 1.1rem' }}>
                 <h3 style={{
-                  fontFamily: "'Syne', sans-serif", fontSize: '0.9rem', fontWeight: 700,
+                  fontFamily: "'Syne', sans-serif", fontSize: '0.92rem', fontWeight: 700,
                   color: 'var(--white)', marginBottom: '0.35rem', lineHeight: 1.3
                 }}>
                   {exp.title}

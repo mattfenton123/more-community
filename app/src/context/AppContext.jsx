@@ -393,8 +393,19 @@ export function AppProvider({ children }) {
         }
       }
 
-      // Experiences are client-side mock data for now (no DB table yet)
-      setExperiences(initialExperiences);
+      // Fetch live Viator experiences (with fallback to curated defaults)
+      try {
+        const expRes = await fetch('/api/experiences/discover?q=Tunbridge%20Wells');
+        const expJson = await expRes.json();
+        if (expJson.status === 'success' && expJson.data && expJson.data.length > 0) {
+          setExperiences(expJson.data);
+        } else {
+          setExperiences(initialExperiences);
+        }
+      } catch (err) {
+        console.warn('Viator fetch fallback:', err);
+        setExperiences(initialExperiences);
+      }
 
       setIsLoading(false);
     };
@@ -1366,6 +1377,7 @@ export function AppProvider({ children }) {
       markNotificationRead,
       feedPosts,
       experiences,
+      setExperiences,
       services,
       reviews,
       savedItems,
