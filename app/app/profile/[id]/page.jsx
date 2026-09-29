@@ -106,7 +106,7 @@ export default function UserProfile() {
     ...(currentUser.isAdmin ? [{ icon: Shield, label: 'Admin Hub', desc: 'Platform management', color: '#ef4444', href: '/admin' }] : []),
     ...(currentUser.leaderOf ? 
       [{ icon: BarChart2, label: 'Leader Dashboard', desc: 'Manage your communities', color: '#8b5cf6', href: '/dashboard' }] :
-      [{ icon: Plus, label: 'Start a Community', desc: 'Create and lead your own group', color: '#8b5cf6', href: '/dashboard' }]
+      [{ icon: Plus, label: 'Start a Community', desc: 'Create and lead your own group', color: '#8b5cf6', href: '/create-community' }]
     ),
     { icon: Compass, label: 'Discover Communities', desc: 'Find groups near you', color: 'var(--teal-500)', href: '/discover' },
     { icon: Calendar, label: 'Browse Events', desc: 'See what\'s happening locally', color: '#3b82f6', href: '/events' },

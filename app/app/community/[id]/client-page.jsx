@@ -22,6 +22,7 @@ import { downloadIcs } from '../../../src/lib/calendar';
 const VideoUploader = dynamic(() => import('../../../src/components/VideoUploader'), { ssr: false });
 const EmojiPicker = dynamic(() => import('emoji-picker-react'), { ssr: false });
 import confetti from 'canvas-confetti';
+import LeaderSetupChecklist from '../../../src/components/LeaderSetupChecklist';
 
 // Category-specific gallery photos (generated unique images)
 const IMG = '/images/communities';
@@ -413,6 +414,18 @@ export default function CommunityProfile() {
           </button>
         </div>
       </div>
+
+      {/* ===== LEADER SETUP CHECKLIST (Visible to Community Leaders) ===== */}
+      {isLeader && (
+        <div style={{ padding: '0 20px', marginBottom: '10px' }}>
+          <LeaderSetupChecklist
+            community={community}
+            events={communityEvents}
+            onOpenEventModal={() => navigate.push(`/dashboard?community=${community.id}&tab=events`)}
+            onOpenSettings={() => navigate.push(`/dashboard?community=${community.id}&tab=settings`)}
+          />
+        </div>
+      )}
 
       {/* ===== TAB NAVIGATION ===== */}
       <div style={{ padding: '0 20px', marginBottom: '24px' }}>

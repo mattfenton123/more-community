@@ -13,6 +13,7 @@ import DigitalTicket from '../../src/components/DigitalTicket';
 import QRScanner from '../../src/components/QRScanner';
 import CommunityOnboardingFlow from '../../src/views/CommunityOnboardingFlow';
 import EventFlyerGenerator from '../../src/components/EventFlyerGenerator';
+import LeaderSetupChecklist from '../../src/components/LeaderSetupChecklist';
 import dynamic from 'next/dynamic';
 const LocationPicker = dynamic(() => import('../../src/components/LocationPicker'), { ssr: false });
 
@@ -835,6 +836,20 @@ export default function LeaderDashboard() {
           {/* ══════════════════════════════════════════════════════ */}
           {activeTab === 'overview' && (
             <>
+              {/* Leader Setup & Launch Checklist */}
+              <div style={{ padding: '0 20px', marginBottom: '16px' }}>
+                <LeaderSetupChecklist
+                  community={community}
+                  events={communityEvents}
+                  onOpenEventModal={() => {
+                    setEditingEventId(null);
+                    setEventForm(emptyEventForm);
+                    setModalType('event');
+                  }}
+                  onOpenSettings={() => setActiveTab('settings')}
+                />
+              </div>
+
               {/* Stats Grid 2×3 */}
               <div style={{ padding: '0 20px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '24px' }}>
                 <StatCard value={stats.totalMembers || 0} label="Total Members" icon={Users} color="white" />

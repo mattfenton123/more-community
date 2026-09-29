@@ -14,13 +14,35 @@ export default function AppHeader({ title, subtitle, rightElement, showBack = fa
   };
 
   const defaultRightElement = (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+      <button
+        onClick={() => navigate.push('/create-community')}
+        className="interactive-press"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '5px',
+          padding: '6px 12px',
+          borderRadius: '999px',
+          background: 'rgba(20, 184, 166, 0.15)',
+          border: '1px solid rgba(20, 184, 166, 0.4)',
+          color: 'var(--teal-300)',
+          fontSize: '0.78rem',
+          fontWeight: 700,
+          cursor: 'pointer',
+          whiteSpace: 'nowrap'
+        }}
+        title="Start a Community"
+      >
+        <span style={{ fontSize: '1rem', lineHeight: 1, fontWeight: 800 }}>+</span>
+        <span>Start Community</span>
+      </button>
       <div 
         className="interactive-press"
         onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
         style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--slate-300)' }}
       >
-        {theme === 'light' ? <Moon size={22} /> : <Sun size={22} />}
+        {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
       </div>
       <div 
         className="interactive-press" 

@@ -154,6 +154,51 @@ export default function GettingStarted() {
         )}
       </div>
 
+      {/* Start Community Option for Leaders */}
+      <div style={{ padding: '0 20px', marginBottom: '24px' }}>
+        <div 
+          onClick={() => router.push('/create-community')}
+          className="interactive-press"
+          style={{
+            background: 'linear-gradient(135deg, rgba(20,184,166,0.14) 0%, rgba(59,130,246,0.1) 100%)',
+            borderRadius: '16px',
+            padding: '16px 20px',
+            border: '1px solid rgba(20,184,166,0.3)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '12px',
+            cursor: 'pointer'
+          }}
+        >
+          <div>
+            <div style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--teal-400)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              Want to lead?
+            </div>
+            <div style={{ fontWeight: 800, color: 'var(--white)', fontSize: '0.98rem' }}>
+              Start your own community
+            </div>
+            <div style={{ fontSize: '0.8rem', color: 'var(--slate-300)', marginTop: '2px' }}>
+              Bring people together around your passion. Full leader toolkit included.
+            </div>
+          </div>
+          <button
+            onClick={(e) => { e.stopPropagation(); router.push('/create-community'); }}
+            className="btn btn-primary"
+            style={{
+              padding: '10px 18px',
+              borderRadius: '12px',
+              fontSize: '0.85rem',
+              fontWeight: 700,
+              whiteSpace: 'nowrap',
+              background: 'linear-gradient(135deg, var(--teal-500), #2563eb)'
+            }}
+          >
+            Start →
+          </button>
+        </div>
+      </div>
+
       {/* Recommended Communities */}
       <div style={{ padding: '0 20px' }}>
         <div style={{

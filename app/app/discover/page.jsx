@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useMemo } from 'react';
-import { Compass, Users, MapPin, Search, Calendar, ChevronRight, X, List, Map as MapIcon, Sparkles, BadgeCheck, TrendingUp, Activity, Zap, Sun, Moon, ChevronsRight, Heart } from 'lucide-react';
+import { Compass, Users, MapPin, Search, Calendar, ChevronRight, X, List, Map as MapIcon, Sparkles, BadgeCheck, TrendingUp, Activity, Zap, Sun, Moon, ChevronsRight, Heart, Plus } from 'lucide-react';
 import { useRouter as useNavigate } from 'next/navigation';
 import { useAppContext } from '../../src/context/AppContext';
 import { useChat } from '../../src/context/ChatContext';
@@ -204,8 +204,28 @@ export default function Discover() {
       
       <div style={{ padding: '20px 20px 10px' }}>
         <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--slate-400)' }}>Local communities in</p>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '4px 0 16px 0' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '4px 0 16px 0', gap: '8px' }}>
           <h2 style={{ margin: 0, fontFamily: 'var(--font-heading)', fontSize: '1.4rem' }}>Tunbridge Wells, UK</h2>
+          <button
+            onClick={() => navigate.push('/create-community')}
+            className="interactive-press"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '6px 14px',
+              borderRadius: '999px',
+              background: 'linear-gradient(135deg, rgba(20,184,166,0.2), rgba(59,130,246,0.15))',
+              border: '1px solid rgba(20,184,166,0.4)',
+              color: 'var(--teal-300)',
+              fontSize: '0.8rem',
+              fontWeight: 700,
+              cursor: 'pointer',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            <Plus size={14} /> Start Community
+          </button>
         </div>
         
         <div 
@@ -552,14 +572,41 @@ export default function Discover() {
 
               {/* Create CTA */}
               <div 
-                onClick={() => navigate.push('/dashboard')}
+                onClick={() => navigate.push('/create-community')}
                 className="interactive-press"
-                style={{ margin: '8px 20px 24px', padding: '20px', border: '1px dashed rgba(20,184,166,0.3)', background: 'rgba(20,184,166,0.03)', borderRadius: '16px', textAlign: 'center', cursor: 'pointer', transition: 'background 0.2s' }}
-                onMouseOver={e => e.currentTarget.style.background = 'rgba(20,184,166,0.08)'}
-                onMouseOut={e => e.currentTarget.style.background = 'rgba(20,184,166,0.03)'}
+                style={{
+                  margin: '12px 20px 32px',
+                  padding: '24px 20px',
+                  border: '1px solid rgba(20,184,166,0.3)',
+                  background: 'linear-gradient(135deg, rgba(20,184,166,0.08) 0%, rgba(59,130,246,0.05) 100%)',
+                  borderRadius: '20px',
+                  textAlign: 'center',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.15)'
+                }}
               >
-                <div style={{ fontSize: '0.95rem', color: 'var(--teal-400)', fontWeight: 600, marginBottom: '4px' }}>Don't see your group?</div>
-                <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)' }}>Start your own community on more.</div>
+                <div style={{ fontSize: '1.1rem', color: 'var(--white)', fontWeight: 800, marginBottom: '6px' }}>
+                  Don't see your community?
+                </div>
+                <div style={{ fontSize: '0.85rem', color: 'var(--slate-300)', marginBottom: '16px', maxWidth: '320px', margin: '0 auto 16px' }}>
+                  Start your own club, network or social group. It takes less than 2 minutes.
+                </div>
+                <button
+                  onClick={(e) => { e.stopPropagation(); navigate.push('/create-community'); }}
+                  className="btn btn-primary interactive-press"
+                  style={{
+                    padding: '10px 22px',
+                    borderRadius: '12px',
+                    fontWeight: 700,
+                    fontSize: '0.88rem',
+                    background: 'linear-gradient(135deg, var(--teal-500), #2563eb)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  <Plus size={16} /> Start a Community
+                </button>
               </div>
             </>
           )}

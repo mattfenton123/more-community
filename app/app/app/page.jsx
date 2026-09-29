@@ -3,7 +3,7 @@ import { useMemo, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppContext } from '../../src/context/AppContext';
 import { useFeed } from '../../src/context/FeedContext';
-import { Heart, MessageCircle, Share2, Calendar, MapPin, Clock, Compass, Plus, Megaphone, Edit3, Briefcase, ChevronUp, Shield } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Calendar, MapPin, Clock, Compass, Plus, Megaphone, Edit3, Briefcase, ChevronUp, Shield, ArrowRight, Sparkles } from 'lucide-react';
 import { SkeletonList, SkeletonCard } from '../../src/components/SkeletonCard';
 import InlineComments from '../../src/components/InlineComments';
 import AppHeader from '../../src/components/AppHeader';
@@ -149,6 +149,58 @@ export default function HomeFeed() {
                 ? `${recentPosts.length} new post${recentPosts.length > 1 ? 's' : ''} in your communities.`
                 : "You're all caught up for today."}
           </p>
+        </div>
+      </div>
+
+      {/* Leader & Community Creation Callout */}
+      <div style={{ padding: '0 20px', margin: '14px 0 18px' }}>
+        <div style={{
+          background: 'linear-gradient(135deg, rgba(20,184,166,0.14) 0%, rgba(59,130,246,0.1) 100%)',
+          borderRadius: '16px',
+          padding: '16px 18px',
+          border: '1px solid rgba(20,184,166,0.3)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '14px',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.2)'
+        }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '3px' }}>
+              <Sparkles size={14} color="var(--teal-400)" />
+              <span style={{ fontSize: '0.72rem', fontWeight: 800, color: 'var(--teal-400)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                {user?.ledCommunities?.length > 0 ? 'Leader Hub' : 'Start a Community'}
+              </span>
+            </div>
+            <div style={{ fontWeight: 800, color: 'var(--white)', fontSize: '0.98rem' }}>
+              {user?.ledCommunities?.length > 0 ? 'Manage your community & events' : 'Lead a community in your area'}
+            </div>
+            <div style={{ fontSize: '0.78rem', color: 'var(--slate-300)', marginTop: '2px' }}>
+              {user?.ledCommunities?.length > 0 ? 'Open your leader dashboard, CRM & tickets.' : 'Free tools, zero platform fees, full community ownership.'}
+            </div>
+          </div>
+          <button
+            onClick={() => router.push(user?.ledCommunities?.length > 0 ? '/dashboard' : '/create-community')}
+            className="btn btn-primary interactive-press"
+            style={{
+              padding: '10px 16px',
+              borderRadius: '12px',
+              fontSize: '0.85rem',
+              fontWeight: 700,
+              whiteSpace: 'nowrap',
+              background: 'linear-gradient(135deg, var(--teal-500), #2563eb)',
+              boxShadow: '0 4px 12px rgba(20,184,166,0.3)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}
+          >
+            {user?.ledCommunities?.length > 0 ? (
+              <><span>Dashboard</span> <ArrowRight size={15} /></>
+            ) : (
+              <><Plus size={16} /> <span>Start</span></>
+            )}
+          </button>
         </div>
       </div>
 

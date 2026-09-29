@@ -48,7 +48,7 @@ export default function BottomNav() {
     { id: 'events', label: 'Events', icon: Calendar, href: '/events' },
     { id: 'chat', label: 'Chat', icon: MessageCircle, href: '/chat', badge: unreadChatCount },
     ...(user?.isAdmin ? [{ id: 'admin', label: 'Admin', icon: Shield, href: '/admin' }] : []),
-    ...(!user?.isAdmin && isLeader ? [{ id: 'dashboard', label: 'Leader', icon: Shield, href: '/dashboard' }] : []),
+    { id: 'leader', label: isLeader ? 'Leader' : 'Start', icon: Shield, href: isLeader ? '/dashboard' : '/create-community' },
     { id: 'profile', label: 'Profile', icon: User, href: `/profile/${user?.id || ''}` },
   ];
 
