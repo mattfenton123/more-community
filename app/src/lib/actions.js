@@ -23,11 +23,26 @@ const supabaseAdmin = createClient(supabaseUrl, supabaseKey, {
   auth: { autoRefreshToken: false, persistSession: false }
 });
 
+const ADMIN_EMAILS = [
+  'matt@morecommunity.app',
+  'alex@morecommunity.app',
+  'msf199@hotmail.com',
+  'alex@morecommunity.co.uk'
+];
+
 async function verifyUser(token, expectedUserId) {
   if (!token) throw new Error("Missing authentication token");
   const { data: { user }, error } = await supabaseAdmin.auth.getUser(token);
   if (error || !user) throw new Error("Invalid or expired token");
   if (expectedUserId && user.id !== expectedUserId) throw new Error("Unauthorized: User ID mismatch");
+  return user;
+}
+
+async function verifyAdmin(token) {
+  const user = await verifyUser(token);
+  if (!user.email || !ADMIN_EMAILS.includes(user.email.toLowerCase())) {
+    throw new Error("Forbidden: Admin access required");
+  }
   return user;
 }
 
@@ -398,7 +413,7 @@ export async function updateUserAction(userId, updates, token) {
 }
 
 export async function adminVerifyCommunityAction(communityId, verified, token) {
-  await verifyUser(token);
+  await verifyAdmin(token);
   
   const { error } = await supabaseAdmin.from('communities').update({ verified }).eq('id', communityId);
   if (error) throw new Error(error.message);
@@ -406,7 +421,7 @@ export async function adminVerifyCommunityAction(communityId, verified, token) {
 }
 
 export async function broadcastNotificationAction(notifications, token) {
-  await verifyUser(token);
+  await verifyAdmin(token);
   const { error } = await supabaseAdmin.from('notifications').insert(notifications);
   if (error) throw new Error(error.message);
   return true;

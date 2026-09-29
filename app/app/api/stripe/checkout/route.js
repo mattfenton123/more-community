@@ -1,22 +1,46 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
+import { createClient } from '@supabase/supabase-js';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_mock', {
   apiVersion: '2023-10-16',
 });
 
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://xasaxxjxxkdruuqbrcmf.supabase.co';
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_QMPEXQKfkPDK1XktnEOIDQ_Fhs_p7rQ';
+const supabase = createClient(supabaseUrl, supabaseKey);
+
 export async function POST(req) {
   try {
-    const { eventId, userId, price, title, communityId, leaderStripeAccountId } = await req.json();
+    const { eventId, userId, price: clientPrice, title: clientTitle, communityId, leaderStripeAccountId } = await req.json();
 
-    if (!eventId || !userId || !price) {
+    if (!eventId || !userId) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    // In a real implementation, you would lookup the leader's Stripe Account ID from the database
-    // to route funds via Stripe Connect (destination charges).
-    
-    // For this prototype, we mock the session creation
+    // Verify price from database to prevent client-side price tampering
+    let verifiedPrice = clientPrice;
+    let verifiedTitle = clientTitle || 'Event Ticket';
+
+    const { data: eventData } = await supabase
+      .from('events')
+      .select('title, ticket_price, price')
+      .eq('id', eventId)
+      .single();
+
+    if (eventData) {
+      if (eventData.ticket_price != null && Number(eventData.ticket_price) > 0) {
+        verifiedPrice = Number(eventData.ticket_price);
+      } else if (eventData.price != null && Number(eventData.price) > 0) {
+        verifiedPrice = Number(eventData.price);
+      }
+      if (eventData.title) verifiedTitle = eventData.title;
+    }
+
+    if (!verifiedPrice || Number(verifiedPrice) <= 0) {
+      return NextResponse.json({ error: 'Invalid or missing ticket price' }, { status: 400 });
+    }
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
@@ -24,10 +48,10 @@ export async function POST(req) {
           price_data: {
             currency: 'gbp',
             product_data: {
-              name: `Ticket for ${title}`,
+              name: `Ticket for ${verifiedTitle}`,
               description: `Community event ticket`,
             },
-            unit_amount: Math.round(price * 100), // convert to pence
+            unit_amount: Math.round(Number(verifiedPrice) * 100), // convert to pence
           },
           quantity: 1,
         },

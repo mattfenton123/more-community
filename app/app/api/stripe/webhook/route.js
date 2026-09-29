@@ -1,9 +1,15 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { supabase } from '../../../../src/lib/supabaseClient'; // Adjusted path if needed
+import { createClient } from '@supabase/supabase-js';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_mock', {
   apiVersion: '2023-10-16',
+});
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://xasaxxjxxkdruuqbrcmf.supabase.co';
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_QMPEXQKfkPDK1XktnEOIDQ_Fhs_p7rQ';
+const supabaseAdmin = createClient(supabaseUrl, supabaseKey, {
+  auth: { autoRefreshToken: false, persistSession: false }
 });
 
 // Use edge runtime if standard node has issues, but standard is fine
@@ -38,10 +44,8 @@ export async function POST(req) {
       
       const { eventId, userId } = session.metadata;
       
-      // Update our database to confirm the RSVP
-      // Note: In production, you MUST use a secure Service Role key for this!
-      // Here we assume supabaseClient has the necessary permissions.
-      const { error } = await supabase.from('event_rsvps').upsert([{
+      // Update our database to confirm the RSVP using Service Role key
+      const { error } = await supabaseAdmin.from('event_rsvps').upsert([{
         event_id: eventId,
         user_id: userId,
         status: 'going',
