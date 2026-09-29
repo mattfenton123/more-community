@@ -1,5 +1,5 @@
 // Service Worker for more. community PWA
-const CACHE_NAME = 'more-community-v3';
+const CACHE_NAME = 'more-community-v4';
 const OFFLINE_URL = '/';
 
 // Assets to pre-cache
@@ -18,7 +18,7 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
-// Activate event - clean old caches
+// Activate event - clean old caches immediately
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
@@ -37,6 +37,14 @@ self.addEventListener('fetch', (event) => {
 
   // Never intercept during local development
   if (self.location.hostname === 'localhost' || self.location.hostname === '127.0.0.1') return;
+
+  // Always fetch fresh navigation requests from network to prevent serving stale code
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request).catch(() => caches.match(OFFLINE_URL))
+    );
+    return;
+  }
 
   // Never cache Next.js bundles, chunks, or HMR assets
   if (event.request.url.includes('/_next/')) return;
