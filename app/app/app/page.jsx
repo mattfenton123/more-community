@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppContext } from '../../src/context/AppContext';
 import { useFeed } from '../../src/context/FeedContext';
@@ -19,12 +19,12 @@ export default function HomeFeed() {
   const [showInstallBanner, setShowInstallBanner] = useState(() => typeof window !== 'undefined' && !localStorage.getItem('pwa-dismissed'));
 
   // Capture PWA install prompt
-  useState(() => {
+  useEffect(() => {
     if (typeof window === 'undefined') return;
     const handler = (e) => { e.preventDefault(); setInstallPrompt(e); };
     window.addEventListener('beforeinstallprompt', handler);
     return () => window.removeEventListener('beforeinstallprompt', handler);
-  });
+  }, []);
 
   // Location-based community recommendations
   const nearYouCommunities = useMemo(() => {
@@ -41,11 +41,6 @@ export default function HomeFeed() {
 
   const unreadCount = notifications ? notifications.filter(n => !n.is_read).length : 0;
   const joinedCommunities = communities?.filter(c => user?.joinedCommunities?.includes(c.id)) || [];
-
-  // Show Getting Started screen for users with no communities
-  if (!isLoading && user?.onboarded && joinedCommunities.length === 0) {
-    return <GettingStarted />;
-  }
 
   // Determine Daily Briefing
   const todayEvents = events?.filter(e => {
@@ -131,6 +126,11 @@ export default function HomeFeed() {
     
     return sortedItems;
   }, [feedPosts, events, user?.joinedCommunities, activeFeedTab, sponsors, sponsorshipAssignments]);
+
+  // Show Getting Started screen for users with no communities
+  if (!isLoading && user?.onboarded && joinedCommunities.length === 0) {
+    return <GettingStarted />;
+  }
 
   return (
     <div className="view-home" style={{ paddingBottom: '80px', background: 'var(--slate-950)', minHeight: '100dvh' }}>
