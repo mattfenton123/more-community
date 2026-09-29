@@ -76,6 +76,14 @@ export function AuthProvider({ children }) {
     return { error };
   };
 
+  const resetPassword = async (email) => {
+    const redirectTo = typeof window !== 'undefined' ? `${window.location.origin}/app/update-password` : undefined;
+    const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo,
+    });
+    return { data, error };
+  };
+
   const signOut = async () => {
     await supabase.auth.signOut();
     setSession(null);
@@ -92,6 +100,7 @@ export function AuthProvider({ children }) {
       signInWithGoogle,
       signInWithApple,
       signInWithFacebook,
+      resetPassword,
       signOut,
     }}>
       {children}

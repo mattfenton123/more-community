@@ -1,3 +1,6 @@
+export const LAUNCH_CITY = 'Tunbridge Wells';
+export const LAUNCH_LOCATION_DISPLAY = 'Tunbridge Wells, UK';
+
 export const FALLBACK_IMAGES = {
   community: 'https://images.unsplash.com/photo-1543269865-cbf427effbad?w=800&q=80',
   user: 'https://images.unsplash.com/photo-1531384441138-2736e62e0919?w=400&q=80',

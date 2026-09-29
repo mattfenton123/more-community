@@ -20,7 +20,7 @@ const STEP_VIDEOS = [
 
 export default function OnboardingFlow({ onComplete }) {
   const { authUser, signOut } = useAuth();
-  const { user, updateUser, uploadImage, communities, theme, setTheme, highContrast, setHighContrast, largeText, setLargeText, reduceMotion, setReduceMotion } = useAppContext();
+  const { user, updateUser, uploadImage, communities, joinCommunity, theme, setTheme, highContrast, setHighContrast, largeText, setLargeText, reduceMotion, setReduceMotion } = useAppContext();
   const [step, setStep] = useState(0);
   const [gender, setGender] = useState(user?.gender || '');
   const [name, setName] = useState(user?.name || '');
@@ -176,6 +176,17 @@ export default function OnboardingFlow({ onComplete }) {
       };
 
       await updateUser(authUser.id, updates);
+
+      // Auto-join communities user swiped right on during swipe matching
+      if (swipedLiked && swipedLiked.length > 0) {
+        for (const comm of swipedLiked) {
+          try {
+            await joinCommunity(comm.id);
+          } catch (e) {
+            console.error("Auto-joining community failed:", e);
+          }
+        }
+      }
 
       toast.success('Welcome!', 'Your profile has been created');
       onComplete?.();

@@ -358,8 +358,51 @@ export default function GettingStarted() {
           })}
         </div>
 
+        {/* Continue to Feed CTA */}
+        {justJoined.length > 0 && (
+          <div style={{
+            position: 'sticky',
+            bottom: '24px',
+            zIndex: 50,
+            padding: '0 20px',
+            marginTop: '24px',
+            display: 'flex',
+            justifyContent: 'center',
+          }}>
+            <button
+              onClick={() => {
+                if (typeof window !== 'undefined') {
+                  window.location.href = '/app';
+                } else {
+                  router.push('/app');
+                }
+              }}
+              className="btn btn-primary interactive-press"
+              style={{
+                width: '100%',
+                maxWidth: '400px',
+                padding: '16px 24px',
+                borderRadius: '16px',
+                fontSize: '1.05rem',
+                fontWeight: 700,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '10px',
+                boxShadow: '0 10px 25px rgba(20,184,166,0.4)',
+                background: 'var(--teal-500)',
+                color: '#0f172a',
+                border: 'none',
+                cursor: 'pointer',
+              }}
+            >
+              Go to Your Feed ({justJoined.length} {justJoined.length === 1 ? 'community' : 'communities'} joined) <ArrowRight size={20} />
+            </button>
+          </div>
+        )}
+
         {/* Browse all link */}
-        <div style={{ textAlign: 'center', marginTop: '32px', paddingBottom: '20px' }}>
+        <div style={{ textAlign: 'center', marginTop: '24px', paddingBottom: '20px' }}>
           <button
             onClick={() => router.push('/discover')}
             className="interactive-press"

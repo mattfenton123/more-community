@@ -8,23 +8,63 @@ import { SkeletonList, SkeletonCard } from '../../src/components/SkeletonCard';
 import InlineComments from '../../src/components/InlineComments';
 import AppHeader from '../../src/components/AppHeader';
 import GettingStarted from '../../src/views/GettingStarted';
+import { useToast } from '../../src/components/Toast';
 
 export default function HomeFeed() {
   const { user, communities, events, users, eventRsvps, isLoading, notifications, sponsors, sponsorshipAssignments } = useAppContext();
   const { feedPosts, likeFeedPost } = useFeed();
   const router = useRouter();
+  const { toast } = useToast();
   const [expandedComments, setExpandedComments] = useState({});
   const [activeFeedTab, setActiveFeedTab] = useState('Feed');
   const [installPrompt, setInstallPrompt] = useState(null);
   const [showInstallBanner, setShowInstallBanner] = useState(() => typeof window !== 'undefined' && !localStorage.getItem('pwa-dismissed'));
+  const [showIOSInstallBanner, setShowIOSInstallBanner] = useState(false);
 
-  // Capture PWA install prompt
+  // Capture PWA install prompt & iOS detection
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const handler = (e) => { e.preventDefault(); setInstallPrompt(e); };
     window.addEventListener('beforeinstallprompt', handler);
+
+    const ua = window.navigator.userAgent.toLowerCase();
+    const isIos = /iphone|ipad|ipod/.test(ua);
+    const isStandalone = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
+    const dismissed = localStorage.getItem('ios-pwa-dismissed') === 'true';
+    if (isIos && !isStandalone && !dismissed) {
+      setShowIOSInstallBanner(true);
+    }
+
     return () => window.removeEventListener('beforeinstallprompt', handler);
   }, []);
+
+  const handleShare = async ({ title, text, url }) => {
+    const shareUrl = url || (typeof window !== 'undefined' ? window.location.href : '');
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      try {
+        await navigator.share({
+          title: title || 'more. Community',
+          text: text || 'Check this out on more.',
+          url: shareUrl,
+        });
+        return;
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          console.log('Share error:', err);
+        } else {
+          return;
+        }
+      }
+    }
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        toast.success('Link copied!', 'Copied link to clipboard.');
+      } catch (e) {
+        toast.info('Share link', shareUrl);
+      }
+    }
+  };
 
   // Location-based community recommendations
   const nearYouCommunities = useMemo(() => {
@@ -292,6 +332,19 @@ export default function HomeFeed() {
         </div>
       )}
 
+      {/* iOS Install Guide Banner */}
+      {showIOSInstallBanner && (
+        <div style={{ margin: '0 20px 0', padding: '14px 16px', background: 'linear-gradient(135deg, rgba(20,184,166,0.12) 0%, rgba(59,130,246,0.08) 100%)', border: '1px solid rgba(20,184,166,0.2)', borderRadius: '14px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <img src="/logo.png" alt="more." style={{ width: '36px', height: '36px', borderRadius: '10px' }} className="theme-invert" />
+          <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--white)' }}>Install more. on iOS</div>
+            <div style={{ fontSize: '0.72rem', color: 'var(--slate-300)', lineHeight: 1.4 }}>Tap <strong>Share</strong> (square with arrow up) then <strong>'Add to Home Screen'</strong></div>
+          </div>
+          <button onClick={() => { setShowIOSInstallBanner(false); localStorage.setItem('ios-pwa-dismissed', 'true'); }}
+            style={{ background: 'none', border: 'none', color: 'var(--slate-400)', cursor: 'pointer', padding: '4px', fontSize: '1.2rem' }}>×</button>
+        </div>
+      )}
+
       {/* Quick Action Hub */}
       <div style={{ padding: '20px', display: 'flex', gap: '12px', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
         {user?.ledCommunities?.length > 0 || user?.isAdmin ? (
@@ -452,7 +505,16 @@ export default function HomeFeed() {
                   <button onClick={() => setExpandedComments(prev => ({...prev, [post.id]: !prev[post.id]}))} className="interactive-press" style={{ background: 'rgba(255,255,255,0.05)', padding: '8px 16px', borderRadius: '20px', border: 'none', display: 'flex', alignItems: 'center', gap: '8px', color: expandedComments[post.id] ? 'var(--teal-400)' : 'white', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600 }}>
                     <MessageCircle size={18} /> {post.comments || 0}
                   </button>
-                  <button className="interactive-press" style={{ background: 'rgba(255,255,255,0.05)', width: '38px', height: '38px', borderRadius: '50%', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--white)', cursor: 'pointer', marginLeft: 'auto' }}>
+                  <button 
+                    onClick={() => handleShare({
+                      title: 'more. Community Post',
+                      text: post.text,
+                      url: typeof window !== 'undefined' ? `${window.location.origin}/app` : '',
+                    })}
+                    className="interactive-press" 
+                    title="Share post"
+                    style={{ background: 'rgba(255,255,255,0.05)', width: '38px', height: '38px', borderRadius: '50%', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--white)', cursor: 'pointer', marginLeft: 'auto' }}
+                  >
                     <Share2 size={18} />
                   </button>
                 </div>
@@ -496,7 +558,16 @@ export default function HomeFeed() {
                     <button onClick={() => setExpandedComments(prev => ({...prev, [idea.id]: !prev[idea.id]}))} className="btn btn-outline interactive-press" style={{ padding: '8px 16px', borderRadius: '12px', fontSize: '0.85rem', display: 'flex', gap: '6px', alignItems: 'center' }}>
                       <MessageCircle size={16} /> Discuss ({idea.comments || 0})
                     </button>
-                    <button className="interactive-press" style={{ background: 'rgba(255,255,255,0.05)', width: '38px', height: '38px', borderRadius: '50%', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--white)', cursor: 'pointer', marginLeft: 'auto' }}>
+                    <button 
+                      onClick={() => handleShare({
+                        title: ideaData.title || idea.text,
+                        text: idea.text,
+                        url: typeof window !== 'undefined' ? `${window.location.origin}/app` : '',
+                      })}
+                      className="interactive-press" 
+                      title="Share suggestion"
+                      style={{ background: 'rgba(255,255,255,0.05)', width: '38px', height: '38px', borderRadius: '50%', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--white)', cursor: 'pointer', marginLeft: 'auto' }}
+                    >
                       <Share2 size={18} />
                     </button>
                   </div>
@@ -514,10 +585,17 @@ export default function HomeFeed() {
             const community = communities?.find(c => c.id === event.communityId);
             return (
               <div key={item.id} style={{ background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(10px)', border: '1px solid rgba(20,184,166,0.4)', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 8px 24px rgba(0,0,0,0.2)' }}>
-                <div style={{ padding: '12px 16px', background: 'linear-gradient(to right, rgba(20,184,166,0.15), transparent)', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', color: 'var(--teal-400)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                <div 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (community?.id) router.push(`/community/${community.id}`);
+                  }}
+                  className="interactive-press"
+                  style={{ padding: '12px 16px', background: 'linear-gradient(to right, rgba(20,184,166,0.15), transparent)', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', color: 'var(--teal-400)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', cursor: 'pointer' }}
+                >
                   <Calendar size={16} /> Upcoming in {community?.name}
                 </div>
-                <div onClick={() => router.push(`/community/${community?.id}`)} className="interactive-press" style={{ cursor: 'pointer' }}>
+                <div onClick={() => router.push(`/events/${event.id}`)} className="interactive-press" style={{ cursor: 'pointer' }}>
                   {event.image && (
                     <div style={{ height: '160px', background: `url(${event.image})`, backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative' }}>
                       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 40%, rgba(15,23,42,0.9))' }}></div>
@@ -560,13 +638,13 @@ export default function HomeFeed() {
             <div style={{ fontSize: '3rem', marginBottom: '16px' }}>✨</div>
             <h3 style={{ margin: '0 0 12px 0', color: 'var(--white)', fontFamily: 'var(--font-heading)', fontSize: '1.4rem' }}>Nothing to show yet</h3>
             <p style={{ color: 'var(--slate-400)', margin: '0 0 24px 0', fontSize: '0.95rem', lineHeight: 1.6 }}>
-              {activeFeedTab === 'All' 
+              {activeFeedTab === 'Feed' 
                 ? "Your feed is empty. Join some communities to see their updates and events here."
                 : activeFeedTab === 'Events' 
                   ? "There are no upcoming events in your communities right now."
                   : "No recent discussions. Be the first to post something!"}
             </p>
-            {activeFeedTab === 'All' && (
+            {activeFeedTab === 'Feed' && (
               <button onClick={() => router.push('/discover')} className="btn btn-primary interactive-press" style={{ padding: '14px 24px', borderRadius: '12px', fontSize: '1rem' }}>
                 Discover Communities
               </button>

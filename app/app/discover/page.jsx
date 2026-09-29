@@ -4,7 +4,7 @@ import { Compass, Users, MapPin, Search, Calendar, ChevronRight, X, List, Map as
 import { useRouter as useNavigate } from 'next/navigation';
 import { useAppContext } from '../../src/context/AppContext';
 import { useChat } from '../../src/context/ChatContext';
-import { FALLBACK_IMAGES } from '../../src/lib/constants';
+import { FALLBACK_IMAGES, LAUNCH_LOCATION_DISPLAY } from '../../src/lib/constants';
 import { SkeletonList, SkeletonCard } from '../../src/components/SkeletonCard';
 import { useToast } from '../../src/components/Toast';
 import dynamic from 'next/dynamic';
@@ -103,6 +103,7 @@ export default function Discover() {
       });
     } else if (activePill === '❤️ Saved') {
       list = enrichedCommunities.filter(c => 
+        savedItems.includes(c.id) ||
         savedItems.some(id => events.find(e => e.id === id)?.communityId === c.id)
       );
     } else {
@@ -205,7 +206,7 @@ export default function Discover() {
       <div style={{ padding: '20px 20px 10px' }}>
         <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--slate-400)' }}>Local communities in</p>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '4px 0 16px 0', gap: '8px' }}>
-          <h2 style={{ margin: 0, fontFamily: 'var(--font-heading)', fontSize: '1.4rem' }}>Tunbridge Wells, UK</h2>
+          <h2 style={{ margin: 0, fontFamily: 'var(--font-heading)', fontSize: '1.4rem' }}>{user?.location || LAUNCH_LOCATION_DISPLAY}</h2>
           <button
             onClick={() => navigate.push('/create-community')}
             className="interactive-press"
@@ -384,8 +385,8 @@ export default function Discover() {
               {savedItems.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--slate-400)' }}>
                   <Heart size={48} color="var(--slate-700)" style={{ marginBottom: '16px' }} />
-                  <h3 style={{ fontFamily: 'var(--font-heading)', color: 'var(--white)', marginBottom: '8px' }}>No saved events</h3>
-                  <p style={{ fontSize: '0.9rem' }}>Swipe right on the "For You" tab to save events here.</p>
+                  <h3 style={{ fontFamily: 'var(--font-heading)', color: 'var(--white)', marginBottom: '8px' }}>No saved items</h3>
+                  <p style={{ fontSize: '0.9rem' }}>Bookmark communities or save events to find them here.</p>
                 </div>
               ) : (
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '16px' }}>
@@ -547,14 +548,44 @@ export default function Discover() {
                             <ActivityBadge level={community.activityLevel} />
                           </div>
                         </div>
-                        <button 
-                          className={`btn ${isMember ? 'btn-outline' : 'btn-primary'} interactive-press`} 
-                          onClick={(e) => { e.stopPropagation(); handleJoin(community.id, community.name); }}
-                          style={{ padding: '8px 18px', borderRadius: '999px', fontSize: '0.8rem', opacity: isMember ? 0.7 : 1, flexShrink: 0 }}
-                          disabled={isMember}
-                        >
-                          {isMember ? 'Joined' : 'Join'}
-                        </button>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+                          <button 
+                            className="interactive-press"
+                            title={savedItems.includes(community.id) ? "Remove from saved" : "Save community"}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (savedItems.includes(community.id)) {
+                                unsaveItem(community.id);
+                                toast.info('Removed', 'Removed from saved communities');
+                              } else {
+                                saveItem(community.id);
+                                toast.success('Saved!', 'Added to your ❤️ Saved list');
+                              }
+                            }}
+                            style={{
+                              background: 'rgba(255,255,255,0.05)',
+                              border: '1px solid rgba(255,255,255,0.1)',
+                              width: '34px',
+                              height: '34px',
+                              borderRadius: '50%',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              cursor: 'pointer',
+                              color: savedItems.includes(community.id) ? '#ef4444' : 'var(--slate-400)',
+                            }}
+                          >
+                            <Heart size={16} fill={savedItems.includes(community.id) ? '#ef4444' : 'none'} color={savedItems.includes(community.id) ? '#ef4444' : 'currentColor'} />
+                          </button>
+                          <button 
+                            className={`btn ${isMember ? 'btn-outline' : 'btn-primary'} interactive-press`} 
+                            onClick={(e) => { e.stopPropagation(); handleJoin(community.id, community.name); }}
+                            style={{ padding: '8px 18px', borderRadius: '999px', fontSize: '0.8rem', opacity: isMember ? 0.7 : 1 }}
+                            disabled={isMember}
+                          >
+                            {isMember ? 'Joined' : 'Join'}
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
