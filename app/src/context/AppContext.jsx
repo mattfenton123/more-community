@@ -94,7 +94,9 @@ export function AppProvider({ children }) {
         'matthewfenton123@gmail.com', 
         'matt@inspiredventures.co.uk',
         'alex@maorecommunity.co.uk', 
-        'alex@morecommunity.co.uk'
+        'alex@morecommunity.co.uk',
+        'matt@morecommunity.app',
+        'alex@morecommunity.app'
       ];
       if (ADMIN_EMAILS.includes(email)) {
         user.isAdmin = true;
