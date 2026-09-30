@@ -117,8 +117,9 @@ export default function LeaderDashboard() {
   const [aiPrompt, setAiPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [showWelcomeGuide, setShowWelcomeGuide] = useState(true);
-  const [peopleSubTab, setPeopleSubTab] = useState('members'); // 'members' | 'crm'
+  const [peopleSubTab, setPeopleSubTab] = useState('members');
   const [linkCopied, setLinkCopied] = useState(false);
+  const [leaderDrillDown, setLeaderDrillDown] = useState(null); // 'members'|'active'|'revenue'|'events'|'checkin'|'next'
 
   const fileInputRef = useRef(null);
 
@@ -844,18 +845,261 @@ export default function LeaderDashboard() {
                 />
               </div>
 
-              {/* Stats Grid 2×3 */}
-              <div style={{ padding: '0 20px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '24px' }}>
-                <StatCard value={stats.totalMembers || 0} label="Total Members" icon={Users} color="white" />
-                <StatCard value={stats.activeMembers || 0} label="Active Members" icon={Activity} color="#22c55e" accent="#22c55e" />
-                <StatCard value={`£${stats.totalRevenue || 0}`} label="Total Revenue" icon={DollarSign} color="#f59e0b" accent="#f59e0b" />
-                <StatCard value={stats.eventsThisMonth || 0} label="Events This Month" icon={Calendar} color="var(--teal-400)" />
-                <StatCard value={`${stats.checkinRate || 0}%`} label="Check-in Rate" icon={ScanLine} color="#3b82f6" accent="#3b82f6" />
-                <StatCard 
-                  value={stats.daysToNext !== null ? (stats.daysToNext === 0 ? 'Today!' : `${stats.daysToNext}d`) : '—'} 
-                  label="Next Event" icon={Zap} color="#a78bfa" accent="#a78bfa" 
-                />
+              {/* Stats Grid 2x3 — clickable for drill-down */}
+              <div style={{ padding: '0 20px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: leaderDrillDown ? '0' : '24px' }}>
+                {[
+                  { key: 'members',   value: stats.totalMembers || 0,                                                                    label: 'Total Members',     icon: Users,     color: 'white' },
+                  { key: 'active',    value: stats.activeMembers || 0,                                                                   label: 'Active Members',    icon: Activity,  color: '#22c55e', accent: '#22c55e' },
+                  { key: 'revenue',   value: `\u00a3${stats.totalRevenue || 0}`,                                                          label: 'Total Revenue',     icon: DollarSign,color: '#f59e0b', accent: '#f59e0b' },
+                  { key: 'events',    value: stats.eventsThisMonth || 0,                                                                 label: 'Events This Month', icon: Calendar,  color: 'var(--teal-400)' },
+                  { key: 'checkin',   value: `${stats.checkinRate || 0}%`,                                                               label: 'Check-in Rate',     icon: ScanLine,  color: '#3b82f6', accent: '#3b82f6' },
+                  { key: 'next',      value: stats.daysToNext !== null ? (stats.daysToNext === 0 ? 'Today!' : `${stats.daysToNext}d`) : '\u2014', label: 'Next Event', icon: Zap, color: '#a78bfa', accent: '#a78bfa' },
+                ].map(s => (
+                  <button
+                    key={s.key}
+                    onClick={() => setLeaderDrillDown(leaderDrillDown === s.key ? null : s.key)}
+                    className="interactive-press"
+                    style={{
+                      all: 'unset', display: 'block', cursor: 'pointer', borderRadius: '14px',
+                      outline: leaderDrillDown === s.key ? `2px solid ${s.accent || s.color || 'white'}` : '2px solid transparent',
+                      transition: 'outline 0.2s'
+                    }}
+                  >
+                    <div className="glass-panel stagger-item" style={{
+                      padding: '16px', borderRadius: '14px',
+                      ...(s.accent ? { border: `1px solid ${s.accent}30`, background: `linear-gradient(135deg, ${s.accent}10 0%, ${s.accent}02 100%)` } : {})
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                        <div style={{ fontSize: '1.8rem', fontFamily: 'var(--font-heading)', fontWeight: 700, color: s.color || 'white' }}>{s.value}</div>
+                        <s.icon size={18} color={s.color || 'var(--slate-500)'} />
+                      </div>
+                      <div style={{ fontSize: '0.7rem', color: 'var(--slate-400)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.03em' }}>{s.label}</div>
+                      <div style={{ fontSize: '0.6rem', color: leaderDrillDown === s.key ? (s.accent || s.color || 'white') : 'var(--slate-600)', marginTop: '4px', fontWeight: 600 }}>
+                        {leaderDrillDown === s.key ? '\u25b2 Hide details' : '\u25bc Tap for details'}
+                      </div>
+                    </div>
+                  </button>
+                ))}
               </div>
+
+              {/* Drill-down panel */}
+              {leaderDrillDown && (
+                <div style={{ margin: '12px 20px 24px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '20px' }}>
+
+                  {/* Members */}
+                  {leaderDrillDown === 'members' && (
+                    <>
+                      <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <Users size={14} /> Member Breakdown
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginBottom: '16px' }}>
+                        {[
+                          { label: 'Total',    value: stats.totalMembers || 0,                                             color: 'white' },
+                          { label: 'Active',   value: stats.activeMembers || 0,                                            color: '#22c55e' },
+                          { label: 'Inactive', value: (stats.totalMembers || 0) - (stats.activeMembers || 0),              color: '#6b7280' },
+                        ].map(r => (
+                          <div key={r.label} style={{ padding: '12px', background: 'rgba(0,0,0,0.2)', borderRadius: '10px', textAlign: 'center' }}>
+                            <div style={{ fontSize: '1.4rem', fontWeight: 700, color: r.color, fontFamily: 'var(--font-heading)' }}>{r.value}</div>
+                            <div style={{ fontSize: '0.65rem', color: 'var(--slate-400)', textTransform: 'uppercase', fontWeight: 600 }}>{r.label}</div>
+                          </div>
+                        ))}
+                      </div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', marginBottom: '10px', fontWeight: 600 }}>Top engaged members</div>
+                      {memberList.map(m => {
+                        const u = users.find(x => x.id === m.userId);
+                        if (!u) return null;
+                        return { u, score: getEngagementScore(m, events, eventRsvps, communityMessages, community.id) };
+                      }).filter(Boolean).sort((a, b) => b.score - a.score).slice(0, 5).map(({ u, score }) => (
+                        <div key={u.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                          <img src={u.avatar} alt={u.name} style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }} />
+                          <span style={{ flex: 1, fontSize: '0.85rem', color: 'var(--white)' }}>{u.name}</span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <div style={{ width: '40px', height: '4px', background: 'rgba(255,255,255,0.06)', borderRadius: '99px', overflow: 'hidden' }}>
+                              <div style={{ width: `${score}%`, height: '100%', background: score >= 60 ? '#22c55e' : score >= 30 ? '#f59e0b' : '#6b7280', borderRadius: '99px' }} />
+                            </div>
+                            <span style={{ fontSize: '0.7rem', color: 'var(--slate-400)', minWidth: '32px', textAlign: 'right' }}>{score}%</span>
+                          </div>
+                        </div>
+                      ))}
+                      <button onClick={() => { setActiveTab('people'); setLeaderDrillDown(null); }} style={{ marginTop: '14px', background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--slate-300)', borderRadius: '8px', padding: '8px 16px', fontSize: '0.8rem', cursor: 'pointer', width: '100%', fontWeight: 600 }}>Manage Members \u2192</button>
+                    </>
+                  )}
+
+                  {/* Active Members */}
+                  {leaderDrillDown === 'active' && (
+                    <>
+                      <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <Activity size={14} /> Active Member Insights
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '16px' }}>
+                        <div style={{ padding: '14px', background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: '12px', textAlign: 'center' }}>
+                          <div style={{ fontSize: '1.6rem', fontWeight: 700, color: '#22c55e', fontFamily: 'var(--font-heading)' }}>{stats.activeMembers || 0}</div>
+                          <div style={{ fontSize: '0.65rem', color: 'var(--slate-400)', textTransform: 'uppercase', fontWeight: 600 }}>Active (30%+ eng.)</div>
+                        </div>
+                        <div style={{ padding: '14px', background: 'rgba(107,114,128,0.08)', border: '1px solid rgba(107,114,128,0.2)', borderRadius: '12px', textAlign: 'center' }}>
+                          <div style={{ fontSize: '1.6rem', fontWeight: 700, color: '#6b7280', fontFamily: 'var(--font-heading)' }}>{(stats.totalMembers || 0) - (stats.activeMembers || 0)}</div>
+                          <div style={{ fontSize: '0.65rem', color: 'var(--slate-400)', textTransform: 'uppercase', fontWeight: 600 }}>Need Re-engaging</div>
+                        </div>
+                      </div>
+                      <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)', lineHeight: 1.6, marginBottom: '14px' }}>
+                        Members are marked active if they have attended an event or sent a message. Use CRM to re-engage dormant members with a broadcast.
+                      </div>
+                      <button onClick={() => { setActiveTab('people'); setPeopleSubTab('crm'); setLeaderDrillDown(null); }} style={{ background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--slate-300)', borderRadius: '8px', padding: '8px 16px', fontSize: '0.8rem', cursor: 'pointer', width: '100%', fontWeight: 600 }}>Open CRM & Broadcast \u2192</button>
+                    </>
+                  )}
+
+                  {/* Revenue */}
+                  {leaderDrillDown === 'revenue' && (
+                    <>
+                      <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <DollarSign size={14} /> Revenue Breakdown
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '16px' }}>
+                        <div style={{ padding: '14px', background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)', borderRadius: '12px' }}>
+                          <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#f59e0b', fontFamily: 'var(--font-heading)' }}>\u00a3{stats.totalRevenue || 0}</div>
+                          <div style={{ fontSize: '0.65rem', color: 'var(--slate-400)', textTransform: 'uppercase', fontWeight: 600 }}>All Time</div>
+                        </div>
+                        <div style={{ padding: '14px', background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: '12px' }}>
+                          <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#22c55e', fontFamily: 'var(--font-heading)' }}>\u00a3{stats.monthRevenue || 0}</div>
+                          <div style={{ fontSize: '0.65rem', color: 'var(--slate-400)', textTransform: 'uppercase', fontWeight: 600 }}>This Month</div>
+                        </div>
+                      </div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', marginBottom: '10px', fontWeight: 600 }}>Revenue by event</div>
+                      {communityEvents.filter(e => (e.ticketPrice || 0) > 0).map(e => {
+                        const r = getEventRevenue(e);
+                        return (
+                          <div key={e.id} style={{ padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                              <span style={{ fontSize: '0.85rem', color: 'var(--white)' }}>{e.title}</span>
+                              <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#f59e0b' }}>\u00a3{r.revenue}</span>
+                            </div>
+                            <div style={{ fontSize: '0.7rem', color: 'var(--slate-500)' }}>{r.rsvpCount} tickets \u00d7 \u00a3{r.price}</div>
+                          </div>
+                        );
+                      })}
+                      {communityEvents.filter(e => (e.ticketPrice || 0) > 0).length === 0 && (
+                        <div style={{ color: 'var(--slate-500)', fontSize: '0.85rem', textAlign: 'center', padding: '16px' }}>No paid events yet. Add a ticket price when creating your next event.</div>
+                      )}
+                      <button onClick={() => { setActiveTab('monetisation'); setLeaderDrillDown(null); }} style={{ marginTop: '14px', background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--slate-300)', borderRadius: '8px', padding: '8px 16px', fontSize: '0.8rem', cursor: 'pointer', width: '100%', fontWeight: 600 }}>Revenue Hub \u2192</button>
+                    </>
+                  )}
+
+                  {/* Events This Month */}
+                  {leaderDrillDown === 'events' && (
+                    <>
+                      <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <Calendar size={14} /> Events This Month
+                      </div>
+                      {(() => {
+                        const now = new Date();
+                        const thisMonthEvents = publishedEvents.filter(e => {
+                          if (!e.date) return false;
+                          const d = new Date(e.date + 'T00:00:00');
+                          return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+                        });
+                        if (thisMonthEvents.length === 0) return (
+                          <div style={{ color: 'var(--slate-500)', fontSize: '0.85rem', textAlign: 'center', padding: '16px' }}>No events this month. Create one!</div>
+                        );
+                        return thisMonthEvents.map(e => {
+                          const r = getEventRevenue(e);
+                          const isPast = new Date(e.date + 'T00:00:00') < now;
+                          return (
+                            <div key={e.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                              <div style={{ width: '36px', height: '40px', background: isPast ? 'rgba(107,114,128,0.15)' : 'rgba(20,184,166,0.12)', borderRadius: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                <div style={{ fontSize: '1rem', fontWeight: 700, color: isPast ? 'var(--slate-400)' : 'var(--teal-300)', lineHeight: 1 }}>{new Date(e.date + 'T00:00:00').getDate()}</div>
+                              </div>
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ fontSize: '0.85rem', color: 'var(--white)', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{e.title}</div>
+                                <div style={{ fontSize: '0.7rem', color: 'var(--slate-500)' }}>{r.rsvpCount} going{r.revenue > 0 ? ` \u00b7 \u00a3${r.revenue}` : ''}</div>
+                              </div>
+                              <span style={{ fontSize: '0.65rem', fontWeight: 600, color: isPast ? 'var(--slate-500)' : '#22c55e', background: isPast ? 'rgba(107,114,128,0.1)' : 'rgba(34,197,94,0.1)', padding: '3px 7px', borderRadius: '6px' }}>{isPast ? 'Past' : 'Upcoming'}</span>
+                            </div>
+                          );
+                        });
+                      })()}
+                      <button onClick={() => { setActiveTab('events'); setLeaderDrillDown(null); }} style={{ marginTop: '14px', background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--slate-300)', borderRadius: '8px', padding: '8px 16px', fontSize: '0.8rem', cursor: 'pointer', width: '100%', fontWeight: 600 }}>View All Events \u2192</button>
+                    </>
+                  )}
+
+                  {/* Check-in Rate */}
+                  {leaderDrillDown === 'checkin' && (
+                    <>
+                      <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <ScanLine size={14} /> Attendance & Check-ins
+                      </div>
+                      {(() => {
+                        let totalR = 0, totalC = 0;
+                        communityEvents.forEach(e => {
+                          const rsvps = eventRsvps[e.id] || [];
+                          totalR += rsvps.filter(r => r.status === 'going').length;
+                          totalC += rsvps.filter(r => r.checkedIn).length;
+                        });
+                        return (
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginBottom: '16px' }}>
+                            {[
+                              { label: 'Total RSVPs',  value: totalR,                                    color: '#a78bfa' },
+                              { label: 'Checked In',   value: totalC,                                    color: '#22c55e' },
+                              { label: 'Check-in %',   value: `${stats.checkinRate || 0}%`,              color: '#3b82f6' },
+                            ].map(r => (
+                              <div key={r.label} style={{ padding: '12px', background: 'rgba(0,0,0,0.2)', borderRadius: '10px', textAlign: 'center' }}>
+                                <div style={{ fontSize: '1.3rem', fontWeight: 700, color: r.color, fontFamily: 'var(--font-heading)' }}>{r.value}</div>
+                                <div style={{ fontSize: '0.6rem', color: 'var(--slate-400)', textTransform: 'uppercase', fontWeight: 600 }}>{r.label}</div>
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      })()}
+                      <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', marginBottom: '10px', fontWeight: 600 }}>Check-ins by event</div>
+                      {communityEvents.filter(e => (eventRsvps[e.id] || []).some(r => r.status === 'going')).map(e => {
+                        const rsvps = eventRsvps[e.id] || [];
+                        const going = rsvps.filter(r => r.status === 'going').length;
+                        const checkedIn = rsvps.filter(r => r.checkedIn).length;
+                        const pct = going > 0 ? Math.round((checkedIn / going) * 100) : 0;
+                        return (
+                          <div key={e.id} style={{ padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                              <span style={{ fontSize: '0.85rem', color: 'var(--white)' }}>{e.title}</span>
+                              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: pct >= 75 ? '#22c55e' : pct >= 40 ? '#f59e0b' : 'var(--slate-400)' }}>{checkedIn}/{going}</span>
+                            </div>
+                            <div style={{ height: '4px', background: 'rgba(255,255,255,0.06)', borderRadius: '99px', overflow: 'hidden' }}>
+                              <div style={{ width: `${pct}%`, height: '100%', background: pct >= 75 ? '#22c55e' : pct >= 40 ? '#f59e0b' : '#6b7280', borderRadius: '99px' }} />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </>
+                  )}
+
+                  {/* Next Event */}
+                  {leaderDrillDown === 'next' && (
+                    <>
+                      <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <Zap size={14} /> Upcoming Events
+                      </div>
+                      {publishedEvents.filter(e => daysUntil(e.date) !== null).slice(0, 5).map(e => {
+                        const d = daysUntil(e.date);
+                        const r = getEventRevenue(e);
+                        return (
+                          <div key={e.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                            <div style={{ padding: '4px 10px', background: 'rgba(139,92,246,0.15)', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 700, color: '#a78bfa', whiteSpace: 'nowrap' }}>
+                              {d === 0 ? 'Today' : d === 1 ? 'Tomorrow' : `${d}d`}
+                            </div>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontSize: '0.85rem', color: 'var(--white)', fontWeight: 600 }}>{e.title}</div>
+                              <div style={{ fontSize: '0.7rem', color: 'var(--slate-500)' }}>{e.time} \u00b7 {r.rsvpCount} going</div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                      {publishedEvents.filter(e => daysUntil(e.date) !== null).length === 0 && (
+                        <div style={{ color: 'var(--slate-500)', fontSize: '0.85rem', textAlign: 'center', padding: '16px' }}>No upcoming events. Create one to get your community moving!</div>
+                      )}
+                      <button onClick={() => { setActiveTab('events'); setLeaderDrillDown(null); }} style={{ marginTop: '14px', background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--slate-300)', borderRadius: '8px', padding: '8px 16px', fontSize: '0.8rem', cursor: 'pointer', width: '100%', fontWeight: 600 }}>Manage Events \u2192</button>
+                    </>
+                  )}
+
+                </div>
+              )}
 
               {/* Member Growth Chart */}
               <div style={{ padding: '0 20px', marginBottom: '24px' }}>

@@ -83,6 +83,7 @@ export default function AdminDashboard() {
   const [broadcastText, setBroadcastText] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [verifyingCommunityId, setVerifyingCommunityId] = useState(null);
+  const [drillDownStat, setDrillDownStat] = useState(null); // 'users'|'communities'|'verified'|'events'|'revenue'|'attendance'
 
   if (!user || !user.isAdmin) {
     if (typeof window !== 'undefined') navigate.push('/app');
@@ -326,15 +327,243 @@ export default function AdminDashboard() {
         {/* ═══════════════════════════════════════════════════ */}
         {activeTab === 'overview' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            {/* KPI Grid */}
+            {/* KPI Grid — each card is clickable for drill-down */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
-              <StatCard value={platformStats.totalUsers} label="Total Users" icon={Users} color="white" />
-              <StatCard value={platformStats.totalCommunities} label="Communities" icon={Globe} color="#3b82f6" accent="#3b82f6" />
-              <StatCard value={platformStats.verifiedCommunities} label="Verified" icon={BadgeCheck} color="#22c55e" accent="#22c55e" />
-              <StatCard value={platformStats.totalEvents} label="Total Events" icon={Calendar} color="var(--teal-400)" />
-              <StatCard value={`£${platformStats.totalRevenue}`} label="Revenue" icon={DollarSign} color="#f59e0b" accent="#f59e0b" />
-              <StatCard value={platformStats.avgAttendance} label="Avg Attendance" icon={UserCheck} color="#a78bfa" accent="#a78bfa" />
+              {[
+                { key: 'users',        value: platformStats.totalUsers,          label: 'Total Users',     icon: Users,      color: 'white' },
+                { key: 'communities',  value: platformStats.totalCommunities,     label: 'Communities',     icon: Globe,      color: '#3b82f6', accent: '#3b82f6' },
+                { key: 'verified',     value: platformStats.verifiedCommunities,  label: 'Verified',        icon: BadgeCheck, color: '#22c55e', accent: '#22c55e' },
+                { key: 'events',       value: platformStats.totalEvents,          label: 'Total Events',    icon: Calendar,   color: 'var(--teal-400)' },
+                { key: 'revenue',      value: `£${platformStats.totalRevenue}`,   label: 'Revenue',         icon: DollarSign, color: '#f59e0b', accent: '#f59e0b' },
+                { key: 'attendance',   value: platformStats.avgAttendance,        label: 'Avg Attendance',  icon: UserCheck,  color: '#a78bfa', accent: '#a78bfa' },
+              ].map(s => (
+                <button
+                  key={s.key}
+                  onClick={() => setDrillDownStat(drillDownStat === s.key ? null : s.key)}
+                  className="interactive-press"
+                  style={{
+                    all: 'unset', display: 'block', cursor: 'pointer', borderRadius: '12px',
+                    outline: drillDownStat === s.key ? `2px solid ${s.accent || s.color || 'white'}` : '2px solid transparent',
+                    transition: 'outline 0.2s'
+                  }}
+                >
+                  <div className="glass-panel stagger-item" style={{
+                    padding: '16px',
+                    ...(s.accent ? { border: `1px solid ${s.accent}30`, background: `linear-gradient(135deg, ${s.accent}10 0%, ${s.accent}02 100%)` } : {}),
+                    borderRadius: '12px'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                      <div style={{ fontSize: '1.8rem', fontFamily: 'var(--font-heading)', fontWeight: 700, color: s.color || 'white' }}>{s.value}</div>
+                      <s.icon size={18} color={s.color || 'var(--slate-500)'} />
+                    </div>
+                    <div style={{ fontSize: '0.7rem', color: 'var(--slate-400)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.03em' }}>{s.label}</div>
+                    <div style={{ fontSize: '0.6rem', color: drillDownStat === s.key ? (s.accent || s.color || 'white') : 'var(--slate-600)', marginTop: '4px', fontWeight: 600 }}>
+                      {drillDownStat === s.key ? '▲ Hide details' : '▼ Tap for details'}
+                    </div>
+                  </div>
+                </button>
+              ))}
             </div>
+
+            {/* Drill-down detail panel */}
+            {drillDownStat && (
+              <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '20px', animation: 'fadeSlideIn 0.2s ease-out' }}>
+
+                {/* Users drill-down */}
+                {drillDownStat === 'users' && (
+                  <>
+                    <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <Users size={14} /> User Breakdown
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '16px' }}>
+                      {[
+                        { label: 'Admins',   value: users.filter(u => ADMIN_EMAILS.includes(u.email?.toLowerCase())).length, color: '#3b82f6' },
+                        { label: 'Leaders',  value: Object.values(communityMemberships).flat().filter(m => m.role === 'Leader').length, color: '#f59e0b' },
+                        { label: 'Members',  value: users.length - users.filter(u => ADMIN_EMAILS.includes(u.email?.toLowerCase())).length, color: '#22c55e' },
+                      ].map(row => (
+                        <div key={row.label} style={{ padding: '12px', background: 'rgba(0,0,0,0.2)', borderRadius: '10px', textAlign: 'center' }}>
+                          <div style={{ fontSize: '1.4rem', fontWeight: 700, color: row.color, fontFamily: 'var(--font-heading)' }}>{row.value}</div>
+                          <div style={{ fontSize: '0.65rem', color: 'var(--slate-400)', textTransform: 'uppercase', fontWeight: 600 }}>{row.label}</div>
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', marginBottom: '10px', fontWeight: 600 }}>Recent signups</div>
+                    {users.slice(-5).reverse().map(u => (
+                      <div key={u.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                        <img src={u.avatar} alt={u.name} style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }} />
+                        <span style={{ flex: 1, fontSize: '0.85rem', color: 'var(--white)' }}>{u.name}</span>
+                        <span style={{ fontSize: '0.7rem', color: 'var(--slate-500)' }}>{u.email}</span>
+                      </div>
+                    ))}
+                    <button onClick={() => { setActiveTab('users'); setDrillDownStat(null); }} style={{ marginTop: '14px', background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--slate-300)', borderRadius: '8px', padding: '8px 16px', fontSize: '0.8rem', cursor: 'pointer', width: '100%', fontWeight: 600 }}>View All Users →</button>
+                  </>
+                )}
+
+                {/* Communities drill-down */}
+                {drillDownStat === 'communities' && (
+                  <>
+                    <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <Globe size={14} /> Community Breakdown
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '16px' }}>
+                      {[
+                        { label: 'Active',    value: platformStats.communityHealth.filter(c => c.health === 'active').length,   color: '#22c55e' },
+                        { label: 'Moderate',  value: platformStats.communityHealth.filter(c => c.health === 'moderate').length, color: '#f59e0b' },
+                        { label: 'Dormant',   value: platformStats.communityHealth.filter(c => c.health === 'dormant').length,  color: '#ef4444' },
+                      ].map(row => (
+                        <div key={row.label} style={{ padding: '12px', background: 'rgba(0,0,0,0.2)', borderRadius: '10px', textAlign: 'center' }}>
+                          <div style={{ fontSize: '1.4rem', fontWeight: 700, color: row.color, fontFamily: 'var(--font-heading)' }}>{row.value}</div>
+                          <div style={{ fontSize: '0.65rem', color: 'var(--slate-400)', textTransform: 'uppercase', fontWeight: 600 }}>{row.label}</div>
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', marginBottom: '10px', fontWeight: 600 }}>Top by members</div>
+                    {platformStats.communityHealth.sort((a,b) => b.members - a.members).slice(0,5).map((c,i) => (
+                      <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 700, color: i === 0 ? '#f59e0b' : 'var(--slate-500)', minWidth: '20px' }}>#{i+1}</span>
+                        <span style={{ flex: 1, fontSize: '0.85rem', color: 'var(--white)' }}>{c.name}</span>
+                        <HealthBadge health={c.health} />
+                        <span style={{ fontSize: '0.7rem', color: 'var(--slate-400)' }}>{c.members} mbrs</span>
+                      </div>
+                    ))}
+                    <button onClick={() => { setActiveTab('communities'); setDrillDownStat(null); }} style={{ marginTop: '14px', background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--slate-300)', borderRadius: '8px', padding: '8px 16px', fontSize: '0.8rem', cursor: 'pointer', width: '100%', fontWeight: 600 }}>Manage Communities →</button>
+                  </>
+                )}
+
+                {/* Verified drill-down */}
+                {drillDownStat === 'verified' && (
+                  <>
+                    <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <BadgeCheck size={14} /> Verification Status
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '16px' }}>
+                      <div style={{ padding: '16px', background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: '12px', textAlign: 'center' }}>
+                        <div style={{ fontSize: '2rem', fontWeight: 700, color: '#22c55e', fontFamily: 'var(--font-heading)' }}>{platformStats.verifiedCommunities}</div>
+                        <div style={{ fontSize: '0.7rem', color: 'var(--slate-400)', textTransform: 'uppercase', fontWeight: 600 }}>✓ Verified</div>
+                      </div>
+                      <div style={{ padding: '16px', background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)', borderRadius: '12px', textAlign: 'center' }}>
+                        <div style={{ fontSize: '2rem', fontWeight: 700, color: '#f59e0b', fontFamily: 'var(--font-heading)' }}>{platformStats.totalCommunities - platformStats.verifiedCommunities}</div>
+                        <div style={{ fontSize: '0.7rem', color: 'var(--slate-400)', textTransform: 'uppercase', fontWeight: 600 }}>⏳ Pending</div>
+                      </div>
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', marginBottom: '10px', fontWeight: 600 }}>Awaiting verification</div>
+                    {platformStats.communityHealth.filter(c => !c.verified).slice(0,5).map(c => (
+                      <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                        <span style={{ flex: 1, fontSize: '0.85rem', color: 'var(--white)' }}>{c.name}</span>
+                        <span style={{ fontSize: '0.7rem', color: 'var(--slate-500)' }}>{c.members} members</span>
+                      </div>
+                    ))}
+                    <button onClick={() => { setActiveTab('communities'); setDrillDownStat(null); }} style={{ marginTop: '14px', background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--slate-300)', borderRadius: '8px', padding: '8px 16px', fontSize: '0.8rem', cursor: 'pointer', width: '100%', fontWeight: 600 }}>Verify Communities →</button>
+                  </>
+                )}
+
+                {/* Events drill-down */}
+                {drillDownStat === 'events' && (
+                  <>
+                    <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <Calendar size={14} /> Events Breakdown
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '16px' }}>
+                      {[
+                        { label: 'Upcoming', value: events.filter(e => e.status !== 'cancelled' && new Date(e.date + 'T00:00:00') >= new Date()).length, color: 'var(--teal-400)' },
+                        { label: 'Past',     value: events.filter(e => e.date && new Date(e.date + 'T00:00:00') < new Date()).length, color: 'var(--slate-400)' },
+                        { label: 'Cancelled',value: events.filter(e => e.status === 'cancelled').length, color: '#ef4444' },
+                      ].map(row => (
+                        <div key={row.label} style={{ padding: '12px', background: 'rgba(0,0,0,0.2)', borderRadius: '10px', textAlign: 'center' }}>
+                          <div style={{ fontSize: '1.4rem', fontWeight: 700, color: row.color, fontFamily: 'var(--font-heading)' }}>{row.value}</div>
+                          <div style={{ fontSize: '0.65rem', color: 'var(--slate-400)', textTransform: 'uppercase', fontWeight: 600 }}>{row.label}</div>
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', marginBottom: '10px', fontWeight: 600 }}>Next upcoming events</div>
+                    {events.filter(e => e.status !== 'cancelled' && e.date).sort((a,b) => new Date(a.date) - new Date(b.date)).slice(0,5).map(e => {
+                      const comm = communities.find(c => c.id === e.communityId);
+                      return (
+                        <div key={e.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                          <span style={{ flex: 1, fontSize: '0.85rem', color: 'var(--white)' }}>{e.title}</span>
+                          <span style={{ fontSize: '0.7rem', color: 'var(--teal-400)' }}>{comm?.name || '?'}</span>
+                          <span style={{ fontSize: '0.7rem', color: 'var(--slate-500)' }}>{e.date}</span>
+                        </div>
+                      );
+                    })}
+                    <button onClick={() => { setActiveTab('events'); setDrillDownStat(null); }} style={{ marginTop: '14px', background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--slate-300)', borderRadius: '8px', padding: '8px 16px', fontSize: '0.8rem', cursor: 'pointer', width: '100%', fontWeight: 600 }}>View All Events →</button>
+                  </>
+                )}
+
+                {/* Revenue drill-down */}
+                {drillDownStat === 'revenue' && (
+                  <>
+                    <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <DollarSign size={14} /> Revenue Breakdown
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '16px' }}>
+                      <div style={{ padding: '14px', background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)', borderRadius: '12px' }}>
+                        <div style={{ fontSize: '1.6rem', fontWeight: 700, color: '#f59e0b', fontFamily: 'var(--font-heading)' }}>£{platformStats.totalRevenue}</div>
+                        <div style={{ fontSize: '0.65rem', color: 'var(--slate-400)', textTransform: 'uppercase', fontWeight: 600 }}>All Time</div>
+                      </div>
+                      <div style={{ padding: '14px', background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: '12px' }}>
+                        <div style={{ fontSize: '1.6rem', fontWeight: 700, color: '#22c55e', fontFamily: 'var(--font-heading)' }}>£{platformStats.monthRevenue}</div>
+                        <div style={{ fontSize: '0.65rem', color: 'var(--slate-400)', textTransform: 'uppercase', fontWeight: 600 }}>This Month</div>
+                      </div>
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', marginBottom: '10px', fontWeight: 600 }}>Revenue by community</div>
+                    {platformStats.communityHealth.filter(c => c.cRevenue > 0).sort((a,b) => b.cRevenue - a.cRevenue).map(c => {
+                      const maxRev = Math.max(...platformStats.communityHealth.map(x => x.cRevenue), 1);
+                      return (
+                        <div key={c.id} style={{ padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                            <span style={{ fontSize: '0.85rem', color: 'var(--white)' }}>{c.name}</span>
+                            <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#f59e0b' }}>£{c.cRevenue}</span>
+                          </div>
+                          <div style={{ height: '4px', background: 'rgba(255,255,255,0.06)', borderRadius: '99px', overflow: 'hidden' }}>
+                            <div style={{ width: `${(c.cRevenue / maxRev) * 100}%`, height: '100%', background: '#f59e0b', borderRadius: '99px' }} />
+                          </div>
+                        </div>
+                      );
+                    })}
+                    {platformStats.communityHealth.filter(c => c.cRevenue > 0).length === 0 && (
+                      <div style={{ color: 'var(--slate-500)', fontSize: '0.85rem', textAlign: 'center', padding: '16px' }}>No paid events yet.</div>
+                    )}
+                    <button onClick={() => { setActiveTab('revenue'); setDrillDownStat(null); }} style={{ marginTop: '14px', background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--slate-300)', borderRadius: '8px', padding: '8px 16px', fontSize: '0.8rem', cursor: 'pointer', width: '100%', fontWeight: 600 }}>Full Revenue Report →</button>
+                  </>
+                )}
+
+                {/* Avg Attendance drill-down */}
+                {drillDownStat === 'attendance' && (
+                  <>
+                    <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <UserCheck size={14} /> Attendance Breakdown
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '16px' }}>
+                      {[
+                        { label: 'Total RSVPs',    value: platformStats.totalRsvps,   color: '#a78bfa' },
+                        { label: 'Check-ins',      value: platformStats.totalCheckins, color: '#22c55e' },
+                        { label: 'Avg / Event',    value: platformStats.avgAttendance, color: 'var(--teal-400)' },
+                      ].map(row => (
+                        <div key={row.label} style={{ padding: '12px', background: 'rgba(0,0,0,0.2)', borderRadius: '10px', textAlign: 'center' }}>
+                          <div style={{ fontSize: '1.4rem', fontWeight: 700, color: row.color, fontFamily: 'var(--font-heading)' }}>{row.value}</div>
+                          <div style={{ fontSize: '0.6rem', color: 'var(--slate-400)', textTransform: 'uppercase', fontWeight: 600 }}>{row.label}</div>
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', marginBottom: '10px', fontWeight: 600 }}>Top attended events</div>
+                    {Object.entries(eventRsvps).map(([eventId, rsvps]) => {
+                      const e = events.find(ev => ev.id === eventId);
+                      if (!e) return null;
+                      const going = rsvps.filter(r => r.status === 'going').length;
+                      return { e, going };
+                    }).filter(Boolean).sort((a,b) => b.going - a.going).slice(0,5).map(({ e, going }) => (
+                      <div key={e.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                        <span style={{ flex: 1, fontSize: '0.85rem', color: 'var(--white)' }}>{e.title}</span>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#a78bfa' }}>{going} going</span>
+                      </div>
+                    ))}
+                    <button onClick={() => { setActiveTab('events'); setDrillDownStat(null); }} style={{ marginTop: '14px', background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--slate-300)', borderRadius: '8px', padding: '8px 16px', fontSize: '0.8rem', cursor: 'pointer', width: '100%', fontWeight: 600 }}>View All Events →</button>
+                  </>
+                )}
+
+              </div>
+            )}
 
             {/* Growth Chart */}
             <div className="glass-panel" style={{ padding: '18px' }}>
