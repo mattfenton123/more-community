@@ -210,7 +210,7 @@ export async function GET(request) {
         googleResults = [
           {
             id: `gp-${cleanQuery.toLowerCase().replace(/[^a-z0-9]/g, '-')}-1`,
-            productCode: `GP-${cleanQuery.toUpperCase().replace(/[^a-z0-9]/g, '-')}-01`,
+            productCode: `GP-${cleanQuery.toUpperCase().replace(/[^A-Z0-9]/g, '-')}-01`,
             title: isHotelQuery ? `${cleanQuery} Executive Lounge & Afternoon Tea` : `${cleanQuery} Experience & Tasting`,
             description: `Exclusive group package at ${cleanQuery}. Includes dedicated host, welcome refreshments, and private member lounge access.`,
             category: isWellness ? '🧘 Wellness' : isDining ? '🍷 Food & Drink' : '🎭 Culture',
@@ -231,7 +231,7 @@ export async function GET(request) {
           },
           {
             id: `gp-${cleanQuery.toLowerCase().replace(/[^a-z0-9]/g, '-')}-2`,
-            productCode: `GP-${cleanQuery.toUpperCase().replace(/[^a-z0-9]/g, '-')}-02`,
+            productCode: `GP-${cleanQuery.toUpperCase().replace(/[^A-Z0-9]/g, '-')}-02`,
             title: isHotelQuery ? `${cleanQuery} Spa Day & Thermal Suite Pass` : `${cleanQuery} Private Workshop & Social`,
             description: `Curated community session at ${cleanQuery}. Features full amenity access and reserved networking area.`,
             category: '🧘 Wellness',
@@ -250,7 +250,7 @@ export async function GET(request) {
           },
           {
             id: `gp-${cleanQuery.toLowerCase().replace(/[^a-z0-9]/g, '-')}-3`,
-            productCode: `GP-${cleanQuery.toUpperCase().replace(/[^a-z0-9]/g, '-')}-03`,
+            productCode: `GP-${cleanQuery.toUpperCase().replace(/[^A-Z0-9]/g, '-')}-03`,
             title: `${cleanQuery} Rooftop Social & Evening Gathering`,
             description: `Sunset gathering spot for community members at ${cleanQuery}. Includes signature drink voucher and reserved seating.`,
             category: '🍷 Food & Drink',
