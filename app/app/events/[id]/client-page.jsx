@@ -16,10 +16,21 @@ const KNOWN_LOCATIONS = {
   'camden road': { lat: 51.1330, lng: 0.2630 },
   'the forum': { lat: 51.1310, lng: 0.2650 },
   'trinity arts centre': { lat: 51.1315, lng: 0.2640 },
+  'trinity theatre': { lat: 51.1315, lng: 0.2640 },
   'the assembly hall': { lat: 51.1340, lng: 0.2625 },
+  'assembly hall': { lat: 51.1340, lng: 0.2625 },
   'grosvenor park': { lat: 51.1280, lng: 0.2680 },
   'hawkenbury recreation ground': { lat: 51.1400, lng: 0.2770 },
+  'hawkenbury': { lat: 51.1400, lng: 0.2770 },
   'st johns park': { lat: 51.1370, lng: 0.2560 },
+  'st johns': { lat: 51.1370, lng: 0.2560 },
+  'the common': { lat: 51.1315, lng: 0.2550 },
+  'common': { lat: 51.1315, lng: 0.2550 },
+  'rusthall': { lat: 51.1380, lng: 0.2350 },
+  'southborough': { lat: 51.1550, lng: 0.2580 },
+  'high street': { lat: 51.1295, lng: 0.2615 },
+  'the ivy': { lat: 51.1335, lng: 0.2635 },
+  'royal victoria place': { lat: 51.1350, lng: 0.2620 },
 };
 
 function EventLocationMap({ location }) {
@@ -65,12 +76,21 @@ function EventLocationMap({ location }) {
   useEffect(() => {
     if (!coords || !mapRef.current) return;
 
+    let isMounted = true;
+
     // Dynamic import of Leaflet (client-side only)
     import('leaflet').then(L => {
       import('leaflet/dist/leaflet.css');
 
+      if (!isMounted || !mapRef.current) return;
+
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+      }
+
+      if (mapRef.current._leaflet_id) {
+        delete mapRef.current._leaflet_id;
       }
 
       const map = L.map(mapRef.current, {
@@ -84,16 +104,17 @@ function EventLocationMap({ location }) {
 
       L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
         maxZoom: 19,
+        subdomains: 'abcd',
       }).addTo(map);
 
       // Custom teal marker
       const markerIcon = L.divIcon({
         html: `<div style="
           width: 36px; height: 36px; border-radius: 50%;
-          background: rgba(20,184,166,0.9);
-          border: 3px solid rgba(20,184,166,0.3);
+          background: rgba(20,184,166,0.95);
+          border: 3px solid rgba(255,255,255,0.9);
           display: flex; align-items: center; justify-content: center;
-          box-shadow: 0 4px 16px rgba(20,184,166,0.4), 0 0 0 8px rgba(20,184,166,0.1);
+          box-shadow: 0 4px 16px rgba(20,184,166,0.5), 0 0 0 8px rgba(20,184,166,0.2);
           animation: pulseMarker 2s ease-in-out infinite;
         "><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>`,
         iconSize: [36, 36],
@@ -104,12 +125,20 @@ function EventLocationMap({ location }) {
       L.marker([coords.lat, coords.lng], { icon: markerIcon }).addTo(map);
 
       mapInstanceRef.current = map;
+
+      // Invalidate size to guarantee full tile rendering
+      setTimeout(() => { if (isMounted && map) map.invalidateSize(); }, 120);
+      setTimeout(() => { if (isMounted && map) map.invalidateSize(); }, 350);
     });
 
     return () => {
+      isMounted = false;
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
+      }
+      if (mapRef.current && mapRef.current._leaflet_id) {
+        delete mapRef.current._leaflet_id;
       }
     };
   }, [coords]);

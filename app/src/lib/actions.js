@@ -24,10 +24,14 @@ const supabaseAdmin = createClient(supabaseUrl, supabaseKey, {
 });
 
 const ADMIN_EMAILS = [
-  'matt@morecommunity.app',
-  'alex@morecommunity.app',
   'msf199@hotmail.com',
-  'alex@morecommunity.co.uk'
+  'mattfenton123@gmail.com',
+  'matthewfenton123@gmail.com',
+  'matt@inspiredventures.co.uk',
+  'alex@maorecommunity.co.uk',
+  'alex@morecommunity.co.uk',
+  'matt@morecommunity.app',
+  'alex@morecommunity.app'
 ];
 
 async function verifyUser(token, expectedUserId) {
@@ -425,7 +429,11 @@ export async function markNotificationReadAction(notificationId, token) {
 }
 
 export async function updateUserAction(userId, updates, token) {
-  await verifyUser(token, userId);
+  const user = await verifyUser(token);
+  const isAdmin = user.email && ADMIN_EMAILS.includes(user.email.toLowerCase());
+  if (user.id !== userId && !isAdmin) {
+    throw new Error("Unauthorized: User ID mismatch");
+  }
   
   const { error } = await supabaseAdmin.from('users').update(updates).eq('id', userId);
   if (error) {

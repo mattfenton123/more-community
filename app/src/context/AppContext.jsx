@@ -965,12 +965,17 @@ export function AppProvider({ children }) {
     // Optimistic UI update
     setCommunities(prev => prev.map(c => c.id === communityId ? { ...c, verified: isVerified } : c));
     try {
-      const { error } = await supabase.from('communities').update({ verified: isVerified }).eq('id', communityId);
-      if (error) throw error;
+      let token = session?.access_token;
+      if (!token) {
+        const { data: sessionData } = await supabase.auth.getSession();
+        token = sessionData?.session?.access_token;
+      }
+      await adminVerifyCommunityAction(communityId, isVerified, token);
     } catch (err) {
-      console.error(err);
+      console.error('adminVerifyCommunity failed:', err);
       // Revert optimistic update on failure
       setCommunities(prev => prev.map(c => c.id === communityId ? { ...c, verified: !isVerified } : c));
+      throw err;
     }
   };
 
@@ -1277,7 +1282,12 @@ export function AppProvider({ children }) {
     const { affinityProfile, ...dbUpdates } = updates;
     
     try {
-      await updateUserAction(userId, dbUpdates, session?.access_token);
+      let token = session?.access_token;
+      if (!token) {
+        const { data: sessionData } = await supabase.auth.getSession();
+        token = sessionData?.session?.access_token;
+      }
+      await updateUserAction(userId, dbUpdates, token);
     } catch (err) {
       console.error('User update failed (ignoring for prototype):', err);
     }

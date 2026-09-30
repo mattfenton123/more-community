@@ -72,7 +72,7 @@ function getEngagementScore(member, events, eventRsvps, messages, communityId) {
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
-  const { user, communities, users, events, communityMemberships, eventRsvps, adminVerifyCommunity, notifications, broadcastNotification, platformBroadcast, toggleUserRole, updateCommunity } = useAppContext();
+  const { user, communities, users, events, communityMemberships, eventRsvps, adminVerifyCommunity, updateUser, notifications, broadcastNotification, platformBroadcast, toggleUserRole, updateCommunity } = useAppContext();
     const { feedPosts } = useFeed();
     const { messages } = useChat();
   const { toast } = useToast();
@@ -86,6 +86,7 @@ export default function AdminDashboard() {
   const [eventFilter, setEventFilter] = useState('all');
   const [broadcastText, setBroadcastText] = useState('');
   const [isSending, setIsSending] = useState(false);
+  const [verifyingCommunityId, setVerifyingCommunityId] = useState(null);
 
   React.useEffect(() => {
     if (!user || !user.isAdmin) {
@@ -93,7 +94,16 @@ export default function AdminDashboard() {
     }
   }, [user, navigate]);
 
-  const ADMIN_EMAILS = ['msf199@hotmail.com', 'alex@maorecommunity.co.uk', 'alex@morecommunity.co.uk', 'matt@morecommunity.app', 'alex@morecommunity.app'];
+  const ADMIN_EMAILS = [
+    'msf199@hotmail.com',
+    'mattfenton123@gmail.com',
+    'matthewfenton123@gmail.com',
+    'matt@inspiredventures.co.uk',
+    'alex@maorecommunity.co.uk',
+    'alex@morecommunity.co.uk',
+    'matt@morecommunity.app',
+    'alex@morecommunity.app'
+  ];
 
   // ─── Platform-wide computed stats ─────────────────────────
   const platformStats = useMemo(() => {
@@ -249,6 +259,10 @@ export default function AdminDashboard() {
     } else if (type === 'events') {
       csv = 'Title,Community,Date,RSVPs,Check-ins,Revenue\n' + filteredEvents.map(e =>
         `"${e.title}","${e.communityName}","${e.date}",${e.rsvpCount},${e.checkins},${e.revenue}`
+      ).join('\n');
+    } else if (type === 'revenue') {
+      csv = 'Community,Events,Members,Revenue\n' + revenueByComm.map(c =>
+        `"${c.name}",${c.cEvents},${c.members},${c.cRevenue}`
       ).join('\n');
     }
     const blob = new Blob([csv], { type: 'text/csv' });
@@ -480,11 +494,31 @@ export default function AdminDashboard() {
                           </div>
                         </div>
                         <div style={{ display: 'flex', gap: '6px' }}>
-                          <button onClick={() => adminVerifyCommunity(c.id, !c.verified)} className="btn interactive-press"
-                            style={{ flex: 1, padding: '10px', borderRadius: '8px', border: 'none', fontSize: '0.75rem', fontWeight: 600,
+                          <button 
+                            disabled={verifyingCommunityId === c.id}
+                            onClick={async () => {
+                              setVerifyingCommunityId(c.id);
+                              try {
+                                await adminVerifyCommunity(c.id, !c.verified);
+                                toast.success(
+                                  c.verified ? 'Verification Revoked' : 'Community Verified',
+                                  `${c.name} is now ${c.verified ? 'unverified' : 'verified'}.`
+                                );
+                              } catch (err) {
+                                toast.error('Action Failed', err.message || 'Could not update verification.');
+                              } finally {
+                                setVerifyingCommunityId(null);
+                              }
+                            }} 
+                            className="btn interactive-press"
+                            style={{ 
+                              flex: 1, padding: '10px', borderRadius: '8px', border: 'none', fontSize: '0.75rem', fontWeight: 600,
                               background: c.verified ? 'rgba(239,68,68,0.1)' : 'rgba(59,130,246,0.1)',
-                              color: c.verified ? '#ef4444' : '#3b82f6', cursor: 'pointer' }}>
-                            {c.verified ? '✕ Revoke Verification' : '✓ Verify Community'}
+                              color: c.verified ? '#ef4444' : '#3b82f6', 
+                              cursor: verifyingCommunityId === c.id ? 'not-allowed' : 'pointer',
+                              opacity: verifyingCommunityId === c.id ? 0.6 : 1
+                            }}>
+                            {verifyingCommunityId === c.id ? 'Updating...' : (c.verified ? '✕ Revoke Verification' : '✓ Verify Community')}
                           </button>
                         </div>
                       </div>
@@ -646,10 +680,14 @@ export default function AdminDashboard() {
                               <MessageCircle size={12} /> Message
                             </button>
                             {!u.isAdmin && (
-                              <button onClick={(e) => { 
+                              <button onClick={async (e) => { 
                                 e.stopPropagation(); 
-                                updateUser(u.id, { is_suspended: !u.is_suspended });
-                                toast.success(u.is_suspended ? 'User unsuspended' : 'User suspended', `${u.name} has been ${u.is_suspended ? 'unsuspended' : 'suspended'}.`);
+                                try {
+                                  await updateUser(u.id, { is_suspended: !u.is_suspended });
+                                  toast.success(u.is_suspended ? 'User unsuspended' : 'User suspended', `${u.name} has been ${u.is_suspended ? 'unsuspended' : 'suspended'}.`);
+                                } catch (err) {
+                                  toast.error('Action Failed', err.message || 'Could not update user status.');
+                                }
                               }} className="btn interactive-press" style={{ padding: '8px 12px', borderRadius: '8px', fontSize: '0.75rem', background: u.is_suspended ? 'rgba(34,197,94,0.08)' : 'rgba(239,68,68,0.08)', border: `1px solid ${u.is_suspended ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)'}`, color: u.is_suspended ? '#22c55e' : '#ef4444', display: 'flex', alignItems: 'center', gap: '4px' }}>
                                 {u.is_suspended ? <CheckCircle size={12} /> : <Ban size={12} />} {u.is_suspended ? 'Unsuspend' : 'Suspend'}
                               </button>
