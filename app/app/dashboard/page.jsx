@@ -117,6 +117,8 @@ export default function LeaderDashboard() {
   const [aiPrompt, setAiPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [showWelcomeGuide, setShowWelcomeGuide] = useState(true);
+  const [peopleSubTab, setPeopleSubTab] = useState('members'); // 'members' | 'crm'
+  const [linkCopied, setLinkCopied] = useState(false);
 
   const fileInputRef = useRef(null);
 
@@ -367,56 +369,33 @@ export default function LeaderDashboard() {
   const handleAIGenerateEvent = async () => {
     if (!aiPrompt.trim()) return;
     setIsGenerating(true);
-    
-    // Simulate LLM latency
-    setTimeout(() => {
-      const lowerPrompt = aiPrompt.toLowerCase();
-      let generated = {
-        title: "Weekend Community Meetup",
-        description: "Join us for a fantastic community meetup. We'll connect, share stories, and enjoy a great time together. Don't forget to bring your positive energy!",
-        date: new Date(Date.now() + 86400000 * 3).toISOString().split('T')[0],
-        time: "10:00",
-        location: "City Park Main Entrance",
-        maxCapacity: "50",
-        ticketPrice: "0",
-        image: "https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=800&q=80",
-        autoReminders: true,
-        autoFeedback: true
-      };
-
-      if (lowerPrompt.includes('hike') || lowerPrompt.includes('walk')) {
-        generated = {
-          title: "Sunset Ridge Trail Hike",
-          description: "Disconnect and recharge with a guided sunset hike along the beautiful Ridge Trail. Perfect for all fitness levels. Bring water, sturdy shoes, and your camera for the incredible views at the summit!",
-          date: new Date(Date.now() + 86400000 * 2).toISOString().split('T')[0],
-          time: "17:30",
-          location: "Ridge Trailhead Parking Lot",
-          maxCapacity: "20",
-          ticketPrice: "0",
-          image: "https://images.unsplash.com/photo-1551632811-561732d1e306?w=800&q=80",
-          autoReminders: true,
-          autoFeedback: true
-        };
-      } else if (lowerPrompt.includes('dinner') || lowerPrompt.includes('drink')) {
-        generated = {
-          title: "Community Dinner & Networking",
-          description: "A relaxed evening of great food and even better company. We have reserved a private area at the Local Bistro. Your ticket covers a welcome drink and shared appetizers.",
-          date: new Date(Date.now() + 86400000 * 5).toISOString().split('T')[0],
-          time: "19:00",
-          location: "The Local Bistro, Main St",
-          maxCapacity: "15",
-          ticketPrice: "25",
-          image: "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=800&q=80",
-          autoReminders: true,
-          autoFeedback: true
-        };
+    try {
+      const res = await fetch('/api/ai/generate-event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt: aiPrompt,
+          communityName: community?.name,
+          communityTags: community?.tags
+        })
+      });
+      const data = await res.json();
+      if (data.event) {
+        setEventForm(prev => ({ ...prev, ...data.event }));
+        setAiPrompt('');
+        toast.success(
+          data.fallback ? 'Event Drafted!' : '✨ AI Generated!',
+          data.fallback ? 'Smart template applied — review and publish.' : 'Gemini crafted your event — review and publish.'
+        );
+      } else {
+        toast.error('Generation failed', 'Please try again or fill in manually.');
       }
-
-      setEventForm(generated);
+    } catch (err) {
+      console.error('AI event generation error:', err);
+      toast.error('Connection error', 'Could not reach the AI. Try again shortly.');
+    } finally {
       setIsGenerating(false);
-      setAiPrompt('');
-      toast.success('Event Generated!', 'AI successfully drafted your event.');
-    }, 1500);
+    }
   };
 
   const handleSimulateApiSearch = async () => {
@@ -761,11 +740,10 @@ export default function LeaderDashboard() {
             {[
               { id: 'overview', icon: Activity, label: 'Overview' },
               { id: 'events', icon: Calendar, label: 'Events' },
-              { id: 'monetisation', icon: DollarSign, label: 'Monetisation' },
+              { id: 'people', icon: Users, label: 'People' },
+              { id: 'monetisation', icon: DollarSign, label: 'Revenue' },
               { id: 'experiences', icon: Globe, label: 'Experiences' },
               { id: 'social hub', icon: Heart, label: 'Social Hub' },
-              { id: 'crm', icon: BarChart3, label: 'CRM' },
-              { id: 'members', icon: Users, label: 'Members' },
               { id: 'network', icon: Map, label: 'Network' },
               { id: 'settings', icon: Settings, label: 'Settings' }
             ].map(tab => (
@@ -830,7 +808,7 @@ export default function LeaderDashboard() {
           {/* Tab Navigation (Mobile) */}
           <div className="mobile-only" style={{ padding: '0 20px', marginBottom: '24px' }}>
             <div style={{ display: 'flex', gap: '4px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', padding: '4px', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-              {['overview', 'events', 'network', 'monetisation', 'experiences', 'social hub', 'crm', 'members', 'settings'].map(tab => (
+              {['overview', 'events', 'people', 'monetisation', 'experiences', 'social hub', 'network', 'settings'].map(tab => (
                 <button 
                   key={tab} onClick={() => setActiveTab(tab)}
                   style={{
@@ -981,9 +959,9 @@ export default function LeaderDashboard() {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr', gap: '8px' }}>
                   {[
                     { label: 'New Event', icon: Plus, color: '#14b8a6', action: () => openEventWizard() },
-                    { label: 'Broadcast', icon: Megaphone, color: '#f59e0b', action: () => setActiveTab('crm') },
+                    { label: 'Broadcast', icon: Megaphone, color: '#f59e0b', action: () => setActiveTab('people') },
                     { label: 'Scan QR', icon: QrCode, color: '#3b82f6', action: () => setShowScanner(true) },
-                    { label: 'CRM', icon: BarChart3, color: '#a78bfa', action: () => setActiveTab('crm') },
+                    { label: 'People', icon: Users, color: '#a78bfa', action: () => setActiveTab('people') },
                     { label: 'Microsite', icon: Globe, color: '#f43f5e', action: () => router.push(`/community/${community.id}`) },
                   ].map(a => (
                     <button key={a.label} onClick={a.action} className="interactive-press" style={{
@@ -995,6 +973,78 @@ export default function LeaderDashboard() {
                       {a.label}
                     </button>
                   ))}
+                </div>
+              </div>
+
+              {/* Growth Kit */}
+              <div style={{ padding: '0 20px', marginBottom: '24px' }}>
+                <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--slate-500)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '10px', paddingLeft: '4px' }}>🚀 Growth Kit</div>
+                <div style={{ background: 'linear-gradient(135deg, rgba(20,184,166,0.06) 0%, rgba(139,92,246,0.06) 100%)', border: '1px solid rgba(20,184,166,0.15)', borderRadius: '16px', padding: '20px' }}>
+                  <div style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--white)', marginBottom: '4px' }}>Invite your community</div>
+                  <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)', marginBottom: '16px', lineHeight: 1.5 }}>Share your community page link to grow your membership.</div>
+                  
+                  {/* Share link bar */}
+                  <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+                    <div style={{ flex: 1, padding: '10px 14px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', fontSize: '0.8rem', color: 'var(--slate-400)', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
+                      morecommunity.app/community/{community.id}
+                    </div>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(`https://morecommunity.app/community/${community.id}`);
+                        setLinkCopied(true);
+                        setTimeout(() => setLinkCopied(false), 2000);
+                        toast.success('Link copied!', 'Share it anywhere to grow your community');
+                      }}
+                      className="interactive-press"
+                      style={{ padding: '10px 16px', background: linkCopied ? 'rgba(34,197,94,0.2)' : 'rgba(20,184,166,0.15)', border: `1px solid ${linkCopied ? 'rgba(34,197,94,0.4)' : 'rgba(20,184,166,0.3)'}`, borderRadius: '10px', color: linkCopied ? '#22c55e' : 'var(--teal-300)', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.2s' }}
+                    >
+                      {linkCopied ? '✓ Copied!' : 'Copy Link'}
+                    </button>
+                  </div>
+
+                  {/* Share channels */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                    <button
+                      onClick={() => {
+                        const url = `https://morecommunity.app/community/${community.id}`;
+                        const text = `Join ${community.name} on MoreCommunity! 🌟 ${url}`;
+                        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+                      }}
+                      className="interactive-press"
+                      style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 14px', background: 'rgba(37,211,102,0.1)', border: '1px solid rgba(37,211,102,0.25)', borderRadius: '12px', color: '#25d366', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}
+                    >
+                      <span style={{ fontSize: '1.2rem' }}>💬</span>
+                      Share on WhatsApp
+                    </button>
+                    <button
+                      onClick={() => {
+                        const url = `https://morecommunity.app/community/${community.id}`;
+                        const text = `Join ${community.name} on MoreCommunity!`;
+                        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
+                      }}
+                      className="interactive-press"
+                      style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 14px', background: 'rgba(29,161,242,0.1)', border: '1px solid rgba(29,161,242,0.25)', borderRadius: '12px', color: '#1da1f2', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}
+                    >
+                      <span style={{ fontSize: '1.2rem' }}>🐦</span>
+                      Share on Twitter
+                    </button>
+                    <button
+                      onClick={() => router.push(`/community/${community.id}`)}
+                      className="interactive-press"
+                      style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 14px', background: 'rgba(236,72,153,0.1)', border: '1px solid rgba(236,72,153,0.25)', borderRadius: '12px', color: '#ec4899', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}
+                    >
+                      <Globe size={16} />
+                      View Microsite
+                    </button>
+                    <button
+                      onClick={() => setActiveTab('people')}
+                      className="interactive-press"
+                      style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 14px', background: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.25)', borderRadius: '12px', color: '#a78bfa', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}
+                    >
+                      <BarChart3 size={16} />
+                      Member CRM
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -1411,34 +1461,88 @@ export default function LeaderDashboard() {
           )}
 
           {/* ══════════════════════════════════════════════════════ */}
-          {/* TAB: CRM                                             */}
+          {/* TAB: PEOPLE (Members + CRM merged)                   */}
           {/* ══════════════════════════════════════════════════════ */}
-          {activeTab === 'crm' && (
-            <div style={{ padding: '0 20px', paddingBottom: '40px' }}>
-              <MemberCRM communityId={community.id} />
-            </div>
-          )}
-
-          {/* ══════════════════════════════════════════════════════ */}
-          {/* TAB: MEMBERS                                         */}
-          {/* ══════════════════════════════════════════════════════ */}
-          {activeTab === 'members' && (
-            <div style={{ padding: '0 20px', display: 'flex', flexDirection: 'column', gap: '8px', paddingBottom: '40px' }}>
-              <button onClick={() => setModalType('members')} className="interactive-press" style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', color: 'var(--white)', width: '100%', cursor: 'pointer', textAlign: 'left' }}>
-                <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(59,130,246,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3b82f6' }}>
-                  <Users size={20} />
+          {activeTab === 'people' && (
+            <div style={{ paddingBottom: '40px' }}>
+              {/* Sub-tab switcher */}
+              <div style={{ padding: '0 20px', marginBottom: '20px' }}>
+                <div style={{ display: 'inline-flex', background: 'rgba(255,255,255,0.04)', borderRadius: '12px', padding: '4px', gap: '2px' }}>
+                  {[{ id: 'members', label: 'Members', icon: Users }, { id: 'crm', label: 'CRM & Broadcast', icon: BarChart3 }].map(t => (
+                    <button
+                      key={t.id}
+                      onClick={() => setPeopleSubTab(t.id)}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px',
+                        borderRadius: '9px', border: 'none', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, transition: 'all 0.2s',
+                        background: peopleSubTab === t.id ? 'rgba(20,184,166,0.15)' : 'transparent',
+                        color: peopleSubTab === t.id ? 'var(--teal-300)' : 'var(--slate-400)'
+                      }}
+                    >
+                      <t.icon size={15} /> {t.label}
+                    </button>
+                  ))}
                 </div>
-                <span style={{ flex: 1, fontWeight: 500 }}>Manage Members</span>
-                <span style={{ color: 'var(--slate-500)' }}>→</span>
-              </button>
+              </div>
 
-              <button onClick={() => setModalType('coleader')} className="interactive-press" style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', color: 'var(--white)', width: '100%', cursor: 'pointer', textAlign: 'left' }}>
-                <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(139,92,246,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#a78bfa' }}>
-                  <UserPlus size={20} />
+              {/* Members sub-tab */}
+              {peopleSubTab === 'members' && (
+                <div style={{ padding: '0 20px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {/* Member count header */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)' }}><span style={{ color: 'var(--white)', fontWeight: 700 }}>{memberList.length}</span> members in {community.name}</div>
+                    <button onClick={() => setModalType('coleader')} className="btn btn-outline interactive-press" style={{ padding: '6px 12px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '6px', borderRadius: '8px', color: '#a78bfa', borderColor: 'rgba(139,92,246,0.3)' }}>
+                      <Crown size={12} /> Promote
+                    </button>
+                  </div>
+
+                  {memberList.map(membership => {
+                    const memberUser = users.find(u => u.id === membership.userId);
+                    if (!memberUser) return null;
+                    const score = getEngagementScore(membership, events, eventRsvps, communityMessages, community.id);
+                    return (
+                      <div key={memberUser.id} className="stagger-item" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <div style={{ position: 'relative' }}>
+                            <img onClick={() => router.push(`/profile/${memberUser.id}`)} src={memberUser.avatar} alt={memberUser.name} style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', cursor: 'pointer' }} />
+                            <div style={{ position: 'absolute', bottom: 0, right: 0, width: '12px', height: '12px', borderRadius: '50%', background: score >= 60 ? '#22c55e' : score >= 30 ? '#f59e0b' : '#6b7280', border: '2px solid var(--slate-900)' }} />
+                          </div>
+                          <div>
+                            <div onClick={() => router.push(`/profile/${memberUser.id}`)} style={{ fontWeight: 600, color: 'var(--white)', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '0.9rem' }}>
+                              {memberUser.name}
+                              {membership.role === 'Leader' && <span style={{ fontSize: '0.65rem', background: 'var(--teal-500)', padding: '2px 6px', borderRadius: '4px' }}>Leader</span>}
+                              {membership.role === 'Co-Leader' && <span style={{ fontSize: '0.65rem', background: 'rgba(139,92,246,0.3)', color: '#a78bfa', padding: '2px 6px', borderRadius: '4px' }}>Co-Leader</span>}
+                            </div>
+                            <div style={{ fontSize: '0.75rem', color: 'var(--slate-500)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <span style={{ color: score >= 60 ? '#22c55e' : score >= 30 ? '#f59e0b' : 'var(--slate-500)', fontWeight: 600 }}>{score}%</span> engagement
+                            </div>
+                          </div>
+                        </div>
+                        {membership.role !== 'Leader' && (
+                          <div style={{ display: 'flex', gap: '6px' }}>
+                            {membership.role === 'Co-Leader' ? (
+                              <button onClick={() => handleDemote(memberUser)} className="btn btn-outline interactive-press" style={{ padding: '5px 10px', fontSize: '0.75rem' }}>Demote</button>
+                            ) : (
+                              <button onClick={() => handlePromote(memberUser)} className="btn btn-outline interactive-press" style={{ padding: '5px 10px', fontSize: '0.75rem' }}>Promote</button>
+                            )}
+                            <button onClick={() => handleRemove(memberUser)} className="btn btn-danger interactive-press" style={{ padding: '5px 10px', fontSize: '0.75rem' }}>Remove</button>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                  {memberList.length === 0 && (
+                    <div style={{ padding: '40px', textAlign: 'center', color: 'var(--slate-500)' }}>No members yet. Share your community link to grow!</div>
+                  )}
                 </div>
-                <span style={{ flex: 1, fontWeight: 500 }}>Promote Co-Leaders</span>
-                <span style={{ color: 'var(--slate-500)' }}>→</span>
-              </button>
+              )}
+
+              {/* CRM sub-tab */}
+              {peopleSubTab === 'crm' && (
+                <div style={{ padding: '0 20px' }}>
+                  <MemberCRM communityId={community.id} />
+                </div>
+              )}
             </div>
           )}
 
