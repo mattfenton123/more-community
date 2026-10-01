@@ -8,19 +8,34 @@ import { MapPin, Search, Navigation, Check, Loader2 } from 'lucide-react';
 // Default center: Tunbridge Wells
 const DEFAULT_CENTER = [51.1322, 0.2637];
 
-// Well-known Tunbridge Wells locations for fast local lookup
+// Well-known Tunbridge Wells & surrounding Kent/East Sussex locations for fast local lookup
 const FAST_TW_SPOTS = [
-  { name: 'Dunorlan Park', lat: 51.1345, lon: 0.2710 },
-  { name: 'The Pantiles', lat: 51.1280, lon: 0.2620 },
-  { name: 'Calverley Grounds', lat: 51.1355, lon: 0.2605 },
-  { name: 'Tunbridge Wells Common', lat: 51.1315, lon: 0.2550 },
-  { name: 'Camden Road', lat: 51.1330, lon: 0.2630 },
-  { name: 'The Forum', lat: 51.1310, lon: 0.2650 },
-  { name: 'Trinity Theatre & Arts Centre', lat: 51.1315, lon: 0.2640 },
-  { name: 'Assembly Hall Theatre', lat: 51.1340, lon: 0.2625 },
-  { name: 'Grosvenor & Hilbert Park', lat: 51.1280, lon: 0.2680 },
-  { name: 'St Johns Park', lat: 51.1370, lon: 0.2560 },
-  { name: 'High Street, Tunbridge Wells', lat: 51.1295, lon: 0.2615 }
+  { name: 'Bewl Water / Bewl Reservoir', lat: 51.0676, lon: 0.4049, aliases: ['bewl', 'bewl reservoir', 'bewl water', 'bewl water reservoir'] },
+  { name: 'Dunorlan Park', lat: 51.1345, lon: 0.2710, aliases: ['dunorlan', 'dunorlan park'] },
+  { name: 'The Pantiles', lat: 51.1280, lon: 0.2620, aliases: ['pantiles', 'the pantiles'] },
+  { name: 'Calverley Grounds', lat: 51.1355, lon: 0.2605, aliases: ['calverley', 'calverley grounds'] },
+  { name: 'Tunbridge Wells Common', lat: 51.1315, lon: 0.2550, aliases: ['tw common', 'common', 'tunbridge wells common'] },
+  { name: 'Camden Road', lat: 51.1330, lon: 0.2630, aliases: ['camden rd', 'camden road'] },
+  { name: 'The Forum', lat: 51.1310, lon: 0.2650, aliases: ['forum', 'the forum'] },
+  { name: 'Trinity Theatre & Arts Centre', lat: 51.1315, lon: 0.2640, aliases: ['trinity', 'trinity theatre'] },
+  { name: 'Assembly Hall Theatre', lat: 51.1340, lon: 0.2625, aliases: ['assembly hall'] },
+  { name: 'Grosvenor & Hilbert Park', lat: 51.1280, lon: 0.2680, aliases: ['hilbert', 'grosvenor park', 'grosvenor & hilbert'] },
+  { name: 'St Johns Park', lat: 51.1370, lon: 0.2560, aliases: ['st johns', 'st johns park'] },
+  { name: 'High Street, Tunbridge Wells', lat: 51.1295, lon: 0.2615, aliases: ['high street'] },
+  { name: 'Bedgebury National Pinetum & Forest', lat: 51.0827, lon: 0.4578, aliases: ['bedgebury', 'pinetum', 'bedgebury forest'] },
+  { name: 'Groombridge Place', lat: 51.1189, lon: 0.1878, aliases: ['groombridge', 'groombridge place'] },
+  { name: 'Eridge Rocks', lat: 51.1039, lon: 0.2078, aliases: ['eridge', 'eridge rocks'] },
+  { name: 'Harrison\'s Rocks', lat: 51.1011, lon: 0.1972, aliases: ['harrisons rocks', 'harrison rocks', 'harrisons'] },
+  { name: 'High Rocks', lat: 51.1278, lon: 0.2319, aliases: ['high rocks'] },
+  { name: 'Scotney Castle', lat: 51.0931, lon: 0.4069, aliases: ['scotney', 'scotney castle'] },
+  { name: 'Penshurst Place', lat: 51.1744, lon: 0.1828, aliases: ['penshurst', 'penshurst place'] },
+  { name: 'Kingdom (Penshurst)', lat: 51.1685, lon: 0.1795, aliases: ['kingdom', 'kingdom penshurst'] },
+  { name: 'Haysden Country Park', lat: 51.1895, lon: 0.2520, aliases: ['haysden', 'haysden park'] },
+  { name: 'Tonbridge Castle', lat: 51.1965, lon: 0.2740, aliases: ['tonbridge castle', 'tonbridge'] },
+  { name: 'Ashdown Forest', lat: 51.0667, lon: 0.0667, aliases: ['ashdown', 'ashdown forest'] },
+  { name: 'Southborough Common', lat: 51.1578, lon: 0.2742, aliases: ['southborough'] },
+  { name: 'Rusthall Common', lat: 51.1390, lon: 0.2310, aliases: ['rusthall'] },
+  { name: 'Broadwater Warren', lat: 51.1095, lon: 0.2480, aliases: ['broadwater', 'broadwater warren'] }
 ];
 
 function createPinIcon() {
@@ -79,6 +94,7 @@ export default function LocationPicker({ locationName, setLocationName }) {
   const [searchResults, setSearchResults] = useState([]);
   const [showMap, setShowMap] = useState(false);
   const [pinAddress, setPinAddress] = useState(locationName || '');
+  const [searchNotFound, setSearchNotFound] = useState(false);
 
   // Keep internal query aligned if parent prop changes
   useEffect(() => {
@@ -114,6 +130,7 @@ export default function LocationPicker({ locationName, setLocationName }) {
   const handleLocationChosen = async (lat, lng) => {
     setCoords([lat, lng]);
     setShowMap(true);
+    setSearchNotFound(false);
     const resolvedName = await reverseGeocode(lat, lng);
     setSearchQuery(resolvedName);
     setPinAddress(resolvedName);
@@ -124,9 +141,14 @@ export default function LocationPicker({ locationName, setLocationName }) {
     if (e) e.preventDefault();
     if (!searchQuery.trim()) return;
 
-    // Check fast local TW spots first
+    setSearchNotFound(false);
+
+    // Check fast local TW & Kent/Sussex spots first (including aliases)
     const qLower = searchQuery.toLowerCase().trim();
-    const matchedSpot = FAST_TW_SPOTS.find(s => s.name.toLowerCase().includes(qLower));
+    const matchedSpot = FAST_TW_SPOTS.find(s => 
+      s.name.toLowerCase().includes(qLower) || 
+      (s.aliases && s.aliases.some(a => qLower.includes(a) || a.includes(qLower)))
+    );
     if (matchedSpot) {
       setCoords([matchedSpot.lat, matchedSpot.lon]);
       setLocationName(matchedSpot.name);
@@ -139,16 +161,31 @@ export default function LocationPicker({ locationName, setLocationName }) {
 
     setIsSearching(true);
     try {
-      const queryWithContext = qLower.includes('tunbridge') || qLower.includes('kent') || qLower.includes('uk')
-        ? searchQuery
-        : `${searchQuery}, Tunbridge Wells, UK`;
+      // Build candidate searches in order of relevance without forcefully restricting to TW town center
+      const candidates = [
+        searchQuery,
+        qLower.includes('reservoir') ? searchQuery.replace(/\breservoir\b/gi, 'Water') : null,
+        qLower.includes('water') ? searchQuery.replace(/\bwater\b/gi, 'Reservoir') : null,
+        !qLower.includes('uk') ? `${searchQuery}, Kent, UK` : null,
+        !qLower.includes('uk') ? `${searchQuery}, UK` : null
+      ].filter(Boolean);
 
-      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(queryWithContext)}&limit=4`);
-      const data = await res.json();
-      setSearchResults(data || []);
+      let foundData = [];
+      for (const cand of candidates) {
+        // Prioritize South East / Kent / Sussex region with viewbox
+        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(cand)}&viewbox=-0.2,51.35,0.7,50.95&bounded=0&limit=4`;
+        const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+        const data = await res.json();
+        if (data && data.length > 0) {
+          foundData = data;
+          break;
+        }
+      }
 
-      if (data && data.length > 0) {
-        const best = data[0];
+      setSearchResults(foundData || []);
+
+      if (foundData && foundData.length > 0) {
+        const best = foundData[0];
         const newCoords = [parseFloat(best.lat), parseFloat(best.lon)];
         setCoords(newCoords);
         const shortName = best.display_name.split(',')[0].trim();
@@ -156,9 +193,13 @@ export default function LocationPicker({ locationName, setLocationName }) {
         setSearchQuery(shortName);
         setPinAddress(shortName);
         setShowMap(true);
+      } else {
+        setSearchNotFound(true);
+        setShowMap(true);
       }
     } catch (err) {
       console.error("Search error:", err);
+      setSearchNotFound(true);
     } finally {
       setIsSearching(false);
     }
@@ -242,6 +283,23 @@ export default function LocationPicker({ locationName, setLocationName }) {
           {isSearching ? <Loader2 size={18} className="animate-spin" /> : <Search size={18} />}
         </button>
       </div>
+
+      {/* Search Not Found Banner */}
+      {searchNotFound && (
+        <div style={{
+          padding: '10px 14px',
+          background: 'rgba(245, 158, 11, 0.1)',
+          border: '1px solid rgba(245, 158, 11, 0.3)',
+          borderRadius: '10px',
+          color: '#fbbf24',
+          fontSize: '0.82rem',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px'
+        }}>
+          <span>📍 Specific landmark not found in index. Tap anywhere on the map to place your pin directly.</span>
+        </div>
+      )}
 
       {/* Autocomplete / Search Suggestions */}
       {searchResults.length > 0 && (

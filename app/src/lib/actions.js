@@ -198,28 +198,22 @@ export async function createEventAction(eventData, token) {
   // In a real app we'd verify the user is a leader of the community, but for demo:
   await verifyUser(token);
 
-  const { data, error } = await supabaseAdmin.from('events').insert({
+  const payload = {
     id: eventData.id || crypto.randomUUID(),
     community_id: eventData.communityId,
     title: eventData.title,
     date: eventData.date,
     time: eventData.time,
     location: eventData.location,
-    image: eventData.image,
+    image: eventData.image || null,
     attendees: eventData.attendees || 0,
     description: eventData.description || '',
     status: eventData.status || 'published',
     max_capacity: eventData.maxCapacity || null,
-    ticket_price: eventData.ticketPrice || 0,
-    meeting_point: eventData.meetingPoint || '',
-    itinerary: eventData.itinerary || '',
-    what_to_bring: eventData.whatToBring || '',
-    activity_level: eventData.activityLevel || 'All Levels',
-    cohost_community_ids: eventData.collabCommunityIds || [],
-    profit_share_enabled: eventData.profitShareEnabled || false,
-    profit_share_amount: eventData.profitShareAmount || 0,
-    auto_reminders_enabled: eventData.autoReminders !== false
-  }).select().single();
+    ticket_price: eventData.ticketPrice != null ? Number(eventData.ticketPrice) : (eventData.ticket_price != null ? Number(eventData.ticket_price) : 0)
+  };
+
+  const { data, error } = await supabaseAdmin.from('events').insert(payload).select().single();
 
   if (error) {
     console.error('Event creation failed:', error);
@@ -356,14 +350,9 @@ export async function updateEventAction(eventId, updates, token) {
   if (updates.image !== undefined) dbUpdates.image = updates.image;
   if (updates.status !== undefined) dbUpdates.status = updates.status;
   if (updates.maxCapacity !== undefined) dbUpdates.max_capacity = updates.maxCapacity;
-  if (updates.meetingPoint !== undefined) dbUpdates.meeting_point = updates.meetingPoint;
-  if (updates.itinerary !== undefined) dbUpdates.itinerary = updates.itinerary;
-  if (updates.whatToBring !== undefined) dbUpdates.what_to_bring = updates.whatToBring;
-  if (updates.activityLevel !== undefined) dbUpdates.activity_level = updates.activityLevel;
-  if (updates.profitShareEnabled !== undefined) dbUpdates.profit_share_enabled = updates.profitShareEnabled;
-  if (updates.profitShareAmount !== undefined) dbUpdates.profit_share_amount = updates.profitShareAmount;
-  if (updates.autoReminders !== undefined) dbUpdates.auto_reminders_enabled = updates.autoReminders;
-  if (updates.autoFeedback !== undefined) dbUpdates.auto_feedback_enabled = updates.autoFeedback;
+  if (updates.max_capacity !== undefined) dbUpdates.max_capacity = updates.max_capacity;
+  if (updates.ticketPrice !== undefined) dbUpdates.ticket_price = Number(updates.ticketPrice);
+  if (updates.ticket_price !== undefined) dbUpdates.ticket_price = Number(updates.ticket_price);
   
   const { data, error } = await supabaseAdmin.from('events').update(dbUpdates).eq('id', eventId).select().single();
   if (error) {
@@ -379,8 +368,14 @@ export async function updateCommunityAction(communityId, updates, token) {
   const dbUpdates = {};
   if (updates.name !== undefined) dbUpdates.name = updates.name;
   if (updates.description !== undefined) dbUpdates.description = updates.description;
-  if (updates.image !== undefined) dbUpdates.cover_image = updates.image;
-  if (updates.cover_image !== undefined) dbUpdates.cover_image = updates.cover_image;
+  if (updates.image !== undefined) {
+    dbUpdates.cover_image = updates.image;
+    dbUpdates.image = updates.image;
+  }
+  if (updates.cover_image !== undefined) {
+    dbUpdates.cover_image = updates.cover_image;
+    dbUpdates.image = updates.cover_image;
+  }
   if (updates.tags !== undefined) dbUpdates.tags = updates.tags;
   if (updates.subscription_price !== undefined) dbUpdates.subscription_price = updates.subscription_price;
   if (updates.visibility !== undefined) dbUpdates.visibility = updates.visibility;

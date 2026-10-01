@@ -783,15 +783,37 @@ html, body {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(2, 6, 23, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  z-index: 9999;
+  background: rgba(2, 6, 23, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  z-index: 99999;
   animation: fadeIn var(--transition-fade) ease-out;
 }
 
 .modal-content {
   animation: scaleIn var(--transition-base) var(--ease-out-expo);
+}
+
+/* Hide floating bottom nav when any modal or fullscreen overlay is open */
+body:has(.modal-overlay) .bottom-nav,
+.app-container:has(.modal-overlay) .bottom-nav {
+  display: none !important;
+}
+
+/* Custom Select Dropdowns & Options (Prevents white-on-white text in Chrome/Windows) */
+select {
+  background-color: var(--slate-900, #0f172a);
+  color: var(--slate-100, #f8fafc);
+}
+
+select option {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+}
+
+select optgroup {
+  background-color: #0f172a !important;
+  color: #94a3b8 !important;
 }
 
 /* ============================================================

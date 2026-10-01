@@ -13,6 +13,21 @@ export default function BottomNav() {
   const { directMessages, chatReadReceipts } = useChat();
   const isLeader = user?.ledCommunities?.length > 0;
 
+  const [hasModalOpen, setHasModalOpen] = React.useState(false);
+
+  React.useEffect(() => {
+    const checkModal = () => {
+      if (typeof document !== 'undefined') {
+        const modal = document.querySelector('.modal-overlay');
+        setHasModalOpen(!!modal);
+      }
+    };
+    checkModal();
+    const observer = new MutationObserver(checkModal);
+    observer.observe(document.body, { childList: true, subtree: true, attributes: true });
+    return () => observer.disconnect();
+  }, []);
+
   // Hide bottom nav on specific pages, particularly deep pages where fixed footers or chat inputs shouldn't be obscured
   const isDeepPage = currentPath.match(/^\/events\/[^/]+$/) || 
                      currentPath.match(/^\/community\/[^/]+$/) || 
@@ -20,7 +35,7 @@ export default function BottomNav() {
                      currentPath.match(/^\/chat\/dm\/[^/]+$/) ||
                      currentPath === '/settings';
   
-  const hideBottomNav = currentPath === '/login' || currentPath === '/onboarding' || isDeepPage;
+  const hideBottomNav = currentPath === '/login' || currentPath === '/onboarding' || isDeepPage || hasModalOpen;
   
   if (hideBottomNav) return null;
 

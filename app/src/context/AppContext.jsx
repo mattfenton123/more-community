@@ -1059,22 +1059,27 @@ export function AppProvider({ children }) {
 
   const createEvent = async (communityId, eventData) => {
     try {
+      let token = session?.access_token;
+      if (!token) {
+        const { data: sessionData } = await supabase.auth.getSession();
+        token = sessionData?.session?.access_token;
+      }
+
       const newEvent = {
         communityId: communityId,
         title: eventData.title,
         description: eventData.description || '',
         date: eventData.date,
         time: eventData.time,
-      ticket_price: eventData.ticketPrice || 0,
+        ticketPrice: eventData.ticketPrice || eventData.ticket_price || 0,
         location: eventData.location,
-        image: eventData.image,
+        image: eventData.image || null,
         attendees: 0,
         status: 'published',
         maxCapacity: eventData.maxCapacity || null,
-        collabCommunityIds: eventData.collabCommunityIds || []
       };
 
-      const data = await createEventAction(newEvent, session?.access_token);
+      const data = await createEventAction(newEvent, token);
       
       // Optimistic UI update
       if (data) {
@@ -1082,19 +1087,20 @@ export function AppProvider({ children }) {
         setEvents(prev => [...prev, {
           id: e.id,
           communityId: e.community_id,
-          collabCommunityIds: e.cohost_community_ids || [],
           title: e.title,
           description: e.description || '',
           date: e.date,
           time: e.time,
           location: e.location,
           image: e.image,
-          attendees: e.attendees,
+          attendees: e.attendees || 0,
           status: e.status || 'published',
           maxCapacity: e.max_capacity || null,
+          ticketPrice: e.ticket_price || 0,
           createdAt: e.created_at
         }]);
       }
+      return data;
     } catch (err) {
       console.error(err);
       throw err;
@@ -1305,7 +1311,12 @@ export function AppProvider({ children }) {
       delete dbUpdates.autoFeedbackEnabled;
       
       if (Object.keys(dbUpdates).length > 0) {
-        await updateCommunityAction(communityId, dbUpdates, session?.access_token);
+        let token = session?.access_token;
+        if (!token) {
+          const { data: sessionData } = await supabase.auth.getSession();
+          token = sessionData?.session?.access_token;
+        }
+        await updateCommunityAction(communityId, dbUpdates, token);
       }
     } catch (err) {
       console.error(err);

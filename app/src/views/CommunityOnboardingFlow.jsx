@@ -141,7 +141,7 @@ function StepAesthetics({ tags, toggleTag, coverImagePreview, handleImageSelect,
           </div>
         )}
       </div>
-      <input type="file" ref={fileInputRef} onChange={handleImageSelect} accept="image/*" style={{ display: 'none' }} />
+      <input type="file" ref={fileInputRef} onChange={handleImageSelect} accept="image/*,.heic,.heif,.jpg,.jpeg,.png,.webp" style={{ display: 'none' }} />
 
       <div>
         <label className="input-label" style={{ textAlign: 'center', marginBottom: '12px' }}>Select up to 3 Categories</label>
@@ -321,13 +321,26 @@ export default function CommunityOnboardingFlow({ onComplete }) {
     );
   };
 
-  const handleImageSelect = (e) => {
+  const handleImageSelect = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    setCoverImageFile(file);
+
+    let processedFile = file;
+    if (file.type === 'image/heic' || file.type === 'image/heif' || file.name.toLowerCase().endsWith('.heic') || file.name.toLowerCase().endsWith('.heif')) {
+      try {
+        const heic2any = (await import('heic2any')).default;
+        const blob = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.85 });
+        const jpegBlob = Array.isArray(blob) ? blob[0] : blob;
+        processedFile = new File([jpegBlob], file.name.replace(/\.[^/.]+$/, "") + ".jpeg", { type: 'image/jpeg' });
+      } catch (err) {
+        console.warn("HEIC conversion fallback:", err);
+      }
+    }
+
+    setCoverImageFile(processedFile);
     const reader = new FileReader();
     reader.onloadend = () => setCoverImagePreview(reader.result);
-    reader.readAsDataURL(file);
+    reader.readAsDataURL(processedFile);
   };
 
   const handleFinish = async () => {

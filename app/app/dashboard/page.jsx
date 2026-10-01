@@ -74,7 +74,7 @@ function getEngagementScore(member, events, eventRsvps, messages, communityId) {
 }
 
 // ─── Component ──────────────────────────────────────────────────
-export default function LeaderDashboard() {
+export default function LeaderDashboard({ initialCommunityId }) {
   const { user, communities, events, updateCommunity, users, communityMemberships, createEvent, updateEvent, cancelEvent, uploadImage, eventRsvps, whatsappSettings, setWhatsappSettings, promoteMember, removeMember, checkInMember, broadcastNotification, experiences } = useAppContext();
     const { messages } = useChat();
   const { toast } = useToast();
@@ -86,7 +86,7 @@ export default function LeaderDashboard() {
   const [modalType, setModalType] = useState(null);
   const [editForm, setEditForm] = useState({ description: '', tags: '' });
   const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'overview');
-  const [activeCommunityId, setActiveCommunityId] = useState(user?.ledCommunities?.[0] || null);
+  const [activeCommunityId, setActiveCommunityId] = useState(initialCommunityId || user?.ledCommunities?.[0] || null);
   
   useEffect(() => {
     const tab = searchParams.get('tab');
@@ -98,6 +98,10 @@ export default function LeaderDashboard() {
   const [editingEventId, setEditingEventId] = useState(null);
   const [broadcastText, setBroadcastText] = useState('');
   const [imageFile, setImageFile] = useState(null);
+  const [coverImageFile, setCoverImageFile] = useState(null);
+  const [coverImagePreview, setCoverImagePreview] = useState(null);
+  const coverFileInputRef = useRef(null);
+  const bannerFileInputRef = useRef(null);
   const [isUploading, setIsUploading] = useState(false);
   const [cancelConfirmId, setCancelConfirmId] = useState(null);
   const [showScanner, setShowScanner] = useState(false);
@@ -238,6 +242,44 @@ export default function LeaderDashboard() {
   }, [communityMessages, communityEvents, eventRsvps, memberList, users]);
 
   // ─── Handlers ─────────────────────────────────────────────
+  const handleCoverImageSelect = async (e, directSave = false) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    let processedFile = file;
+    if (file.type === 'image/heic' || file.type === 'image/heif' || file.name.toLowerCase().endsWith('.heic') || file.name.toLowerCase().endsWith('.heif')) {
+      try {
+        const heic2any = (await import('heic2any')).default;
+        const blob = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.85 });
+        const jpegBlob = Array.isArray(blob) ? blob[0] : blob;
+        processedFile = new File([jpegBlob], file.name.replace(/\.[^/.]+$/, "") + ".jpeg", { type: 'image/jpeg' });
+      } catch (err) {
+        console.warn("HEIC conversion fallback:", err);
+      }
+    }
+
+    if (directSave && community) {
+      setIsUploading(true);
+      try {
+        const url = await uploadImage(processedFile, 'community_covers');
+        await updateCommunity(community.id, { cover_image: url, image: url });
+        setCoverImagePreview(url);
+        toast.success('Cover image updated!', 'Your community cover is now live');
+      } catch (err) {
+        console.error(err);
+        toast.error('Upload failed', 'Could not upload cover image');
+      } finally {
+        setIsUploading(false);
+      }
+      return;
+    }
+
+    setCoverImageFile(processedFile);
+    const reader = new FileReader();
+    reader.onloadend = () => setCoverImagePreview(reader.result);
+    reader.readAsDataURL(processedFile);
+  };
+
   const handleEditClick = () => {
     if (community) {
       setEditForm({ 
@@ -246,12 +288,25 @@ export default function LeaderDashboard() {
         whatsapp_group: community.whatsapp_group || '',
         instagram_handle: community.instagram_handle || ''
       });
+      setCoverImageFile(null);
+      setCoverImagePreview(community.cover_image || community.image || null);
       setSubscriptionPrice(community.subscriptionPrice || community.subscription_price || '');
     }
     setIsEditing(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    setIsUploading(true);
+    let coverUrl = community?.cover_image || community?.image;
+    if (coverImageFile) {
+      try {
+        coverUrl = await uploadImage(coverImageFile, 'community_covers');
+      } catch (err) {
+        console.error('Failed to upload cover image:', err);
+        toast.error('Image upload failed', 'Could not upload cover image');
+      }
+    }
+
     let wa = (editForm.whatsapp_group || '').trim();
     if (wa && !wa.startsWith('http://') && !wa.startsWith('https://')) {
       wa = `https://${wa}`;
@@ -261,14 +316,18 @@ export default function LeaderDashboard() {
       ig = `@${ig}`;
     }
 
-    updateCommunity(community.id, {
+    await updateCommunity(community.id, {
       description: editForm.description,
       tags: editForm.tags.split(',').map(t => t.trim()).filter(Boolean),
       whatsapp_group: wa,
-      instagram_handle: ig
+      instagram_handle: ig,
+      cover_image: coverUrl,
+      image: coverUrl
     });
-    toast.success('Profile updated!', 'Your community microsite has been saved');
+    setIsUploading(false);
     setIsEditing(false);
+    setCoverImageFile(null);
+    toast.success('Profile updated!', 'Your community microsite has been saved');
   };
 
   const handleCreateEvent = async () => {
@@ -674,33 +733,8 @@ export default function LeaderDashboard() {
         </>
       )}
 
-      {/* Navigation Buttons */}
-      <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
-        {eventStep > 0 && (
-          <button onClick={() => setEventStep(eventStep - 1)} className="btn btn-outline interactive-press" style={{ padding: '14px', flex: 1, borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-            ← Back
-          </button>
-        )}
-        {eventStep < 3 ? (
-          <button 
-            onClick={() => setEventStep(eventStep + 1)} 
-            disabled={!canAdvanceStep()}
-            className="btn btn-primary interactive-press" 
-            style={{ padding: '14px', flex: 2, borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', opacity: canAdvanceStep() ? 1 : 0.4 }}
-          >
-            Next: {eventSteps[eventStep + 1].label} →
-          </button>
-        ) : (
-          <button 
-            onClick={() => { if (editingEventId) handleSaveEvent(); else handleCreateEvent(); }}
-            disabled={isUploading || !canAdvanceStep()}
-            className="btn btn-primary interactive-press" 
-            style={{ padding: '14px', flex: 2, borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', background: 'linear-gradient(135deg, var(--teal-500), #3b82f6)', opacity: isUploading ? 0.7 : 1 }}
-          >
-            <Check size={18} /> {isUploading ? 'Publishing...' : editingEventId ? 'Save Changes' : 'Publish Event'}
-          </button>
-        )}
-      </div>
+      {/* Spacer for bottom docked footer */}
+      <div style={{ height: '24px' }} />
     </>
   );
 
@@ -718,10 +752,10 @@ export default function LeaderDashboard() {
                 <select 
                   value={communityIdLed} 
                   onChange={e => setActiveCommunityId(e.target.value)}
-                  style={{ background: 'rgba(255,255,255,0.05)', color: 'var(--white)', border: '1px solid rgba(255,255,255,0.1)', padding: '6px 8px', borderRadius: '8px', fontSize: '1.1rem', fontFamily: 'var(--font-heading)', outline: 'none', width: '100%', marginBottom: '4px' }}
+                  style={{ background: '#0f172a', color: '#f8fafc', border: '1px solid rgba(255,255,255,0.15)', padding: '8px 12px', borderRadius: '8px', fontSize: '1rem', fontFamily: 'var(--font-heading)', outline: 'none', width: '100%', marginBottom: '4px', cursor: 'pointer' }}
                 >
                   {availableCommunities.map(c => (
-                    <option key={c.id} value={c.id}>{c.name}</option>
+                    <option key={c.id} value={c.id} style={{ background: '#0f172a', color: '#f8fafc' }}>{c.name}</option>
                   ))}
                 </select>
               ) : (
@@ -749,7 +783,7 @@ export default function LeaderDashboard() {
               { id: 'settings', icon: Settings, label: 'Settings' }
             ].map(tab => (
               <button 
-                key={tab.id}
+                key={tab.id} 
                 onClick={() => setActiveTab(tab.id)}
                 className={`dashboard-nav-item ${activeTab === tab.id ? 'active' : ''}`}
               >
@@ -782,10 +816,10 @@ export default function LeaderDashboard() {
                   <select 
                     value={communityIdLed} 
                     onChange={e => setActiveCommunityId(e.target.value)}
-                    style={{ background: 'rgba(255,255,255,0.05)', color: 'var(--white)', border: '1px solid rgba(255,255,255,0.1)', padding: '4px 8px', borderRadius: '6px', fontSize: '0.85rem', outline: 'none' }}
+                    style={{ background: '#0f172a', color: '#f8fafc', border: '1px solid rgba(255,255,255,0.15)', padding: '6px 10px', borderRadius: '8px', fontSize: '0.85rem', outline: 'none', cursor: 'pointer' }}
                   >
                     {availableCommunities.map(c => (
-                      <option key={c.id} value={c.id}>{c.name}</option>
+                      <option key={c.id} value={c.id} style={{ background: '#0f172a', color: '#f8fafc' }}>{c.name}</option>
                     ))}
                   </select>
                 ) : (
@@ -831,6 +865,73 @@ export default function LeaderDashboard() {
           {/* ══════════════════════════════════════════════════════ */}
           {activeTab === 'overview' && (
             <>
+              {/* Community Banner & Quick Cover Update */}
+              <div style={{ padding: '0 20px', marginBottom: '16px' }}>
+                <div style={{ 
+                  position: 'relative', 
+                  borderRadius: '16px', 
+                  overflow: 'hidden', 
+                  height: '140px', 
+                  background: 'linear-gradient(135deg, rgba(20,184,166,0.2), rgba(15,23,42,0.8))',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.3)'
+                }}>
+                  {(community.cover_image || community.image) ? (
+                    <img 
+                      src={community.cover_image || community.image} 
+                      alt={community.name} 
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                    />
+                  ) : (
+                    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--slate-500)', fontSize: '0.85rem' }}>
+                      No cover photo yet
+                    </div>
+                  )}
+                  <div style={{ 
+                    position: 'absolute', 
+                    inset: 0, 
+                    background: 'linear-gradient(to top, rgba(2,6,23,0.9) 0%, rgba(2,6,23,0.3) 50%, transparent 100%)',
+                    display: 'flex',
+                    alignItems: 'flex-end',
+                    justifyContent: 'space-between',
+                    padding: '16px'
+                  }}>
+                    <div>
+                      <h3 style={{ margin: 0, color: 'white', fontSize: '1.2rem', fontFamily: 'var(--font-heading)' }}>{community.name}</h3>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--teal-300)', fontWeight: 500 }}>Public Community Microsite</span>
+                    </div>
+                    <div>
+                      <input 
+                        type="file" 
+                        ref={bannerFileInputRef} 
+                        onChange={(e) => handleCoverImageSelect(e, true)} 
+                        accept="image/*,.heic,.heif,.jpg,.jpeg,.png,.webp" 
+                        style={{ display: 'none' }} 
+                      />
+                      <button 
+                        onClick={() => bannerFileInputRef.current?.click()}
+                        disabled={isUploading}
+                        className="btn btn-outline interactive-press"
+                        style={{ 
+                          background: 'rgba(15,23,42,0.85)', 
+                          backdropFilter: 'blur(8px)',
+                          border: '1px solid rgba(255,255,255,0.2)', 
+                          color: 'white',
+                          padding: '8px 12px',
+                          borderRadius: '8px',
+                          fontSize: '0.75rem',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px'
+                        }}
+                      >
+                        <ImageIcon size={14} /> {isUploading ? 'Updating...' : 'Update Cover'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               {/* Leader Setup & Launch Checklist */}
               <div style={{ padding: '0 20px', marginBottom: '16px' }}>
                 <LeaderSetupChecklist
@@ -1918,6 +2019,34 @@ export default function LeaderDashboard() {
             {isEditing && (
               <>
                 <div>
+                  <label style={{ display: 'block', marginBottom: '8px', color: 'var(--slate-300)', fontSize: '0.9rem', fontWeight: 600 }}>Community Cover Photo</label>
+                  <div style={{ position: 'relative', width: '100%', height: '140px', borderRadius: '12px', overflow: 'hidden', background: 'var(--slate-800)', border: '1px dashed var(--slate-700)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '10px' }}>
+                    {coverImagePreview ? (
+                      <img src={coverImagePreview} alt="Community cover preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', color: 'var(--slate-400)' }}>
+                        <ImageIcon size={28} />
+                        <span style={{ fontSize: '0.8rem' }}>No cover photo uploaded</span>
+                      </div>
+                    )}
+                  </div>
+                  <input 
+                    type="file" 
+                    ref={coverFileInputRef} 
+                    onChange={(e) => handleCoverImageSelect(e, false)} 
+                    accept="image/*,.heic,.heif,.jpg,.jpeg,.png,.webp" 
+                    style={{ display: 'none' }} 
+                  />
+                  <button 
+                    type="button"
+                    onClick={() => coverFileInputRef.current?.click()} 
+                    className="btn btn-outline interactive-press" 
+                    style={{ width: '100%', padding: '10px', borderRadius: '10px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                  >
+                    <ImageIcon size={16} /> {coverImagePreview ? 'Change Cover Photo' : 'Upload Cover Photo'}
+                  </button>
+                </div>
+                <div>
                   <label style={{ display: 'block', marginBottom: '8px', color: 'var(--slate-300)', fontSize: '0.9rem' }}>Community Description</label>
                   <textarea value={editForm.description} onChange={(e) => setEditForm({...editForm, description: e.target.value})} style={{ width: '100%', padding: '12px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'var(--white)', minHeight: '120px', fontFamily: 'inherit', resize: 'none' }} />
                 </div>
@@ -2039,9 +2168,38 @@ export default function LeaderDashboard() {
             )}
           </div>
 
-          {/* Modal Action Button — skip for event forms (wizard has its own buttons) */}
-          {(isEditing || (modalType && modalType !== 'community' && modalType !== 'coleader' && modalType !== 'event' && modalType !== 'edit-event')) && (
-            <div style={{ padding: '16px 20px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+          {/* Modal Sticky Docked Footer */}
+          {(modalType === 'event' || modalType === 'edit-event') ? (
+            <div style={{ padding: '16px 20px', borderTop: '1px solid rgba(255,255,255,0.08)', background: '#0f172a', position: 'sticky', bottom: 0, zIndex: 20, paddingBottom: 'max(16px, env(safe-area-inset-bottom, 16px))' }}>
+              <div style={{ display: 'flex', gap: '8px', width: '100%' }}>
+                {eventStep > 0 && (
+                  <button onClick={() => setEventStep(eventStep - 1)} className="btn btn-outline interactive-press" style={{ padding: '14px', flex: 1, borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                    ← Back
+                  </button>
+                )}
+                {eventStep < 3 ? (
+                  <button 
+                    onClick={() => setEventStep(eventStep + 1)} 
+                    disabled={!canAdvanceStep()}
+                    className="btn btn-primary interactive-press" 
+                    style={{ padding: '14px', flex: 2, borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', opacity: canAdvanceStep() ? 1 : 0.4 }}
+                  >
+                    Next: {eventSteps[eventStep + 1].label} →
+                  </button>
+                ) : (
+                  <button 
+                    onClick={() => { if (editingEventId) handleSaveEvent(); else handleCreateEvent(); }}
+                    disabled={isUploading || !canAdvanceStep()}
+                    className="btn btn-primary interactive-press" 
+                    style={{ padding: '14px', flex: 2, borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', background: 'linear-gradient(135deg, var(--teal-500), #3b82f6)', opacity: isUploading ? 0.7 : 1 }}
+                  >
+                    <Check size={18} /> {isUploading ? 'Publishing...' : editingEventId ? 'Save Changes' : 'Publish Event'}
+                  </button>
+                )}
+              </div>
+            </div>
+          ) : (isEditing || (modalType && modalType !== 'community' && modalType !== 'coleader')) ? (
+            <div style={{ padding: '16px 20px', borderTop: '1px solid rgba(255,255,255,0.08)', background: '#0f172a', position: 'sticky', bottom: 0, zIndex: 20, paddingBottom: 'max(16px, env(safe-area-inset-bottom, 16px))' }}>
               <button 
                 onClick={() => { 
                   if(isEditing) handleSave(); 
@@ -2065,7 +2223,7 @@ export default function LeaderDashboard() {
                 {isUploading ? 'Uploading...' : isEditing ? 'Save Changes' : modalType === 'whatsapp' ? 'Save Settings' : 'Confirm'}
               </button>
             </div>
-          )}
+          ) : null}
         </div>
       )}
 
