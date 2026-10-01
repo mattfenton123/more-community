@@ -1,10 +1,14 @@
 "use client";
 import { useState, useRef, useEffect } from 'react';
-import { Send, ChevronLeft, Image as ImageIcon, X, MessageCircle, Plus } from 'lucide-react';
+import { Send, ChevronLeft, Image as ImageIcon, X, MessageCircle, Plus, Smile } from 'lucide-react';
 import { useAppContext } from '../../../../src/context/AppContext';
 import { useChat } from '../../../../src/context/ChatContext';
 import { useRouter, useParams } from 'next/navigation';
-import EmojiPicker from 'emoji-picker-react';
+import dynamic from 'next/dynamic';
+
+const EmojiPicker = dynamic(() => import('emoji-picker-react'), { ssr: false });
+
+const QUICK_EMOJIS = ['😊', '❤️', '🙌', '🔥', '👍', '🎉', '😂', '✨', '👏', '💯'];
 
 export default function DirectMessage() {
   const { id: targetUserId } = useParams();
@@ -14,7 +18,10 @@ export default function DirectMessage() {
   const [imageFile, setImageFile] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const [hoveredMsgId, setHoveredMsgId] = useState(null);
+  const [selectedMsgId, setSelectedMsgId] = useState(null);
   const [reactionMsgId, setReactionMsgId] = useState(null);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [showThreadEmojiPicker, setShowThreadEmojiPicker] = useState(false);
   const [activeThreadId, setActiveThreadId] = useState(null);
   
   const messagesEndRef = useRef(null);
@@ -52,6 +59,7 @@ export default function DirectMessage() {
     }
     const text = inputText.trim();
     setInputText('');
+    setShowEmojiPicker(false);
     await sendDirectMessage(targetUserId, text, imageUrl);
   };
 
@@ -60,6 +68,14 @@ export default function DirectMessage() {
       reactToMessage(reactionMsgId, emojiObject.emoji, true);
       setReactionMsgId(null);
     }
+  };
+
+  const handleInputEmojiClick = (emojiObject) => {
+    setInputText(prev => prev + emojiObject.emoji);
+  };
+
+  const handleThreadEmojiClick = (emojiObject) => {
+    setThreadInputText(prev => prev + emojiObject.emoji);
   };
 
   if (!targetUser) {
@@ -138,17 +154,17 @@ export default function DirectMessage() {
                       position: 'relative'
                     }}>
                       
-                      {hoveredMsgId === msg.id && (
+                      {(hoveredMsgId === msg.id || selectedMsgId === msg.id) && (
                         <div style={{ position: 'absolute', top: '-16px', right: isOwn ? '16px' : 'auto', left: isOwn ? 'auto' : '-16px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '99px', padding: '4px', display: 'flex', gap: '4px', zIndex: 10, boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }}>
                           {['❤️', '👍', '😂', '🔥', '🎉'].map(e => (
-                            <button key={e} onClick={() => reactToMessage(msg.id, e, true)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem', padding: '2px 4px', transition: 'transform 0.1s' }} onMouseEnter={ev => ev.currentTarget.style.transform='scale(1.2)'} onMouseLeave={ev => ev.currentTarget.style.transform='scale(1)'}>
+                            <button key={e} onClick={() => { reactToMessage(msg.id, e, true); setSelectedMsgId(null); }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem', padding: '2px 4px', transition: 'transform 0.1s' }} onMouseEnter={ev => ev.currentTarget.style.transform='scale(1.2)'} onMouseLeave={ev => ev.currentTarget.style.transform='scale(1)'}>
                               {e}
                             </button>
                           ))}
-                          <button onClick={() => setActiveThreadId(msg.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center', transition: 'transform 0.1s' }} onMouseEnter={ev => ev.currentTarget.style.transform='scale(1.2)'} onMouseLeave={ev => ev.currentTarget.style.transform='scale(1)'}>
+                          <button onClick={() => { setActiveThreadId(msg.id); setSelectedMsgId(null); }} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center', transition: 'transform 0.1s' }} onMouseEnter={ev => ev.currentTarget.style.transform='scale(1.2)'} onMouseLeave={ev => ev.currentTarget.style.transform='scale(1)'}>
                             <MessageCircle size={14} color="var(--slate-400)" />
                           </button>
-                          <button onClick={() => setReactionMsgId(reactionMsgId === msg.id ? null : msg.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center', transition: 'transform 0.1s' }} onMouseEnter={ev => ev.currentTarget.style.transform='scale(1.2)'} onMouseLeave={ev => ev.currentTarget.style.transform='scale(1)'}>
+                          <button onClick={() => { setReactionMsgId(reactionMsgId === msg.id ? null : msg.id); setSelectedMsgId(null); }} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center', transition: 'transform 0.1s' }} onMouseEnter={ev => ev.currentTarget.style.transform='scale(1.2)'} onMouseLeave={ev => ev.currentTarget.style.transform='scale(1)'}>
                             <Plus size={14} color="var(--slate-400)" />
                           </button>
                         </div>
@@ -197,11 +213,48 @@ export default function DirectMessage() {
             <div ref={messagesEndRef} />
           </div>
 
+          {/* Quick Emoji Bar */}
+          <div style={{ padding: '6px 14px', background: 'rgba(15,23,42,0.85)', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: '6px', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+            <span style={{ fontSize: '0.65rem', color: 'var(--slate-500)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700, flexShrink: 0, marginRight: '4px' }}>Quick</span>
+            {QUICK_EMOJIS.map(em => (
+              <button 
+                key={em} 
+                type="button" 
+                onClick={() => setInputText(prev => prev + em)} 
+                className="interactive-press" 
+                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', fontSize: '1rem', padding: '3px 7px', cursor: 'pointer', transition: 'transform 0.1s', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                title={`Insert ${em}`}
+              >
+                {em}
+              </button>
+            ))}
+          </div>
+
           {/* Input */}
-          <div style={{ padding: '12px 16px', borderTop: '1px solid var(--slate-800)', background: 'var(--slate-900)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ padding: '12px 16px', borderTop: '1px solid var(--slate-800)', background: 'var(--slate-900)', display: 'flex', alignItems: 'center', gap: '8px', position: 'relative' }}>
+            {showEmojiPicker && (
+              <div style={{ position: 'absolute', bottom: '100%', left: '12px', zIndex: 100, maxWidth: '340px', width: 'calc(100% - 24px)', boxShadow: '0 12px 36px rgba(0,0,0,0.6)', borderRadius: '16px', overflow: 'hidden', border: '1px solid var(--slate-700)', marginBottom: '8px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--slate-900)', padding: '8px 14px', borderBottom: '1px solid var(--slate-800)' }}>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--slate-300)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Smile size={16} color="var(--teal-400)" /> Emojis
+                  </span>
+                  <button onClick={() => setShowEmojiPicker(false)} style={{ background: 'none', border: 'none', color: 'var(--slate-400)', cursor: 'pointer', padding: '2px', display: 'flex' }}><X size={16} /></button>
+                </div>
+                <EmojiPicker onEmojiClick={handleInputEmojiClick} theme="dark" width="100%" height={320} searchDisabled={false} skinTonesDisabled />
+              </div>
+            )}
             <input type="file" ref={fileInputRef} accept="image/*,video/*" style={{ display: 'none' }} onChange={(e) => setImageFile(e.target.files[0])} />
-            <button onClick={() => fileInputRef.current?.click()} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '8px' }}>
+            <button onClick={() => fileInputRef.current?.click()} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '8px' }} title="Attach media">
               <ImageIcon size={20} color="var(--slate-400)" />
+            </button>
+            <button 
+              type="button" 
+              onClick={() => setShowEmojiPicker(!showEmojiPicker)} 
+              className="interactive-press" 
+              style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '8px', color: showEmojiPicker ? 'var(--teal-400)' : 'var(--slate-400)', display: 'flex', alignItems: 'center' }}
+              title="Add emoji"
+            >
+              <Smile size={20} />
             </button>
             <input
               type="text"
@@ -272,8 +325,26 @@ export default function DirectMessage() {
                 );
               })()}
             </div>
-            <div style={{ padding: '16px', borderTop: '1px solid var(--slate-800)', background: 'var(--slate-900)' }}>
-              <div style={{ display: 'flex', gap: '8px' }}>
+            <div style={{ padding: '16px', borderTop: '1px solid var(--slate-800)', background: 'var(--slate-900)', position: 'relative' }}>
+              {showThreadEmojiPicker && (
+                <div style={{ position: 'absolute', bottom: '100%', right: '16px', zIndex: 100, maxWidth: '300px', width: 'calc(100% - 32px)', boxShadow: '0 12px 36px rgba(0,0,0,0.6)', borderRadius: '16px', overflow: 'hidden', border: '1px solid var(--slate-700)', marginBottom: '8px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--slate-900)', padding: '6px 12px', borderBottom: '1px solid var(--slate-800)' }}>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--slate-300)', fontWeight: 600 }}>Thread Emojis</span>
+                    <button onClick={() => setShowThreadEmojiPicker(false)} style={{ background: 'none', border: 'none', color: 'var(--slate-400)', cursor: 'pointer', padding: '2px', display: 'flex' }}><X size={14} /></button>
+                  </div>
+                  <EmojiPicker onEmojiClick={handleThreadEmojiClick} theme="dark" width="100%" height={280} searchDisabled={false} skinTonesDisabled />
+                </div>
+              )}
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <button 
+                  type="button" 
+                  onClick={() => setShowThreadEmojiPicker(!showThreadEmojiPicker)}
+                  className="interactive-press"
+                  style={{ background: 'none', border: 'none', color: showThreadEmojiPicker ? 'var(--teal-400)' : 'var(--slate-400)', cursor: 'pointer', padding: '6px', display: 'flex', alignItems: 'center' }}
+                  title="Insert emoji"
+                >
+                  <Smile size={18} />
+                </button>
                 <input 
                   type="text" 
                   value={threadInputText}
@@ -282,6 +353,7 @@ export default function DirectMessage() {
                     if (e.key === 'Enter' && threadInputText.trim()) {
                       sendDirectMessage(targetUserId, threadInputText, '', activeThreadId);
                       setThreadInputText('');
+                      setShowThreadEmojiPicker(false);
                     }
                   }}
                   placeholder="Reply in thread..."
@@ -293,6 +365,7 @@ export default function DirectMessage() {
                   if (threadInputText.trim()) {
                     sendDirectMessage(targetUserId, threadInputText, '', activeThreadId);
                     setThreadInputText('');
+                    setShowThreadEmojiPicker(false);
                   }
                 }} className="interactive-press" style={{ background: 'var(--teal-600)', border: 'none', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', cursor: 'pointer', opacity: threadInputText.trim() ? 1 : 0.5 }}>
                   <Send size={16} />
