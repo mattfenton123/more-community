@@ -175,7 +175,7 @@ export async function ensureLeadersNetworkAction() {
   const ALEX_USER_ID = 'a31edbf0-db87-4a32-b108-c13d365adbf8';
   const { error } = await supabaseAdmin.from('communities').upsert([{
     id: 'more-leaders-network',
-    name: 'The more. Leaders Network',
+    name: 'The More. Community Leaders Network',
     description: 'A private space for more. leaders to collaborate, share tips, and organize cross-community events.',
     tags: ['leadership', 'network'],
     leader_id: ALEX_USER_ID,

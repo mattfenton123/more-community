@@ -295,6 +295,7 @@ export function AppProvider({ children }) {
           if (c.id === 'more-leaders-network') {
             return {
               ...c,
+              name: 'The More. Community Leaders Network',
               leader_id: c.leader_id || ALEX_ID
             };
           }
@@ -305,7 +306,7 @@ export function AppProvider({ children }) {
         if (!comms.find(c => c.id === 'more-leaders-network')) {
           const leadersComm = {
              id: 'more-leaders-network',
-             name: 'The more. Leaders Network',
+             name: 'The More. Community Leaders Network',
              description: 'A private space for more. leaders to collaborate, share tips, and organize cross-community events.',
              tags: ['leadership', 'network'],
              image: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1200&q=80',

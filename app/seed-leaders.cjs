@@ -10,7 +10,7 @@ const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 async function seed() {
   const { data, error } = await supabaseAdmin.from('communities').upsert([{
     id: 'more-leaders-network',
-    name: 'The more. Leaders Network',
+    name: 'The More. Community Leaders Network',
     description: 'A private space for more. leaders to collaborate, share tips, and organize cross-community events.',
     tags: ['leadership', 'network'],
     leader_id: null,
