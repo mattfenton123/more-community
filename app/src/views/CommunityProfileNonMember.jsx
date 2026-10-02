@@ -34,8 +34,16 @@ export default function CommunityProfileNonMember({
     try { return new Date(e.date) >= new Date(); } catch { return true; }
   });
   
+  const SEED_COMMUNITY_IDS = [
+    'tw-tech-meetup', 'tw-parkrun', 'c_tw_ramblers', 'c_tw_run_club', 
+    'c_mindful_miles', 'c_tw_creative', 'c_good_neighbours', 'c_tw_dads', 
+    'more-leaders-network'
+  ];
+  const isDemoCommunity = SEED_COMMUNITY_IDS.includes(community.id);
   const galleryType = getGalleryType(community.tags);
-  const galleryPhotos = GALLERY_PHOTOS[galleryType];
+  const dbPhotos = (community.gallery_photos || []).map(p => typeof p === 'string' ? { url: p, uploaderId: null } : p);
+  const stockPhotos = isDemoCommunity && dbPhotos.length === 0 ? GALLERY_PHOTOS[galleryType].map(url => ({ url, uploaderId: 'stock' })) : [];
+  const galleryPhotos = dbPhotos.length > 0 ? dbPhotos : stockPhotos;
   const nextEvent = upcomingEvents[0] || communityEvents[0];
   const subPrice = community.subscription_price || community.subscriptionPrice || 0;
 

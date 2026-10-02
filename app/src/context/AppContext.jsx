@@ -85,7 +85,7 @@ export function AppProvider({ children }) {
     affinityProfile: { tagScores: {}, likedCommunityIds: [], passedCommunityIds: [] }
   };
 
-  const user = { ...dbUser, joinedCommunities: [], ledCommunities: [], savedItems: savedItems, isAdmin: false };
+  const user = { ...dbUser, joinedCommunities: [], ledCommunities: [], savedItems: savedItems, isAdmin: false, leaderOf: null };
     if (authUser?.email) {
       const email = authUser.email.toLowerCase();
       const ADMIN_EMAILS = [
@@ -126,6 +126,8 @@ export function AppProvider({ children }) {
         if (!user.joinedCommunities.includes(c.id)) user.joinedCommunities.push(c.id);
       }
     });
+
+    user.leaderOf = user.ledCommunities[0] || null;
   }
 
 
@@ -318,22 +320,14 @@ export function AppProvider({ children }) {
           ensureLeadersNetworkAction().catch(e => console.error("Error ensuring leaders network:", e));
         }
 
-        const stockVideos = [
-          'https://videos.pexels.com/video-files/853889/853889-hd_1920_1080_25fps.mp4',
-          'https://videos.pexels.com/video-files/3195394/3195394-uhd_2560_1440_25fps.mp4'
-        ];
-
-        setCommunities(comms.map((c, i) => ({
+        setCommunities(comms.map((c) => ({
           ...c, // pass through ALL columns from Supabase
           tags: c.tags || [],
           image: c.image || c.cover_image, // support both column names
           category: (c.tags && c.tags.length > 0) ? c.tags[0] : 'All',
           metrics: { members: 1, cost: c.cost || 'Free', eventsRun: 0 },
           colors: ['#3b82f6', '#14b8a6'], // fallback gradient
-          highlights: c.highlights || [
-            { id: `h1_${c.id}`, url: stockVideos[i % stockVideos.length], title: 'Community Vibe', uploaderName: 'more. team', timestamp: '2d ago' },
-            { id: `h2_${c.id}`, url: stockVideos[(i+1) % stockVideos.length], title: 'Event Highlight', uploaderName: 'more. team', timestamp: '1w ago' }
-          ]
+          highlights: c.highlights || []
         })));
       }
 

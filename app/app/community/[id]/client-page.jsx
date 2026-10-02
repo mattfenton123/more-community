@@ -113,18 +113,30 @@ export default function CommunityProfile() {
 
   const isMember = user.joinedCommunities.includes(communityId);
   const isLeader = community.leader_id === user?.id || 
+                   community.creator_id === user?.id ||
+                   community.creatorId === user?.id ||
                    user?.ledCommunities?.includes(communityId) || 
-                   (communityMemberships[communityId] || []).some(m => (m.userId === user?.id || m.user_id === user?.id) && (m.role === 'co-founder' || m.role === 'Leader'));
+                   user?.isAdmin ||
+                   (communityMemberships[communityId] || []).some(m => (m.userId === user?.id || m.user_id === user?.id) && (m.role === 'co-founder' || m.role === 'Leader' || m.role === 'Co-Leader' || m.role === 'Admin'));
   const communityEvents = events.filter(e => e.communityId === communityId || e.collabCommunityIds?.includes(communityId));
   const upcomingEvents = communityEvents.filter(e => {
     try { return new Date(e.date) >= new Date(); } catch { return true; }
   });
   const leaderUser = users.find(u => u.id === community.leader_id);
   const memberList = (communityMemberships[communityId] || []).map(m => users.find(u => u.id === m.userId || u.id === m.user_id)).filter(Boolean);
+  
+  // Only provide fallback stock photos for the default initial demo seed communities if they have no uploaded photos.
+  // Newly created communities start with an empty gallery and shouldn't display mock "past event" photos.
+  const SEED_COMMUNITY_IDS = [
+    'tw-tech-meetup', 'tw-parkrun', 'c_tw_ramblers', 'c_tw_run_club', 
+    'c_mindful_miles', 'c_tw_creative', 'c_good_neighbours', 'c_tw_dads', 
+    'more-leaders-network'
+  ];
+  const isDemoCommunity = SEED_COMMUNITY_IDS.includes(community.id);
   const galleryType = getGalleryType(community.tags);
   const dbPhotos = (community.gallery_photos || []).map(p => typeof p === 'string' ? { url: p, uploaderId: null } : p);
-  const stockPhotos = GALLERY_PHOTOS[galleryType].map(url => ({ url, uploaderId: 'stock' }));
-  const galleryPhotos = [...dbPhotos, ...stockPhotos];
+  const stockPhotos = isDemoCommunity && dbPhotos.length === 0 ? GALLERY_PHOTOS[galleryType].map(url => ({ url, uploaderId: 'stock' })) : [];
+  const galleryPhotos = dbPhotos.length > 0 ? dbPhotos : stockPhotos;
   const nextEvent = upcomingEvents[0] || communityEvents[0];
   const communityFeed = feedPosts?.filter(p => p.communityId === communityId) || [];
   
@@ -286,23 +298,43 @@ export default function CommunityProfile() {
         
         {/* ===== HERO SECTION ===== */}
       <div style={{ 
-        height: '380px', 
+        minHeight: '400px', 
         background: community.image ? `url(${community.image})` : `linear-gradient(135deg, var(--teal-500), var(--slate-900))`, 
         backgroundSize: 'cover',
         backgroundPosition: 'center',
-        position: 'relative' 
+        position: 'relative',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between'
       }}>
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(15,23,42,1) 100%)' }}></div>
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, rgba(15,23,42,0.4) 40%, rgba(15,23,42,0.98) 100%)', zIndex: 0 }}></div>
         
         {/* Nav */}
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, padding: '20px', display: 'flex', justifyContent: 'space-between', zIndex: 10 }}>
-          <button className="interactive-press" style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.2)', color: 'var(--white)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }} onClick={() => navigate.back()}>
-            <ChevronLeft />
+        <div style={{ position: 'relative', padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', zIndex: 100 }}>
+          <button 
+            className="interactive-press" 
+            style={{ 
+              width: '42px', height: '42px', borderRadius: '50%', 
+              background: 'rgba(15, 23, 42, 0.85)', 
+              backdropFilter: 'blur(12px)', 
+              border: '1px solid rgba(255,255,255,0.25)', 
+              color: '#ffffff', 
+              display: 'flex', alignItems: 'center', justifyContent: 'center', 
+              cursor: 'pointer',
+              boxShadow: '0 4px 14px rgba(0,0,0,0.5)',
+              position: 'relative',
+              zIndex: 100
+            }} 
+            onClick={() => navigate.back()}
+            title="Go Back"
+            aria-label="Go Back"
+          >
+            <ChevronLeft size={22} />
           </button>
           <div style={{ display: 'flex', alignItems: 'center' }}>
-            <img src="/logo.png" alt="more." style={{ height: '20px' }} />
+            <img src="/logo.png" alt="more." style={{ height: '22px' }} />
           </div>
-          <div style={{ display: 'flex', gap: '8px' }}>
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
             <button 
               onClick={() => {
                 if (window.confirm('Are you sure you want to flag this community for review?')) {
@@ -314,21 +346,50 @@ export default function CommunityProfile() {
                 }
               }} 
               className="interactive-press" 
-              style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(244,63,94,0.1)', border: '1px solid rgba(244,63,94,0.2)', backdropFilter: 'blur(10px)', color: 'var(--rose-400)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }} 
+              style={{ 
+                width: '42px', height: '42px', borderRadius: '50%', 
+                background: 'rgba(15, 23, 42, 0.85)', 
+                border: '1px solid rgba(244,63,94,0.4)', 
+                backdropFilter: 'blur(12px)', 
+                color: 'var(--rose-400)', 
+                display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                cursor: 'pointer',
+                boxShadow: '0 4px 14px rgba(0,0,0,0.5)',
+                position: 'relative',
+                zIndex: 100
+              }} 
               title="Report Community"
+              aria-label="Report Community"
             >
               <Flag size={18} />
             </button>
             {isLeader && (
-              <button className="interactive-press" style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(20,184,166,0.2)', border: '1px solid rgba(20,184,166,0.4)', backdropFilter: 'blur(10px)', color: 'var(--teal-400)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }} onClick={() => navigate.push('/dashboard')}>
-                <Settings size={18} />
+              <button 
+                className="interactive-press" 
+                style={{ 
+                  width: '42px', height: '42px', borderRadius: '50%', 
+                  background: 'rgba(15, 23, 42, 0.85)', 
+                  border: '1px solid rgba(20,184,166,0.6)', 
+                  backdropFilter: 'blur(12px)', 
+                  color: 'var(--teal-300)', 
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 14px rgba(0,0,0,0.5)',
+                  position: 'relative',
+                  zIndex: 100
+                }} 
+                onClick={() => navigate.push(`/dashboard?community=${community.id}`)}
+                title="Leader Panel"
+                aria-label="Leader Panel"
+              >
+                <Settings size={20} />
               </button>
             )}
           </div>
         </div>
 
         {/* Hero Content */}
-        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '24px 20px', zIndex: 10 }}>
+        <div style={{ position: 'relative', padding: '24px 20px 20px', zIndex: 10 }}>
           {/* Tags */}
           {community.tags && community.tags.length > 0 && (
             <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '12px' }}>
@@ -505,32 +566,36 @@ export default function CommunityProfile() {
       </div>
 
       {/* ===== HIGHLIGHTS STORY RINGS ===== */}
-      <div style={{ padding: '0 20px 24px 20px', display: 'flex', gap: '16px', overflowX: 'auto', scrollSnapType: 'x mandatory' }} className="no-scrollbar">
-        {/* Upload Button */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', cursor: 'pointer', flexShrink: 0 }} onClick={() => setShowUploader(true)}>
-          <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', border: '2px dashed rgba(20,184,166,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-            <Plus size={24} color="var(--teal-400)" />
-            <div style={{ position: 'absolute', bottom: '-4px', right: '-4px', background: 'var(--teal-500)', borderRadius: '50%', padding: '4px', border: '2px solid var(--slate-950)' }}>
-              <Video size={10} color="#000" />
-            </div>
-          </div>
-          <span style={{ fontSize: '0.75rem', color: 'var(--slate-300)', fontWeight: 500 }}>Add</span>
-        </div>
-
-        {/* Highlight Rings */}
-        {community?.highlights?.map((highlight, idx) => (
-          <div key={highlight.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', cursor: 'pointer', flexShrink: 0 }} onClick={() => setShowReelViewer(idx)}>
-            <div style={{ width: '64px', height: '64px', borderRadius: '50%', padding: '2px', background: 'linear-gradient(45deg, var(--teal-400), var(--blue-500))' }}>
-              <div style={{ width: '100%', height: '100%', borderRadius: '50%', overflow: 'hidden', border: '2px solid var(--slate-950)', background: '#000', position: 'relative' }}>
-                <video src={highlight.url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} muted playsInline />
-                <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.2)' }} />
-                <Play size={16} color="rgba(255,255,255,0.8)" style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }} />
+      {community?.highlights && community.highlights.length > 0 && (
+        <div style={{ padding: '0 20px 24px 20px', display: 'flex', gap: '16px', overflowX: 'auto', scrollSnapType: 'x mandatory' }} className="no-scrollbar">
+          {/* Upload Button */}
+          {isLeader && (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', cursor: 'pointer', flexShrink: 0 }} onClick={() => setShowUploader(true)}>
+              <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', border: '2px dashed rgba(20,184,166,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+                <Plus size={24} color="var(--teal-400)" />
+                <div style={{ position: 'absolute', bottom: '-4px', right: '-4px', background: 'var(--teal-500)', borderRadius: '50%', padding: '4px', border: '2px solid var(--slate-950)' }}>
+                  <Video size={10} color="#000" />
+                </div>
               </div>
+              <span style={{ fontSize: '0.75rem', color: 'var(--slate-300)', fontWeight: 500 }}>Add</span>
             </div>
-            <span style={{ fontSize: '0.75rem', color: 'var(--slate-300)', fontWeight: 500, maxWidth: '64px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{highlight.title || 'Highlight'}</span>
-          </div>
-        ))}
-      </div>
+          )}
+
+          {/* Highlight Rings */}
+          {community.highlights.map((highlight, idx) => (
+            <div key={highlight.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', cursor: 'pointer', flexShrink: 0 }} onClick={() => setShowReelViewer(idx)}>
+              <div style={{ width: '64px', height: '64px', borderRadius: '50%', padding: '2px', background: 'linear-gradient(45deg, var(--teal-400), var(--blue-500))' }}>
+                <div style={{ width: '100%', height: '100%', borderRadius: '50%', overflow: 'hidden', border: '2px solid var(--slate-950)', background: '#000', position: 'relative' }}>
+                  <video src={highlight.url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} muted playsInline />
+                  <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.2)' }} />
+                  <Play size={16} color="rgba(255,255,255,0.8)" style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }} />
+                </div>
+              </div>
+              <span style={{ fontSize: '0.75rem', color: 'var(--slate-300)', fontWeight: 500, maxWidth: '64px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{highlight.title || 'Highlight'}</span>
+            </div>
+          ))}
+        </div>
+      )}
 
       <div style={{ padding: '0 20px' }}>
 
@@ -1053,7 +1118,7 @@ export default function CommunityProfile() {
                     <div style={{ color: 'var(--slate-300)', fontSize: '0.85rem' }}>Add a welcome video, update pricing, or change social links.</div>
                   </div>
                 </div>
-                <button onClick={() => navigate.push('/dashboard?tab=settings')} className="btn btn-primary interactive-press" style={{ padding: '8px 16px', borderRadius: '8px', fontSize: '0.85rem' }}>
+                <button onClick={() => navigate.push(`/dashboard?community=${community.id}&tab=settings`)} className="btn btn-primary interactive-press" style={{ padding: '8px 16px', borderRadius: '8px', fontSize: '0.85rem' }}>
                   Edit Settings
                 </button>
               </div>
@@ -1096,7 +1161,7 @@ export default function CommunityProfile() {
                 />
               </div>
             ) : isLeader ? (
-              <div onClick={() => navigate.push('/dashboard?tab=settings')} className="interactive-press" style={{ marginBottom: '32px', borderRadius: '16px', padding: '24px', textAlign: 'center', border: '1px dashed rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.02)', cursor: 'pointer' }}>
+              <div onClick={() => navigate.push(`/dashboard?community=${community.id}&tab=settings`)} className="interactive-press" style={{ marginBottom: '32px', borderRadius: '16px', padding: '24px', textAlign: 'center', border: '1px dashed rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.02)', cursor: 'pointer' }}>
                 <Camera size={24} color="var(--slate-400)" style={{ margin: '0 auto 8px' }} />
                 <div style={{ color: 'var(--white)', fontWeight: 600, fontSize: '0.95rem' }}>Add a Welcome Video</div>
                 <div style={{ color: 'var(--slate-400)', fontSize: '0.85rem' }}>Introduce yourself and welcome new members.</div>
@@ -1655,21 +1720,29 @@ export default function CommunityProfile() {
             <h3 style={{ fontSize: '1.3rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: '0 0 16px 0' }}>
               Photos & Moments
             </h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
-              {galleryPhotos.map((photo, idx) => (
-                <div key={idx} style={{ borderRadius: '12px', overflow: 'hidden', aspectRatio: idx === 0 ? '16/12' : '1/1', gridColumn: idx === 0 ? 'span 2' : 'span 1', position: 'relative' }}>
-                  <img src={photo.url} alt={`Gallery ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  {photo.uploaderId !== 'stock' && (isLeader || photo.uploaderId === user?.id) && (
-                    <button 
-                      onClick={(e) => handleDeletePhoto(idx, e)}
-                      style={{ position: 'absolute', top: '8px', right: '8px', background: 'rgba(0,0,0,0.6)', border: 'none', borderRadius: '50%', padding: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                    >
-                      <Trash2 size={14} color="#ef4444" />
-                    </button>
-                  )}
-                </div>
-              ))}
-            </div>
+            {galleryPhotos.length > 0 ? (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
+                {galleryPhotos.map((photo, idx) => (
+                  <div key={idx} style={{ borderRadius: '12px', overflow: 'hidden', aspectRatio: idx === 0 ? '16/12' : '1/1', gridColumn: idx === 0 ? 'span 2' : 'span 1', position: 'relative' }}>
+                    <img src={photo.url} alt={`Gallery ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    {photo.uploaderId !== 'stock' && (isLeader || photo.uploaderId === user?.id) && (
+                      <button 
+                        onClick={(e) => handleDeletePhoto(idx, e)}
+                        style={{ position: 'absolute', top: '8px', right: '8px', background: 'rgba(0,0,0,0.6)', border: 'none', borderRadius: '50%', padding: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                      >
+                        <Trash2 size={14} color="#ef4444" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div style={{ padding: '40px 20px', textAlign: 'center', background: 'rgba(255,255,255,0.02)', borderRadius: '16px', border: '1px dashed rgba(255,255,255,0.1)', marginBottom: '16px' }}>
+                <div style={{ fontSize: '2rem', marginBottom: '10px' }}>📸</div>
+                <div style={{ color: 'var(--white)', fontWeight: 600, marginBottom: '6px' }}>No photos yet</div>
+                <p style={{ color: 'var(--slate-400)', fontSize: '0.85rem', margin: 0 }}>Photos from meetups and events will appear here once uploaded.</p>
+              </div>
+            )}
             {isMember && (
               <>
                 <input type="file" ref={fileInputRef} accept="image/*" style={{ display: 'none' }} onChange={handleUploadPhoto} />

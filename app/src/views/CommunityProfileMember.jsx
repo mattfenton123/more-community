@@ -116,15 +116,28 @@ export default function CommunityProfile() {
   }
 
   const isMember = user.joinedCommunities.includes(communityId);
-  const isLeader = user.leaderOf === communityId;
+  const isLeader = community.leader_id === user?.id || 
+                   community.creator_id === user?.id ||
+                   community.creatorId === user?.id ||
+                   user?.ledCommunities?.includes(communityId) || 
+                   user?.isAdmin ||
+                   (communityMemberships[communityId] || []).some(m => (m.userId === user?.id || m.user_id === user?.id) && (m.role === 'co-founder' || m.role === 'Leader' || m.role === 'Co-Leader' || m.role === 'Admin'));
   const communityEvents = events.filter(e => e.communityId === communityId);
   const upcomingEvents = communityEvents.filter(e => {
     try { return new Date(e.date) >= new Date(); } catch { return true; }
   });
   const leaderUser = users.find(u => u.id === community.leader_id);
   const memberList = (communityMemberships[communityId] || []).map(m => users.find(u => u.id === m.userId || u.id === m.user_id)).filter(Boolean);
+  const SEED_COMMUNITY_IDS = [
+    'tw-tech-meetup', 'tw-parkrun', 'c_tw_ramblers', 'c_tw_run_club', 
+    'c_mindful_miles', 'c_tw_creative', 'c_good_neighbours', 'c_tw_dads', 
+    'more-leaders-network'
+  ];
+  const isDemoCommunity = SEED_COMMUNITY_IDS.includes(community.id);
   const galleryType = getGalleryType(community.tags);
-  const galleryPhotos = GALLERY_PHOTOS[galleryType];
+  const dbPhotos = (community.gallery_photos || []).map(p => typeof p === 'string' ? { url: p, uploaderId: null } : p);
+  const stockPhotos = isDemoCommunity && dbPhotos.length === 0 ? GALLERY_PHOTOS[galleryType].map(url => ({ url, uploaderId: 'stock' })) : [];
+  const galleryPhotos = dbPhotos.length > 0 ? dbPhotos : stockPhotos;
   const nextEvent = upcomingEvents[0] || communityEvents[0];
 
   const handleShare = async () => {

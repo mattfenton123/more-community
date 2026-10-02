@@ -1,6 +1,6 @@
 "use client";
 import { useState, useRef, useMemo, useEffect } from 'react';
-import { Users, Calendar, MessageCircle, TrendingUp, Search, Plus, MapPin, Image as ImageIcon, CreditCard, ChevronRight, Download, Activity, Globe, Heart, Crown, Info, X, Map, Zap, Mail, Trash2, UserCheck, Ban, ChevronDown, ChevronUp, Settings, Megaphone, QrCode, BarChart3, Ticket, ScanLine, UserPlus, DollarSign, Clock, Edit3, Check, Eye, EyeOff, Shield, Star, Sparkles } from 'lucide-react';
+import { Users, Calendar, MessageCircle, TrendingUp, Search, Plus, MapPin, Image as ImageIcon, CreditCard, ChevronRight, ChevronLeft, Download, Activity, Globe, Heart, Crown, Info, X, Map, Zap, Mail, Trash2, UserCheck, Ban, ChevronDown, ChevronUp, Settings, Megaphone, QrCode, BarChart3, Ticket, ScanLine, UserPlus, DollarSign, Clock, Edit3, Check, Eye, EyeOff, Shield, Star, Sparkles } from 'lucide-react';
 import AppHeader from '../../src/components/AppHeader';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAppContext } from '../../src/context/AppContext';
@@ -86,12 +86,20 @@ export default function LeaderDashboard({ initialCommunityId }) {
   const [modalType, setModalType] = useState(null);
   const [editForm, setEditForm] = useState({ description: '', tags: '' });
   const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'overview');
-  const [activeCommunityId, setActiveCommunityId] = useState(initialCommunityId || user?.ledCommunities?.[0] || null);
+  const [activeCommunityId, setActiveCommunityId] = useState(
+    initialCommunityId || searchParams?.get('community') || user?.ledCommunities?.[0] || null
+  );
   
   useEffect(() => {
     const tab = searchParams.get('tab');
     if (tab) setActiveTab(tab);
+    const comm = searchParams.get('community');
+    if (comm) setActiveCommunityId(comm);
   }, [searchParams]);
+
+  useEffect(() => {
+    if (initialCommunityId) setActiveCommunityId(initialCommunityId);
+  }, [initialCommunityId]);
   
   const emptyEventForm = { title: '', description: '', date: '', time: '', location: '', maxCapacity: '', ticketPrice: '', autoReminders: true, autoFeedback: true };
   const [eventForm, setEventForm] = useState(emptyEventForm);
@@ -747,6 +755,13 @@ export default function LeaderDashboard({ initialCommunityId }) {
       {community && (
         <div className="dashboard-sidebar desktop-only">
           <div className="dashboard-sidebar-header">
+            <button 
+              onClick={() => community?.id ? router.push(`/community/${community.id}`) : router.back()}
+              style={{ background: 'none', border: 'none', color: 'var(--teal-400)', fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', padding: '0 0 12px 0', fontWeight: 600 }}
+              className="interactive-press"
+            >
+              <ChevronLeft size={16} /> Back to Community
+            </button>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%' }}>
               {availableCommunities.length > 1 ? (
                 <select 
@@ -809,7 +824,11 @@ export default function LeaderDashboard({ initialCommunityId }) {
       ) : (
         <>
           <div className="mobile-only">
-            <AppHeader title="Dashboard" />
+            <AppHeader 
+              title="Dashboard" 
+              showBack={true} 
+              onBack={() => community?.id ? router.push(`/community/${community.id}`) : router.back()} 
+            />
             <div style={{ padding: '0 20px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 {availableCommunities.length > 1 ? (
