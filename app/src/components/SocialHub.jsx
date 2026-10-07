@@ -1,19 +1,21 @@
 "use client";
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Share2, Image as ImageIcon, Send, Activity, Users, Settings, Plus, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { useToast } from './Toast';
 import { FALLBACK_IMAGES } from '../lib/constants';
 
 export default function SocialHub({ communityId }) {
-  const { connectedSocialAccounts, setConnectedSocialAccounts, createPost } = useAppContext();
+  const { connectedSocialAccounts, setConnectedSocialAccounts, createPost, uploadImage } = useAppContext();
   const { toast } = useToast();
+  const fileInputRef = useRef(null);
   
   const [activeTab, setActiveTab] = useState('composer'); // composer, calendar, accounts
   
   // Composer State
   const [postText, setPostText] = useState('');
   const [postMedia, setPostMedia] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
   const [destinations, setDestinations] = useState({
     app: true,
     instagram: connectedSocialAccounts.instagram.connected,
@@ -150,22 +152,43 @@ export default function SocialHub({ communityId }) {
 
             {/* Actions */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <button 
-                onClick={() => {
-                  const url = prompt('Enter image URL (mocking file upload):', FALLBACK_IMAGES.event);
-                  if (url) setPostMedia(url);
+              <input
+                type="file"
+                ref={fileInputRef}
+                accept="image/*"
+                style={{ display: 'none' }}
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  setIsUploading(true);
+                  try {
+                    toast.info('Uploading media...', 'Please wait');
+                    const url = await uploadImage(file);
+                    setPostMedia(url);
+                    toast.success('Media uploaded!');
+                  } catch (err) {
+                    toast.error('Upload failed', err.message || 'Could not upload media');
+                  } finally {
+                    setIsUploading(false);
+                    if (e.target) e.target.value = '';
+                  }
                 }}
+              />
+              <button 
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploading}
                 className="interactive-press"
-                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--white)', padding: '12px 16px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
+                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--white)', padding: '12px 16px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', opacity: isUploading ? 0.6 : 1 }}
               >
-                <ImageIcon size={18} /> Add Media
+                <ImageIcon size={18} /> {isUploading ? 'Uploading...' : 'Add Media'}
               </button>
               
               <button 
                 onClick={handlePost}
-                disabled={isPosting || (!postText.trim() && !postMedia)}
+                disabled={isPosting || isUploading || (!postText.trim() && !postMedia)}
                 className="btn btn-primary interactive-press"
-                style={{ padding: '12px 32px', borderRadius: '99px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.05rem', opacity: (isPosting || (!postText.trim() && !postMedia)) ? 0.5 : 1 }}
+                style={{ padding: '12px 32px', borderRadius: '99px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.05rem', opacity: (isPosting || isUploading || (!postText.trim() && !postMedia)) ? 0.5 : 1 }}
               >
                 {isPosting ? <span className="spinner" style={{ width: '18px', height: '18px', borderTopColor: 'white' }}></span> : <Send size={18} />}
                 {isPosting ? 'Broadcasting...' : 'Post Now'}

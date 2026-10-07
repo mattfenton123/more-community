@@ -1,16 +1,18 @@
 "use client";
 import React, { useState, useRef } from 'react';
-import { ArrowRight, Camera, Check, Link as LinkIcon, Calendar, Image as ImageIcon, MessageCircle, ChevronLeft } from 'lucide-react';
+import { ArrowRight, Camera, Check, Link as LinkIcon, Calendar, Image as ImageIcon, MessageCircle, ChevronLeft, Plus, X, Search } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { useToast } from '../components/Toast';
+import { COMMUNITY_TAG_CATEGORIES, ALL_COMMUNITY_TAGS } from '../lib/constants';
 import './CommunityOnboardingFlow.css';
 
-const PREDEFINED_TAGS = [
-  '🏃 Running', '🚶 Walking', '🧘 Wellness', '⛰️ Adventure',
-  '🤝 Volunteering', '🎨 Creative', '✂️ Arts & Crafts', '💼 Business', '🎵 Music',
-  '📚 Book Club', '🍳 Cooking', '🌱 Gardening', '👶 Parenting',
-  '🎓 Learning', '🎮 Gaming', '⚽ Sports'
-];
+const SEGMENT_ICONS = {
+  'Sports & Fitness': '⚽',
+  'Social & Lifestyle': '☕',
+  'Arts & Creative': '🎨',
+  'Outdoors & Nature': '🌲',
+  'Tech, Games & Learning': '💻'
+};
 
 function StepBasics({ name, setName, description, setDescription }) {
   const nameError = name.length > 0 && name.trim().length < 3;
@@ -99,6 +101,7 @@ function StepDetails({ targetAudience, setTargetAudience, cost, setCost, activit
           <option value="Very Active">Very Active (Weekly)</option>
           <option value="Active">Active (Fortnightly)</option>
           <option value="Casual">Casual (Monthly or less)</option>
+          <option value="Flexible">Flexible / Pop-up</option>
         </select>
       </div>
 
@@ -116,48 +119,258 @@ function StepDetails({ targetAudience, setTargetAudience, cost, setCost, activit
   );
 }
 
-function StepAesthetics({ tags, toggleTag, coverImagePreview, handleImageSelect, fileInputRef }) {
+function StepTags({ tags, toggleTag, addCustomTag, removeTag }) {
+  const [activeSegment, setActiveSegment] = useState('Sports & Fitness');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [customTagInput, setCustomTagInput] = useState('');
+
+  const segments = Object.keys(COMMUNITY_TAG_CATEGORIES);
+
+  const handleAddCustom = (e) => {
+    if (e) e.preventDefault();
+    if (customTagInput.trim()) {
+      addCustomTag(customTagInput);
+      setCustomTagInput('');
+    }
+  };
+
+  const getSelectedCountForCategory = (cat) => {
+    const catTags = COMMUNITY_TAG_CATEGORIES[cat] || [];
+    return tags.filter(t => catTags.includes(t)).length;
+  };
+
+  const filteredTags = searchQuery.trim()
+    ? ALL_COMMUNITY_TAGS.filter(t => t.toLowerCase().includes(searchQuery.trim().toLowerCase()))
+    : COMMUNITY_TAG_CATEGORIES[activeSegment] || [];
+
   return (
     <div className="step-wrapper">
       <div className="step-header">
-        <h2 className="step-title">Stand Out</h2>
-        <p className="step-subtitle">Add a visual identity to attract members.</p>
+        <h2 className="step-title">Choose Your Focus</h2>
+        <p className="step-subtitle">Segment your community's tags so local members find you easily.</p>
+      </div>
+
+      {/* Selected Tags Summary Bar */}
+      <div style={{ marginBottom: '16px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+          <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--teal-400)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            Selected Tags ({tags.length})
+          </span>
+          {tags.length > 0 && (
+            <span style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>Tap ✕ to remove</span>
+          )}
+        </div>
+        {tags.length > 0 ? (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', padding: '10px 12px', background: 'rgba(20,184,166,0.06)', borderRadius: '14px', border: '1px solid rgba(20,184,166,0.2)' }}>
+            {tags.map((tag, idx) => (
+              <span key={idx} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '5px 10px', borderRadius: '8px', background: 'rgba(20,184,166,0.18)', color: 'var(--teal-300)', fontSize: '0.8rem', fontWeight: 600 }}>
+                {idx === 0 && <span style={{ fontSize: '0.65rem', background: 'var(--teal-500)', color: 'white', padding: '1px 5px', borderRadius: '4px', textTransform: 'uppercase' }}>Primary</span>}
+                {tag}
+                <button type="button" onClick={() => removeTag(tag)} style={{ background: 'none', border: 'none', color: 'var(--teal-400)', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center' }}>
+                  <X size={13} />
+                </button>
+              </span>
+            ))}
+          </div>
+        ) : (
+          <div style={{ padding: '12px 14px', borderRadius: '12px', background: 'rgba(255,255,255,0.02)', border: '1px dashed rgba(255,255,255,0.1)', color: 'var(--slate-400)', fontSize: '0.82rem', textAlign: 'center' }}>
+            Select 1 or more tags below. Your first tag sets your group's category.
+          </div>
+        )}
+      </div>
+
+      {/* Quick Search */}
+      <div style={{ position: 'relative', marginBottom: '14px' }}>
+        <Search size={15} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--slate-400)' }} />
+        <input
+          type="text"
+          placeholder="Search 60+ tags (e.g. running, coffee, chess)..."
+          value={searchQuery}
+          onChange={e => setSearchQuery(e.target.value)}
+          className="text-input"
+          style={{ padding: '10px 12px 10px 36px', fontSize: '0.85rem', borderRadius: '10px' }}
+        />
+        {searchQuery && (
+          <button
+            type="button"
+            onClick={() => setSearchQuery('')}
+            style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--slate-400)', cursor: 'pointer', padding: '4px' }}
+          >
+            <X size={14} />
+          </button>
+        )}
+      </div>
+
+      {/* Category Segments (Shown when not actively searching) */}
+      {!searchQuery.trim() && (
+        <div style={{ marginBottom: '16px' }}>
+          <label className="input-label" style={{ marginBottom: '8px', fontWeight: 600 }}>Category Segments</label>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
+            {segments.map(cat => {
+              const count = getSelectedCountForCategory(cat);
+              const isActive = activeSegment === cat;
+              return (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => setActiveSegment(cat)}
+                  className="interactive-press"
+                  style={{
+                    padding: '10px 12px',
+                    borderRadius: '12px',
+                    border: isActive ? '1px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.08)',
+                    background: isActive ? 'rgba(20,184,166,0.15)' : 'rgba(255,255,255,0.03)',
+                    color: isActive ? 'var(--teal-200)' : 'var(--slate-300)',
+                    fontSize: '0.82rem',
+                    fontWeight: isActive ? 700 : 500,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    gridColumn: cat === segments[segments.length - 1] && segments.length % 2 !== 0 ? 'span 2' : 'span 1'
+                  }}
+                >
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '6px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <span>{SEGMENT_ICONS[cat] || '🏷️'}</span>
+                    <span>{cat}</span>
+                  </span>
+                  {count > 0 && (
+                    <span style={{ fontSize: '0.7rem', padding: '2px 7px', borderRadius: '99px', background: 'var(--teal-500)', color: 'white', fontWeight: 700, marginLeft: '6px' }}>
+                      {count}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Active Segment Tags / Search Results */}
+      <div style={{ marginBottom: '20px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+          <span style={{ fontSize: '0.8rem', color: 'var(--slate-400)', fontWeight: 600 }}>
+            {searchQuery.trim() ? `Search Results (${filteredTags.length})` : `${activeSegment} (${filteredTags.length} tags)`}
+          </span>
+        </div>
+
+        {filteredTags.length > 0 ? (
+          <div className="tags-container" style={{ justifyContent: 'flex-start', gap: '8px' }}>
+            {filteredTags.map(tag => {
+              const selected = tags.includes(tag);
+              return (
+                <button
+                  key={tag}
+                  type="button"
+                  onClick={() => toggleTag(tag)}
+                  className={`tag-btn ${selected ? 'selected' : 'unselected'}`}
+                >
+                  {selected && <Check size={12} style={{ display: 'inline', marginRight: '4px', verticalAlign: 'middle' }} />}
+                  {tag}
+                </button>
+              );
+            })}
+          </div>
+        ) : (
+          <div style={{ padding: '16px', borderRadius: '12px', background: 'rgba(255,255,255,0.02)', textAlign: 'center' }}>
+            <p style={{ color: 'var(--slate-400)', fontSize: '0.85rem', margin: '0 0 10px 0' }}>
+              No standard tag matched "{searchQuery}".
+            </p>
+            <button
+              type="button"
+              onClick={() => { addCustomTag(searchQuery); setSearchQuery(''); }}
+              className="btn btn-primary interactive-press"
+              style={{ fontSize: '0.8rem', padding: '6px 14px', borderRadius: '8px' }}
+            >
+              <Plus size={14} style={{ marginRight: '4px' }} /> Add "{searchQuery}" as Custom Tag
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Custom Tag Input */}
+      <div>
+        <label className="input-label" style={{ fontSize: '0.8rem' }}>Don't see your interest? Add a custom tag:</label>
+        <form onSubmit={handleAddCustom} style={{ display: 'flex', gap: '8px' }}>
+          <input 
+            type="text" 
+            placeholder="e.g. 🏸 Badminton or 🥏 Ultimate Frisbee" 
+            value={customTagInput} 
+            onChange={e => setCustomTagInput(e.target.value)} 
+            className="text-input" 
+            style={{ padding: '10px 14px', fontSize: '0.85rem' }}
+          />
+          <button 
+            type="submit" 
+            disabled={!customTagInput.trim()} 
+            className="btn btn-outline interactive-press" 
+            style={{ padding: '0 16px', borderRadius: '10px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0, opacity: customTagInput.trim() ? 1 : 0.4 }}
+          >
+            <Plus size={16} /> Add
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function StepCoverPhoto({ coverImagePreview, handleImageSelect, fileInputRef }) {
+  return (
+    <div className="step-wrapper">
+      <div className="step-header">
+        <h2 className="step-title">Cover Image</h2>
+        <p className="step-subtitle">Upload a photo to give your group an inviting visual identity.</p>
       </div>
 
       <div 
         onClick={() => fileInputRef.current?.click()}
         className={`image-upload-area ${coverImagePreview ? 'image-upload-filled' : 'image-upload-empty'}`}
-        style={coverImagePreview ? { backgroundImage: `url(${coverImagePreview})` } : {}}
+        style={{
+          width: '100%',
+          height: '210px',
+          borderRadius: '16px',
+          backgroundImage: coverImagePreview ? `url(${coverImagePreview})` : undefined,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          position: 'relative',
+          cursor: 'pointer',
+          marginBottom: '16px'
+        }}
       >
-        {!coverImagePreview && (
-          <>
-            <ImageIcon size={32} style={{ marginBottom: '8px' }} />
-            <span style={{ fontSize: '0.9rem' }}>Upload Cover Image</span>
-          </>
-        )}
-        {coverImagePreview && (
-          <div className="image-upload-overlay">
-            <Camera size={28} color="white" />
+        {!coverImagePreview ? (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', color: 'var(--slate-400)' }}>
+            <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <ImageIcon size={28} color="var(--teal-400)" />
+            </div>
+            <span style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--white)' }}>Upload Cover Photo</span>
+            <span style={{ fontSize: '0.8rem', color: 'var(--slate-400)' }}>Tap to browse files (JPEG, PNG, HEIC)</span>
+          </div>
+        ) : (
+          <div className="image-upload-overlay" style={{ opacity: 1, background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 60%)', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', padding: '16px' }}>
+            <span style={{ fontSize: '0.85rem', color: 'white', fontWeight: 600 }}>Tap to change photo</span>
+            <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Camera size={18} color="white" />
+            </div>
           </div>
         )}
       </div>
       <input type="file" ref={fileInputRef} onChange={handleImageSelect} accept="image/*,.heic,.heif,.jpg,.jpeg,.png,.webp" style={{ display: 'none' }} />
 
-      <div>
-        <label className="input-label" style={{ textAlign: 'center', marginBottom: '12px' }}>Select up to 3 Categories</label>
-        <div className="tags-container">
-          {PREDEFINED_TAGS.map(tag => {
-            const selected = tags.includes(tag);
-            return (
-              <button
-                key={tag}
-                onClick={() => toggleTag(tag)}
-                className={`tag-btn ${selected ? 'selected' : 'unselected'}`}
-              >
-                {tag}
-              </button>
-            );
-          })}
+      <button
+        type="button"
+        onClick={() => fileInputRef.current?.click()}
+        className="btn btn-outline interactive-press"
+        style={{ width: '100%', padding: '12px', borderRadius: '12px', fontSize: '0.9rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+      >
+        <Camera size={16} /> {coverImagePreview ? 'Change Photo' : 'Select Photo'}
+      </button>
+
+      <div style={{ marginTop: '20px', padding: '14px', borderRadius: '12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+        <span style={{ fontSize: '1.1rem' }}>💡</span>
+        <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)', lineHeight: 1.5 }}>
+          <strong style={{ color: 'var(--slate-200)', display: 'block', marginBottom: '2px' }}>Pro Tip:</strong>
+          Real photos of community gatherings or outdoor spots attract 3x more members. You can always update this later.
         </div>
       </div>
     </div>
@@ -317,8 +530,19 @@ export default function CommunityOnboardingFlow({ onComplete }) {
     setTags(prev => 
       prev.includes(tag) 
         ? prev.filter(t => t !== tag)
-        : prev.length < 3 ? [...prev, tag] : prev
+        : [...prev, tag]
     );
+  };
+
+  const removeTag = (tag) => {
+    setTags(prev => prev.filter(t => t !== tag));
+  };
+
+  const addCustomTag = (tag) => {
+    const clean = tag.trim();
+    if (clean && !tags.includes(clean)) {
+      setTags(prev => [...prev, clean]);
+    }
   };
 
   const handleImageSelect = async (e) => {
@@ -372,6 +596,7 @@ export default function CommunityOnboardingFlow({ onComplete }) {
         name: name.trim(),
         description: description.trim(),
         tags: tags,
+        category: tags[0] || 'General',
         image: imageUrl,
         verified: false,
         instagram_handle: formattedInstagram,
@@ -420,12 +645,13 @@ export default function CommunityOnboardingFlow({ onComplete }) {
   const isValidIg = instagram.trim() === '' || /^[@a-zA-Z0-9._]+$/.test(instagram.trim()) || instagram.includes('instagram.com');
   const isValidWa = whatsapp.trim() === '' || whatsapp.includes('chat.whatsapp.com') || whatsapp.includes('wa.me');
 
-  const TOTAL_STEPS = 5;
+  const TOTAL_STEPS = 6;
   const isStep1Valid = name.trim().length >= 3 && description.trim().length >= 10;
   const isStep2Valid = true;
   const isStep3Valid = tags.length > 0;
-  const isStep4Valid = !isPartiallyFilledEvent;
-  const isStep5Valid = isValidIg && isValidWa;
+  const isStep4Valid = true;
+  const isStep5Valid = !isPartiallyFilledEvent;
+  const isStep6Valid = isValidIg && isValidWa;
 
   const getCanProceed = () => {
     if (step === 0) return isStep1Valid;
@@ -433,13 +659,15 @@ export default function CommunityOnboardingFlow({ onComplete }) {
     if (step === 2) return isStep3Valid;
     if (step === 3) return isStep4Valid;
     if (step === 4) return isStep5Valid;
+    if (step === 5) return isStep6Valid;
     return true;
   };
 
   const steps = [
     <StepBasics key="basics" name={name} setName={setName} description={description} setDescription={setDescription} />,
     <StepDetails key="details" targetAudience={targetAudience} setTargetAudience={setTargetAudience} cost={cost} setCost={setCost} activityLevel={activityLevel} setActivityLevel={setActivityLevel} locationName={locationName} setLocationName={setLocationName} />,
-    <StepAesthetics key="aesthetics" tags={tags} toggleTag={toggleTag} coverImagePreview={coverImagePreview} handleImageSelect={handleImageSelect} fileInputRef={fileInputRef} />,
+    <StepTags key="tags" tags={tags} toggleTag={toggleTag} addCustomTag={addCustomTag} removeTag={removeTag} />,
+    <StepCoverPhoto key="cover" coverImagePreview={coverImagePreview} handleImageSelect={handleImageSelect} fileInputRef={fileInputRef} />,
     <StepEvent key="event" eventTitle={eventTitle} setEventTitle={setEventTitle} eventDate={eventDate} setEventDate={setEventDate} eventTime={eventTime} setEventTime={setEventTime} eventLocation={eventLocation} setEventLocation={setEventLocation} />,
     <StepVerification key="verify" instagram={instagram} setInstagram={setInstagram} whatsapp={whatsapp} setWhatsapp={setWhatsapp} />
   ];

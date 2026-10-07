@@ -16,6 +16,7 @@ import EventFlyerGenerator from '../../src/components/EventFlyerGenerator';
 import LeaderSetupChecklist from '../../src/components/LeaderSetupChecklist';
 import dynamic from 'next/dynamic';
 const LocationPicker = dynamic(() => import('../../src/components/LocationPicker'), { ssr: false });
+import { COMMUNITY_TAG_CATEGORIES, ALL_COMMUNITY_TAGS } from '../../src/lib/constants';
 
 // ─── Stat Card Component ──────────────────────────────────
 const StatCard = ({ value, label, color, icon: Icon, accent }) => (
@@ -75,7 +76,7 @@ function getEngagementScore(member, events, eventRsvps, messages, communityId) {
 
 // ─── Component ──────────────────────────────────────────────────
 export default function LeaderDashboard({ initialCommunityId }) {
-  const { user, communities, events, updateCommunity, users, communityMemberships, createEvent, updateEvent, cancelEvent, uploadImage, eventRsvps, whatsappSettings, setWhatsappSettings, promoteMember, removeMember, checkInMember, broadcastNotification, experiences } = useAppContext();
+  const { user, communities, events, updateCommunity, deleteCommunity, users, communityMemberships, createEvent, updateEvent, cancelEvent, uploadImage, eventRsvps, whatsappSettings, setWhatsappSettings, promoteMember, removeMember, checkInMember, broadcastNotification, experiences } = useAppContext();
     const { messages } = useChat();
   const { toast } = useToast();
   const router = useRouter();
@@ -84,7 +85,10 @@ export default function LeaderDashboard({ initialCommunityId }) {
   // ─── State ──────────────────────────────────────────────────
   const [isEditing, setIsEditing] = useState(false);
   const [modalType, setModalType] = useState(null);
-  const [editForm, setEditForm] = useState({ description: '', tags: '' });
+  const [editForm, setEditForm] = useState({ 
+    name: '', category: '', description: '', location_name: '', cost: 'Free', target_audience: '', activity_level: 'Active', tags: [], customTagInput: '', whatsapp_group: '', instagram_handle: '' 
+  });
+  const [editTagCategory, setEditTagCategory] = useState('All');
   const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'overview');
   const [activeCommunityId, setActiveCommunityId] = useState(
     initialCommunityId || searchParams?.get('community') || user?.ledCommunities?.[0] || null
@@ -120,6 +124,10 @@ export default function LeaderDashboard({ initialCommunityId }) {
   const [communityVisibility, setCommunityVisibility] = useState('public');
   const [requireApproval, setRequireApproval] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [deleteConfirmChecked, setDeleteConfirmChecked] = useState(false);
+  const [isDeletingCommunity, setIsDeletingCommunity] = useState(false);
   const [eventStep, setEventStep] = useState(0);
   const [isDiscoveryModalOpen, setIsDiscoveryModalOpen] = useState(false);
   const [discoverySearchTerm, setDiscoverySearchTerm] = useState('');
@@ -290,20 +298,75 @@ export default function LeaderDashboard({ initialCommunityId }) {
 
   const handleEditClick = () => {
     if (community) {
+      const currentTags = Array.isArray(community.tags) 
+        ? [...community.tags] 
+        : (typeof community.tags === 'string' && community.tags ? community.tags.split(',').map(t => t.trim()).filter(Boolean) : []);
+
       setEditForm({ 
+        name: community.name || '',
+        category: community.category || currentTags[0] || '',
         description: community.description || '', 
-        tags: community.tags ? community.tags.join(', ') : '',
+        location_name: community.location_name || '',
+        cost: community.cost || 'Free',
+        target_audience: community.target_audience || '',
+        activity_level: community.activity_level || 'Active',
+        tags: currentTags,
+        customTagInput: '',
         whatsapp_group: community.whatsapp_group || '',
         instagram_handle: community.instagram_handle || ''
       });
       setCoverImageFile(null);
       setCoverImagePreview(community.cover_image || community.image || null);
       setSubscriptionPrice(community.subscriptionPrice || community.subscription_price || '');
+      setEditTagCategory('All');
     }
     setIsEditing(true);
   };
 
+  const toggleEditTag = (tag) => {
+    setEditForm(prev => {
+      const currentTags = Array.isArray(prev.tags) ? prev.tags : [];
+      const updated = currentTags.includes(tag)
+        ? currentTags.filter(t => t !== tag)
+        : [...currentTags, tag];
+      return { 
+        ...prev, 
+        tags: updated,
+        category: prev.category || (updated.length > 0 ? updated[0] : '')
+      };
+    });
+  };
+
+  const removeEditTag = (tag) => {
+    setEditForm(prev => {
+      const currentTags = Array.isArray(prev.tags) ? prev.tags : [];
+      return { ...prev, tags: currentTags.filter(t => t !== tag) };
+    });
+  };
+
+  const addCustomEditTag = (e) => {
+    if (e) e.preventDefault();
+    const tag = (editForm.customTagInput || '').trim();
+    if (!tag) return;
+    setEditForm(prev => {
+      const currentTags = Array.isArray(prev.tags) ? prev.tags : [];
+      if (currentTags.includes(tag)) return { ...prev, customTagInput: '' };
+      const updated = [...currentTags, tag];
+      return { 
+        ...prev, 
+        tags: updated, 
+        customTagInput: '',
+        category: prev.category || updated[0]
+      };
+    });
+  };
+
   const handleSave = async () => {
+    if (!editForm.name?.trim()) {
+      toast.error('Name required', 'Community name cannot be empty');
+      return;
+    }
+
     setIsUploading(true);
     let coverUrl = community?.cover_image || community?.image;
     if (coverImageFile) {
@@ -324,18 +387,53 @@ export default function LeaderDashboard({ initialCommunityId }) {
       ig = `@${ig}`;
     }
 
+    const currentTags = Array.isArray(editForm.tags) 
+      ? editForm.tags 
+      : (typeof editForm.tags === 'string' ? editForm.tags.split(',') : []);
+    const cleanedTags = currentTags.map(t => t.trim()).filter(Boolean);
+
     await updateCommunity(community.id, {
-      description: editForm.description,
-      tags: editForm.tags.split(',').map(t => t.trim()).filter(Boolean),
+      name: editForm.name.trim(),
+      category: editForm.category.trim() || cleanedTags[0] || 'General',
+      description: editForm.description.trim(),
+      tags: cleanedTags,
+      location_name: editForm.location_name.trim(),
+      cost: editForm.cost.trim() || 'Free',
+      target_audience: editForm.target_audience.trim(),
+      activity_level: editForm.activity_level || 'Active',
       whatsapp_group: wa,
       instagram_handle: ig,
       cover_image: coverUrl,
       image: coverUrl
     });
+
     setIsUploading(false);
     setIsEditing(false);
     setCoverImageFile(null);
-    toast.success('Profile updated!', 'Your community microsite has been saved');
+    toast.success('Community updated!', 'Changes to name and details have been saved');
+  };
+
+  const handleDeleteCommunity = async () => {
+    if (!community) return;
+    if (deleteConfirmText.trim() !== community.name.trim() || !deleteConfirmChecked) {
+      toast.error('Safeguard check failed', 'Please type the exact community name and check the confirmation box');
+      return;
+    }
+
+    setIsDeletingCommunity(true);
+    try {
+      await deleteCommunity(community.id, deleteConfirmText.trim());
+      setIsDeleteModalOpen(false);
+      setDeleteConfirmText('');
+      setDeleteConfirmChecked(false);
+      toast.success('Community Deleted', `"${community.name}" and all associated data have been permanently removed`);
+      router.push('/discover');
+    } catch (err) {
+      console.error('Error deleting community:', err);
+      toast.error('Deletion failed', err.message || 'Could not delete community');
+    } finally {
+      setIsDeletingCommunity(false);
+    }
   };
 
   const handleCreateEvent = async () => {
@@ -1992,21 +2090,21 @@ export default function LeaderDashboard({ initialCommunityId }) {
               </button>
 
               {/* Danger Zone */}
-              <div style={{ marginTop: '16px', padding: '16px', background: 'rgba(239,68,68,0.03)', border: '1px solid rgba(239,68,68,0.15)', borderRadius: '12px' }}>
-                <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#ef4444', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '12px' }}>Danger Zone</div>
-                {!deleteConfirm ? (
-                  <button onClick={() => setDeleteConfirm(true)} className="btn btn-danger interactive-press" style={{ width: '100%', padding: '14px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                    <Trash2 size={16} /> Delete Community
-                  </button>
-                ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <p style={{ color: '#ef4444', fontSize: '0.85rem', margin: 0 }}>This cannot be undone. All data, events, and members will be permanently removed.</p>
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                      <button onClick={() => { toast.error('Not yet available', 'Community deletion requires admin approval'); setDeleteConfirm(false); }} className="btn btn-danger interactive-press" style={{ flex: 1, padding: '12px' }}>Confirm Delete</button>
-                      <button onClick={() => setDeleteConfirm(false)} className="btn btn-outline interactive-press" style={{ flex: 1, padding: '12px' }}>Cancel</button>
-                    </div>
-                  </div>
-                )}
+              <div style={{ marginTop: '16px', padding: '16px', background: 'rgba(239,68,68,0.03)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '14px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                  <Trash2 size={16} color="#ef4444" />
+                  <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#ef4444', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Danger Zone</div>
+                </div>
+                <p style={{ color: 'var(--slate-400)', fontSize: '0.85rem', margin: '0 0 14px 0', lineHeight: 1.5 }}>
+                  Permanently delete this community, its upcoming events, tickets, discussion channels, and member relationships.
+                </p>
+                <button 
+                  onClick={() => { setIsDeleteModalOpen(true); setDeleteConfirmText(''); setDeleteConfirmChecked(false); }} 
+                  className="btn btn-danger interactive-press" 
+                  style={{ width: '100%', padding: '12px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontWeight: 600 }}
+                >
+                  <Trash2 size={16} /> Delete Community
+                </button>
               </div>
             </div>
           )}
@@ -2037,6 +2135,106 @@ export default function LeaderDashboard({ initialCommunityId }) {
             {/* Edit Profile */}
             {isEditing && (
               <>
+                {/* 1. Community Name */}
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', color: 'var(--white)', fontSize: '0.9rem', fontWeight: 600 }}>
+                    Community Name <span style={{ color: 'var(--teal-400)' }}>*</span>
+                  </label>
+                  <input 
+                    type="text" 
+                    value={editForm.name} 
+                    onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} 
+                    placeholder="e.g. Tunbridge Wells Run Club"
+                    style={{ width: '100%', padding: '12px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'var(--white)', fontSize: '1rem', fontWeight: 600 }} 
+                  />
+                </div>
+
+                {/* 2. Primary Category */}
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', color: 'var(--white)', fontSize: '0.9rem', fontWeight: 600 }}>
+                    Primary Category / Focus
+                  </label>
+                  <input 
+                    type="text" 
+                    value={editForm.category} 
+                    onChange={(e) => setEditForm({ ...editForm, category: e.target.value })} 
+                    placeholder="e.g. ⚽ Sports, 🏃 Running, 🧘 Wellness, 🎨 Creative"
+                    style={{ width: '100%', padding: '12px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'var(--white)', fontSize: '0.95rem' }} 
+                  />
+                  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '8px' }}>
+                    {['⚽ Sports', '🏃 Running', '🚶 Walking', '🧘 Wellness', '⛰️ Adventure', '🎨 Creative', '🍷 Food & Drink', '💻 Tech & Gaming'].map(cat => (
+                      <button
+                        key={cat}
+                        type="button"
+                        onClick={() => setEditForm({ ...editForm, category: cat })}
+                        style={{
+                          padding: '4px 8px',
+                          borderRadius: '6px',
+                          fontSize: '0.75rem',
+                          background: editForm.category === cat ? 'rgba(20,184,166,0.2)' : 'rgba(255,255,255,0.05)',
+                          border: editForm.category === cat ? '1px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.1)',
+                          color: editForm.category === cat ? 'var(--teal-300)' : 'var(--slate-300)',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        {cat}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 3. Location & Cadence */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '8px', color: 'var(--slate-300)', fontSize: '0.85rem', fontWeight: 600 }}>Location / Area</label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g. Tunbridge Wells, Kent" 
+                      value={editForm.location_name} 
+                      onChange={(e) => setEditForm({ ...editForm, location_name: e.target.value })} 
+                      style={{ width: '100%', padding: '12px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'var(--white)', fontSize: '0.9rem' }} 
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '8px', color: 'var(--slate-300)', fontSize: '0.85rem', fontWeight: 600 }}>How Often? (Cadence)</label>
+                    <select
+                      value={editForm.activity_level}
+                      onChange={(e) => setEditForm({ ...editForm, activity_level: e.target.value })}
+                      style={{ width: '100%', padding: '12px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'var(--white)', fontSize: '0.9rem', appearance: 'none' }}
+                    >
+                      <option value="Very Active">Very Active (Weekly)</option>
+                      <option value="Active">Active (Fortnightly)</option>
+                      <option value="Casual">Casual (Monthly or less)</option>
+                      <option value="Flexible">Flexible / Pop-up</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* 4. Target Audience & Cost */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '8px', color: 'var(--slate-300)', fontSize: '0.85rem', fontWeight: 600 }}>Who is it for?</label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g. All abilities welcome" 
+                      value={editForm.target_audience} 
+                      onChange={(e) => setEditForm({ ...editForm, target_audience: e.target.value })} 
+                      style={{ width: '100%', padding: '12px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'var(--white)', fontSize: '0.9rem' }} 
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '8px', color: 'var(--slate-300)', fontSize: '0.85rem', fontWeight: 600 }}>Cost / Pricing</label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g. Free, Pay for coffee" 
+                      value={editForm.cost} 
+                      onChange={(e) => setEditForm({ ...editForm, cost: e.target.value })} 
+                      style={{ width: '100%', padding: '12px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'var(--white)', fontSize: '0.9rem' }} 
+                    />
+                  </div>
+                </div>
+
+                {/* 5. Cover Photo */}
                 <div>
                   <label style={{ display: 'block', marginBottom: '8px', color: 'var(--slate-300)', fontSize: '0.9rem', fontWeight: 600 }}>Community Cover Photo</label>
                   <div style={{ position: 'relative', width: '100%', height: '140px', borderRadius: '12px', overflow: 'hidden', background: 'var(--slate-800)', border: '1px dashed var(--slate-700)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '10px' }}>
@@ -2065,21 +2263,117 @@ export default function LeaderDashboard({ initialCommunityId }) {
                     <ImageIcon size={16} /> {coverImagePreview ? 'Change Cover Photo' : 'Upload Cover Photo'}
                   </button>
                 </div>
+
+                {/* 6. Description */}
                 <div>
-                  <label style={{ display: 'block', marginBottom: '8px', color: 'var(--slate-300)', fontSize: '0.9rem' }}>Community Description</label>
-                  <textarea value={editForm.description} onChange={(e) => setEditForm({...editForm, description: e.target.value})} style={{ width: '100%', padding: '12px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'var(--white)', minHeight: '120px', fontFamily: 'inherit', resize: 'none' }} />
+                  <label style={{ display: 'block', marginBottom: '8px', color: 'var(--slate-300)', fontSize: '0.9rem', fontWeight: 600 }}>Description & Story</label>
+                  <textarea value={editForm.description} onChange={(e) => setEditForm({...editForm, description: e.target.value})} placeholder="What is this community about? Who is it for? What can members expect?" style={{ width: '100%', padding: '12px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'var(--white)', minHeight: '120px', fontFamily: 'inherit', resize: 'vertical', lineHeight: 1.5 }} />
+                </div>
+
+                {/* 7. Tags (Multi-select & Custom) */}
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <label style={{ color: 'var(--slate-300)', fontSize: '0.9rem', fontWeight: 600, margin: 0 }}>
+                      Community Tags ({editForm.tags?.length || 0} selected)
+                    </label>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>Add multiple tags</span>
+                  </div>
+
+                  {/* Selected Tags Chips */}
+                  {editForm.tags && editForm.tags.length > 0 && (
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '12px', padding: '10px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                      {editForm.tags.map((tag, idx) => (
+                        <span key={idx} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 10px', borderRadius: '8px', background: 'rgba(20,184,166,0.15)', color: 'var(--teal-300)', fontSize: '0.8rem', fontWeight: 600 }}>
+                          {tag}
+                          <button type="button" onClick={() => removeEditTag(tag)} style={{ background: 'none', border: 'none', color: 'var(--teal-400)', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center' }}>
+                            <X size={13} />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Custom Tag Input */}
+                  <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+                    <input 
+                      type="text" 
+                      placeholder="Add custom tag (e.g. 🏸 Badminton)" 
+                      value={editForm.customTagInput || ''} 
+                      onChange={e => setEditForm({ ...editForm, customTagInput: e.target.value })} 
+                      onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addCustomEditTag(); } }}
+                      style={{ flex: 1, padding: '10px 12px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '10px', color: 'var(--white)', fontSize: '0.85rem' }}
+                    />
+                    <button 
+                      type="button"
+                      onClick={addCustomEditTag}
+                      disabled={!editForm.customTagInput?.trim()} 
+                      className="btn btn-outline interactive-press" 
+                      style={{ padding: '0 14px', borderRadius: '10px', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '4px', opacity: editForm.customTagInput?.trim() ? 1 : 0.4 }}
+                    >
+                      <Plus size={14} /> Add
+                    </button>
+                  </div>
+
+                  {/* Category Filter Pills */}
+                  <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '6px', marginBottom: '10px', scrollbarWidth: 'none' }}>
+                    {['All', ...Object.keys(COMMUNITY_TAG_CATEGORIES)].map(cat => (
+                      <button
+                        key={cat}
+                        type="button"
+                        onClick={() => setEditTagCategory(cat)}
+                        style={{
+                          padding: '4px 10px',
+                          borderRadius: '8px',
+                          fontSize: '0.72rem',
+                          fontWeight: 600,
+                          whiteSpace: 'nowrap',
+                          border: editTagCategory === cat ? '1px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.08)',
+                          background: editTagCategory === cat ? 'rgba(20,184,166,0.2)' : 'rgba(255,255,255,0.02)',
+                          color: editTagCategory === cat ? 'var(--teal-300)' : 'var(--slate-400)',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        {cat}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Available Tag Buttons */}
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', maxHeight: '160px', overflowY: 'auto', padding: '4px', background: 'rgba(0,0,0,0.2)', borderRadius: '10px' }}>
+                    {(editTagCategory === 'All' ? ALL_COMMUNITY_TAGS : (COMMUNITY_TAG_CATEGORIES[editTagCategory] || ALL_COMMUNITY_TAGS)).map(tag => {
+                      const selected = editForm.tags?.includes(tag);
+                      return (
+                        <button
+                          key={tag}
+                          type="button"
+                          onClick={() => toggleEditTag(tag)}
+                          style={{
+                            padding: '6px 12px',
+                            borderRadius: '999px',
+                            fontSize: '0.78rem',
+                            border: selected ? '1px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.1)',
+                            background: selected ? 'rgba(20,184,166,0.15)' : 'transparent',
+                            color: selected ? 'var(--teal-300)' : 'var(--slate-300)',
+                            fontWeight: selected ? 600 : 400,
+                            cursor: 'pointer',
+                            transition: 'all 0.15s ease'
+                          }}
+                        >
+                          {tag}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* 8. Social Links */}
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', color: 'var(--slate-300)', fontSize: '0.9rem', fontWeight: 600 }}>WhatsApp Group Link</label>
+                  <input type="url" placeholder="https://chat.whatsapp.com/..." value={editForm.whatsapp_group} onChange={(e) => setEditForm({...editForm, whatsapp_group: e.target.value})} style={{ width: '100%', padding: '12px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'var(--white)', fontSize: '0.9rem' }} />
                 </div>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '8px', color: 'var(--slate-300)', fontSize: '0.9rem' }}>Vibe & Values Tags (comma separated)</label>
-                  <input type="text" value={editForm.tags} onChange={(e) => setEditForm({...editForm, tags: e.target.value})} style={{ width: '100%', padding: '12px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'var(--white)' }} />
-                </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '8px', color: 'var(--slate-300)', fontSize: '0.9rem' }}>WhatsApp Group Link (for 1-tap member onboarding)</label>
-                  <input type="url" placeholder="https://chat.whatsapp.com/..." value={editForm.whatsapp_group} onChange={(e) => setEditForm({...editForm, whatsapp_group: e.target.value})} style={{ width: '100%', padding: '12px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'var(--white)' }} />
-                </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '8px', color: 'var(--slate-300)', fontSize: '0.9rem' }}>Instagram Handle</label>
-                  <input type="text" placeholder="@your.community" value={editForm.instagram_handle} onChange={(e) => setEditForm({...editForm, instagram_handle: e.target.value})} style={{ width: '100%', padding: '12px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'var(--white)' }} />
+                  <label style={{ display: 'block', marginBottom: '8px', color: 'var(--slate-300)', fontSize: '0.9rem', fontWeight: 600 }}>Instagram Handle</label>
+                  <input type="text" placeholder="@your.community" value={editForm.instagram_handle} onChange={(e) => setEditForm({...editForm, instagram_handle: e.target.value})} style={{ width: '100%', padding: '12px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'var(--white)', fontSize: '0.9rem' }} />
                 </div>
               </>
             )}
@@ -2243,6 +2537,121 @@ export default function LeaderDashboard({ initialCommunityId }) {
               </button>
             </div>
           ) : null}
+        </div>
+      )}
+
+      {/* Heavy-Safeguard Community Deletion Modal */}
+      {isDeleteModalOpen && community && (
+        <div className="modal-overlay" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', zIndex: 10000 }}>
+          <div className="glass-panel" style={{ width: '100%', maxWidth: '480px', borderRadius: '20px', border: '1px solid rgba(239,68,68,0.4)', background: 'linear-gradient(180deg, #1e1014 0%, #0f172a 100%)', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7)', overflow: 'hidden' }}>
+            
+            {/* Header */}
+            <div style={{ padding: '20px', borderBottom: '1px solid rgba(239,68,68,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(239,68,68,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ef4444' }}>
+                  <Trash2 size={22} />
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '1.15rem', color: 'var(--white)', fontWeight: 700 }}>Delete Community</h3>
+                  <div style={{ fontSize: '0.75rem', color: '#f87171', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Strict Safeguard Mode</div>
+                </div>
+              </div>
+              <button 
+                type="button"
+                onClick={() => { setIsDeleteModalOpen(false); setDeleteConfirmText(''); setDeleteConfirmChecked(false); }}
+                style={{ background: 'none', border: 'none', color: 'var(--slate-400)', cursor: 'pointer', padding: '6px' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Warning Body */}
+            <div style={{ padding: '24px 20px', display: 'flex', flexDirection: 'column', gap: '18px' }}>
+              <div style={{ padding: '14px', borderRadius: '12px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)', color: '#fca5a5', fontSize: '0.85rem', lineHeight: 1.5 }}>
+                <strong style={{ color: '#ef4444', display: 'block', marginBottom: '6px' }}>⚠️ Warning: This action cannot be reversed!</strong>
+                Deleting <strong>{community.name}</strong> will permanently erase:
+                <ul style={{ margin: '8px 0 0 16px', padding: 0 }}>
+                  <li>All {memberList.length} member connections and roles</li>
+                  <li>All past & upcoming events, RSVPs, and ticket records</li>
+                  <li>All community feed posts, comments, and chat channels</li>
+                  <li>The community public microsite and branding</li>
+                </ul>
+              </div>
+
+              {/* Step 1: Type exact name */}
+              <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'var(--slate-200)', marginBottom: '8px' }}>
+                  1. To confirm, type <span style={{ color: '#ef4444', userSelect: 'all', background: 'rgba(239,68,68,0.15)', padding: '2px 6px', borderRadius: '4px' }}>{community.name}</span> below:
+                </label>
+                <input
+                  type="text"
+                  value={deleteConfirmText}
+                  onChange={e => setDeleteConfirmText(e.target.value)}
+                  placeholder={`Type "${community.name}"`}
+                  style={{
+                    width: '100%',
+                    padding: '12px 14px',
+                    borderRadius: '10px',
+                    background: 'var(--slate-900)',
+                    border: deleteConfirmText === community.name ? '1px solid #22c55e' : '1px solid rgba(255,255,255,0.15)',
+                    color: 'var(--white)',
+                    fontSize: '0.95rem'
+                  }}
+                  autoFocus
+                />
+              </div>
+
+              {/* Step 2: Confirmation Checkbox */}
+              <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', cursor: 'pointer', userSelect: 'none' }}>
+                <input
+                  type="checkbox"
+                  checked={deleteConfirmChecked}
+                  onChange={e => setDeleteConfirmChecked(e.target.checked)}
+                  style={{ marginTop: '3px', width: '18px', height: '18px', accentColor: '#ef4444' }}
+                />
+                <span style={{ fontSize: '0.85rem', color: 'var(--slate-300)', lineHeight: 1.4 }}>
+                  I understand that this action is permanent, and that all data and members for <strong>{community.name}</strong> will be permanently destroyed.
+                </span>
+              </label>
+            </div>
+
+            {/* Actions */}
+            <div style={{ padding: '16px 20px', borderTop: '1px solid rgba(255,255,255,0.06)', background: 'rgba(0,0,0,0.3)', display: 'flex', gap: '10px' }}>
+              <button
+                type="button"
+                onClick={() => { setIsDeleteModalOpen(false); setDeleteConfirmText(''); setDeleteConfirmChecked(false); }}
+                className="btn btn-outline interactive-press"
+                style={{ flex: 1, padding: '12px', borderRadius: '10px', color: 'var(--slate-300)' }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteCommunity}
+                disabled={isDeletingCommunity || deleteConfirmText !== community.name || !deleteConfirmChecked}
+                className="btn interactive-press"
+                style={{
+                  flex: 2,
+                  padding: '12px',
+                  borderRadius: '10px',
+                  background: (deleteConfirmText === community.name && deleteConfirmChecked) ? '#ef4444' : 'rgba(239,68,68,0.2)',
+                  color: 'var(--white)',
+                  fontWeight: 700,
+                  border: 'none',
+                  cursor: (deleteConfirmText === community.name && deleteConfirmChecked && !isDeletingCommunity) ? 'pointer' : 'not-allowed',
+                  opacity: (deleteConfirmText === community.name && deleteConfirmChecked && !isDeletingCommunity) ? 1 : 0.45,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px'
+                }}
+              >
+                <Trash2 size={16} />
+                {isDeletingCommunity ? 'Deleting Community...' : 'Permanently Delete'}
+              </button>
+            </div>
+
+          </div>
         </div>
       )}
 

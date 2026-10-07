@@ -50,6 +50,41 @@ async function verifyAdmin(token) {
   return user;
 }
 
+function isAdminUser(user) {
+  return !!(user?.email && ADMIN_EMAILS.includes(user.email.toLowerCase()));
+}
+
+// Returns 'Leader' | 'Co-Leader' | 'Member' | null for a user in a community.
+// Falls back to communities.leader_id so a creator is never locked out of their own group.
+async function getCommunityRole(userId, communityId) {
+  if (!userId || !communityId) return null;
+  const { data: membership } = await supabaseAdmin.from('community_memberships')
+    .select('role')
+    .match({ user_id: userId, community_id: communityId })
+    .maybeSingle();
+  if (membership?.role) return membership.role;
+  const { data: community } = await supabaseAdmin.from('communities')
+    .select('leader_id')
+    .eq('id', communityId)
+    .maybeSingle();
+  return community?.leader_id === userId ? 'Leader' : null;
+}
+
+// Requires the caller to be a Leader/Co-Leader (or Leader only) of the community, or a platform admin.
+async function verifyCommunityManager(token, communityId, { leaderOnly = false } = {}) {
+  const user = await verifyUser(token);
+  if (!communityId) throw new Error("Missing community");
+  if (isAdminUser(user)) return { user, role: 'Admin', isAdmin: true };
+  const role = await getCommunityRole(user.id, communityId);
+  const allowed = leaderOnly ? role === 'Leader' : (role === 'Leader' || role === 'Co-Leader');
+  if (!allowed) {
+    throw new Error(leaderOnly
+      ? "Forbidden: Only the community leader can do this"
+      : "Forbidden: Community leader access required");
+  }
+  return { user, role, isAdmin: false };
+}
+
 export async function sendMessageAction(messageData, token) {
   if (!messageData.authorId) throw new Error("Unauthorized");
   await verifyUser(token, messageData.authorId);
@@ -195,8 +230,7 @@ export async function ensureLeadersNetworkAction() {
 }
 
 export async function createEventAction(eventData, token) {
-  // In a real app we'd verify the user is a leader of the community, but for demo:
-  await verifyUser(token);
+  await verifyCommunityManager(token, eventData.communityId);
 
   const payload = {
     id: eventData.id || crypto.randomUUID(),
@@ -339,7 +373,9 @@ export async function uploadVideoAction(formData, token) {
 }
 
 export async function updateEventAction(eventId, updates, token) {
-  await verifyUser(token);
+  const { data: existingEvent } = await supabaseAdmin.from('events').select('community_id').eq('id', eventId).maybeSingle();
+  if (!existingEvent) throw new Error("Event not found");
+  await verifyCommunityManager(token, existingEvent.community_id);
   
   const dbUpdates = {};
   if (updates.title !== undefined) dbUpdates.title = updates.title;
@@ -356,14 +392,49 @@ export async function updateEventAction(eventId, updates, token) {
   
   const { data, error } = await supabaseAdmin.from('events').update(dbUpdates).eq('id', eventId).select().single();
   if (error) {
-    console.error('Event update failed in DB, returning mock updates:', error);
-    return { id: eventId, ...dbUpdates };
+    console.error('Event update failed:', error);
+    throw new Error(error.message);
   }
   return data;
 }
 
+const ADMIN_ONLY_COMMUNITY_FIELDS = ['verified', 'is_banned', 'is_flagged', 'flag_reason'];
+const MEMBER_EDITABLE_COMMUNITY_FIELDS = ['gallery_photos'];
+
+const photoUrl = (p) => (typeof p === 'string' ? p : p?.url);
+const photoOwner = (p) => (typeof p === 'string' ? null : p?.uploaderId);
+
 export async function updateCommunityAction(communityId, updates, token) {
-  await verifyUser(token);
+  const user = await verifyUser(token);
+  const isAdmin = isAdminUser(user);
+  const keys = Object.keys(updates || {}).filter(k => updates[k] !== undefined);
+
+  if (!isAdmin) {
+    if (keys.some(k => ADMIN_ONLY_COMMUNITY_FIELDS.includes(k))) {
+      throw new Error("Forbidden: Admin access required for these fields");
+    }
+
+    const role = await getCommunityRole(user.id, communityId);
+    const isManager = role === 'Leader' || role === 'Co-Leader';
+
+    if (!isManager) {
+      // Regular members may only add/remove their OWN gallery photos.
+      const onlyMemberFields = keys.length > 0 && keys.every(k => MEMBER_EDITABLE_COMMUNITY_FIELDS.includes(k));
+      if (!role || !onlyMemberFields) {
+        throw new Error("Forbidden: Community leader access required");
+      }
+      const { data: current } = await supabaseAdmin.from('communities').select('gallery_photos').eq('id', communityId).maybeSingle();
+      const before = current?.gallery_photos || [];
+      const after = updates.gallery_photos || [];
+      const beforeUrls = new Set(before.map(photoUrl));
+      const afterUrls = new Set(after.map(photoUrl));
+      const added = after.filter(p => !beforeUrls.has(photoUrl(p)));
+      const removed = before.filter(p => !afterUrls.has(photoUrl(p)));
+      if ([...added, ...removed].some(p => photoOwner(p) !== user.id)) {
+        throw new Error("Forbidden: You can only change your own photos");
+      }
+    }
+  }
   
   const dbUpdates = {};
   if (updates.name !== undefined) dbUpdates.name = updates.name;
@@ -387,6 +458,7 @@ export async function updateCommunityAction(communityId, updates, token) {
   if (updates.location_name !== undefined) dbUpdates.location_name = updates.location_name;
   if (updates.cost !== undefined) dbUpdates.cost = updates.cost;
   if (updates.activity_level !== undefined) dbUpdates.activity_level = updates.activity_level;
+  if (updates.target_audience !== undefined) dbUpdates.target_audience = updates.target_audience;
   if (updates.guidelines !== undefined) dbUpdates.guidelines = updates.guidelines;
   if (updates.highlights !== undefined) dbUpdates.highlights = updates.highlights;
   if (updates.welcome_video_url !== undefined) dbUpdates.welcome_video_url = updates.welcome_video_url;
@@ -416,9 +488,9 @@ export async function createChannelAction(channelData, token) {
 }
 
 export async function markNotificationReadAction(notificationId, token) {
-  await verifyUser(token);
+  const user = await verifyUser(token);
   
-  const { error } = await supabaseAdmin.from('notifications').update({ is_read: true }).eq('id', notificationId);
+  const { error } = await supabaseAdmin.from('notifications').update({ is_read: true }).eq('id', notificationId).eq('user_id', user.id);
   if (error) throw new Error(error.message);
   return true;
 }
@@ -454,7 +526,12 @@ export async function broadcastNotificationAction(notifications, token) {
 }
 
 export async function promoteMemberAction(communityId, memberId, newRole, token) {
-  await verifyUser(token);
+  const { user } = await verifyCommunityManager(token, communityId, { leaderOnly: true });
+  if (!['Member', 'Co-Leader'].includes(newRole)) throw new Error("Invalid role");
+  if (memberId === user.id) throw new Error("You cannot change your own role");
+  const targetRole = await getCommunityRole(memberId, communityId);
+  if (!targetRole) throw new Error("User is not a member of this community");
+  if (targetRole === 'Leader') throw new Error("The community leader's role cannot be changed");
   const { error } = await supabaseAdmin.from('community_memberships')
     .update({ role: newRole })
     .match({ community_id: communityId, user_id: memberId });
@@ -489,7 +566,12 @@ export async function votePollAction(pollId, userId, optionIndex, token) {
 }
 
 export async function removeMemberAction(communityId, memberId, token) {
-  await verifyUser(token);
+  const { role: callerRole } = await verifyCommunityManager(token, communityId);
+  const targetRole = await getCommunityRole(memberId, communityId);
+  if (targetRole === 'Leader') throw new Error("The community leader cannot be removed");
+  if (targetRole === 'Co-Leader' && callerRole !== 'Leader' && callerRole !== 'Admin') {
+    throw new Error("Only the leader can remove a co-leader");
+  }
   const { error } = await supabaseAdmin.from('community_memberships')
     .delete()
     .match({ community_id: communityId, user_id: memberId });
@@ -630,7 +712,13 @@ export async function sendPushNotificationAction(userId, payload) {
 }
 
 export async function deleteFeedPostAction(postId, token) {
-  await verifyUser(token);
+  const user = await verifyUser(token);
+  const { data: post } = await supabaseAdmin.from('feed_posts').select('author_id, community_id').eq('id', postId).maybeSingle();
+  if (!post) throw new Error("Post not found");
+  if (post.author_id !== user.id && !isAdminUser(user)) {
+    const role = await getCommunityRole(user.id, post.community_id);
+    if (role !== 'Leader' && role !== 'Co-Leader') throw new Error("Forbidden: You can't delete this post");
+  }
   
   // First, delete any comments associated with this post (messages table)
   await supabaseAdmin.from('messages').delete().eq('channel', postId);
@@ -642,7 +730,13 @@ export async function deleteFeedPostAction(postId, token) {
 }
 
 export async function deleteCommentAction(commentId, postId, token) {
-  await verifyUser(token);
+  const user = await verifyUser(token);
+  const { data: comment } = await supabaseAdmin.from('messages').select('author_id, community_id').eq('id', commentId).maybeSingle();
+  if (!comment) throw new Error("Comment not found");
+  if (comment.author_id !== user.id && !isAdminUser(user)) {
+    const role = await getCommunityRole(user.id, comment.community_id);
+    if (role !== 'Leader' && role !== 'Co-Leader') throw new Error("Forbidden: You can't delete this comment");
+  }
   
   const { error } = await supabaseAdmin.from('messages').delete().eq('id', commentId);
   if (error) throw new Error(error.message);
@@ -684,7 +778,13 @@ export async function getCommentsAction(postId, token) {
 }
 
 export async function updateMessageAction(messageId, updates, token) {
-  await verifyUser(token);
+  const user = await verifyUser(token);
+  const { data: message } = await supabaseAdmin.from('messages').select('author_id, community_id').eq('id', messageId).maybeSingle();
+  if (!message) throw new Error("Message not found");
+  if (message.author_id !== user.id && !isAdminUser(user)) {
+    const role = await getCommunityRole(user.id, message.community_id);
+    if (role !== 'Leader' && role !== 'Co-Leader') throw new Error("Forbidden: You can't edit this message");
+  }
   const { data, error } = await supabaseAdmin
     .from('messages')
     .update(updates)
@@ -698,15 +798,52 @@ export async function updateMessageAction(messageId, updates, token) {
   return data;
 }
 
-export async function deleteCommunityAction(communityId, token) {
+// Postgres/PostgREST codes meaning "this optional table doesn't exist in this deployment".
+const MISSING_TABLE_CODES = ['42P01', 'PGRST205', 'PGRST200'];
+
+export async function deleteCommunityAction(communityId, token, confirmName) {
   try {
-    await verifyUser(token);
-    
-    // Delete all related records
-    await supabaseAdmin.from('community_memberships').delete().eq('community_id', communityId);
-    await supabaseAdmin.from('feed_posts').delete().eq('community_id', communityId);
-    await supabaseAdmin.from('events').delete().eq('community_id', communityId);
-    
+    const { data: community } = await supabaseAdmin.from('communities').select('id, name').eq('id', communityId).maybeSingle();
+    if (!community) throw new Error("Community not found");
+    if (community.id === 'more-leaders-network') throw new Error("This community cannot be deleted");
+
+    // Only the Leader (or a platform admin) may delete; Co-Leaders may not.
+    await verifyCommunityManager(token, communityId, { leaderOnly: true });
+
+    // Server-side repeat of the UI safeguard: caller must supply the exact community name.
+    if (!confirmName || confirmName !== community.name) {
+      throw new Error("Confirmation name does not match the community name");
+    }
+
+    // Fail-fast, ordered cleanup: children first, the community row LAST.
+    // If any step fails we abort BEFORE the community is removed, so the group is never left half-deleted
+    // without a parent (the operation can simply be retried).
+    const run = async (label, promise, { optional = false } = {}) => {
+      const { error } = await promise;
+      if (error && !(optional && MISSING_TABLE_CODES.includes(error.code))) {
+        throw new Error(`Failed while deleting ${label}: ${error.message}`);
+      }
+    };
+
+    const { data: eventRows } = await supabaseAdmin.from('events').select('id').eq('community_id', communityId);
+    const eventIds = (eventRows || []).map(e => e.id);
+    if (eventIds.length > 0) {
+      await run('event RSVPs', supabaseAdmin.from('event_rsvps').delete().in('event_id', eventIds), { optional: true });
+    }
+
+    const { data: pollRows } = await supabaseAdmin.from('polls').select('id').eq('community_id', communityId);
+    const pollIds = (pollRows || []).map(p => p.id);
+    if (pollIds.length > 0) {
+      await run('poll votes', supabaseAdmin.from('poll_votes').delete().in('poll_id', pollIds), { optional: true });
+    }
+    await run('polls', supabaseAdmin.from('polls').delete().eq('community_id', communityId), { optional: true });
+
+    await run('messages', supabaseAdmin.from('messages').delete().eq('community_id', communityId));
+    await run('feed posts', supabaseAdmin.from('feed_posts').delete().eq('community_id', communityId));
+    await run('channels', supabaseAdmin.from('channels').delete().eq('community_id', communityId));
+    await run('events', supabaseAdmin.from('events').delete().eq('community_id', communityId));
+    await run('memberships', supabaseAdmin.from('community_memberships').delete().eq('community_id', communityId));
+
     const { error } = await supabaseAdmin.from('communities').delete().eq('id', communityId);
     if (error) throw new Error(error.message);
     return { success: true };
@@ -717,7 +854,11 @@ export async function deleteCommunityAction(communityId, token) {
 
 export async function deleteUserAction(userId, token) {
   try {
-    await verifyUser(token);
+    const caller = await verifyUser(token);
+    // Users may delete only their own account; platform admins may delete any.
+    if (caller.id !== userId && !isAdminUser(caller)) {
+      throw new Error("Unauthorized: You can only delete your own account");
+    }
     
     // Delete all related records
     await supabaseAdmin.from('community_memberships').delete().eq('user_id', userId);
@@ -781,21 +922,21 @@ export async function submitReviewAction(userId, targetId, targetType, rating, c
 
 // ─── Admin Moderation Actions ─────────────────────────────
 export async function dismissFlagAction(communityId, token) {
-  await verifyUser(token);
+  await verifyAdmin(token);
   const { error } = await supabaseAdmin.from('communities').update({ is_flagged: false, flag_reason: null }).eq('id', communityId);
   if (error) throw new Error(error.message);
   return true;
 }
 
 export async function banCommunityAction(communityId, token) {
-  await verifyUser(token);
+  await verifyAdmin(token);
   const { error } = await supabaseAdmin.from('communities').update({ is_banned: true, is_flagged: false, flag_reason: null }).eq('id', communityId);
   if (error) throw new Error(error.message);
   return true;
 }
 
 export async function unbanCommunityAction(communityId, token) {
-  await verifyUser(token);
+  await verifyAdmin(token);
   const { error } = await supabaseAdmin.from('communities').update({ is_banned: false }).eq('id', communityId);
   if (error) throw new Error(error.message);
   return true;

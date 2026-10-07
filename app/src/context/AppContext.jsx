@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabaseClient';
 import { useAuth } from './AuthContext';
 import { initialExperiences } from '../lib/constants';
 import imageCompression from 'browser-image-compression';
-import { createEventAction, joinCommunityAction, leaveCommunityAction, rsvpToEventAction, createCommunityAction, uploadImageAction, updateEventAction, updateCommunityAction, createChannelAction, markNotificationReadAction, updateUserAction, adminVerifyCommunityAction, broadcastNotificationAction, promoteMemberAction, removeMemberAction, subscribeToPushNotificationsAction, ensureLeadersNetworkAction } from '../lib/actions';
+import { createEventAction, joinCommunityAction, leaveCommunityAction, rsvpToEventAction, createCommunityAction, uploadImageAction, updateEventAction, updateCommunityAction, deleteCommunityAction, createChannelAction, markNotificationReadAction, updateUserAction, adminVerifyCommunityAction, broadcastNotificationAction, promoteMemberAction, removeMemberAction, subscribeToPushNotificationsAction, ensureLeadersNetworkAction } from '../lib/actions';
 import { Capacitor } from '@capacitor/core';
 
 const AppContext = createContext();
@@ -1296,7 +1296,14 @@ export function AppProvider({ children }) {
 
   const updateCommunity = async (communityId, updates) => {
     // Optimistic UI update
-    setCommunities(prev => prev.map(c => c.id === communityId ? { ...c, ...updates } : c));
+    setCommunities(prev => prev.map(c => {
+      if (c.id !== communityId) return c;
+      const updated = { ...c, ...updates };
+      if (updates.tags && updates.tags.length > 0) {
+        updated.category = updates.category || updates.tags[0];
+      }
+      return updated;
+    }));
     
     try {
       const dbUpdates = { ...updates };
@@ -1304,6 +1311,7 @@ export function AppProvider({ children }) {
       delete dbUpdates.autoWelcomeEnabled;
       delete dbUpdates.autoRemindersEnabled;
       delete dbUpdates.autoFeedbackEnabled;
+      delete dbUpdates.customTagInput;
       
       if (Object.keys(dbUpdates).length > 0) {
         let token = session?.access_token;
@@ -1317,6 +1325,46 @@ export function AppProvider({ children }) {
       console.error(err);
       // Revert optimistic update
       setCommunities(prev => prev.map(c => c.id === communityId ? { ...c, ...Object.fromEntries(Object.entries(updates).map(([k]) => [k, c[k]])) } : c));
+      throw err;
+    }
+  };
+
+  const deleteCommunity = async (communityId, confirmName) => {
+    const prevCommunities = [...communities];
+    const prevMemberships = { ...communityMemberships };
+    const prevEvents = [...events];
+
+    // Find the community name if not provided directly
+    const targetComm = communities.find(c => c.id === communityId);
+    const resolvedConfirmName = confirmName || targetComm?.name;
+
+    // Optimistic UI update
+    setCommunities(prev => prev.filter(c => c.id !== communityId));
+    setEvents(prev => prev.filter(e => e.communityId !== communityId));
+    setCommunityMemberships(prev => {
+      const next = { ...prev };
+      delete next[communityId];
+      return next;
+    });
+
+    try {
+      let token = session?.access_token;
+      if (!token) {
+        const { data: sessionData } = await supabase.auth.getSession();
+        token = sessionData?.session?.access_token;
+      }
+      const res = await deleteCommunityAction(communityId, token, resolvedConfirmName);
+      if (res && res.error) {
+        throw new Error(res.error);
+      }
+      return { success: true };
+    } catch (err) {
+      console.error('deleteCommunity failed:', err);
+      // Revert optimistic update
+      setCommunities(prevCommunities);
+      setCommunityMemberships(prevMemberships);
+      setEvents(prevEvents);
+      throw err;
     }
   };
 
@@ -1437,6 +1485,7 @@ export function AppProvider({ children }) {
       addCommunityHighlight,
       updateUser,
       updateCommunity,
+      deleteCommunity,
       toggleUserRole,
       promoteMember,
       removeMember,

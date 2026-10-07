@@ -6,6 +6,8 @@ import { useAppContext } from '../../../src/context/AppContext';
 import { useAuth } from '../../../src/context/AuthContext';
 import { useToast } from '../../../src/components/Toast';
 import AppHeader from '../../../src/components/AppHeader';
+import { deleteUserAction } from '../../../src/lib/actions';
+import { supabase } from '../../../src/lib/supabaseClient';
 
 export default function SecuritySettings() {
   const navigate = useNavigate();
@@ -17,6 +19,7 @@ export default function SecuritySettings() {
   const [dmLimit, setDmLimit] = useState(user.privacy_dms || 'everyone');
   const [showActivity, setShowActivity] = useState(user.privacy_activity !== false);
   const [isExporting, setIsExporting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleSavePrivacy = async (key, value) => {
     try {
@@ -35,7 +38,7 @@ export default function SecuritySettings() {
   const handleExportData = () => {
     setIsExporting(true);
     setTimeout(() => {
-      // Create a mock blob and download it
+      // Create a blob and download it
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(user, null, 2));
       const downloadAnchorNode = document.createElement('a');
       downloadAnchorNode.setAttribute("href", dataStr);
@@ -46,16 +49,27 @@ export default function SecuritySettings() {
       
       setIsExporting(false);
       toast.success('Data exported successfully');
-    }, 1500);
+    }, 800);
   };
 
-  const handleDeleteAccount = () => {
-    const confirm = window.confirm("Are you sure you want to delete your account? This action is irreversible.");
-    if (confirm) {
-      toast.info('Account marked for deletion', 'An admin will process this request within 30 days.');
-      // In a real app this would trigger a deletion flow
-      signOut();
+  const handleDeleteAccount = async () => {
+    const confirmed = window.confirm("Are you sure you want to permanently delete your account? All your posts, memberships, and profile data will be permanently erased. This cannot be undone.");
+    if (!confirmed) return;
+    setIsDeleting(true);
+    try {
+      toast.info('Deleting account...', 'Removing your data');
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+      const res = await deleteUserAction(user.id, token);
+      if (res?.error) throw new Error(res.error);
+      await signOut();
+      toast.success('Account deleted', 'Your account and data have been permanently removed.');
       navigate.push('/login');
+    } catch (err) {
+      console.error('Account deletion error:', err);
+      toast.error('Deletion failed', err.message || 'Could not delete account. Please try again.');
+    } finally {
+      setIsDeleting(false);
     }
   };
 

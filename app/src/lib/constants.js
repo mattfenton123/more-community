@@ -100,3 +100,32 @@ export const initialExperiences = [
     spotsLeft: 4
   }
 ];
+
+export const COMMUNITY_TAG_CATEGORIES = {
+  'Sports & Fitness': [
+    '⚽ Sports', '🏃 Running', '🚶 Walking', '🚴 Cycling', '🎾 Tennis & Padel',
+    '🏊 Swimming', '🧗 Climbing & Bouldering', '🏋️ Fitness & Gym', '🧘 Yoga & Pilates',
+    '🥊 Boxing & Martial Arts', '🏄 Watersports', '⛳ Golf', '🛹 Skate & Roller', '🥾 Hiking'
+  ],
+  'Social & Lifestyle': [
+    '☕ Coffee & Chat', '🍻 Social Drinks', '🍷 Food & Drink', '🍳 Cooking & Baking',
+    '🐶 Dog Walkers', '👶 Parenting & Families', '🤝 Volunteering', '💬 Discussion & Debates',
+    '🏳️‍🌈 LGBTQ+', '🌱 Vegan & Plant-Based', '✨ Mindfulness & Meditation', '🌟 Chill Vibes'
+  ],
+  'Arts & Creative': [
+    '🎨 Creative & Art', '✂️ Arts & Crafts', '📸 Photography', '🧶 Knitting & Sewing',
+    '🏺 Pottery & Ceramics', '📝 Creative Writing', '📚 Book Club', '🎭 Theatre & Drama',
+    '🎵 Music & Jamming', '🎤 Choir & Singing', '💃 Dance & Movement'
+  ],
+  'Outdoors & Nature': [
+    '⛰️ Adventure', '🌲 Trails & Woodlands', '🏕️ Camping', '🌱 Gardening',
+    '🌊 Wild Swimming', '🎣 Angling & Fishing', '🦅 Birdwatching', '🌿 Ecology & Nature'
+  ],
+  'Tech, Games & Learning': [
+    '💻 Tech & Coding', '🎮 Video Gaming', '🎲 Board Games', '♟️ Chess',
+    '💼 Business & Networking', '🚀 Startups & Founders', '🎓 Learning & Skills',
+    '🌍 Language Exchange', '🔬 Science & Nature', '🪙 Finance & Investing'
+  ]
+};
+
+export const ALL_COMMUNITY_TAGS = Array.from(new Set(Object.values(COMMUNITY_TAG_CATEGORIES).flat()));

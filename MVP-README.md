@@ -11,10 +11,11 @@ This project is a fully functional MVP for the More Community platform. It enabl
 - **Authentication**: Email/password and OAuth support out of the box via Supabase, guarded by an `AuthGate` component.
 
 ## Tech Stack
-- **Frontend**: React 19, Vite, React Router DOM
-- **UI Components**: Lucide React for iconography, Vanilla CSS for styling (per strict design requirements)
-- **Mapping**: Leaflet & React-Leaflet
-- **Backend & Database**: Supabase (PostgreSQL, GoTrue Auth, Realtime, Storage)
+- **Frontend & Routing**: Next.js 15 (App Router), React 19
+- **UI Components & Design**: Lucide React for iconography, Vanilla CSS Design System with dark glassmorphic styling
+- **Mapping**: Leaflet & React-Leaflet with dynamic coordinates
+- **Backend & Database**: Supabase (PostgreSQL, GoTrue Auth, Realtime, Storage) via Next.js Server Actions with Service Role verification
+- **Integrations**: Web Push notifications, AI Event Drafting, WhatsApp community bridges
 
 ## Setup & Local Development
 
@@ -25,26 +26,25 @@ This project is a fully functional MVP for the More Community platform. It enabl
    ```
 
 2. **Database Seeding (Optional but Recommended)**
-   If you want to view the app populated with rich mock data, run the seeder script:
+   To seed communities, users, and events:
    ```bash
    node seedFullData.js
    ```
-   *Note: This script will populate the database with users, communities, and events using the credentials found in your environment or the script itself.*
 
 3. **Start the Development Server**
    ```bash
    npm run dev
    ```
-   The app will be available at `http://localhost:5173`.
+   The app will run at `http://localhost:3000`.
 
 4. **Production Build**
-   To create an exportable, production-ready build:
+   To verify and generate an optimized production build:
    ```bash
    npm run build
    ```
-   The output will be generated in the `app/dist/` directory, which can be deployed to Vercel, Netlify, or any static hosting provider.
 
-## Next Iterations
-- **Advanced Analytics**: Implement time-series data tracking for member engagement and event attendance.
-- **Notifications Engine**: Wire up the existing `notifications` table to push real-time browser alerts.
-- **In-App Messaging**: Expand the existing basic `Chat.jsx` to support threading and rich media reactions.
+## Key Completed Features
+- **Community Management & Safeguarded Deletion**: Leaders can rename and customize full details, with strict name-confirmation and cascade cleanup on delete.
+- **Segmented Onboarding**: Category-segmented tag library (60+ tags across 5 focus areas) with instant search and custom tag creation.
+- **Server Action Security**: Server-side role verification (Leader/Co-Leader/Admin) on all mutations (community updates, event editing, member management, posts).
+- **Interactive Discovery & Maps**: Real-time category filtering, map view, and event calendars.

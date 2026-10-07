@@ -1202,12 +1202,26 @@ export default function CommunityProfile() {
             <div style={{ marginBottom: '32px' }}>
               <h3 style={{ fontSize: '1.3rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: '0 0 16px 0' }}>What we're about</h3>
               
-              {/* Vibe Check */}
+              {/* Tags & Community Focus */}
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '16px' }}>
-                <span style={{ padding: '6px 12px', borderRadius: '8px', background: 'rgba(236,72,153,0.1)', color: 'var(--pink-400)', fontSize: '0.8rem', fontWeight: 600 }}>✨ {community.activity_level === 'Very Active' ? 'High Energy' : 'Chill Vibes'}</span>
-                {community.tags?.slice(0, 2).map((tag, idx) => (
-                   <span key={idx} style={{ padding: '6px 12px', borderRadius: '8px', background: 'rgba(59,130,246,0.1)', color: 'var(--blue-400)', fontSize: '0.8rem', fontWeight: 600 }}>🔥 {tag}</span>
-                ))}
+                {community.category && (
+                  <span style={{ padding: '6px 12px', borderRadius: '8px', background: 'rgba(20,184,166,0.12)', color: 'var(--teal-300)', fontSize: '0.8rem', fontWeight: 600, border: '1px solid rgba(20,184,166,0.2)' }}>
+                    🎯 {community.category}
+                  </span>
+                )}
+                {community.activity_level && (
+                  <span style={{ padding: '6px 12px', borderRadius: '8px', background: 'rgba(236,72,153,0.1)', color: 'var(--pink-400)', fontSize: '0.8rem', fontWeight: 600 }}>
+                    ⚡ {community.activity_level === 'Very Active' ? 'High Energy (Weekly)' : community.activity_level === 'Active' ? 'Active (Fortnightly)' : community.activity_level === 'Casual' ? 'Casual Pace' : community.activity_level}
+                  </span>
+                )}
+                {community.tags?.map((tag, idx) => {
+                  if (tag === community.category) return null;
+                  return (
+                    <span key={idx} style={{ padding: '6px 12px', borderRadius: '8px', background: 'rgba(59,130,246,0.1)', color: 'var(--blue-400)', fontSize: '0.8rem', fontWeight: 600 }}>
+                      {tag.match(/[\p{Emoji}]/u) ? tag : `🔥 ${tag}`}
+                    </span>
+                  );
+                })}
               </div>
 
               <div style={{ 
