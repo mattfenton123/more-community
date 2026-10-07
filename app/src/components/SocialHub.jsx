@@ -1,12 +1,12 @@
 "use client";
 import { useState, useRef } from 'react';
-import { Share2, Image as ImageIcon, Send, Activity, Users, Settings, Plus, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Share2, Image as ImageIcon, Send, Activity, Users, Settings, Plus, CheckCircle2, AlertCircle, Clock } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { useToast } from './Toast';
 import { FALLBACK_IMAGES } from '../lib/constants';
 
 export default function SocialHub({ communityId }) {
-  const { connectedSocialAccounts, setConnectedSocialAccounts, createPost, uploadImage } = useAppContext();
+  const { connectedSocialAccounts, setConnectedSocialAccounts, createPost, uploadImage, broadcastHistory, feedPosts } = useAppContext();
   const { toast } = useToast();
   const fileInputRef = useRef(null);
   
@@ -18,10 +18,10 @@ export default function SocialHub({ communityId }) {
   const [isUploading, setIsUploading] = useState(false);
   const [destinations, setDestinations] = useState({
     app: true,
-    instagram: connectedSocialAccounts.instagram.connected,
-    facebook: connectedSocialAccounts.facebook.connected,
-    x: connectedSocialAccounts.x.connected,
-    linkedin: connectedSocialAccounts.linkedin.connected
+    instagram: connectedSocialAccounts?.instagram?.connected || false,
+    facebook: connectedSocialAccounts?.facebook?.connected || false,
+    x: connectedSocialAccounts?.x?.connected || false,
+    linkedin: connectedSocialAccounts?.linkedin?.connected || false
   });
   const [isPosting, setIsPosting] = useState(false);
 
@@ -38,13 +38,22 @@ export default function SocialHub({ communityId }) {
 
     setIsPosting(true);
     try {
-      await createPost(communityId, postText, postMedia, destinations);
-      toast.success('Broadcast successful!', `Posted to ${selectedDests.length} platforms.`);
+      const result = await createPost(communityId, postText, postMedia, destinations);
+      const extCount = result?.socialCount || 0;
+      if (extCount > 0) {
+        toast.success(
+          'Broadcast Published!',
+          `Live on Community Feed & sent to members! (${result.selectedSocials.join(', ')} queued in demo mode)`
+        );
+      } else {
+        toast.success('Broadcast Published!', 'Published to Community Feed and sent to all members.');
+      }
       setPostText('');
       setPostMedia(null);
       setActiveTab('calendar');
     } catch (err) {
-      toast.error('Broadcast failed', 'There was an issue pushing to external networks.');
+      console.error(err);
+      toast.error('Broadcast failed', err.message || 'There was an issue pushing the broadcast.');
     } finally {
       setIsPosting(false);
     }
@@ -63,6 +72,24 @@ export default function SocialHub({ communityId }) {
       toast.success(`Connected ${platform}`);
     }
   };
+
+  // Compile real community broadcasts from history and feed announcement posts
+  const communityBroadcasts = [
+    ...(broadcastHistory || []).filter(b => b.communityId === communityId),
+    ...(feedPosts || [])
+      .filter(p => p.communityId === communityId && (p.is_announcement || p.isAnnouncement))
+      .filter(p => !(broadcastHistory || []).some(b => b.id === p.id))
+      .map(p => ({
+        id: p.id,
+        communityId: p.communityId,
+        text: p.text || p.content,
+        media: p.media || p.media_url,
+        destinations: { app: true },
+        syndicatedTo: [],
+        timestamp: p.timestamp || p.createdAt || p.created_at || new Date().toISOString(),
+        status: 'published'
+      }))
+  ].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -224,30 +251,76 @@ export default function SocialHub({ communityId }) {
 
       {activeTab === 'calendar' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div style={{ background: 'rgba(255,255,255,0.03)', padding: '24px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)', textAlign: 'center' }}>
-            <h3 style={{ margin: '0 0 8px 0', color: 'var(--white)' }}>Content History</h3>
-            <p style={{ color: 'var(--slate-400)', fontSize: '0.9rem', margin: 0 }}>View your past broadcasts across all platforms.</p>
+          <div style={{ background: 'rgba(255,255,255,0.03)', padding: '20px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)', textAlign: 'center' }}>
+            <h3 style={{ margin: '0 0 6px 0', color: 'var(--white)' }}>Content & Broadcast History</h3>
+            <p style={{ color: 'var(--slate-400)', fontSize: '0.85rem', margin: 0 }}>View your announcements syndicated across the app and connected channels.</p>
           </div>
           
-          <div style={{ background: 'rgba(20,184,166,0.05)', border: '1px solid rgba(20,184,166,0.2)', padding: '16px', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <CheckCircle2 color="var(--teal-400)" size={32} />
+          <div style={{ background: 'rgba(20,184,166,0.05)', border: '1px solid rgba(20,184,166,0.2)', padding: '14px 16px', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '14px' }}>
+            <CheckCircle2 color="var(--teal-400)" size={24} style={{ flexShrink: 0 }} />
             <div>
-              <div style={{ color: 'var(--white)', fontWeight: 600 }}>All systems operational</div>
-              <div style={{ color: 'var(--slate-400)', fontSize: '0.85rem' }}>Your last post was successfully syndicated.</div>
+              <div style={{ color: 'var(--white)', fontWeight: 600, fontSize: '0.9rem' }}>Community Syndication Engine Active</div>
+              <div style={{ color: 'var(--slate-400)', fontSize: '0.8rem' }}>Announcements automatically push to your Community Feed and dispatch in-app push alerts to members.</div>
             </div>
           </div>
           
-          <div style={{ color: 'var(--slate-500)', textAlign: 'center', padding: '40px' }}>
-            (History list will appear here in production)
-          </div>
+          {communityBroadcasts.length === 0 ? (
+            <div style={{ color: 'var(--slate-400)', textAlign: 'center', padding: '40px 20px', background: 'rgba(255,255,255,0.02)', borderRadius: '16px', border: '1px dashed rgba(255,255,255,0.08)' }}>
+              <Share2 size={32} style={{ color: 'var(--slate-600)', marginBottom: '10px' }} />
+              <div style={{ fontWeight: 600, color: 'var(--slate-300)', fontSize: '0.95rem' }}>No broadcasts published yet</div>
+              <div style={{ fontSize: '0.82rem', color: 'var(--slate-500)', marginTop: '4px' }}>Compose your first announcement above to syndicate it to your members.</div>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {communityBroadcasts.map((item, idx) => (
+                <div key={item.id || idx} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '16px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', flexWrap: 'wrap', gap: '8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontSize: '0.75rem', padding: '3px 8px', borderRadius: '99px', background: 'rgba(20,184,166,0.15)', color: 'var(--teal-300)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <CheckCircle2 size={12} /> Published
+                      </span>
+                      <span style={{ fontSize: '0.8rem', color: 'var(--slate-400)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <Clock size={12} /> {new Date(item.timestamp).toLocaleDateString([], { month: 'short', day: 'numeric' })} at {new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                      <span style={{ fontSize: '0.7rem', padding: '2px 8px', borderRadius: '99px', background: 'rgba(20,184,166,0.1)', color: 'var(--teal-300)', border: '1px solid rgba(20,184,166,0.2)' }}>
+                        App Feed
+                      </span>
+                      {item.syndicatedTo && item.syndicatedTo.map(soc => (
+                        <span key={soc} style={{ fontSize: '0.7rem', padding: '2px 8px', borderRadius: '99px', background: `${getPlatformColor(soc)}15`, color: getPlatformColor(soc), border: `1px solid ${getPlatformColor(soc)}30`, textTransform: 'capitalize' }}>
+                          {soc}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  <div style={{ color: 'var(--slate-200)', fontSize: '0.9rem', lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>
+                    {item.text}
+                  </div>
+                  {item.media && (
+                    <div style={{ marginTop: '12px', borderRadius: '10px', overflow: 'hidden', maxHeight: '180px', maxWidth: '320px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                      <img src={item.media} alt="Broadcast attachment" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
       {activeTab === 'accounts' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div style={{ marginBottom: '16px' }}>
-            <h3 style={{ color: 'var(--white)', margin: '0 0 8px 0' }}>Connected Accounts</h3>
-            <p style={{ color: 'var(--slate-400)', fontSize: '0.9rem', margin: 0 }}>Link your social media to broadcast updates seamlessly.</p>
+          <div style={{ marginBottom: '8px' }}>
+            <h3 style={{ color: 'var(--white)', margin: '0 0 6px 0' }}>Connected Accounts</h3>
+            <p style={{ color: 'var(--slate-400)', fontSize: '0.85rem', margin: 0 }}>Link your social media to broadcast updates seamlessly.</p>
+          </div>
+
+          <div style={{ background: 'rgba(59, 130, 246, 0.08)', border: '1px solid rgba(59, 130, 246, 0.25)', borderRadius: '16px', padding: '14px 16px', display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+            <AlertCircle size={18} color="var(--blue-400)" style={{ flexShrink: 0, marginTop: '2px' }} />
+            <div style={{ fontSize: '0.82rem', color: 'var(--slate-300)', lineHeight: 1.5 }}>
+              <strong style={{ color: 'white' }}>Live vs External Accounts:</strong> Internal app broadcast to your Community Feed and in-app member notifications is <strong>100% live</strong>. External social networks (Instagram, Facebook, X, LinkedIn) run in demonstration mode until official developer API keys (Meta Graph & X API) are integrated.
+            </div>
           </div>
           
           {Object.keys(connectedSocialAccounts).map(platform => {

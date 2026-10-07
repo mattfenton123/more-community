@@ -69,6 +69,7 @@ export function AppProvider({ children }) {
     facebook: { connected: true, handle: 'More Community' }
   });
   const [whatsappSettings, setWhatsappSettings] = useState({});
+  const [broadcastHistory, setBroadcastHistory] = useState([]);
   const [chatReadReceipts, setChatReadReceipts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -988,7 +989,7 @@ export function AppProvider({ children }) {
     if (notifications.length === 0) return;
     
     try {
-      await broadcastNotificationAction(notifications, session?.access_token);
+      await broadcastNotificationAction(notifications, session?.access_token, communityId);
     } catch (err) {
       console.error('Broadcast failed:', err);
       throw err;
@@ -1163,26 +1164,77 @@ export function AppProvider({ children }) {
     }
   };
 
-  const createPost = async (communityId, text, media, destinations) => {
-    // Optimistic UI update for internal feed
-    if (destinations.app) {
-      const newPost = {
-        id: `post_${Date.now()}`,
-        communityId,
-        authorId: user.id,
-        text,
-        media,
-        timestamp: new Date().toISOString(),
-        likes: 0,
-        comments: 0
-      };
-      setFeedPosts(prev => [newPost, ...prev]);
+  const createPost = async (communityId, text, media = null, destinations = { app: true }) => {
+    const { data: { session: curSession } } = await supabase.auth.getSession();
+    const token = curSession?.access_token;
+    
+    let dbPost = null;
+    // 1. Post to internal feed if app destination selected
+    if (destinations?.app) {
+      try {
+        const { createFeedPostAction } = await import('../lib/actions');
+        const res = await createFeedPostAction(
+          communityId,
+          user.id,
+          text,
+          media,
+          true, // isAnnouncement
+          false, // isPinned
+          token
+        );
+        if (res?.data) {
+          dbPost = res.data;
+          setFeedPosts(prev => [{
+            id: dbPost.id,
+            communityId,
+            authorId: user.id,
+            text,
+            media,
+            likes: 0,
+            comments: 0,
+            is_announcement: true,
+            timestamp: dbPost.created_at || new Date().toISOString()
+          }, ...prev]);
+        }
+      } catch (feedErr) {
+        console.error('Error in createPost feed insert:', feedErr);
+      }
+      
+      // Also broadcast an in-app notification to all community members
+      try {
+        const preview = text.length > 100 ? text.slice(0, 97) + '...' : text;
+        await broadcastNotification(communityId, '📢 Community Announcement', preview);
+      } catch (notifErr) {
+        console.warn('Could not broadcast notification to community members:', notifErr);
+      }
     }
 
-    // In a real app, this would send a POST request to an edge function
-    // which handles the OAuth API calls to Instagram, Facebook, etc.
-    // We simulate the network delay here.
-    return new Promise((resolve) => setTimeout(resolve, 1500));
+    // 2. Capture external syndication
+    const selectedSocials = Object.keys(destinations || {}).filter(k => k !== 'app' && destinations[k]);
+    const record = {
+      id: dbPost?.id || `broadcast_${Date.now()}`,
+      communityId,
+      text,
+      media,
+      destinations: { ...destinations },
+      syndicatedTo: selectedSocials,
+      timestamp: new Date().toISOString(),
+      status: 'published'
+    };
+    setBroadcastHistory(prev => [record, ...prev]);
+
+    // Simulate short network delay for external platforms if selected
+    if (selectedSocials.length > 0) {
+      await new Promise(res => setTimeout(res, 600));
+    }
+
+    return {
+      success: true,
+      post: dbPost,
+      destinations,
+      socialCount: selectedSocials.length,
+      selectedSocials
+    };
   };
 
   const createChannel = async (communityId, channelName, type = 'text', memberIds = null) => {
@@ -1502,6 +1554,8 @@ export function AppProvider({ children }) {
       setReviews,
       connectedSocialAccounts,
       setConnectedSocialAccounts,
+      createPost,
+      broadcastHistory,
       createFeedPost,
       likeFeedPost,
       createFeedComment,

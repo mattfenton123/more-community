@@ -518,8 +518,23 @@ export async function adminVerifyCommunityAction(communityId, verified, token) {
   return true;
 }
 
-export async function broadcastNotificationAction(notifications, token) {
-  await verifyAdmin(token);
+export async function broadcastNotificationAction(notifications, token, communityId = null) {
+  const user = await verifyUser(token);
+  if (!isAdminUser(user)) {
+    let targetCommId = communityId;
+    if (!targetCommId && notifications?.[0]?.link) {
+      const match = notifications[0].link.match(/\/community\/([^/?#]+)/);
+      if (match) targetCommId = match[1];
+    }
+    if (targetCommId) {
+      const role = await getCommunityRole(user.id, targetCommId);
+      if (role !== 'Leader' && role !== 'Co-Leader') {
+        throw new Error("Forbidden: Only community leaders or admins can broadcast");
+      }
+    } else {
+      throw new Error("Forbidden: Admin access required for platform broadcast");
+    }
+  }
   const { error } = await supabaseAdmin.from('notifications').insert(notifications);
   if (error) throw new Error(error.message);
   return true;
