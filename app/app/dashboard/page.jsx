@@ -957,23 +957,56 @@ export default function LeaderDashboard({ initialCommunityId }) {
           </div>
 
           <div className="dashboard-content-scroll">
-          {/* Tab Navigation (Mobile) */}
-          <div className="mobile-only" style={{ padding: '0 20px', marginBottom: '24px' }}>
-            <div style={{ display: 'flex', gap: '4px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', padding: '4px', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-              {['overview', 'events', 'people', 'monetisation', 'experiences', 'social hub', 'network', 'settings'].map(tab => (
-                <button 
-                  key={tab} onClick={() => setActiveTab(tab)}
-                  style={{
-                    flex: 1, padding: '10px 12px', borderRadius: '10px', border: 'none',
-                    background: activeTab === tab ? 'rgba(20,184,166,0.15)' : 'transparent',
-                    color: activeTab === tab ? 'var(--teal-300)' : 'var(--slate-400)',
-                    fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer', textTransform: 'capitalize',
-                    whiteSpace: 'nowrap', transition: 'all 0.2s',
-                  }}
-                >
-                  {tab}
-                </button>
-              ))}
+          {/* Tab Navigation (Mobile) - 4x2 Grid layout: No horizontal sliding */}
+          <div className="mobile-only" style={{ padding: '0 20px', marginBottom: '20px' }}>
+            <div style={{ 
+              display: 'grid', 
+              gridTemplateColumns: 'repeat(4, 1fr)', 
+              gap: '6px', 
+              background: 'rgba(255,255,255,0.02)', 
+              border: '1px solid rgba(255,255,255,0.06)', 
+              borderRadius: '16px', 
+              padding: '6px' 
+            }}>
+              {[
+                { id: 'overview', icon: Activity, label: 'Overview' },
+                { id: 'events', icon: Calendar, label: 'Events' },
+                { id: 'people', icon: Users, label: 'People' },
+                { id: 'monetisation', icon: DollarSign, label: 'Revenue' },
+                { id: 'experiences', icon: Globe, label: 'Experiences' },
+                { id: 'social hub', icon: Heart, label: 'Social Hub' },
+                { id: 'network', icon: Map, label: 'Network' },
+                { id: 'settings', icon: Settings, label: 'Settings' }
+              ].map(tab => {
+                const isActive = activeTab === tab.id;
+                const Icon = tab.icon;
+                return (
+                  <button 
+                    key={tab.id} 
+                    onClick={() => setActiveTab(tab.id)}
+                    className="interactive-press"
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '4px',
+                      padding: '8px 4px',
+                      borderRadius: '10px',
+                      border: isActive ? '1px solid rgba(20,184,166,0.3)' : '1px solid transparent',
+                      background: isActive ? 'rgba(20,184,166,0.15)' : 'transparent',
+                      color: isActive ? 'var(--teal-300)' : 'var(--slate-400)',
+                      fontWeight: isActive ? 700 : 500,
+                      fontSize: '0.72rem',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    <Icon size={16} color={isActive ? 'var(--teal-300)' : 'var(--slate-400)'} />
+                    <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}>{tab.label}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
 

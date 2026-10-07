@@ -508,7 +508,7 @@ export default function CommunityProfile() {
       )}
 
       {/* ===== TAB NAVIGATION ===== */}
-      <div style={{ padding: '0 20px', marginBottom: '24px' }}>
+      <div style={{ padding: '0 20px', marginBottom: '24px', overflow: 'hidden', maxWidth: '100%' }}>
         <div style={{ 
           display: 'flex', 
           gap: '8px', 
@@ -516,7 +516,6 @@ export default function CommunityProfile() {
           WebkitOverflowScrolling: 'touch',
           scrollbarWidth: 'none', // Firefox
           msOverflowStyle: 'none', // IE and Edge
-          // Hide scrollbar for Chrome, Safari and Opera
           paddingBottom: '8px',
           margin: '0 -20px', // allow scroll to edge
           padding: '4px 20px 8px 20px', // restore padding including edges
