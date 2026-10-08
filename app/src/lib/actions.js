@@ -456,6 +456,8 @@ export async function updateCommunityAction(communityId, updates, token) {
   if (updates.whatsapp_group !== undefined) dbUpdates.whatsapp_group = updates.whatsapp_group;
   if (updates.instagram_handle !== undefined) dbUpdates.instagram_handle = updates.instagram_handle;
   if (updates.location_name !== undefined) dbUpdates.location_name = updates.location_name;
+  if (updates.lat !== undefined) dbUpdates.lat = updates.lat;
+  if (updates.lng !== undefined) dbUpdates.lng = updates.lng;
   if (updates.cost !== undefined) dbUpdates.cost = updates.cost;
   if (updates.activity_level !== undefined) dbUpdates.activity_level = updates.activity_level;
   if (updates.target_audience !== undefined) dbUpdates.target_audience = updates.target_audience;

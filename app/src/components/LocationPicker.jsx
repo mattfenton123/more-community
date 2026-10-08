@@ -35,7 +35,12 @@ const FAST_TW_SPOTS = [
   { name: 'Ashdown Forest', lat: 51.0667, lon: 0.0667, aliases: ['ashdown', 'ashdown forest'] },
   { name: 'Southborough Common', lat: 51.1578, lon: 0.2742, aliases: ['southborough'] },
   { name: 'Rusthall Common', lat: 51.1390, lon: 0.2310, aliases: ['rusthall'] },
-  { name: 'Broadwater Warren', lat: 51.1095, lon: 0.2480, aliases: ['broadwater', 'broadwater warren'] }
+  { name: 'Broadwater Warren', lat: 51.1095, lon: 0.2480, aliases: ['broadwater', 'broadwater warren'] },
+  { name: 'Cuckoo Trail Car Park, Heathfield', lat: 50.9685, lon: 0.2520, aliases: ['cuckoo trail', 'cuckoo trail car park', 'cuckoo trail heathfield', 'heathfield walk'] },
+  { name: 'Heathfield, East Sussex', lat: 50.9680, lon: 0.2530, aliases: ['heathfield', 'heathfield high street', 'heathfield east sussex'] },
+  { name: 'Mayfield, East Sussex', lat: 51.0200, lon: 0.2600, aliases: ['mayfield', 'mayfield village'] },
+  { name: 'Crowborough, East Sussex', lat: 51.0550, lon: 0.1600, aliases: ['crowborough'] },
+  { name: 'Wadhurst, East Sussex', lat: 51.0620, lon: 0.3400, aliases: ['wadhurst'] }
 ];
 
 function createPinIcon() {

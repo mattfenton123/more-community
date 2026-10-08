@@ -312,7 +312,7 @@ export default function Discover() {
       {viewMode === 'map' ? (
         /* Map View */
         <div style={{ width: '100%', height: 'calc(100dvh - 170px)', position: 'relative' }}>
-          <MapView communities={filteredCommunities} />
+          <MapView communities={filteredCommunities} events={events} />
           <div style={{
             position: 'absolute', bottom: '16px', left: '50%', transform: 'translateX(-50%)',
             background: 'rgba(15, 23, 42, 0.9)', backdropFilter: 'blur(12px)',
