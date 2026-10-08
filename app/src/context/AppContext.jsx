@@ -338,15 +338,28 @@ export function AppProvider({ children }) {
           ensureLeadersNetworkAction().catch(e => console.error("Error ensuring leaders network:", e));
         }
 
-        setCommunities(comms.map((c) => ({
-          ...c, // pass through ALL columns from Supabase
-          tags: c.tags || [],
-          image: c.image || c.cover_image, // support both column names
-          category: (c.tags && c.tags.length > 0) ? c.tags[0] : 'All',
-          metrics: { members: 1, cost: c.cost || 'Free', eventsRun: 0 },
-          colors: ['#3b82f6', '#14b8a6'], // fallback gradient
-          highlights: c.highlights || []
-        })));
+        setCommunities(comms.map((c) => {
+          let storedGuidelines = [];
+          if (Array.isArray(c.guidelines) && c.guidelines.length > 0) {
+            storedGuidelines = c.guidelines;
+          } else if (typeof window !== 'undefined') {
+            try {
+              const raw = localStorage.getItem(`more_community_guidelines_${c.id}`);
+              if (raw) storedGuidelines = JSON.parse(raw);
+            } catch (e) {}
+          }
+
+          return {
+            ...c, // pass through ALL columns from Supabase
+            guidelines: storedGuidelines,
+            tags: c.tags || [],
+            image: c.image || c.cover_image, // support both column names
+            category: (c.tags && c.tags.length > 0) ? c.tags[0] : 'All',
+            metrics: { members: 1, cost: c.cost || 'Free', eventsRun: 0 },
+            colors: ['#3b82f6', '#14b8a6'], // fallback gradient
+            highlights: c.highlights || []
+          };
+        }));
       }
 
       if (chanRes.data) setChannels(chanRes.data);
@@ -1376,6 +1389,14 @@ export function AppProvider({ children }) {
     
     try {
       const dbUpdates = { ...updates };
+      if (updates.guidelines !== undefined) {
+        if (typeof window !== 'undefined') {
+          try {
+            localStorage.setItem(`more_community_guidelines_${communityId}`, JSON.stringify(updates.guidelines));
+          } catch (e) {}
+        }
+        delete dbUpdates.guidelines; // Stored client-side until DB migration is run
+      }
       // Prevent throwing error for non-existent mock CRM columns
       delete dbUpdates.autoWelcomeEnabled;
       delete dbUpdates.autoRemindersEnabled;

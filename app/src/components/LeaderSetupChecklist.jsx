@@ -47,7 +47,7 @@ export default function LeaderSetupChecklist({ community, events = [], onOpenEve
       completed: hasGuidelines,
       actionLabel: hasGuidelines ? 'Review Rules' : 'Add Guidelines',
       icon: Settings,
-      onClick: onOpenSettings
+      onClick: () => onOpenSettings ? onOpenSettings('guidelines') : null
     },
     {
       id: 'invite',

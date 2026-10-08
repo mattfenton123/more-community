@@ -1,6 +1,6 @@
 "use client";
 import { useState, useRef, useMemo, useEffect } from 'react';
-import { Users, Calendar, MessageCircle, TrendingUp, Search, Plus, MapPin, Image as ImageIcon, CreditCard, ChevronRight, ChevronLeft, Download, Activity, Globe, Heart, Crown, Info, X, Map, Zap, Mail, Trash2, UserCheck, Ban, ChevronDown, ChevronUp, Settings, Megaphone, QrCode, BarChart3, Ticket, ScanLine, UserPlus, DollarSign, Clock, Edit3, Check, Eye, EyeOff, Shield, Star, Sparkles } from 'lucide-react';
+import { Users, Calendar, MessageCircle, TrendingUp, Search, Plus, MapPin, Image as ImageIcon, CreditCard, ChevronRight, ChevronLeft, Download, Activity, Globe, Heart, Crown, Info, X, Map, Zap, Mail, Trash2, UserCheck, Ban, ChevronDown, ChevronUp, Settings, Megaphone, QrCode, BarChart3, Ticket, ScanLine, UserPlus, DollarSign, Clock, Edit3, Check, Eye, EyeOff, Shield, Star, Sparkles, BookOpen, ListChecks } from 'lucide-react';
 import AppHeader from '../../src/components/AppHeader';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAppContext } from '../../src/context/AppContext';
@@ -17,6 +17,79 @@ import LeaderSetupChecklist from '../../src/components/LeaderSetupChecklist';
 import dynamic from 'next/dynamic';
 const LocationPicker = dynamic(() => import('../../src/components/LocationPicker'), { ssr: false });
 import { COMMUNITY_TAG_CATEGORIES, ALL_COMMUNITY_TAGS } from '../../src/lib/constants';
+
+// ─── Pre-Made Guidelines Presets & Inspiration ─────────────
+export const PREMADE_GUIDELINE_PACKS = [
+  {
+    id: 'core',
+    name: '🌟 Core Community Standard',
+    desc: 'The essential welcoming, respectful, and anti-spam baseline for any group.',
+    badge: 'Standard 3 Rules',
+    rules: [
+      'Be respectful, inclusive, and kind to all members at all times.',
+      'No unsolicited commercial sales pitches, promotions, or spam.',
+      'Respect member privacy and keep private group conversations confidential.'
+    ]
+  },
+  {
+    id: 'dogs',
+    name: '🐶 Dogs & Pet Walks (Golden Retrievers & Friends)',
+    desc: 'Tailored safety, leash etiquette, and dog welfare rules for meetup walks.',
+    badge: 'Popular for Dog Groups',
+    rules: [
+      'Keep dogs on-lead until reaching designated, safe off-lead open areas.',
+      'Always clean up after your dog and dispose of waste responsibly.',
+      'Ask the owner before introducing dogs or offering treats.',
+      'Ensure dog vaccinations, flea, and worm treatments are up to date.',
+      'Give nervous or reactive dogs plenty of space and respect color-coded leads.'
+    ]
+  },
+  {
+    id: 'outdoors',
+    name: '🏃 Sports, Hiking & Fitness',
+    desc: 'Pacing, hydration, trail safety, and RSVP commitment for active groups.',
+    badge: 'Active & Outdoors',
+    rules: [
+      'All fitness levels and paces welcome — we never leave anyone behind.',
+      'Follow the route leader briefing and stay aware of road/trail hazards.',
+      'Please cancel your event RSVP at least 24 hours in advance if you cannot make it.',
+      'Wear suitable footwear, dress for the weather, and bring your own hydration.'
+    ]
+  },
+  {
+    id: 'networking',
+    name: '💼 Business & Founder Networking',
+    desc: 'Relationship-first professional collaboration and peer support.',
+    badge: 'Founders & Business',
+    rules: [
+      'Focus on mutual support, learning, and authentic relationships over hard selling.',
+      'Honor member confidentiality regarding business ideas, contacts, and discussions.',
+      'Be punctual for morning and evening meetups and notify hosts if running late.'
+    ]
+  },
+  {
+    id: 'wellness',
+    name: '🧘 Mindful Wellness & Support',
+    desc: 'Safe, empathetic space for honest sharing, mindfulness, and mental health.',
+    badge: 'Empathy & Wellness',
+    rules: [
+      'What is shared in our circle stays in our circle — strict confidentiality.',
+      'A zero-judgement zone: listen actively, show compassion, and respect silence.',
+      'Step back or take a break anytime you need personal space.'
+    ]
+  }
+];
+
+export const QUICK_INSPIRATION_RULES = [
+  'Be welcoming and friendly to new members',
+  'No hate speech, bullying, or discrimination of any kind',
+  'No unsolicited commercial sales pitches or spam',
+  'Notify the leader if you need to cancel your RSVP',
+  'Ask permission before posting member photos to public socials',
+  'Keep dogs friendly, on-lead near roads, and clean up waste',
+  'Arrive 5–10 minutes before scheduled events begin',
+  'Respect personal boundaries and consent during all activities'
+];
 
 // ─── Stat Card Component ──────────────────────────────────
 const StatCard = ({ value, label, color, icon: Icon, accent }) => (
@@ -89,15 +162,15 @@ export default function LeaderDashboard({ initialCommunityId }) {
     name: '', category: '', description: '', location_name: '', cost: 'Free', target_audience: '', activity_level: 'Active', tags: [], customTagInput: '', whatsapp_group: '', instagram_handle: '' 
   });
   const [editTagCategory, setEditTagCategory] = useState('All');
-  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'overview');
+  const [activeTab, setActiveTab] = useState(searchParams?.get('tab') || 'overview');
   const [activeCommunityId, setActiveCommunityId] = useState(
     initialCommunityId || searchParams?.get('community') || user?.ledCommunities?.[0] || null
   );
   
   useEffect(() => {
-    const tab = searchParams.get('tab');
+    const tab = searchParams?.get('tab');
     if (tab) setActiveTab(tab);
-    const comm = searchParams.get('community');
+    const comm = searchParams?.get('community');
     if (comm) setActiveCommunityId(comm);
   }, [searchParams]);
 
@@ -141,13 +214,105 @@ export default function LeaderDashboard({ initialCommunityId }) {
   const [linkCopied, setLinkCopied] = useState(false);
   const [leaderDrillDown, setLeaderDrillDown] = useState(null); // 'members'|'active'|'revenue'|'events'|'checkin'|'next'
 
+  // ─── Community Guidelines State & Effects ─────────────────
+  const [guidelinesDraft, setGuidelinesDraft] = useState([]);
+  const [newGuidelineInput, setNewGuidelineInput] = useState('');
+  const [isGuidelinesExpanded, setIsGuidelinesExpanded] = useState(false);
+  const [isSavingGuidelines, setIsSavingGuidelines] = useState(false);
+  const [selectedPackId, setSelectedPackId] = useState(null);
+
+  useEffect(() => {
+    if (community?.id) {
+      if (Array.isArray(community.guidelines) && community.guidelines.length > 0) {
+        setGuidelinesDraft([...community.guidelines]);
+      } else {
+        try {
+          const raw = localStorage.getItem(`more_community_guidelines_${community.id}`);
+          if (raw) setGuidelinesDraft(JSON.parse(raw));
+          else setGuidelinesDraft([]);
+        } catch {
+          setGuidelinesDraft([]);
+        }
+      }
+    }
+  }, [community?.id, community?.guidelines]);
+
+  useEffect(() => {
+    if (searchParams?.get('tab') === 'settings' && (searchParams?.get('section') === 'guidelines' || searchParams?.get('action') === 'guidelines')) {
+      setIsGuidelinesExpanded(true);
+    }
+  }, [searchParams]);
+
+  const handleSaveGuidelines = async () => {
+    if (!community?.id) return;
+    setIsSavingGuidelines(true);
+    const cleaned = guidelinesDraft.map(g => g.trim()).filter(Boolean);
+    try {
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem(`more_community_guidelines_${community.id}`, JSON.stringify(cleaned));
+        } catch (e) {}
+      }
+      await updateCommunity(community.id, { guidelines: cleaned });
+      toast.success('Guidelines saved!', `${cleaned.length} community guidelines are now active.`);
+    } catch (err) {
+      console.error(err);
+      toast.error('Could not save guidelines', 'Please try again.');
+    } finally {
+      setIsSavingGuidelines(false);
+    }
+  };
+
+  const handleApplyPresetPack = (pack, replace = false) => {
+    setSelectedPackId(pack.id);
+    if (replace || guidelinesDraft.length === 0) {
+      setGuidelinesDraft([...pack.rules]);
+      toast.success('Template loaded!', `${pack.rules.length} rules loaded from ${pack.name}.`);
+    } else {
+      const existing = new Set(guidelinesDraft.map(r => r.toLowerCase().trim()));
+      const toAdd = pack.rules.filter(r => !existing.has(r.toLowerCase().trim()));
+      if (toAdd.length === 0) {
+        toast.info('Already added', 'These rules are already in your list.');
+      } else {
+        setGuidelinesDraft(prev => [...prev, ...toAdd]);
+        toast.success('Rules appended!', `Added ${toAdd.length} additional rules from ${pack.name}.`);
+      }
+    }
+  };
+
+  const handleAddInspirationRule = (ruleText) => {
+    const trimmed = ruleText.trim();
+    if (!trimmed) return;
+    if (guidelinesDraft.some(r => r.toLowerCase().trim() === trimmed.toLowerCase())) {
+      toast.info('Already in draft', 'This guideline is already in your list.');
+      return;
+    }
+    setGuidelinesDraft(prev => [...prev, trimmed]);
+    toast.success('Rule added', `Added to guidelines.`);
+  };
+
+  const handleAddCustomGuideline = (e) => {
+    if (e) e.preventDefault();
+    const text = newGuidelineInput.trim();
+    if (!text) return;
+    setGuidelinesDraft(prev => [...prev, text]);
+    setNewGuidelineInput('');
+  };
+
   const fileInputRef = useRef(null);
 
   // ─── Derived Data ─────────────────────────────────────────
   const availableCommunities = user?.isAdmin 
     ? communities 
-    : (user?.ledCommunities || []).map(id => communities.find(comm => comm.id === id)).filter(Boolean);
-  const communityIdLed = activeCommunityId || user?.ledCommunities?.[0] || (user?.isAdmin && communities.length > 0 ? communities[0].id : null);
+    : communities.filter(comm => 
+        (user?.ledCommunities || []).includes(comm.id) ||
+        comm.leader_id === user?.id ||
+        comm.creator_id === user?.id ||
+        comm.creatorId === user?.id ||
+        comm.id === activeCommunityId ||
+        (communityMemberships[comm.id] || []).some(m => (m.userId === user?.id || m.user_id === user?.id) && (m.role === 'co-founder' || m.role === 'Leader' || m.role === 'Co-Leader' || m.role === 'Admin'))
+      );
+  const communityIdLed = activeCommunityId || availableCommunities[0]?.id || user?.ledCommunities?.[0] || (user?.isAdmin && communities.length > 0 ? communities[0].id : null);
   const community = communities.find(c => c.id === communityIdLed);
   const memberList = community ? (communityMemberships[community.id] || []) : [];
   const communityEvents = community ? events.filter(e => e.communityId === community.id).sort((a, b) => new Date(a.date) - new Date(b.date)) : [];
@@ -1092,7 +1257,10 @@ export default function LeaderDashboard({ initialCommunityId }) {
                     setEventForm(emptyEventForm);
                     setModalType('event');
                   }}
-                  onOpenSettings={() => setActiveTab('settings')}
+                  onOpenSettings={(section) => {
+                    setActiveTab('settings');
+                    if (section === 'guidelines') setIsGuidelinesExpanded(true);
+                  }}
                 />
               </div>
 
@@ -2054,6 +2222,272 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 <span style={{ flex: 1, fontWeight: 500 }}>Edit Microsite Profile</span>
                 <ChevronRight size={16} color="var(--slate-500)" />
               </button>
+
+              {/* Community Guidelines & Norms */}
+              <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', overflow: 'hidden' }}>
+                <button
+                  type="button"
+                  onClick={() => setIsGuidelinesExpanded(!isGuidelinesExpanded)}
+                  className="interactive-press"
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '16px', padding: '16px',
+                    width: '100%', background: 'transparent', border: 'none',
+                    color: 'var(--white)', cursor: 'pointer', textAlign: 'left'
+                  }}
+                >
+                  <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(20,184,166,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--teal-400)' }}>
+                    <BookOpen size={20} />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                      <span style={{ fontWeight: 500, color: 'var(--white)', fontSize: '0.95rem' }}>Community Guidelines & Norms</span>
+                      {guidelinesDraft.length > 0 ? (
+                        <span style={{ fontSize: '0.7rem', padding: '2px 8px', borderRadius: '999px', background: 'rgba(20,184,166,0.2)', color: 'var(--teal-300)', fontWeight: 600 }}>
+                          {guidelinesDraft.length} {guidelinesDraft.length === 1 ? 'Rule' : 'Rules'} Active
+                        </span>
+                      ) : (
+                        <span style={{ fontSize: '0.7rem', padding: '2px 8px', borderRadius: '999px', background: 'rgba(245,158,11,0.2)', color: '#fbbf24', fontWeight: 600 }}>
+                          Not Set
+                        </span>
+                      )}
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', marginTop: '2px' }}>
+                      Set safety expectations, pet etiquette, and welcoming norms
+                    </div>
+                  </div>
+                  {isGuidelinesExpanded ? <ChevronUp size={18} color="var(--slate-400)" /> : <ChevronDown size={18} color="var(--slate-400)" />}
+                </button>
+
+                {isGuidelinesExpanded && (
+                  <div style={{ padding: '0 16px 20px 16px', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', gap: '16px', paddingTop: '16px' }}>
+                    {/* Pre-made template pack selector */}
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                        <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--teal-300)', textTransform: 'uppercase', letterSpacing: '0.04em', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <Sparkles size={14} /> Starter Template Packs (1-Click)
+                        </span>
+                        <span style={{ fontSize: '0.72rem', color: 'var(--slate-400)' }}>Select a template to build from</span>
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '8px' }}>
+                        {PREMADE_GUIDELINE_PACKS.map(pack => {
+                          const isRecommended = (pack.id === 'dogs' && (
+                            (community?.name || '').toLowerCase().includes('dog') || 
+                            (community?.name || '').toLowerCase().includes('golden') ||
+                            (community?.tags || []).some(t => t.toLowerCase().includes('dog') || t.toLowerCase().includes('pet'))
+                          ));
+                          const isSelected = selectedPackId === pack.id;
+                          return (
+                            <div
+                              key={pack.id}
+                              style={{
+                                padding: '12px',
+                                background: isSelected ? 'rgba(20,184,166,0.12)' : isRecommended ? 'rgba(245,158,11,0.08)' : 'rgba(255,255,255,0.02)',
+                                border: isSelected ? '1px solid var(--teal-500)' : isRecommended ? '1px solid rgba(245,158,11,0.4)' : '1px solid rgba(255,255,255,0.05)',
+                                borderRadius: '10px',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                justifyContent: 'space-between',
+                                gap: '8px'
+                              }}
+                            >
+                              <div>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                                  <span style={{ fontWeight: 600, fontSize: '0.82rem', color: 'var(--white)' }}>{pack.name}</span>
+                                  {isRecommended && (
+                                    <span style={{ fontSize: '0.65rem', padding: '1px 6px', borderRadius: '4px', background: 'rgba(245,158,11,0.25)', color: '#fbbf24', fontWeight: 700 }}>
+                                      Best Fit
+                                    </span>
+                                  )}
+                                </div>
+                                <p style={{ fontSize: '0.72rem', color: 'var(--slate-400)', margin: '0 0 6px 0', lineHeight: 1.4 }}>{pack.desc}</p>
+                                <div style={{ fontSize: '0.7rem', color: 'var(--slate-500)' }}>
+                                  • {pack.rules.length} pre-written rules
+                                </div>
+                              </div>
+                              <div style={{ display: 'flex', gap: '6px', marginTop: '4px' }}>
+                                <button
+                                  type="button"
+                                  onClick={() => handleApplyPresetPack(pack, true)}
+                                  className="interactive-press"
+                                  style={{
+                                    flex: 1, padding: '6px 8px', borderRadius: '6px', border: 'none',
+                                    background: isSelected ? 'var(--teal-500)' : 'rgba(20,184,166,0.2)',
+                                    color: isSelected ? '#000' : 'var(--teal-300)',
+                                    fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer'
+                                  }}
+                                >
+                                  Use Template
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleApplyPresetPack(pack, false)}
+                                  className="interactive-press"
+                                  style={{
+                                    padding: '6px 8px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)',
+                                    background: 'rgba(255,255,255,0.04)',
+                                    color: 'var(--slate-300)',
+                                    fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer'
+                                  }}
+                                  title="Append rules to existing draft without replacing"
+                                >
+                                  + Append
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Quick Inspiration Chips */}
+                    <div>
+                      <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--slate-300)', marginBottom: '8px' }}>
+                        💡 Tap any rule to add instantly:
+                      </div>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                        {QUICK_INSPIRATION_RULES.map((rule, idx) => {
+                          const isAlreadyAdded = guidelinesDraft.some(r => r.toLowerCase().trim() === rule.toLowerCase().trim());
+                          return (
+                            <button
+                              key={idx}
+                              type="button"
+                              onClick={() => handleAddInspirationRule(rule)}
+                              disabled={isAlreadyAdded}
+                              className="interactive-press"
+                              style={{
+                                padding: '5px 10px',
+                                borderRadius: '999px',
+                                border: isAlreadyAdded ? '1px solid rgba(255,255,255,0.04)' : '1px solid rgba(20,184,166,0.3)',
+                                background: isAlreadyAdded ? 'rgba(255,255,255,0.02)' : 'rgba(20,184,166,0.08)',
+                                color: isAlreadyAdded ? 'var(--slate-500)' : 'var(--teal-300)',
+                                fontSize: '0.72rem',
+                                cursor: isAlreadyAdded ? 'default' : 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '4px'
+                              }}
+                            >
+                              {isAlreadyAdded ? <Check size={12} /> : <Plus size={12} />}
+                              <span>{rule}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Active Guidelines Draft List */}
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                        <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--white)' }}>
+                          Your Group Guidelines ({guidelinesDraft.length})
+                        </span>
+                        {guidelinesDraft.length > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (confirm('Clear all draft guidelines?')) setGuidelinesDraft([]);
+                            }}
+                            style={{ background: 'none', border: 'none', color: 'var(--rose-400)', fontSize: '0.72rem', cursor: 'pointer', padding: 0 }}
+                          >
+                            Clear all
+                          </button>
+                        )}
+                      </div>
+
+                      {guidelinesDraft.length === 0 ? (
+                        <div style={{ padding: '20px', borderRadius: '10px', background: 'rgba(255,255,255,0.02)', border: '1px dashed rgba(255,255,255,0.1)', textAlign: 'center', color: 'var(--slate-400)', fontSize: '0.8rem' }}>
+                          No guidelines set yet. Choose a starter pack above or type a custom rule below.
+                        </div>
+                      ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          {guidelinesDraft.map((rule, idx) => (
+                            <div
+                              key={idx}
+                              style={{
+                                display: 'flex', alignItems: 'center', gap: '10px',
+                                padding: '8px 12px', background: 'rgba(255,255,255,0.03)',
+                                border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px'
+                              }}
+                            >
+                              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--teal-400)', minWidth: '22px' }}>
+                                #{idx + 1}
+                              </span>
+                              <input
+                                type="text"
+                                value={rule}
+                                onChange={e => {
+                                  const newVal = e.target.value;
+                                  setGuidelinesDraft(prev => prev.map((r, i) => i === idx ? newVal : r));
+                                }}
+                                style={{
+                                  flex: 1, background: 'transparent', border: 'none',
+                                  color: 'var(--white)', fontSize: '0.82rem', outline: 'none'
+                                }}
+                              />
+                              <button
+                                type="button"
+                                onClick={() => setGuidelinesDraft(prev => prev.filter((_, i) => i !== idx))}
+                                style={{ background: 'none', border: 'none', color: 'var(--slate-500)', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center' }}
+                                title="Remove rule"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Add Custom Rule Input */}
+                    <form onSubmit={handleAddCustomGuideline} style={{ display: 'flex', gap: '8px' }}>
+                      <input
+                        type="text"
+                        value={newGuidelineInput}
+                        onChange={e => setNewGuidelineInput(e.target.value)}
+                        placeholder="Type a custom guideline (e.g. Bring dog waste bags & water)..."
+                        style={{
+                          flex: 1, padding: '10px 14px', background: 'rgba(255,255,255,0.04)',
+                          border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px',
+                          color: 'var(--white)', fontSize: '0.82rem', outline: 'none'
+                        }}
+                      />
+                      <button
+                        type="submit"
+                        disabled={!newGuidelineInput.trim()}
+                        className="interactive-press"
+                        style={{
+                          padding: '0 16px', background: newGuidelineInput.trim() ? 'rgba(20,184,166,0.2)' : 'rgba(255,255,255,0.05)',
+                          border: newGuidelineInput.trim() ? '1px solid rgba(20,184,166,0.4)' : '1px solid rgba(255,255,255,0.08)',
+                          borderRadius: '8px', color: newGuidelineInput.trim() ? 'var(--teal-300)' : 'var(--slate-500)',
+                          fontSize: '0.8rem', fontWeight: 700, cursor: newGuidelineInput.trim() ? 'pointer' : 'default',
+                          display: 'flex', alignItems: 'center', gap: '4px'
+                        }}
+                      >
+                        <Plus size={14} /> Add
+                      </button>
+                    </form>
+
+                    {/* Save Guidelines Action Bar */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '8px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                      <span style={{ fontSize: '0.72rem', color: 'var(--slate-400)' }}>
+                        Changes are published to your community microsite immediately.
+                      </span>
+                      <button
+                        type="button"
+                        onClick={handleSaveGuidelines}
+                        disabled={isSavingGuidelines}
+                        className="btn btn-primary interactive-press"
+                        style={{
+                          padding: '8px 18px', fontSize: '0.82rem', borderRadius: '8px',
+                          display: 'flex', alignItems: 'center', gap: '6px'
+                        }}
+                      >
+                        <Check size={14} /> {isSavingGuidelines ? 'Saving...' : 'Save Guidelines'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
 
               {/* WhatsApp */}
               <button onClick={() => { setWaConfig(whatsappSettings[community.id] || { businessConnected: false, groupLink: community.whatsapp_group || '' }); setModalType('whatsapp'); }} className="interactive-press" style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', color: 'var(--white)', width: '100%', cursor: 'pointer', textAlign: 'left' }}>

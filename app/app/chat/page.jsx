@@ -13,7 +13,7 @@ export default function ChatIndex() {
   const { directMessages, chatReadReceipts, messages } = useChat();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const communityFilterId = searchParams.get('communityId');
+  const communityFilterId = searchParams?.get('communityId');
   const { toast } = useToast();
   
   const [showCreateModal, setShowCreateModal] = useState(false);

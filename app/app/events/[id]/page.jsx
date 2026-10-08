@@ -10,7 +10,7 @@ export async function generateMetadata({ params }) {
   
   if (!event) {
     return {
-      title: 'Event Not Found',
+      title: 'Community Event | more.',
     };
   }
 
