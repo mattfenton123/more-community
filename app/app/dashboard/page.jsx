@@ -20,6 +20,7 @@ import { COMMUNITY_TAG_CATEGORIES, ALL_COMMUNITY_TAGS } from '../../src/lib/cons
 
 import { PREMADE_GUIDELINE_PACKS, QUICK_INSPIRATION_RULES } from '../../src/lib/guidelinesPacks';
 import EventReminderModal from '../../src/components/EventReminderModal';
+import NetworkEventPreviewModal from '../../src/components/NetworkEventPreviewModal';
 
 // ─── Stat Card Component ──────────────────────────────────
 const StatCard = ({ value, label, color, icon: Icon, accent }) => (
@@ -144,6 +145,41 @@ export default function LeaderDashboard({ initialCommunityId }) {
 
   const handleOpenReminderModal = (event) => {
     setReminderModalEvent(event);
+  };
+
+  const [selectedNetworkEvent, setSelectedNetworkEvent] = useState(null);
+  const [isCoHostingNetworkEvent, setIsCoHostingNetworkEvent] = useState(false);
+
+  const handleCoHostNetworkEvent = async (eventToCoHost) => {
+    const targetCommunityId = activeCommunityId || communityIdLed;
+    if (!eventToCoHost || !targetCommunityId) {
+      toast.error('Selection Error', 'Please select a community to add this event to.');
+      return;
+    }
+    try {
+      setIsCoHostingNetworkEvent(true);
+      const sourceCommunity = communities.find(c => c.id === eventToCoHost.communityId);
+      const newEvent = {
+        title: `Co-Hosted: ${eventToCoHost.title}`,
+        description: (eventToCoHost.description || '') + `\n\n🤝 Co-hosted with ${sourceCommunity?.name || 'our partner community'}.`,
+        date: eventToCoHost.date,
+        time: eventToCoHost.time,
+        location: eventToCoHost.location,
+        image: eventToCoHost.image,
+        communityId: targetCommunityId,
+        status: 'published',
+        maxCapacity: eventToCoHost.maxCapacity || 50,
+        ticketPrice: eventToCoHost.ticketPrice || eventToCoHost.ticket_price || 0
+      };
+      await createEvent(targetCommunityId, newEvent);
+      toast.success('Event Co-Hosted! 🎉', `"${eventToCoHost.title}" is now added to your community calendar.`);
+      setSelectedNetworkEvent(null);
+    } catch (err) {
+      console.error('Failed to co-host event:', err);
+      toast.error('Co-Host Failed', 'Could not add this event to your calendar. Please try again.');
+    } finally {
+      setIsCoHostingNetworkEvent(false);
+    }
   };
   const [coLeaderSearch, setCoLeaderSearch] = useState('');
   const [subscriptionPrice, setSubscriptionPrice] = useState('');
@@ -1827,56 +1863,161 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 </p>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                 {events.filter(e => e.status === 'published' && !user.ledCommunities?.includes(e.communityId)).map(event => {
                   const sourceCommunity = communities.find(c => c.id === event.communityId);
+                  const attendeeCount = (eventRsvps[event.id] || []).length;
+                  const priceLabel = (event.ticketPrice || event.ticket_price) > 0 ? `£${event.ticketPrice || event.ticket_price}` : 'Free';
+
                   return (
-                    <div key={event.id} className="stagger-item" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '16px' }}>
+                    <div 
+                      key={event.id} 
+                      className="stagger-item interactive-hover" 
+                      style={{ 
+                        background: 'rgba(255,255,255,0.02)', 
+                        border: '1px solid rgba(255,255,255,0.06)', 
+                        borderRadius: '16px', 
+                        padding: '18px',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
                       <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
-                        {event.image ? (
-                          <img src={event.image} alt={event.title} style={{ width: '64px', height: '64px', borderRadius: '12px', objectFit: 'cover' }} />
-                        ) : (
-                          <div style={{ width: '64px', height: '64px', borderRadius: '12px', background: 'rgba(20,184,166,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <Calendar size={24} color="var(--teal-400)" />
+                        {/* Clickable Image / Icon */}
+                        <div 
+                          onClick={() => setSelectedNetworkEvent(event)}
+                          title="Click to view event details"
+                          style={{ cursor: 'pointer', flexShrink: 0, position: 'relative' }}
+                        >
+                          {event.image ? (
+                            <img 
+                              src={event.image} 
+                              alt={event.title} 
+                              style={{ width: '80px', height: '80px', borderRadius: '14px', objectFit: 'cover' }} 
+                            />
+                          ) : (
+                            <div style={{ width: '80px', height: '80px', borderRadius: '14px', background: 'rgba(20,184,166,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              <Calendar size={28} color="var(--teal-400)" />
+                            </div>
+                          )}
+                          <div style={{
+                            position: 'absolute',
+                            bottom: '4px',
+                            right: '4px',
+                            background: 'rgba(0,0,0,0.65)',
+                            backdropFilter: 'blur(4px)',
+                            borderRadius: '6px',
+                            padding: '2px 4px',
+                            display: 'flex',
+                            alignItems: 'center'
+                          }}>
+                            <Eye size={10} color="#fff" />
                           </div>
-                        )}
-                        <div style={{ flex: 1 }}>
-                          <h4 style={{ margin: '0 0 4px 0', fontSize: '1.05rem', color: 'var(--white)', fontWeight: 600 }}>{event.title}</h4>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', color: 'var(--slate-400)', marginBottom: '8px' }}>
-                            <span style={{ color: 'var(--teal-300)' }}>{sourceCommunity?.name || 'Another Community'}</span>
+                        </div>
+
+                        {/* Event Info */}
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
+                            <h4 
+                              onClick={() => setSelectedNetworkEvent(event)}
+                              style={{ 
+                                margin: '0 0 6px 0', 
+                                fontSize: '1.1rem', 
+                                color: 'var(--white)', 
+                                fontWeight: 600,
+                                cursor: 'pointer',
+                                transition: 'color 0.15s ease'
+                              }}
+                              onMouseEnter={(e) => e.currentTarget.style.color = 'var(--teal-300)'}
+                              onMouseLeave={(e) => e.currentTarget.style.color = 'var(--white)'}
+                            >
+                              {event.title}
+                            </h4>
+                            <span style={{
+                              background: (event.ticketPrice || event.ticket_price) > 0 ? 'rgba(168, 85, 247, 0.12)' : 'rgba(34, 197, 94, 0.12)',
+                              color: (event.ticketPrice || event.ticket_price) > 0 ? '#c084fc' : '#4ade80',
+                              border: `1px solid ${(event.ticketPrice || event.ticket_price) > 0 ? 'rgba(168, 85, 247, 0.3)' : 'rgba(34, 197, 94, 0.3)'}`,
+                              padding: '2px 8px',
+                              borderRadius: '99px',
+                              fontSize: '0.72rem',
+                              fontWeight: 700,
+                              flexShrink: 0
+                            }}>
+                              {priceLabel}
+                            </span>
+                          </div>
+
+                          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '10px', fontSize: '0.8rem', color: 'var(--slate-400)', marginBottom: '8px' }}>
+                            <span style={{ color: 'var(--teal-300)', fontWeight: 500 }}>
+                              {sourceCommunity?.name || 'Partner Community'}
+                            </span>
                             <span>•</span>
-                            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={12} /> {event.date} at {event.time}</span>
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              <Clock size={12} /> {event.date} at {event.time || 'TBD'}
+                            </span>
+                            {event.location && (
+                              <>
+                                <span>•</span>
+                                <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                  <MapPin size={12} /> {event.location}
+                                </span>
+                              </>
+                            )}
+                            {attendeeCount > 0 && (
+                              <>
+                                <span>•</span>
+                                <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                  <Users size={12} /> {attendeeCount} going
+                                </span>
+                              </>
+                            )}
                           </div>
-                          <div style={{ fontSize: '0.85rem', color: 'var(--slate-300)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+
+                          <div style={{ fontSize: '0.85rem', color: 'var(--slate-300)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: 1.5, marginBottom: '14px' }}>
                             {event.description}
                           </div>
                           
-                          <button 
-                            onClick={async () => {
-                              try {
-                                const newEvent = {
-                                  title: `Co-Hosted: ${event.title}`,
-                                  description: event.description + `\n\nCo-hosted with ${sourceCommunity?.name || 'another community'}.`,
-                                  date: event.date,
-                                  time: event.time,
-                                  location: event.location,
-                                  image: event.image,
-                                  communityId: activeCommunityId,
-                                  status: 'published',
-                                  maxCapacity: event.maxCapacity || 50,
-                                  ticketPrice: event.ticketPrice || 0
-                                };
-                                await createEvent(newEvent);
-                                toast.success('Event Co-Hosted!', 'It has been added to your community calendar.');
-                              } catch (err) {
-                                toast.error('Error', 'Could not co-host this event.');
-                              }
-                            }}
-                            className="btn btn-outline interactive-press" 
-                            style={{ marginTop: '16px', display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', padding: '8px 16px', borderRadius: '8px', color: 'var(--teal-400)', borderColor: 'rgba(20,184,166,0.3)' }}
-                          >
-                            <Plus size={14} /> Promote to My Community
-                          </button>
+                          {/* Action Buttons */}
+                          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '10px' }}>
+                            <button
+                              type="button"
+                              onClick={() => setSelectedNetworkEvent(event)}
+                              className="btn btn-outline interactive-press"
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                fontSize: '0.8rem',
+                                padding: '7px 14px',
+                                borderRadius: '8px',
+                                color: 'var(--slate-200)',
+                                borderColor: 'rgba(255,255,255,0.12)',
+                                background: 'rgba(255,255,255,0.03)'
+                              }}
+                            >
+                              <Eye size={14} color="var(--teal-400)" /> View Full Details
+                            </button>
+
+                            <button 
+                              type="button"
+                              onClick={() => handleCoHostNetworkEvent(event)}
+                              disabled={isCoHostingNetworkEvent}
+                              className="btn interactive-press" 
+                              style={{ 
+                                display: 'inline-flex', 
+                                alignItems: 'center', 
+                                gap: '6px', 
+                                fontSize: '0.8rem', 
+                                padding: '7px 16px', 
+                                borderRadius: '8px', 
+                                color: '#fff', 
+                                background: 'linear-gradient(135deg, #0d9488 0%, #0f766e 100%)',
+                                border: '1px solid #14b8a6',
+                                fontWeight: 500
+                              }}
+                            >
+                              <Plus size={14} /> Promote to My Community
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -3122,6 +3263,17 @@ export default function LeaderDashboard({ initialCommunityId }) {
             }
           }} 
           onClose={() => setShowScanner(false)} 
+        />
+      )}
+
+      {/* Network Event Preview Modal */}
+      {selectedNetworkEvent && (
+        <NetworkEventPreviewModal
+          event={selectedNetworkEvent}
+          sourceCommunity={communities.find(c => c.id === selectedNetworkEvent.communityId)}
+          onClose={() => setSelectedNetworkEvent(null)}
+          onCoHost={handleCoHostNetworkEvent}
+          isCoHosting={isCoHostingNetworkEvent}
         />
       )}
 
