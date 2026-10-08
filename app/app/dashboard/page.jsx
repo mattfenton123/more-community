@@ -81,7 +81,7 @@ function getEngagementScore(member, events, eventRsvps, messages, communityId) {
 
 // ─── Component ──────────────────────────────────────────────────
 export default function LeaderDashboard({ initialCommunityId }) {
-  const { user, communities, events, updateCommunity, deleteCommunity, users, communityMemberships, createEvent, updateEvent, cancelEvent, uploadImage, eventRsvps, whatsappSettings, setWhatsappSettings, promoteMember, removeMember, checkInMember, broadcastNotification, sendEventReminder, experiences } = useAppContext();
+  const { user, communities, events, updateCommunity, deleteCommunity, users, communityMemberships, createEvent, updateEvent, cancelEvent, uploadImage, eventRsvps, whatsappSettings, setWhatsappSettings, promoteMember, removeMember, checkInMember, broadcastNotification, sendEventReminder, experiences, setExperiences } = useAppContext();
     const { messages } = useChat();
   const { toast } = useToast();
   const router = useRouter();
@@ -728,11 +728,11 @@ export default function LeaderDashboard({ initialCommunityId }) {
       ...exp,
       communityId: community.id,
       leaderMarkup: 15,
+      promotedBy: community?.id,
     };
     
-    // In this local state demo, push to the array and force re-render if needed
     if (!experiences.find(e => e.id === exp.id)) {
-      experiences.push(newExp);
+      setExperiences(prev => [...prev, newExp]);
       toast.success(`${exp.title} added to your marketplace!`);
     } else {
       toast.error('Experience already imported.');
@@ -2174,12 +2174,22 @@ export default function LeaderDashboard({ initialCommunityId }) {
                           <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '16px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
                               <span style={{ fontSize: '0.85rem', color: 'var(--slate-300)' }}>Your Markup:</span>
-                              <select onChange={(e) => { exp.leaderMarkup = parseInt(e.target.value); toast.success(`Markup set to +${e.target.value}%`); }}
+                              <select 
+                                value={exp.leaderMarkup ?? 15}
+                                onChange={(e) => { 
+                                  const val = parseInt(e.target.value) || 0;
+                                  setExperiences(prev => prev.map(item => item.id === exp.id ? { ...item, leaderMarkup: val } : item));
+                                  toast.success(`Markup set to +${val}%`); 
+                                }}
                                 style={{ background: 'var(--slate-800)', color: 'var(--white)', border: '1px solid var(--slate-700)', padding: '4px 8px', borderRadius: '6px', fontSize: '0.85rem' }}>
                                 <option value="0">0%</option><option value="10">+10%</option><option value="15">+15%</option><option value="20">+20%</option><option value="30">+30%</option>
                               </select>
                             </div>
-                            <button onClick={() => { exp.promotedBy = community?.id; toast.success(`${exp.title} added!`); setActiveTab('overview'); setTimeout(() => setActiveTab('experiences'), 10); }}
+                            <button 
+                              onClick={() => { 
+                                setExperiences(prev => prev.map(item => item.id === exp.id ? { ...item, promotedBy: community?.id } : item));
+                                toast.success(`${exp.title} added!`); 
+                              }}
                               className="btn btn-primary" style={{ width: '100%', padding: '10px', fontSize: '0.9rem' }}>Promote to Community</button>
                           </div>
                         ) : (
@@ -2188,7 +2198,11 @@ export default function LeaderDashboard({ initialCommunityId }) {
                               <span style={{ fontSize: '0.85rem', color: 'var(--teal-300)' }}>Selling: <strong>£{finalPrice}</strong></span>
                               <span style={{ fontSize: '0.85rem', color: 'var(--teal-300)' }}>Profit: <strong>£{finalPrice - exp.basePrice}</strong></span>
                             </div>
-                            <button onClick={() => { exp.promotedBy = null; toast.info(`${exp.title} removed.`); setActiveTab('overview'); setTimeout(() => setActiveTab('experiences'), 10); }}
+                            <button 
+                              onClick={() => { 
+                                setExperiences(prev => prev.map(item => item.id === exp.id ? { ...item, promotedBy: null } : item));
+                                toast.info(`${exp.title} removed.`); 
+                              }}
                               className="btn btn-outline" style={{ width: '100%', padding: '10px', fontSize: '0.9rem' }}>Remove</button>
                           </div>
                         )}
