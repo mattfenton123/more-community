@@ -15,6 +15,7 @@ import dynamic from 'next/dynamic';
 const OperationsMap = dynamic(() => import('../../src/components/admin/OperationsMap'), { ssr: false });
 import Commercials from '../../src/components/admin/Commercials';
 import ModerationQueue from '../../src/components/admin/ModerationQueue';
+import InvestorAnalytics from '../../src/components/admin/InvestorAnalytics';
 
 // ─── Shared Components ────────────────────────────────────
 const StatCard = ({ value, label, icon: Icon, color, accent }) => (
@@ -279,6 +280,7 @@ export default function AdminDashboard() {
   // ═════════════════════════════════════════════════════════
   const tabs = [
     { key: 'overview', label: 'Overview', icon: BarChart3 },
+    { key: 'analytics', label: 'Investor Analytics', icon: TrendingUp },
     { key: 'crm', label: 'Leader CRM', icon: UserCheck },
     { key: 'map', label: 'Ops Map', icon: Map },
     { key: 'communities', label: 'Communities', icon: Globe },
@@ -355,8 +357,17 @@ export default function AdminDashboard() {
             {/* Growth Chart */}
             <div className="glass-panel" style={{ padding: '18px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-                <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--slate-300)' }}>User Growth</span>
-                <span style={{ fontSize: '0.65rem', color: 'var(--slate-500)' }}>Last 8 weeks</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--slate-300)' }}>User Growth</span>
+                  <span style={{ fontSize: '0.65rem', color: 'var(--slate-500)' }}>Last 8 weeks</span>
+                </div>
+                <button 
+                  onClick={() => setActiveTab('analytics')}
+                  className="interactive-press"
+                  style={{ background: 'none', border: 'none', color: '#06b6d4', fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '3px' }}
+                >
+                  <TrendingUp size={12} /> View Full Investor Analytics →
+                </button>
               </div>
               <div style={{ display: 'flex', alignItems: 'flex-end', gap: '4px', height: '70px' }}>
                 {growthData.weeks.map((w, i) => (
@@ -757,8 +768,20 @@ export default function AdminDashboard() {
         )}
 
         {/* ═══════════════════════════════════════════════════ */}
-        {/* TAB 5: REVENUE                                     */}
+        {/* TAB: INVESTOR ANALYTICS                             */}
         {/* ═══════════════════════════════════════════════════ */}
+        {activeTab === 'analytics' && (
+          <InvestorAnalytics
+            users={users}
+            events={events}
+            eventRsvps={eventRsvps}
+            messages={messages}
+            communityMemberships={communityMemberships}
+            communities={communities}
+            toast={toast}
+          />
+        )}
+
         {activeTab === 'crm' && <LeaderCRM toast={toast} />}
         {activeTab === 'map' && <OperationsMap platformStats={platformStats} />}
         {activeTab === 'revenue' && <Commercials platformStats={platformStats} handleExportCSV={handleExportCSV} revenueByComm={revenueByComm} />}

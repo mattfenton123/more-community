@@ -12,6 +12,7 @@ import { useToast } from '../components/Toast';
 import { useRouter as useNavigate } from 'next/navigation';
 import { dismissFlagAction, banCommunityAction, unbanCommunityAction } from '../lib/actions';
 import { supabase } from '../lib/supabaseClient';
+import InvestorAnalytics from '../components/admin/InvestorAnalytics';
 
 // ─── Shared Components ────────────────────────────────────
 const StatCard = ({ value, label, icon: Icon, color, accent }) => (
@@ -278,6 +279,7 @@ export default function AdminDashboard() {
   // ═════════════════════════════════════════════════════════
   const tabs = [
     { key: 'overview', label: 'Overview', icon: BarChart3 },
+    { key: 'analytics', label: 'Investor Analytics', icon: TrendingUp },
     { key: 'communities', label: 'Communities', icon: Globe },
     { key: 'moderation', label: `Moderation${communities.filter(c => c.is_flagged).length > 0 ? ` (${communities.filter(c => c.is_flagged).length})` : ''}`, icon: AlertTriangle },
     { key: 'users', label: 'Users', icon: Users },
@@ -654,6 +656,21 @@ export default function AdminDashboard() {
               </div>
             </div>
           </div>
+        )}
+
+        {/* ═══════════════════════════════════════════════════ */}
+        {/* TAB: INVESTOR ANALYTICS                             */}
+        {/* ═══════════════════════════════════════════════════ */}
+        {activeTab === 'analytics' && (
+          <InvestorAnalytics
+            users={users}
+            events={events}
+            eventRsvps={eventRsvps}
+            messages={messages}
+            communityMemberships={communityMemberships}
+            communities={communities}
+            toast={toast}
+          />
         )}
 
         {/* ═══════════════════════════════════════════════════ */}

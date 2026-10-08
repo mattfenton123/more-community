@@ -131,6 +131,23 @@ export function AppProvider({ children }) {
     user.leaderOf = user.ledCommunities[0] || null;
   }
 
+  // Track daily user login / active session for investor analytics
+  useEffect(() => {
+    if (typeof window === 'undefined' || !user?.id) return;
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const storageKey = 'more_daily_active_sessions';
+      const stored = localStorage.getItem(storageKey);
+      let sessionMap = stored ? JSON.parse(stored) : {};
+      if (!sessionMap[today]) sessionMap[today] = [];
+      if (!sessionMap[today].includes(user.id)) {
+        sessionMap[today].push(user.id);
+        localStorage.setItem(storageKey, JSON.stringify(sessionMap));
+      }
+    } catch {
+      // Non-blocking
+    }
+  }, [user?.id]);
 
   const [waConfig, setWaConfig] = useState(null);
 
