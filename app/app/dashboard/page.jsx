@@ -285,15 +285,15 @@ export default function LeaderDashboard({ initialCommunityId }) {
     setSelectedPackId(pack.id);
     if (replace || guidelinesDraft.length === 0) {
       setGuidelinesDraft([...pack.rules]);
-      toast.success('Template loaded!', `${pack.rules.length} rules loaded from ${pack.name}.`);
+      toast.success('Starter rules loaded!', `${pack.rules.length} rules loaded into your draft. Edit or save below.`);
     } else {
       const existing = new Set(guidelinesDraft.map(r => r.toLowerCase().trim()));
       const toAdd = pack.rules.filter(r => !existing.has(r.toLowerCase().trim()));
       if (toAdd.length === 0) {
-        toast.info('Already added', 'These rules are already in your list.');
+        toast.info('Already in your list', 'These rules are already included.');
       } else {
         setGuidelinesDraft(prev => [...prev, ...toAdd]);
-        toast.success('Rules appended!', `Added ${toAdd.length} additional rules from ${pack.name}.`);
+        toast.success('Rules added!', `Added ${toAdd.length} rules from ${pack.name} to your draft.`);
       }
     }
   };
@@ -2262,11 +2262,11 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   <div style={{ padding: '0 16px 20px 16px', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', gap: '16px', paddingTop: '16px' }}>
                     {/* Pre-made template pack selector */}
                     <div>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', flexWrap: 'wrap', gap: '4px' }}>
                         <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--teal-300)', textTransform: 'uppercase', letterSpacing: '0.04em', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <Sparkles size={14} /> Starter Template Packs (1-Click)
+                          <Sparkles size={14} /> Starter Rule Packs
                         </span>
-                        <span style={{ fontSize: '0.72rem', color: 'var(--slate-400)' }}>Select a template to build from</span>
+                        <span style={{ fontSize: '0.72rem', color: 'var(--slate-400)' }}>Pick a pack to load pre-written rules, then customize them below</span>
                       </div>
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '8px' }}>
                         {PREMADE_GUIDELINE_PACKS.map(pack => {
@@ -2304,34 +2304,60 @@ export default function LeaderDashboard({ initialCommunityId }) {
                                   • {pack.rules.length} pre-written rules
                                 </div>
                               </div>
-                              <div style={{ display: 'flex', gap: '6px', marginTop: '4px' }}>
-                                <button
-                                  type="button"
-                                  onClick={() => handleApplyPresetPack(pack, true)}
-                                  className="interactive-press"
-                                  style={{
-                                    flex: 1, padding: '6px 8px', borderRadius: '6px', border: 'none',
-                                    background: isSelected ? 'var(--teal-500)' : 'rgba(20,184,166,0.2)',
-                                    color: isSelected ? '#000' : 'var(--teal-300)',
-                                    fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer'
-                                  }}
-                                >
-                                  Use Template
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => handleApplyPresetPack(pack, false)}
-                                  className="interactive-press"
-                                  style={{
-                                    padding: '6px 8px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)',
-                                    background: 'rgba(255,255,255,0.04)',
-                                    color: 'var(--slate-300)',
-                                    fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer'
-                                  }}
-                                  title="Append rules to existing draft without replacing"
-                                >
-                                  + Append
-                                </button>
+                              <div style={{ marginTop: '8px' }}>
+                                {guidelinesDraft.length === 0 ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleApplyPresetPack(pack, true)}
+                                    className="interactive-press"
+                                    style={{
+                                      width: '100%', padding: '8px 12px', borderRadius: '8px', border: 'none',
+                                      background: isSelected ? 'var(--teal-500)' : 'rgba(20,184,166,0.2)',
+                                      color: isSelected ? '#000' : 'var(--teal-300)',
+                                      fontSize: '0.76rem', fontWeight: 700, cursor: 'pointer',
+                                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px'
+                                    }}
+                                  >
+                                    <Check size={13} /> Load Starter Rules ({pack.rules.length})
+                                  </button>
+                                ) : (
+                                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleApplyPresetPack(pack, false)}
+                                      className="interactive-press"
+                                      style={{
+                                        width: '100%', padding: '7px 10px', borderRadius: '6px',
+                                        border: '1px solid rgba(20,184,166,0.3)',
+                                        background: 'rgba(20,184,166,0.15)',
+                                        color: 'var(--teal-300)',
+                                        fontSize: '0.74rem', fontWeight: 700, cursor: 'pointer',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px'
+                                      }}
+                                    >
+                                      <Plus size={13} /> + Add to My Rules
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        if (confirm(`Replace your current ${guidelinesDraft.length} rules with the ${pack.rules.length} rules from "${pack.name}"?`)) {
+                                          handleApplyPresetPack(pack, true);
+                                        }
+                                      }}
+                                      className="interactive-press"
+                                      style={{
+                                        width: '100%', padding: '5px 8px', borderRadius: '6px',
+                                        border: '1px solid rgba(255,255,255,0.08)',
+                                        background: 'rgba(255,255,255,0.03)',
+                                        color: 'var(--slate-400)',
+                                        fontSize: '0.68rem', fontWeight: 500, cursor: 'pointer',
+                                        textAlign: 'center'
+                                      }}
+                                    >
+                                      Replace all with this template
+                                    </button>
+                                  </div>
+                                )}
                               </div>
                             </div>
                           );
