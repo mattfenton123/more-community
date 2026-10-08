@@ -4,12 +4,13 @@ import { useRouter as useNavigate, useParams } from 'next/navigation';
 import { useAppContext } from '../../../src/context/AppContext';
 import { useChat } from '../../../src/context/ChatContext';
 import { useAuth } from '../../../src/context/AuthContext';
-import { ArrowLeft, Users, Calendar, MapPin, Settings, Camera, Check, X, MessageCircle, Edit3, Trophy, Flame, Plus, Compass, Star, LogOut, ChevronRight, Shield, BarChart2, Heart } from 'lucide-react';
+import { ArrowLeft, Users, Calendar, MapPin, Settings, Camera, Check, X, MessageCircle, Edit3, Trophy, Flame, Plus, Compass, Star, LogOut, ChevronRight, Shield, BarChart2, Heart, Eye } from 'lucide-react';
 import AppHeader from '../../../src/components/AppHeader';
 import BottomNav from '../../../src/components/BottomNav';
 import { useToast } from '../../../src/components/Toast';
 import GamificationPanel, { BadgeRow, useGamification } from '../../../src/components/Gamification';
 import { FALLBACK_IMAGES } from '../../../src/lib/constants';
+import ProfileImageModal from '../../../src/components/ProfileImageModal';
 
 export default function UserProfile() {
   const { id } = useParams();
@@ -54,7 +55,33 @@ export default function UserProfile() {
   });
   const messagesSent = messages.filter(m => m.authorId === targetId).length;
 
-  const handleAvatarClick = () => { if (isOwnProfile && isEditing) fileInputRef.current?.click(); };
+  const [selectedImageModal, setSelectedImageModal] = useState(null);
+
+  const handleAvatarClick = () => {
+    if (isOwnProfile && isEditing) {
+      fileInputRef.current?.click();
+    } else {
+      setSelectedImageModal({
+        imageUrl: profileUser.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(profileUser.name)}&background=0D8B93&color=fff`,
+        name: profileUser.name,
+        subtitle: isOwnProfile ? 'Your Profile Picture' : `${profileUser.name}'s Profile Picture`,
+        isOwnProfile: isOwnProfile,
+        onEditPhoto: isOwnProfile ? () => fileInputRef.current?.click() : null
+      });
+    }
+  };
+
+  const handleBannerClick = () => {
+    if (!isEditing && (profileUser.banner || editForm.banner || FALLBACK_IMAGES.general)) {
+      setSelectedImageModal({
+        imageUrl: isEditing ? editForm.banner : (profileUser.banner || FALLBACK_IMAGES.general),
+        name: profileUser.name,
+        subtitle: isOwnProfile ? 'Your Cover Banner' : `${profileUser.name}'s Cover Banner`,
+        isOwnProfile: isOwnProfile,
+        onEditPhoto: isOwnProfile ? () => bannerInputRef.current?.click() : null
+      });
+    }
+  };
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -140,10 +167,21 @@ export default function UserProfile() {
         }
       />
       {/* Hero Banner */}
-      <div style={{ height: '180px', background: `url(${isEditing ? editForm.banner : (profileUser.banner || FALLBACK_IMAGES.general)})`, backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative' }}>
+      <div 
+        style={{ 
+          height: '180px', 
+          background: `url(${isEditing ? editForm.banner : (profileUser.banner || FALLBACK_IMAGES.general)})`, 
+          backgroundSize: 'cover', 
+          backgroundPosition: 'center', 
+          position: 'relative',
+          cursor: !isEditing ? 'pointer' : 'default'
+        }}
+        onClick={handleBannerClick}
+        title={!isEditing ? "Click to view full cover banner" : undefined}
+      >
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.1), var(--slate-950))' }}></div>
         {isEditing && (
-          <div onClick={() => bannerInputRef.current?.click()} className="interactive-hover" style={{ position: 'absolute', right: '16px', bottom: '16px', background: 'rgba(0,0,0,0.6)', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 20 }}>
+          <div onClick={(e) => { e.stopPropagation(); bannerInputRef.current?.click(); }} className="interactive-hover" style={{ position: 'absolute', right: '16px', bottom: '16px', background: 'rgba(0,0,0,0.6)', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 20 }}>
             <Camera size={18} color="white" />
           </div>
         )}
@@ -153,9 +191,66 @@ export default function UserProfile() {
       <div style={{ padding: '0 20px', marginTop: '-60px', position: 'relative', zIndex: 10 }}>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', marginBottom: '24px' }}>
           {/* Avatar */}
-          <div style={{ position: 'relative', marginBottom: '12px', cursor: isEditing ? 'pointer' : 'default' }} onClick={handleAvatarClick} className={isEditing ? 'interactive-hover' : ''}>
-            <img src={profileUser.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(profileUser.name)}&background=0D8B93&color=fff`} alt={profileUser.name} style={{ width: '110px', height: '110px', borderRadius: '50%', objectFit: 'cover', border: '4px solid var(--slate-950)', background: 'var(--slate-800)', opacity: isUploading ? 0.5 : 1 }} />
-            {isEditing && <div style={{ position: 'absolute', inset: 4, borderRadius: '50%', background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--white)' }}><Camera size={28} /></div>}
+          <div 
+            style={{ 
+              position: 'relative', 
+              marginBottom: '12px', 
+              cursor: 'pointer',
+              display: 'inline-block'
+            }} 
+            onClick={handleAvatarClick} 
+            className="interactive-hover"
+            title={isOwnProfile && isEditing ? "Click to change avatar" : "Click to view full picture"}
+            onMouseEnter={(e) => {
+              const overlay = e.currentTarget.querySelector('.avatar-zoom-overlay');
+              if (overlay) overlay.style.opacity = '1';
+            }}
+            onMouseLeave={(e) => {
+              const overlay = e.currentTarget.querySelector('.avatar-zoom-overlay');
+              if (overlay) overlay.style.opacity = '0';
+            }}
+          >
+            <div style={{ position: 'relative', borderRadius: '50%', overflow: 'hidden' }}>
+              <img 
+                src={profileUser.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(profileUser.name)}&background=0D8B93&color=fff`} 
+                alt={profileUser.name} 
+                style={{ 
+                  width: '110px', 
+                  height: '110px', 
+                  borderRadius: '50%', 
+                  objectFit: 'cover', 
+                  border: '4px solid var(--slate-950)', 
+                  background: 'var(--slate-800)', 
+                  opacity: isUploading ? 0.5 : 1,
+                  display: 'block',
+                  transition: 'transform 0.2s ease'
+                }} 
+              />
+              {!isEditing && (
+                <div 
+                  className="avatar-zoom-overlay"
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    borderRadius: '50%',
+                    background: 'rgba(0, 0, 0, 0.38)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    opacity: 0,
+                    transition: 'opacity 0.2s ease',
+                    backdropFilter: 'blur(2px)'
+                  }}
+                >
+                  <Eye size={24} color="#fff" />
+                </div>
+              )}
+            </div>
+            {isEditing && (
+              <div style={{ position: 'absolute', inset: 4, borderRadius: '50%', background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--white)' }}>
+                <Camera size={28} />
+              </div>
+            )}
             <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" style={{ display: 'none' }} />
             {/* Level Badge */}
             <div style={{ position: 'absolute', bottom: -2, right: -2, width: '32px', height: '32px', borderRadius: '10px', background: 'linear-gradient(135deg, #f59e0b, #ef4444)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '3px solid var(--slate-950)' }}>
@@ -401,6 +496,19 @@ export default function UserProfile() {
           </div>
         )}
       </div>
+
+      {/* Profile / Cover Image Modal */}
+      {selectedImageModal && (
+        <ProfileImageModal
+          isOpen={Boolean(selectedImageModal)}
+          imageUrl={selectedImageModal.imageUrl}
+          name={selectedImageModal.name}
+          subtitle={selectedImageModal.subtitle}
+          isOwnProfile={selectedImageModal.isOwnProfile}
+          onEditPhoto={selectedImageModal.onEditPhoto}
+          onClose={() => setSelectedImageModal(null)}
+        />
+      )}
       <BottomNav />
     </div>
   );

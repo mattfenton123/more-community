@@ -21,6 +21,7 @@ import { COMMUNITY_TAG_CATEGORIES, ALL_COMMUNITY_TAGS } from '../../src/lib/cons
 import { PREMADE_GUIDELINE_PACKS, QUICK_INSPIRATION_RULES } from '../../src/lib/guidelinesPacks';
 import EventReminderModal from '../../src/components/EventReminderModal';
 import NetworkEventPreviewModal from '../../src/components/NetworkEventPreviewModal';
+import ProfileImageModal from '../../src/components/ProfileImageModal';
 
 // ─── Stat Card Component ──────────────────────────────────
 const StatCard = ({ value, label, color, icon: Icon, accent }) => (
@@ -149,6 +150,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
 
   const [selectedNetworkEvent, setSelectedNetworkEvent] = useState(null);
   const [isCoHostingNetworkEvent, setIsCoHostingNetworkEvent] = useState(false);
+  const [selectedProfileImage, setSelectedProfileImage] = useState(null);
 
   const handleCoHostNetworkEvent = async (eventToCoHost) => {
     const targetCommunityId = activeCommunityId || communityIdLed;
@@ -2251,7 +2253,17 @@ export default function LeaderDashboard({ initialCommunityId }) {
                       <div key={memberUser.id} className="stagger-item" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                           <div style={{ position: 'relative' }}>
-                            <img onClick={() => router.push(`/profile/${memberUser.id}`)} src={memberUser.avatar} alt={memberUser.name} style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', cursor: 'pointer' }} />
+                            <img 
+                              onClick={() => setSelectedProfileImage({
+                                imageUrl: memberUser.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(memberUser.name)}&background=0D8B93&color=fff`,
+                                name: memberUser.name,
+                                subtitle: `${membership.role || 'Member'} • ${community?.name || ''}`
+                              })} 
+                              src={memberUser.avatar} 
+                              alt={memberUser.name} 
+                              title="Click to view full photo"
+                              style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', cursor: 'pointer' }} 
+                            />
                             <div style={{ position: 'absolute', bottom: 0, right: 0, width: '12px', height: '12px', borderRadius: '50%', background: score >= 60 ? '#22c55e' : score >= 30 ? '#f59e0b' : '#6b7280', border: '2px solid var(--slate-900)' }} />
                           </div>
                           <div>
@@ -2971,7 +2983,17 @@ export default function LeaderDashboard({ initialCommunityId }) {
                     return (
                       <div key={memberUser.id} className="stagger-item" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                          <img onClick={() => { router.push(`/profile/${memberUser.id}`); setModalType(null); }} src={memberUser.avatar} alt={memberUser.name} style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', cursor: 'pointer' }} />
+                          <img 
+                            onClick={() => setSelectedProfileImage({
+                              imageUrl: memberUser.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(memberUser.name)}&background=0D8B93&color=fff`,
+                              name: memberUser.name,
+                              subtitle: `${membership.role || 'Member'} • ${community?.name || ''}`
+                            })} 
+                            src={memberUser.avatar} 
+                            alt={memberUser.name} 
+                            title="Click to view full photo"
+                            style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', cursor: 'pointer' }} 
+                          />
                           <div>
                             <div onClick={() => { router.push(`/profile/${memberUser.id}`); setModalType(null); }} style={{ fontWeight: 600, color: 'var(--white)', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
                               {memberUser.name}
@@ -3274,6 +3296,17 @@ export default function LeaderDashboard({ initialCommunityId }) {
           onClose={() => setSelectedNetworkEvent(null)}
           onCoHost={handleCoHostNetworkEvent}
           isCoHosting={isCoHostingNetworkEvent}
+        />
+      )}
+
+      {/* Profile Image Modal */}
+      {selectedProfileImage && (
+        <ProfileImageModal
+          isOpen={Boolean(selectedProfileImage)}
+          imageUrl={selectedProfileImage.imageUrl}
+          name={selectedProfileImage.name}
+          subtitle={selectedProfileImage.subtitle}
+          onClose={() => setSelectedProfileImage(null)}
         />
       )}
 

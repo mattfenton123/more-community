@@ -4,6 +4,7 @@ import { TrendingUp, TrendingDown, UserCheck, AlertTriangle, Send, Search, Megap
 import { useAppContext } from '../context/AppContext';
 import { useChat } from '../context/ChatContext';
 import { useToast } from '../components/Toast';
+import ProfileImageModal from './ProfileImageModal';
 
 function getEngagementScore(member, events, eventRsvps, messages, communityId) {
   let score = 0;
@@ -40,6 +41,7 @@ export default function MemberCRM({ communityId }) {
   const [broadcastText, setBroadcastText] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [filter, setFilter] = useState('all');
+  const [selectedMemberImage, setSelectedMemberImage] = useState(null);
 
   const members = (communityMemberships[communityId] || []).map(mem => {
     const u = users.find(usr => usr.id === mem.userId);
@@ -168,7 +170,17 @@ export default function MemberCRM({ communityId }) {
           const StatusIcon = member.status.icon;
           return (
             <div key={member.userId} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '14px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <img src={member.user.avatar} alt={member.user.name} style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
+              <img 
+                src={member.user.avatar} 
+                alt={member.user.name} 
+                title="Click to view full photo"
+                onClick={() => setSelectedMemberImage({
+                  imageUrl: member.user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(member.user.name)}&background=0D8B93&color=fff`,
+                  name: member.user.name,
+                  subtitle: `${member.role || 'Member'} • Engagement Score: ${member.score}`
+                })}
+                style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', cursor: 'pointer' }} 
+              />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <span style={{ color: 'var(--white)', fontWeight: 600, fontSize: '0.95rem' }}>{member.user.name}</span>
@@ -214,6 +226,17 @@ export default function MemberCRM({ communityId }) {
           <div style={{ textAlign: 'center', padding: '32px', color: 'var(--slate-500)' }}>No members match your filter.</div>
         )}
       </div>
+
+      {/* Full Profile Image Modal */}
+      {selectedMemberImage && (
+        <ProfileImageModal
+          isOpen={Boolean(selectedMemberImage)}
+          imageUrl={selectedMemberImage.imageUrl}
+          name={selectedMemberImage.name}
+          subtitle={selectedMemberImage.subtitle}
+          onClose={() => setSelectedMemberImage(null)}
+        />
+      )}
     </div>
   );
 }
