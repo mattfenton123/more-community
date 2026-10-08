@@ -98,6 +98,9 @@ export default function CommunityProfile() {
   const [showIdeaModal, setShowIdeaModal] = useState(false);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [showLeaveModal, setShowLeaveModal] = useState(false);
+  const [showJoinGuidelinesModal, setShowJoinGuidelinesModal] = useState(false);
+  const [guidelinesAgreed, setGuidelinesAgreed] = useState(true);
+  const [isJoining, setIsJoining] = useState(false);
   const [showFullDesc, setShowFullDesc] = useState(false);
   const [showReelViewer, setShowReelViewer] = useState(null);
   const [showUploader, setShowUploader] = useState(false);
@@ -190,13 +193,28 @@ export default function CommunityProfile() {
       if (isMember) {
         setShowLeaveModal(true);
       } else {
-        await joinCommunity(community.id);
-        toast.success('Welcome!', community.whatsapp_group 
-          ? `You're in! Tap "Join WhatsApp Group" to chat with members.` 
-          : `You're now a member of ${community.name}`);
+        setShowJoinGuidelinesModal(true);
       }
     } catch (err) {
       toast.error('Could not join', 'Something went wrong. Please try again.');
+    }
+  };
+
+  const confirmJoinWithGuidelines = async () => {
+    setIsJoining(true);
+    try {
+      await joinCommunity(community.id);
+      setShowJoinGuidelinesModal(false);
+      try {
+        confetti({ particleCount: 50, spread: 60, origin: { y: 0.6 } });
+      } catch (e) {}
+      toast.success('Welcome!', community.whatsapp_group 
+        ? `You're in! Tap "Join WhatsApp Group" to chat with members.` 
+        : `You're now a member of ${community.name}`);
+    } catch (err) {
+      toast.error('Could not join', 'Something went wrong. Please try again.');
+    } finally {
+      setIsJoining(false);
     }
   };
 
@@ -1898,6 +1916,97 @@ export default function CommunityProfile() {
       
       {showReviewForm && (
         <ReviewForm communityId={communityId} onClose={() => setShowReviewForm(false)} />
+      )}
+
+      {/* Join Community Guidelines Agreement Modal */}
+      {showJoinGuidelinesModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(2,6,23,0.85)', backdropFilter: 'blur(12px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
+          <div style={{ background: 'var(--slate-900)', borderRadius: '24px', padding: '28px 24px', width: '100%', maxWidth: '440px', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', flexDirection: 'column', gap: '16px', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 20px 50px rgba(0,0,0,0.5)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(20,184,166,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--teal-400)' }}>
+                  <Shield size={22} />
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '1.2rem', color: 'var(--white)', fontFamily: 'var(--font-heading)' }}>
+                    Community Guidelines
+                  </h3>
+                  <div style={{ fontSize: '0.78rem', color: 'var(--teal-300)' }}>
+                    Joining {community.name}
+                  </div>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowJoinGuidelinesModal(false)}
+                style={{ background: 'none', border: 'none', color: 'var(--slate-400)', cursor: 'pointer', padding: '4px' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <p style={{ margin: 0, color: 'var(--slate-300)', fontSize: '0.85rem', lineHeight: 1.5 }}>
+              To ensure every member feels welcomed, respected, and safe, please review our group norms before joining:
+            </p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', background: 'rgba(255,255,255,0.02)', padding: '14px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.05)' }}>
+              {(community.guidelines && community.guidelines.length > 0 ? community.guidelines : [
+                'Be respectful, inclusive, and kind to all members at all times.',
+                'No unsolicited commercial sales pitches, promotions, or spam.',
+                'Attend events you RSVP to, or cancel at least 24 hours in advance.',
+                'Respect member privacy and keep private group conversations confidential.'
+              ]).map((rule, idx) => (
+                <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                  <span style={{ fontSize: '0.72rem', fontWeight: 700, padding: '2px 6px', borderRadius: '6px', background: 'rgba(20,184,166,0.15)', color: 'var(--teal-300)', marginTop: '2px', flexShrink: 0 }}>
+                    #{idx + 1}
+                  </span>
+                  <span style={{ fontSize: '0.82rem', color: 'var(--slate-200)', lineHeight: 1.45, flex: 1 }}>
+                    {rule}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            {community.require_approval && (
+              <div style={{ padding: '10px 12px', borderRadius: '10px', background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.25)', color: '#fbbf24', fontSize: '0.78rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Info size={16} style={{ flexShrink: 0 }} />
+                <span>This community reviews new members. A join request will be sent to the leader.</span>
+              </div>
+            )}
+
+            <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', cursor: 'pointer', padding: '4px 2px' }}>
+              <input
+                type="checkbox"
+                checked={guidelinesAgreed}
+                onChange={e => setGuidelinesAgreed(e.target.checked)}
+                style={{ width: '18px', height: '18px', marginTop: '2px', accentColor: 'var(--teal-500)', cursor: 'pointer' }}
+              />
+              <span style={{ fontSize: '0.8rem', color: 'var(--slate-300)', lineHeight: 1.4 }}>
+                I agree to adhere to these community guidelines and respect fellow members.
+              </span>
+            </label>
+
+            <div style={{ display: 'flex', gap: '10px', marginTop: '4px' }}>
+              <button
+                type="button"
+                onClick={() => setShowJoinGuidelinesModal(false)}
+                className="interactive-press"
+                style={{ flex: 1, padding: '12px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--slate-300)', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer' }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={!guidelinesAgreed || isJoining}
+                onClick={confirmJoinWithGuidelines}
+                className="btn btn-primary interactive-press"
+                style={{ flex: 2, padding: '12px', borderRadius: '12px', fontSize: '0.9rem', fontWeight: 700, opacity: (!guidelinesAgreed || isJoining) ? 0.6 : 1, cursor: (!guidelinesAgreed || isJoining) ? 'not-allowed' : 'pointer' }}
+              >
+                {isJoining ? 'Joining...' : 'Agree & Join'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {showLeaveModal && (

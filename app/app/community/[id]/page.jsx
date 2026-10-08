@@ -19,10 +19,13 @@ export async function generateMetadata({ params }) {
   }
   
   // Construct dynamic OG image URL
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://morecommunity.co.uk';
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://www.morecommunity.app';
   const ogUrl = new URL(`${baseUrl}/api/og`);
   ogUrl.searchParams.set('title', community.name);
   ogUrl.searchParams.set('community', 'more community.');
+  ogUrl.searchParams.set('type', 'community');
+  if (community.location) ogUrl.searchParams.set('location', community.location);
+  if (community.members) ogUrl.searchParams.set('members', `${community.members} members`);
   const image = community.image || community.cover_image;
   if (image) {
     ogUrl.searchParams.set('image', image.startsWith('http') ? image : `${baseUrl}${image}`);

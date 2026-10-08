@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabaseClient';
 import { useAuth } from './AuthContext';
 import { initialExperiences } from '../lib/constants';
 import imageCompression from 'browser-image-compression';
-import { createEventAction, joinCommunityAction, leaveCommunityAction, rsvpToEventAction, createCommunityAction, uploadImageAction, updateEventAction, updateCommunityAction, deleteCommunityAction, createChannelAction, markNotificationReadAction, updateUserAction, adminVerifyCommunityAction, broadcastNotificationAction, promoteMemberAction, removeMemberAction, subscribeToPushNotificationsAction, ensureLeadersNetworkAction } from '../lib/actions';
+import { createEventAction, joinCommunityAction, leaveCommunityAction, rsvpToEventAction, createCommunityAction, uploadImageAction, updateEventAction, updateCommunityAction, deleteCommunityAction, createChannelAction, markNotificationReadAction, updateUserAction, adminVerifyCommunityAction, broadcastNotificationAction, promoteMemberAction, removeMemberAction, subscribeToPushNotificationsAction, ensureLeadersNetworkAction, sendEventReminderAction, createSelfNotificationAction } from '../lib/actions';
 import { Capacitor } from '@capacitor/core';
 
 const AppContext = createContext();
@@ -495,47 +495,97 @@ export function AppProvider({ children }) {
       } catch (e) { /* Notification not supported */ }
     };
 
-    // Push Notifications & Event Reminders
-    const setupNotifications = () => {
-      if ('Notification' in window) {
-        Notification.requestPermission().then(permission => {
-          if (permission === 'granted' && authUser?.id) {
-            // Check for upcoming events in the next 24h that the user is RSVP'd to
-            const tomorrow = new Date();
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            
-            // Wait for events to load, so we set a small timeout or do it after load
-            setTimeout(() => {
-              setEvents(currentEvents => {
-                setEventRsvps(currentRsvps => {
-                  currentEvents.forEach(e => {
-                    if (e.date) {
-                      const eventDate = new Date(e.date + 'T00:00:00');
-                      const timeDiff = eventDate.getTime() - Date.now();
-                      const isGoing = (currentRsvps[e.id] || []).some(r => r.userId === authUser.id && r.status === 'going');
-                      
-                      // If event is in exactly 24h (approximate window)
-                      if (isGoing && timeDiff > 0 && timeDiff <= 24 * 60 * 60 * 1000) {
-                        const notifKey = `reminded_${e.id}`;
-                        if (!localStorage.getItem(notifKey)) {
-                          showSafeNotification(`Reminder: ${e.title} is tomorrow!`, {
-                            body: 'Get ready for your upcoming event.',
-                          });
-                          localStorage.setItem(notifKey, 'true');
-                        }
+    // Automated Event Reminders (24h pre-event alert & 48h post-event follow-up)
+    const runAutomatedEventChecks = () => {
+      if (!authUser?.id) return;
+      if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission().catch(() => {});
+      }
+
+      // Check events and RSVPs after data load
+      setTimeout(() => {
+        setEvents(currentEvents => {
+          setEventRsvps(currentRsvps => {
+            const now = Date.now();
+            currentEvents.forEach(async (e) => {
+              if (!e.date || e.status === 'cancelled') return;
+
+              const isGoing = (currentRsvps[e.id] || []).some(
+                r => (r.userId === authUser.id || r.user_id === authUser.id) && (r.status === 'going' || r.status === 'checked_in' || !r.status)
+              );
+              if (!isGoing) return;
+
+              const eventDateTimeStr = e.time ? `${e.date}T${e.time}` : `${e.date}T12:00:00`;
+              const eventTime = new Date(eventDateTimeStr).getTime();
+              if (isNaN(eventTime)) return;
+
+              const diffHours = (eventTime - now) / (1000 * 60 * 60);
+
+              // 1. 24h Pre-event reminder (starts within next 26 hours)
+              if (diffHours > 0 && diffHours <= 26) {
+                const notifKey = `more_reminded_24h_${e.id}_${authUser.id}`;
+                if (typeof window !== 'undefined' && !localStorage.getItem(notifKey)) {
+                  localStorage.setItem(notifKey, 'true');
+                  const title = `⏰ Reminder: ${e.title} is coming up!`;
+                  const message = `Get ready! ${e.title} takes place ${e.time ? 'at ' + e.time : 'tomorrow'}${e.location ? ' at ' + e.location : ''}. See you there!`;
+                  
+                  showSafeNotification(title, { body: message });
+
+                  try {
+                    const token = session?.access_token;
+                    if (token) {
+                      const saved = await createSelfNotificationAction({
+                        title,
+                        message,
+                        link: `/events/${e.id}`,
+                        type: 'reminder'
+                      }, token);
+                      if (saved) {
+                        setNotifications(prev => [saved, ...prev.filter(n => n.id !== saved.id)]);
                       }
                     }
-                  });
-                  return currentRsvps;
-                });
-                return currentEvents;
-              });
-            }, 3000); // Check 3s after load
-          }
+                  } catch (err) {
+                    console.warn('Pre-event notification save skipped:', err);
+                  }
+                }
+              }
+
+              // 2. Post-event recap & photo prompt (ended within last 48 hours)
+              if (diffHours < 0 && diffHours >= -48) {
+                const postKey = `more_post_event_${e.id}_${authUser.id}`;
+                if (typeof window !== 'undefined' && !localStorage.getItem(postKey)) {
+                  localStorage.setItem(postKey, 'true');
+                  const title = `📸 How was ${e.title}?`;
+                  const message = `Hope you had a great time at ${e.title}! Share your favourite moments, photos, or feedback with the group.`;
+
+                  showSafeNotification(title, { body: message });
+
+                  try {
+                    const token = session?.access_token;
+                    if (token) {
+                      const saved = await createSelfNotificationAction({
+                        title,
+                        message,
+                        link: `/community/${e.communityId}`,
+                        type: 'event'
+                      }, token);
+                      if (saved) {
+                        setNotifications(prev => [saved, ...prev.filter(n => n.id !== saved.id)]);
+                      }
+                    }
+                  } catch (err) {
+                    console.warn('Post-event notification save skipped:', err);
+                  }
+                }
+              }
+            });
+            return currentRsvps;
+          });
+          return currentEvents;
         });
-      }
+      }, 2500);
     };
-    setupNotifications();
+    runAutomatedEventChecks();
 
     // Realtime Subscriptions
     const subMessages = supabase.channel('public:messages')
@@ -1066,6 +1116,16 @@ export function AppProvider({ children }) {
     }
   };
 
+  const sendEventReminder = async (eventId, customMessage = null) => {
+    let token = session?.access_token;
+    if (!token) {
+      const { data: sessionData } = await supabase.auth.getSession();
+      token = sessionData?.session?.access_token;
+    }
+    if (!token) throw new Error("Authentication required to send event reminders");
+    return await sendEventReminderAction(eventId, customMessage, token);
+  };
+
   const checkInMember = async (eventId, userId) => {
     setEventRsvps(prev => ({
       ...prev,
@@ -1564,6 +1624,7 @@ export function AppProvider({ children }) {
       updateCommunityProfile,
       adminVerifyCommunity,
       broadcastNotification,
+      sendEventReminder,
       notifyCommunityLeaders,
       createEvent,
       updateEvent,

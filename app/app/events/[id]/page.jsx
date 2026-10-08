@@ -15,13 +15,14 @@ export async function generateMetadata({ params }) {
   }
 
   // Construct OG image URL
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://morecommunity.co.uk';
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://www.morecommunity.app';
   const ogUrl = new URL(`${baseUrl}/api/og`);
   ogUrl.searchParams.set('title', event.title);
-  ogUrl.searchParams.set('date', event.date ? `${event.date} at ${event.time}` : event.duration);
-  // We can pass image if available
+  ogUrl.searchParams.set('type', 'event');
+  ogUrl.searchParams.set('date', event.date ? `${event.date}${event.time ? ` at ${event.time}` : ''}` : (event.duration || ''));
+  if (event.location) ogUrl.searchParams.set('location', event.location);
   if (event.image) {
-    ogUrl.searchParams.set('image', `${baseUrl}${event.image}`);
+    ogUrl.searchParams.set('image', event.image.startsWith('http') ? event.image : `${baseUrl}${event.image}`);
   }
 
   return {

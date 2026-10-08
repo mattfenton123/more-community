@@ -540,6 +540,84 @@ export async function broadcastNotificationAction(notifications, token, communit
   return true;
 }
 
+export async function sendEventReminderAction(eventId, customMessage, token) {
+  const user = await verifyUser(token);
+  
+  const { data: event, error: eventErr } = await supabaseAdmin
+    .from('events')
+    .select('*')
+    .eq('id', eventId)
+    .single();
+
+  if (eventErr || !event) {
+    throw new Error("Event not found");
+  }
+
+  if (!isAdminUser(user)) {
+    const role = await getCommunityRole(user.id, event.community_id);
+    if (role !== 'Leader' && role !== 'Co-Leader') {
+      throw new Error("Forbidden: Only community leaders or admins can send event reminders");
+    }
+  }
+
+  const { data: rsvps, error: rsvpErr } = await supabaseAdmin
+    .from('event_rsvps')
+    .select('user_id, status')
+    .eq('event_id', eventId);
+
+  if (rsvpErr) {
+    throw new Error("Failed to load attendees: " + rsvpErr.message);
+  }
+
+  const attendees = (rsvps || []).filter(r => r.status === 'going' || r.status === 'checked_in' || !r.status);
+
+  if (attendees.length === 0) {
+    return { success: true, count: 0, message: 'No registered attendees to notify.' };
+  }
+
+  const defaultMsg = `⏰ Reminder: ${event.title} is coming up${event.date ? ' on ' + event.date : ''}${event.time ? ' at ' + event.time : ''}${event.location ? ' at ' + event.location : ''}! Looking forward to seeing you there.`;
+
+  const notifications = attendees.map(r => ({
+    user_id: r.user_id,
+    type: 'reminder',
+    title: `⏰ Reminder: ${event.title}`,
+    message: customMessage?.trim() || defaultMsg,
+    link: `/events/${event.id}`,
+    is_read: false
+  }));
+
+  const { error: notifErr } = await supabaseAdmin.from('notifications').insert(notifications);
+  if (notifErr) {
+    throw new Error("Failed to create notifications: " + notifErr.message);
+  }
+
+  return { success: true, count: notifications.length };
+}
+
+export async function createSelfNotificationAction(notification, token) {
+  const user = await verifyUser(token);
+  
+  const payload = {
+    user_id: user.id,
+    type: notification.type || 'reminder',
+    title: notification.title || 'Notification',
+    message: notification.message || '',
+    link: notification.link || '/',
+    is_read: false
+  };
+
+  const { data, error } = await supabaseAdmin
+    .from('notifications')
+    .insert([payload])
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+  return data;
+}
+
 export async function promoteMemberAction(communityId, memberId, newRole, token) {
   const { user } = await verifyCommunityManager(token, communityId, { leaderOnly: true });
   if (!['Member', 'Co-Leader'].includes(newRole)) throw new Error("Invalid role");
