@@ -178,6 +178,24 @@ export default function LeaderDashboard({ initialCommunityId }) {
     if (initialCommunityId) setActiveCommunityId(initialCommunityId);
   }, [initialCommunityId]);
   
+  // ─── Derived Data ─────────────────────────────────────────
+  const availableCommunities = user?.isAdmin 
+    ? communities 
+    : communities.filter(comm => 
+        (user?.ledCommunities || []).includes(comm.id) ||
+        comm.leader_id === user?.id ||
+        comm.creator_id === user?.id ||
+        comm.creatorId === user?.id ||
+        comm.id === activeCommunityId ||
+        (communityMemberships[comm.id] || []).some(m => (m.userId === user?.id || m.user_id === user?.id) && (m.role === 'co-founder' || m.role === 'Leader' || m.role === 'Co-Leader' || m.role === 'Admin'))
+      );
+  const communityIdLed = activeCommunityId || availableCommunities[0]?.id || user?.ledCommunities?.[0] || (user?.isAdmin && communities.length > 0 ? communities[0].id : null);
+  const community = communities.find(c => c.id === communityIdLed);
+  const memberList = community ? (communityMemberships[community.id] || []) : [];
+  const communityEvents = community ? events.filter(e => e.communityId === community.id).sort((a, b) => new Date(a.date) - new Date(b.date)) : [];
+  const publishedEvents = communityEvents.filter(e => e.status !== 'cancelled');
+  const communityMessages = community ? messages.filter(m => m.communityId === community.id) : [];
+
   const emptyEventForm = { title: '', description: '', date: '', time: '', location: '', maxCapacity: '', ticketPrice: '', autoReminders: true, autoFeedback: true };
   const [eventForm, setEventForm] = useState(emptyEventForm);
   const [editingEventId, setEditingEventId] = useState(null);
@@ -300,24 +318,6 @@ export default function LeaderDashboard({ initialCommunityId }) {
   };
 
   const fileInputRef = useRef(null);
-
-  // ─── Derived Data ─────────────────────────────────────────
-  const availableCommunities = user?.isAdmin 
-    ? communities 
-    : communities.filter(comm => 
-        (user?.ledCommunities || []).includes(comm.id) ||
-        comm.leader_id === user?.id ||
-        comm.creator_id === user?.id ||
-        comm.creatorId === user?.id ||
-        comm.id === activeCommunityId ||
-        (communityMemberships[comm.id] || []).some(m => (m.userId === user?.id || m.user_id === user?.id) && (m.role === 'co-founder' || m.role === 'Leader' || m.role === 'Co-Leader' || m.role === 'Admin'))
-      );
-  const communityIdLed = activeCommunityId || availableCommunities[0]?.id || user?.ledCommunities?.[0] || (user?.isAdmin && communities.length > 0 ? communities[0].id : null);
-  const community = communities.find(c => c.id === communityIdLed);
-  const memberList = community ? (communityMemberships[community.id] || []) : [];
-  const communityEvents = community ? events.filter(e => e.communityId === community.id).sort((a, b) => new Date(a.date) - new Date(b.date)) : [];
-  const publishedEvents = communityEvents.filter(e => e.status !== 'cancelled');
-  const communityMessages = community ? messages.filter(m => m.communityId === community.id) : [];
 
   // ─── Computed Stats ───────────────────────────────────────
   const stats = useMemo(() => {
