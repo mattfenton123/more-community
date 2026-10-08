@@ -121,11 +121,16 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <head>
         <meta charSet="utf-8" />
-        <title>more | The Power of Real-Life Connection</title>
-        <meta name="description" content="more is a movement celebrating the power of connecting in person. Find local groups, join real-life meetups, and experience the joy of shared passions. Free for community leaders. Starting in Tunbridge Wells." />
-        <meta property="og:title" content="more | The Power of Real-Life Connection" />
-        <meta property="og:description" content="Find local groups, join real-life meetups, and experience the joy of shared passions." />
+        <title>More Community | Find Your People, Connect in Real Life</title>
+        <meta name="description" content="More Community empowers local leaders and brings people together in the real world. Discover clubs, join in-person meetups, and experience the joy of shared passions. 100% free forever for community champions." />
+        <meta property="og:site_name" content="More Community" />
+        <meta property="og:title" content="More Community | Find Your People, Connect in Real Life" />
+        <meta property="og:description" content="Discover local groups, join in-person meetups, and build genuine community where you live. Free tools for community leaders." />
         <meta property="og:image" content="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=1200&q=80" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="More Community | Find Your People, Connect in Real Life" />
+        <meta name="twitter:description" content="Discover local groups, join in-person meetups, and build genuine community where you live. Free tools for community leaders." />
+        <meta name="twitter:image" content="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=1200&q=80" />
         <meta name="theme-color" content="#020617" />
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
         <link rel="icon" href="/favicon.svg" />

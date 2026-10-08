@@ -13,7 +13,7 @@ export default function EventCreatedShareModal({ event, experience, onClose }) {
     ? `${window.location.origin}/events/${event.id}`
     : `https://www.morecommunity.app/events/${event.id}`;
 
-  const shareText = `Tickets are now live for our community trip: ${event.title}! 🎟️\nDate: ${event.date} at ${event.time}\nSpots: ${event.maxCapacity || 15} available\n\nBook your spot here: ${bookingUrl}`;
+  const shareText = `Tickets & RSVPs are now live for ${event.title} on More Community! 🎟️\nDate: ${event.date} at ${event.time}\nSpots: ${event.maxCapacity || 15} available\n\nRSVP & see details here: ${bookingUrl}`;
   const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
 
   const handleCopy = () => {

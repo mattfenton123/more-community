@@ -7,11 +7,11 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url);
 
     // Dynamic values from URL params
-    const title = searchParams.get('title') || 'Discover more communities & events';
+    const title = searchParams.get('title') || 'Find Your People, Connect in Real Life';
     const date = searchParams.get('date');
     const location = searchParams.get('location') || 'Tunbridge Wells';
     const members = searchParams.get('members');
-    const community = searchParams.get('community') || 'more community.';
+    const community = searchParams.get('community') || 'More Community';
     const type = searchParams.get('type') || (date ? 'event' : 'community');
     const image = searchParams.get('image');
 
@@ -54,15 +54,14 @@ export async function GET(request) {
               <div
                 style={{
                   color: 'white',
-                  fontSize: 44,
+                  fontSize: 36,
                   fontWeight: 900,
-                  letterSpacing: '-0.05em',
+                  letterSpacing: '-0.04em',
                   display: 'flex',
-                  alignItems: 'baseline',
+                  alignItems: 'center',
                 }}
               >
-                <span>more</span>
-                <span style={{ color: '#14b8a6' }}>.</span>
+                <span>More Community</span>
               </div>
               <div
                 style={{
@@ -214,7 +213,7 @@ export async function GET(request) {
                   boxShadow: '0 8px 24px rgba(20, 184, 166, 0.35)',
                 }}
               >
-                <span>Join on more. →</span>
+                <span>Join on More Community →</span>
               </div>
             </div>
           </div>

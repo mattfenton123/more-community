@@ -10,7 +10,7 @@ export async function generateMetadata({ params }) {
   
   if (!event) {
     return {
-      title: 'Community Event | more.',
+      title: 'Community Event | More Community',
     };
   }
 
@@ -18,6 +18,7 @@ export async function generateMetadata({ params }) {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://www.morecommunity.app';
   const ogUrl = new URL(`${baseUrl}/api/og`);
   ogUrl.searchParams.set('title', event.title);
+  ogUrl.searchParams.set('community', 'More Community');
   ogUrl.searchParams.set('type', 'event');
   ogUrl.searchParams.set('date', event.date ? `${event.date}${event.time ? ` at ${event.time}` : ''}` : (event.duration || ''));
   if (event.location) ogUrl.searchParams.set('location', event.location);
@@ -25,12 +26,15 @@ export async function generateMetadata({ params }) {
     ogUrl.searchParams.set('image', event.image.startsWith('http') ? event.image : `${baseUrl}${event.image}`);
   }
 
+  const desc = event.description || `Join us for ${event.title} on More Community. RSVP, view event details, and connect with your local community in real life.`;
+
   return {
-    title: `${event.title} | more.`,
-    description: event.description,
+    title: `${event.title} | More Community`,
+    description: desc,
     openGraph: {
-      title: event.title,
-      description: event.description,
+      title: `${event.title} | More Community`,
+      description: desc,
+      siteName: 'More Community',
       images: [
         {
           url: ogUrl.toString(),
@@ -42,8 +46,8 @@ export async function generateMetadata({ params }) {
     },
     twitter: {
       card: 'summary_large_image',
-      title: event.title,
-      description: event.description,
+      title: `${event.title} | More Community`,
+      description: desc,
       images: [ogUrl.toString()],
     },
   };

@@ -14,7 +14,7 @@ export async function generateMetadata({ params }) {
     
   if (!community) {
     return {
-      title: 'Community Not Found | more.',
+      title: 'Community Not Found | More Community',
     };
   }
   
@@ -22,21 +22,24 @@ export async function generateMetadata({ params }) {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://www.morecommunity.app';
   const ogUrl = new URL(`${baseUrl}/api/og`);
   ogUrl.searchParams.set('title', community.name);
-  ogUrl.searchParams.set('community', 'more community.');
+  ogUrl.searchParams.set('community', 'More Community');
   ogUrl.searchParams.set('type', 'community');
-  if (community.location) ogUrl.searchParams.set('location', community.location);
+  if (community.location || community.location_name) ogUrl.searchParams.set('location', community.location || community.location_name);
   if (community.members) ogUrl.searchParams.set('members', `${community.members} members`);
   const image = community.image || community.cover_image;
   if (image) {
     ogUrl.searchParams.set('image', image.startsWith('http') ? image : `${baseUrl}${image}`);
   }
 
+  const desc = community.description || `Join ${community.name} on More Community. Discover upcoming meetups, connect with local members, and experience the joy of real-life connection.`;
+
   return {
-    title: `${community.name} | more.`,
-    description: community.description,
+    title: `${community.name} | More Community`,
+    description: desc,
     openGraph: {
-      title: `${community.name} | more.`,
-      description: community.description,
+      title: `${community.name} | More Community`,
+      description: desc,
+      siteName: 'More Community',
       images: [
         {
           url: ogUrl.toString(),
@@ -48,8 +51,8 @@ export async function generateMetadata({ params }) {
     },
     twitter: {
       card: 'summary_large_image',
-      title: community.name,
-      description: community.description,
+      title: `${community.name} | More Community`,
+      description: desc,
       images: [ogUrl.toString()],
     }
   };

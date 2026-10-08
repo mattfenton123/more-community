@@ -68,7 +68,7 @@ export default function LeaderSetupChecklist({ community, events = [], onOpenEve
       ? `${window.location.origin}/community/${community.id}`
       : `https://www.morecommunity.app/community/${community.id}`;
     
-    const shareText = `Join our new community "${community.name}" on more.! Connect with local members and join our upcoming events: ${shareUrl}`;
+    const shareText = `Join our community "${community.name}" on More Community! Connect with local members and join our upcoming meetups: ${shareUrl}`;
 
     if (navigator.clipboard) {
       navigator.clipboard.writeText(shareText);
@@ -82,7 +82,7 @@ export default function LeaderSetupChecklist({ community, events = [], onOpenEve
     const shareUrl = typeof window !== 'undefined' 
       ? `${window.location.origin}/community/${community.id}`
       : `https://www.morecommunity.app/community/${community.id}`;
-    const text = encodeURIComponent(`Hey! I've just set up our community "${community.name}" on more. Join us here: ${shareUrl}`);
+    const text = encodeURIComponent(`Hey! I've set up our community "${community.name}" on More Community. Join us and see our upcoming meetups here: ${shareUrl}`);
     window.open(`https://wa.me/?text=${text}`, '_blank');
   };
 
