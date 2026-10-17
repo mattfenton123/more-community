@@ -57,20 +57,22 @@ export async function POST(req) {
         },
       ],
       mode: 'payment',
-      success_url: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/community/${communityId}?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/community/${communityId}?checkout=cancelled`,
-      client_reference_id: `${userId}_${eventId}`, // Pass our internal IDs so webhook can fulfill it
+      success_url: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://www.morecommunity.app'}/community/${communityId}?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://www.morecommunity.app'}/community/${communityId}?checkout=cancelled`,
+      client_reference_id: `${userId}_${eventId}`,
       metadata: {
         eventId,
         userId,
         communityId
       },
-      // payment_intent_data: {
-      //   application_fee_amount: Math.round(price * 100 * 0.05), // 5% platform fee
-      //   transfer_data: {
-      //     destination: leaderStripeAccountId,
-      //   },
-      // },
+      ...(leaderStripeAccountId && !leaderStripeAccountId.startsWith('acct_express_demo') ? {
+        payment_intent_data: {
+          application_fee_amount: Math.round(Number(verifiedPrice) * 100 * 0.05), // 5% platform fee
+          transfer_data: {
+            destination: leaderStripeAccountId,
+          },
+        },
+      } : {}),
     });
 
     return NextResponse.json({ sessionId: session.id, url: session.url });

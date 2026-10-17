@@ -1,12 +1,12 @@
 "use client";
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ChevronLeft, Share, MapPin, Calendar, Clock, Users, CheckCircle2, Info, List, Activity, Check, Map, Ticket, DollarSign, Copy, ExternalLink, Navigation, Video, AlertTriangle, Image as ImageIcon, ScanLine, Archive, Repeat } from 'lucide-react';
+import { ChevronLeft, Share, MapPin, Calendar, Clock, Users, CheckCircle2, Info, List, Activity, Check, Map, Ticket, DollarSign, Copy, ExternalLink, Navigation, Video, AlertTriangle, Image as ImageIcon, ScanLine, Archive, Repeat, MessageCircle } from 'lucide-react';
 import { useAppContext } from '../../../src/context/AppContext';
 import { useToast } from '../../../src/components/Toast';
 import DigitalTicket from '../../../src/components/DigitalTicket';
 import QRScanner from '../../../src/components/QRScanner';
-import { isEventPast, isEventUpcoming } from '../../../src/lib/calendar';
+import { isEventPast, isEventUpcoming, downloadIcs, getGoogleCalendarEventUrl, getWhatsAppShareUrl } from '../../../src/lib/calendar';
 import { formatEventDate } from '../../../src/lib/recurrence';
 import {
   findKnownLocation,
@@ -254,6 +254,7 @@ export default function EventClient({ id }) {
   const [checkoutState, setCheckoutState] = useState('idle');
   const [showTicket, setShowTicket] = useState(null);
   const [showScanner, setShowScanner] = useState(false);
+  const [showRsvpSuccessModal, setShowRsvpSuccessModal] = useState(false);
 
   const isLeader = user?.ledCommunities?.includes(event?.communityId) || user?.isAdmin;
 
@@ -325,16 +326,20 @@ export default function EventClient({ id }) {
         setCheckoutState('success');
         const referredBy = searchParams?.get('ref') || null;
         await rsvpToEvent(event.id, 'going', 'paid', referredBy);
-        toast.success('Ticket Purchased!', 'Your ticket is confirmed.');
+        toast.success('Ticket Confirmed!', 'Your ticket is saved.');
         setTimeout(() => {
           setCheckoutState('idle');
-          setShowTicket(event);
-        }, 1500);
-      }, 1500);
+          setShowRsvpSuccessModal(true);
+        }, 1000);
+      }, 1400);
     } else {
       const newStatus = isGoing ? 'not_going' : 'going';
       await rsvpToEvent(event.id, newStatus);
-      toast.success(newStatus === 'going' ? 'You\'re going!' : 'RSVP Cancelled', newStatus === 'going' ? 'Added to your schedule' : 'Removed from your schedule');
+      if (newStatus === 'going') {
+        setShowRsvpSuccessModal(true);
+      } else {
+        toast.success('RSVP Cancelled', 'Removed from your schedule');
+      }
     }
   };
 
@@ -779,6 +784,180 @@ export default function EventClient({ id }) {
           </div>
         </div>
       </div>
+
+      {/* RSVP Success & WhatsApp Welcome Bridge Modal */}
+      {showRsvpSuccessModal && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 1100,
+          background: 'rgba(2, 6, 23, 0.85)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px'
+        }}>
+          <div style={{
+            width: '100%', maxWidth: '480px',
+            background: 'linear-gradient(180deg, #0f172a 0%, #090d16 100%)',
+            border: '1px solid rgba(45, 212, 191, 0.35)',
+            borderRadius: '24px', padding: '24px',
+            boxShadow: '0 20px 50px rgba(0,0,0,0.7), 0 0 40px rgba(20, 184, 166, 0.18)',
+            position: 'relative', overflow: 'hidden'
+          }}>
+            {/* Ambient teal glow */}
+            <div style={{
+              position: 'absolute', top: '-60px', right: '-60px', width: '180px', height: '180px',
+              borderRadius: '50%', background: 'radial-gradient(circle, rgba(20,184,166,0.3) 0%, transparent 70%)', pointerEvents: 'none'
+            }} />
+
+            {/* Success Badge */}
+            <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+              <div style={{
+                width: '64px', height: '64px', borderRadius: '50%',
+                background: 'linear-gradient(135deg, #10b981 0%, #14b8a6 100%)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                margin: '0 auto 14px', color: '#090d16',
+                boxShadow: '0 8px 24px rgba(16, 185, 129, 0.35)'
+              }}>
+                <CheckCircle2 size={36} strokeWidth={2.5} />
+              </div>
+              <h3 style={{ fontSize: '1.45rem', fontWeight: 800, color: 'var(--white)', margin: '0 0 6px 0', fontFamily: 'var(--font-heading)' }}>
+                You're Going!
+              </h3>
+              <p style={{ color: 'var(--slate-300)', fontSize: '0.92rem', margin: 0, lineHeight: 1.4 }}>
+                Your spot is confirmed for <strong style={{ color: 'var(--white)' }}>{event.title}</strong>
+              </p>
+            </div>
+
+            {/* Event Summary */}
+            <div style={{
+              background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)',
+              borderRadius: '16px', padding: '14px 16px', marginBottom: '20px',
+              display: 'flex', flexDirection: 'column', gap: '8px'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--slate-200)', fontSize: '0.88rem' }}>
+                <Calendar size={16} color="var(--teal-400)" style={{ flexShrink: 0 }} />
+                <span><strong>{event.date}</strong> at {event.time || '10:00'}</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--slate-200)', fontSize: '0.88rem' }}>
+                <MapPin size={16} color="#ec4899" style={{ flexShrink: 0 }} />
+                <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{cleanLocationName(event.location)}</span>
+              </div>
+              {event.meetingPoint && (
+                <div style={{ fontSize: '0.78rem', color: 'var(--slate-400)', paddingLeft: '26px' }}>
+                  Meeting point: {event.meetingPoint}
+                </div>
+              )}
+            </div>
+
+            {/* WhatsApp Community Bridge */}
+            <div style={{ marginBottom: '16px' }}>
+              <div style={{ fontSize: '0.76rem', fontWeight: 700, color: 'var(--teal-300)', textTransform: 'uppercase', letterSpacing: '0.6px', marginBottom: '8px' }}>
+                WhatsApp Community Bridge
+              </div>
+
+              {community?.whatsapp_group && (
+                <a
+                  href={community.whatsapp_group.startsWith('http') ? community.whatsapp_group : `https://${community.whatsapp_group}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="interactive-press"
+                  style={{
+                    width: '100%', padding: '12px 16px', borderRadius: '14px',
+                    background: 'linear-gradient(135deg, #25D366 0%, #128C7E 100%)',
+                    color: '#ffffff', fontWeight: 700, fontSize: '0.92rem',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                    textDecoration: 'none', marginBottom: '8px',
+                    boxShadow: '0 4px 16px rgba(37, 211, 102, 0.25)'
+                  }}
+                >
+                  <MessageCircle size={18} /> Join WhatsApp Group & Say Hi
+                </a>
+              )}
+
+              <a
+                href={getWhatsAppShareUrl(event, community?.name)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="interactive-press"
+                style={{
+                  width: '100%', padding: '11px 16px', borderRadius: '14px',
+                  background: 'rgba(37, 211, 102, 0.12)',
+                  border: '1px solid rgba(37, 211, 102, 0.3)',
+                  color: '#4ade80', fontWeight: 600, fontSize: '0.88rem',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                  textDecoration: 'none'
+                }}
+              >
+                <Share size={16} /> Share RSVP / Intro to WhatsApp
+              </a>
+            </div>
+
+            {/* Calendar Sync Options */}
+            <div style={{ marginBottom: '20px' }}>
+              <div style={{ fontSize: '0.76rem', fontWeight: 700, color: 'var(--slate-400)', textTransform: 'uppercase', letterSpacing: '0.6px', marginBottom: '8px' }}>
+                Add to Your Calendar
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                <button
+                  onClick={() => downloadIcs(event, community?.name)}
+                  className="interactive-press"
+                  style={{
+                    padding: '10px', borderRadius: '12px',
+                    background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+                    color: 'var(--white)', fontSize: '0.82rem', fontWeight: 600,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', cursor: 'pointer'
+                  }}
+                >
+                  <Calendar size={15} color="var(--teal-400)" /> Apple / Outlook
+                </button>
+                <a
+                  href={getGoogleCalendarEventUrl(event, community?.name)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="interactive-press"
+                  style={{
+                    padding: '10px', borderRadius: '12px',
+                    background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+                    color: 'var(--white)', fontSize: '0.82rem', fontWeight: 600,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                    textDecoration: 'none'
+                  }}
+                >
+                  <ExternalLink size={15} color="#3b82f6" /> Google Cal
+                </a>
+              </div>
+            </div>
+
+            {/* Bottom Actions */}
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button
+                onClick={() => {
+                  setShowRsvpSuccessModal(false);
+                  setShowTicket(event);
+                }}
+                className="interactive-press"
+                style={{
+                  flex: 1, padding: '12px', borderRadius: '12px',
+                  background: 'rgba(20,184,166,0.15)', border: '1px solid rgba(20,184,166,0.3)',
+                  color: 'var(--teal-300)', fontSize: '0.9rem', fontWeight: 700,
+                  cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px'
+                }}
+              >
+                <Ticket size={16} /> View Pass
+              </button>
+              <button
+                onClick={() => setShowRsvpSuccessModal(false)}
+                className="interactive-press"
+                style={{
+                  flex: 1, padding: '12px', borderRadius: '12px',
+                  background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)',
+                  color: 'var(--white)', fontSize: '0.9rem', fontWeight: 600,
+                  cursor: 'pointer'
+                }}
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Ticket Modal */}
       {showTicket && (

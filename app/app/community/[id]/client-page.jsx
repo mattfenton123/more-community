@@ -17,7 +17,7 @@ import ReviewsList from '../../../src/components/ReviewsList';
 import ReviewForm from '../../../src/components/ReviewForm';
 import ReelViewer from '../../../src/components/ReelViewer';
 import dynamic from 'next/dynamic';
-import { downloadIcs, isEventUpcoming, isEventPast, parseEventDateTime } from '../../../src/lib/calendar';
+import { downloadIcs, getCalendarFeedUrls, isEventUpcoming, isEventPast, parseEventDateTime } from '../../../src/lib/calendar';
 import { cleanLocationName } from '../../../src/lib/location';
 
 const VideoUploader = dynamic(() => import('../../../src/components/VideoUploader'), { ssr: false });
@@ -106,6 +106,7 @@ export default function CommunityProfile() {
   const [showReelViewer, setShowReelViewer] = useState(null);
   const [showUploader, setShowUploader] = useState(false);
   const [showPostEmojiPicker, setShowPostEmojiPicker] = useState(false);
+  const [showCalendarModal, setShowCalendarModal] = useState(false);
   const fileInputRef = useRef(null);
   
   const communityId = id || (user?.joinedCommunities?.length > 0 ? user.joinedCommunities[0] : 'tw-tech-meetup');
@@ -1682,9 +1683,23 @@ export default function CommunityProfile() {
         {/* ===== EVENTS TAB ===== */}
         {activeTab === 'events' && (
           <>
-            <h3 style={{ fontSize: '1.3rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: '0 0 16px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Calendar size={20} color="var(--teal-400)" /> Upcoming Events ({upcomingEvents.length})
-            </h3>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', margin: '0 0 16px 0' }}>
+              <h3 style={{ fontSize: '1.3rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Calendar size={20} color="var(--teal-400)" /> Upcoming Events ({upcomingEvents.length})
+              </h3>
+              <button 
+                onClick={() => setShowCalendarModal(true)}
+                className="interactive-press"
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '6px',
+                  background: 'rgba(20,184,166,0.1)', border: '1px solid rgba(20,184,166,0.3)',
+                  color: 'var(--teal-400)', padding: '6px 14px', borderRadius: '99px',
+                  fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer'
+                }}
+              >
+                <Calendar size={14} /> Subscribe to Calendar
+              </button>
+            </div>
             {upcomingEvents.length > 0 ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '24px' }}>
                 {upcomingEvents.map(event => {
@@ -2135,6 +2150,89 @@ export default function CommunityProfile() {
             setShowUploader(false);
           }}
         />
+      )}
+      {/* Calendar Subscription Modal */}
+      {showCalendarModal && (
+        <div className="modal-overlay" onClick={() => setShowCalendarModal(false)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', zIndex: 10000 }}>
+          <div className="glass-panel" onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: '420px', padding: '24px', borderRadius: '24px', background: 'var(--slate-900)', border: '1px solid rgba(255,255,255,0.1)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '1.25rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Calendar size={20} color="var(--teal-400)" /> Subscribe to Calendar
+                </h3>
+                <p style={{ margin: '4px 0 0 0', fontSize: '0.82rem', color: 'var(--slate-400)' }}>
+                  Sync {community.name} meetups directly to your phone. Recurring events auto-update.
+                </p>
+              </div>
+              <button onClick={() => setShowCalendarModal(false)} style={{ background: 'none', border: 'none', color: 'var(--slate-400)', cursor: 'pointer', padding: '4px' }}>
+                <X size={20} />
+              </button>
+            </div>
+
+            {(() => {
+              const urls = getCalendarFeedUrls(community.id);
+              return (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <a 
+                    href={urls.webcal} 
+                    className="interactive-press"
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '12px',
+                      background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
+                      padding: '14px 16px', borderRadius: '14px', textDecoration: 'none', color: 'var(--white)'
+                    }}
+                  >
+                    <span style={{ fontSize: '1.4rem' }}>🍏</span>
+                    <div>
+                      <div style={{ fontWeight: 600, fontSize: '0.95rem' }}>Apple Calendar (iPhone & Mac)</div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>One-tap subscribe with automatic updates</div>
+                    </div>
+                  </a>
+
+                  <a 
+                    href={urls.google} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="interactive-press"
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '12px',
+                      background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
+                      padding: '14px 16px', borderRadius: '14px', textDecoration: 'none', color: 'var(--white)'
+                    }}
+                  >
+                    <span style={{ fontSize: '1.4rem' }}>📅</span>
+                    <div>
+                      <div style={{ fontWeight: 600, fontSize: '0.95rem' }}>Google Calendar</div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>Sync with your Google account</div>
+                    </div>
+                  </a>
+
+                  <button 
+                    onClick={() => {
+                      if (navigator.clipboard) {
+                        navigator.clipboard.writeText(urls.http);
+                        toast.success('Feed Link Copied!', 'Paste into Outlook or any calendar app.');
+                      }
+                    }}
+                    className="interactive-press"
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '12px',
+                      background: 'rgba(20,184,166,0.08)', border: '1px solid rgba(20,184,166,0.25)',
+                      padding: '14px 16px', borderRadius: '14px', color: 'var(--teal-400)',
+                      cursor: 'pointer', textAlign: 'left', width: '100%'
+                    }}
+                  >
+                    <span style={{ fontSize: '1.4rem' }}>📋</span>
+                    <div>
+                      <div style={{ fontWeight: 600, fontSize: '0.95rem' }}>Copy .ICS Feed URL</div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>For Outlook, Proton, or manual subscription</div>
+                    </div>
+                  </button>
+                </div>
+              );
+            })()}
+          </div>
+        </div>
       )}
       
     </div>

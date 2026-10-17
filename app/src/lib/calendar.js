@@ -9,18 +9,18 @@ export function downloadIcs(event, communityName) {
   const icsData = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//more. community//EN',
+    'PRODID:-//more. Community//EN',
     'BEGIN:VEVENT',
-    `UID:${event.id}@more-community.com`,
+    `UID:${event.id}@morecommunity.app`,
     `DTSTAMP:${formatDate(new Date())}`,
     `DTSTART:${formatDate(startTime)}`,
     `DTEND:${formatDate(endTime)}`,
     `SUMMARY:${event.title} - ${communityName}`,
-    `DESCRIPTION:${event.description || ''}\\n\\nView on more.: https://more-community.vercel.app/event/${event.id}`,
+    `DESCRIPTION:${event.description || ''}\\n\\nView on more.: https://www.morecommunity.app/events/${event.id}`,
     `LOCATION:${event.location || ''}`,
     'END:VEVENT',
     'END:VCALENDAR'
-  ].join('\\r\\n');
+  ].join('\r\n');
 
   const blob = new Blob([icsData], { type: 'text/calendar;charset=utf-8' });
   const link = document.createElement('a');
@@ -29,6 +29,38 @@ export function downloadIcs(event, communityName) {
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
+}
+
+export function getCalendarFeedUrls(communityId) {
+  if (typeof window === 'undefined') return { webcal: '', google: '', http: '' };
+  const origin = window.location.origin;
+  const host = window.location.host;
+  const httpUrl = `${origin}/api/calendar/${communityId}`;
+  const webcalUrl = `webcal://${host}/api/calendar/${communityId}`;
+  const googleUrl = `https://calendar.google.com/calendar/render?cid=${encodeURIComponent(webcalUrl)}`;
+  return { webcal: webcalUrl, google: googleUrl, http: httpUrl };
+}
+
+export function getGoogleCalendarEventUrl(event, communityName) {
+  const startTime = parseEventDateTime(event.date, event.time) || new Date();
+  const endTime = new Date(startTime.getTime() + 2 * 60 * 60 * 1000);
+  const formatDate = (date) => date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+  const startStr = formatDate(startTime);
+  const endStr = formatDate(endTime);
+  const title = encodeURIComponent(`${event.title} - ${communityName || 'more. Community'}`);
+  const details = encodeURIComponent(`${event.description || ''}\n\nJoin on more.: https://www.morecommunity.app/events/${event.id}`);
+  const location = encodeURIComponent(event.location || '');
+  return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startStr}/${endStr}&details=${details}&location=${location}`;
+}
+
+export function getWhatsAppShareUrl(event, communityName) {
+  const text = encodeURIComponent(
+    `Hey everyone! I'm attending ${event.title}${communityName ? ` with ${communityName}` : ''}! 🎉\n\n` +
+    `📅 ${event.date} at ${event.time || '10:00'}\n` +
+    `📍 ${event.location || 'Location on map'}\n\n` +
+    `Come join me: https://www.morecommunity.app/events/${event.id}`
+  );
+  return `https://api.whatsapp.com/send?text=${text}`;
 }
 
 export function parseEventDateTime(dateStr, timeStr) {

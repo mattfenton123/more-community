@@ -219,8 +219,56 @@ export default function LeaderDashboard({ initialCommunityId }) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [showWelcomeGuide, setShowWelcomeGuide] = useState(true);
   const [peopleSubTab, setPeopleSubTab] = useState('members');
-  const [linkCopied, setLinkCopied] = useState(false);
   const [leaderDrillDown, setLeaderDrillDown] = useState(null); // 'members'|'active'|'revenue'|'events'|'checkin'|'next'
+
+  // ─── Stripe Connect Express State & Handlers ──────────────
+  const [stripeConnected, setStripeConnected] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem(`more_stripe_connected_${community?.id}`) === 'true';
+    }
+    return false;
+  });
+  const [isConnectingStripe, setIsConnectingStripe] = useState(false);
+
+  useEffect(() => {
+    if (searchParams?.get('stripe_connect') === 'success') {
+      const accId = searchParams.get('account_id') || `acct_express_${community?.id || 'leader'}`;
+      setStripeConnected(true);
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem(`more_stripe_connected_${community?.id}`, 'true');
+          localStorage.setItem(`more_stripe_account_${community?.id}`, accId);
+        } catch (e) {}
+      }
+      toast.success('Stripe Express Connected!', 'Your bank account is linked. 95% of ticket revenue will be paid out automatically.');
+    }
+  }, [searchParams, community?.id]);
+
+  const handleConnectStripe = async () => {
+    if (!community?.id) return;
+    try {
+      setIsConnectingStripe(true);
+      const res = await fetch('/api/stripe/connect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          communityId: community.id,
+          returnUrl: `${window.location.origin}/dashboard?tab=monetisation&stripe_connect=success`,
+        })
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error(data.error || 'Failed to generate onboarding URL');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('Stripe Connect Failed', err.message || 'Please try again.');
+    } finally {
+      setIsConnectingStripe(false);
+    }
+  };
 
   // ─── Community Guidelines State & Effects ─────────────────
   const [guidelinesDraft, setGuidelinesDraft] = useState([]);
@@ -2270,35 +2318,98 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 </div>
               </div>
 
-              {/* Premium Simulated Payout Summary */}
-              <div className="glass-panel" style={{ padding: '24px', border: '1px solid rgba(255,255,255,0.08)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(20,184,166,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <DollarSign size={18} color="var(--teal-400)" />
+              {/* Stripe Connect Express Leader Payouts */}
+              <div className="glass-panel" style={{ padding: '24px', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '20px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(20,184,166,0.12)', border: '1px solid rgba(20,184,166,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <DollarSign size={20} color="var(--teal-400)" />
                     </div>
-                    <span style={{ fontSize: '1.05rem', fontWeight: 600, color: 'var(--white)' }}>Stripe Payouts</span>
+                    <div>
+                      <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--white)' }}>Stripe Connect Express Payouts</div>
+                      <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)' }}>Automated UK Faster Payments to your bank</div>
+                    </div>
                   </div>
-                  <div style={{ padding: '4px 8px', borderRadius: '6px', background: 'rgba(59,130,246,0.1)', color: '#3b82f6', fontSize: '0.75rem', fontWeight: 600 }}>Connected</div>
+                  {stripeConnected ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', borderRadius: '99px', background: 'rgba(16,185,129,0.15)', border: '1px solid rgba(16,185,129,0.3)', color: '#34d399', fontSize: '0.8rem', fontWeight: 700 }}>
+                      <CheckCircle2 size={14} /> Bank Connected
+                    </div>
+                  ) : (
+                    <div style={{ padding: '6px 12px', borderRadius: '99px', background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.3)', color: '#fbbf24', fontSize: '0.8rem', fontWeight: 600 }}>
+                      Setup Required
+                    </div>
+                  )}
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
-                  <div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>In Transit</div>
-                    <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--teal-400)' }}>£450.00</div>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--slate-500)', marginTop: '4px' }}>Expected Nov 12</div>
+                {stripeConnected ? (
+                  <>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '16px', marginBottom: '20px' }}>
+                      <div style={{ background: 'rgba(255,255,255,0.02)', padding: '14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                        <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '4px' }}>In Transit</div>
+                        <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--teal-400)' }}>£450.00</div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--slate-500)', marginTop: '2px' }}>Rolling daily transfer</div>
+                      </div>
+                      <div style={{ background: 'rgba(255,255,255,0.02)', padding: '14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                        <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '4px' }}>Lifetime Earnings</div>
+                        <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--white)' }}>£3,240.00</div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--slate-500)', marginTop: '2px' }}>95% Leader share</div>
+                      </div>
+                      <div style={{ background: 'rgba(255,255,255,0.02)', padding: '14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                        <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '4px' }}>Platform Split</div>
+                        <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#38bdf8' }}>95% / 5%</div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--slate-500)', marginTop: '2px' }}>Zero upfront fees</div>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', padding: '12px 16px', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.04)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--teal-400)' }}></div>
+                        <span style={{ fontSize: '0.85rem', color: 'var(--slate-300)' }}>Payouts route automatically via Stripe Express to your UK bank account.</span>
+                      </div>
+                      <button
+                        onClick={handleConnectStripe}
+                        disabled={isConnectingStripe}
+                        className="interactive-press"
+                        style={{
+                          padding: '8px 14px', borderRadius: '8px',
+                          background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)',
+                          color: 'var(--white)', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer'
+                        }}
+                      >
+                        {isConnectingStripe ? 'Opening Stripe...' : 'Manage Bank Account'}
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <div style={{
+                    padding: '20px', borderRadius: '16px',
+                    background: 'linear-gradient(135deg, rgba(20,184,166,0.08) 0%, rgba(59,130,246,0.05) 100%)',
+                    border: '1px solid rgba(20,184,166,0.2)',
+                  }}>
+                    <div style={{ marginBottom: '16px' }}>
+                      <h4 style={{ color: 'var(--white)', margin: '0 0 6px 0', fontSize: '1.05rem', fontWeight: 700 }}>
+                        Get Paid Directly to Your UK Bank Account
+                      </h4>
+                      <p style={{ color: 'var(--slate-300)', margin: 0, fontSize: '0.88rem', lineHeight: 1.5 }}>
+                        Connect your bank account via Stripe Express in under 2 minutes. Receive 95% of every event ticket and subscription directly into your account with automatic daily payouts.
+                      </p>
+                    </div>
+                    <button
+                      onClick={handleConnectStripe}
+                      disabled={isConnectingStripe}
+                      className="btn btn-primary interactive-press"
+                      style={{
+                        padding: '12px 24px', borderRadius: '12px',
+                        display: 'inline-flex', alignItems: 'center', gap: '8px',
+                        fontSize: '0.95rem', fontWeight: 700,
+                        cursor: isConnectingStripe ? 'not-allowed' : 'pointer'
+                      }}
+                    >
+                      <DollarSign size={18} />
+                      {isConnectingStripe ? 'Opening Stripe Express...' : 'Connect Bank Account (Stripe Express)'}
+                    </button>
                   </div>
-                  <div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>Lifetime Revenue</div>
-                    <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--white)' }}>£3,240.00</div>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--slate-500)', marginTop: '4px' }}>Since Mar 2026</div>
-                  </div>
-                </div>
-                
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.04)' }}>
-                   <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--teal-500)' }}></div>
-                   <span style={{ fontSize: '0.85rem', color: 'var(--slate-300)' }}>Payouts arrive daily on a 7-day rolling basis.</span>
-                </div>
+                )}
               </div>
             </div>
           )}
