@@ -10,21 +10,39 @@ export function AuthProvider({ children }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    let mounted = true;
+    const safetyTimeout = setTimeout(() => {
+      if (mounted) setIsLoading(false);
+    }, 2000);
+
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!mounted) return;
+      clearTimeout(safetyTimeout);
       setSession(session);
       setAuthUser(session?.user ?? null);
+      setIsLoading(false);
+    }).catch(err => {
+      if (!mounted) return;
+      clearTimeout(safetyTimeout);
+      console.warn('Error fetching auth session:', err);
       setIsLoading(false);
     });
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!mounted) return;
+      clearTimeout(safetyTimeout);
       setSession(session);
       setAuthUser(session?.user ?? null);
       setIsLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      clearTimeout(safetyTimeout);
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signUpWithEmail = async (email, password, name) => {

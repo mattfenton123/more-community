@@ -268,7 +268,7 @@ strong { color: var(--white); }
 /* Mobile Menu */
 .menu-overlay {
     display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,0.6); z-index: 999;
+    background: rgba(0,0,0,0.6); z-index: 998;
 }
 .menu-overlay.active { display: block; }
 .menu-toggle {
@@ -1266,7 +1266,7 @@ strong { color: var(--white); }
         flex-direction: column; align-items: center; justify-content: center;
         padding: 4rem 2rem; gap: 1rem;
         transition: right 0.5s var(--ease-out-expo);
-        z-index: 999;
+        z-index: 1000;
     }
     .nav-links.open { right: 0; }
     .nav-links a { 

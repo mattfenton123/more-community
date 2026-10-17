@@ -144,7 +144,7 @@ const communities = [
         hostQuote: "I started Mindful Miles because I realized how lonely remote work can be. Walking side-by-side takes the pressure off networking. I can't wait to walk with you!",
         galleryImage: 'images/gallery/mindful-miles.png',
         missionStatement: "Walking isn't just about reaching a destination. It's about the conversations, the clarity, and the connections we make along the way.",
-        button1Text: 'Join Next Walk', button1Link: '/portal/community/mindful-miles',
+        button1Text: 'Join Next Walk', button1Link: '/community/mindful-miles',
         button2Text: 'View Routes', button2Link: '#',
         offers: [
             { icon: '🥾', title: 'Guided Routes', desc: 'From Dunorlan Park to High Rocks, we explore the best trails the borough has to offer.' },
@@ -170,7 +170,7 @@ const communities = [
         hostQuote: 'There is nothing quite like earning your pint after climbing a steep Kentish hill in the rain. We are a hardy bunch, but incredibly welcoming.',
         galleryImage: 'images/gallery/tw-ramblers.png',
         missionStatement: 'To explore further, climb higher, and experience the rugged beauty of the high Weald with those who share the same drive.',
-        button1Text: 'View Calendar', button1Link: '/portal/community/tw-ramblers',
+        button1Text: 'View Calendar', button1Link: '/community/tw-ramblers',
         button2Text: 'Our Gear List', button2Link: '#',
         offers: [
             { icon: '⛰️', title: 'Long-Distance Hikes', desc: '10km to 30km routes taking in the high Weald and coastal paths.' },
@@ -196,7 +196,7 @@ const communities = [
         hostQuote: "Fitness shouldn't be a chore. I started this challenge to trick myself into running by making it a game, and the community that built around it is incredible.",
         galleryImage: 'images/gallery/a-z-challenge.png',
         missionStatement: 'We believe fitness should be an adventure. Turning the streets of our town into a massive playground for runners.',
-        button1Text: 'Start Running', button1Link: '/portal/community/a-z-challenge',
+        button1Text: 'Start Running', button1Link: '/community/a-z-challenge',
         button2Text: 'Leaderboard', button2Link: '#',
         offers: [
             { icon: '🏃‍♂️', title: 'A-Z Routes', desc: '26 unique routes around TW, starting with Ashdown and ending with Z...' },
@@ -248,7 +248,7 @@ const communities = [
         hostQuote: "Yoga isn't about touching your toes, it's about what you learn on the way down. Our collective is a safe space to reconnect with yourself.",
         galleryImage: 'images/gallery/tw-yoga-collective.png',
         missionStatement: 'Finding stillness in a fast-moving world. We gather to ground ourselves, breathe intentionally, and move with purpose.',
-        button1Text: 'Book a Mat', button1Link: '/portal/community/tw-yoga-collective',
+        button1Text: 'Book a Mat', button1Link: '/community/tw-yoga-collective',
         button2Text: 'Meet Teachers', button2Link: '#',
         offers: [
             { icon: '🧘‍♀️', title: 'Vinyasa & Yin', desc: 'Dynamic flows to build strength, and deep holds to release tension.' },
@@ -274,7 +274,7 @@ const communities = [
         hostQuote: 'I hated spending my weekends on the sofa. I started organizing these trips to find other people who wanted to get their hands dirty and try new things.',
         galleryImage: 'images/gallery/kent-adventures.png',
         missionStatement: 'Nature is meant to be challenged. We provide the equipment, the expertise, and the community to get you out of your comfort zone.',
-        button1Text: 'See Upcoming', button1Link: '/portal/community/kent-adventures',
+        button1Text: 'See Upcoming', button1Link: '/community/kent-adventures',
         button2Text: 'Gallery', button2Link: '#',
         offers: [
             { icon: '🛶', title: 'River Kayaking', desc: 'Weekend paddles down the Medway and surrounding waterways.' },
@@ -300,7 +300,7 @@ const communities = [
         hostQuote: "A town is defined by how it treats its most vulnerable. Volunteering here isn't just charity, it's building true neighborhood resilience.",
         galleryImage: 'images/gallery/tw-good-neighbours.png',
         missionStatement: 'A town is only as strong as its willingness to help those in need. We are neighbors helping neighbors.',
-        button1Text: 'Volunteer', button1Link: '/portal/community/tw-good-neighbours',
+        button1Text: 'Volunteer', button1Link: '/community/tw-good-neighbours',
         button2Text: 'Request Help', button2Link: '#',
         offers: [
             { icon: '🛍️', title: 'Errand Running', desc: 'Assisting elderly residents with shopping and prescription collections.' },
@@ -326,7 +326,7 @@ const communities = [
         hostQuote: 'When we sit at a table and share the food of our ancestors, the differences melt away. We realize we are all just trying to live good lives.',
         galleryImage: 'images/gallery/tw-interfaith-network.png',
         missionStatement: 'Bridging divides through shared meals, open dialogue, and a fundamental belief in our shared humanity.',
-        button1Text: 'Join Dialogue', button1Link: '/portal/community/tw-interfaith-network',
+        button1Text: 'Join Dialogue', button1Link: '/community/tw-interfaith-network',
         button2Text: 'Events', button2Link: '#',
         offers: [
             { icon: '🤝', title: 'Open Dialogues', desc: 'Respectful, moderated discussions on faith, culture, and shared values.' },
@@ -352,7 +352,7 @@ const communities = [
         hostQuote: "Creating art can be incredibly isolating. I wanted to build a chaotic, wonderful space where artists could feed off each other's energy.",
         galleryImage: 'images/gallery/tw-creative-collective.png',
         missionStatement: "Creativity shouldn't happen in a vacuum. We bring artists out of their studios and into a vibrant, collaborative ecosystem.",
-        button1Text: 'Join Studio', button1Link: '/portal/community/tw-creative-collective',
+        button1Text: 'Join Studio', button1Link: '/community/tw-creative-collective',
         button2Text: 'Exhibitions', button2Link: '#',
         offers: [
             { icon: '🎨', title: 'Drink & Draw', desc: 'Casual evening meetups to sketch, paint, and socialize over a glass of wine.' },

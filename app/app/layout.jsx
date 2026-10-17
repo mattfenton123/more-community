@@ -72,22 +72,23 @@ function MainLayout({ children }) {
   const hideTabBar = currentPath === '/login' || currentPath === '/onboarding' || isChatRoom || currentPath?.startsWith('/admin');
   const isDesktopFriendly = isDashboard || currentPath?.startsWith('/community/');
 
+  const isPublicRoute = Boolean(
+    currentPath === '/' ||
+    currentPath === '/login' ||
+    currentPath === '/discover' ||
+    currentPath === '/events' ||
+    currentPath === '/invite' ||
+    currentPath === '/update-password' ||
+    currentPath?.startsWith('/events/') ||
+    currentPath?.startsWith('/community/') ||
+    currentPath?.startsWith('/legal/') ||
+    currentPath?.startsWith('/sponsors/') ||
+    currentPath?.startsWith('/experiences/')
+  );
+
   useEffect(() => {
     // Wait for auth to initialize
     if (authLoading || appLoading) return;
-
-    const isPublicRoute = (
-      currentPath === '/login' ||
-      currentPath === '/discover' ||
-      currentPath === '/events' ||
-      currentPath === '/invite' ||
-      currentPath === '/update-password' ||
-      currentPath?.startsWith('/events/') ||
-      currentPath?.startsWith('/community/') ||
-      currentPath?.startsWith('/legal/') ||
-      currentPath?.startsWith('/sponsors/') ||
-      currentPath?.startsWith('/experiences/')
-    );
 
     if (!authUser && !isPublicRoute) {
       const redirectUrl = currentPath && currentPath !== '/' ? `/login?redirect=${encodeURIComponent(currentPath)}` : '/login';
@@ -95,10 +96,10 @@ function MainLayout({ children }) {
       return;
     }
 
-    if (user && user.onboarded === false && currentPath !== '/onboarding' && currentPath !== '/login') {
+    if (authUser && user && user.onboarded === false && currentPath !== '/onboarding' && currentPath !== '/login' && !isPublicRoute) {
       router.push('/onboarding');
     }
-  }, [authUser, user, authLoading, appLoading, currentPath, router]);
+  }, [authUser, user, authLoading, appLoading, currentPath, isPublicRoute, router]);
 
   useEffect(() => {
     if (process.env.NODE_ENV === 'production' && 'serviceWorker' in navigator) {
@@ -106,8 +107,8 @@ function MainLayout({ children }) {
     }
   }, []);
 
-  // Don't render content until auth checks are done
-  if (authLoading || (authUser && !user)) return (
+  // Don't render content until auth checks are done (exempt public routes so guests can browse immediately)
+  if (!isPublicRoute && (authLoading || (authUser && !user))) return (
     <div style={{ minHeight: '100dvh', background: 'var(--slate-950)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '16px' }}>
       <div style={{ width: '40px', height: '40px', border: '3px solid rgba(20,184,166,0.2)', borderTopColor: 'var(--teal-500)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
       <span style={{ color: 'var(--slate-400)', fontSize: '0.9rem' }}>Loading...</span>

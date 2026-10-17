@@ -1,0 +1,852 @@
+{
+  "timestamp": "2026-10-17T12:12:53.107Z",
+  "baseUrl": "https://www.morecommunity.app",
+  "staticPages": {
+    "/": {
+      "path": "/",
+      "url": "https://www.morecommunity.app/",
+      "status": 200,
+      "title": "more | The Power of Real-Life Connection",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 404 ()"
+      ],
+      "failedRequests": [
+        {
+          "url": "https://www.morecommunity.app/favicon.ico",
+          "status": 404
+        }
+      ],
+      "brokenInternalLinks": [
+        {
+          "href": "/portal/",
+          "resolved": "https://www.morecommunity.app/portal/",
+          "status": 404,
+          "text": "App Preview"
+        }
+      ],
+      "brokenHashLinks": [],
+      "scriptTests": {
+        "mobileMenu": "PASS",
+        "menuOverlayClose": "PASS",
+        "emailNotification": "PASS"
+      }
+    },
+    "/about.html": {
+      "path": "/about.html",
+      "url": "https://www.morecommunity.app/about.html",
+      "status": 200,
+      "title": "Our Story | more",
+      "consoleErrors": [],
+      "failedRequests": [],
+      "brokenInternalLinks": [],
+      "brokenHashLinks": [],
+      "scriptTests": {
+        "mobileMenu": "PASS",
+        "menuOverlayClose": "PASS"
+      }
+    },
+    "/discover.html": {
+      "path": "/discover.html",
+      "url": "https://www.morecommunity.app/discover.html",
+      "status": 200,
+      "title": "Discover Communities | more",
+      "consoleErrors": [],
+      "failedRequests": [],
+      "brokenInternalLinks": [],
+      "brokenHashLinks": [],
+      "scriptTests": {
+        "mobileMenu": "PASS",
+        "menuOverlayClose": "FAIL: overlay click did not close menu",
+        "filterPills": "PASS (Total pills: 9, filtered visible cards: 10/10)",
+        "searchFiltering": "PASS (Cards matching 'Parkrun': 1)",
+        "searchNoResults": "PASS"
+      }
+    },
+    "/leaders.html": {
+      "path": "/leaders.html",
+      "url": "https://www.morecommunity.app/leaders.html",
+      "status": 200,
+      "title": "For Community Leaders | more",
+      "consoleErrors": [],
+      "failedRequests": [],
+      "brokenInternalLinks": [],
+      "brokenHashLinks": [],
+      "scriptTests": {
+        "mobileMenu": "PASS",
+        "menuOverlayClose": "PASS"
+      }
+    },
+    "/tunbridge-wells.html": {
+      "path": "/tunbridge-wells.html",
+      "url": "https://www.morecommunity.app/tunbridge-wells.html",
+      "status": 200,
+      "title": "Tunbridge Wells | more",
+      "consoleErrors": [],
+      "failedRequests": [],
+      "brokenInternalLinks": [],
+      "brokenHashLinks": [],
+      "scriptTests": {
+        "mobileMenu": "PASS",
+        "menuOverlayClose": "PASS"
+      }
+    },
+    "/a-z-challenge.html": {
+      "path": "/a-z-challenge.html",
+      "url": "https://www.morecommunity.app/a-z-challenge.html",
+      "status": 200,
+      "title": "more A-Z Challenge | more",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 404 ()"
+      ],
+      "failedRequests": [
+        {
+          "url": "https://www.morecommunity.app/images/hero-home.jpg",
+          "status": 404
+        }
+      ],
+      "brokenInternalLinks": [
+        {
+          "href": "/portal/community/a-z-challenge",
+          "resolved": "https://www.morecommunity.app/portal/community/a-z-challenge",
+          "status": 404,
+          "text": "Start Running"
+        }
+      ],
+      "brokenHashLinks": [],
+      "scriptTests": {
+        "mobileMenu": "PASS",
+        "menuOverlayClose": "PASS"
+      }
+    },
+    "/kent-adventures.html": {
+      "path": "/kent-adventures.html",
+      "url": "https://www.morecommunity.app/kent-adventures.html",
+      "status": 200,
+      "title": "Kent Adventures | more",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 404 ()"
+      ],
+      "failedRequests": [
+        {
+          "url": "https://www.morecommunity.app/images/hero-home.jpg",
+          "status": 404
+        }
+      ],
+      "brokenInternalLinks": [
+        {
+          "href": "/portal/community/kent-adventures",
+          "resolved": "https://www.morecommunity.app/portal/community/kent-adventures",
+          "status": 404,
+          "text": "See Upcoming"
+        }
+      ],
+      "brokenHashLinks": [],
+      "scriptTests": {
+        "mobileMenu": "PASS",
+        "menuOverlayClose": "PASS"
+      }
+    },
+    "/mindful-miles.html": {
+      "path": "/mindful-miles.html",
+      "url": "https://www.morecommunity.app/mindful-miles.html",
+      "status": 200,
+      "title": "more Mindful Miles | more",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 404 ()"
+      ],
+      "failedRequests": [
+        {
+          "url": "https://www.morecommunity.app/images/hero-home.jpg",
+          "status": 404
+        }
+      ],
+      "brokenInternalLinks": [
+        {
+          "href": "/portal/community/mindful-miles",
+          "resolved": "https://www.morecommunity.app/portal/community/mindful-miles",
+          "status": 404,
+          "text": "Join Next Walk"
+        }
+      ],
+      "brokenHashLinks": [],
+      "scriptTests": {
+        "mobileMenu": "PASS",
+        "menuOverlayClose": "PASS"
+      }
+    },
+    "/tw-creative-collective.html": {
+      "path": "/tw-creative-collective.html",
+      "url": "https://www.morecommunity.app/tw-creative-collective.html",
+      "status": 200,
+      "title": "TW Creative Collective | more",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 404 ()"
+      ],
+      "failedRequests": [
+        {
+          "url": "https://www.morecommunity.app/images/hero-home.jpg",
+          "status": 404
+        }
+      ],
+      "brokenInternalLinks": [
+        {
+          "href": "/portal/community/tw-creative-collective",
+          "resolved": "https://www.morecommunity.app/portal/community/tw-creative-collective",
+          "status": 404,
+          "text": "Join Studio"
+        }
+      ],
+      "brokenHashLinks": [],
+      "scriptTests": {
+        "mobileMenu": "PASS",
+        "menuOverlayClose": "PASS"
+      }
+    },
+    "/tw-good-neighbours.html": {
+      "path": "/tw-good-neighbours.html",
+      "url": "https://www.morecommunity.app/tw-good-neighbours.html",
+      "status": 200,
+      "title": "TW Good Neighbours | more",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 404 ()"
+      ],
+      "failedRequests": [
+        {
+          "url": "https://www.morecommunity.app/images/hero-home.jpg",
+          "status": 404
+        }
+      ],
+      "brokenInternalLinks": [
+        {
+          "href": "/portal/community/tw-good-neighbours",
+          "resolved": "https://www.morecommunity.app/portal/community/tw-good-neighbours",
+          "status": 404,
+          "text": "Volunteer"
+        }
+      ],
+      "brokenHashLinks": [],
+      "scriptTests": {
+        "mobileMenu": "PASS",
+        "menuOverlayClose": "FAIL: overlay click did not close menu"
+      }
+    },
+    "/tw-interfaith-network.html": {
+      "path": "/tw-interfaith-network.html",
+      "url": "https://www.morecommunity.app/tw-interfaith-network.html",
+      "status": 200,
+      "title": "TW Interfaith Network | more",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 404 ()"
+      ],
+      "failedRequests": [
+        {
+          "url": "https://www.morecommunity.app/images/hero-home.jpg",
+          "status": 404
+        }
+      ],
+      "brokenInternalLinks": [
+        {
+          "href": "/portal/community/tw-interfaith-network",
+          "resolved": "https://www.morecommunity.app/portal/community/tw-interfaith-network",
+          "status": 404,
+          "text": "Join Dialogue"
+        }
+      ],
+      "brokenHashLinks": [],
+      "scriptTests": {
+        "mobileMenu": "PASS",
+        "menuOverlayClose": "PASS"
+      }
+    },
+    "/tw-parkrun.html": {
+      "path": "/tw-parkrun.html",
+      "url": "https://www.morecommunity.app/tw-parkrun.html",
+      "status": 200,
+      "title": "TW Parkrun | more",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 404 ()"
+      ],
+      "failedRequests": [
+        {
+          "url": "https://www.morecommunity.app/images/hero-home.jpg",
+          "status": 404
+        }
+      ],
+      "brokenInternalLinks": [],
+      "brokenHashLinks": [],
+      "scriptTests": {
+        "mobileMenu": "PASS",
+        "menuOverlayClose": "FAIL: overlay click did not close menu"
+      }
+    },
+    "/tw-ramblers.html": {
+      "path": "/tw-ramblers.html",
+      "url": "https://www.morecommunity.app/tw-ramblers.html",
+      "status": 200,
+      "title": "TW Ramblers | more",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 404 ()"
+      ],
+      "failedRequests": [
+        {
+          "url": "https://www.morecommunity.app/images/hero-home.jpg",
+          "status": 404
+        }
+      ],
+      "brokenInternalLinks": [
+        {
+          "href": "/portal/community/tw-ramblers",
+          "resolved": "https://www.morecommunity.app/portal/community/tw-ramblers",
+          "status": 404,
+          "text": "View Calendar"
+        }
+      ],
+      "brokenHashLinks": [],
+      "scriptTests": {
+        "mobileMenu": "PASS",
+        "menuOverlayClose": "PASS"
+      }
+    },
+    "/tw-yoga-collective.html": {
+      "path": "/tw-yoga-collective.html",
+      "url": "https://www.morecommunity.app/tw-yoga-collective.html",
+      "status": 200,
+      "title": "TW Yoga Collective | more",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 404 ()"
+      ],
+      "failedRequests": [
+        {
+          "url": "https://www.morecommunity.app/images/hero-home.jpg",
+          "status": 404
+        }
+      ],
+      "brokenInternalLinks": [
+        {
+          "href": "/portal/community/tw-yoga-collective",
+          "resolved": "https://www.morecommunity.app/portal/community/tw-yoga-collective",
+          "status": 404,
+          "text": "Book a Mat"
+        }
+      ],
+      "brokenHashLinks": [],
+      "scriptTests": {
+        "mobileMenu": "PASS",
+        "menuOverlayClose": "PASS"
+      }
+    },
+    "/yentw.html": {
+      "path": "/yentw.html",
+      "url": "https://www.morecommunity.app/yentw.html",
+      "status": 200,
+      "title": "YENTW | more",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 404 ()"
+      ],
+      "failedRequests": [
+        {
+          "url": "https://www.morecommunity.app/images/hero-home.jpg",
+          "status": 404
+        }
+      ],
+      "brokenInternalLinks": [],
+      "brokenHashLinks": [],
+      "scriptTests": {
+        "mobileMenu": "PASS",
+        "menuOverlayClose": "PASS"
+      }
+    },
+    "/business-plan.html": {
+      "path": "/business-plan.html",
+      "url": "https://www.morecommunity.app/business-plan.html",
+      "status": 200,
+      "title": "More Community — Business Plan 2026",
+      "consoleErrors": [],
+      "failedRequests": [],
+      "brokenInternalLinks": [],
+      "brokenHashLinks": [],
+      "scriptTests": {}
+    },
+    "/commercials.html": {
+      "path": "/commercials.html",
+      "url": "https://www.morecommunity.app/commercials.html",
+      "status": 200,
+      "title": "More Community — Commercials & Competitor Analysis 2026",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 404 ()"
+      ],
+      "failedRequests": [
+        {
+          "url": "https://www.morecommunity.app/images/more-logo-white.webp",
+          "status": 404
+        }
+      ],
+      "brokenInternalLinks": [],
+      "brokenHashLinks": [],
+      "scriptTests": {}
+    },
+    "/investor-deck.html": {
+      "path": "/investor-deck.html",
+      "url": "https://www.morecommunity.app/investor-deck.html",
+      "status": 200,
+      "title": "More Community — Investor Deck 2026",
+      "consoleErrors": [],
+      "failedRequests": [],
+      "brokenInternalLinks": [],
+      "brokenHashLinks": [],
+      "scriptTests": {
+        "deckSlideNav": "PASS (Total slides: 20, navigated successfully)"
+      }
+    },
+    "/accelerator.html": {
+      "path": "/accelerator.html",
+      "url": "https://www.morecommunity.app/accelerator.html",
+      "status": 200,
+      "title": "Startup Accelerator | more",
+      "consoleErrors": [],
+      "failedRequests": [],
+      "brokenInternalLinks": [],
+      "brokenHashLinks": [],
+      "scriptTests": {
+        "mobileMenu": "PASS",
+        "menuOverlayClose": "PASS",
+        "emailNotification": "PASS"
+      }
+    },
+    "/hackathons.html": {
+      "path": "/hackathons.html",
+      "url": "https://www.morecommunity.app/hackathons.html",
+      "status": 200,
+      "title": "Hackathons | more",
+      "consoleErrors": [],
+      "failedRequests": [],
+      "brokenInternalLinks": [],
+      "brokenHashLinks": [],
+      "scriptTests": {
+        "mobileMenu": "PASS",
+        "menuOverlayClose": "PASS",
+        "emailNotification": "PASS"
+      }
+    },
+    "/sponsorship.html": {
+      "path": "/sponsorship.html",
+      "url": "https://www.morecommunity.app/sponsorship.html",
+      "status": 200,
+      "title": "More Community — Local Sponsorship",
+      "consoleErrors": [],
+      "failedRequests": [],
+      "brokenInternalLinks": [],
+      "brokenHashLinks": [],
+      "scriptTests": {}
+    },
+    "/app-preview.html": {
+      "path": "/app-preview.html",
+      "url": "https://www.morecommunity.app/app-preview.html",
+      "status": 404,
+      "title": "More Community | Find Your People, Connect in Real Life",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 404 ()"
+      ],
+      "failedRequests": [
+        {
+          "url": "https://www.morecommunity.app/app-preview.html",
+          "status": 404
+        }
+      ],
+      "brokenInternalLinks": [],
+      "brokenHashLinks": [],
+      "scriptTests": {
+        "appPreview": "ERROR: Error: failed to find element matching selector \"#screenTitle\""
+      }
+    }
+  },
+  "appPages": {
+    "/app": {
+      "path": "/app",
+      "url": "https://www.morecommunity.app/app",
+      "status": 200,
+      "title": "More Community | Find Your People, Connect in Real Life",
+      "consoleErrors": [],
+      "failedRequests": [],
+      "hydrationErrors": [],
+      "authRedirect": "https://www.morecommunity.app/login?redirect=%2Fapp",
+      "linksCount": 0
+    },
+    "/discover": {
+      "path": "/discover",
+      "url": "https://www.morecommunity.app/discover",
+      "status": 200,
+      "title": "More Community | Find Your People, Connect in Real Life",
+      "consoleErrors": [],
+      "failedRequests": [],
+      "hydrationErrors": [],
+      "authRedirect": "https://www.morecommunity.app/login?redirect=%2Fonboarding",
+      "linksCount": 0
+    },
+    "/login": {
+      "path": "/login",
+      "url": "https://www.morecommunity.app/login",
+      "status": 200,
+      "title": "More Community | Find Your People, Connect in Real Life",
+      "consoleErrors": [],
+      "failedRequests": [],
+      "hydrationErrors": [],
+      "authRedirect": null,
+      "linksCount": 0
+    },
+    "/dashboard": {
+      "path": "/dashboard",
+      "url": "https://www.morecommunity.app/dashboard",
+      "status": 200,
+      "title": "",
+      "consoleErrors": [
+        "ReferenceError: linkCopied is not defined",
+        "GlobalErrorBoundary caught: ReferenceError: linkCopied is not defined [object Object]"
+      ],
+      "failedRequests": [],
+      "hydrationErrors": [],
+      "authRedirect": null,
+      "linksCount": 0
+    },
+    "/create-community": {
+      "path": "/create-community",
+      "url": "https://www.morecommunity.app/create-community",
+      "status": 200,
+      "title": "More Community | Find Your People, Connect in Real Life",
+      "consoleErrors": [],
+      "failedRequests": [],
+      "hydrationErrors": [],
+      "authRedirect": "https://www.morecommunity.app/login?redirect=%2Fcreate-community",
+      "linksCount": 0
+    },
+    "/leaderboard": {
+      "path": "/leaderboard",
+      "url": "https://www.morecommunity.app/leaderboard",
+      "status": 200,
+      "title": "More Community | Find Your People, Connect in Real Life",
+      "consoleErrors": [],
+      "failedRequests": [],
+      "hydrationErrors": [],
+      "authRedirect": "https://www.morecommunity.app/login?redirect=%2Fleaderboard",
+      "linksCount": 0
+    },
+    "/events": {
+      "path": "/events",
+      "url": "https://www.morecommunity.app/events",
+      "status": 200,
+      "title": "More Community | Find Your People, Connect in Real Life",
+      "consoleErrors": [],
+      "failedRequests": [
+        {
+          "url": "https://videos.pexels.com/video-files/3195394/3195394-uhd_2560_1440_25fps.mp4",
+          "error": "net::ERR_ABORTED"
+        }
+      ],
+      "hydrationErrors": [],
+      "authRedirect": "https://www.morecommunity.app/login?redirect=%2Fonboarding",
+      "linksCount": 0
+    },
+    "/experiences": {
+      "path": "/experiences",
+      "url": "https://www.morecommunity.app/experiences",
+      "status": 200,
+      "title": "More Community | Find Your People, Connect in Real Life",
+      "consoleErrors": [],
+      "failedRequests": [],
+      "hydrationErrors": [],
+      "authRedirect": "https://www.morecommunity.app/login?redirect=%2Fexperiences",
+      "linksCount": 0
+    },
+    "/my-communities": {
+      "path": "/my-communities",
+      "url": "https://www.morecommunity.app/my-communities",
+      "status": 200,
+      "title": "More Community | Find Your People, Connect in Real Life",
+      "consoleErrors": [],
+      "failedRequests": [],
+      "hydrationErrors": [],
+      "authRedirect": "https://www.morecommunity.app/login?redirect=%2Fmy-communities",
+      "linksCount": 0
+    },
+    "/profile": {
+      "path": "/profile",
+      "url": "https://www.morecommunity.app/profile",
+      "status": 200,
+      "title": "More Community | Find Your People, Connect in Real Life",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 404 ()"
+      ],
+      "failedRequests": [
+        {
+          "url": "https://www.morecommunity.app/images/general.webp",
+          "status": 404
+        }
+      ],
+      "hydrationErrors": [],
+      "authRedirect": "https://www.morecommunity.app/login?redirect=%2Fprofile",
+      "linksCount": 0
+    },
+    "/settings": {
+      "path": "/settings",
+      "url": "https://www.morecommunity.app/settings",
+      "status": 200,
+      "title": "More Community | Find Your People, Connect in Real Life",
+      "consoleErrors": [],
+      "failedRequests": [],
+      "hydrationErrors": [],
+      "authRedirect": "https://www.morecommunity.app/login?redirect=%2Fsettings",
+      "linksCount": 0
+    },
+    "/chat": {
+      "path": "/chat",
+      "url": "https://www.morecommunity.app/chat",
+      "status": 200,
+      "title": "More Community | Find Your People, Connect in Real Life",
+      "consoleErrors": [],
+      "failedRequests": [],
+      "hydrationErrors": [],
+      "authRedirect": "https://www.morecommunity.app/login?redirect=%2Fchat",
+      "linksCount": 0
+    },
+    "/notifications": {
+      "path": "/notifications",
+      "url": "https://www.morecommunity.app/notifications",
+      "status": 200,
+      "title": "More Community | Find Your People, Connect in Real Life",
+      "consoleErrors": [],
+      "failedRequests": [],
+      "hydrationErrors": [],
+      "authRedirect": "https://www.morecommunity.app/login?redirect=%2Fnotifications",
+      "linksCount": 0
+    },
+    "/admin": {
+      "path": "/admin",
+      "url": "https://www.morecommunity.app/admin",
+      "status": 200,
+      "title": "More Community | Find Your People, Connect in Real Life",
+      "consoleErrors": [],
+      "failedRequests": [],
+      "hydrationErrors": [],
+      "authRedirect": "https://www.morecommunity.app/login?redirect=%2Fadmin",
+      "linksCount": 0
+    }
+  },
+  "brokenLinks": [
+    {
+      "page": "/",
+      "type": "broken-internal",
+      "href": "/portal/",
+      "resolved": "https://www.morecommunity.app/portal/",
+      "status": 404,
+      "text": "App Preview"
+    },
+    {
+      "page": "/a-z-challenge.html",
+      "type": "broken-internal",
+      "href": "/portal/community/a-z-challenge",
+      "resolved": "https://www.morecommunity.app/portal/community/a-z-challenge",
+      "status": 404,
+      "text": "Start Running"
+    },
+    {
+      "page": "/kent-adventures.html",
+      "type": "broken-internal",
+      "href": "/portal/community/kent-adventures",
+      "resolved": "https://www.morecommunity.app/portal/community/kent-adventures",
+      "status": 404,
+      "text": "See Upcoming"
+    },
+    {
+      "page": "/mindful-miles.html",
+      "type": "broken-internal",
+      "href": "/portal/community/mindful-miles",
+      "resolved": "https://www.morecommunity.app/portal/community/mindful-miles",
+      "status": 404,
+      "text": "Join Next Walk"
+    },
+    {
+      "page": "/tw-creative-collective.html",
+      "type": "broken-internal",
+      "href": "/portal/community/tw-creative-collective",
+      "resolved": "https://www.morecommunity.app/portal/community/tw-creative-collective",
+      "status": 404,
+      "text": "Join Studio"
+    },
+    {
+      "page": "/tw-good-neighbours.html",
+      "type": "broken-internal",
+      "href": "/portal/community/tw-good-neighbours",
+      "resolved": "https://www.morecommunity.app/portal/community/tw-good-neighbours",
+      "status": 404,
+      "text": "Volunteer"
+    },
+    {
+      "page": "/tw-interfaith-network.html",
+      "type": "broken-internal",
+      "href": "/portal/community/tw-interfaith-network",
+      "resolved": "https://www.morecommunity.app/portal/community/tw-interfaith-network",
+      "status": 404,
+      "text": "Join Dialogue"
+    },
+    {
+      "page": "/tw-ramblers.html",
+      "type": "broken-internal",
+      "href": "/portal/community/tw-ramblers",
+      "resolved": "https://www.morecommunity.app/portal/community/tw-ramblers",
+      "status": 404,
+      "text": "View Calendar"
+    },
+    {
+      "page": "/tw-yoga-collective.html",
+      "type": "broken-internal",
+      "href": "/portal/community/tw-yoga-collective",
+      "resolved": "https://www.morecommunity.app/portal/community/tw-yoga-collective",
+      "status": 404,
+      "text": "Book a Mat"
+    }
+  ],
+  "consoleErrors": [
+    {
+      "page": "/",
+      "message": "Failed to load resource: the server responded with a status of 404 ()"
+    },
+    {
+      "page": "/a-z-challenge.html",
+      "message": "Failed to load resource: the server responded with a status of 404 ()"
+    },
+    {
+      "page": "/kent-adventures.html",
+      "message": "Failed to load resource: the server responded with a status of 404 ()"
+    },
+    {
+      "page": "/mindful-miles.html",
+      "message": "Failed to load resource: the server responded with a status of 404 ()"
+    },
+    {
+      "page": "/tw-creative-collective.html",
+      "message": "Failed to load resource: the server responded with a status of 404 ()"
+    },
+    {
+      "page": "/tw-good-neighbours.html",
+      "message": "Failed to load resource: the server responded with a status of 404 ()"
+    },
+    {
+      "page": "/tw-interfaith-network.html",
+      "message": "Failed to load resource: the server responded with a status of 404 ()"
+    },
+    {
+      "page": "/tw-parkrun.html",
+      "message": "Failed to load resource: the server responded with a status of 404 ()"
+    },
+    {
+      "page": "/tw-ramblers.html",
+      "message": "Failed to load resource: the server responded with a status of 404 ()"
+    },
+    {
+      "page": "/tw-yoga-collective.html",
+      "message": "Failed to load resource: the server responded with a status of 404 ()"
+    },
+    {
+      "page": "/yentw.html",
+      "message": "Failed to load resource: the server responded with a status of 404 ()"
+    },
+    {
+      "page": "/commercials.html",
+      "message": "Failed to load resource: the server responded with a status of 404 ()"
+    },
+    {
+      "page": "/app-preview.html",
+      "message": "Failed to load resource: the server responded with a status of 404 ()"
+    },
+    {
+      "page": "/dashboard",
+      "message": "ReferenceError: linkCopied is not defined"
+    },
+    {
+      "page": "/dashboard",
+      "message": "GlobalErrorBoundary caught: ReferenceError: linkCopied is not defined [object Object]"
+    },
+    {
+      "page": "/profile",
+      "message": "Failed to load resource: the server responded with a status of 404 ()"
+    }
+  ],
+  "failedRequests": [
+    {
+      "page": "/",
+      "url": "https://www.morecommunity.app/favicon.ico",
+      "status": 404
+    },
+    {
+      "page": "/a-z-challenge.html",
+      "url": "https://www.morecommunity.app/images/hero-home.jpg",
+      "status": 404
+    },
+    {
+      "page": "/kent-adventures.html",
+      "url": "https://www.morecommunity.app/images/hero-home.jpg",
+      "status": 404
+    },
+    {
+      "page": "/mindful-miles.html",
+      "url": "https://www.morecommunity.app/images/hero-home.jpg",
+      "status": 404
+    },
+    {
+      "page": "/tw-creative-collective.html",
+      "url": "https://www.morecommunity.app/images/hero-home.jpg",
+      "status": 404
+    },
+    {
+      "page": "/tw-good-neighbours.html",
+      "url": "https://www.morecommunity.app/images/hero-home.jpg",
+      "status": 404
+    },
+    {
+      "page": "/tw-interfaith-network.html",
+      "url": "https://www.morecommunity.app/images/hero-home.jpg",
+      "status": 404
+    },
+    {
+      "page": "/tw-parkrun.html",
+      "url": "https://www.morecommunity.app/images/hero-home.jpg",
+      "status": 404
+    },
+    {
+      "page": "/tw-ramblers.html",
+      "url": "https://www.morecommunity.app/images/hero-home.jpg",
+      "status": 404
+    },
+    {
+      "page": "/tw-yoga-collective.html",
+      "url": "https://www.morecommunity.app/images/hero-home.jpg",
+      "status": 404
+    },
+    {
+      "page": "/yentw.html",
+      "url": "https://www.morecommunity.app/images/hero-home.jpg",
+      "status": 404
+    },
+    {
+      "page": "/commercials.html",
+      "url": "https://www.morecommunity.app/images/more-logo-white.webp",
+      "status": 404
+    },
+    {
+      "page": "/app-preview.html",
+      "url": "https://www.morecommunity.app/app-preview.html",
+      "status": 404
+    },
+    {
+      "page": "/events",
+      "url": "https://videos.pexels.com/video-files/3195394/3195394-uhd_2560_1440_25fps.mp4",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "page": "/profile",
+      "url": "https://www.morecommunity.app/images/general.webp",
+      "status": 404
+    }
+  ],
+  "scriptIssues": []
+}

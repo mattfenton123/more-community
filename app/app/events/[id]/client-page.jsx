@@ -308,6 +308,14 @@ export default function EventClient({ id }) {
     return communities.filter(c => event.collabCommunityIds.includes(c.id));
   }, [event, communities]);
 
+  const seriesEvents = useMemo(() => {
+    if (!event || !events) return [];
+    return events
+      .filter(e => e.communityId === event.communityId && e.title?.trim().toLowerCase() === event.title?.trim().toLowerCase())
+      .sort((a, b) => new Date(a.date) - new Date(b.date));
+  }, [event, events]);
+  const currentSeriesIndex = event ? seriesEvents.findIndex(e => e.id === event.id) : -1;
+
   if (!event || !community) {
     return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100dvh', color: 'var(--slate-400)' }}>Loading event...</div>;
   }
@@ -317,14 +325,6 @@ export default function EventClient({ id }) {
   const isGoing = myRsvp?.status === 'going';
   const spotsLeft = event.maxCapacity ? Math.max(0, event.maxCapacity - rsvps.filter(r => r.status === 'going').length) : null;
   const isMember = user?.joinedCommunities?.includes(event.communityId);
-
-  const seriesEvents = useMemo(() => {
-    if (!event || !events) return [];
-    return events
-      .filter(e => e.communityId === event.communityId && e.title.trim().toLowerCase() === event.title.trim().toLowerCase())
-      .sort((a, b) => new Date(a.date) - new Date(b.date));
-  }, [event, events]);
-  const currentSeriesIndex = seriesEvents.findIndex(e => e.id === event.id);
 
   const handleJoinAndRSVP = async () => {
     if (!user) {

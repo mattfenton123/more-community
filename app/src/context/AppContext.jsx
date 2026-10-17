@@ -81,7 +81,7 @@ export function AppProvider({ children }) {
     avatar: 'https://i.pravatar.cc/150',
     bio: 'New here.',
     joined: new Date().toISOString(),
-    onboarded: false,
+    onboarded: !authUser ? true : false,
     interests: [],
     affinityProfile: { tagScores: {}, likedCommunityIds: [], passedCommunityIds: [] }
   };

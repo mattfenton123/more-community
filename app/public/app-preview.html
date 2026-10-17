@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>App Preview | more</title>
+    <meta name="description" content="Preview the more community app — discover communities, chat, manage events, and lead your own community, all from your pocket.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css?v=8">
+    <link rel="stylesheet" href="pages.css">
+</head>
+<body class="yentw-theme">
+    <div class="menu-overlay" id="menuOverlay"></div>
+    <nav id="navbar" class="navbar scrolled">
+        <div class="nav-container">
+            <a href="index.html" class="nav-brand"><img src="images/logo.png" alt="more community"></a>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="discover.html">Discover</a></li>
+                <li><a href="leaders.html">For Leaders</a></li>
+                <li><a href="about.html">Our Story</a></li>
+                <li><a href="tunbridge-wells.html">Tunbridge Wells</a></li>
+                <li class="nav-dropdown"><a href="#" id="venturesDropdownToggle">Ventures ▾</a><div class="nav-dropdown-menu"><a href="yentw.html">YENTW</a><a href="accelerator.html">Accelerator</a><a href="hackathons.html">Hackathons</a><a href="sponsorship.html">Sponsorship</a></div></li>
+                <li><a href="index.html#join" class="btn-nav">Join the Movement</a></li>
+            </ul>
+            <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <section class="page-hero" style="padding-top: 7rem; padding-bottom: 2rem;">
+        <div class="container" style="text-align: center;">
+            <p class="eyebrow">App Preview</p>
+            <h1 class="editorial-title" style="font-size: clamp(2rem, 4vw, 3rem);">Your community.<br><em>In your pocket.</em></h1>
+            <p style="color: var(--slate-400); font-size: 1rem; max-width: 500px; margin: 0 auto;">Tap through the screens below to preview the <img src="images/logo.png" alt="more" style="height: 0.85em; vertical-align: baseline;"> app experience.</p>
+        </div>
+    </section>
+
+    <!-- App Preview -->
+    <section class="section" style="padding-top: 1rem;">
+        <div class="container">
+            <div class="app-preview-container">
+
+                <!-- Info Panel -->
+                <div class="app-info-panel">
+                    <h2 id="screenTitle">Discover</h2>
+                    <p id="screenDesc">Browse communities by interest, location, or activity. Your personalised feed of what's happening near you.</p>
+                    <ul class="app-screen-list" id="screenList">
+                        <li class="active-screen" data-screen="discover"><span class="screen-icon">🔍</span> Discover</li>
+                        <li data-screen="community"><span class="screen-icon">👥</span> Community Profile</li>
+                        <li data-screen="event"><span class="screen-icon">📅</span> Event Detail</li>
+                        <li data-screen="chat"><span class="screen-icon">💬</span> Chat</li>
+                        <li data-screen="dashboard"><span class="screen-icon">📊</span> Leader Dashboard</li>
+                    </ul>
+                    <div style="margin-top: 2rem;">
+                        <div class="email-signup" style="max-width: 350px;">
+                            <input type="email" placeholder="Get early access" id="emailInput">
+                            <button class="btn btn-primary" id="notifyBtn">Notify Me</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Phone Frame -->
+                <div class="app-phone-frame">
+                    <div class="app-notch"></div>
+                    <div class="app-status-bar">
+                        <span>9:41</span>
+                        <span>⚡ 87%</span>
+                    </div>
+
+                    <!-- Screen 1: Discover -->
+                    <div class="app-screen active" id="screen-discover">
+                        <div class="app-header">
+                            <h2>Discover</h2>
+                            <span style="font-size: 1.3rem;">📍</span>
+                        </div>
+                        <div class="app-search-mini">
+                            <span>🔍</span> Search communities...
+                        </div>
+                        <div class="app-pills">
+                            <span class="app-pill active-pill">All</span>
+                            <span class="app-pill">🚶 Walking</span>
+                            <span class="app-pill">🏃 Running</span>
+                            <span class="app-pill">🧘 Wellness</span>
+                            <span class="app-pill">💼 Business</span>
+                            <span class="app-pill">⛰️ Adventure</span>
+                        </div>
+                        <div class="app-section-title">Near You</div>
+                        <div class="app-community-card">
+                            <div class="app-card-avatar"><img src="images/walking.png" alt=""></div>
+                            <div class="app-card-info">
+                                <h4>Mindful Miles</h4>
+                                <p>Walk & talk sessions</p>
+                                <span class="card-mini-meta">📍 0.8mi • 👥 85 • Sat 10am</span>
+                            </div>
+                            <button class="app-card-join">Join</button>
+                        </div>
+                        <div class="app-community-card">
+                            <div class="app-card-avatar"><img src="images/running.png" alt=""></div>
+                            <div class="app-card-info">
+                                <h4>A-Z Challenge</h4>
+                                <p>Running routes A to Z</p>
+                                <span class="card-mini-meta">📍 1.2mi • 👥 150 • Wed 6:30pm</span>
+                            </div>
+                            <button class="app-card-join">Join</button>
+                        </div>
+                        <div class="app-community-card">
+                            <div class="app-card-avatar"><img src="images/entrepreneurs.png" alt=""></div>
+                            <div class="app-card-info">
+                                <h4>YENTW</h4>
+                                <p>Young Entrepreneurs TW</p>
+                                <span class="card-mini-meta">📍 0.5mi • 👥 200 • Thu 7pm</span>
+                            </div>
+                            <button class="app-card-join">Join</button>
+                        </div>
+                        <div class="app-section-title">Trending</div>
+                        <div class="app-community-card">
+                            <div class="app-card-avatar"><img src="images/wellness.png" alt=""></div>
+                            <div class="app-card-info">
+                                <h4>TW Yoga Collective</h4>
+                                <p>Outdoor yoga for all levels</p>
+                                <span class="card-mini-meta">📍 1.5mi • 👥 65 • Tue 7am</span>
+                            </div>
+                            <button class="app-card-join">Join</button>
+                        </div>
+                        <div class="app-community-card">
+                            <div class="app-card-avatar"><img src="images/adventure.png" alt=""></div>
+                            <div class="app-card-info">
+                                <h4>Kent Adventures</h4>
+                                <p>Kayaking, climbing, camping</p>
+                                <span class="card-mini-meta">📍 2.1mi • 👥 90 • Sat 8am</span>
+                            </div>
+                            <button class="app-card-join">Join</button>
+                        </div>
+                    </div>
+
+                    <!-- Screen 2: Community Profile -->
+                    <div class="app-screen" id="screen-community">
+                        <div style="height: 180px; overflow: hidden; position: relative;">
+                            <img src="images/walking.png" alt="" style="width: 100%; height: 100%; object-fit: cover;">
+                            <div style="position: absolute; bottom: 0; left: 0; right: 0; padding: 16px; background: linear-gradient(0deg, rgba(0,0,0,0.8), transparent);">
+                                <div style="font-family: var(--font-heading); font-size: 1.2rem; font-weight: 700; color: var(--white);">Mindful Miles</div>
+                                <div style="font-size: 0.72rem; color: var(--slate-400);">🚶 Walking • 📍 Dunorlan Park</div>
+                            </div>
+                        </div>
+                        <div style="padding: 16px; display: flex; gap: 8px;">
+                            <button style="flex: 1; padding: 10px; background: var(--teal-600); border: none; border-radius: 10px; color: white; font-weight: 700; font-size: 0.85rem; cursor: pointer;">Join Community</button>
+                            <button style="padding: 10px 16px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: var(--white); font-size: 0.85rem; cursor: pointer;">💬</button>
+                        </div>
+                        <div style="padding: 0 16px;">
+                            <div style="display: flex; gap: 16px; margin-bottom: 16px;">
+                                <div style="text-align: center;"><div style="font-weight: 700; color: var(--white); font-size: 1.1rem;">85</div><div style="font-size: 0.65rem; color: var(--slate-600);">Members</div></div>
+                                <div style="text-align: center;"><div style="font-weight: 700; color: var(--white); font-size: 1.1rem;">42</div><div style="font-size: 0.65rem; color: var(--slate-600);">Events</div></div>
+                                <div style="text-align: center;"><div style="font-weight: 700; color: var(--teal-400); font-size: 1.1rem;">4.9★</div><div style="font-size: 0.65rem; color: var(--slate-600);">Rating</div></div>
+                            </div>
+                        </div>
+                        <div style="padding: 0 16px; margin-bottom: 16px;">
+                            <p style="font-size: 0.8rem; color: var(--slate-400); line-height: 1.6;">Weekly walk and talk sessions in the beautiful TW countryside. A safe space to connect, share, and enjoy the outdoors. No pace, no pressure — just presence.</p>
+                        </div>
+                        <div class="app-section-title">Upcoming Events</div>
+                        <div style="margin: 0 16px 10px; padding: 14px; background: rgba(20,184,166,0.06); border: 1px solid rgba(20,184,166,0.12); border-radius: 12px;">
+                            <div style="font-weight: 700; color: var(--white); font-size: 0.85rem;">Saturday Morning Walk</div>
+                            <div style="font-size: 0.72rem; color: var(--slate-500); margin-top: 2px;">Sat 14 Jun, 10:00am • Dunorlan Park</div>
+                            <div style="font-size: 0.72rem; color: var(--teal-400); margin-top: 4px;">12 attending</div>
+                        </div>
+                        <div style="margin: 0 16px 10px; padding: 14px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px;">
+                            <div style="font-weight: 700; color: var(--white); font-size: 0.85rem;">Woodland Trail Walk</div>
+                            <div style="font-size: 0.72rem; color: var(--slate-500); margin-top: 2px;">Wed 18 Jun, 7:00pm • High Rocks</div>
+                            <div style="font-size: 0.72rem; color: var(--teal-400); margin-top: 4px;">8 attending</div>
+                        </div>
+                        <div class="app-section-title">Leaders</div>
+                        <div style="display: flex; gap: 10px; padding: 0 16px 20px;">
+                            <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--teal-600); display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 0.8rem;">JD</div>
+                            <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--slate-700); display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 0.8rem;">SK</div>
+                        </div>
+                    </div>
+
+                    <!-- Screen 3: Event Detail -->
+                    <div class="app-screen" id="screen-event">
+                        <div style="padding: 16px;">
+                            <div style="font-size: 0.7rem; color: var(--teal-400); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">Upcoming Event</div>
+                            <h3 style="font-family: var(--font-heading); font-size: 1.3rem; font-weight: 700; color: var(--white); margin-bottom: 4px;">Saturday Morning Walk</h3>
+                            <div style="font-size: 0.78rem; color: var(--slate-500);">Hosted by Mindful Miles</div>
+                        </div>
+                        <div style="margin: 0 16px 16px; padding: 16px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px;">
+                            <div style="display: flex; flex-direction: column; gap: 10px;">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <span style="font-size: 1.1rem;">📅</span>
+                                    <div><div style="font-weight: 600; color: var(--white); font-size: 0.85rem;">Saturday, 14 June</div><div style="font-size: 0.72rem; color: var(--slate-500);">10:00am — 11:30am</div></div>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <span style="font-size: 1.1rem;">📍</span>
+                                    <div><div style="font-weight: 600; color: var(--white); font-size: 0.85rem;">Dunorlan Park</div><div style="font-size: 0.72rem; color: var(--slate-500);">Tunbridge Wells, TN2 3QN</div></div>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <span style="font-size: 1.1rem;">💰</span>
+                                    <div><div style="font-weight: 600; color: var(--white); font-size: 0.85rem;">Free</div><div style="font-size: 0.72rem; color: var(--slate-500);">Always free</div></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="padding: 0 16px; margin-bottom: 16px;">
+                            <div style="height: 120px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; display: flex; align-items: center; justify-content: center; color: var(--slate-600); font-size: 0.8rem;">📍 Map — Dunorlan Park</div>
+                        </div>
+                        <div style="padding: 0 16px; margin-bottom: 16px;">
+                            <p style="font-size: 0.82rem; color: var(--slate-400); line-height: 1.6;">A gentle walk around Dunorlan Park. Meet at the main car park entrance. All paces welcome — we walk together, talk together, and finish together. Dogs welcome too! 🐕</p>
+                        </div>
+                        <div style="padding: 0 16px 10px;">
+                            <button style="width: 100%; padding: 14px; background: var(--teal-600); border: none; border-radius: 12px; color: white; font-family: var(--font-heading); font-weight: 700; font-size: 0.95rem; cursor: pointer;">RSVP — I'm Going ✓</button>
+                        </div>
+                        <div class="app-section-title">Attending (12)</div>
+                        <div style="display: flex; gap: 8px; padding: 0 16px 20px; flex-wrap: wrap;">
+                            <div style="width: 36px; height: 36px; border-radius: 50%; background: #2dd4bf; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 0.7rem;">JD</div>
+                            <div style="width: 36px; height: 36px; border-radius: 50%; background: #f59e0b; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 0.7rem;">SK</div>
+                            <div style="width: 36px; height: 36px; border-radius: 50%; background: #8b5cf6; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 0.7rem;">MR</div>
+                            <div style="width: 36px; height: 36px; border-radius: 50%; background: #ec4899; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 0.7rem;">LP</div>
+                            <div style="width: 36px; height: 36px; border-radius: 50%; background: #06b6d4; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 0.7rem;">AW</div>
+                            <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--slate-700); display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 0.7rem;">+7</div>
+                        </div>
+                    </div>
+
+                    <!-- Screen 4: Chat -->
+                    <div class="app-screen" id="screen-chat">
+                        <div class="chat-header-bar">
+                            <div class="chat-avatar"><img src="images/walking.png" alt=""></div>
+                            <div>
+                                <div class="chat-name">Mindful Miles</div>
+                                <div class="chat-members-count">85 members • 12 online</div>
+                            </div>
+                        </div>
+                        <div class="chat-messages" style="padding-bottom: 60px;">
+                            <div class="chat-msg chat-msg-other">
+                                <div class="chat-msg-sender">Sarah K</div>
+                                Lovely walk this morning everyone! The bluebells were stunning 💙
+                            </div>
+                            <div class="chat-msg chat-msg-other">
+                                <div class="chat-msg-sender">James D</div>
+                                Agreed! Great turnout today. 14 of us! Who's coming Wednesday?
+                            </div>
+                            <div class="chat-msg chat-msg-self">
+                                I'll be there! Can we do the High Rocks route again? 🥾
+                            </div>
+                            <div class="chat-msg chat-msg-other">
+                                <div class="chat-msg-sender">Mike R</div>
+                                High Rocks +1 🙌 Best views in TW
+                            </div>
+                            <div class="chat-msg chat-msg-other">
+                                <div class="chat-msg-sender">Laura P</div>
+                                Can I bring my friend? She's new to the area and looking for walking groups
+                            </div>
+                            <div class="chat-msg chat-msg-self">
+                                Of course! Everyone's welcome. Just share the more link 🔗
+                            </div>
+                            <div class="chat-msg chat-msg-other">
+                                <div class="chat-msg-sender">James D</div>
+                                That's what it's all about 💚 See you all Wednesday!
+                            </div>
+                        </div>
+                        <div class="chat-input-bar">
+                            <input type="text" class="chat-input-field" placeholder="Message Mindful Miles..." disabled>
+                            <button class="chat-send-btn">→</button>
+                        </div>
+                    </div>
+
+                    <!-- Screen 5: Leader Dashboard -->
+                    <div class="app-screen" id="screen-dashboard">
+                        <div class="app-header">
+                            <h2>Dashboard</h2>
+                            <span style="font-size: 1.1rem;">⚙️</span>
+                        </div>
+                        <div style="padding: 0 16px 12px;">
+                            <div style="font-size: 0.78rem; color: var(--slate-500);">Mindful Miles • Leader View</div>
+                        </div>
+                        <div class="dash-stat-row">
+                            <div class="dash-stat">
+                                <div class="dash-stat-num">85</div>
+                                <div class="dash-stat-label">Members</div>
+                            </div>
+                            <div class="dash-stat">
+                                <div class="dash-stat-num">42</div>
+                                <div class="dash-stat-label">Events Run</div>
+                            </div>
+                        </div>
+                        <div class="dash-stat-row">
+                            <div class="dash-stat">
+                                <div class="dash-stat-num" style="color: #2dd4bf;">92%</div>
+                                <div class="dash-stat-label">Retention</div>
+                            </div>
+                            <div class="dash-stat">
+                                <div class="dash-stat-num" style="color: #f59e0b;">+12</div>
+                                <div class="dash-stat-label">This Month</div>
+                            </div>
+                        </div>
+                        <div class="dash-chart-placeholder">
+                            <div class="chart-bar" style="height: 25%;"></div>
+                            <div class="chart-bar" style="height: 30%;"></div>
+                            <div class="chart-bar" style="height: 28%;"></div>
+                            <div class="chart-bar" style="height: 40%;"></div>
+                            <div class="chart-bar" style="height: 45%;"></div>
+                            <div class="chart-bar" style="height: 42%;"></div>
+                            <div class="chart-bar" style="height: 55%;"></div>
+                            <div class="chart-bar" style="height: 60%;"></div>
+                            <div class="chart-bar" style="height: 58%;"></div>
+                            <div class="chart-bar" style="height: 72%;"></div>
+                            <div class="chart-bar" style="height: 80%;"></div>
+                            <div class="chart-bar" style="height: 85%;"></div>
+                        </div>
+                        <div class="app-section-title">Quick Actions</div>
+                        <div class="dash-quick-action">
+                            <span class="dash-action-icon">📅</span> Create New Event <span class="dash-action-arrow">→</span>
+                        </div>
+                        <div class="dash-quick-action">
+                            <span class="dash-action-icon">📢</span> Send Announcement <span class="dash-action-arrow">→</span>
+                        </div>
+                        <div class="dash-quick-action">
+                            <span class="dash-action-icon">👥</span> Manage Members <span class="dash-action-arrow">→</span>
+                        </div>
+                        <div class="dash-quick-action">
+                            <span class="dash-action-icon">🤝</span> Add Co-Leader <span class="dash-action-arrow">→</span>
+                        </div>
+                    </div>
+
+                    <!-- Tab Bar -->
+                    <div class="app-tab-bar">
+                        <button class="app-tab active" data-target="discover">
+                            <span class="app-tab-icon">🔍</span>Discover
+                        </button>
+                        <button class="app-tab" data-target="community">
+                            <span class="app-tab-icon">👥</span>Community
+                        </button>
+                        <button class="app-tab" data-target="event">
+                            <span class="app-tab-icon">📅</span>Events
+                        </button>
+                        <button class="app-tab" data-target="chat">
+                            <span class="app-tab-icon">💬</span>Chat
+                        </button>
+                        <button class="app-tab" data-target="dashboard">
+                            <span class="app-tab-icon">📊</span>Lead
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="section" style="text-align: center;">
+        <div class="container" style="max-width: 600px;">
+            <div class="scroll-reveal">
+                <h2 class="editorial-title">Want to be <em>first?</em></h2>
+                <p style="color: var(--slate-400); line-height: 1.8; margin-bottom: 2rem;">We're building the <img src="images/logo.png" alt="more" style="height: 0.85em; vertical-align: baseline;"> app right now. Sign up for early access and be the first to experience community in your pocket.</p>
+                <div class="email-signup" style="max-width: 400px; margin: 0 auto;">
+                    <input type="email" placeholder="Your email">
+                    <button class="btn btn-primary">Get Early Access</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-bottom-bar">
+                <p>&copy; 2026 more community</p>
+                <p class="footer-motto">do more >> experience more >> achieve more >></p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js?v=22"></script>
+    <script>
+        // App screen navigation
+        const tabs = document.querySelectorAll('.app-tab');
+        const screenListItems = document.querySelectorAll('.app-screen-list li');
+        const screens = document.querySelectorAll('.app-screen');
+        const screenTitle = document.getElementById('screenTitle');
+        const screenDesc = document.getElementById('screenDesc');
+
+        const screenData = {
+            discover: { title: 'Discover', desc: 'Browse communities by interest, location, or activity. Your personalised feed of what\'s happening near you.' },
+            community: { title: 'Community Profile', desc: 'See everything about a community at a glance — members, events, leaders, and how to join.' },
+            event: { title: 'Event Detail', desc: 'Full event information with RSVP, map, attendee list, and automatic reminders.' },
+            chat: { title: 'Chat', desc: 'Real-time group messaging built into the community. No more juggling WhatsApp, Facebook, and email.' },
+            dashboard: { title: 'Leader Dashboard', desc: 'Analytics, quick actions, and member management. Everything a community leader needs in one place.' }
+        };
+
+        function switchScreen(target) {
+            screens.forEach(s => s.classList.remove('active'));
+            tabs.forEach(t => t.classList.remove('active'));
+            screenListItems.forEach(li => li.classList.remove('active-screen'));
+
+            const targetScreen = document.getElementById('screen-' + target);
+            if (targetScreen) targetScreen.classList.add('active');
+
+            tabs.forEach(t => { if (t.dataset.target === target) t.classList.add('active'); });
+            screenListItems.forEach(li => { if (li.dataset.screen === target) li.classList.add('active-screen'); });
+
+            if (screenData[target]) {
+                screenTitle.textContent = screenData[target].title;
+                screenDesc.textContent = screenData[target].desc;
+            }
+        }
+
+        tabs.forEach(tab => tab.addEventListener('click', () => switchScreen(tab.dataset.target)));
+        screenListItems.forEach(li => li.addEventListener('click', () => switchScreen(li.dataset.screen)));
+    </script>
+</body>
+</html>

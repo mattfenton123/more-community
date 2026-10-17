@@ -161,6 +161,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
   const [flyerEvent, setFlyerEvent] = useState(null);
   const [reminderModalEvent, setReminderModalEvent] = useState(null);
   const [dashboardEventFilter, setDashboardEventFilter] = useState('upcoming');
+  const [linkCopied, setLinkCopied] = useState(false);
 
   const handleOpenReminderModal = (event) => {
     setReminderModalEvent(event);

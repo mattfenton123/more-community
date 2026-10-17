@@ -18,6 +18,7 @@ export default function EventsHub() {
   const { toast } = useToast();
   
   const [checkoutState, setCheckoutState] = useState('idle');
+  const [selectedEvent, setSelectedEvent] = useState(null);
   const [showTicket, setShowTicket] = useState(null);
   const [cardForm, setCardForm] = useState({ number: '', expiry: '', cvc: '', name: '' });
   const [showCalendarDropdown, setShowCalendarDropdown] = useState(false);
@@ -155,8 +156,6 @@ export default function EventsHub() {
     const cb = communities.find(c => c.id === b.communityId);
     return (getAffinityScore(cb) || 0) - (getAffinityScore(ca) || 0);
   });
-
-  const [selectedEvent, setSelectedEvent] = useState(null);
 
   const getEventPrice = (event) => {
     if (event.ticketPrice && event.ticketPrice > 0) return event.ticketPrice;
