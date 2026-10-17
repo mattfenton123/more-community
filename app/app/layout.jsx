@@ -76,8 +76,22 @@ function MainLayout({ children }) {
     // Wait for auth to initialize
     if (authLoading || appLoading) return;
 
-    if (!authUser && currentPath !== '/login') {
-      router.push('/login');
+    const isPublicRoute = (
+      currentPath === '/login' ||
+      currentPath === '/discover' ||
+      currentPath === '/events' ||
+      currentPath === '/invite' ||
+      currentPath === '/update-password' ||
+      currentPath?.startsWith('/events/') ||
+      currentPath?.startsWith('/community/') ||
+      currentPath?.startsWith('/legal/') ||
+      currentPath?.startsWith('/sponsors/') ||
+      currentPath?.startsWith('/experiences/')
+    );
+
+    if (!authUser && !isPublicRoute) {
+      const redirectUrl = currentPath && currentPath !== '/' ? `/login?redirect=${encodeURIComponent(currentPath)}` : '/login';
+      router.push(redirectUrl);
       return;
     }
 

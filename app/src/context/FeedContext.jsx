@@ -14,8 +14,6 @@ export function FeedProvider({ children }) {
   const [isFeedLoading, setIsFeedLoading] = useState(true);
 
   useEffect(() => {
-    if (!authUser || !user) return;
-    
     const fetchFeedData = async () => {
       setIsFeedLoading(true);
       try {
