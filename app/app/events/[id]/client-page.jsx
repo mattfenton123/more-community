@@ -245,7 +245,7 @@ function EventLocationMap({ location, event }) {
 
 export default function EventClient({ id }) {
   const router = useRouter();
-  const { events, communities, user, eventRsvps, rsvpToEvent, joinCommunity } = useAppContext();
+  const { events, communities, user, users, eventRsvps, rsvpToEvent, joinCommunity, checkInMember } = useAppContext();
   const { toast } = useToast();
   const [event, setEvent] = useState(null);
   const [community, setCommunity] = useState(null);
@@ -267,7 +267,9 @@ export default function EventClient({ id }) {
       if (typeof checkInMember === 'function') {
         await checkInMember(event.id, scannedUserId);
       }
-      toast.success('Ticket Scanned!', 'Member checked in successfully.');
+      const member = (users || []).find(u => u.id === scannedUserId);
+      const name = member?.name || 'Member';
+      toast.success('Ticket Verified! ✓', `${name} has been checked in.`);
     } catch(e) {
       toast.error('Scan Failed', 'Could not verify ticket.');
     }

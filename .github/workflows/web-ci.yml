@@ -1,0 +1,40 @@
+name: Web CI Build Verification
+
+on:
+  push:
+    branches:
+      - master
+      - live-site
+    paths:
+      - 'app/**'
+      - '!app/android/**'
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  verify-build:
+    runs-on: ubuntu-latest
+    name: Verify Next.js Build
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: 'app/package-lock.json'
+
+      - name: Install Dependencies
+        working-directory: ./app
+        run: npm ci
+
+      - name: Run Next.js Build
+        working-directory: ./app
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'https://xasaxxjxxkdruuqbrcmf.supabase.co' }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_QMPEXQKfkPDK1XktnEOIDQ_Fhs_p7rQ' }}

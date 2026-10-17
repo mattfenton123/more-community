@@ -47,6 +47,11 @@ export default function QRScanner({ onScan, onClose }) {
         if (code) {
           setScanning(false); // Stop scanning momentarily
           
+          // Haptic vibration feedback on mobile devices
+          if (typeof navigator !== 'undefined' && navigator.vibrate) {
+            try { navigator.vibrate([100, 50, 100]); } catch (e) {}
+          }
+
           // Try to parse JSON if the QR contains it, otherwise send raw data
           let payload = code.data;
           try {

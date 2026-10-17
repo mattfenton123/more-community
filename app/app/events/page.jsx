@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Calendar as CalIcon, MapPin, Search, X, CheckCircle2, CreditCard, Check, Ticket, Users, QrCode, Share, Sparkles, Navigation, ChevronRight, ChevronsRight, Archive } from 'lucide-react';
+import { Calendar as CalIcon, MapPin, Search, X, CheckCircle2, CreditCard, Check, Ticket, Users, QrCode, Share, Sparkles, Navigation, ChevronRight, ChevronsRight, Archive, Filter, Sun, Moon, Sunrise, RotateCcw, Tag } from 'lucide-react';
 import { useAppContext } from '../../src/context/AppContext';
 import { SkeletonList, SkeletonEvent } from '../../src/components/SkeletonCard';
 import { useToast } from '../../src/components/Toast';
@@ -24,6 +24,10 @@ export default function EventsHub() {
   const [showSwipe, setShowSwipe] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [dateFilter, setDateFilter] = useState('all');
+  const [priceFilter, setPriceFilter] = useState('all'); // 'all' | 'free' | 'paid'
+  const [timeOfDayFilter, setTimeOfDayFilter] = useState('all'); // 'all' | 'morning' | 'afternoon' | 'evening'
+  const [categoryFilter, setCategoryFilter] = useState('all'); // 'all' | category tag
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
   // Sort events chronologically (soonest first)
   const sortByDate = (list) => {
@@ -75,11 +79,57 @@ export default function EventsHub() {
     });
   };
 
+  const filterByPrice = (list) => {
+    if (priceFilter === 'all') return list;
+    if (priceFilter === 'free') return list.filter(e => !e.ticketPrice || Number(e.ticketPrice) === 0);
+    if (priceFilter === 'paid') return list.filter(e => Number(e.ticketPrice) > 0);
+    return list;
+  };
+
+  const filterByTimeOfDay = (list) => {
+    if (timeOfDayFilter === 'all') return list;
+    return list.filter(e => {
+      const dt = parseEventDateTime(e.date, e.time);
+      if (!dt) return true;
+      const hours = dt.getHours();
+      if (timeOfDayFilter === 'morning') return hours < 12;
+      if (timeOfDayFilter === 'afternoon') return hours >= 12 && hours < 17;
+      if (timeOfDayFilter === 'evening') return hours >= 17;
+      return true;
+    });
+  };
+
+  const filterByCategory = (list) => {
+    if (categoryFilter === 'all') return list;
+    return list.filter(e => {
+      const comm = communities.find(c => c.id === e.communityId);
+      const tags = (comm?.tags || []).join(' ').toLowerCase();
+      const title = (e.title || '').toLowerCase();
+      const desc = (e.description || '').toLowerCase();
+      const cat = categoryFilter.toLowerCase();
+      return tags.includes(cat) || title.includes(cat) || desc.includes(cat);
+    });
+  };
+
+  const applyAllFilters = (list) => {
+    return filterByCategory(filterByTimeOfDay(filterByPrice(filterByDate(filterBySearch(list)))));
+  };
+
+  const hasActiveFilters = searchQuery.trim() !== '' || dateFilter !== 'all' || priceFilter !== 'all' || timeOfDayFilter !== 'all' || categoryFilter !== 'all';
+
+  const resetAllFilters = () => {
+    setSearchQuery('');
+    setDateFilter('all');
+    setPriceFilter('all');
+    setTimeOfDayFilter('all');
+    setCategoryFilter('all');
+  };
+
   const myRsvpEventIds = Object.keys(eventRsvps).filter(eventId => 
     eventRsvps[eventId]?.some(r => r.userId === user?.id)
   );
 
-  const allUserEvents = filterByDate(filterBySearch(events.filter(e => (myRsvpEventIds.includes(e.id) || user?.joinedCommunities?.includes(e.communityId)) && e.status !== 'cancelled')));
+  const allUserEvents = applyAllFilters(events.filter(e => (myRsvpEventIds.includes(e.id) || user?.joinedCommunities?.includes(e.communityId)) && e.status !== 'cancelled'));
   const upcomingUserEvents = allUserEvents
     .filter(e => isEventUpcoming(e))
     .sort((a, b) => (parseEventDateTime(a.date, a.time) || 0) - (parseEventDateTime(b.date, b.time) || 0));
@@ -87,7 +137,7 @@ export default function EventsHub() {
     .filter(e => isEventPast(e))
     .sort((a, b) => (parseEventDateTime(b.date, b.time) || 0) - (parseEventDateTime(a.date, a.time) || 0));
 
-  const allExploreEvents = filterByDate(filterBySearch(events.filter(e => !user?.joinedCommunities?.includes(e.communityId) && e.status !== 'cancelled')));
+  const allExploreEvents = applyAllFilters(events.filter(e => !user?.joinedCommunities?.includes(e.communityId) && e.status !== 'cancelled'));
   const upcomingExploreEvents = allExploreEvents
     .filter(e => isEventUpcoming(e))
     .sort((a, b) => (parseEventDateTime(a.date, a.time) || 0) - (parseEventDateTime(b.date, b.time) || 0));
@@ -333,54 +383,213 @@ export default function EventsHub() {
         </div>
       </div>
 
-      {/* Date Filter Chips */}
-      <div style={{ padding: '12px 20px 4px', display: 'flex', gap: '8px', overflowX: 'auto', WebkitOverflowScrolling: 'touch', msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
-        {[
-          { id: 'all', label: 'All Dates' },
-          { id: 'today', label: 'Today' },
-          { id: 'this_week', label: 'This Week' },
-          { id: 'this_weekend', label: 'This Weekend' },
-        ].map(filter => (
+      {/* Enhanced Multi-Attribute Filter Bar */}
+      <div style={{ padding: '12px 20px 4px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        {/* Row 1: Date Chips & More Filters Toggle */}
+        <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', alignItems: 'center', WebkitOverflowScrolling: 'touch', msOverflowStyle: 'none', scrollbarWidth: 'none', paddingBottom: '2px' }}>
+          {[
+            { id: 'all', label: 'All Dates' },
+            { id: 'today', label: 'Today' },
+            { id: 'this_week', label: 'This Week' },
+            { id: 'this_weekend', label: 'This Weekend' },
+          ].map(filter => (
+            <button
+              key={filter.id}
+              onClick={() => setDateFilter(filter.id)}
+              className="interactive-press"
+              style={{
+                padding: '6px 12px',
+                borderRadius: '20px',
+                border: dateFilter === filter.id ? '1px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.1)',
+                background: dateFilter === filter.id ? 'rgba(20,184,166,0.12)' : 'rgba(255,255,255,0.02)',
+                color: dateFilter === filter.id ? 'var(--teal-400)' : 'var(--slate-300)',
+                fontSize: '0.8rem',
+                fontWeight: 600,
+                whiteSpace: 'nowrap',
+                cursor: 'pointer'
+              }}
+            >
+              {filter.label}
+            </button>
+          ))}
+
+          {/* Price Quick Filters */}
           <button
-            key={filter.id}
-            onClick={() => setDateFilter(filter.id)}
+            onClick={() => setPriceFilter(priceFilter === 'free' ? 'all' : 'free')}
             className="interactive-press"
             style={{
               padding: '6px 12px',
               borderRadius: '20px',
-              border: dateFilter === filter.id ? '1px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.1)',
-              background: dateFilter === filter.id ? 'rgba(20,184,166,0.1)' : 'rgba(255,255,255,0.02)',
-              color: dateFilter === filter.id ? 'var(--teal-400)' : 'var(--slate-300)',
+              border: priceFilter === 'free' ? '1px solid #10b981' : '1px solid rgba(255,255,255,0.1)',
+              background: priceFilter === 'free' ? 'rgba(16,185,129,0.15)' : 'rgba(255,255,255,0.02)',
+              color: priceFilter === 'free' ? '#34d399' : 'var(--slate-300)',
               fontSize: '0.8rem',
               fontWeight: 600,
-              whiteSpace: 'nowrap'
+              whiteSpace: 'nowrap',
+              cursor: 'pointer'
             }}
           >
-            {filter.label}
+            🎟️ Free
           </button>
-        ))}
-        {/* Calendar Input */}
-        <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-          <input 
-            type="date"
-            value={!['all', 'today', 'this_week', 'this_weekend'].includes(dateFilter) ? dateFilter : ''}
-            onChange={(e) => setDateFilter(e.target.value)}
+
+          <button
+            onClick={() => setPriceFilter(priceFilter === 'paid' ? 'all' : 'paid')}
             className="interactive-press"
             style={{
-              padding: '4px 12px',
+              padding: '6px 12px',
               borderRadius: '20px',
-              border: (!['all', 'today', 'this_week', 'this_weekend'].includes(dateFilter)) ? '1px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.1)',
-              background: (!['all', 'today', 'this_week', 'this_weekend'].includes(dateFilter)) ? 'rgba(20,184,166,0.1)' : 'rgba(255,255,255,0.02)',
-              color: (!['all', 'today', 'this_week', 'this_weekend'].includes(dateFilter)) ? 'var(--teal-400)' : 'var(--slate-300)',
+              border: priceFilter === 'paid' ? '1px solid #38bdf8' : '1px solid rgba(255,255,255,0.1)',
+              background: priceFilter === 'paid' ? 'rgba(56,189,248,0.15)' : 'rgba(255,255,255,0.02)',
+              color: priceFilter === 'paid' ? '#38bdf8' : 'var(--slate-300)',
               fontSize: '0.8rem',
               fontWeight: 600,
-              fontFamily: 'inherit',
-              cursor: 'pointer',
-              outline: 'none',
-              minWidth: '130px'
+              whiteSpace: 'nowrap',
+              cursor: 'pointer'
             }}
-          />
+          >
+            💳 Paid
+          </button>
+
+          {/* Toggle Advanced Filters */}
+          <button
+            onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+            className="interactive-press"
+            style={{
+              padding: '6px 12px',
+              borderRadius: '20px',
+              border: (showAdvancedFilters || timeOfDayFilter !== 'all' || categoryFilter !== 'all') ? '1px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.1)',
+              background: (showAdvancedFilters || timeOfDayFilter !== 'all' || categoryFilter !== 'all') ? 'rgba(20,184,166,0.12)' : 'rgba(255,255,255,0.02)',
+              color: (showAdvancedFilters || timeOfDayFilter !== 'all' || categoryFilter !== 'all') ? 'var(--teal-400)' : 'var(--slate-300)',
+              fontSize: '0.8rem',
+              fontWeight: 600,
+              whiteSpace: 'nowrap',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '5px',
+              cursor: 'pointer'
+            }}
+          >
+            <Filter size={13} />
+            Filters {(timeOfDayFilter !== 'all' || categoryFilter !== 'all') ? '•' : ''}
+          </button>
+
+          {/* Clear Filters Button */}
+          {hasActiveFilters && (
+            <button
+              onClick={resetAllFilters}
+              className="interactive-press"
+              style={{
+                padding: '6px 10px',
+                borderRadius: '20px',
+                border: '1px solid rgba(244,63,94,0.3)',
+                background: 'rgba(244,63,94,0.1)',
+                color: '#fb7185',
+                fontSize: '0.78rem',
+                fontWeight: 600,
+                whiteSpace: 'nowrap',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                cursor: 'pointer'
+              }}
+            >
+              <RotateCcw size={12} /> Reset
+            </button>
+          )}
+
+          {/* Calendar Input */}
+          <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+            <input 
+              type="date"
+              value={!['all', 'today', 'this_week', 'this_weekend'].includes(dateFilter) ? dateFilter : ''}
+              onChange={(e) => setDateFilter(e.target.value)}
+              className="interactive-press"
+              style={{
+                padding: '4px 12px',
+                borderRadius: '20px',
+                border: (!['all', 'today', 'this_week', 'this_weekend'].includes(dateFilter)) ? '1px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.1)',
+                background: (!['all', 'today', 'this_week', 'this_weekend'].includes(dateFilter)) ? 'rgba(20,184,166,0.1)' : 'rgba(255,255,255,0.02)',
+                color: (!['all', 'today', 'this_week', 'this_weekend'].includes(dateFilter)) ? 'var(--teal-400)' : 'var(--slate-300)',
+                fontSize: '0.8rem',
+                fontWeight: 600,
+                fontFamily: 'inherit',
+                cursor: 'pointer',
+                outline: 'none',
+                minWidth: '130px'
+              }}
+            />
+          </div>
         </div>
+
+        {/* Row 2: Expandable Time of Day & Category Chips */}
+        {showAdvancedFilters && (
+          <div style={{
+            background: 'rgba(255,255,255,0.02)',
+            border: '1px solid rgba(255,255,255,0.06)',
+            borderRadius: '14px',
+            padding: '10px 12px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '8px'
+          }}>
+            {/* Time of Day */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}>
+              <span style={{ fontSize: '0.72rem', color: 'var(--slate-400)', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 700, flexShrink: 0 }}>
+                Time:
+              </span>
+              {[
+                { id: 'all', label: 'Any Time' },
+                { id: 'morning', label: '🌅 Morning (<12pm)' },
+                { id: 'afternoon', label: '☀️ Afternoon (12-5pm)' },
+                { id: 'evening', label: '🌙 Evening (5pm+)' },
+              ].map(tod => (
+                <button
+                  key={tod.id}
+                  onClick={() => setTimeOfDayFilter(tod.id)}
+                  style={{
+                    padding: '4px 10px',
+                    borderRadius: '12px',
+                    border: timeOfDayFilter === tod.id ? '1px solid var(--teal-400)' : '1px solid rgba(255,255,255,0.08)',
+                    background: timeOfDayFilter === tod.id ? 'rgba(20,184,166,0.15)' : 'transparent',
+                    color: timeOfDayFilter === tod.id ? 'var(--teal-300)' : 'var(--slate-400)',
+                    fontSize: '0.75rem',
+                    fontWeight: 600,
+                    whiteSpace: 'nowrap',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {tod.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Category Tags */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}>
+              <span style={{ fontSize: '0.72rem', color: 'var(--slate-400)', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 700, flexShrink: 0 }}>
+                Category:
+              </span>
+              {['all', 'Running', 'Walking', 'Wellness', 'Creative', 'Adventure', 'Social'].map(cat => (
+                <button
+                  key={cat}
+                  onClick={() => setCategoryFilter(cat)}
+                  style={{
+                    padding: '4px 10px',
+                    borderRadius: '12px',
+                    border: categoryFilter === cat ? '1px solid #a855f7' : '1px solid rgba(255,255,255,0.08)',
+                    background: categoryFilter === cat ? 'rgba(168,85,247,0.15)' : 'transparent',
+                    color: categoryFilter === cat ? '#d8b4fe' : 'var(--slate-400)',
+                    fontSize: '0.75rem',
+                    fontWeight: 600,
+                    whiteSpace: 'nowrap',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {cat === 'all' ? 'All' : cat}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       <div style={{ padding: '12px 20px 8px' }}>
