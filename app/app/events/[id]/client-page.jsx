@@ -1,77 +1,70 @@
 "use client";
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ChevronLeft, Share, MapPin, Calendar, Clock, Users, CheckCircle2, Info, List, Activity, Check, Map, Ticket, DollarSign, Copy, ExternalLink, Navigation, Video, AlertTriangle, Image as ImageIcon, ScanLine } from 'lucide-react';
+import { ChevronLeft, Share, MapPin, Calendar, Clock, Users, CheckCircle2, Info, List, Activity, Check, Map, Ticket, DollarSign, Copy, ExternalLink, Navigation, Video, AlertTriangle, Image as ImageIcon, ScanLine, Archive, Repeat } from 'lucide-react';
 import { useAppContext } from '../../../src/context/AppContext';
 import { useToast } from '../../../src/components/Toast';
 import DigitalTicket from '../../../src/components/DigitalTicket';
 import QRScanner from '../../../src/components/QRScanner';
+import { isEventPast, isEventUpcoming } from '../../../src/lib/calendar';
+import { formatEventDate } from '../../../src/lib/recurrence';
+import {
+  findKnownLocation,
+  parseLocationCoords,
+  cleanLocationName,
+  geocodeLocation,
+  DEFAULT_TW_CENTER
+} from '../../../src/lib/location';
 
-// Well-known Tunbridge Wells locations for instant lookup
-const KNOWN_LOCATIONS = {
-  'dunorlan park': { lat: 51.1345, lng: 0.2710 },
-  'calverley grounds': { lat: 51.1355, lng: 0.2605 },
-  'the pantiles': { lat: 51.1280, lng: 0.2620 },
-  'tunbridge wells': { lat: 51.1322, lng: 0.2637 },
-  'camden road': { lat: 51.1330, lng: 0.2630 },
-  'the forum': { lat: 51.1310, lng: 0.2650 },
-  'trinity arts centre': { lat: 51.1315, lng: 0.2640 },
-  'trinity theatre': { lat: 51.1315, lng: 0.2640 },
-  'the assembly hall': { lat: 51.1340, lng: 0.2625 },
-  'assembly hall': { lat: 51.1340, lng: 0.2625 },
-  'grosvenor park': { lat: 51.1280, lng: 0.2680 },
-  'hawkenbury recreation ground': { lat: 51.1400, lng: 0.2770 },
-  'hawkenbury': { lat: 51.1400, lng: 0.2770 },
-  'st johns park': { lat: 51.1370, lng: 0.2560 },
-  'st johns': { lat: 51.1370, lng: 0.2560 },
-  'the common': { lat: 51.1315, lng: 0.2550 },
-  'common': { lat: 51.1315, lng: 0.2550 },
-  'rusthall': { lat: 51.1380, lng: 0.2350 },
-  'southborough': { lat: 51.1550, lng: 0.2580 },
-  'high street': { lat: 51.1295, lng: 0.2615 },
-  'the ivy': { lat: 51.1335, lng: 0.2635 },
-  'royal victoria place': { lat: 51.1350, lng: 0.2620 },
-};
-
-function EventLocationMap({ location }) {
+function EventLocationMap({ location, event }) {
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
-  const [coords, setCoords] = useState(null);
-  const [geocodeError, setGeocodeError] = useState(false);
+  const [coords, setCoords] = useState(() => {
+    const parsed = parseLocationCoords(location) || (event?.lat && event?.lng ? { lat: Number(event.lat), lng: Number(event.lng) } : null);
+    if (parsed) return parsed;
+    const known = findKnownLocation(location) || (event?.title ? findKnownLocation(event.title) : null);
+    if (known) return { lat: known.lat, lng: known.lng };
+    return null;
+  });
+  const [areaInfo, setAreaInfo] = useState(() => {
+    const known = findKnownLocation(location) || (event?.title ? findKnownLocation(event.title) : null);
+    return known?.area || '';
+  });
 
   useEffect(() => {
     if (!location) return;
 
-    // Try known locations first
-    const locLower = location.toLowerCase().trim();
-    for (const [key, value] of Object.entries(KNOWN_LOCATIONS)) {
-      if (locLower.includes(key)) {
-        setCoords(value);
-        return;
-      }
+    // Check embedded or known first
+    const parsed = parseLocationCoords(location) || (event?.lat && event?.lng ? { lat: Number(event.lat), lng: Number(event.lng) } : null);
+    if (parsed) {
+      setCoords(parsed);
+      return;
     }
 
-    // Fallback: geocode via Nominatim
+    const known = findKnownLocation(location) || (event?.title ? findKnownLocation(event.title) : null);
+    if (known) {
+      setCoords({ lat: known.lat, lng: known.lng });
+      setAreaInfo(known.area || '');
+      return;
+    }
+
+    // Geocode via smart fallback
     const controller = new AbortController();
-    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(location + ', Tunbridge Wells, UK')}&limit=1`, {
-      signal: controller.signal,
-      headers: { 'Accept': 'application/json' },
-    })
-      .then(r => r.json())
-      .then(data => {
-        if (data && data.length > 0) {
-          setCoords({ lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) });
+    geocodeLocation(location, { signal: controller.signal })
+      .then(res => {
+        if (res && res.lat && res.lng) {
+          setCoords({ lat: res.lat, lng: res.lng });
+          if (res.area) setAreaInfo(res.area);
         } else {
-          // Default to Tunbridge Wells center
-          setCoords({ lat: 51.1322, lng: 0.2637 });
+          setCoords({ lat: DEFAULT_TW_CENTER[0], lng: DEFAULT_TW_CENTER[1] });
         }
       })
       .catch(() => {
-        setCoords({ lat: 51.1322, lng: 0.2637 });
+        setCoords({ lat: DEFAULT_TW_CENTER[0], lng: DEFAULT_TW_CENTER[1] });
       });
 
     return () => controller.abort();
-  }, [location]);
+  }, [location, event]);
 
   useEffect(() => {
     if (!coords || !mapRef.current) return;
@@ -96,7 +89,7 @@ function EventLocationMap({ location }) {
       const map = L.map(mapRef.current, {
         center: [coords.lat, coords.lng],
         zoom: 15,
-        zoomControl: false,
+        zoomControl: true,
         attributionControl: false,
         dragging: true,
         scrollWheelZoom: false,
@@ -110,19 +103,22 @@ function EventLocationMap({ location }) {
       // Custom teal marker
       const markerIcon = L.divIcon({
         html: `<div style="
-          width: 36px; height: 36px; border-radius: 50%;
+          width: 38px; height: 38px; border-radius: 50%;
           background: rgba(20,184,166,0.95);
-          border: 3px solid rgba(255,255,255,0.9);
+          border: 3px solid rgba(255,255,255,0.95);
           display: flex; align-items: center; justify-content: center;
-          box-shadow: 0 4px 16px rgba(20,184,166,0.5), 0 0 0 8px rgba(20,184,166,0.2);
+          box-shadow: 0 4px 18px rgba(20,184,166,0.6), 0 0 0 8px rgba(20,184,166,0.25);
           animation: pulseMarker 2s ease-in-out infinite;
-        "><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>`,
-        iconSize: [36, 36],
-        iconAnchor: [18, 18],
+          font-size: 18px;
+        ">📍</div>`,
+        iconSize: [38, 38],
+        iconAnchor: [19, 19],
         className: '',
       });
 
-      L.marker([coords.lat, coords.lng], { icon: markerIcon }).addTo(map);
+      const cleanName = cleanLocationName(location);
+      const marker = L.marker([coords.lat, coords.lng], { icon: markerIcon }).addTo(map);
+      marker.bindPopup(`<b>${cleanName}</b>${areaInfo ? `<br/><span style="color:#64748b;font-size:12px;">${areaInfo}</span>` : ''}`);
 
       mapInstanceRef.current = map;
 
@@ -143,40 +139,63 @@ function EventLocationMap({ location }) {
     };
   }, [coords]);
 
+  const cleanName = cleanLocationName(location);
+
   const googleMapsUrl = coords
-    ? `https://www.google.com/maps/search/?api=1&query=${coords.lat},${coords.lng}`
-    : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`;
+    ? `https://www.google.com/maps/dir/?api=1&destination=${coords.lat},${coords.lng}`
+    : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(cleanName)}`;
 
   const appleMapsUrl = coords
-    ? `https://maps.apple.com/?q=${coords.lat},${coords.lng}`
-    : `https://maps.apple.com/?q=${encodeURIComponent(location)}`;
+    ? `https://maps.apple.com/?daddr=${coords.lat},${coords.lng}`
+    : `https://maps.apple.com/?q=${encodeURIComponent(cleanName)}`;
 
   return (
     <div style={{ marginBottom: '32px' }}>
       <h3 style={{ fontSize: '1.2rem', margin: '0 0 12px 0', color: 'var(--white)', fontFamily: 'var(--font-heading)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <MapPin size={20} color="var(--teal-400)" /> Location
+        <MapPin size={20} color="var(--teal-400)" /> Event Start Location
       </h3>
 
       {/* Map container */}
       <div style={{
         borderRadius: '16px', overflow: 'hidden',
-        border: '1px solid rgba(255,255,255,0.06)',
+        border: '1px solid rgba(255,255,255,0.08)',
         background: 'var(--slate-900)',
         marginBottom: '12px',
+        position: 'relative',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.3)'
       }}>
-        <div ref={mapRef} style={{ width: '100%', height: '200px' }} />
+        <div ref={mapRef} style={{ width: '100%', height: '220px' }} />
+        {coords && (
+          <div style={{
+            position: 'absolute', bottom: '10px', left: '10px', zIndex: 400,
+            background: 'rgba(15, 23, 42, 0.85)', backdropFilter: 'blur(8px)',
+            padding: '4px 10px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.1)',
+            fontSize: '0.72rem', color: '#2dd4bf', fontFamily: 'monospace'
+          }}>
+            📍 {coords.lat.toFixed(4)}°, {coords.lng.toFixed(4)}°
+          </div>
+        )}
       </div>
 
       {/* Location name + directions buttons */}
       <div style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px',
         background: 'rgba(255,255,255,0.03)',
         border: '1px solid rgba(255,255,255,0.06)',
-        borderRadius: '12px', padding: '12px 16px',
+        borderRadius: '12px', padding: '14px 16px',
       }}>
-        <div>
-          <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.95rem' }}>{location}</div>
-          <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)', marginTop: '2px' }}>Tap to get directions</div>
+        <div style={{ minWidth: '180px' }}>
+          <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.98rem' }}>
+            {cleanName}
+          </div>
+          {areaInfo && (
+            <div style={{ fontSize: '0.8rem', color: 'var(--teal-400)', marginTop: '2px', fontWeight: 500 }}>
+              {areaInfo}
+            </div>
+          )}
+          <div style={{ fontSize: '0.78rem', color: 'var(--slate-400)', marginTop: '2px' }}>
+            Tap below for directions to the start point
+          </div>
         </div>
         <div style={{ display: 'flex', gap: '8px' }}>
           <a
@@ -186,14 +205,30 @@ function EventLocationMap({ location }) {
             className="interactive-press"
             style={{
               display: 'flex', alignItems: 'center', gap: '6px',
-              padding: '8px 14px', borderRadius: '10px',
-              background: 'rgba(20,184,166,0.1)',
-              border: '1px solid rgba(20,184,166,0.25)',
-              color: 'var(--teal-400)', fontSize: '0.8rem', fontWeight: 600,
+              padding: '9px 14px', borderRadius: '10px',
+              background: 'rgba(20,184,166,0.12)',
+              border: '1px solid rgba(20,184,166,0.3)',
+              color: 'var(--teal-400)', fontSize: '0.82rem', fontWeight: 600,
               textDecoration: 'none', cursor: 'pointer',
             }}
           >
-            <Navigation size={14} /> Directions
+            <Navigation size={14} /> Google Maps
+          </a>
+          <a
+            href={appleMapsUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="interactive-press"
+            style={{
+              display: 'flex', alignItems: 'center', gap: '6px',
+              padding: '9px 14px', borderRadius: '10px',
+              background: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(255,255,255,0.12)',
+              color: 'var(--white)', fontSize: '0.82rem', fontWeight: 600,
+              textDecoration: 'none', cursor: 'pointer',
+            }}
+          >
+            <ExternalLink size={14} /> Apple Maps
           </a>
         </div>
       </div>
@@ -258,6 +293,14 @@ export default function EventClient({ id }) {
   const spotsLeft = event.maxCapacity ? Math.max(0, event.maxCapacity - rsvps.filter(r => r.status === 'going').length) : null;
   const isMember = user?.joinedCommunities?.includes(event.communityId);
 
+  const seriesEvents = useMemo(() => {
+    if (!event || !events) return [];
+    return events
+      .filter(e => e.communityId === event.communityId && e.title.trim().toLowerCase() === event.title.trim().toLowerCase())
+      .sort((a, b) => new Date(a.date) - new Date(b.date));
+  }, [event, events]);
+  const currentSeriesIndex = seriesEvents.findIndex(e => e.id === event.id);
+
   const handleJoinAndRSVP = async () => {
     if (!isMember) {
       await joinCommunity(event.communityId);
@@ -320,16 +363,40 @@ export default function EventClient({ id }) {
             <Share size={20} />
           </button>
         </div>
-        {/* Status Badge */}
-        {isGoing && (
-          <div style={{ position: 'absolute', bottom: '20px', left: '20px', background: 'var(--teal-500)', color: 'white', padding: '6px 12px', borderRadius: '99px', fontSize: '0.8rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}>
-            <CheckCircle2 size={14} /> YOU'RE GOING
-          </div>
-        )}
+        {/* Status Badges */}
+        <div style={{ position: 'absolute', bottom: '20px', left: '20px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          {isEventPast(event) && (
+            <div style={{ background: 'rgba(71,85,105,0.95)', color: 'white', padding: '6px 14px', borderRadius: '99px', fontSize: '0.8rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px', backdropFilter: 'blur(8px)', boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }}>
+              <Archive size={14} /> PAST EVENT • ARCHIVED
+            </div>
+          )}
+          {seriesEvents.length > 1 && (
+            <div style={{ background: 'rgba(20,184,166,0.9)', color: 'white', padding: '6px 12px', borderRadius: '99px', fontSize: '0.8rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px', backdropFilter: 'blur(8px)', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}>
+              <Repeat size={13} /> {currentSeriesIndex >= 0 ? `SESSION ${currentSeriesIndex + 1} OF ${seriesEvents.length}` : `${seriesEvents.length} SESSIONS`}
+            </div>
+          )}
+          {isGoing && (
+            <div style={{ background: 'var(--teal-500)', color: 'white', padding: '6px 12px', borderRadius: '99px', fontSize: '0.8rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}>
+              <CheckCircle2 size={14} /> {isEventPast(event) ? 'YOU ATTENDED' : "YOU'RE GOING"}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Content Body */}
       <div style={{ padding: '24px 20px', maxWidth: '800px', margin: '0 auto' }}>
+        
+        {isEventPast(event) && (
+          <div style={{ background: 'rgba(148,163,184,0.08)', border: '1px solid rgba(148,163,184,0.2)', borderRadius: '14px', padding: '14px 18px', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <Archive size={22} color="var(--slate-400)" style={{ flexShrink: 0 }} />
+            <div>
+              <div style={{ color: 'var(--white)', fontWeight: 700, fontSize: '0.95rem' }}>This event has taken place</div>
+              <div style={{ color: 'var(--slate-400)', fontSize: '0.82rem', marginTop: '2px' }}>
+                Event date: {event.date} at {event.time}. It is now archived for community memory.
+              </div>
+            </div>
+          </div>
+        )}
         
         {event.profitShareEnabled && event.ticketPrice > 0 && user?.id && (
           <div style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: '12px', padding: '16px', marginBottom: '24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -373,11 +440,54 @@ export default function EventClient({ id }) {
                 <MapPin size={20} />
               </div>
               <div>
-                <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '1rem' }}>{event.location}</div>
+                <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '1rem' }}>{cleanLocationName(event.location)}</div>
                 {event.meetingPoint && <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)' }}>Meet: {event.meetingPoint}</div>}
               </div>
             </div>
           </div>
+
+          {/* Other dates in recurring series */}
+          {seriesEvents.length > 1 && (
+            <div style={{ marginTop: '16px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '14px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.82rem', fontWeight: 600, color: 'var(--teal-300)' }}>
+                  <Repeat size={14} /> Other Dates in this Series ({seriesEvents.length} sessions)
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
+                {seriesEvents.map((se, sIdx) => {
+                  const isCurrent = se.id === event.id;
+                  const isPast = isEventPast(se);
+                  return (
+                    <button
+                      key={se.id}
+                      onClick={() => { if (!isCurrent) router.push(`/events/${se.id}`); }}
+                      style={{
+                        padding: '8px 12px',
+                        borderRadius: '10px',
+                        border: isCurrent ? '1px solid var(--teal-400)' : '1px solid rgba(255,255,255,0.08)',
+                        background: isCurrent ? 'rgba(20,184,166,0.15)' : 'rgba(255,255,255,0.03)',
+                        color: isCurrent ? 'var(--white)' : isPast ? 'var(--slate-500)' : 'var(--slate-300)',
+                        cursor: isCurrent ? 'default' : 'pointer',
+                        textAlign: 'left',
+                        flexShrink: 0,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '2px',
+                        opacity: isPast && !isCurrent ? 0.6 : 1
+                      }}
+                    >
+                      <div style={{ fontSize: '0.68rem', fontWeight: 700, color: isCurrent ? 'var(--teal-400)' : 'var(--slate-400)' }}>
+                        #{sIdx + 1} {isCurrent ? '• CURRENT' : isPast ? '• PAST' : ''}
+                      </div>
+                      <div style={{ fontSize: '0.8rem', fontWeight: 600 }}>{formatEventDate(se.date)}</div>
+                      <div style={{ fontSize: '0.7rem', color: 'var(--slate-400)' }}>{se.time || '10:00'}</div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
 
         <hr style={{ border: 'none', borderTop: '1px solid rgba(255,255,255,0.05)', margin: '24px 0' }} />
@@ -484,7 +594,7 @@ export default function EventClient({ id }) {
 
         {/* Location Map */}
         {event.location && (
-          <EventLocationMap location={event.location} />
+          <EventLocationMap location={event.location} event={event} />
         )}
 
         {/* Deep Dive Grid */}
@@ -563,13 +673,26 @@ export default function EventClient({ id }) {
       }}>
         <div style={{ maxWidth: '800px', margin: '0 auto', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
-            <div style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--white)' }}>
-              {event.ticketPrice > 0 ? `£${event.ticketPrice.toFixed(2)}` : 'Free'}
-            </div>
-            {spotsLeft !== null && (
-              <div style={{ fontSize: '0.8rem', color: spotsLeft < 5 ? 'var(--rose-400)' : 'var(--slate-400)', fontWeight: 600 }}>
-                {spotsLeft === 0 ? 'Sold Out' : `${spotsLeft} spots left`}
-              </div>
+            {isEventPast(event) ? (
+              <>
+                <div style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--slate-400)' }}>
+                  Event Ended
+                </div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--slate-500)', fontWeight: 500 }}>
+                  Archived • {event.date}
+                </div>
+              </>
+            ) : (
+              <>
+                <div style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--white)' }}>
+                  {event.ticketPrice > 0 ? `£${event.ticketPrice.toFixed(2)}` : 'Free'}
+                </div>
+                {spotsLeft !== null && (
+                  <div style={{ fontSize: '0.8rem', color: spotsLeft < 5 ? 'var(--rose-400)' : 'var(--slate-400)', fontWeight: 600 }}>
+                    {spotsLeft === 0 ? 'Sold Out' : `${spotsLeft} spots left`}
+                  </div>
+                )}
+              </>
             )}
           </div>
           <div style={{ display: 'flex', gap: '8px' }}>
@@ -589,27 +712,57 @@ export default function EventClient({ id }) {
                 <ScanLine size={18} /> Scan
               </button>
             )}
-            <button  
-            onClick={!isMember && !isGoing ? handleJoinAndRSVP : handleRSVP}
-            disabled={checkoutState === 'processing' || (spotsLeft === 0 && !isGoing)}
-            className="interactive-press"
-            style={{ 
-              background: isGoing ? 'rgba(255,255,255,0.1)' : 'var(--teal-500)', 
-              color: isGoing ? 'var(--white)' : '#0f172a', 
-              border: isGoing ? '1px solid rgba(255,255,255,0.2)' : 'none',
-              padding: '12px 32px', borderRadius: '99px', fontSize: '1rem', fontWeight: 700, 
-              cursor: (checkoutState === 'processing' || (spotsLeft === 0 && !isGoing)) ? 'not-allowed' : 'pointer',
-              opacity: (checkoutState === 'processing' || (spotsLeft === 0 && !isGoing)) ? 0.7 : 1,
-              display: 'flex', alignItems: 'center', gap: '8px',
-              minWidth: '140px', justifyContent: 'center'
-            }}
-          >
-            {checkoutState === 'processing' ? 'Processing...' : 
-             isGoing ? 'Cancel RSVP' : 
-             spotsLeft === 0 ? 'Sold Out' :
-             !isMember ? 'Join Community to ' + (event.ticketPrice > 0 ? 'Buy Ticket' : 'RSVP') :
-             event.ticketPrice > 0 ? 'Buy Ticket' : 'RSVP'}
-          </button>
+            {isEventPast(event) ? (
+              isGoing ? (
+                <button
+                  onClick={() => setShowTicket(event)}
+                  className="interactive-press"
+                  style={{
+                    background: 'rgba(20,184,166,0.15)',
+                    color: 'var(--teal-300)',
+                    border: '1px solid rgba(20,184,166,0.3)',
+                    padding: '12px 24px', borderRadius: '99px', fontSize: '0.95rem', fontWeight: 700,
+                    display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer'
+                  }}
+                >
+                  <CheckCircle2 size={16} /> View Ticket
+                </button>
+              ) : (
+                <div
+                  style={{
+                    background: 'rgba(255,255,255,0.05)',
+                    color: 'var(--slate-400)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    padding: '12px 24px', borderRadius: '99px', fontSize: '0.95rem', fontWeight: 600,
+                    display: 'flex', alignItems: 'center', gap: '8px'
+                  }}
+                >
+                  <Archive size={16} /> Archived
+                </div>
+              )
+            ) : (
+              <button  
+                onClick={!isMember && !isGoing ? handleJoinAndRSVP : handleRSVP}
+                disabled={checkoutState === 'processing' || (spotsLeft === 0 && !isGoing)}
+                className="interactive-press"
+                style={{ 
+                  background: isGoing ? 'rgba(255,255,255,0.1)' : 'var(--teal-500)', 
+                  color: isGoing ? 'var(--white)' : '#0f172a', 
+                  border: isGoing ? '1px solid rgba(255,255,255,0.2)' : 'none',
+                  padding: '12px 32px', borderRadius: '99px', fontSize: '1rem', fontWeight: 700, 
+                  cursor: (checkoutState === 'processing' || (spotsLeft === 0 && !isGoing)) ? 'not-allowed' : 'pointer',
+                  opacity: (checkoutState === 'processing' || (spotsLeft === 0 && !isGoing)) ? 0.7 : 1,
+                  display: 'flex', alignItems: 'center', gap: '8px',
+                  minWidth: '140px', justifyContent: 'center'
+                }}
+              >
+                {checkoutState === 'processing' ? 'Processing...' : 
+                 isGoing ? 'Cancel RSVP' : 
+                 spotsLeft === 0 ? 'Sold Out' :
+                 !isMember ? 'Join Community to ' + (event.ticketPrice > 0 ? 'Buy Ticket' : 'RSVP') :
+                 event.ticketPrice > 0 ? 'Buy Ticket' : 'RSVP'}
+              </button>
+            )}
           </div>
         </div>
       </div>

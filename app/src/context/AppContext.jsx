@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabaseClient';
 import { useAuth } from './AuthContext';
 import { initialExperiences } from '../lib/constants';
 import imageCompression from 'browser-image-compression';
-import { createEventAction, joinCommunityAction, leaveCommunityAction, rsvpToEventAction, createCommunityAction, uploadImageAction, updateEventAction, updateCommunityAction, deleteCommunityAction, createChannelAction, markNotificationReadAction, updateUserAction, adminVerifyCommunityAction, broadcastNotificationAction, promoteMemberAction, removeMemberAction, subscribeToPushNotificationsAction, ensureLeadersNetworkAction, sendEventReminderAction, createSelfNotificationAction } from '../lib/actions';
+import { createEventAction, createEventsBatchAction, joinCommunityAction, leaveCommunityAction, rsvpToEventAction, createCommunityAction, uploadImageAction, updateEventAction, updateCommunityAction, deleteCommunityAction, createChannelAction, markNotificationReadAction, updateUserAction, adminVerifyCommunityAction, broadcastNotificationAction, promoteMemberAction, removeMemberAction, subscribeToPushNotificationsAction, ensureLeadersNetworkAction, sendEventReminderAction, createSelfNotificationAction } from '../lib/actions';
 import { Capacitor } from '@capacitor/core';
 
 const AppContext = createContext();
@@ -1193,6 +1193,56 @@ export function AppProvider({ children }) {
     }
   };
 
+  const createEventsBatch = async (communityId, eventsList) => {
+    try {
+      if (!Array.isArray(eventsList) || eventsList.length === 0) return [];
+      let token = session?.access_token;
+      if (!token) {
+        const { data: sessionData } = await supabase.auth.getSession();
+        token = sessionData?.session?.access_token;
+      }
+
+      const formattedEvents = eventsList.map(item => ({
+        communityId: communityId,
+        title: item.title,
+        description: item.description || '',
+        date: item.date,
+        time: item.time,
+        ticketPrice: item.ticketPrice || item.ticket_price || 0,
+        location: item.location,
+        image: item.image || null,
+        attendees: 0,
+        status: 'published',
+        maxCapacity: item.maxCapacity || null,
+      }));
+
+      const data = await createEventsBatchAction(formattedEvents, token);
+
+      if (data && Array.isArray(data)) {
+        const mapped = data.map(e => ({
+          id: e.id,
+          communityId: e.community_id,
+          title: e.title,
+          description: e.description || '',
+          date: e.date,
+          time: e.time,
+          location: e.location,
+          image: e.image,
+          attendees: e.attendees || 0,
+          status: e.status || 'published',
+          maxCapacity: e.max_capacity || null,
+          ticketPrice: e.ticket_price || 0,
+          createdAt: e.created_at
+        }));
+        setEvents(prev => [...prev, ...mapped]);
+      }
+      return data;
+    } catch (err) {
+      console.error('Batch creation error:', err);
+      throw err;
+    }
+  };
+
   const markNotificationRead = async (id) => {
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
     try {
@@ -1627,6 +1677,7 @@ export function AppProvider({ children }) {
       sendEventReminder,
       notifyCommunityLeaders,
       createEvent,
+      createEventsBatch,
       updateEvent,
       cancelEvent,
       rsvpToEvent,

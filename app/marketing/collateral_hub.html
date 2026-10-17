@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>More Community — Email & Social Collateral Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #020617;
+      --card-bg: #0f172a;
+      --card-border: #1e293b;
+      --teal-500: #14b8a6;
+      --teal-400: #2dd4bf;
+      --teal-600: #0f766e;
+      --amber-500: #f59e0b;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: 'Inter', sans-serif;
+      line-height: 1.6;
+      padding-bottom: 60px;
+    }
+    header {
+      background-color: #0b1120;
+      border-bottom: 1px solid var(--card-border);
+      padding: 24px 32px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: blur(12px);
+    }
+    .header-inner {
+      max-width: 1300px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+    .brand h1 span { color: var(--teal-400); }
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background-color: rgba(20, 184, 166, 0.15);
+      border: 1px solid rgba(20, 184, 166, 0.3);
+      color: var(--teal-400);
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .nav-tabs {
+      display: flex;
+      gap: 8px;
+      background-color: var(--bg-dark);
+      padding: 4px;
+      border-radius: 12px;
+      border: 1px solid var(--card-border);
+    }
+    .tab-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: 'Inter', sans-serif;
+    }
+    .tab-btn:hover { color: #fff; }
+    .tab-btn.active {
+      background-color: var(--teal-600);
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(15, 118, 110, 0.4);
+    }
+    main {
+      max-width: 1300px;
+      margin: 32px auto;
+      padding: 0 24px;
+    }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    
+    /* Email Preview Section */
+    .preview-layout {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 24px;
+    }
+    @media (max-width: 900px) {
+      .preview-layout { grid-template-columns: 1fr; }
+    }
+    .template-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .template-item {
+      background-color: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 16px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .template-item:hover, .template-item.active {
+      border-color: var(--teal-400);
+      background-color: #131d35;
+    }
+    .template-item h4 {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 4px;
+      color: #fff;
+    }
+    .template-item p {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .viewport-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--card-border);
+    }
+    .viewport-buttons {
+      display: flex;
+      gap: 8px;
+    }
+    .btn-vp {
+      background-color: var(--card-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .btn-vp.active {
+      background-color: var(--teal-500);
+      color: #020617;
+      border-color: var(--teal-500);
+    }
+    .preview-frame-wrap {
+      background-color: #000;
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      min-height: 700px;
+    }
+    iframe#emailFrame {
+      width: 640px;
+      height: 750px;
+      border: none;
+      border-radius: 12px;
+      background: #090d16;
+      transition: width 0.3s ease;
+    }
+
+    /* Social Campaigns Cards */
+    .grid-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 24px;
+    }
+    .social-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+    }
+    .social-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .platform-tag {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: #1e293b;
+      color: #94a3b8;
+    }
+    .social-card h3 {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      font-family: 'Outfit', sans-serif;
+    }
+    .social-card .meta {
+      font-size: 12px;
+      color: var(--amber-500);
+      margin-bottom: 16px;
+      font-weight: 600;
+    }
+    .copy-box {
+      background-color: #090d16;
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 16px;
+      font-size: 13px;
+      line-height: 1.6;
+      color: #cbd5e1;
+      white-space: pre-wrap;
+      max-height: 280px;
+      overflow-y: auto;
+      margin-bottom: 16px;
+      font-family: monospace;
+    }
+    .btn-copy {
+      margin-top: auto;
+      background-color: var(--teal-600);
+      color: #fff;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background 0.2s;
+    }
+    .btn-copy:hover { background-color: #0d9488; }
+
+    /* Visual Media Assets Section */
+    .assets-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 24px;
+    }
+    .asset-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    .asset-preview {
+      width: 100%;
+      height: 240px;
+      object-fit: cover;
+      display: block;
+      background-color: #020617;
+    }
+    .asset-info {
+      padding: 20px;
+    }
+    .asset-info h4 {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 4px;
+      font-family: 'Outfit', sans-serif;
+    }
+    .asset-info p {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+    .asset-specs {
+      font-size: 11px;
+      color: var(--teal-400);
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-inner">
+      <div class="brand">
+        <h1>more<span>.</span></h1>
+        <span class="badge">Marketing & Collateral Hub</span>
+        <span style="font-size: 13px; color: var(--text-muted);">Royal Tunbridge Wells</span>
+      </div>
+      <div class="nav-tabs">
+        <button class="tab-btn active" onclick="switchTab('emails')">📧 Email Templates</button>
+        <button class="tab-btn" onclick="switchTab('social')">📱 Social Media Posts</button>
+        <button class="tab-btn" onclick="switchTab('assets')">🖼️ Visual Creative Assets</button>
+        <button class="tab-btn" onclick="switchTab('playbooks')">🎯 Outreach Docs</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- TAB 1: EMAIL TEMPLATES PREVIEW -->
+    <section id="tab-emails" class="tab-content active">
+      <div class="preview-layout">
+        <div class="template-list">
+          <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 12px;">Email Templates (4)</h3>
+          
+          <div class="template-item active" onclick="loadEmail('emails/template_leader_invitation.html', this)">
+            <h4>1. Leader Invitation & Pitch</h4>
+            <p>Cold/warm invite with comparison matrix and free microsite link.</p>
+          </div>
+
+          <div class="template-item" onclick="loadEmail('emails/template_leader_welcome.html', this)">
+            <h4>2. Leader Onboarding & Welcome</h4>
+            <p>Sent upon claiming. Includes 3-minute launch checklist & WhatsApp copy.</p>
+          </div>
+
+          <div class="template-item" onclick="loadEmail('emails/template_weekly_tw_digest.html', this)">
+            <h4>3. Weekly Tunbridge Wells Digest</h4>
+            <p>Thursday community roundup of weekend walks, runs, and creative meetups.</p>
+          </div>
+
+          <div class="template-item" onclick="loadEmail('emails/template_event_pass_reminder.html', this)">
+            <h4>4. Event Reminder & QR Pass</h4>
+            <p>24h automated reminder with styled digital pass and attendee QR code.</p>
+          </div>
+        </div>
+
+        <div>
+          <div class="viewport-controls">
+            <div>
+              <span id="currentEmailName" style="font-weight: 700; font-size: 15px;">Template: Leader Invitation & Pitch</span>
+            </div>
+            <div class="viewport-buttons">
+              <button class="btn-vp active" onclick="setViewport('desktop', this)">🖥️ Desktop (640px)</button>
+              <button class="btn-vp" onclick="setViewport('mobile', this)">📱 Mobile (375px)</button>
+              <a id="btnOpenTab" href="emails/template_leader_invitation.html" target="_blank" class="btn-vp" style="text-decoration: none;">↗ Open Standalone</a>
+            </div>
+          </div>
+
+          <div class="preview-frame-wrap">
+            <iframe id="emailFrame" src="emails/template_leader_invitation.html"></iframe>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: SOCIAL MEDIA POSTS -->
+    <section id="tab-social" class="tab-content">
+      <h2 style="font-size: 22px; font-weight: 800; margin-bottom: 20px; font-family: 'Outfit';">Ready-to-Publish Social Media Campaigns</h2>
+      
+      <div class="grid-cards">
+        
+        <!-- Post 1 -->
+        <div class="social-card">
+          <div class="social-header">
+            <span class="platform-tag" style="background: rgba(225, 48, 108, 0.2); color: #f43f5e;">Instagram Carousel</span>
+            <span style="font-size: 11px; color: var(--text-muted);">6 Slides (1080x1350)</span>
+          </div>
+          <h3>"The £240 Meetup Tax"</h3>
+          <div class="meta">Hook: Why are we charging community organizers £240 a year?</div>
+          <div class="copy-box" id="copy-ig-1">If you run a running club, book circle, walking group, or social meetup in Tunbridge Wells: thank you. 🙌
+
+Bringing people together in real life is essential work. It fights isolation, creates lifelong friendships, and makes our town feel alive.
+
+So why on earth does traditional software charge local organizers £200+ a year just for the privilege of hosting?
+
+We think that model is broken.
+
+That’s why we built @morecommunity.app:
+✅ Dedicated public microsite for your group
+✅ Clean RSVPs and automatic waitlists (no more counting hands in WhatsApp!)
+✅ 1-second QR check-ins on your phone
+✅ 100% Free Forever for local leaders. No catches. No ads. No fees.
+
+We’ve already set up draft pages for dozens of Tunbridge Wells groups. Tap the link in our bio to claim yours, or drop us a DM and we’ll set it up over a coffee at The Pantiles! ☕🌲
+
+#TunbridgeWells #RoyalTunbridgeWells #TWells #KentLife #CommunityFirst #ThePantiles</div>
+          <button class="btn-copy" onclick="copyText('copy-ig-1', this)">📋 Copy Caption</button>
+        </div>
+
+        <!-- Post 2 -->
+        <div class="social-card">
+          <div class="social-header">
+            <span class="platform-tag" style="background: rgba(225, 48, 108, 0.2); color: #f43f5e;">Instagram Carousel</span>
+            <span style="font-size: 11px; color: var(--text-muted);">7 Slides (Discovery)</span>
+          </div>
+          <h3>"10 Free Clubs You Didn't Know Existed in TW"</h3>
+          <div class="meta">Hook: Making new friends in Tunbridge Wells as an adult</div>
+          <div class="copy-box" id="copy-ig-2">Tunbridge Wells has so much more going on than people realise. 🌲✨
+
+Whether you’ve lived here for 10 years or just moved down from London, making new friends as an adult shouldn’t feel intimidating.
+
+Here are 8 incredible local communities meeting up this month — all free, all welcoming, all in real life.
+
+Swipe through for times and locations! 👉
+
+Want the direct RSVP links, meeting point maps, and reminder passes for all of these? Tap the link in our bio to browse @morecommunity.app.
+
+Which one are you trying first? Tell us below! 👇
+
+#TunbridgeWells #TunbridgeWellsMums #TunbridgeWellsRunners #Pantiles #CalverleyGrounds #DunorlanPark #KentWalks #KentCreatives</div>
+          <button class="btn-copy" onclick="copyText('copy-ig-2', this)">📋 Copy Caption</button>
+        </div>
+
+        <!-- Post 3 -->
+        <div class="social-card">
+          <div class="social-header">
+            <span class="platform-tag" style="background: rgba(10, 102, 194, 0.2); color: #60a5fa;">LinkedIn Founder Post</span>
+            <span style="font-size: 11px; color: var(--text-muted);">Founder Voice / Matt Fenton</span>
+          </div>
+          <h3>"The Economics of Community in Tunbridge Wells"</h3>
+          <div class="meta">Topic: The £240 software penalty on volunteer hosts</div>
+          <div class="copy-box" id="copy-li-1">Last week, I spoke with a community leader in Tunbridge Wells who organizes a free weekly walking group for 50+ local residents.
+
+She plans the routes.
+She scouts wheelchair and dog-friendly paths.
+She waits at the car park to make sure no nervous newcomer walks alone.
+
+Then she opened her laptop and showed me her annual bill:
+Meetup.com was charging her £228 a year.
+
+Think about that for a second.
+
+A volunteer, doing unpaid civic work that directly fights the UK's loneliness epidemic, being taxed over £200 a year just to list meeting dates.
+
+We built More Community (morecommunity.app) on three unbreakable principles:
+1. 100% Free Forever for Leaders
+2. Respect Member Attention (Zero spam feeds)
+3. Focused on In-Person Check-Ins
+
+If you know a community organizer in Tunbridge Wells or Kent who deserves better tools and zero fees, send them my way.
+
+#Community #SocialImpact #TunbridgeWells #TechForGood #Kent</div>
+          <button class="btn-copy" onclick="copyText('copy-li-1', this)">📋 Copy Caption</button>
+        </div>
+
+        <!-- Post 4 -->
+        <div class="social-card">
+          <div class="social-header">
+            <span class="platform-tag" style="background: rgba(37, 211, 102, 0.2); color: #34d399;">WhatsApp Group Card</span>
+            <span style="font-size: 11px; color: var(--text-muted);">Organizer-to-Group</span>
+          </div>
+          <h3>"The WhatsApp Event Drop"</h3>
+          <div class="meta">Use: Post directly into existing WhatsApp chats</div>
+          <div class="copy-box" id="copy-wa-1">Hey everyone! 👋 For this week’s meetup on [Day], we’ve set up our new event page on More Community so we don't lose the details in the chat:
+
+👉 https://www.morecommunity.app/community/[id]
+
+Please tap the link to RSVP in 1 tap so we have an exact headcount for the cafe/venue! Can't wait to see you all ☕✨</div>
+          <button class="btn-copy" onclick="copyText('copy-wa-1', this)">📋 Copy Snippet</button>
+        </div>
+
+        <!-- Post 5 -->
+        <div class="social-card">
+          <div class="social-header">
+            <span class="platform-tag" style="background: rgba(24, 119, 242, 0.2); color: #60a5fa;">Facebook Group / Nextdoor</span>
+            <span style="font-size: 11px; color: var(--text-muted);">TW Residents & Grapevine</span>
+          </div>
+          <h3>"Local Grapevine Community Announcement"</h3>
+          <div class="meta">Tone: Friendly resident, helpful, anti-sales</div>
+          <div class="copy-box" id="copy-fb-1">Hi everyone! 👋
+
+A few fellow locals and I have been working on something to help celebrate all the brilliant clubs, walking groups, and meetups in Tunbridge Wells.
+
+We noticed how hard it is to find out what’s actually happening in town unless you’re already in 15 different private WhatsApp groups or paying for Meetup.com.
+
+So we’ve built More Community (morecommunity.app) — a free local hub for Tunbridge Wells where you can browse local clubs (from beginners running at Dunorlan, to dog walks at Broadwater Warren, to creative circles at Trinity) and RSVP for free with zero fuss.
+
+And for any local hosts or club organizers: the platform is 100% free forever (no organizer subscriptions, no ticketing fees, no ads).
+
+Take a browse here if you're looking for things to do this weekend:
+👉 https://www.morecommunity.app/discover
+
+If you run a local group in TW and would like your free page set up, feel free to drop me a comment or PM! Have a lovely weekend all ☕🌲</div>
+          <button class="btn-copy" onclick="copyText('copy-fb-1', this)">📋 Copy Post</button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- TAB 3: VISUAL CREATIVE ASSETS -->
+    <section id="tab-assets" class="tab-content">
+      <h2 style="font-size: 22px; font-weight: 800; margin-bottom: 20px; font-family: 'Outfit';">High-Resolution Marketing Creative Assets</h2>
+      
+      <div class="assets-grid">
+        
+        <div class="asset-card">
+          <img src="assets/the_pantiles_coffee_banner.jpg" class="asset-preview" alt="The Pantiles Meetup">
+          <div class="asset-info">
+            <h4>The Pantiles Coffee Meetup Banner</h4>
+            <p>Cinematic editorial photography of friends gathering on The Pantiles cafe colonnade on a sunny morning.</p>
+            <div class="asset-specs">DIMENSIONS: 1920 × 1080 (16:9) • EMAIL HEADER / HERO</div>
+            <a href="assets/the_pantiles_coffee_banner.jpg" download class="btn-copy" style="text-decoration: none;">⬇️ Download Full Asset</a>
+          </div>
+        </div>
+
+        <div class="asset-card">
+          <img src="assets/tw_community_hero.jpg" class="asset-preview" alt="Tunbridge Wells Friends">
+          <div class="asset-info">
+            <h4>Tunbridge Wells Community Group</h4>
+            <p>Diverse friends walking together in historic Georgian town park. Warm, uplifting authentic community vibes.</p>
+            <div class="asset-specs">DIMENSIONS: 1080 × 1080 (1:1) • INSTAGRAM COVER / ADS</div>
+            <a href="assets/tw_community_hero.jpg" download class="btn-copy" style="text-decoration: none;">⬇️ Download Full Asset</a>
+          </div>
+        </div>
+
+        <div class="asset-card">
+          <img src="assets/social_badge_free_forever.jpg" class="asset-preview" alt="100% Free Forever Badge">
+          <div class="asset-info">
+            <h4>100% Free Forever Leader Seal</h4>
+            <p>Modern dark-slate neon emblem guaranteeing zero fees, zero ads, and zero organizer subscriptions.</p>
+            <div class="asset-specs">DIMENSIONS: 1080 × 1080 (1:1) • CAMPAIGN BADGE / STORY</div>
+            <a href="assets/social_badge_free_forever.jpg" download class="btn-copy" style="text-decoration: none;">⬇️ Download Full Asset</a>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- TAB 4: OUTREACH PLAYBOOKS -->
+    <section id="tab-playbooks" class="tab-content">
+      <h2 style="font-size: 22px; font-weight: 800; margin-bottom: 20px; font-family: 'Outfit';">Core Strategy & Execution Documents</h2>
+      <div class="grid-cards">
+        <div class="social-card">
+          <h3>📧 Email Marketing Collateral</h3>
+          <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
+            Complete automated lifecycle sequences, cold & warm leader conversion flows, member retention digests, and UK PECR/GDPR compliance specs.
+          </p>
+          <a href="email_marketing_collateral.md" class="btn-copy" style="text-decoration: none;">📖 View email_marketing_collateral.md</a>
+        </div>
+
+        <div class="social-card">
+          <h3>📱 Social Media Suite</h3>
+          <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
+            Slide-by-slide Instagram carousels, founder LinkedIn thought leadership, Facebook grapevine copy, and forwardable WhatsApp cards.
+          </p>
+          <a href="social_media_collateral.md" class="btn-copy" style="text-decoration: none;">📖 View social_media_collateral.md</a>
+        </div>
+
+        <div class="social-card">
+          <h3>🎯 4-Touch Outreach Sequences</h3>
+          <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
+            Word-for-word DM, Email & Phone outreach sequences with 4 key objection handlers for WhatsApp & Meetup.com users.
+          </p>
+          <a href="outreach_playbooks.md" class="btn-copy" style="text-decoration: none;">📖 View outreach_playbooks.md</a>
+        </div>
+
+        <div class="social-card">
+          <h3>🖨️ Physical Print Specs</h3>
+          <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
+            A5 Leader Flyers, Cafe Coasters, and Table Talker specifications for local Tunbridge Wells coffee shops.
+          </p>
+          <a href="print_collateral_specs.md" class="btn-copy" style="text-decoration: none;">📖 View print_collateral_specs.md</a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+      
+      document.getElementById('tab-' + tabId).classList.add('active');
+      event.target.classList.add('active');
+    }
+
+    function loadEmail(url, element) {
+      document.querySelectorAll('.template-item').forEach(el => el.classList.remove('active'));
+      element.classList.add('active');
+      
+      const frame = document.getElementById('emailFrame');
+      frame.src = url;
+      document.getElementById('btnOpenTab').href = url;
+      document.getElementById('currentEmailName').textContent = 'Template: ' + element.querySelector('h4').textContent;
+    }
+
+    function setViewport(type, btn) {
+      document.querySelectorAll('.btn-vp').forEach(el => el.classList.remove('active'));
+      btn.classList.add('active');
+      const frame = document.getElementById('emailFrame');
+      if (type === 'mobile') {
+        frame.style.width = '375px';
+      } else {
+        frame.style.width = '640px';
+      }
+    }
+
+    function copyText(elementId, btn) {
+      const text = document.getElementById(elementId).innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '✅ Copied to Clipboard!';
+        btn.style.backgroundColor = '#059669';
+        setTimeout(() => {
+          btn.innerHTML = originalText;
+          btn.style.backgroundColor = '';
+        }, 2000);
+      });
+    }
+  </script>
+</body>
+</html>

@@ -11,6 +11,7 @@ import dynamic from 'next/dynamic';
 const MapView = dynamic(() => import('../components/MapView'), { ssr: false, loading: () => <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--slate-500)' }}>Loading map...</div> });
 import AppHeader from '../components/AppHeader';
 import SwipeDiscovery from '../components/SwipeDiscovery';
+import { isEventUpcoming } from '../lib/calendar';
 
 export default function Discover() {
   const { communities, user, users, communityMemberships, joinCommunity, isLoading, events, getAffinityScore, sponsors, sponsorshipAssignments } = useAppContext();
@@ -302,7 +303,7 @@ export default function Discover() {
       {viewMode === 'swipe' ? (
         <div style={{ padding: '0 20px', flex: 1, position: 'relative' }}>
           <SwipeDiscovery 
-            events={events.filter(e => !user.joinedCommunities.includes(e.communityId))} 
+            events={events.filter(e => isEventUpcoming(e) && !user.joinedCommunities.includes(e.communityId))} 
             communities={communities} 
             onSave={(event) => {
               // Handled inside SwipeDiscovery

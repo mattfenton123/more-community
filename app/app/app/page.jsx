@@ -3,12 +3,14 @@ import { useMemo, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppContext } from '../../src/context/AppContext';
 import { useFeed } from '../../src/context/FeedContext';
-import { Heart, MessageCircle, Share2, Calendar, MapPin, Clock, Compass, Plus, Megaphone, Edit3, Briefcase, ChevronUp, Shield, ArrowRight, Sparkles } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Calendar, MapPin, Clock, Compass, Plus, Megaphone, Edit3, Briefcase, ChevronUp, Shield, ArrowRight, Sparkles, Archive } from 'lucide-react';
 import { SkeletonList, SkeletonCard } from '../../src/components/SkeletonCard';
 import InlineComments from '../../src/components/InlineComments';
 import AppHeader from '../../src/components/AppHeader';
 import GettingStarted from '../../src/views/GettingStarted';
 import { useToast } from '../../src/components/Toast';
+import { isEventUpcoming, isEventPast } from '../../src/lib/calendar';
+import { cleanLocationName } from '../../src/lib/location';
 
 export default function HomeFeed() {
   const { user, communities, events, users, eventRsvps, isLoading, notifications, sponsors, sponsorshipAssignments } = useAppContext();
@@ -133,7 +135,12 @@ export default function HomeFeed() {
         const isMemberOfCollab = event.collabCommunityIds?.some(id => user?.joinedCommunities?.includes(id));
         
         if (isMemberOfPrimary || isMemberOfCollab) {
-          if (activeFeedTab === 'Feed' || activeFeedTab === 'Events') {
+          const isUpcoming = isEventUpcoming(event);
+          if (activeFeedTab === 'Events') {
+            if (isUpcoming) {
+              items.push({ type: 'event', id: `event-${event.id}`, data: event, timestamp: new Date(event.createdAt || event.date).getTime() });
+            }
+          } else if (activeFeedTab === 'Feed') {
             items.push({ type: 'event', id: `event-${event.id}`, data: event, timestamp: new Date(event.createdAt || event.date).getTime() });
           }
         }
@@ -581,37 +588,74 @@ export default function HomeFeed() {
 
           if (item.type === 'event') {
             const event = item.data;
+            const isUpcoming = isEventUpcoming(event);
             const rsvps = eventRsvps[event.id] || [];
             const community = communities?.find(c => c.id === event.communityId);
             return (
-              <div key={item.id} style={{ background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(10px)', border: '1px solid rgba(20,184,166,0.4)', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 8px 24px rgba(0,0,0,0.2)' }}>
+              <div key={item.id} style={{
+                background: isUpcoming ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.015)',
+                backdropFilter: 'blur(10px)',
+                border: isUpcoming ? '1px solid rgba(20,184,166,0.4)' : '1px solid rgba(255,255,255,0.08)',
+                borderRadius: '16px',
+                overflow: 'hidden',
+                boxShadow: isUpcoming ? '0 8px 24px rgba(0,0,0,0.2)' : '0 4px 16px rgba(0,0,0,0.1)',
+                opacity: isUpcoming ? 1 : 0.85
+              }}>
                 <div 
                   onClick={(e) => {
                     e.stopPropagation();
                     if (community?.id) router.push(`/community/${community.id}`);
                   }}
                   className="interactive-press"
-                  style={{ padding: '12px 16px', background: 'linear-gradient(to right, rgba(20,184,166,0.15), transparent)', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', color: 'var(--teal-400)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', cursor: 'pointer' }}
+                  style={{
+                    padding: '12px 16px',
+                    background: isUpcoming ? 'linear-gradient(to right, rgba(20,184,166,0.15), transparent)' : 'linear-gradient(to right, rgba(148,163,184,0.1), transparent)',
+                    display: 'flex', alignItems: 'center', gap: '8px',
+                    fontSize: '0.85rem',
+                    color: isUpcoming ? 'var(--teal-400)' : 'var(--slate-400)',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    cursor: 'pointer'
+                  }}
                 >
-                  <Calendar size={16} /> Upcoming in {community?.name}
+                  {isUpcoming ? (
+                    <>
+                      <Calendar size={16} /> Upcoming in {community?.name}
+                    </>
+                  ) : (
+                    <>
+                      <Archive size={16} /> Past Event • Archived in {community?.name}
+                    </>
+                  )}
                 </div>
                 <div onClick={() => router.push(`/events/${event.id}`)} className="interactive-press" style={{ cursor: 'pointer' }}>
                   {event.image && (
                     <div style={{ height: '160px', background: `url(${event.image})`, backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative' }}>
                       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 40%, rgba(15,23,42,0.9))' }}></div>
-                      <div style={{ position: 'absolute', bottom: '16px', left: '16px', background: 'rgba(20,184,166,1)', padding: '6px 12px', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 800, color: 'var(--white)', boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }}>
-                        {event.date}
+                      <div style={{
+                        position: 'absolute', bottom: '16px', left: '16px',
+                        background: isUpcoming ? 'rgba(20,184,166,1)' : 'rgba(71,85,105,0.9)',
+                        padding: '6px 12px', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 800, color: 'var(--white)',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+                        display: 'flex', alignItems: 'center', gap: '6px'
+                      }}>
+                        {!isUpcoming && <Archive size={13} />}
+                        {isUpcoming ? event.date : `Ended • ${event.date}`}
                       </div>
                     </div>
                   )}
                   <div style={{ padding: '20px 16px' }}>
                     <div style={{ fontWeight: 800, fontSize: '1.2rem', color: 'var(--white)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                       {event.title}
+                      {!isUpcoming && (
+                        <span style={{ fontSize: '0.65rem', background: 'rgba(148,163,184,0.2)', color: 'var(--slate-300)', padding: '3px 8px', borderRadius: '6px', fontWeight: 700, textTransform: 'uppercase' }}>Archived</span>
+                      )}
                       {event.collabCommunityIds?.length > 0 && <span style={{ fontSize: '0.65rem', background: 'var(--teal-500)', color: 'var(--white)', padding: '4px 8px', borderRadius: '6px', fontWeight: 800, textTransform: 'uppercase' }}>Collab</span>}
                     </div>
                     <div style={{ display: 'flex', gap: '20px', fontSize: '0.85rem', color: 'var(--slate-300)', marginBottom: '12px', fontWeight: 500 }}>
                       <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Clock size={16} color="var(--slate-400)" /> {event.time}</span>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><MapPin size={16} color="var(--slate-400)" /> {event.location}</span>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><MapPin size={16} color="var(--slate-400)" /> {cleanLocationName(event.location)}</span>
                     </div>
                     {event.description && (
                       <p style={{ margin: '0 0 16px 0', fontSize: '0.95rem', color: 'var(--slate-400)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: 1.5 }}>{event.description}</p>

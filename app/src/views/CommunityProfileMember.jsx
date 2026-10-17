@@ -1,6 +1,6 @@
 "use client";
 import { useState } from 'react';
-import { ChevronLeft, Share2, Users, Calendar, Settings, ChevronDown, ChevronUp, Image as ImageIcon, ExternalLink, Camera, Mail, Activity, Sparkles, MapPin, Clock, Star, MessageCircle, Heart, BadgeCheck, Briefcase, Check, X, Lightbulb, PieChart, BarChart3 } from 'lucide-react';
+import { ChevronLeft, Share2, Users, Calendar, Settings, ChevronDown, ChevronUp, Image as ImageIcon, ExternalLink, Camera, Mail, Activity, Sparkles, MapPin, Clock, Star, MessageCircle, Heart, BadgeCheck, Briefcase, Check, X, Lightbulb, PieChart, BarChart3, Archive } from 'lucide-react';
 import { useRouter as useNavigate, useParams } from 'next/navigation';
 import { useAppContext } from '../context/AppContext';
 import { useFeed } from '../context/FeedContext';
@@ -13,6 +13,7 @@ import CreateServiceModal from '../components/CreateServiceModal';
 import CreateIdeaModal from '../components/CreateIdeaModal';
 import { useRef } from 'react';
 import AppHeader from '../components/AppHeader';
+import { isEventUpcoming, isEventPast, parseEventDateTime } from '../lib/calendar';
 
 // Category-specific gallery photos (generated unique images)
 const IMG = '/images/communities';
@@ -123,9 +124,12 @@ export default function CommunityProfile() {
                    user?.isAdmin ||
                    (communityMemberships[communityId] || []).some(m => (m.userId === user?.id || m.user_id === user?.id) && (m.role === 'co-founder' || m.role === 'Leader' || m.role === 'Co-Leader' || m.role === 'Admin'));
   const communityEvents = events.filter(e => e.communityId === communityId);
-  const upcomingEvents = communityEvents.filter(e => {
-    try { return new Date(e.date) >= new Date(); } catch { return true; }
-  });
+  const upcomingEvents = communityEvents
+    .filter(e => isEventUpcoming(e))
+    .sort((a, b) => parseEventDateTime(a.date, a.time) - parseEventDateTime(b.date, b.time));
+  const pastEvents = communityEvents
+    .filter(e => isEventPast(e))
+    .sort((a, b) => parseEventDateTime(b.date, b.time) - parseEventDateTime(a.date, a.time));
   const leaderUser = users.find(u => u.id === community.leader_id);
   const memberList = (communityMemberships[communityId] || []).map(m => users.find(u => u.id === m.userId || u.id === m.user_id)).filter(Boolean);
   const SEED_COMMUNITY_IDS = [
@@ -138,7 +142,7 @@ export default function CommunityProfile() {
   const dbPhotos = (community.gallery_photos || []).map(p => typeof p === 'string' ? { url: p, uploaderId: null } : p);
   const stockPhotos = isDemoCommunity && dbPhotos.length === 0 ? GALLERY_PHOTOS[galleryType].map(url => ({ url, uploaderId: 'stock' })) : [];
   const galleryPhotos = dbPhotos.length > 0 ? dbPhotos : stockPhotos;
-  const nextEvent = upcomingEvents[0] || communityEvents[0];
+  const nextEvent = upcomingEvents[0] || null;
 
   const handleShare = async () => {
     setShowShareModal(true);
@@ -497,19 +501,19 @@ export default function CommunityProfile() {
         {/* ===== EVENTS TAB ===== */}
         {activeTab === 'events' && (
           <>
-            <h3 style={{ fontSize: '1.3rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: '0 0 16px 0' }}>
-              Upcoming Events ({communityEvents.length})
+            <h3 style={{ fontSize: '1.3rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: '0 0 16px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Calendar size={20} color="var(--teal-400)" /> Upcoming Events ({upcomingEvents.length})
             </h3>
-            {communityEvents.length > 0 ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                {communityEvents.map(event => {
+            {upcomingEvents.length > 0 ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '32px' }}>
+                {upcomingEvents.map(event => {
                   const rsvps = eventRsvps[event.id] || [];
                   return (
-                    <div key={event.id} onClick={() => navigate.push(`/events/${event.id}`)} className="interactive-press" style={{ borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)', cursor: 'pointer' }}>
+                    <div key={event.id} onClick={() => navigate.push(`/events/${event.id}`)} className="interactive-press" style={{ borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(20,184,166,0.3)', background: 'rgba(255,255,255,0.02)', cursor: 'pointer' }}>
                       {event.image && (
                         <div style={{ height: '140px', background: `url(${event.image})`, backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative' }}>
                           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.6))' }}></div>
-                          <div style={{ position: 'absolute', bottom: '10px', left: '12px', background: 'rgba(20,184,166,0.9)', padding: '4px 10px', borderRadius: '6px', fontSize: '0.7rem', fontWeight: 700, color: 'var(--white)' }}>
+                          <div style={{ position: 'absolute', bottom: '10px', left: '12px', background: 'rgba(20,184,166,0.95)', padding: '4px 10px', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 700, color: 'var(--white)' }}>
                             {event.date}
                           </div>
                         </div>
@@ -540,11 +544,54 @@ export default function CommunityProfile() {
                 })}
               </div>
             ) : (
-              <div style={{ padding: '40px 20px', textAlign: 'center', background: 'rgba(255,255,255,0.02)', borderRadius: '16px', border: '1px dashed rgba(255,255,255,0.1)' }}>
-                <div style={{ fontSize: '2rem', marginBottom: '12px' }}>📅</div>
-                <p style={{ color: 'var(--slate-400)', margin: 0 }}>No events scheduled yet. Check back soon!</p>
+              <div style={{ padding: '32px 20px', textAlign: 'center', background: 'rgba(255,255,255,0.02)', borderRadius: '16px', border: '1px dashed rgba(255,255,255,0.1)', marginBottom: '32px' }}>
+                <div style={{ fontSize: '2rem', marginBottom: '8px' }}>📅</div>
+                <p style={{ color: 'var(--slate-400)', margin: 0, fontSize: '0.9rem' }}>No upcoming events scheduled right now.</p>
               </div>
             )}
+
+            {pastEvents.length > 0 && (
+              <>
+                <h3 style={{ fontSize: '1.2rem', fontFamily: 'var(--font-heading)', color: 'var(--slate-300)', margin: '0 0 14px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Archive size={18} color="var(--slate-400)" /> Past Events & Archive ({pastEvents.length})
+                </h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                  {pastEvents.map(event => {
+                    const rsvps = eventRsvps[event.id] || [];
+                    const wentCount = rsvps.filter(r => r.status === 'going').length;
+                    return (
+                      <div key={event.id} onClick={() => navigate.push(`/events/${event.id}`)} className="interactive-press" style={{ borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.015)', opacity: 0.85, cursor: 'pointer' }}>
+                        {event.image && (
+                          <div style={{ height: '120px', background: `url(${event.image})`, backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative' }}>
+                            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.7))' }}></div>
+                            <div style={{ position: 'absolute', bottom: '10px', left: '12px', background: 'rgba(71,85,105,0.9)', padding: '4px 8px', borderRadius: '6px', fontSize: '0.7rem', fontWeight: 700, color: 'var(--white)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              <Archive size={12} /> Ended • {event.date}
+                            </div>
+                            <div style={{ position: 'absolute', top: '10px', right: '12px', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', color: 'var(--slate-300)', padding: '3px 8px', borderRadius: '6px', fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase' }}>
+                              Archived
+                            </div>
+                          </div>
+                        )}
+                        <div style={{ padding: '14px 16px' }}>
+                          <div style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--white)', marginBottom: '4px' }}>{event.title}</div>
+                          <div style={{ display: 'flex', gap: '14px', fontSize: '0.75rem', color: 'var(--slate-400)', marginBottom: '6px' }}>
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={13} /> {event.time}</span>
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><MapPin size={13} /> {event.location}</span>
+                          </div>
+                          {wentCount > 0 && (
+                            <div style={{ fontSize: '0.75rem', color: 'var(--teal-400)', fontWeight: 600 }}>
+                              {wentCount} {wentCount === 1 ? 'member attended' : 'members attended'}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+          </>
+        )}
           </>
         )}
 

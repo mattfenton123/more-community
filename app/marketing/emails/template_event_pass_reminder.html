@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Event Pass for {{event_title}}</title>
+  <style type="text/css">
+    body { margin: 0; padding: 0; background-color: #090d16; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    table { border-collapse: separate; }
+    td { font-size: 15px; line-height: 24px; color: #cbd5e1; }
+    a { color: #2dd4bf; text-decoration: none; }
+    @media only screen and (max-width: 620px) {
+      .container { width: 100% !important; padding: 12px !important; }
+      .mobile-padding { padding: 24px 18px !important; }
+    }
+  </style>
+</head>
+<body style="margin: 0; padding: 0; background-color: #090d16;">
+  <center style="width: 100%; background-color: #090d16; padding-top: 32px; padding-bottom: 48px;">
+    
+    <!-- Preheader -->
+    <div style="display: none; font-size: 1px; line-height: 1px; max-height: 0px; max-width: 0px; opacity: 0; overflow: hidden; mso-hide: all;">
+      Your check-in pass for tomorrow's meetup: {{event_title}} at {{event_location}}.
+    </div>
+
+    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; margin: 0 auto; background-color: #0f172a; border-radius: 16px; border: 1px solid #1e293b; overflow: hidden;" class="container">
+      
+      <!-- Top Brand Bar -->
+      <tr>
+        <td style="padding: 20px 32px; background-color: #090d16; border-bottom: 1px solid #1e293b;">
+          <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+            <tr>
+              <td>
+                <span style="font-size: 24px; font-weight: 800; color: #ffffff;">more<span style="color: #14b8a6;">.</span></span>
+                <span style="font-size: 12px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 1.5px; margin-left: 8px;">Event Pass</span>
+              </td>
+              <td align="right">
+                <span style="display: inline-block; padding: 4px 10px; background-color: #064e3b; border-radius: 999px; color: #34d399; font-size: 11px; font-weight: 700;">RSVP Confirmed</span>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+
+      <!-- Body Content -->
+      <tr>
+        <td style="padding: 32px 32px 20px 32px;" class="mobile-padding">
+          <p style="margin: 0 0 6px 0; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; color: #14b8a6;">
+            See you tomorrow!
+          </p>
+          <h1 style="margin: 0 0 16px 0; font-size: 26px; line-height: 34px; font-weight: 800; color: #f8fafc; letter-spacing: -0.5px;">
+            {{event_title}}
+          </h1>
+          <p style="margin: 0 0 24px 0; font-size: 15px; line-height: 25px; color: #cbd5e1;">
+            Hi {{first_name}}, this is your friendly reminder that you’re attending tomorrow’s meetup with <strong>{{community_name}}</strong> in Tunbridge Wells!
+          </p>
+
+          <!-- Digital Ticket Pass Container -->
+          <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #090d16; border-radius: 16px; border: 2px dashed #0f766e; margin-bottom: 24px; overflow: hidden;">
+            
+            <!-- Pass Header -->
+            <tr>
+              <td style="padding: 20px 24px; background: linear-gradient(135deg, #0f766e, #115e59); color: #ffffff;">
+                <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                  <tr>
+                    <td>
+                      <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.85;">Official Attendee Pass</span>
+                      <h2 style="margin: 4px 0 0 0; font-size: 20px; font-weight: 800; color: #ffffff;">{{event_title}}</h2>
+                    </td>
+                    <td align="right" style="vertical-align: top;">
+                      <span style="font-size: 22px;">🎟️</span>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- Pass Details Grid -->
+            <tr>
+              <td style="padding: 24px;">
+                <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 20px;">
+                  <tr>
+                    <td style="padding-bottom: 12px; width: 50%; vertical-align: top;">
+                      <span style="font-size: 11px; color: #94a3b8; font-weight: 700; text-transform: uppercase;">Date & Time</span>
+                      <p style="margin: 4px 0 0 0; font-size: 15px; font-weight: 700; color: #f8fafc;">
+                        📅 {{event_date}} at {{event_time}}
+                      </p>
+                    </td>
+                    <td style="padding-bottom: 12px; width: 50%; vertical-align: top;">
+                      <span style="font-size: 11px; color: #94a3b8; font-weight: 700; text-transform: uppercase;">Attendee</span>
+                      <p style="margin: 4px 0 0 0; font-size: 15px; font-weight: 700; color: #f8fafc;">
+                        👤 {{first_name}} {{last_name}}
+                      </p>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colspan="2" style="padding-top: 8px;">
+                      <span style="font-size: 11px; color: #94a3b8; font-weight: 700; text-transform: uppercase;">Exact Meeting Location</span>
+                      <p style="margin: 4px 0 0 0; font-size: 15px; font-weight: 700; color: #2dd4bf;">
+                        📍 {{event_location}}
+                      </p>
+                      <p style="margin: 4px 0 0 0; font-size: 13px; color: #94a3b8;">
+                        <em>Note: Look out for the More Community sign / our host {{host_name}}!</em>
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+
+                <!-- QR Code Box -->
+                <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #ffffff; border-radius: 12px; padding: 20px; text-align: center; margin: 0 auto;">
+                  <tr>
+                    <td align="center">
+                      <!-- High Contrast Stylized QR Image Mockup -->
+                      <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=https%3A%2F%2Fmorecommunity.app%2Fcheckin%2F{{ticket_id}}&color=0f172a" alt="Check-in QR Code" width="160" height="160" style="display: block; margin: 0 auto;" />
+                      <p style="margin: 10px 0 0 0; font-size: 12px; font-weight: 700; color: #0f172a; letter-spacing: 1px; font-family: monospace;">
+                        PASS #{{ticket_id}}
+                      </p>
+                      <p style="margin: 2px 0 0 0; font-size: 11px; color: #64748b;">
+                        Show this screen to the host for 1-second check-in
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+
+              </td>
+            </tr>
+          </table>
+
+          <!-- Calendar & Directions Action Buttons -->
+          <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 24px;">
+            <tr>
+              <td align="center">
+                <a href="{{calendar_url}}" style="display: inline-block; padding: 12px 24px; background-color: #1e293b; color: #ffffff; font-size: 14px; font-weight: 600; border-radius: 8px; text-decoration: none; border: 1px solid #334155; margin-right: 8px;">
+                  📅 Add to Calendar (.ics)
+                </a>
+                <a href="https://maps.google.com/?q={{event_location_encoded}}" style="display: inline-block; padding: 12px 24px; background-color: #1e293b; color: #ffffff; font-size: 14px; font-weight: 600; border-radius: 8px; text-decoration: none; border: 1px solid #334155;">
+                  🗺️ Google Maps Pin
+                </a>
+              </td>
+            </tr>
+          </table>
+
+          <!-- Change of Plans notice -->
+          <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #131c31; border-radius: 10px; border: 1px solid #1e293b; margin-bottom: 16px;">
+            <tr>
+              <td style="padding: 16px;">
+                <p style="margin: 0; font-size: 13px; line-height: 20px; color: #94a3b8;">
+                  Can no longer make it? No problem at all! Please <a href="https://www.morecommunity.app/events/{{event_id}}/cancel" style="color: #f87171; text-decoration: underline;">click here to release your spot</a> so someone on the waitlist can join.
+                </p>
+              </td>
+            </tr>
+          </table>
+
+        </td>
+      </tr>
+
+      <!-- Footer -->
+      <tr>
+        <td style="padding: 24px 32px; background-color: #090d16; border-top: 1px solid #1e293b; text-align: center;">
+          <p style="margin: 0; font-size: 11px; color: #64748b;">
+            More Community Tunbridge Wells • See you in real life!
+          </p>
+        </td>
+      </tr>
+
+    </table>
+  </center>
+</body>
+</html>

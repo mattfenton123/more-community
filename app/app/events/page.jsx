@@ -1,13 +1,15 @@
 "use client";
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Calendar as CalIcon, MapPin, Search, X, CheckCircle2, CreditCard, Check, Ticket, Users, QrCode, Share, Sparkles, Navigation, ChevronRight, ChevronsRight } from 'lucide-react';
+import { Calendar as CalIcon, MapPin, Search, X, CheckCircle2, CreditCard, Check, Ticket, Users, QrCode, Share, Sparkles, Navigation, ChevronRight, ChevronsRight, Archive } from 'lucide-react';
 import { useAppContext } from '../../src/context/AppContext';
 import { SkeletonList, SkeletonEvent } from '../../src/components/SkeletonCard';
 import { useToast } from '../../src/components/Toast';
 import DigitalTicket from '../../src/components/DigitalTicket';
 import AppHeader from '../../src/components/AppHeader';
 import SwipeDiscovery from '../../src/components/SwipeDiscovery';
+import { isEventUpcoming, isEventPast, parseEventDateTime } from '../../src/lib/calendar';
+import { cleanLocationName } from '../../src/lib/location';
 
 export default function EventsHub() {
   const router = useRouter();
@@ -23,17 +25,10 @@ export default function EventsHub() {
   const [searchQuery, setSearchQuery] = useState('');
   const [dateFilter, setDateFilter] = useState('all');
 
-  // Sort events chronologically (soonest first, past at end)
+  // Sort events chronologically (soonest first)
   const sortByDate = (list) => {
-    const now = new Date();
     return [...list].sort((a, b) => {
-      const da = new Date(a.date + 'T00:00:00');
-      const db = new Date(b.date + 'T00:00:00');
-      const aFuture = da >= now;
-      const bFuture = db >= now;
-      if (aFuture && !bFuture) return -1;
-      if (!aFuture && bFuture) return 1;
-      return da - db;
+      return parseEventDateTime(a.date, a.time) - parseEventDateTime(b.date, b.time);
     });
   };
 
@@ -83,15 +78,29 @@ export default function EventsHub() {
   const myRsvpEventIds = Object.keys(eventRsvps).filter(eventId => 
     eventRsvps[eventId]?.some(r => r.userId === user?.id)
   );
-  const userEvents = sortByDate(filterByDate(filterBySearch(events.filter(e => myRsvpEventIds.includes(e.id) || user?.joinedCommunities?.includes(e.communityId)))));
-  const exploreEvents = sortByDate(filterByDate(filterBySearch(events.filter(e => !user?.joinedCommunities?.includes(e.communityId)))));
 
-  const recommendedEvents = sortByDate(filterBySearch(exploreEvents.filter(e => {
+  const allUserEvents = filterByDate(filterBySearch(events.filter(e => (myRsvpEventIds.includes(e.id) || user?.joinedCommunities?.includes(e.communityId)) && e.status !== 'cancelled')));
+  const upcomingUserEvents = allUserEvents
+    .filter(e => isEventUpcoming(e))
+    .sort((a, b) => (parseEventDateTime(a.date, a.time) || 0) - (parseEventDateTime(b.date, b.time) || 0));
+  const pastUserEvents = allUserEvents
+    .filter(e => isEventPast(e))
+    .sort((a, b) => (parseEventDateTime(b.date, b.time) || 0) - (parseEventDateTime(a.date, a.time) || 0));
+
+  const allExploreEvents = filterByDate(filterBySearch(events.filter(e => !user?.joinedCommunities?.includes(e.communityId) && e.status !== 'cancelled')));
+  const upcomingExploreEvents = allExploreEvents
+    .filter(e => isEventUpcoming(e))
+    .sort((a, b) => (parseEventDateTime(a.date, a.time) || 0) - (parseEventDateTime(b.date, b.time) || 0));
+  const pastExploreEvents = allExploreEvents
+    .filter(e => isEventPast(e))
+    .sort((a, b) => (parseEventDateTime(b.date, b.time) || 0) - (parseEventDateTime(a.date, a.time) || 0));
+
+  const recommendedEvents = upcomingExploreEvents.filter(e => {
     if (!user || !user.interests) return false;
     const community = communities.find(c => c.id === e.communityId);
     if (!community || !community.tags) return false;
     return community.tags.some(tag => user.interests.includes(tag)) || getAffinityScore(community) > 0;
-  }))).sort((a, b) => {
+  }).sort((a, b) => {
     const ca = communities.find(c => c.id === a.communityId);
     const cb = communities.find(c => c.id === b.communityId);
     return (getAffinityScore(cb) || 0) - (getAffinityScore(ca) || 0);
@@ -204,11 +213,12 @@ export default function EventsHub() {
     return cleaned;
   };
 
-  const renderEvent = (event, index) => {
+  const renderEvent = (event, index, isPast = false) => {
     const community = communities.find(c => c.id === event.communityId);
     const eventImage = event.image || community?.image;
     const price = getEventPrice(event);
     const hasRsvp = eventRsvps[event.id]?.some(r => r.userId === user.id);
+    const isArchived = isPast || isEventPast(event);
     
     // Check for sponsor
     const sponsorAssignment = sponsorshipAssignments.find(a => a.target_id === event.communityId && a.target_type === 'community');
@@ -219,12 +229,18 @@ export default function EventsHub() {
         key={event.id} 
         onClick={() => router.push(`/events/${event.id}`)}
         className="interactive-press stagger-item" 
-        style={{ cursor: 'pointer', marginBottom: '20px', borderRadius: '20px', overflow: 'hidden', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', transition: 'all 0.3s', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}
-        onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'; e.currentTarget.style.transform = 'scale(1.02)'; e.currentTarget.style.boxShadow = '0 8px 30px rgba(0,0,0,0.2)'; }}
-        onMouseOut={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)'; e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.1)'; }}
+        style={{ 
+          cursor: 'pointer', marginBottom: '20px', borderRadius: '20px', overflow: 'hidden', 
+          background: isArchived ? 'rgba(255,255,255,0.015)' : 'rgba(255,255,255,0.02)', 
+          border: isArchived ? '1px solid rgba(255,255,255,0.04)' : '1px solid rgba(255,255,255,0.06)', 
+          opacity: isArchived ? 0.85 : 1,
+          transition: 'all 0.3s', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' 
+        }}
+        onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'; e.currentTarget.style.transform = 'scale(1.01)'; }}
+        onMouseOut={e => { e.currentTarget.style.borderColor = isArchived ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.06)'; e.currentTarget.style.transform = 'scale(1)'; }}
       >
         {eventImage && (
-          <div style={{ height: '140px', background: `url(${eventImage})`, backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative' }}>
+          <div style={{ height: '140px', background: `url(${eventImage})`, backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative', filter: isArchived ? 'saturate(0.8)' : 'none' }}>
             <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.8))' }}></div>
             
             {/* Calendar Leaf Overlay */}
@@ -233,7 +249,7 @@ export default function EventsHub() {
               borderRadius: '10px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)',
               display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: '42px', boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
             }}>
-              <div style={{ background: 'var(--teal-500)', color: 'white', width: '100%', textAlign: 'center', fontSize: '0.65rem', fontWeight: 800, padding: '2px 0', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              <div style={{ background: isArchived ? 'var(--slate-600)' : 'var(--teal-500)', color: 'white', width: '100%', textAlign: 'center', fontSize: '0.65rem', fontWeight: 800, padding: '2px 0', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                 {event.date ? (isNaN(new Date(event.date)) ? event.date.substring(0,3) : new Date(event.date).toLocaleDateString('en-GB', { month: 'short' })) : 'TBA'}
               </div>
               <div style={{ padding: '4px 8px', color: 'white', fontSize: '1.1rem', fontWeight: 800 }}>
@@ -241,29 +257,36 @@ export default function EventsHub() {
               </div>
             </div>
 
-            <div style={{ position: 'absolute', top: '12px', right: '12px', fontSize: '0.75rem', fontWeight: 700, color: price > 0 ? 'var(--amber-400)' : 'var(--teal-300)', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)', padding: '6px 12px', borderRadius: '99px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}>
-              {price > 0 ? `£${price}` : 'FREE'}
+            <div style={{ position: 'absolute', top: '12px', right: '12px', display: 'flex', gap: '6px', alignItems: 'center' }}>
+              {isArchived && (
+                <div style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--slate-300)', background: 'rgba(51,65,85,0.85)', backdropFilter: 'blur(6px)', padding: '4px 8px', borderRadius: '99px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                  ARCHIVED
+                </div>
+              )}
+              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: price > 0 ? 'var(--amber-400)' : 'var(--teal-300)', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)', padding: '6px 12px', borderRadius: '99px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}>
+                {price > 0 ? `£${price}` : 'FREE'}
+              </div>
             </div>
             {hasRsvp && (
-              <div style={{ position: 'absolute', bottom: '12px', right: '12px', fontSize: '0.7rem', fontWeight: 700, color: 'var(--teal-300)', background: 'rgba(20,184,166,0.2)', backdropFilter: 'blur(6px)', padding: '4px 10px', borderRadius: '99px', border: '1px solid rgba(20,184,166,0.4)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <Check size={12} /> Going
+              <div style={{ position: 'absolute', bottom: '12px', right: '12px', fontSize: '0.7rem', fontWeight: 700, color: isArchived ? 'var(--slate-300)' : 'var(--teal-300)', background: isArchived ? 'rgba(51,65,85,0.7)' : 'rgba(20,184,166,0.2)', backdropFilter: 'blur(6px)', padding: '4px 10px', borderRadius: '99px', border: isArchived ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(20,184,166,0.4)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <Check size={12} /> {isArchived ? 'Attended' : 'Going'}
               </div>
             )}
           </div>
         )}
         <div style={{ padding: '16px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '4px' }}>
-            <div style={{ fontSize: '0.75rem', color: 'var(--teal-400)', fontWeight: 600, textTransform: 'uppercase' }}>{community?.name}</div>
+            <div style={{ fontSize: '0.75rem', color: isArchived ? 'var(--slate-400)' : 'var(--teal-400)', fontWeight: 600, textTransform: 'uppercase' }}>{community?.name}</div>
             {sponsor && (
               <div style={{ fontSize: '0.65rem', color: 'var(--slate-400)', background: 'rgba(255,255,255,0.05)', padding: '2px 6px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.1)' }}>
                 Supported by {sponsor.name}
               </div>
             )}
           </div>
-          <h3 style={{ margin: '0 0 8px 0', fontSize: '1.1rem', fontWeight: 700 }}>{event.title}</h3>
+          <h3 style={{ margin: '0 0 8px 0', fontSize: '1.1rem', fontWeight: 700, color: isArchived ? 'var(--slate-200)' : 'var(--white)' }}>{event.title}</h3>
           <div style={{ display: 'flex', gap: '16px', fontSize: '0.85rem', color: 'var(--slate-400)' }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><CalIcon size={14} /> {event.date}</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><MapPin size={14} /> {event.location}</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><MapPin size={14} /> {cleanLocationName(event.location)}</span>
           </div>
         </div>
       </div>
@@ -382,7 +405,7 @@ export default function EventsHub() {
             <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)', marginBottom: '12px', fontWeight: 600 }}>UPCOMING • SOONEST FIRST</div>
             {isLoading ? (
               <SkeletonList count={3} Component={SkeletonEvent} />
-            ) : userEvents.length > 0 ? userEvents.map((e, i) => renderEvent(e, i)) : (
+            ) : upcomingUserEvents.length > 0 ? upcomingUserEvents.map((e, i) => renderEvent(e, i, false)) : (
               <div style={{ textAlign: 'center', padding: '50px 20px', background: 'rgba(255,255,255,0.02)', borderRadius: '24px', border: '1px dashed rgba(255,255,255,0.1)', marginTop: '20px' }}>
                 <div style={{ width: '80px', height: '80px', background: 'rgba(20,184,166,0.1)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', color: 'var(--teal-400)' }}>
                   <CalIcon size={36} />
@@ -400,14 +423,27 @@ export default function EventsHub() {
                 </button>
               </div>
             )}
+
+            {/* Past & Archived Events Section */}
+            {pastUserEvents.length > 0 && (
+              <div style={{ marginTop: '36px', paddingTop: '20px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+                  <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Archive size={14} /> PAST EVENTS & ARCHIVE ({pastUserEvents.length})
+                  </div>
+                  <span style={{ fontSize: '0.7rem', color: 'var(--slate-400)', background: 'rgba(255,255,255,0.05)', padding: '2px 8px', borderRadius: '12px' }}>Archived</span>
+                </div>
+                {pastUserEvents.map((e, i) => renderEvent(e, i, true))}
+              </div>
+            )}
           </>
         ) : activeTab === 'Recommended' ? (
           <>
             <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)', marginBottom: '12px', fontWeight: 600 }}>MATCHING YOUR INTERESTS • SOONEST FIRST</div>
             {isLoading ? (
               <SkeletonList count={3} Component={SkeletonEvent} />
-            ) : recommendedEvents.length > 0 ? recommendedEvents.map((e, i) => renderEvent(e, i)) : (
-              <p style={{ color: 'var(--slate-400)' }}>No recommended events right now based on your interests.</p>
+            ) : recommendedEvents.length > 0 ? recommendedEvents.map((e, i) => renderEvent(e, i, false)) : (
+              <p style={{ color: 'var(--slate-400)' }}>No recommended upcoming events right now based on your interests.</p>
             )}
           </>
         ) : (
@@ -430,9 +466,32 @@ export default function EventsHub() {
 
             {isLoading ? (
               <SkeletonList count={3} Component={SkeletonEvent} />
-            ) : exploreEvents.length > 0 ? exploreEvents.map((e, i) => renderEvent(e, i)) : (
+            ) : upcomingExploreEvents.length > 0 ? (
+              <>
+                {upcomingExploreEvents.map((e, i) => renderEvent(e, i, false))}
+                {pastExploreEvents.length > 0 && (
+                  <div style={{ marginTop: '36px', paddingTop: '20px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+                      <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <Archive size={14} /> PAST COMMUNITY EVENTS ({pastExploreEvents.length})
+                      </div>
+                      <span style={{ fontSize: '0.7rem', color: 'var(--slate-400)', background: 'rgba(255,255,255,0.05)', padding: '2px 8px', borderRadius: '12px' }}>Archived</span>
+                    </div>
+                    {pastExploreEvents.map((e, i) => renderEvent(e, i, true))}
+                  </div>
+                )}
+              </>
+            ) : (
               <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--slate-400)' }}>
-                {searchQuery ? 'No events match your search.' : 'No events to explore right now.'}
+                {searchQuery ? 'No events match your search.' : 'No upcoming events to explore right now.'}
+                {pastExploreEvents.length > 0 && (
+                  <div style={{ marginTop: '24px', textAlign: 'left' }}>
+                    <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)', fontWeight: 600, marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Archive size={14} /> PAST COMMUNITY EVENTS ({pastExploreEvents.length})
+                    </div>
+                    {pastExploreEvents.map((e, i) => renderEvent(e, i, true))}
+                  </div>
+                )}
               </div>
             )}
           </>
@@ -446,7 +505,7 @@ export default function EventsHub() {
 
       {showSwipe && (
         <SwipeDiscovery 
-          events={exploreEvents} 
+          events={upcomingExploreEvents} 
           communities={communities} 
           onClose={() => setShowSwipe(false)} 
           onSave={(item) => {

@@ -256,6 +256,35 @@ export async function createEventAction(eventData, token) {
   return data;
 }
 
+export async function createEventsBatchAction(eventsData, token) {
+  if (!Array.isArray(eventsData) || eventsData.length === 0) return [];
+  const communityId = eventsData[0].communityId;
+  await verifyCommunityManager(token, communityId);
+
+  const payloads = eventsData.map(eventData => ({
+    id: eventData.id || crypto.randomUUID(),
+    community_id: eventData.communityId,
+    title: eventData.title,
+    date: eventData.date,
+    time: eventData.time,
+    location: eventData.location,
+    image: eventData.image || null,
+    attendees: eventData.attendees || 0,
+    description: eventData.description || '',
+    status: eventData.status || 'published',
+    max_capacity: eventData.maxCapacity || null,
+    ticket_price: eventData.ticketPrice != null ? Number(eventData.ticketPrice) : (eventData.ticket_price != null ? Number(eventData.ticket_price) : 0)
+  }));
+
+  const { data, error } = await supabaseAdmin.from('events').insert(payloads).select();
+
+  if (error) {
+    console.error('Batch event creation failed:', error);
+    throw new Error(error.message);
+  }
+  return data || [];
+}
+
 export async function leaveCommunityAction(userId, communityId, token) {
   try {
     if (!userId || !communityId) return { error: "Missing data" };

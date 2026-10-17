@@ -1,6 +1,6 @@
 "use client";
 import { useState } from 'react';
-import { Mail, ArrowRight, Users, Calendar, MessageCircle, KeyRound, CheckCircle2 } from 'lucide-react';
+import { Mail, ArrowRight, Users, Calendar, MessageCircle, KeyRound, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../src/context/AuthContext';
 import { FALLBACK_IMAGES, LAUNCH_CITY } from '../../src/lib/constants';
@@ -12,52 +12,118 @@ export default function LoginScreen() {
   const [isSignUp, setIsSignUp] = useState(false);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [resetEmailSent, setResetEmailSent] = useState(false);
+  const [signUpEmailSent, setSignUpEmailSent] = useState(false);
+  const [resendNotice, setResendNotice] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
-  const { signInWithEmail, signUpWithEmail, resetPassword } = useAuth();
+  const [error, setError] = useState(null);
+  const { signInWithEmail, signUpWithEmail, resetPassword, resendConfirmationEmail } = useAuth();
   const router = useRouter();
+
+  const formatAuthError = (err) => {
+    if (!err) return null;
+    const msg = typeof err === 'string' ? err : err.message || '';
+    const lower = msg.toLowerCase();
+    if (lower.includes('error sending confirmation email')) {
+      return {
+        title: 'Email Confirmation Unavailable',
+        message: 'Supabase could not dispatch the confirmation email (built-in email rate limit reached). To log in immediately, ask an administrator to disable "Confirm email" in the Supabase Dashboard (Auth > Providers > Email), or configure a custom SMTP provider.',
+        isEmailRateLimit: true,
+      };
+    }
+    if (lower.includes('error sending recovery email')) {
+      return {
+        title: 'Recovery Email Failed',
+        message: 'Could not send the password reset email due to provider rate limits. Please try again shortly or contact support.',
+        isEmailRateLimit: true,
+      };
+    }
+    if (lower.includes('email not confirmed')) {
+      return {
+        title: 'Email Not Confirmed',
+        message: 'Your email address has not been verified yet. Please check your inbox or spam folder for your confirmation link.',
+        isUnconfirmed: true,
+      };
+    }
+    if (lower.includes('invalid login credentials')) {
+      return {
+        title: 'Sign In Failed',
+        message: 'Invalid email or password. Please verify your credentials and try again.',
+      };
+    }
+    return {
+      title: 'Authentication Error',
+      message: msg,
+    };
+  };
 
   const handleAuth = async (e) => {
     e.preventDefault();
     if (!email.trim() || !password.trim() || (isSignUp && !name.trim())) return;
     setIsLoading(true);
-    setError('');
+    setError(null);
+    setResendNotice('');
     
-    let authError;
     if (isSignUp) {
-      const { error } = await signUpWithEmail(email, password, name);
-      authError = error;
+      const { data, error: authErr } = await signUpWithEmail(email, password, name);
+      if (authErr) {
+        setError(formatAuthError(authErr));
+        setIsLoading(false);
+        return;
+      }
+      if (data?.session) {
+        router.push('/app');
+      } else {
+        // Confirmation email required
+        setSignUpEmailSent(true);
+      }
     } else {
-      const { error } = await signInWithEmail(email, password);
-      authError = error;
-    }
-    
-    if (authError) {
-      setError(authError.message);
-    } else {
+      const { data, error: authErr } = await signInWithEmail(email, password);
+      if (authErr) {
+        setError(formatAuthError(authErr));
+        setIsLoading(false);
+        return;
+      }
       router.push('/app');
     }
     setIsLoading(false);
   };
 
+  const handleResendConfirmation = async () => {
+    if (!email.trim()) return;
+    setIsLoading(true);
+    setResendNotice('');
+    try {
+      const { error: resendErr } = await resendConfirmationEmail(email.trim());
+      if (resendErr) {
+        setError(formatAuthError(resendErr));
+      } else {
+        setResendNotice('Confirmation email re-sent! Please check your inbox.');
+      }
+    } catch (err) {
+      setError(formatAuthError(err));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleForgotPassword = async (e) => {
     e.preventDefault();
     if (!email.trim()) {
-      setError('Please enter your email address.');
+      setError({ title: 'Missing Email', message: 'Please enter your email address.' });
       return;
     }
     setIsLoading(true);
-    setError('');
+    setError(null);
 
     try {
       const { error: resetError } = await resetPassword(email.trim());
       if (resetError) {
-        setError(resetError.message);
+        setError(formatAuthError(resetError));
       } else {
         setResetEmailSent(true);
       }
     } catch (err) {
-      setError(err.message || 'Failed to send reset link');
+      setError(formatAuthError(err));
     } finally {
       setIsLoading(false);
     }
@@ -198,6 +264,56 @@ export default function LoginScreen() {
                 </button>
               </div>
             </div>
+          ) : signUpEmailSent ? (
+            <div style={{ marginBottom: '20px' }}>
+              <div style={{
+                background: 'rgba(20,184,166,0.1)',
+                border: '1px solid rgba(20,184,166,0.3)',
+                borderRadius: '16px',
+                padding: '24px 20px',
+                textAlign: 'center',
+                marginBottom: '16px',
+              }}>
+                <CheckCircle2 size={36} color="var(--teal-400)" style={{ margin: '0 auto 12px' }} />
+                <h3 style={{ color: 'var(--white)', fontSize: '1.2rem', margin: '0 0 8px 0', fontWeight: 700 }}>Check your email</h3>
+                <p style={{ color: 'var(--slate-300)', fontSize: '0.9rem', margin: '0 0 16px 0', lineHeight: 1.5 }}>
+                  We've sent an activation link to <strong>{email}</strong>. Please check your inbox and click the link to confirm your account.
+                </p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <button
+                    type="button"
+                    onClick={handleResendConfirmation}
+                    disabled={isLoading}
+                    style={{
+                      background: 'rgba(255,255,255,0.06)',
+                      border: '1px solid rgba(255,255,255,0.15)',
+                      color: 'var(--slate-200)',
+                      padding: '10px',
+                      borderRadius: '10px',
+                      fontSize: '0.85rem',
+                      fontWeight: 600,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {isLoading ? 'Sending...' : 'Resend confirmation link'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setSignUpEmailSent(false); setIsSignUp(false); setError(null); }}
+                    className="btn btn-primary"
+                    style={{
+                      padding: '12px',
+                      borderRadius: '12px',
+                      fontSize: '0.95rem',
+                      fontWeight: 600,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Proceed to Sign In
+                  </button>
+                </div>
+              </div>
+            </div>
           ) : (
             <form onSubmit={handleAuth} style={{ marginBottom: '20px' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '10px' }}>
@@ -218,7 +334,7 @@ export default function LoginScreen() {
                 <div style={{ textAlign: 'right', marginBottom: '14px' }}>
                   <button
                     type="button"
-                    onClick={() => { setIsForgotPassword(true); setError(''); }}
+                    onClick={() => { setIsForgotPassword(true); setError(null); }}
                     style={{ background: 'none', border: 'none', color: 'var(--slate-400)', fontSize: '0.82rem', cursor: 'pointer', padding: '2px 4px' }}
                   >
                     Forgot password?
@@ -249,13 +365,13 @@ export default function LoginScreen() {
             </form>
           )}
 
-          {!isForgotPassword && (
+          {!isForgotPassword && !signUpEmailSent && (
             <div style={{ textAlign: 'center', marginBottom: '20px' }}>
               <span style={{ color: 'var(--slate-400)', fontSize: '0.9rem' }}>
                 {isSignUp ? 'Already have an account?' : "Don't have an account?"}
               </span>
               <button 
-                onClick={() => { setIsSignUp(!isSignUp); setError(''); }}
+                onClick={() => { setIsSignUp(!isSignUp); setError(null); setResendNotice(''); }}
                 style={{ background: 'none', border: 'none', color: 'var(--teal-400)', fontWeight: 600, fontSize: '0.9rem', marginLeft: '8px', cursor: 'pointer' }}
               >
                 {isSignUp ? 'Sign In' : 'Sign Up'}
@@ -263,10 +379,61 @@ export default function LoginScreen() {
             </div>
           )}
 
+          {resendNotice && (
+            <div style={{
+              background: 'rgba(34,197,94,0.1)',
+              border: '1px solid rgba(34,197,94,0.3)',
+              borderRadius: '12px',
+              padding: '12px 16px',
+              marginBottom: '16px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              color: '#4ade80',
+              fontSize: '0.85rem',
+            }}>
+              <CheckCircle2 size={16} />
+              <span>{resendNotice}</span>
+            </div>
+          )}
+
           {error && (
-            <p style={{ color: 'var(--red-400)', fontSize: '0.85rem', textAlign: 'center', marginBottom: '16px' }}>
-              {error}
-            </p>
+            <div style={{
+              background: 'rgba(239,68,68,0.1)',
+              border: '1px solid rgba(239,68,68,0.3)',
+              borderRadius: '14px',
+              padding: '14px 16px',
+              marginBottom: '16px',
+              textAlign: 'left'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#f87171', fontWeight: 600, fontSize: '0.9rem', marginBottom: '6px' }}>
+                <AlertCircle size={16} />
+                {typeof error === 'object' ? error.title : 'Authentication Notice'}
+              </div>
+              <p style={{ color: 'var(--slate-300)', fontSize: '0.82rem', margin: 0, lineHeight: 1.5 }}>
+                {typeof error === 'object' ? error.message : error}
+              </p>
+              {typeof error === 'object' && error.isUnconfirmed && (
+                <button
+                  type="button"
+                  onClick={handleResendConfirmation}
+                  disabled={isLoading}
+                  style={{
+                    marginTop: '10px',
+                    background: 'rgba(20,184,166,0.15)',
+                    border: '1px solid rgba(20,184,166,0.3)',
+                    color: 'var(--teal-300)',
+                    padding: '6px 12px',
+                    borderRadius: '8px',
+                    fontSize: '0.8rem',
+                    fontWeight: 600,
+                    cursor: 'pointer'
+                  }}
+                >
+                  Resend Confirmation Link
+                </button>
+              )}
+            </div>
           )}
 
           {/* Social proof */}

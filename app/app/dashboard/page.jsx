@@ -1,8 +1,9 @@
 "use client";
 import { useState, useRef, useMemo, useEffect } from 'react';
-import { Users, Calendar, MessageCircle, TrendingUp, Search, Plus, MapPin, Image as ImageIcon, CreditCard, ChevronRight, ChevronLeft, Download, Activity, Globe, Heart, Crown, Info, X, Map, Zap, Mail, Trash2, UserCheck, Ban, ChevronDown, ChevronUp, Settings, Megaphone, QrCode, BarChart3, Ticket, ScanLine, UserPlus, DollarSign, Clock, Edit3, Check, Eye, EyeOff, Shield, Star, Sparkles, BookOpen, ListChecks, Bell } from 'lucide-react';
+import { Users, Calendar, MessageCircle, TrendingUp, Search, Plus, MapPin, Image as ImageIcon, CreditCard, ChevronRight, ChevronLeft, Download, Activity, Globe, Heart, Crown, Info, X, Map, Zap, Mail, Trash2, UserCheck, Ban, ChevronDown, ChevronUp, Settings, Megaphone, QrCode, BarChart3, Ticket, ScanLine, UserPlus, DollarSign, Clock, Edit3, Check, Eye, EyeOff, Shield, Star, Sparkles, BookOpen, ListChecks, Bell, Archive } from 'lucide-react';
 import AppHeader from '../../src/components/AppHeader';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { isEventUpcoming, isEventPast, parseEventDateTime } from '../../src/lib/calendar';
 import { useAppContext } from '../../src/context/AppContext';
 import { useChat } from '../../src/context/ChatContext';
 import { useToast } from '../../src/components/Toast';
@@ -16,6 +17,8 @@ import EventFlyerGenerator from '../../src/components/EventFlyerGenerator';
 import LeaderSetupChecklist from '../../src/components/LeaderSetupChecklist';
 import dynamic from 'next/dynamic';
 const LocationPicker = dynamic(() => import('../../src/components/LocationPicker'), { ssr: false });
+import RecurringSchedulePicker from '../../src/components/RecurringSchedulePicker';
+import { formatEventDate } from '../../src/lib/recurrence';
 import { COMMUNITY_TAG_CATEGORIES, ALL_COMMUNITY_TAGS } from '../../src/lib/constants';
 
 import { PREMADE_GUIDELINE_PACKS, QUICK_INSPIRATION_RULES } from '../../src/lib/guidelinesPacks';
@@ -81,7 +84,7 @@ function getEngagementScore(member, events, eventRsvps, messages, communityId) {
 
 // ─── Component ──────────────────────────────────────────────────
 export default function LeaderDashboard({ initialCommunityId }) {
-  const { user, communities, events, updateCommunity, deleteCommunity, users, communityMemberships, createEvent, updateEvent, cancelEvent, uploadImage, eventRsvps, whatsappSettings, setWhatsappSettings, promoteMember, removeMember, checkInMember, broadcastNotification, sendEventReminder, experiences, setExperiences } = useAppContext();
+  const { user, communities, events, updateCommunity, deleteCommunity, users, communityMemberships, createEvent, createEventsBatch, updateEvent, cancelEvent, uploadImage, eventRsvps, whatsappSettings, setWhatsappSettings, promoteMember, removeMember, checkInMember, broadcastNotification, sendEventReminder, experiences, setExperiences } = useAppContext();
     const { messages } = useChat();
   const { toast } = useToast();
   const router = useRouter();
@@ -128,7 +131,20 @@ export default function LeaderDashboard({ initialCommunityId }) {
   const publishedEvents = communityEvents.filter(e => e.status !== 'cancelled');
   const communityMessages = community ? messages.filter(m => m.communityId === community.id) : [];
 
-  const emptyEventForm = { title: '', description: '', date: '', time: '', location: '', maxCapacity: '', ticketPrice: '', autoReminders: true, autoFeedback: true };
+  const emptyEventForm = { 
+    title: '', 
+    description: '', 
+    date: '', 
+    time: '', 
+    location: '', 
+    maxCapacity: '', 
+    ticketPrice: '', 
+    autoReminders: true, 
+    autoFeedback: true,
+    scheduleMode: 'single',
+    resolvedDates: [],
+    recurrenceSummary: 'Single event'
+  };
   const [eventForm, setEventForm] = useState(emptyEventForm);
   const [editingEventId, setEditingEventId] = useState(null);
   const [broadcastText, setBroadcastText] = useState('');
@@ -143,6 +159,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
   const [expandedEventId, setExpandedEventId] = useState(null);
   const [flyerEvent, setFlyerEvent] = useState(null);
   const [reminderModalEvent, setReminderModalEvent] = useState(null);
+  const [dashboardEventFilter, setDashboardEventFilter] = useState('upcoming');
 
   const handleOpenReminderModal = (event) => {
     setReminderModalEvent(event);
@@ -575,7 +592,11 @@ export default function LeaderDashboard({ initialCommunityId }) {
   };
 
   const handleCreateEvent = async () => {
-    if (!eventForm.title || !eventForm.date || !eventForm.time || !eventForm.location) return;
+    const dates = (eventForm.resolvedDates && eventForm.resolvedDates.length > 0)
+      ? eventForm.resolvedDates
+      : (eventForm.date ? [eventForm.date] : []);
+
+    if (!eventForm.title || dates.length === 0 || !eventForm.time || !eventForm.location) return;
     setIsUploading(true);
     let imageUrl = '';
     
@@ -584,20 +605,35 @@ export default function LeaderDashboard({ initialCommunityId }) {
         imageUrl = await uploadImage(imageFile, 'events');
       }
       
-      await createEvent(community.id, {
-        ...eventForm,
-        maxCapacity: eventForm.maxCapacity ? parseInt(eventForm.maxCapacity, 10) : null,
-        ticketPrice: eventForm.ticketPrice ? parseFloat(eventForm.ticketPrice) : 0,
-        autoReminders: eventForm.autoReminders,
-        autoFeedback: eventForm.autoFeedback,
-        image: imageUrl
-      });
+      if (dates.length === 1) {
+        await createEvent(community.id, {
+          ...eventForm,
+          date: dates[0],
+          maxCapacity: eventForm.maxCapacity ? parseInt(eventForm.maxCapacity, 10) : null,
+          ticketPrice: eventForm.ticketPrice ? parseFloat(eventForm.ticketPrice) : 0,
+          autoReminders: eventForm.autoReminders,
+          autoFeedback: eventForm.autoFeedback,
+          image: imageUrl
+        });
+        toast.success('Event created!', `${eventForm.title} has been published`);
+      } else {
+        const eventsList = dates.map(d => ({
+          ...eventForm,
+          date: d,
+          maxCapacity: eventForm.maxCapacity ? parseInt(eventForm.maxCapacity, 10) : null,
+          ticketPrice: eventForm.ticketPrice ? parseFloat(eventForm.ticketPrice) : 0,
+          autoReminders: eventForm.autoReminders,
+          autoFeedback: eventForm.autoFeedback,
+          image: imageUrl
+        }));
+        await createEventsBatch(community.id, eventsList);
+        toast.success(`${dates.length} events created!`, `${eventForm.title} recurring schedule published`);
+      }
       
       setModalType(null);
       setEventStep(0);
       setEventForm(emptyEventForm);
       setImageFile(null);
-      toast.success('Event created!', `${eventForm.title} has been published`);
     } catch (e) {
       console.error(e);
       toast.error('Failed to create event', e.message || 'An error occurred while publishing.');
@@ -615,7 +651,10 @@ export default function LeaderDashboard({ initialCommunityId }) {
       maxCapacity: event.maxCapacity ? event.maxCapacity.toString() : '',
       ticketPrice: event.ticketPrice ? event.ticketPrice.toString() : '',
       autoReminders: event.autoReminders ?? true,
-      autoFeedback: event.autoFeedback ?? true
+      autoFeedback: event.autoFeedback ?? true,
+      scheduleMode: 'single',
+      resolvedDates: event.date ? [event.date] : [],
+      recurrenceSummary: 'Single event'
     });
     setImageFile(null);
     setModalType('edit-event');
@@ -775,7 +814,10 @@ export default function LeaderDashboard({ initialCommunityId }) {
 
   const canAdvanceStep = () => {
     if (eventStep === 0) return eventForm.title.trim().length > 0;
-    if (eventStep === 1) return eventForm.date && eventForm.time && eventForm.location.trim().length > 0;
+    if (eventStep === 1) {
+      const hasDate = (eventForm.resolvedDates && eventForm.resolvedDates.length > 0) || Boolean(eventForm.date);
+      return hasDate && Boolean(eventForm.time) && eventForm.location.trim().length > 0;
+    }
     return true;
   };
 
@@ -852,22 +894,31 @@ export default function LeaderDashboard({ initialCommunityId }) {
       {/* Step 1: When & Where */}
       {eventStep === 1 && (
         <>
-          <div style={{ background: 'rgba(59,130,246,0.05)', border: '1px solid rgba(59,130,246,0.15)', borderRadius: '12px', padding: '14px', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ background: 'rgba(59,130,246,0.05)', border: '1px solid rgba(59,130,246,0.15)', borderRadius: '12px', padding: '14px', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '10px' }}>
             <MapPin size={16} color="#3b82f6" style={{ flexShrink: 0 }} />
-            <span style={{ fontSize: '0.8rem', color: '#93c5fd', lineHeight: 1.4 }}>Pick a date, time, and place. Members will see this in their calendar and on the map.</span>
+            <span style={{ fontSize: '0.8rem', color: '#93c5fd', lineHeight: 1.4 }}>Pick a single date, repeating schedule, or variety of dates.</span>
           </div>
-          <div className="form-row">
-            <div className="form-group">
-              <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Calendar size={14} color="#3b82f6" /> Date <span style={{ color: 'var(--rose-400)', fontSize: '0.7rem' }}>*</span></label>
-              <input type="date" className="form-input" value={eventForm.date} onChange={e => setEventForm({...eventForm, date: e.target.value})} style={{ colorScheme: 'dark', padding: '14px 16px' }} />
-            </div>
-            <div className="form-group">
-              <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Clock size={14} color="#3b82f6" /> Time <span style={{ color: 'var(--rose-400)', fontSize: '0.7rem' }}>*</span></label>
-              <input type="time" className="form-input" value={eventForm.time} onChange={e => setEventForm({...eventForm, time: e.target.value})} style={{ colorScheme: 'dark', padding: '14px 16px' }} />
-            </div>
-          </div>
-          <div className="form-group">
-            <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><MapPin size={14} color="#3b82f6" /> Location <span style={{ color: 'var(--rose-400)', fontSize: '0.7rem' }}>*</span></label>
+
+          <RecurringSchedulePicker
+            initialDate={eventForm.date}
+            initialTime={eventForm.time}
+            isEditing={Boolean(editingEventId)}
+            onChange={(scheduleData) => {
+              setEventForm(prev => ({
+                ...prev,
+                date: scheduleData.date,
+                time: scheduleData.time,
+                scheduleMode: scheduleData.scheduleMode,
+                resolvedDates: scheduleData.resolvedDates,
+                recurrenceSummary: scheduleData.recurrenceSummary
+              }));
+            }}
+          />
+
+          <div className="form-group" style={{ marginTop: '14px' }}>
+            <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <MapPin size={14} color="#3b82f6" /> Location <span style={{ color: 'var(--rose-400)', fontSize: '0.7rem' }}>*</span>
+            </label>
             <LocationPicker locationName={eventForm.location} setLocationName={(loc) => setEventForm({...eventForm, location: loc})} />
           </div>
         </>
@@ -902,7 +953,14 @@ export default function LeaderDashboard({ initialCommunityId }) {
           {/* Preview card */}
           {eventForm.title && (
             <div style={{ marginTop: '4px', padding: '16px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px' }}>
-              <div style={{ fontSize: '0.65rem', fontWeight: 600, color: 'var(--slate-500)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' }}>Preview</div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <span style={{ fontSize: '0.65rem', fontWeight: 600, color: 'var(--slate-500)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Preview</span>
+                {eventForm.resolvedDates && eventForm.resolvedDates.length > 1 && (
+                  <span style={{ fontSize: '0.72rem', color: 'var(--teal-300)', background: 'rgba(20,184,166,0.15)', padding: '2px 8px', borderRadius: '99px', fontWeight: 600 }}>
+                    🔁 {eventForm.recurrenceSummary || `${eventForm.resolvedDates.length} sessions`}
+                  </span>
+                )}
+              </div>
               <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
                 <div style={{ width: '44px', height: '48px', background: 'rgba(20,184,166,0.1)', borderRadius: '10px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                   <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--white)', lineHeight: 1 }}>{eventForm.date ? new Date(eventForm.date + 'T00:00:00').getDate() : '—'}</div>
@@ -1736,117 +1794,207 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   </div>
                 </div>
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  {communityEvents.map(event => {
-                    const { day, month } = parseDateParts(event.date);
-                    const ev = getEventRevenue(event);
-                    const isCancelled = event.status === 'cancelled';
-                    const isExpanded = expandedEventId === event.id;
-                    const attendees = (eventRsvps[event.id] || []).filter(r => r.status === 'going');
-                    
+                <>
+                  {/* Event Filter Tabs */}
+                  {(() => {
+                    const upcomingCount = publishedEvents.filter(e => isEventUpcoming(e)).length;
+                    const pastCount = publishedEvents.filter(e => isEventPast(e)).length;
                     return (
-                      <div key={event.id} className="stagger-item" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px', overflow: 'hidden', ...(isCancelled ? { opacity: 0.5 } : {}) }}>
-                        <div style={{ display: 'flex', gap: '14px', padding: '14px' }}>
-                          {/* Date block */}
-                          <div style={{ width: '48px', height: '54px', background: 'rgba(20,184,166,0.1)', borderRadius: '10px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                            <div style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--white)', lineHeight: 1 }}>{day}</div>
-                            <div style={{ fontSize: '0.65rem', color: 'var(--teal-400)', fontWeight: 600, textTransform: 'uppercase' }}>{month}</div>
-                          </div>
-                          
-                          {/* Info */}
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                              <h4 style={{ margin: 0, flex: 1, fontSize: '0.95rem', fontWeight: 600, color: 'var(--white)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{event.title}</h4>
-                              <span className={`status-badge ${event.status || 'published'}`}>{event.status || 'live'}</span>
-                            </div>
-                            
-                            {/* Meta row */}
-                            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', fontSize: '0.75rem', color: 'var(--slate-400)', marginBottom: '6px' }}>
-                              <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}><Clock size={11} /> {event.time}</span>
-                              <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}><MapPin size={11} /> {event.location}</span>
-                            </div>
-                            
-                            {/* Stats row */}
-                            <div style={{ display: 'flex', gap: '12px', fontSize: '0.75rem' }}>
-                              <span style={{ color: 'var(--teal-400)', display: 'flex', alignItems: 'center', gap: '3px' }}>
-                                <UserCheck size={12} /> {ev.rsvpCount}{event.maxCapacity ? `/${event.maxCapacity}` : ''} going
-                              </span>
-                              {ev.price > 0 && (
-                                <span style={{ color: '#f59e0b', display: 'flex', alignItems: 'center', gap: '3px' }}>
-                                  <DollarSign size={12} /> £{ev.revenue} revenue
-                                </span>
-                              )}
-                              <span style={{ color: '#3b82f6', display: 'flex', alignItems: 'center', gap: '3px' }}>
-                                <ScanLine size={12} /> {ev.checkedIn} checked in
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                        
-                        {/* Action buttons */}
-                        {!isCancelled && (
-                          <div style={{ display: 'flex', gap: '6px', padding: '0 14px 10px', flexWrap: 'wrap' }}>
-                            <button onClick={() => setShowScanner(true)} className="btn btn-outline interactive-press" style={{ padding: '6px 12px', fontSize: '0.75rem', color: 'var(--teal-400)', borderColor: 'rgba(20,184,166,0.3)' }}>
-                              <QrCode size={12} style={{ marginRight: '4px' }} /> Scan
-                            </button>
-                            <button onClick={() => setFlyerEvent(event)} className="btn btn-outline interactive-press" style={{ padding: '6px 12px', fontSize: '0.75rem', color: '#a78bfa', borderColor: 'rgba(167,139,250,0.3)' }}>
-                              <ImageIcon size={12} style={{ marginRight: '4px' }} /> Flyer
-                            </button>
-                            <button onClick={() => setExpandedEventId(isExpanded ? null : event.id)} className="btn btn-outline interactive-press" style={{ padding: '6px 12px', fontSize: '0.75rem' }}>
-                              {isExpanded ? <ChevronUp size={12} style={{ marginRight: '4px' }} /> : <ChevronDown size={12} style={{ marginRight: '4px' }} />}
-                              {isExpanded ? 'Hide' : 'Attendees'}
-                            </button>
-                            <button 
-                              onClick={() => handleOpenReminderModal(event)} 
-                              className="btn btn-outline interactive-press" 
-                              style={{ padding: '6px 12px', fontSize: '0.75rem', color: '#38bdf8', borderColor: 'rgba(56,189,248,0.3)' }}
-                              title={attendees.length === 0 ? "No registered attendees yet" : `Broadcast reminder to ${attendees.length} attendee(s)`}
-                            >
-                              <Bell size={12} style={{ marginRight: '4px' }} /> Remind
-                            </button>
-                            <button onClick={() => handleEditEvent(event)} className="btn btn-outline interactive-press" style={{ padding: '6px 12px', fontSize: '0.75rem' }}>
-                              <Edit3 size={12} style={{ marginRight: '4px' }} /> Edit
-                            </button>
-                            {cancelConfirmId === event.id ? (
-                              <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-                                <span style={{ fontSize: '0.7rem', color: 'var(--slate-400)' }}>Cancel?</span>
-                                <button onClick={() => handleCancelEvent(event.id)} className="btn btn-danger interactive-press" style={{ padding: '4px 10px', fontSize: '0.7rem' }}>Yes</button>
-                                <button onClick={() => setCancelConfirmId(null)} className="btn btn-outline interactive-press" style={{ padding: '4px 10px', fontSize: '0.7rem' }}>No</button>
-                              </div>
-                            ) : (
-                              <button onClick={() => setCancelConfirmId(event.id)} className="btn btn-outline interactive-press" style={{ padding: '6px 12px', fontSize: '0.75rem', color: '#ef4444', borderColor: 'rgba(239,68,68,0.3)' }}>
-                                <Ban size={12} style={{ marginRight: '4px' }} /> Cancel
-                              </button>
-                            )}
-                          </div>
-                        )}
-                        
-                        {/* Expandable Attendee List */}
-                        {isExpanded && attendees.length > 0 && (
-                          <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                            <div style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--slate-500)', textTransform: 'uppercase', marginBottom: '4px' }}>Attendees ({attendees.length})</div>
-                            {attendees.map((rsvp, idx) => {
-                              const attendee = users.find(u => u.id === rsvp.userId);
-                              if (!attendee) return null;
-                              return (
-                                <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '6px 0' }}>
-                                  <img src={attendee.avatar} alt={attendee.name} style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }} />
-                                  <span style={{ flex: 1, fontSize: '0.85rem', color: 'var(--white)' }}>{attendee.name}</span>
-                                  <span style={{ fontSize: '0.7rem', padding: '2px 8px', borderRadius: '99px', fontWeight: 600, ...(rsvp.checkedIn ? { background: 'rgba(34,197,94,0.15)', color: '#22c55e' } : { background: 'rgba(255,255,255,0.05)', color: 'var(--slate-500)' }) }}>
-                                    {rsvp.checkedIn ? '✓ Checked In' : 'Pending'}
-                                  </span>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        )}
-                        {isExpanded && attendees.length === 0 && (
-                          <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '16px 14px', textAlign: 'center', color: 'var(--slate-500)', fontSize: '0.8rem' }}>No attendees yet</div>
-                        )}
+                      <div style={{ display: 'flex', gap: '8px', marginBottom: '14px', overflowX: 'auto', paddingBottom: '2px' }}>
+                        {[
+                          { id: 'upcoming', label: `Upcoming (${upcomingCount})` },
+                          { id: 'past', label: `Past & Archived (${pastCount})` },
+                          { id: 'all', label: `All Events (${communityEvents.length})` }
+                        ].map(tab => (
+                          <button
+                            key={tab.id}
+                            onClick={() => setDashboardEventFilter(tab.id)}
+                            className="interactive-press"
+                            style={{
+                              padding: '6px 14px',
+                              borderRadius: '20px',
+                              border: '1px solid',
+                              borderColor: dashboardEventFilter === tab.id ? 'var(--teal-500)' : 'rgba(255,255,255,0.08)',
+                              background: dashboardEventFilter === tab.id ? 'rgba(20,184,166,0.15)' : 'rgba(255,255,255,0.02)',
+                              color: dashboardEventFilter === tab.id ? 'var(--teal-300)' : 'var(--slate-400)',
+                              fontSize: '0.8rem',
+                              fontWeight: 600,
+                              cursor: 'pointer',
+                              whiteSpace: 'nowrap'
+                            }}
+                          >
+                            {tab.label}
+                          </button>
+                        ))}
                       </div>
                     );
-                  })}
-                </div>
+                  })()}
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    {(() => {
+                      let filteredEvents = communityEvents;
+                      if (dashboardEventFilter === 'upcoming') {
+                        filteredEvents = communityEvents.filter(e => isEventUpcoming(e) && e.status !== 'cancelled')
+                          .sort((a, b) => (parseEventDateTime(a.date, a.time) || 0) - (parseEventDateTime(b.date, b.time) || 0));
+                      } else if (dashboardEventFilter === 'past') {
+                        filteredEvents = communityEvents.filter(e => isEventPast(e) && e.status !== 'cancelled')
+                          .sort((a, b) => (parseEventDateTime(b.date, b.time) || 0) - (parseEventDateTime(a.date, a.time) || 0));
+                      }
+
+                      if (filteredEvents.length === 0) {
+                        return (
+                          <div style={{ padding: '36px 20px', textAlign: 'center', background: 'rgba(255,255,255,0.02)', borderRadius: '16px', border: '1px dashed rgba(255,255,255,0.08)' }}>
+                            <p style={{ color: 'var(--slate-400)', margin: 0, fontSize: '0.9rem' }}>
+                              {dashboardEventFilter === 'upcoming' 
+                                ? 'No upcoming events scheduled. Create one to gather your members!' 
+                                : dashboardEventFilter === 'past'
+                                  ? 'No past events archived yet.'
+                                  : 'No events found.'}
+                            </p>
+                          </div>
+                        );
+                      }
+
+                      return filteredEvents.map(event => {
+                        const { day, month } = parseDateParts(event.date);
+                        const ev = getEventRevenue(event);
+                        const isCancelled = event.status === 'cancelled';
+                        const isPast = isEventPast(event);
+                        const isExpanded = expandedEventId === event.id;
+                        const attendees = (eventRsvps[event.id] || []).filter(r => r.status === 'going');
+                        
+                        return (
+                          <div key={event.id} className="stagger-item" style={{ 
+                            background: isPast ? 'rgba(255,255,255,0.015)' : 'rgba(255,255,255,0.02)', 
+                            border: isPast ? '1px solid rgba(255,255,255,0.04)' : '1px solid rgba(255,255,255,0.06)', 
+                            borderRadius: '14px', 
+                            overflow: 'hidden', 
+                            opacity: isCancelled ? 0.5 : isPast ? 0.88 : 1 
+                          }}>
+                            <div style={{ display: 'flex', gap: '14px', padding: '14px' }}>
+                              {/* Date block */}
+                              <div style={{ width: '48px', height: '54px', background: isPast ? 'rgba(51,65,85,0.4)' : 'rgba(20,184,166,0.1)', borderRadius: '10px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                <div style={{ fontSize: '1.2rem', fontWeight: 700, color: isPast ? 'var(--slate-300)' : 'var(--white)', lineHeight: 1 }}>{day}</div>
+                                <div style={{ fontSize: '0.65rem', color: isPast ? 'var(--slate-400)' : 'var(--teal-400)', fontWeight: 600, textTransform: 'uppercase' }}>{month}</div>
+                              </div>
+                              
+                              {/* Info */}
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                                  <h4 style={{ margin: 0, flex: 1, fontSize: '0.95rem', fontWeight: 600, color: isPast ? 'var(--slate-200)' : 'var(--white)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{event.title}</h4>
+                                  {isPast ? (
+                                    <span style={{ fontSize: '0.65rem', background: 'rgba(51,65,85,0.6)', color: 'var(--slate-300)', padding: '2px 8px', borderRadius: '99px', fontWeight: 600, textTransform: 'uppercase' }}>Archived</span>
+                                  ) : (
+                                    <span className={`status-badge ${event.status || 'published'}`}>{event.status || 'live'}</span>
+                                  )}
+                                </div>
+                                
+                                {/* Meta row */}
+                                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', fontSize: '0.75rem', color: 'var(--slate-400)', marginBottom: '6px' }}>
+                                  <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}><Clock size={11} /> {event.time}</span>
+                                  <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}><MapPin size={11} /> {event.location}</span>
+                                </div>
+                                
+                                {/* Stats row */}
+                                <div style={{ display: 'flex', gap: '12px', fontSize: '0.75rem' }}>
+                                  <span style={{ color: isPast ? 'var(--slate-400)' : 'var(--teal-400)', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                                    <UserCheck size={12} /> {ev.rsvpCount}{event.maxCapacity ? `/${event.maxCapacity}` : ''} {isPast ? 'attended' : 'going'}
+                                  </span>
+                                  {ev.price > 0 && (
+                                    <span style={{ color: '#f59e0b', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                                      <DollarSign size={12} /> £{ev.revenue} revenue
+                                    </span>
+                                  )}
+                                  <span style={{ color: '#3b82f6', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                                    <ScanLine size={12} /> {ev.checkedIn} checked in
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            {/* Action buttons */}
+                            {!isCancelled && (
+                              <div style={{ display: 'flex', gap: '6px', padding: '0 14px 10px', flexWrap: 'wrap', alignItems: 'center' }}>
+                                {!isPast ? (
+                                  <>
+                                    <button onClick={() => setShowScanner(true)} className="btn btn-outline interactive-press" style={{ padding: '6px 12px', fontSize: '0.75rem', color: 'var(--teal-400)', borderColor: 'rgba(20,184,166,0.3)' }}>
+                                      <QrCode size={12} style={{ marginRight: '4px' }} /> Scan
+                                    </button>
+                                    <button onClick={() => setFlyerEvent(event)} className="btn btn-outline interactive-press" style={{ padding: '6px 12px', fontSize: '0.75rem', color: '#a78bfa', borderColor: 'rgba(167,139,250,0.3)' }}>
+                                      <ImageIcon size={12} style={{ marginRight: '4px' }} /> Flyer
+                                    </button>
+                                    <button onClick={() => setExpandedEventId(isExpanded ? null : event.id)} className="btn btn-outline interactive-press" style={{ padding: '6px 12px', fontSize: '0.75rem' }}>
+                                      {isExpanded ? <ChevronUp size={12} style={{ marginRight: '4px' }} /> : <ChevronDown size={12} style={{ marginRight: '4px' }} />}
+                                      {isExpanded ? 'Hide' : 'Attendees'}
+                                    </button>
+                                    <button 
+                                      onClick={() => handleOpenReminderModal(event)} 
+                                      className="btn btn-outline interactive-press" 
+                                      style={{ padding: '6px 12px', fontSize: '0.75rem', color: '#38bdf8', borderColor: 'rgba(56,189,248,0.3)' }}
+                                      title={attendees.length === 0 ? "No registered attendees yet" : `Broadcast reminder to ${attendees.length} attendee(s)`}
+                                    >
+                                      <Bell size={12} style={{ marginRight: '4px' }} /> Remind
+                                    </button>
+                                    <button onClick={() => handleEditEvent(event)} className="btn btn-outline interactive-press" style={{ padding: '6px 12px', fontSize: '0.75rem' }}>
+                                      <Edit3 size={12} style={{ marginRight: '4px' }} /> Edit
+                                    </button>
+                                    {cancelConfirmId === event.id ? (
+                                      <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                                        <span style={{ fontSize: '0.7rem', color: 'var(--slate-400)' }}>Cancel?</span>
+                                        <button onClick={() => handleCancelEvent(event.id)} className="btn btn-danger interactive-press" style={{ padding: '4px 10px', fontSize: '0.7rem' }}>Yes</button>
+                                        <button onClick={() => setCancelConfirmId(null)} className="btn btn-outline interactive-press" style={{ padding: '4px 10px', fontSize: '0.7rem' }}>No</button>
+                                      </div>
+                                    ) : (
+                                      <button onClick={() => setCancelConfirmId(event.id)} className="btn btn-outline interactive-press" style={{ padding: '6px 12px', fontSize: '0.75rem', color: '#ef4444', borderColor: 'rgba(239,68,68,0.3)' }}>
+                                        <Ban size={12} style={{ marginRight: '4px' }} /> Cancel
+                                      </button>
+                                    )}
+                                  </>
+                                ) : (
+                                  <>
+                                    <span style={{ fontSize: '0.75rem', color: 'var(--slate-400)', display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '4px 10px', background: 'rgba(255,255,255,0.03)', borderRadius: '6px' }}>
+                                      <Archive size={12} /> Event Ended (Archived)
+                                    </span>
+                                    <button onClick={() => setExpandedEventId(isExpanded ? null : event.id)} className="btn btn-outline interactive-press" style={{ padding: '6px 12px', fontSize: '0.75rem' }}>
+                                      {isExpanded ? <ChevronUp size={12} style={{ marginRight: '4px' }} /> : <ChevronDown size={12} style={{ marginRight: '4px' }} />}
+                                      {isExpanded ? 'Hide' : `Attendees (${attendees.length})`}
+                                    </button>
+                                    <button onClick={() => setFlyerEvent(event)} className="btn btn-outline interactive-press" style={{ padding: '6px 12px', fontSize: '0.75rem', color: '#a78bfa', borderColor: 'rgba(167,139,250,0.3)' }}>
+                                      <ImageIcon size={12} style={{ marginRight: '4px' }} /> Flyer
+                                    </button>
+                                  </>
+                                )}
+                              </div>
+                            )}
+                            
+                            {/* Expandable Attendee List */}
+                            {isExpanded && attendees.length > 0 && (
+                              <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                <div style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--slate-500)', textTransform: 'uppercase', marginBottom: '4px' }}>Attendees ({attendees.length})</div>
+                                {attendees.map((rsvp, idx) => {
+                                  const attendee = users.find(u => u.id === rsvp.userId);
+                                  if (!attendee) return null;
+                                  return (
+                                    <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '6px 0' }}>
+                                      <img src={attendee.avatar} alt={attendee.name} style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }} />
+                                      <span style={{ flex: 1, fontSize: '0.85rem', color: 'var(--white)' }}>{attendee.name}</span>
+                                      <span style={{ fontSize: '0.7rem', padding: '2px 8px', borderRadius: '99px', fontWeight: 600, ...(rsvp.checkedIn ? { background: 'rgba(34,197,94,0.15)', color: '#22c55e' } : { background: 'rgba(255,255,255,0.05)', color: 'var(--slate-500)' }) }}>
+                                        {rsvp.checkedIn ? '✓ Checked In' : 'Pending'}
+                                      </span>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            )}
+                            {isExpanded && attendees.length === 0 && (
+                              <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '16px 14px', textAlign: 'center', color: 'var(--slate-500)', fontSize: '0.8rem' }}>No attendees yet</div>
+                            )}
+                          </div>
+                        );
+                      });
+                    })()}
+                  </div>
+                </>
               )}
             </div>
           )}
@@ -2724,7 +2872,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
           <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <h2 style={{ margin: 0, fontSize: '1.2rem', fontFamily: 'var(--font-heading)', color: 'var(--white)' }}>
               {isEditing ? 'Edit Profile' : 
-               modalType === 'event' ? 'Create Event' : 
+               modalType === 'event' ? (eventForm.resolvedDates && eventForm.resolvedDates.length > 1 ? `Create Schedule (${eventForm.resolvedDates.length} Events)` : 'Create Event') : 
                modalType === 'edit-event' ? 'Edit Event' :
                modalType === 'members' ? 'Manage Members' : 
                modalType === 'whatsapp' ? 'WhatsApp Integration' : 'Promote Co-Leader'}
@@ -3119,7 +3267,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                     className="btn btn-primary interactive-press" 
                     style={{ padding: '14px', flex: 2, borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', background: 'linear-gradient(135deg, var(--teal-500), #3b82f6)', opacity: isUploading ? 0.7 : 1 }}
                   >
-                    <Check size={18} /> {isUploading ? 'Publishing...' : editingEventId ? 'Save Changes' : 'Publish Event'}
+                    <Check size={18} /> {isUploading ? 'Publishing...' : editingEventId ? 'Save Changes' : (eventForm.resolvedDates && eventForm.resolvedDates.length > 1 ? `Publish ${eventForm.resolvedDates.length} Events` : 'Publish Event')}
                   </button>
                 )}
               </div>

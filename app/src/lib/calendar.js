@@ -31,13 +31,15 @@ export function downloadIcs(event, communityName) {
   document.body.removeChild(link);
 }
 
-function parseDateTime(dateStr, timeStr) {
+export function parseEventDateTime(dateStr, timeStr) {
+  if (!dateStr) return null;
   try {
-    let d = new Date(dateStr);
+    let d = new Date(dateStr.includes('T') ? dateStr : `${dateStr}T00:00:00`);
     if (isNaN(d.getTime())) {
-      // Fallback if date parsing fails, use today
-      d = new Date();
+      d = new Date(dateStr);
     }
+    if (isNaN(d.getTime())) return null;
+
     if (timeStr) {
       const timeMatch = timeStr.match(/(\d+):(\d+)\s*(am|pm)?/i);
       if (timeMatch) {
@@ -49,11 +51,32 @@ function parseDateTime(dateStr, timeStr) {
         if (meridian === 'am' && hours === 12) hours = 0;
         
         d.setHours(hours, minutes, 0, 0);
+      } else {
+        d.setHours(23, 59, 59, 999);
       }
+    } else {
+      // Default to end of the day so events happening today stay "Upcoming" for the full day
+      d.setHours(23, 59, 59, 999);
     }
     return d;
   } catch (e) {
-    console.warn("Could not parse date", dateStr, timeStr);
+    return null;
   }
-  return new Date();
 }
+
+export function isEventUpcoming(eventOrDate, optionalTime) {
+  const dateStr = typeof eventOrDate === 'string' ? eventOrDate : eventOrDate?.date;
+  const timeStr = optionalTime || (typeof eventOrDate === 'object' ? eventOrDate?.time : null);
+  const dt = parseEventDateTime(dateStr, timeStr);
+  if (!dt) return false;
+  return dt >= new Date();
+}
+
+export function isEventPast(eventOrDate, optionalTime) {
+  return !isEventUpcoming(eventOrDate, optionalTime);
+}
+
+function parseDateTime(dateStr, timeStr) {
+  return parseEventDateTime(dateStr, timeStr) || new Date();
+}
+

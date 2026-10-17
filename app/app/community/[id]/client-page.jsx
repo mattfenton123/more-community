@@ -1,6 +1,6 @@
 "use client";
 import { useState, useRef, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Share2, Users, Calendar, Settings, ChevronDown, ChevronUp, Image as ImageIcon, ExternalLink, Camera, Mail, Activity, Sparkles, MapPin, Clock, Star, MessageCircle, Heart, BadgeCheck, Globe, Trash2, Flag, Search, Briefcase, Check, X, MessageSquare, Lightbulb, Info, Megaphone, Video, Plus, Shield, Play, Smile } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Share2, Users, Calendar, Settings, ChevronDown, ChevronUp, Image as ImageIcon, ExternalLink, Camera, Mail, Activity, Sparkles, MapPin, Clock, Star, MessageCircle, Heart, BadgeCheck, Globe, Trash2, Flag, Search, Briefcase, Check, X, MessageSquare, Lightbulb, Info, Megaphone, Video, Plus, Shield, Play, Smile, Archive } from 'lucide-react';
 import { useRouter as useNavigate, useParams } from 'next/navigation';
 import { useAppContext } from '../../../src/context/AppContext';
 import { useFeed } from '../../../src/context/FeedContext';
@@ -17,7 +17,8 @@ import ReviewsList from '../../../src/components/ReviewsList';
 import ReviewForm from '../../../src/components/ReviewForm';
 import ReelViewer from '../../../src/components/ReelViewer';
 import dynamic from 'next/dynamic';
-import { downloadIcs } from '../../../src/lib/calendar';
+import { downloadIcs, isEventUpcoming, isEventPast, parseEventDateTime } from '../../../src/lib/calendar';
+import { cleanLocationName } from '../../../src/lib/location';
 
 const VideoUploader = dynamic(() => import('../../../src/components/VideoUploader'), { ssr: false });
 const EmojiPicker = dynamic(() => import('emoji-picker-react'), { ssr: false });
@@ -122,9 +123,12 @@ export default function CommunityProfile() {
                    user?.isAdmin ||
                    (communityMemberships[communityId] || []).some(m => (m.userId === user?.id || m.user_id === user?.id) && (m.role === 'co-founder' || m.role === 'Leader' || m.role === 'Co-Leader' || m.role === 'Admin'));
   const communityEvents = events.filter(e => e.communityId === communityId || e.collabCommunityIds?.includes(communityId));
-  const upcomingEvents = communityEvents.filter(e => {
-    try { return new Date(e.date) >= new Date(); } catch { return true; }
-  });
+  const upcomingEvents = communityEvents
+    .filter(e => isEventUpcoming(e) && e.status !== 'cancelled')
+    .sort((a, b) => (parseEventDateTime(a.date, a.time) || 0) - (parseEventDateTime(b.date, b.time) || 0));
+  const pastEvents = communityEvents
+    .filter(e => isEventPast(e) && e.status !== 'cancelled')
+    .sort((a, b) => (parseEventDateTime(b.date, b.time) || 0) - (parseEventDateTime(a.date, a.time) || 0));
   const leaderUser = users.find(u => u.id === community.leader_id);
   const memberList = (communityMemberships[communityId] || []).map(m => users.find(u => u.id === m.userId || u.id === m.user_id)).filter(Boolean);
   
@@ -140,7 +144,7 @@ export default function CommunityProfile() {
   const dbPhotos = (community.gallery_photos || []).map(p => typeof p === 'string' ? { url: p, uploaderId: null } : p);
   const stockPhotos = isDemoCommunity && dbPhotos.length === 0 ? GALLERY_PHOTOS[galleryType].map(url => ({ url, uploaderId: 'stock' })) : [];
   const galleryPhotos = dbPhotos.length > 0 ? dbPhotos : stockPhotos;
-  const nextEvent = upcomingEvents[0] || communityEvents[0];
+  const nextEvent = upcomingEvents[0] || null;
   const communityFeed = feedPosts?.filter(p => p.communityId === communityId) || [];
   
   // Real reviews
@@ -1434,7 +1438,7 @@ export default function CommunityProfile() {
                           {evt.title}
                           {evt.communityId !== communityId && <span style={{ fontSize: '0.65rem', background: 'var(--teal-500)', color: 'var(--white)', padding: '2px 6px', borderRadius: '6px', fontWeight: 700, textTransform: 'uppercase' }}>Collab</span>}
                         </div>
-                        <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)', display: 'flex', alignItems: 'center', gap: '4px' }}><MapPin size={14} /> {evt.location}</div>
+                        <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)', display: 'flex', alignItems: 'center', gap: '4px' }}><MapPin size={14} /> {cleanLocationName(evt.location)}</div>
                       </div>
                     </div>
                   ))}
@@ -1673,12 +1677,12 @@ export default function CommunityProfile() {
         {/* ===== EVENTS TAB ===== */}
         {activeTab === 'events' && (
           <>
-            <h3 style={{ fontSize: '1.3rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: '0 0 16px 0' }}>
-              Upcoming Events ({communityEvents.length})
+            <h3 style={{ fontSize: '1.3rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: '0 0 16px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Calendar size={20} color="var(--teal-400)" /> Upcoming Events ({upcomingEvents.length})
             </h3>
-            {communityEvents.length > 0 ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                {communityEvents.map(event => {
+            {upcomingEvents.length > 0 ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '24px' }}>
+                {upcomingEvents.map(event => {
                   const rsvps = eventRsvps[event.id] || [];
                   return (
                     <div key={event.id} onClick={() => navigate.push(`/events/${event.id}`)} className="interactive-press" style={{ borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)', cursor: 'pointer' }}>
@@ -1697,7 +1701,7 @@ export default function CommunityProfile() {
                         </div>
                         <div style={{ display: 'flex', gap: '16px', fontSize: '0.8rem', color: 'var(--slate-400)', marginBottom: '8px' }}>
                           <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={14} /> {event.time}</span>
-                          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><MapPin size={14} /> {event.location}</span>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><MapPin size={14} /> {cleanLocationName(event.location)}</span>
                         </div>
                         {event.description && (
                           <p style={{ margin: '0 0 10px 0', fontSize: '0.85rem', color: 'var(--slate-400)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: 1.4 }}>{event.description}</p>
@@ -1713,33 +1717,96 @@ export default function CommunityProfile() {
                             {rsvps.length} going
                           </div>
                         )}
-                        
-                        {new Date(event.date) < new Date() ? (
-                          isLeader && (
-                            <button 
-                              onClick={(e) => { e.stopPropagation(); handleGenerateFomoReel(event); }} 
-                              className="btn interactive-press" 
-                              style={{ marginTop: '12px', width: '100%', padding: '10px', borderRadius: '10px', fontSize: '0.85rem', display: 'flex', gap: '6px', justifyContent: 'center', background: 'linear-gradient(135deg, var(--teal-500), var(--teal-600))', color: 'var(--white)', border: 'none', fontWeight: 600 }}>
-                              <Sparkles size={14} /> Generate FOMO Reel
-                            </button>
-                          )
-                        ) : (
-                          <button 
-                            onClick={(e) => { e.stopPropagation(); downloadIcs(event, community.name); }} 
-                            className="btn btn-outline interactive-press" 
-                            style={{ marginTop: '12px', width: '100%', padding: '10px', borderRadius: '10px', fontSize: '0.85rem', display: 'flex', gap: '6px', justifyContent: 'center' }}>
-                            <Calendar size={14} /> Add to Calendar
-                          </button>
-                        )}
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); downloadIcs(event, community.name); }} 
+                          className="btn btn-outline interactive-press" 
+                          style={{ marginTop: '12px', width: '100%', padding: '10px', borderRadius: '10px', fontSize: '0.85rem', display: 'flex', gap: '6px', justifyContent: 'center' }}>
+                          <Calendar size={14} /> Add to Calendar
+                        </button>
                       </div>
                     </div>
                   );
                 })}
               </div>
             ) : (
-              <div style={{ padding: '40px 20px', textAlign: 'center', background: 'rgba(255,255,255,0.02)', borderRadius: '16px', border: '1px dashed rgba(255,255,255,0.1)' }}>
-                <div style={{ fontSize: '2rem', marginBottom: '12px' }}>📅</div>
-                <p style={{ color: 'var(--slate-400)', margin: 0 }}>No events scheduled yet. Check back soon!</p>
+              <div style={{ padding: '36px 20px', textAlign: 'center', background: 'rgba(255,255,255,0.02)', borderRadius: '16px', border: '1px dashed rgba(255,255,255,0.08)', marginBottom: '24px' }}>
+                <div style={{ fontSize: '2rem', marginBottom: '8px' }}>📅</div>
+                <div style={{ color: 'var(--white)', fontWeight: 600, fontSize: '1rem', marginBottom: '4px' }}>No Upcoming Events</div>
+                <p style={{ color: 'var(--slate-400)', fontSize: '0.85rem', margin: '0 0 16px 0' }}>There are no upcoming meetups currently scheduled for this community.</p>
+                {isLeader && (
+                  <button onClick={() => navigate.push(`/dashboard?community=${community.id}&tab=events`)} className="btn btn-primary interactive-press" style={{ padding: '8px 18px', fontSize: '0.85rem', borderRadius: '10px' }}>
+                    + Schedule an Event
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Past & Archived Events */}
+            {pastEvents.length > 0 && (
+              <div style={{ marginTop: '28px', paddingTop: '20px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+                  <h4 style={{ fontSize: '1.15rem', fontFamily: 'var(--font-heading)', color: 'var(--slate-300)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Archive size={18} color="var(--slate-400)" /> Past Events ({pastEvents.length})
+                  </h4>
+                  <span style={{ fontSize: '0.7rem', color: 'var(--slate-400)', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', padding: '2px 8px', borderRadius: '12px', fontWeight: 600 }}>Archived</span>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                  {pastEvents.map(event => {
+                    const rsvps = eventRsvps[event.id] || [];
+                    return (
+                      <div key={event.id} onClick={() => navigate.push(`/events/${event.id}`)} className="interactive-press" style={{ borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)', background: 'rgba(255,255,255,0.015)', opacity: 0.85, cursor: 'pointer' }}>
+                        {event.image && (
+                          <div style={{ height: '120px', background: `url(${event.image})`, backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative', filter: 'saturate(0.8)' }}>
+                            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 40%, rgba(15,23,42,0.8))' }}></div>
+                            <div style={{ position: 'absolute', top: '10px', right: '10px', background: 'rgba(51,65,85,0.85)', backdropFilter: 'blur(6px)', border: '1px solid rgba(255,255,255,0.1)', padding: '3px 8px', borderRadius: '6px', fontSize: '0.65rem', fontWeight: 700, color: 'var(--slate-300)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                              Archived
+                            </div>
+                            <div style={{ position: 'absolute', bottom: '10px', left: '12px', background: 'rgba(51,65,85,0.9)', padding: '4px 10px', borderRadius: '6px', fontSize: '0.7rem', fontWeight: 700, color: 'var(--slate-200)' }}>
+                              {event.date}
+                            </div>
+                          </div>
+                        )}
+                        <div style={{ padding: '16px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '6px' }}>
+                            <div style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--slate-200)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              {event.title}
+                              {event.communityId !== communityId && <span style={{ fontSize: '0.65rem', background: 'rgba(20,184,166,0.3)', color: 'var(--teal-300)', padding: '2px 6px', borderRadius: '6px', fontWeight: 700, textTransform: 'uppercase' }}>Collab</span>}
+                            </div>
+                            {!event.image && (
+                              <span style={{ fontSize: '0.65rem', background: 'rgba(51,65,85,0.6)', color: 'var(--slate-400)', padding: '2px 6px', borderRadius: '4px', fontWeight: 600, textTransform: 'uppercase' }}>Past Event</span>
+                            )}
+                          </div>
+                          <div style={{ display: 'flex', gap: '16px', fontSize: '0.8rem', color: 'var(--slate-400)', marginBottom: '8px' }}>
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={14} /> {event.time}</span>
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><MapPin size={14} /> {cleanLocationName(event.location)}</span>
+                          </div>
+                          {event.description && (
+                            <p style={{ margin: '0 0 10px 0', fontSize: '0.85rem', color: 'var(--slate-400)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: 1.4 }}>{event.description}</p>
+                          )}
+                          {rsvps.length > 0 && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', color: 'var(--slate-400)' }}>
+                              <div style={{ display: 'flex' }}>
+                                {rsvps.slice(0, 3).map((r, i) => {
+                                  const ru = users.find(u => u.id === r.userId);
+                                  return <img key={i} src={ru?.avatar || 'https://i.pravatar.cc/24'} alt="" style={{ width: '22px', height: '22px', borderRadius: '50%', border: '2px solid var(--slate-950)', marginLeft: i > 0 ? '-6px' : 0, objectFit: 'cover' }} />;
+                                })}
+                              </div>
+                              {rsvps.length} attended
+                            </div>
+                          )}
+                          {isLeader && (
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); handleGenerateFomoReel(event); }} 
+                              className="btn interactive-press" 
+                              style={{ marginTop: '12px', width: '100%', padding: '10px', borderRadius: '10px', fontSize: '0.85rem', display: 'flex', gap: '6px', justifyContent: 'center', background: 'linear-gradient(135deg, var(--teal-500), var(--teal-600))', color: 'var(--white)', border: 'none', fontWeight: 600 }}>
+                              <Sparkles size={14} /> Generate FOMO Reel
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             )}
           </>

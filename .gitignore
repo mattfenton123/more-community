@@ -10,5 +10,4 @@ app/node_modules/
 app/dist/
 app/.next/
 .vercel/
-.vercel
-.vercel
+test_out.docx

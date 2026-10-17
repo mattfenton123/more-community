@@ -8,6 +8,7 @@ import {
   TrendingUp, BarChart3, Stethoscope
 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
+import { isEventUpcoming } from '../../src/lib/calendar';
 
 export default function CouncilDashboard() {
   const { communities, events, users, communityMemberships, eventRsvps, prescribingLinks, setPrescribingLinks } = useAppContext();
@@ -22,7 +23,7 @@ export default function CouncilDashboard() {
     totalMembers += mems.length;
   });
 
-  const upcomingEvents = events.filter(e => new Date(e.date) >= new Date()).length;
+  const upcomingEvents = events.filter(e => isEventUpcoming(e)).length;
   
   // Mock monthly data for the chart
   const monthlyActivity = [

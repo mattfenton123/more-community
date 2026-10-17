@@ -11,6 +11,7 @@ import dynamic from 'next/dynamic';
 const MapView = dynamic(() => import('../../src/components/MapView'), { ssr: false });
 import AppHeader from '../../src/components/AppHeader';
 import SwipeDiscovery from '../../src/components/SwipeDiscovery';
+import { isEventUpcoming } from '../../src/lib/calendar';
 
 export default function Discover() {
   const [activePill, setActivePill] = useState('All');
@@ -29,7 +30,7 @@ export default function Discover() {
     return communities.map(c => {
       const members = (communityMemberships[c.id] || []).length;
       const cEvents = events.filter(e => e.communityId === c.id && e.status !== 'cancelled').length;
-      const upcomingEvents = events.filter(e => e.communityId === c.id && e.status !== 'cancelled' && e.date && new Date(e.date + 'T00:00:00') >= new Date()).length;
+      const upcomingEvents = events.filter(e => e.communityId === c.id && e.status !== 'cancelled' && isEventUpcoming(e)).length;
       const cMessages = messages.filter(m => m.communityId === c.id).length;
       const activityScore = members * 2 + cEvents * 10 + cMessages;
       const activityLevel = activityScore >= 30 ? 'active' : activityScore >= 10 ? 'growing' : 'new';
@@ -369,7 +370,7 @@ export default function Discover() {
               </div>
               <SwipeDiscovery 
                 inline={true}
-                events={events.filter(e => e.status !== 'cancelled' && new Date(e.date + 'T00:00:00') >= new Date() && !savedItems.includes(e.id))} 
+                events={events.filter(e => e.status !== 'cancelled' && isEventUpcoming(e) && !savedItems.includes(e.id))} 
                 communities={communities} 
                 onClose={() => {}} 
                 onSave={(item) => {

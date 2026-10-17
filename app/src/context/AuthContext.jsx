@@ -84,6 +84,14 @@ export function AuthProvider({ children }) {
     return { data, error };
   };
 
+  const resendConfirmationEmail = async (email) => {
+    const { data, error } = await supabase.auth.resend({
+      type: 'signup',
+      email,
+    });
+    return { data, error };
+  };
+
   const signOut = async () => {
     await supabase.auth.signOut();
     setSession(null);
@@ -101,6 +109,7 @@ export function AuthProvider({ children }) {
       signInWithApple,
       signInWithFacebook,
       resetPassword,
+      resendConfirmationEmail,
       signOut,
     }}>
       {children}

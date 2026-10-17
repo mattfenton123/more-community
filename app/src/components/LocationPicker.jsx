@@ -3,59 +3,40 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { MapPin, Search, Navigation, Check, Loader2 } from 'lucide-react';
+import { MapPin, Search, Navigation, Check, Loader2, Sparkles, Crosshair } from 'lucide-react';
+import {
+  REGIONAL_KNOWN_LOCATIONS,
+  DEFAULT_TW_CENTER,
+  DEFAULT_REGION_CENTER,
+  cleanLocationName,
+  parseLocationCoords,
+  encodeLocationWithCoords,
+  findKnownLocation,
+  geocodeLocation
+} from '../lib/location';
 
-// Default center: Tunbridge Wells
-const DEFAULT_CENTER = [51.1322, 0.2637];
-
-// Well-known Tunbridge Wells & surrounding Kent/East Sussex locations for fast local lookup
-const FAST_TW_SPOTS = [
-  { name: 'Bewl Water / Bewl Reservoir', lat: 51.0676, lon: 0.4049, aliases: ['bewl', 'bewl reservoir', 'bewl water', 'bewl water reservoir'] },
-  { name: 'Dunorlan Park', lat: 51.1345, lon: 0.2710, aliases: ['dunorlan', 'dunorlan park'] },
-  { name: 'The Pantiles', lat: 51.1280, lon: 0.2620, aliases: ['pantiles', 'the pantiles'] },
-  { name: 'Calverley Grounds', lat: 51.1355, lon: 0.2605, aliases: ['calverley', 'calverley grounds'] },
-  { name: 'Tunbridge Wells Common', lat: 51.1315, lon: 0.2550, aliases: ['tw common', 'common', 'tunbridge wells common'] },
-  { name: 'Camden Road', lat: 51.1330, lon: 0.2630, aliases: ['camden rd', 'camden road'] },
-  { name: 'The Forum', lat: 51.1310, lon: 0.2650, aliases: ['forum', 'the forum'] },
-  { name: 'Trinity Theatre & Arts Centre', lat: 51.1315, lon: 0.2640, aliases: ['trinity', 'trinity theatre'] },
-  { name: 'Assembly Hall Theatre', lat: 51.1340, lon: 0.2625, aliases: ['assembly hall'] },
-  { name: 'Grosvenor & Hilbert Park', lat: 51.1280, lon: 0.2680, aliases: ['hilbert', 'grosvenor park', 'grosvenor & hilbert'] },
-  { name: 'St Johns Park', lat: 51.1370, lon: 0.2560, aliases: ['st johns', 'st johns park'] },
-  { name: 'High Street, Tunbridge Wells', lat: 51.1295, lon: 0.2615, aliases: ['high street'] },
-  { name: 'Bedgebury National Pinetum & Forest', lat: 51.0827, lon: 0.4578, aliases: ['bedgebury', 'pinetum', 'bedgebury forest'] },
-  { name: 'Groombridge Place', lat: 51.1189, lon: 0.1878, aliases: ['groombridge', 'groombridge place'] },
-  { name: 'Eridge Rocks', lat: 51.1039, lon: 0.2078, aliases: ['eridge', 'eridge rocks'] },
-  { name: 'Harrison\'s Rocks', lat: 51.1011, lon: 0.1972, aliases: ['harrisons rocks', 'harrison rocks', 'harrisons'] },
-  { name: 'High Rocks', lat: 51.1278, lon: 0.2319, aliases: ['high rocks'] },
-  { name: 'Scotney Castle', lat: 51.0931, lon: 0.4069, aliases: ['scotney', 'scotney castle'] },
-  { name: 'Penshurst Place', lat: 51.1744, lon: 0.1828, aliases: ['penshurst', 'penshurst place'] },
-  { name: 'Kingdom (Penshurst)', lat: 51.1685, lon: 0.1795, aliases: ['kingdom', 'kingdom penshurst'] },
-  { name: 'Haysden Country Park', lat: 51.1895, lon: 0.2520, aliases: ['haysden', 'haysden park'] },
-  { name: 'Tonbridge Castle', lat: 51.1965, lon: 0.2740, aliases: ['tonbridge castle', 'tonbridge'] },
-  { name: 'Ashdown Forest', lat: 51.0667, lon: 0.0667, aliases: ['ashdown', 'ashdown forest'] },
-  { name: 'Southborough Common', lat: 51.1578, lon: 0.2742, aliases: ['southborough'] },
-  { name: 'Rusthall Common', lat: 51.1390, lon: 0.2310, aliases: ['rusthall'] },
-  { name: 'Broadwater Warren', lat: 51.1095, lon: 0.2480, aliases: ['broadwater', 'broadwater warren'] },
-  { name: 'Cuckoo Trail Car Park, Heathfield', lat: 50.9685, lon: 0.2520, aliases: ['cuckoo trail', 'cuckoo trail car park', 'cuckoo trail heathfield', 'heathfield walk'] },
-  { name: 'Heathfield, East Sussex', lat: 50.9680, lon: 0.2530, aliases: ['heathfield', 'heathfield high street', 'heathfield east sussex'] },
-  { name: 'Mayfield, East Sussex', lat: 51.0200, lon: 0.2600, aliases: ['mayfield', 'mayfield village'] },
-  { name: 'Crowborough, East Sussex', lat: 51.0550, lon: 0.1600, aliases: ['crowborough'] },
-  { name: 'Wadhurst, East Sussex', lat: 51.0620, lon: 0.3400, aliases: ['wadhurst'] }
+const TOP_PRESETS = [
+  { name: 'Cuckoo Trail, Heathfield', query: 'Cuckoo Trail Car Park, Heathfield' },
+  { name: 'The Pantiles', query: 'The Pantiles' },
+  { name: 'Dunorlan Park', query: 'Dunorlan Park' },
+  { name: 'Calverley Grounds', query: 'Calverley Grounds' },
+  { name: 'Bewl Water', query: 'Bewl Water / Bewl Reservoir' },
+  { name: 'TW Common', query: 'Tunbridge Wells Common' }
 ];
 
 function createPinIcon() {
   return L.divIcon({
     html: `<div style="
-      width: 38px; height: 38px; border-radius: 50%;
+      width: 40px; height: 40px; border-radius: 50%;
       background: #0d9488; border: 3px solid #ffffff;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.4), 0 0 0 6px rgba(13,148,136,0.25);
+      box-shadow: 0 4px 18px rgba(0,0,0,0.45), 0 0 0 7px rgba(13,148,136,0.3);
       display: flex; align-items: center; justify-content: center;
-      color: white; font-size: 18px; cursor: grab;
+      color: white; font-size: 20px; cursor: grab;
       transition: transform 0.15s ease;
     ">📍</div>`,
     className: '',
-    iconSize: [38, 38],
-    iconAnchor: [19, 19]
+    iconSize: [40, 40],
+    iconAnchor: [20, 20]
   });
 }
 
@@ -63,7 +44,7 @@ function createPinIcon() {
 function MapController({ coords }) {
   const map = useMap();
   useEffect(() => {
-    if (coords && coords[0] && coords[1]) {
+    if (coords && coords[0] != null && coords[1] != null && !isNaN(coords[0]) && !isNaN(coords[1])) {
       map.setView(coords, Math.max(map.getZoom(), 15), { animate: true });
       map.invalidateSize();
     }
@@ -91,21 +72,54 @@ function MapInteractionHandler({ onLocationChosen }) {
   return null;
 }
 
-export default function LocationPicker({ locationName, setLocationName }) {
-  const [coords, setCoords] = useState(DEFAULT_CENTER);
-  const [searchQuery, setSearchQuery] = useState(locationName || '');
+export default function LocationPicker({ locationName, setLocationName, coords: externalCoords, onCoordsChange }) {
+  // Initial coordinates resolution
+  const initialCoords = useMemo(() => {
+    if (externalCoords && externalCoords[0] != null && externalCoords[1] != null) {
+      return [externalCoords[0], externalCoords[1]];
+    }
+    const parsed = parseLocationCoords(locationName);
+    if (parsed) return [parsed.lat, parsed.lng];
+
+    const known = findKnownLocation(locationName);
+    if (known) return [known.lat, known.lng];
+
+    return DEFAULT_TW_CENTER;
+  }, []);
+
+  const [coords, setCoords] = useState(initialCoords);
+  const [searchQuery, setSearchQuery] = useState(cleanLocationName(locationName) || '');
   const [isSearching, setIsSearching] = useState(false);
   const [isLocating, setIsLocating] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
-  const [showMap, setShowMap] = useState(false);
-  const [pinAddress, setPinAddress] = useState(locationName || '');
+  const [showMap, setShowMap] = useState(true); // Default map open so leaders can easily pinpoint
+  const [pinAddress, setPinAddress] = useState(cleanLocationName(locationName) || '');
   const [searchNotFound, setSearchNotFound] = useState(false);
+  const [areaLabel, setAreaLabel] = useState('');
 
-  // Keep internal query aligned if parent prop changes
+  // Keep internal query aligned if parent prop changes externally
   useEffect(() => {
-    if (locationName && locationName !== searchQuery && !searchQuery) {
-      setSearchQuery(locationName);
-      setPinAddress(locationName);
+    if (locationName) {
+      const parsed = parseLocationCoords(locationName);
+      const known = findKnownLocation(locationName);
+      const clean = cleanLocationName(locationName);
+
+      if (parsed) {
+        setCoords([parsed.lat, parsed.lng]);
+      } else if (known) {
+        setCoords([known.lat, known.lng]);
+        setAreaLabel(known.area || '');
+      } else if (clean && clean !== searchQuery) {
+        // Geocode in background to align map
+        geocodeLocation(clean).then(res => {
+          if (res && res.lat && res.lng) {
+            setCoords([res.lat, res.lng]);
+          }
+        });
+      }
+
+      setSearchQuery(clean);
+      setPinAddress(clean);
     }
   }, [locationName]);
 
@@ -116,6 +130,15 @@ export default function LocationPicker({ locationName, setLocationName }) {
 
   // Reverse geocoding helper with Nominatim fallback
   const reverseGeocode = async (lat, lng) => {
+    // Check known spots within 300 meters first
+    for (const spot of REGIONAL_KNOWN_LOCATIONS) {
+      const dLat = Math.abs(spot.lat - lat);
+      const dLng = Math.abs(spot.lng - lng);
+      if (dLat < 0.003 && dLng < 0.003) {
+        return { name: spot.name, area: spot.area };
+      }
+    }
+
     try {
       const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`, {
         headers: { 'Accept': 'application/json' }
@@ -124,22 +147,29 @@ export default function LocationPicker({ locationName, setLocationName }) {
       if (data && data.display_name) {
         const parts = data.display_name.split(',');
         const shortName = parts.slice(0, 2).join(',').trim();
-        return shortName || data.display_name;
+        const area = parts.slice(2, 4).join(',').trim();
+        return { name: shortName || data.display_name, area };
       }
     } catch (e) {
       console.warn("Reverse geocode failed, using coordinate fallback:", e);
     }
-    return `Location (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
+    return { name: `Location (${lat.toFixed(4)}, ${lng.toFixed(4)})`, area: '' };
   };
 
-  const handleLocationChosen = async (lat, lng) => {
+  const handleLocationChosen = async (lat, lng, customTitle = null) => {
     setCoords([lat, lng]);
     setShowMap(true);
     setSearchNotFound(false);
-    const resolvedName = await reverseGeocode(lat, lng);
-    setSearchQuery(resolvedName);
-    setPinAddress(resolvedName);
-    setLocationName(resolvedName);
+    if (onCoordsChange) onCoordsChange([lat, lng]);
+
+    const resolved = await reverseGeocode(lat, lng);
+    const chosenName = customTitle || resolved.name;
+    setSearchQuery(chosenName);
+    setPinAddress(chosenName);
+    setAreaLabel(resolved.area || '');
+
+    const encoded = encodeLocationWithCoords(chosenName, lat, lng);
+    setLocationName(encoded);
   };
 
   const handleSearch = async (e) => {
@@ -147,38 +177,42 @@ export default function LocationPicker({ locationName, setLocationName }) {
     if (!searchQuery.trim()) return;
 
     setSearchNotFound(false);
+    const qClean = cleanLocationName(searchQuery).toLowerCase().trim();
 
-    // Check fast local TW & Kent/Sussex spots first (including aliases)
-    const qLower = searchQuery.toLowerCase().trim();
-    const matchedSpot = FAST_TW_SPOTS.find(s => 
-      s.name.toLowerCase().includes(qLower) || 
-      (s.aliases && s.aliases.some(a => qLower.includes(a) || a.includes(qLower)))
-    );
+    // 1. Check verified spots first (including Cuckoo Trail, Bewl Water, Dunorlan, etc.)
+    const matchedSpot = findKnownLocation(qClean);
     if (matchedSpot) {
-      setCoords([matchedSpot.lat, matchedSpot.lon]);
-      setLocationName(matchedSpot.name);
+      const newCoords = [matchedSpot.lat, matchedSpot.lng];
+      setCoords(newCoords);
       setSearchQuery(matchedSpot.name);
       setPinAddress(matchedSpot.name);
+      setAreaLabel(matchedSpot.area || '');
       setSearchResults([]);
       setShowMap(true);
+      if (onCoordsChange) onCoordsChange(newCoords);
+      setLocationName(encodeLocationWithCoords(matchedSpot.name, matchedSpot.lat, matchedSpot.lng));
       return;
     }
 
     setIsSearching(true);
     try {
-      // Build candidate searches in order of relevance without forcefully restricting to TW town center
+      const normalized = qClean
+        .replace(/\bopp\.?\b/gi, '')
+        .replace(/\bopposite\b/gi, '')
+        .replace(/\bnext to\b/gi, '')
+        .replace(/\bnear\b/gi, '')
+        .replace(/\bby\b/gi, '')
+        .trim();
+
       const candidates = [
-        searchQuery,
-        qLower.includes('reservoir') ? searchQuery.replace(/\breservoir\b/gi, 'Water') : null,
-        qLower.includes('water') ? searchQuery.replace(/\bwater\b/gi, 'Reservoir') : null,
-        !qLower.includes('uk') ? `${searchQuery}, Kent, UK` : null,
-        !qLower.includes('uk') ? `${searchQuery}, UK` : null
+        qClean,
+        normalized !== qClean ? normalized : null,
+        !qClean.includes('uk') ? `${normalized}, UK` : null
       ].filter(Boolean);
 
       let foundData = [];
       for (const cand of candidates) {
-        // Prioritize South East / Kent / Sussex region with viewbox
-        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(cand)}&viewbox=-0.2,51.35,0.7,50.95&bounded=0&limit=4`;
+        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(cand)}&viewbox=-0.3,51.45,0.8,50.85&bounded=0&limit=5`;
         const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
         const data = await res.json();
         if (data && data.length > 0) {
@@ -193,11 +227,12 @@ export default function LocationPicker({ locationName, setLocationName }) {
         const best = foundData[0];
         const newCoords = [parseFloat(best.lat), parseFloat(best.lon)];
         setCoords(newCoords);
-        const shortName = best.display_name.split(',')[0].trim();
-        setLocationName(shortName);
+        const shortName = best.display_name.split(',').slice(0, 2).join(',').trim();
         setSearchQuery(shortName);
         setPinAddress(shortName);
         setShowMap(true);
+        if (onCoordsChange) onCoordsChange(newCoords);
+        setLocationName(encodeLocationWithCoords(shortName, newCoords[0], newCoords[1]));
       } else {
         setSearchNotFound(true);
         setShowMap(true);
@@ -212,13 +247,14 @@ export default function LocationPicker({ locationName, setLocationName }) {
 
   const selectResult = (result) => {
     const newCoords = [parseFloat(result.lat), parseFloat(result.lon)];
+    const shortName = result.display_name.split(',').slice(0, 2).join(',').trim();
     setCoords(newCoords);
-    const shortName = result.display_name.split(',')[0].trim();
-    setLocationName(shortName);
     setSearchQuery(shortName);
     setPinAddress(shortName);
     setSearchResults([]);
     setShowMap(true);
+    if (onCoordsChange) onCoordsChange(newCoords);
+    setLocationName(encodeLocationWithCoords(shortName, newCoords[0], newCoords[1]));
   };
 
   const handleUseCurrentLocation = () => {
@@ -227,15 +263,14 @@ export default function LocationPicker({ locationName, setLocationName }) {
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         setIsLocating(false);
-        await handleLocationChosen(pos.coords.latitude, pos.coords.longitude);
+        await handleLocationChosen(pos.coords.latitude, pos.coords.longitude, 'My Current Location');
       },
       (err) => {
         setIsLocating(false);
         console.warn("Geolocation denied/failed:", err);
-        // Fallback to Tunbridge Wells
-        handleLocationChosen(DEFAULT_CENTER[0], DEFAULT_CENTER[1]);
+        handleLocationChosen(DEFAULT_TW_CENTER[0], DEFAULT_TW_CENTER[1]);
       },
-      { timeout: 7000 }
+      { timeout: 8000 }
     );
   };
 
@@ -245,21 +280,22 @@ export default function LocationPicker({ locationName, setLocationName }) {
       <div style={{ display: 'flex', gap: '8px', position: 'relative' }}>
         <input 
           className="form-input" 
-          placeholder="e.g. The Pantiles, Calverley Grounds..." 
+          placeholder="Search start location (e.g. Cuckoo Trail, The Pantiles, Bewl Water)..." 
           value={searchQuery}
           onChange={(e) => {
             setSearchQuery(e.target.value);
+            // Also keep parent updated with human name
             setLocationName(e.target.value);
           }}
           onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(e); }}
-          style={{ padding: '13px 16px', flex: 1, borderRadius: '12px' }} 
+          style={{ padding: '13px 16px', flex: 1, borderRadius: '12px', fontSize: '0.92rem' }} 
         />
         
         {/* Geolocation Button */}
         <button 
           onClick={handleUseCurrentLocation}
           type="button"
-          title="Use my current location"
+          title="Use my current GPS location"
           disabled={isLocating}
           className="interactive-press"
           style={{
@@ -289,6 +325,39 @@ export default function LocationPicker({ locationName, setLocationName }) {
         </button>
       </div>
 
+      {/* Preset spot quick-chips */}
+      <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '2px', scrollbarWidth: 'none' }}>
+        {TOP_PRESETS.map((preset, idx) => (
+          <button
+            key={idx}
+            type="button"
+            onClick={() => {
+              setSearchQuery(preset.query);
+              const spot = findKnownLocation(preset.query);
+              if (spot) {
+                handleLocationChosen(spot.lat, spot.lng, spot.name);
+              }
+            }}
+            className="interactive-press"
+            style={{
+              padding: '5px 10px',
+              borderRadius: '20px',
+              background: 'rgba(255,255,255,0.04)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              color: 'var(--slate-300)',
+              fontSize: '0.74rem',
+              whiteSpace: 'nowrap',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px'
+            }}
+          >
+            <span>📍</span> {preset.name}
+          </button>
+        ))}
+      </div>
+
       {/* Search Not Found Banner */}
       {searchNotFound && (
         <div style={{
@@ -302,7 +371,7 @@ export default function LocationPicker({ locationName, setLocationName }) {
           alignItems: 'center',
           gap: '8px'
         }}>
-          <span>📍 Specific landmark not found in index. Tap anywhere on the map to place your pin directly.</span>
+          <span>📍 Specific landmark not found in online directory. Tap anywhere on the map or drag the pin to place your start location directly.</span>
         </div>
       )}
 
@@ -334,25 +403,7 @@ export default function LocationPicker({ locationName, setLocationName }) {
         </div>
       )}
 
-      {/* Toggle Map View button */}
-      {!showMap && (
-        <button 
-          type="button"
-          onClick={() => setShowMap(true)}
-          className="interactive-press"
-          style={{ 
-            textAlign: 'center', color: '#2dd4bf', fontSize: '0.84rem', 
-            cursor: 'pointer', padding: '9px',
-            background: 'rgba(45, 212, 191, 0.06)',
-            border: '1px dashed rgba(45, 212, 191, 0.3)', borderRadius: '10px',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px'
-          }}
-        >
-          <MapPin size={14} /> Open map to select or fine-tune pin
-        </button>
-      )}
-
-      {/* Interactive Leaflet Map */}
+      {/* Interactive Leaflet Map for Pinpointing */}
       {showMap && (
         <div style={{
           borderRadius: '14px', overflow: 'hidden',
@@ -360,12 +411,12 @@ export default function LocationPicker({ locationName, setLocationName }) {
           background: '#020617', zIndex: 0,
           boxShadow: '0 4px 16px rgba(0,0,0,0.3)'
         }}>
-          <div style={{ height: '220px', width: '100%', position: 'relative' }}>
+          <div style={{ height: '230px', width: '100%', position: 'relative' }}>
             <MapContainer 
               center={coords} 
               zoom={15} 
               style={{ height: '100%', width: '100%', backgroundColor: '#020617' }} 
-              zoomControl={false}
+              zoomControl={true}
               attributionControl={false}
             >
               <TileLayer
@@ -390,23 +441,41 @@ export default function LocationPicker({ locationName, setLocationName }) {
               <MapController coords={coords} />
               <MapInteractionHandler onLocationChosen={handleLocationChosen} />
             </MapContainer>
+
+            {/* Quick helper badge overlay */}
+            <div style={{
+              position: 'absolute', top: '10px', right: '10px', zIndex: 400,
+              background: 'rgba(15, 23, 42, 0.85)', backdropFilter: 'blur(8px)',
+              padding: '5px 10px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.15)',
+              fontSize: '0.72rem', color: '#2dd4bf', display: 'flex', alignItems: 'center', gap: '5px',
+              pointerEvents: 'none'
+            }}>
+              <Crosshair size={12} /> Tap map or drag pin to fine-tune
+            </div>
           </div>
 
           {/* Map Footer status */}
           <div style={{ 
-            background: '#0f172a', padding: '9px 14px', fontSize: '0.78rem', 
+            background: '#0f172a', padding: '10px 14px', fontSize: '0.8rem', 
             color: 'var(--slate-300)', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             borderTop: '1px solid rgba(255,255,255,0.08)'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', overflow: 'hidden' }}>
-              <Check size={14} color="#2dd4bf" />
-              <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontWeight: 500 }}>
-                {pinAddress || 'Tap anywhere or drag pin to adjust'}
-              </span>
+              <Check size={15} color="#2dd4bf" style={{ flexShrink: 0 }} />
+              <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                <span style={{ fontWeight: 600, color: 'var(--white)' }}>
+                  {pinAddress || 'Pin placed'}
+                </span>
+                {areaLabel && (
+                  <span style={{ color: 'var(--slate-400)', marginLeft: '6px', fontSize: '0.74rem' }}>
+                    ({areaLabel})
+                  </span>
+                )}
+              </div>
             </div>
-            <span style={{ fontSize: '0.7rem', color: 'var(--slate-500)', flexShrink: 0, marginLeft: '8px' }}>
-              Tap map to move pin
-            </span>
+            <div style={{ fontSize: '0.7rem', color: 'var(--teal-400)', fontFamily: 'monospace', flexShrink: 0, marginLeft: '8px' }}>
+              {coords[0].toFixed(4)}°, {coords[1].toFixed(4)}°
+            </div>
           </div>
         </div>
       )}

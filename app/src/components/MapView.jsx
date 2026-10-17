@@ -3,6 +3,8 @@ import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { useRouter as useNavigate } from 'next/navigation';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { isEventUpcoming } from '../lib/calendar';
+import { cleanLocationName, parseLocationCoords } from '../lib/location';
 
 // Regional anchor center: High Weald / Kent & East Sussex border
 const REGION_CENTER = [51.0800, 0.3000];
@@ -116,6 +118,11 @@ function resolveEventCoords(event, index) {
     return [Number(event.lat), Number(event.lng)];
   }
 
+  const parsed = parseLocationCoords(event.location);
+  if (parsed) {
+    return [parsed.lat, parsed.lng];
+  }
+
   const textToScan = `${event.location || ''} ${event.title || ''} ${event.description || ''}`.toLowerCase();
   for (const loc of KNOWN_LOCATIONS) {
     if (textToScan.includes(loc.name)) {
@@ -206,7 +213,7 @@ export default function MapView({ communities = [], events = [], onSelect }) {
   }, [communities]);
 
   const activeEvents = useMemo(() => {
-    return (events || []).filter(e => e.status !== 'cancelled');
+    return (events || []).filter(e => e.status !== 'cancelled' && isEventUpcoming(e));
   }, [events]);
 
   // Render or Update Leaflet Map
@@ -358,7 +365,7 @@ export default function MapView({ communities = [], events = [], onSelect }) {
               🗓️ ${dateStr}${timeStr}
             </div>
             <div style="color: #94a3b8; font-size: 0.78rem; margin-bottom: 6px;">
-              📍 ${ev.location || 'See event details'}
+              📍 ${cleanLocationName(ev.location) || 'See event details'}
             </div>
             <div style="color: #cbd5e1; font-size: 0.78rem; margin-bottom: 12px;">
               👥 ${attendeeCount} attending
