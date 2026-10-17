@@ -45,7 +45,7 @@ export default function Chat() {
   const [showNewChatModal, setShowNewChatModal] = useState(false);
   const [userSearchTerm, setUserSearchTerm] = useState('');
 
-  const activeMessages = (targetUserId)
+  const activeMessages = (targetUserId && user)
     ? directMessages.filter(m => (m.senderId === user.id && m.receiverId === targetUserId) || (m.senderId === targetUserId && m.receiverId === user.id))
     : messages.filter(m => m.communityId === communityId && m.channel === channelId);
 
@@ -62,7 +62,7 @@ export default function Chat() {
 
   // INBOX VIEW (If no params provided)
   if (!communityId && !channelId && !targetUserId) {
-    const myCommunities = communities.filter(c => user.joinedCommunities.includes(c.id));
+    const myCommunities = communities.filter(c => Boolean(user?.joinedCommunities?.includes(c.id)));
     
     // Build inbox items from real channels + fallback general
     const communityInboxItems = [];

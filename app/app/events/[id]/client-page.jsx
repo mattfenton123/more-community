@@ -302,6 +302,10 @@ export default function EventClient({ id }) {
   const currentSeriesIndex = seriesEvents.findIndex(e => e.id === event.id);
 
   const handleJoinAndRSVP = async () => {
+    if (!user) {
+      router.push(`/login?redirect=/events/${id}`);
+      return;
+    }
     if (!isMember) {
       await joinCommunity(event.communityId);
       toast.success('Joined Community!', `You are now a member of ${community.name}`);
@@ -310,6 +314,10 @@ export default function EventClient({ id }) {
   };
 
   const handleRSVP = async () => {
+    if (!user) {
+      router.push(`/login?redirect=/events/${id}`);
+      return;
+    }
     if (event.ticketPrice > 0 && !isGoing) {
       // Simulate checkout
       setCheckoutState('processing');
@@ -336,8 +344,12 @@ export default function EventClient({ id }) {
   };
 
   const copyReferralLink = () => {
+    if (!user) {
+      router.push(`/login?redirect=/events/${id}`);
+      return;
+    }
     if (typeof window !== 'undefined') {
-      const url = `${window.location.origin}/events/${event.id}?ref=${user?.id}`;
+      const url = `${window.location.origin}/events/${event.id}?ref=${user.id}`;
       navigator.clipboard.writeText(url);
       toast.success('Link Copied!', `Share this link to earn £${event.profitShareAmount} per ticket.`);
     }
@@ -742,21 +754,22 @@ export default function EventClient({ id }) {
               )
             ) : (
               <button  
-                onClick={!isMember && !isGoing ? handleJoinAndRSVP : handleRSVP}
-                disabled={checkoutState === 'processing' || (spotsLeft === 0 && !isGoing)}
+                onClick={!user ? () => router.push(`/login?redirect=/events/${id}`) : (!isMember && !isGoing ? handleJoinAndRSVP : handleRSVP)}
+                disabled={checkoutState === 'processing' || (spotsLeft === 0 && !isGoing && user)}
                 className="interactive-press"
                 style={{ 
                   background: isGoing ? 'rgba(255,255,255,0.1)' : 'var(--teal-500)', 
                   color: isGoing ? 'var(--white)' : '#0f172a', 
                   border: isGoing ? '1px solid rgba(255,255,255,0.2)' : 'none',
                   padding: '12px 32px', borderRadius: '99px', fontSize: '1rem', fontWeight: 700, 
-                  cursor: (checkoutState === 'processing' || (spotsLeft === 0 && !isGoing)) ? 'not-allowed' : 'pointer',
-                  opacity: (checkoutState === 'processing' || (spotsLeft === 0 && !isGoing)) ? 0.7 : 1,
+                  cursor: (checkoutState === 'processing' || (spotsLeft === 0 && !isGoing && user)) ? 'not-allowed' : 'pointer',
+                  opacity: (checkoutState === 'processing' || (spotsLeft === 0 && !isGoing && user)) ? 0.7 : 1,
                   display: 'flex', alignItems: 'center', gap: '8px',
                   minWidth: '140px', justifyContent: 'center'
                 }}
               >
-                {checkoutState === 'processing' ? 'Processing...' : 
+                {!user ? (event.ticketPrice > 0 ? 'Sign In to Buy Ticket' : 'Sign In to RSVP') :
+                 checkoutState === 'processing' ? 'Processing...' : 
                  isGoing ? 'Cancel RSVP' : 
                  spotsLeft === 0 ? 'Sold Out' :
                  !isMember ? 'Join Community to ' + (event.ticketPrice > 0 ? 'Buy Ticket' : 'RSVP') :
@@ -772,7 +785,8 @@ export default function EventClient({ id }) {
         <DigitalTicket 
           event={showTicket} 
           community={communities.find(c => c.id === showTicket.communityId)}
-          userName={user.name} 
+          user={user}
+          userName={user?.name || 'Community Member'} 
           onClose={() => setShowTicket(null)} 
         />
       )}

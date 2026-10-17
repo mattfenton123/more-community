@@ -23,7 +23,7 @@ export function formatEventDate(dateStr) {
     const year = parseInt(parts[0], 10);
     const month = parseInt(parts[1], 10) - 1;
     const day = parseInt(parts[2], 10);
-    const d = new Date(year, month, day);
+    const d = new Date(year, month, day, 12, 0, 0);
     return d.toLocaleDateString('en-GB', {
       weekday: 'short',
       day: 'numeric',
@@ -85,6 +85,17 @@ export function getWeekdayOrdinalInfo(dateStr) {
     isLast,
     dayOfMonth: day
   };
+}
+
+/**
+ * British ordinal suffix helper ('1st', '2nd', '3rd', '4th', '21st', etc.)
+ */
+export function getOrdinalSuffix(day) {
+  const j = day % 10, k = day % 100;
+  if (j === 1 && k !== 11) return 'st';
+  if (j === 2 && k !== 12) return 'nd';
+  if (j === 3 && k !== 13) return 'rd';
+  return 'th';
 }
 
 /**
@@ -185,7 +196,7 @@ export function generateEventDates({
 
   const ordinalInfo = (frequency === 'monthly_weekday') ? getWeekdayOrdinalInfo(startDate) : null;
 
-  let current = new Date(startYear, startMonth, startDay);
+  let current = new Date(startYear, startMonth, startDay, 12, 0, 0);
   let iterations = 0;
   const MAX_SAFETY = 200;
 
@@ -267,7 +278,8 @@ export function getRecurrenceDescription({
   } else if (frequency === 'monthly_weekday' && ordinal) {
     freqLabel = `Monthly on the ${ordinal.ordinalWord} ${ordinal.weekdayName}`;
   } else if (frequency === 'monthly_date' && ordinal) {
-    freqLabel = `Monthly on the ${ordinal.dayOfMonth}th`;
+    const day = ordinal.dayOfMonth;
+    freqLabel = `Monthly on the ${day}${getOrdinalSuffix(day)}`;
   } else if (frequency === 'weekdays') {
     freqLabel = `Every weekday (Mon–Fri)`;
   }

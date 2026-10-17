@@ -13,7 +13,7 @@ export default function MyCommunities() {
   const router = useRouter();
   const [showCreateModal, setShowCreateModal] = useState(false);
 
-  const joined = communities.filter(c => user.joinedCommunities.includes(c.id));
+  const joined = communities.filter(c => Boolean(user?.joinedCommunities?.includes(c.id)));
 
   return (
     <div className="view-communities" style={{ paddingBottom: '80px' }}>
@@ -23,6 +23,22 @@ export default function MyCommunities() {
         {isLoading ? (
           <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '16px' }}>
             <SkeletonList count={3} Component={SkeletonCommunityCard} />
+          </div>
+        ) : !user ? (
+          <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+            <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', color: 'var(--teal-400)' }}>
+              <Users size={32} />
+            </div>
+            <h3 style={{ fontFamily: 'var(--font-heading)', color: 'var(--white)', marginBottom: '8px' }}>Sign in to see your communities</h3>
+            <p style={{ color: 'var(--slate-400)', fontSize: '0.9rem', marginBottom: '24px' }}>Log in to view the communities you've joined, check in to events, and connect with members.</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'center' }}>
+              <button onClick={() => router.push('/login?redirect=/my-communities')} className="btn btn-primary" style={{ display: 'inline-flex', padding: '12px 24px', borderRadius: '99px' }}>
+                Sign In
+              </button>
+              <button onClick={() => router.push('/discover')} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: 'var(--slate-300)', padding: '12px 24px', borderRadius: '99px', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer' }}>
+                Explore Communities
+              </button>
+            </div>
           </div>
         ) : joined.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '40px 20px' }}>

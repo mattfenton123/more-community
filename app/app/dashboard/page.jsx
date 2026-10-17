@@ -596,7 +596,29 @@ export default function LeaderDashboard({ initialCommunityId }) {
       ? eventForm.resolvedDates
       : (eventForm.date ? [eventForm.date] : []);
 
-    if (!eventForm.title || dates.length === 0 || !eventForm.time || !eventForm.location) return;
+    if (!eventForm.title?.trim()) {
+      toast.error('Missing Title', 'Please enter a title for your event.');
+      return;
+    }
+    if (dates.length === 0) {
+      toast.error('No Dates Selected', 'Please select at least one date for your event.');
+      return;
+    }
+    if (!eventForm.time) {
+      toast.error('Missing Time', 'Please set a start time for the event.');
+      return;
+    }
+    if (!eventForm.location?.trim()) {
+      toast.error('Missing Location', 'Please provide a location or meeting point.');
+      return;
+    }
+
+    const todayStr = new Date().toISOString().split('T')[0];
+    if (dates.length === 1 && dates[0] < todayStr) {
+      const proceed = window.confirm('The date you selected is in the past. This event will be archived immediately under Past Events. Do you wish to publish it anyway?');
+      if (!proceed) return;
+    }
+
     setIsUploading(true);
     let imageUrl = '';
     
@@ -2014,7 +2036,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                {events.filter(e => e.status === 'published' && !user.ledCommunities?.includes(e.communityId)).map(event => {
+                {events.filter(e => e.status === 'published' && !user?.ledCommunities?.includes(e.communityId)).map(event => {
                   const sourceCommunity = communities.find(c => c.id === event.communityId);
                   const attendeeCount = (eventRsvps[event.id] || []).length;
                   const priceLabel = (event.ticketPrice || event.ticket_price) > 0 ? `£${event.ticketPrice || event.ticket_price}` : 'Free';
@@ -2173,7 +2195,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                     </div>
                   );
                 })}
-                {events.filter(e => e.status === 'published' && !user.ledCommunities?.includes(e.communityId)).length === 0 && (
+                {events.filter(e => e.status === 'published' && !user?.ledCommunities?.includes(e.communityId)).length === 0 && (
                   <div style={{ padding: '40px', textAlign: 'center', color: 'var(--slate-400)', background: 'rgba(255,255,255,0.02)', borderRadius: '16px' }}>
                     No network events found. Check back later!
                   </div>

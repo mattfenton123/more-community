@@ -258,23 +258,39 @@ export async function createEventAction(eventData, token) {
 
 export async function createEventsBatchAction(eventsData, token) {
   if (!Array.isArray(eventsData) || eventsData.length === 0) return [];
+  if (eventsData.length > 52) {
+    throw new Error("Batch limit exceeded: Maximum 52 events can be scheduled in a single batch.");
+  }
+
   const communityId = eventsData[0].communityId;
+  if (!communityId) throw new Error("Missing community ID for event batch");
+
+  // Prevent cross-community batch injection
+  if (eventsData.some(e => e.communityId !== communityId)) {
+    throw new Error("Unauthorized: All events in a batch must belong to the same community.");
+  }
+
   await verifyCommunityManager(token, communityId);
 
-  const payloads = eventsData.map(eventData => ({
-    id: eventData.id || crypto.randomUUID(),
-    community_id: eventData.communityId,
-    title: eventData.title,
-    date: eventData.date,
-    time: eventData.time,
-    location: eventData.location,
-    image: eventData.image || null,
-    attendees: eventData.attendees || 0,
-    description: eventData.description || '',
-    status: eventData.status || 'published',
-    max_capacity: eventData.maxCapacity || null,
-    ticket_price: eventData.ticketPrice != null ? Number(eventData.ticketPrice) : (eventData.ticket_price != null ? Number(eventData.ticket_price) : 0)
-  }));
+  const payloads = eventsData.map(eventData => {
+    if (!eventData.title || !eventData.date || !eventData.time || !eventData.location) {
+      throw new Error("Invalid event data: title, date, time, and location are required.");
+    }
+    return {
+      id: eventData.id || crypto.randomUUID(),
+      community_id: communityId,
+      title: String(eventData.title).trim(),
+      date: eventData.date,
+      time: eventData.time,
+      location: String(eventData.location).trim(),
+      image: eventData.image || null,
+      attendees: eventData.attendees || 0,
+      description: eventData.description || '',
+      status: eventData.status || 'published',
+      max_capacity: eventData.maxCapacity ? parseInt(eventData.maxCapacity, 10) : null,
+      ticket_price: eventData.ticketPrice != null ? Math.max(0, Number(eventData.ticketPrice)) : (eventData.ticket_price != null ? Math.max(0, Number(eventData.ticket_price)) : 0)
+    };
+  });
 
   const { data, error } = await supabaseAdmin.from('events').insert(payloads).select();
 

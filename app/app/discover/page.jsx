@@ -147,6 +147,10 @@ export default function Discover() {
   };
 
   const handleJoin = async (communityId, communityName) => {
+    if (!user) {
+      navigate.push(`/login?redirect=/discover`);
+      return;
+    }
     await joinCommunity(communityId);
     toast.success('Joined!', `You're now a member of ${communityName}`);
   };
@@ -197,8 +201,8 @@ export default function Discover() {
             >
               {theme === 'light' ? <Moon size={22} /> : <Sun size={22} />}
             </div>
-            <button onClick={() => navigate.push('/profile')} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 }}>
-              <img onClick={() => navigate.push(`/profile/${user.id}`)} src={user?.avatar || 'https://i.pravatar.cc/150'} alt="Profile" style={{ width: '36px', height: '36px', borderRadius: '50%', border: '2px solid var(--slate-700)', objectFit: 'cover', cursor: 'pointer' }} />
+            <button onClick={() => navigate.push(user ? `/profile/${user.id}` : '/login')} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 }}>
+              <img src={user?.avatar || 'https://i.pravatar.cc/150'} alt="Profile" style={{ width: '36px', height: '36px', borderRadius: '50%', border: '2px solid var(--slate-700)', objectFit: 'cover', cursor: 'pointer' }} />
             </button>
           </>
         }
@@ -455,7 +459,7 @@ export default function Discover() {
                 </div>
               )}
               {filteredCommunities.map((community, index) => {
-                const isMember = user.joinedCommunities.includes(community.id);
+                const isMember = Boolean(user?.joinedCommunities?.includes(community.id));
                 const memberCount = getMemberCount(community.id);
                 
                 // Identify if a global sponsor should be injected here

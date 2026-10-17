@@ -108,14 +108,14 @@ export default function CommunityProfile() {
   const [showPostEmojiPicker, setShowPostEmojiPicker] = useState(false);
   const fileInputRef = useRef(null);
   
-  const communityId = id || (user.joinedCommunities.length > 0 ? user.joinedCommunities[0] : 'tw-tech-meetup');
+  const communityId = id || (user?.joinedCommunities?.length > 0 ? user.joinedCommunities[0] : 'tw-tech-meetup');
   const community = communities.find(c => c.id === communityId);
 
   if (!community) {
     return <div style={{ padding: '40px', color: 'var(--white)', textAlign: 'center' }}>Loading...</div>;
   }
 
-  const isMember = user.joinedCommunities.includes(communityId);
+  const isMember = Boolean(user?.joinedCommunities?.includes(communityId));
   const isLeader = community.leader_id === user?.id || 
                    community.creator_id === user?.id ||
                    community.creatorId === user?.id ||
@@ -193,6 +193,10 @@ export default function CommunityProfile() {
   };
 
   const handleJoinLeave = async () => {
+    if (!user) {
+      navigate.push(`/login?redirect=/community/${communityId}`);
+      return;
+    }
     try {
       if (isMember) {
         setShowLeaveModal(true);
@@ -479,7 +483,8 @@ export default function CommunityProfile() {
                     style={{ position: 'relative', zIndex: 100, width: '100%', padding: '16px', fontSize: '1.05rem', fontWeight: 700, borderRadius: '14px', boxShadow: '0 8px 24px rgba(20,184,166,0.3)', cursor: 'pointer' }}
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleJoinLeave(); }}
                   >
-                    {isPaid ? `Join — £${subPrice}/month` : 'Join this Community — it\'s free'}
+                    {!user ? (isPaid ? `Sign In to Join — £${subPrice}/month` : 'Sign In to Join (Free)') :
+                     isPaid ? `Join — £${subPrice}/month` : 'Join this Community — it\'s free'}
                   </button>
                 )}
                 {isPaid && !isMember && (

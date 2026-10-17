@@ -217,7 +217,7 @@ export default function EventsHub() {
     const community = communities.find(c => c.id === event.communityId);
     const eventImage = event.image || community?.image;
     const price = getEventPrice(event);
-    const hasRsvp = eventRsvps[event.id]?.some(r => r.userId === user.id);
+    const hasRsvp = user ? eventRsvps[event.id]?.some(r => r.userId === user.id) : false;
     const isArchived = isPast || isEventPast(event);
     
     // Check for sponsor
