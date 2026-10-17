@@ -69,7 +69,7 @@ function MainLayout({ children }) {
   const { authUser, isLoading: authLoading } = useAuth();
   const isDashboard = currentPath?.startsWith('/dashboard') || currentPath?.startsWith('/council-dashboard') || currentPath?.startsWith('/admin');
   const isChatRoom = currentPath?.match(/^\/chat\/.+/);
-  const hideTabBar = currentPath === '/login' || currentPath === '/onboarding' || isChatRoom;
+  const hideTabBar = currentPath === '/login' || currentPath === '/onboarding' || isChatRoom || currentPath?.startsWith('/admin');
   const isDesktopFriendly = isDashboard || currentPath?.startsWith('/community/');
 
   useEffect(() => {

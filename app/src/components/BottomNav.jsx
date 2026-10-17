@@ -35,7 +35,7 @@ export default function BottomNav() {
                      currentPath.match(/^\/chat\/dm\/[^/]+$/) ||
                      currentPath === '/settings';
   
-  const hideBottomNav = currentPath === '/login' || currentPath === '/onboarding' || isDeepPage || hasModalOpen;
+  const hideBottomNav = currentPath === '/login' || currentPath === '/onboarding' || isDeepPage || hasModalOpen || currentPath?.startsWith('/admin');
   
   if (hideBottomNav) return null;
 
