@@ -282,9 +282,31 @@ export default function EventClient({ id }) {
         setEvent(e);
         const c = communities.find(c => c.id === e.communityId);
         setCommunity(c);
+        // Cache event and community locally for offline zero-signal access on trails
+        try {
+          localStorage.setItem(`more_cached_event_${id}`, JSON.stringify({ event: e, community: c, ts: Date.now() }));
+        } catch (err) {}
+        return;
       }
     }
+
+    // Zero-signal offline recovery: load cached event from localStorage if offline
+    try {
+      const cached = localStorage.getItem(`more_cached_event_${id}`);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed.event && parsed.community) {
+          setEvent(parsed.event);
+          setCommunity(parsed.community);
+        }
+      }
+    } catch (err) {}
   }, [events, communities, id]);
+
+  const partnerCommunities = useMemo(() => {
+    if (!event?.collabCommunityIds || !communities) return [];
+    return communities.filter(c => event.collabCommunityIds.includes(c.id));
+  }, [event, communities]);
 
   if (!event || !community) {
     return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100dvh', color: 'var(--slate-400)' }}>Loading event...</div>;
@@ -431,13 +453,34 @@ export default function EventClient({ id }) {
         
         {/* Title & Host */}
         <div style={{ marginBottom: '24px' }}>
-          <div 
-            onClick={() => router.push(`/community/${community.id}`)}
-            className="interactive-press"
-            style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', marginBottom: '12px', cursor: 'pointer' }}
-          >
-            <img src={community.image} alt={community.name} style={{ width: '24px', height: '24px', borderRadius: '50%', objectFit: 'cover' }} />
-            <span style={{ fontSize: '0.9rem', color: 'var(--slate-300)', fontWeight: 500 }}>Hosted by <span style={{ color: 'var(--teal-400)' }}>{community.name}</span></span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '12px' }}>
+            <div 
+              onClick={() => router.push(`/community/${community.id}`)}
+              className="interactive-press"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
+            >
+              <img src={community.image} alt={community.name} style={{ width: '24px', height: '24px', borderRadius: '50%', objectFit: 'cover' }} />
+              <span style={{ fontSize: '0.9rem', color: 'var(--slate-300)', fontWeight: 500 }}>Hosted by <span style={{ color: 'var(--teal-400)' }}>{community.name}</span></span>
+            </div>
+
+            {partnerCommunities.length > 0 && (
+              <>
+                <span style={{ color: 'var(--slate-600)', fontSize: '0.85rem' }}>•</span>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '3px 10px', background: 'rgba(56,189,248,0.1)', border: '1px solid rgba(56,189,248,0.25)', borderRadius: '99px', fontSize: '0.78rem', color: '#7dd3fc', fontWeight: 600 }}>
+                  <span>🤝 Co-hosted with</span>
+                  {partnerCommunities.map((pc, idx) => (
+                    <span 
+                      key={pc.id}
+                      onClick={(ev) => { ev.stopPropagation(); router.push(`/community/${pc.id}`); }}
+                      className="interactive-press"
+                      style={{ cursor: 'pointer', textDecoration: 'underline', color: 'var(--white)' }}
+                    >
+                      {pc.name}{idx < partnerCommunities.length - 1 ? ', ' : ''}
+                    </span>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
           <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem', color: 'var(--white)', margin: '0 0 16px 0', lineHeight: 1.1 }}>
             {event.title}
@@ -616,6 +659,46 @@ export default function EventClient({ id }) {
           <EventLocationMap location={event.location} event={event} />
         )}
 
+        {/* Joint Co-Hosting & Partner Community Discovery */}
+        {partnerCommunities.length > 0 && (
+          <div style={{
+            background: 'linear-gradient(135deg, rgba(56,189,248,0.08) 0%, rgba(20,184,166,0.08) 100%)',
+            border: '1px solid rgba(56,189,248,0.2)',
+            borderRadius: '16px',
+            padding: '18px 20px',
+            marginBottom: '28px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+              <span style={{ fontSize: '1.1rem' }}>🤝</span>
+              <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                Joint Community Collaboration
+              </span>
+            </div>
+            <div style={{ fontSize: '0.88rem', color: 'var(--slate-200)', lineHeight: 1.5, marginBottom: '14px' }}>
+              This event is proudly co-hosted by <strong>{community.name}</strong> alongside {partnerCommunities.map(p => p.name).join(' & ')}. Members from across partner communities in Tunbridge Wells are invited to connect!
+            </div>
+            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+              {partnerCommunities.map(pc => (
+                <div 
+                  key={pc.id}
+                  onClick={() => router.push(`/community/${pc.id}`)}
+                  className="interactive-press"
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '10px',
+                    padding: '8px 14px', borderRadius: '12px',
+                    background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {pc.image && <img src={pc.image} alt="" style={{ width: '22px', height: '22px', borderRadius: '50%', objectFit: 'cover' }} />}
+                  <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--white)' }}>{pc.name}</span>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--teal-400)', fontWeight: 700 }}>Explore →</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Deep Dive Grid */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px', marginBottom: '32px' }}>
           
@@ -760,8 +843,24 @@ export default function EventClient({ id }) {
                 </div>
               )
             ) : (
-              <button  
-                onClick={!user ? () => router.push(`/login?redirect=/events/${id}`) : (!isMember && !isGoing ? handleJoinAndRSVP : handleRSVP)}
+              <>
+                {isGoing && (
+                  <button
+                    onClick={() => setShowTicket(event)}
+                    className="interactive-press"
+                    style={{
+                      background: 'rgba(20,184,166,0.18)',
+                      color: 'var(--teal-300)',
+                      border: '1px solid rgba(20,184,166,0.35)',
+                      padding: '12px 18px', borderRadius: '99px', fontSize: '0.95rem', fontWeight: 700,
+                      display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer'
+                    }}
+                  >
+                    <Ticket size={16} /> View Pass
+                  </button>
+                )}
+                <button  
+                  onClick={!user ? () => router.push(`/login?redirect=/events/${id}`) : (!isMember && !isGoing ? handleJoinAndRSVP : handleRSVP)}
                 disabled={checkoutState === 'processing' || (spotsLeft === 0 && !isGoing && user)}
                 className="interactive-press"
                 style={{ 
@@ -782,6 +881,7 @@ export default function EventClient({ id }) {
                  !isMember ? 'Join Community to ' + (event.ticketPrice > 0 ? 'Buy Ticket' : 'RSVP') :
                  event.ticketPrice > 0 ? 'Buy Ticket' : 'RSVP'}
               </button>
+              </>
             )}
           </div>
         </div>

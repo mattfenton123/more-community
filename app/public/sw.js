@@ -1,18 +1,22 @@
 // Service Worker for more. community PWA
-const CACHE_NAME = 'more-community-v4';
+const CACHE_NAME = 'more-community-v5';
+const TILE_CACHE_NAME = 'more-community-tiles-v1';
 const OFFLINE_URL = '/';
 
 // Assets to pre-cache
 const PRECACHE_ASSETS = [
   '/',
-  '/logo.png'
+  '/logo.png',
+  '/favicon.svg',
+  '/manifest.json',
+  '/icons.svg'
 ];
 
 // Install event - cache core assets
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(PRECACHE_ASSETS);
+      return cache.addAll(PRECACHE_ASSETS).catch(() => {});
     })
   );
   self.skipWaiting();
@@ -20,17 +24,20 @@ self.addEventListener('install', (event) => {
 
 // Activate event - clean old caches immediately
 self.addEventListener('activate', (event) => {
+  const allowedCaches = [CACHE_NAME, TILE_CACHE_NAME];
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
-        cacheNames.filter((name) => name !== CACHE_NAME).map((name) => caches.delete(name))
+        cacheNames
+          .filter((name) => !allowedCaches.includes(name))
+          .map((name) => caches.delete(name))
       );
     })
   );
   self.clients.claim();
 });
 
-// Fetch event - network-first strategy for API calls, cache-first for assets
+// Fetch event - map tiles caching, network-first for APIs, offline navigation
 self.addEventListener('fetch', (event) => {
   // Skip non-GET requests
   if (event.request.method !== 'GET') return;
@@ -38,10 +45,44 @@ self.addEventListener('fetch', (event) => {
   // Never intercept during local development
   if (self.location.hostname === 'localhost' || self.location.hostname === '127.0.0.1') return;
 
-  // Always fetch fresh navigation requests from network to prevent serving stale code
+  // Cache-first for OpenStreetMap tiles (vital for zero-signal outdoor trails)
+  if (event.request.url.includes('tile.openstreetmap.org')) {
+    event.respondWith(
+      caches.open(TILE_CACHE_NAME).then((tileCache) => {
+        return tileCache.match(event.request).then((cachedTile) => {
+          if (cachedTile) return cachedTile;
+          return fetch(event.request)
+            .then((networkRes) => {
+              if (networkRes && networkRes.status === 200) {
+                tileCache.put(event.request, networkRes.clone());
+              }
+              return networkRes;
+            })
+            .catch(() => cachedTile || new Response('', { status: 408, statusText: 'Tile Offline' }));
+        });
+      })
+    );
+    return;
+  }
+
+  // Navigation requests: fetch from network and cache, fallback to cached page or offline URL
   if (event.request.mode === 'navigate') {
     event.respondWith(
-      fetch(event.request).catch(() => caches.match(OFFLINE_URL))
+      fetch(event.request)
+        .then((response) => {
+          if (response && response.status === 200) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, clone);
+            });
+          }
+          return response;
+        })
+        .catch(() => {
+          return caches.match(event.request).then((cached) => {
+            return cached || caches.match(OFFLINE_URL);
+          });
+        })
     );
     return;
   }

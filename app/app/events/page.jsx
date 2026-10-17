@@ -326,7 +326,14 @@ export default function EventsHub() {
         )}
         <div style={{ padding: '16px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '4px' }}>
-            <div style={{ fontSize: '0.75rem', color: isArchived ? 'var(--slate-400)' : 'var(--teal-400)', fontWeight: 600, textTransform: 'uppercase' }}>{community?.name}</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+              <div style={{ fontSize: '0.75rem', color: isArchived ? 'var(--slate-400)' : 'var(--teal-400)', fontWeight: 600, textTransform: 'uppercase' }}>{community?.name}</div>
+              {event.collabCommunityIds?.length > 0 && (
+                <span style={{ fontSize: '0.65rem', background: 'rgba(56,189,248,0.12)', color: '#7dd3fc', border: '1px solid rgba(56,189,248,0.25)', padding: '1px 6px', borderRadius: '6px', fontWeight: 700 }}>
+                  🤝 Co-Host
+                </span>
+              )}
+            </div>
             {sponsor && (
               <div style={{ fontSize: '0.65rem', color: 'var(--slate-400)', background: 'rgba(255,255,255,0.05)', padding: '2px 6px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.1)' }}>
                 Supported by {sponsor.name}
@@ -709,7 +716,12 @@ export default function EventsHub() {
 
       {/* Digital Ticket Modal */}
       {showTicket && (
-        <DigitalTicket event={showTicket} user={user} onClose={() => setShowTicket(null)} />
+        <DigitalTicket 
+          event={showTicket} 
+          community={communities.find(c => c.id === showTicket.communityId)}
+          user={user} 
+          onClose={() => setShowTicket(null)} 
+        />
       )}
 
       {showSwipe && (

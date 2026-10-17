@@ -1153,6 +1153,7 @@ export function AppProvider({ children }) {
 
       const newEvent = {
         communityId: communityId,
+        collabCommunityIds: eventData.collabCommunityIds || [],
         title: eventData.title,
         description: eventData.description || '',
         date: eventData.date,
@@ -1173,6 +1174,7 @@ export function AppProvider({ children }) {
         setEvents(prev => [...prev, {
           id: e.id,
           communityId: e.community_id,
+          collabCommunityIds: e.cohost_community_ids || newEvent.collabCommunityIds || [],
           title: e.title,
           description: e.description || '',
           date: e.date,
@@ -1204,6 +1206,7 @@ export function AppProvider({ children }) {
 
       const formattedEvents = eventsList.map(item => ({
         communityId: communityId,
+        collabCommunityIds: item.collabCommunityIds || [],
         title: item.title,
         description: item.description || '',
         date: item.date,
@@ -1219,9 +1222,10 @@ export function AppProvider({ children }) {
       const data = await createEventsBatchAction(formattedEvents, token);
 
       if (data && Array.isArray(data)) {
-        const mapped = data.map(e => ({
+        const mapped = data.map((e, idx) => ({
           id: e.id,
           communityId: e.community_id,
+          collabCommunityIds: e.cohost_community_ids || formattedEvents[idx]?.collabCommunityIds || [],
           title: e.title,
           description: e.description || '',
           date: e.date,

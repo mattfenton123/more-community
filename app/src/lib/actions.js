@@ -244,7 +244,8 @@ export async function createEventAction(eventData, token) {
     description: eventData.description || '',
     status: eventData.status || 'published',
     max_capacity: eventData.maxCapacity || null,
-    ticket_price: eventData.ticketPrice != null ? Number(eventData.ticketPrice) : (eventData.ticket_price != null ? Number(eventData.ticket_price) : 0)
+    ticket_price: eventData.ticketPrice != null ? Number(eventData.ticketPrice) : (eventData.ticket_price != null ? Number(eventData.ticket_price) : 0),
+    cohost_community_ids: eventData.collabCommunityIds || eventData.cohost_community_ids || []
   };
 
   const { data, error } = await supabaseAdmin.from('events').insert(payload).select().single();
@@ -288,7 +289,8 @@ export async function createEventsBatchAction(eventsData, token) {
       description: eventData.description || '',
       status: eventData.status || 'published',
       max_capacity: eventData.maxCapacity ? parseInt(eventData.maxCapacity, 10) : null,
-      ticket_price: eventData.ticketPrice != null ? Math.max(0, Number(eventData.ticketPrice)) : (eventData.ticket_price != null ? Math.max(0, Number(eventData.ticket_price)) : 0)
+      ticket_price: eventData.ticketPrice != null ? Math.max(0, Number(eventData.ticketPrice)) : (eventData.ticket_price != null ? Math.max(0, Number(eventData.ticket_price)) : 0),
+      cohost_community_ids: eventData.collabCommunityIds || eventData.cohost_community_ids || []
     };
   });
 
@@ -434,6 +436,8 @@ export async function updateEventAction(eventId, updates, token) {
   if (updates.max_capacity !== undefined) dbUpdates.max_capacity = updates.max_capacity;
   if (updates.ticketPrice !== undefined) dbUpdates.ticket_price = Number(updates.ticketPrice);
   if (updates.ticket_price !== undefined) dbUpdates.ticket_price = Number(updates.ticket_price);
+  if (updates.collabCommunityIds !== undefined) dbUpdates.cohost_community_ids = updates.collabCommunityIds;
+  if (updates.cohost_community_ids !== undefined) dbUpdates.cohost_community_ids = updates.cohost_community_ids;
   
   const { data, error } = await supabaseAdmin.from('events').update(dbUpdates).eq('id', eventId).select().single();
   if (error) {

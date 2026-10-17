@@ -127,7 +127,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
   const communityIdLed = activeCommunityId || availableCommunities[0]?.id || user?.ledCommunities?.[0] || (user?.isAdmin && communities.length > 0 ? communities[0].id : null);
   const community = communities.find(c => c.id === communityIdLed);
   const memberList = community ? (communityMemberships[community.id] || []) : [];
-  const communityEvents = community ? events.filter(e => e.communityId === community.id).sort((a, b) => new Date(a.date) - new Date(b.date)) : [];
+  const communityEvents = community ? events.filter(e => e.communityId === community.id || e.collabCommunityIds?.includes(community.id)).sort((a, b) => new Date(a.date) - new Date(b.date)) : [];
   const publishedEvents = communityEvents.filter(e => e.status !== 'cancelled');
   const communityMessages = community ? messages.filter(m => m.communityId === community.id) : [];
 
@@ -139,6 +139,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
     location: '', 
     maxCapacity: '', 
     ticketPrice: '', 
+    collabCommunityIds: [],
     autoReminders: true, 
     autoFeedback: true,
     scheduleMode: 'single',
@@ -720,6 +721,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
       location: event.location || '',
       maxCapacity: event.maxCapacity ? event.maxCapacity.toString() : '',
       ticketPrice: event.ticketPrice ? event.ticketPrice.toString() : '',
+      collabCommunityIds: event.collabCommunityIds || [],
       autoReminders: event.autoReminders ?? true,
       autoFeedback: event.autoFeedback ?? true,
       scheduleMode: 'single',
@@ -744,6 +746,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
       date: eventForm.date, time: eventForm.time, location: eventForm.location,
       maxCapacity: eventForm.maxCapacity ? parseInt(eventForm.maxCapacity, 10) : null,
       ticketPrice: eventForm.ticketPrice ? parseFloat(eventForm.ticketPrice) : 0,
+      collabCommunityIds: eventForm.collabCommunityIds || [],
       autoReminders: eventForm.autoReminders,
       autoFeedback: eventForm.autoFeedback
     };
@@ -1019,6 +1022,70 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 <ImageIcon size={18} /> {imageFile ? imageFile.name : 'Choose Image (optional)'}
               </button>
             </div>
+          </div>
+
+          {/* Partner Community Co-Hosting & Cross-Promotion */}
+          <div className="form-group" style={{ marginTop: '16px' }}>
+            <label className="form-label" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Users size={14} color="var(--teal-400)" /> Community Co-Hosting & Cross-Promotion
+              </span>
+              <span style={{ fontSize: '0.68rem', color: 'var(--teal-400)', fontWeight: 600 }}>Optional</span>
+            </label>
+            <div style={{ fontSize: '0.78rem', color: 'var(--slate-400)', marginBottom: '10px', lineHeight: 1.4 }}>
+              Select partner communities in Tunbridge Wells to co-host. This cross-promotes the event to their members and displays joint host branding.
+            </div>
+
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+              {communities
+                .filter(c => c.id !== (community?.id || activeCommunityId))
+                .map(partner => {
+                  const isSelected = (eventForm.collabCommunityIds || []).includes(partner.id);
+                  return (
+                    <button
+                      key={partner.id}
+                      type="button"
+                      onClick={() => {
+                        const current = eventForm.collabCommunityIds || [];
+                        const updated = isSelected 
+                          ? current.filter(id => id !== partner.id)
+                          : [...current, partner.id];
+                        setEventForm({ ...eventForm, collabCommunityIds: updated });
+                      }}
+                      className="interactive-press"
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '8px 12px',
+                        borderRadius: '12px',
+                        cursor: 'pointer',
+                        fontSize: '0.8rem',
+                        fontWeight: 600,
+                        background: isSelected ? 'rgba(20,184,166,0.18)' : 'rgba(255,255,255,0.03)',
+                        border: isSelected ? '1px solid var(--teal-400)' : '1px solid rgba(255,255,255,0.08)',
+                        color: isSelected ? 'var(--teal-300)' : 'var(--slate-300)',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      {partner.image ? (
+                        <img src={partner.image} alt="" style={{ width: '18px', height: '18px', borderRadius: '50%', objectFit: 'cover' }} />
+                      ) : (
+                        <div style={{ width: '18px', height: '18px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.65rem' }}>
+                          🤝
+                        </div>
+                      )}
+                      <span>{partner.name}</span>
+                      {isSelected && <Check size={13} color="var(--teal-400)" />}
+                    </button>
+                  );
+                })}
+            </div>
+            {eventForm.collabCommunityIds?.length > 0 && (
+              <div style={{ fontSize: '0.72rem', color: '#86efac', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <Check size={12} /> {eventForm.collabCommunityIds.length} partner {eventForm.collabCommunityIds.length === 1 ? 'community' : 'communities'} selected for cross-promotion
+              </div>
+            )}
           </div>
           {/* Preview card */}
           {eventForm.title && (
@@ -1541,48 +1608,136 @@ export default function LeaderDashboard({ initialCommunityId }) {
                     </>
                   )}
 
-                  {/* Check-in Rate */}
+                  {/* Check-in & Member Retention Analytics */}
                   {leaderDrillDown === 'checkin' && (
                     <>
-                      <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <ScanLine size={14} /> Attendance & Check-ins
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
+                        <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <ScanLine size={15} color="var(--teal-400)" /> Attendance & Member Retention Analytics
+                        </div>
+                        <button
+                          onClick={() => {
+                            if (!communityEvents || communityEvents.length === 0) {
+                              toast.info('No events', 'No attendance data to export.');
+                              return;
+                            }
+                            const rows = [
+                              ['Event Title', 'Event Date', 'Member Name', 'Member Email', 'RSVP Status', 'Checked In', 'Referred By']
+                            ];
+                            communityEvents.forEach(e => {
+                              const rsvps = eventRsvps[e.id] || [];
+                              rsvps.forEach(r => {
+                                const u = users.find(x => x.id === r.userId);
+                                rows.push([
+                                  `"${(e.title || '').replace(/"/g, '""')}"`,
+                                  `"${e.date || ''}"`,
+                                  `"${(u?.name || 'Member').replace(/"/g, '""')}"`,
+                                  `"${(u?.email || '').replace(/"/g, '""')}"`,
+                                  `"${r.status || 'going'}"`,
+                                  r.checkedIn || r.status === 'checked_in' ? 'Yes' : 'No',
+                                  `"${r.referred_by || r.referredBy || 'Direct'}"`
+                                ]);
+                              });
+                            });
+                            const csvContent = 'data:text/csv;charset=utf-8,' + rows.map(r => r.join(',')).join('\n');
+                            const encodedUri = encodeURI(csvContent);
+                            const link = document.createElement('a');
+                            link.setAttribute('href', encodedUri);
+                            link.setAttribute('download', `${community?.name?.toLowerCase().replace(/[^a-z0-9]/g, '_') || 'community'}_attendance_roster.csv`);
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                            toast.success('Roster Exported!', 'Attendance CSV downloaded successfully.');
+                          }}
+                          className="interactive-press"
+                          style={{
+                            padding: '6px 12px', borderRadius: '8px',
+                            background: 'rgba(20,184,166,0.12)', border: '1px solid rgba(20,184,166,0.25)',
+                            color: 'var(--teal-300)', fontSize: '0.75rem', fontWeight: 600,
+                            display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer'
+                          }}
+                        >
+                          <Download size={13} /> Export Roster (.CSV)
+                        </button>
                       </div>
+
                       {(() => {
-                        let totalR = 0, totalC = 0;
+                        let totalR = 0, totalC = 0, referralCount = 0;
+                        const attendeeCounts = {};
                         communityEvents.forEach(e => {
                           const rsvps = eventRsvps[e.id] || [];
-                          totalR += rsvps.filter(r => r.status === 'going').length;
-                          totalC += rsvps.filter(r => r.checkedIn).length;
+                          rsvps.forEach(r => {
+                            if (r.status === 'going' || r.status === 'checked_in') {
+                              totalR++;
+                              if (r.referred_by || r.referredBy) referralCount++;
+                              if (r.checkedIn || r.status === 'checked_in') {
+                                totalC++;
+                                attendeeCounts[r.userId] = (attendeeCounts[r.userId] || 0) + 1;
+                              }
+                            }
+                          });
                         });
+                        const uniqueAttendees = Object.keys(attendeeCounts).length;
+                        const repeatAttendees = Object.values(attendeeCounts).filter(c => c >= 2).length;
+                        const retentionRate = uniqueAttendees > 0 ? Math.round((repeatAttendees / uniqueAttendees) * 100) : 0;
+                        const checkinRate = totalR > 0 ? Math.round((totalC / totalR) * 100) : 0;
+
                         return (
-                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginBottom: '16px' }}>
-                            {[
-                              { label: 'Total RSVPs',  value: totalR,                                    color: '#a78bfa' },
-                              { label: 'Checked In',   value: totalC,                                    color: '#22c55e' },
-                              { label: 'Check-in %',   value: `${stats.checkinRate || 0}%`,              color: '#3b82f6' },
-                            ].map(r => (
-                              <div key={r.label} style={{ padding: '12px', background: 'rgba(0,0,0,0.2)', borderRadius: '10px', textAlign: 'center' }}>
-                                <div style={{ fontSize: '1.3rem', fontWeight: 700, color: r.color, fontFamily: 'var(--font-heading)' }}>{r.value}</div>
-                                <div style={{ fontSize: '0.6rem', color: 'var(--slate-400)', textTransform: 'uppercase', fontWeight: 600 }}>{r.label}</div>
+                          <>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: '8px', marginBottom: '16px' }}>
+                              {[
+                                { label: 'Total RSVPs',   value: totalR,              color: '#a78bfa' },
+                                { label: 'Checked In',    value: totalC,              color: '#22c55e' },
+                                { label: 'Check-in Rate', value: `${checkinRate}%`,   color: '#3b82f6' },
+                                { label: 'Retention Rate',value: `${retentionRate}%`, color: '#f59e0b', sub: `${repeatAttendees} repeat` },
+                              ].map(r => (
+                                <div key={r.label} style={{ padding: '12px', background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.04)', borderRadius: '12px', textAlign: 'center' }}>
+                                  <div style={{ fontSize: '1.35rem', fontWeight: 800, color: r.color, fontFamily: 'var(--font-heading)' }}>{r.value}</div>
+                                  <div style={{ fontSize: '0.65rem', color: 'var(--slate-400)', textTransform: 'uppercase', fontWeight: 600, marginTop: '2px' }}>{r.label}</div>
+                                  {r.sub && <div style={{ fontSize: '0.62rem', color: 'var(--slate-500)', marginTop: '2px' }}>{r.sub}</div>}
+                                </div>
+                              ))}
+                            </div>
+
+                            {/* Retention & Referral summary cards */}
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '16px' }}>
+                              <div style={{ padding: '12px', background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.15)', borderRadius: '12px' }}>
+                                <div style={{ fontSize: '0.72rem', color: '#86efac', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>
+                                  Loyalty Retention
+                                </div>
+                                <div style={{ fontSize: '0.82rem', color: 'var(--slate-200)', lineHeight: 1.4 }}>
+                                  <strong>{repeatAttendees}</strong> members have attended 2+ events, giving you a <strong>{retentionRate}%</strong> loyalty retention rate.
+                                </div>
                               </div>
-                            ))}
-                          </div>
+                              <div style={{ padding: '12px', background: 'rgba(56,189,248,0.06)', border: '1px solid rgba(56,189,248,0.15)', borderRadius: '12px' }}>
+                                <div style={{ fontSize: '0.72rem', color: '#7dd3fc', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>
+                                  Word of Mouth
+                                </div>
+                                <div style={{ fontSize: '0.82rem', color: 'var(--slate-200)', lineHeight: 1.4 }}>
+                                  <strong>{referralCount}</strong> bookings originated from member referral share links.
+                                </div>
+                              </div>
+                            </div>
+                          </>
                         );
                       })()}
-                      <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', marginBottom: '10px', fontWeight: 600 }}>Check-ins by event</div>
+
+                      <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', marginBottom: '10px', fontWeight: 600 }}>Check-in Performance by Event</div>
                       {communityEvents.filter(e => (eventRsvps[e.id] || []).some(r => r.status === 'going')).map(e => {
                         const rsvps = eventRsvps[e.id] || [];
-                        const going = rsvps.filter(r => r.status === 'going').length;
-                        const checkedIn = rsvps.filter(r => r.checkedIn).length;
+                        const going = rsvps.filter(r => r.status === 'going' || r.status === 'checked_in').length;
+                        const checkedIn = rsvps.filter(r => r.checkedIn || r.status === 'checked_in').length;
                         const pct = going > 0 ? Math.round((checkedIn / going) * 100) : 0;
                         return (
-                          <div key={e.id} style={{ padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                              <span style={{ fontSize: '0.85rem', color: 'var(--white)' }}>{e.title}</span>
-                              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: pct >= 75 ? '#22c55e' : pct >= 40 ? '#f59e0b' : 'var(--slate-400)' }}>{checkedIn}/{going}</span>
+                          <div key={e.id} style={{ padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                              <span style={{ fontSize: '0.85rem', color: 'var(--white)', fontWeight: 600 }}>{e.title}</span>
+                              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: pct >= 75 ? '#22c55e' : pct >= 40 ? '#f59e0b' : 'var(--slate-400)' }}>
+                                {checkedIn}/{going} checked in ({pct}%)
+                              </span>
                             </div>
-                            <div style={{ height: '4px', background: 'rgba(255,255,255,0.06)', borderRadius: '99px', overflow: 'hidden' }}>
-                              <div style={{ width: `${pct}%`, height: '100%', background: pct >= 75 ? '#22c55e' : pct >= 40 ? '#f59e0b' : '#6b7280', borderRadius: '99px' }} />
+                            <div style={{ height: '5px', background: 'rgba(255,255,255,0.06)', borderRadius: '99px', overflow: 'hidden' }}>
+                              <div style={{ width: `${pct}%`, height: '100%', background: pct >= 75 ? '#22c55e' : pct >= 40 ? '#f59e0b' : '#6b7280', borderRadius: '99px', transition: 'width 0.4s ease' }} />
                             </div>
                           </div>
                         );
