@@ -233,11 +233,10 @@ export default function MapView({ communities = [], events = [], onSelect }) {
         attributionControl: false,
       });
 
-      // CartoDB Dark Matter tile layer for premium dark UI
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      // OpenStreetMap tile layer (zero API key dependency, unlimited access)
+      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
-        subdomains: 'abcd',
-        attribution: '&copy; OpenStreetMap &copy; CARTO',
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
       }).addTo(map);
 
       L.control.zoom({ position: 'topright' }).addTo(map);
@@ -540,6 +539,11 @@ export default function MapView({ communities = [], events = [], onSelect }) {
           backgroundColor: '#020617'
         }}
       />
+      <style>{`
+        .leaflet-tile-pane {
+          filter: brightness(0.65) invert(1) contrast(2.2) hue-rotate(185deg) saturate(0.28);
+        }
+      `}</style>
     </div>
   );
 }

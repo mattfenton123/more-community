@@ -8,7 +8,7 @@ import{n as e}from"./rolldown-runtime-Bh1tDfsg.js";import{F as t,Pt as n,_t as r
       box-shadow: 0 4px 16px rgba(0,0,0,0.4);
       cursor: pointer;
       transition: transform 0.2s ease;
-    ">${e}</div>`,iconSize:[40,40],iconAnchor:[20,20],popupAnchor:[0,-24],className:``})}function T({communities:e,onSelect:t}){let n=(0,b.useRef)(null),r=(0,b.useRef)(null),i=o();return(0,b.useEffect)(()=>{r.current&&r.current.remove();let t=x.default.map(n.current,{center:C,zoom:14,zoomControl:!1,attributionControl:!1});return x.default.tileLayer(`https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png`,{maxZoom:19}).addTo(t),x.default.control.zoom({position:`topright`}).addTo(t),e.forEach(e=>{if(!e.lat||!e.lng)return;let n=e.category?.split(` `)[0]||`📍`,r=x.default.marker([e.lat,e.lng],{icon:w(n)}).addTo(t),a=`
+    ">${e}</div>`,iconSize:[40,40],iconAnchor:[20,20],popupAnchor:[0,-24],className:``})}function T({communities:e,onSelect:t}){let n=(0,b.useRef)(null),r=(0,b.useRef)(null),i=o();return(0,b.useEffect)(()=>{r.current&&r.current.remove();let t=x.default.map(n.current,{center:C,zoom:14,zoomControl:!1,attributionControl:!1});return x.default.tileLayer(`https://tile.openstreetmap.org/{z}/{x}/{y}.png`,{maxZoom:19}).addTo(t),x.default.control.zoom({position:`topright`}).addTo(t),e.forEach(e=>{if(!e.lat||!e.lng)return;let n=e.category?.split(` `)[0]||`📍`,r=x.default.marker([e.lat,e.lng],{icon:w(n)}).addTo(t),a=`
         <div style="
           background: #0f172a;
           border: 1px solid rgba(255,255,255,0.1);

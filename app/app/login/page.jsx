@@ -1,11 +1,11 @@
 "use client";
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { Mail, ArrowRight, Users, Calendar, MessageCircle, KeyRound, CheckCircle2, AlertCircle } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '../../src/context/AuthContext';
 import { FALLBACK_IMAGES, LAUNCH_CITY } from '../../src/lib/constants';
 
-export default function LoginScreen() {
+function LoginScreenContent() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
@@ -18,6 +18,8 @@ export default function LoginScreen() {
   const [error, setError] = useState(null);
   const { signInWithEmail, signUpWithEmail, resetPassword, resendConfirmationEmail } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTarget = searchParams?.get('redirect') || '/app';
 
   const formatAuthError = (err) => {
     if (!err) return null;
@@ -71,7 +73,7 @@ export default function LoginScreen() {
         return;
       }
       if (data?.session) {
-        router.push('/app');
+        router.push(redirectTarget);
       } else {
         // Confirmation email required
         setSignUpEmailSent(true);
@@ -83,7 +85,7 @@ export default function LoginScreen() {
         setIsLoading(false);
         return;
       }
-      router.push('/app');
+      router.push(redirectTarget);
     }
     setIsLoading(false);
   };
@@ -476,5 +478,13 @@ export default function LoginScreen() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginScreen() {
+  return (
+    <Suspense fallback={<div style={{ minHeight: '100dvh', background: 'var(--slate-950)' }} />}>
+      <LoginScreenContent />
+    </Suspense>
   );
 }

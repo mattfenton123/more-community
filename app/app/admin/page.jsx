@@ -73,7 +73,7 @@ function getEngagementScore(member, events, eventRsvps, messages, communityId) {
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
-  const { user, communities, users, events, communityMemberships, eventRsvps, adminVerifyCommunity, updateUser, notifications, broadcastNotification, platformBroadcast, toggleUserRole, updateCommunity } = useAppContext();
+  const { user, communities, users, events, communityMemberships, eventRsvps, adminVerifyCommunity, updateUser, notifications, broadcastNotification, platformBroadcast, toggleUserRole, updateCommunity, isLoading } = useAppContext();
     const { feedPosts } = useFeed();
     const { messages } = useChat();
   const { toast } = useToast();
@@ -90,10 +90,10 @@ export default function AdminDashboard() {
   const [verifyingCommunityId, setVerifyingCommunityId] = useState(null);
 
   React.useEffect(() => {
-    if (!user || !user.isAdmin) {
+    if (!isLoading && (!user || !user.isAdmin)) {
       navigate.push('/app');
     }
-  }, [user, navigate]);
+  }, [user, isLoading, navigate]);
 
   const ADMIN_EMAILS = [
     'msf199@hotmail.com',
