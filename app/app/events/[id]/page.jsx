@@ -1,16 +1,41 @@
 import EventClient from './client-page';
 import { initialExperiences } from '../../../src/lib/constants';
+import { supabase } from '../../../src/lib/supabaseClient';
 
 export async function generateMetadata({ params }) {
   const resolvedParams = await params;
   const { id } = resolvedParams;
   
-  // Find the event from constants (or fetch from DB in future)
-  const event = initialExperiences.find(e => e.id === id);
+  // 1. Fetch live event and host community from Supabase
+  let event = null;
+  let communityName = 'More Community';
+
+  try {
+    const { data: dbEvent } = await supabase
+      .from('events')
+      .select('*, communities(name, image)')
+      .eq('id', id)
+      .maybeSingle();
+
+    if (dbEvent) {
+      event = dbEvent;
+      if (dbEvent.communities?.name) {
+        communityName = dbEvent.communities.name;
+      }
+    }
+  } catch (err) {
+    console.error('Error fetching event metadata:', err);
+  }
+
+  // 2. Fallback to initialExperiences if mock ID
+  if (!event) {
+    event = initialExperiences.find(e => e.id === id);
+  }
   
   if (!event) {
     return {
       title: 'Community Event | More Community',
+      description: 'Discover events, connect with local people, and experience real-life community.'
     };
   }
 
@@ -18,21 +43,22 @@ export async function generateMetadata({ params }) {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://www.morecommunity.app';
   const ogUrl = new URL(`${baseUrl}/api/og`);
   ogUrl.searchParams.set('title', event.title);
-  ogUrl.searchParams.set('community', 'More Community');
+  ogUrl.searchParams.set('community', communityName);
   ogUrl.searchParams.set('type', 'event');
   ogUrl.searchParams.set('date', event.date ? `${event.date}${event.time ? ` at ${event.time}` : ''}` : (event.duration || ''));
   if (event.location) ogUrl.searchParams.set('location', event.location);
-  if (event.image) {
-    ogUrl.searchParams.set('image', event.image.startsWith('http') ? event.image : `${baseUrl}${event.image}`);
+  const eventImg = event.image || event.communities?.image;
+  if (eventImg) {
+    ogUrl.searchParams.set('image', eventImg.startsWith('http') ? eventImg : `${baseUrl}${eventImg}`);
   }
 
-  const desc = event.description || `Join us for ${event.title} on More Community. RSVP, view event details, and connect with your local community in real life.`;
+  const desc = event.description || `Join us for ${event.title} with ${communityName} on More Community. RSVP, view event details, and connect with your local community in real life.`;
 
   return {
-    title: `${event.title} | More Community`,
+    title: `${event.title} | ${communityName}`,
     description: desc,
     openGraph: {
-      title: `${event.title} | More Community`,
+      title: `${event.title} | ${communityName}`,
       description: desc,
       siteName: 'More Community',
       images: [
