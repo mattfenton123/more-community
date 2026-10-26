@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useMemo, useEffect } from 'react';
 import { ArrowRight, Camera, Check, Users, Calendar, MessageCircle, Eye, Type, Moon, Sun, Monitor, Activity, Heart, X as XIcon, MapPin, Sparkles } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useAppContext } from '../context/AppContext';
@@ -17,6 +17,81 @@ const STEP_VIDEOS = [
   'https://videos.pexels.com/video-files/3195394/3195394-uhd_2560_1440_25fps.mp4'
 ];
 
+// Clean text: strip emojis, punctuation, symbols, trim, lowercase
+const cleanText = (str) => {
+  if (!str) return '';
+  return String(str)
+    .replace(/[\p{Emoji}\p{Symbol}\p{Punctuation}]/gu, '')
+    .toLowerCase()
+    .trim();
+};
+
+const INTEREST_SYNONYMS = {
+  fitness: ['fitness', 'gym', 'sports', 'running', 'exercise', 'workout', 'training', 'athletics', 'pilates', 'yoga'],
+  walking: ['walking', 'hiking', 'walk', 'rambling', 'steps', 'outdoors', 'trails', 'nature'],
+  wellness: ['wellness', 'wellbeing', 'health', 'mental health', 'mindfulness', 'meditation', 'breathing', 'breathwork', 'chill', 'relax', 'peer support'],
+  outdoors: ['outdoors', 'outdoor', 'adventure', 'walking', 'hiking', 'nature', 'camping', 'wild'],
+  volunteering: ['volunteering', 'volunteer', 'charity', 'community', 'support', 'giving back', 'peer support', 'help'],
+  creative: ['creative', 'art', 'arts', 'crafts', 'painting', 'drawing', 'photography', 'design', 'making'],
+  professional: ['professional', 'business', 'networking', 'career', 'entrepreneur', 'tech', 'work', 'leadership'],
+  music: ['music', 'gigs', 'concerts', 'singing', 'choir', 'bands', 'acoustic', 'live music', 'festival'],
+  bookclub: ['book', 'books', 'reading', 'literature', 'learning', 'discussion'],
+  cooking: ['cooking', 'food', 'baking', 'culinary', 'dinner', 'chef'],
+  gardening: ['gardening', 'garden', 'plants', 'allotment', 'nature', 'growing', 'green'],
+  parenting: ['parenting', 'parents', 'mum', 'mums', 'dad', 'dads', 'baby', 'toddler', 'kids', 'family'],
+  learning: ['learning', 'education', 'skills', 'workshop', 'study', 'talks', 'growth'],
+  gaming: ['gaming', 'games', 'board games', 'video games', 'rpg', 'esports'],
+  theatrearts: ['theatre', 'theater', 'arts', 'drama', 'acting', 'plays', 'culture'],
+  gigslivemusic: ['gigs', 'live music', 'music', 'concerts', 'shows'],
+  singlessocial: ['singles', 'social', 'meetup', 'drinks', 'chill vibes', 'chat', 'mingle', 'community'],
+  quizzing: ['quizzing', 'quiz', 'trivia', 'pub quiz', 'games']
+};
+
+const calculateMatchScore = (community, selectedInterests) => {
+  if (!community || !selectedInterests || selectedInterests.length === 0) return 0;
+  
+  const commTagsClean = (community.tags || []).map(cleanText).filter(Boolean);
+  const commNameClean = cleanText(community.name);
+  const commDescClean = cleanText(community.description);
+  
+  let score = 0;
+  
+  for (const rawInterest of selectedInterests) {
+    const interestClean = cleanText(rawInterest);
+    if (!interestClean) continue;
+    
+    // Direct match against tags
+    for (const tagClean of commTagsClean) {
+      if (tagClean === interestClean) {
+        score += 3;
+      } else if (tagClean.includes(interestClean) || interestClean.includes(tagClean)) {
+        score += 2;
+      }
+    }
+    
+    // Direct match against name or description
+    if (commNameClean.includes(interestClean)) score += 2;
+    if (commDescClean.includes(interestClean)) score += 1;
+    
+    // Synonym matching
+    const synonymKey = Object.keys(INTEREST_SYNONYMS).find(k => interestClean.includes(k) || k.includes(interestClean));
+    if (synonymKey) {
+      const relatedWords = INTEREST_SYNONYMS[synonymKey];
+      for (const word of relatedWords) {
+        for (const tagClean of commTagsClean) {
+          if (tagClean.includes(word) || word.includes(tagClean)) {
+            score += 1.5;
+          }
+        }
+        if (commDescClean.includes(word)) {
+          score += 0.5;
+        }
+      }
+    }
+  }
+  
+  return score;
+};
 
 export default function OnboardingFlow({ onComplete }) {
   const { authUser, signOut } = useAuth();
@@ -43,70 +118,127 @@ export default function OnboardingFlow({ onComplete }) {
   const [swipedPassed, setSwipedPassed] = useState([]);
   const [swipeLeaveDir, setSwipeLeaveDir] = useState(null);
 
-  // Filter communities by selected interests for the swipe step
-  const matchingCommunities = (communities || []).filter(c => {
-    if (!c.tags || c.tags.length === 0) return false;
-    
-    if (gender === 'Male') {
-      const name = c.name?.toLowerCase() || '';
-      const desc = c.description?.toLowerCase() || '';
-      if (name.includes('mum') || name.includes('women') || desc.includes('women only') || desc.includes('for mums') || desc.includes('mothers')) {
-        return false;
-      }
-    }
-    
-    // Strict filter: exclude parenting/mum/dad communities if user didn't select Parenting
-    if (!interests.some(i => i.toLowerCase().includes('parenting'))) {
-      const name = c.name?.toLowerCase() || '';
-      const desc = c.description?.toLowerCase() || '';
-      if (name.includes('mum') || name.includes('dad') || name.includes('parent') || desc.includes('parent') || desc.includes('mum') || desc.includes('dad')) {
-        return false;
-      }
-    }
+  // Filter communities by selected interests for the swipe step, guaranteeing cards to swipe
+  const matchingCommunities = useMemo(() => {
+    if (!communities || communities.length === 0) return [];
 
-    return c.tags.some(tag => 
-      interests.some(interest => interest.toLowerCase().includes(tag.toLowerCase()) || tag.toLowerCase().includes(interest.toLowerCase()))
-    );
-  }).slice(0, 10);
+    // Filter candidate communities
+    const candidates = communities.filter(c => {
+      // Exclude private groups from public onboarding swipe
+      if (c.is_private || c.isPrivate || c.id === 'more-leaders-network') return false;
+
+      const cName = (c.name || '').toLowerCase();
+      const cDesc = (c.description || '').toLowerCase();
+
+      // Gender filters
+      if (gender === 'Male') {
+        if (cName.includes('mum') || cName.includes('women') || cDesc.includes('women only') || cDesc.includes('for mums') || cDesc.includes('mothers')) {
+          return false;
+        }
+      } else if (gender === 'Female') {
+        if (cName.includes('mankind') || cName.includes('men only') || cDesc.includes('for men') || cDesc.includes('men only') || cDesc.includes('groups for men')) {
+          return false;
+        }
+      }
+
+      // Parenting filter: exclude parenting groups if user didn't select Parenting
+      const userWantsParenting = interests.some(i => cleanText(i).includes('parenting'));
+      if (!userWantsParenting) {
+        if (cName.includes('mum') || cName.includes('dad') || cName.includes('parent') || cDesc.includes('parent') || cDesc.includes('mum') || cDesc.includes('dad')) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+
+    if (candidates.length === 0) return [];
+
+    // Score and rank communities by interest relevance
+    const scored = candidates.map(c => ({
+      community: c,
+      score: calculateMatchScore(c, interests)
+    }));
+
+    // Sort descending by score, keeping high matches first
+    scored.sort((a, b) => b.score - a.score);
+
+    // Return the ranked communities (guaranteeing that even if a community had 0 direct tag overlap, public communities are still in the deck)
+    return scored.map(item => item.community).slice(0, 10);
+  }, [communities, interests, gender]);
 
   const currentSwipeCommunity = matchingCommunities[swipeIndex];
 
-  const handleSwipePointerDown = (e) => {
+  // Reset swipeIndex if the community deck changes
+  const prevDeckSignatureRef = useRef('');
+  useEffect(() => {
+    const signature = matchingCommunities.map(c => c.id).join(',');
+    if (prevDeckSignatureRef.current && prevDeckSignatureRef.current !== signature) {
+      setSwipeIndex(0);
+      setSwipedLiked([]);
+      setSwipedPassed([]);
+    }
+    prevDeckSignatureRef.current = signature;
+  }, [matchingCommunities]);
+
+  const handlePointerDown = (e) => {
+    if (e.button !== undefined && e.button !== 0) return;
     setIsDragging(true);
-    setDragStartX(e.clientX || (e.touches && e.touches[0].clientX) || 0);
+    setDragStartX(e.clientX);
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch (_) {}
   };
 
-  const handleSwipePointerMove = (e) => {
+  const handlePointerMove = (e) => {
     if (!isDragging) return;
-    const currentX = e.clientX || (e.touches && e.touches[0].clientX) || 0;
-    setSwipeOffset(currentX - dragStartX);
+    setSwipeOffset(e.clientX - dragStartX);
   };
 
-  const handleSwipePointerUp = () => {
+  const handlePointerUp = (e) => {
+    if (!isDragging) return;
     setIsDragging(false);
-    if (swipeOffset > 80) {
+    try {
+      if (e.currentTarget?.hasPointerCapture?.(e.pointerId)) {
+        e.currentTarget.releasePointerCapture(e.pointerId);
+      }
+    } catch (_) {}
+
+    if (swipeOffset > 75) {
       doSwipe('right');
-    } else if (swipeOffset < -80) {
+    } else if (swipeOffset < -75) {
       doSwipe('left');
     } else {
       setSwipeOffset(0);
     }
   };
 
+  const handlePointerCancel = (e) => {
+    if (!isDragging) return;
+    setIsDragging(false);
+    try {
+      if (e.currentTarget?.hasPointerCapture?.(e.pointerId)) {
+        e.currentTarget.releasePointerCapture(e.pointerId);
+      }
+    } catch (_) {}
+    setSwipeOffset(0);
+  };
+
   const doSwipe = (direction) => {
     const c = currentSwipeCommunity;
+    if (!c) return;
     setSwipeLeaveDir(direction);
-    setSwipeOffset(direction === 'right' ? 500 : -500);
+    setSwipeOffset(direction === 'right' ? 600 : -600);
     setTimeout(() => {
-      if (direction === 'right' && c) {
-        setSwipedLiked(prev => [...prev, c]);
-      } else if (direction === 'left' && c) {
-        setSwipedPassed(prev => [...prev, c]);
+      if (direction === 'right') {
+        setSwipedLiked(prev => (prev.some(item => item.id === c.id) ? prev : [...prev, c]));
+      } else if (direction === 'left') {
+        setSwipedPassed(prev => (prev.some(item => item.id === c.id) ? prev : [...prev, c]));
       }
       setSwipeIndex(prev => prev + 1);
       setSwipeOffset(0);
       setSwipeLeaveDir(null);
-    }, 250);
+    }, 240);
   };
 
   // Build affinityProfile from swipe data
@@ -114,14 +246,18 @@ export default function OnboardingFlow({ onComplete }) {
     const tagScores = {};
     swipedLiked.forEach(c => {
       (c.tags || []).forEach(tag => {
-        const key = tag.toLowerCase();
-        tagScores[key] = (tagScores[key] || 0) + 1;
+        const key = cleanText(tag);
+        if (key) {
+          tagScores[key] = (tagScores[key] || 0) + 1;
+        }
       });
     });
     swipedPassed.forEach(c => {
       (c.tags || []).forEach(tag => {
-        const key = tag.toLowerCase();
-        tagScores[key] = (tagScores[key] || 0) - 0.5;
+        const key = cleanText(tag);
+        if (key) {
+          tagScores[key] = (tagScores[key] || 0) - 0.5;
+        }
       });
     });
     return {
@@ -277,91 +413,282 @@ export default function OnboardingFlow({ onComplete }) {
     </div>,
 
     // Step 1: Community Swipe Matching
-    <div key="swipe" className="page-wrapper" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+    <div key="swipe" className="page-wrapper" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
       <div style={{ textAlign: 'center' }}>
-        <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.6rem', margin: '0 0 8px 0' }}>Communities for you</h2>
-        <p style={{ color: 'var(--slate-400)', fontSize: '0.9rem', margin: '0 0 8px 0' }}>Swipe right to save to your short list, swipe left to discard.</p>
+        <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.6rem', margin: '0 0 6px 0' }}>Communities for you</h2>
+        <p style={{ color: 'var(--slate-400)', fontSize: '0.9rem', margin: '0 0 4px 0' }}>Swipe right to save to your short list, swipe left to pass.</p>
         <p style={{ color: 'var(--slate-500)', fontSize: '0.8rem', margin: 0, fontStyle: 'italic' }}>Like Tinder, but for community! 💚</p>
       </div>
 
-      <div style={{ position: 'relative', width: '100%', height: '320px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+      <div style={{ position: 'relative', width: '100%', height: '390px', display: 'flex', justifyContent: 'center', alignItems: 'flex-start' }}>
         {currentSwipeCommunity ? (
           <>
-            {/* Background card (next) */}
+            {/* Background card preview (next in deck) */}
             {matchingCommunities[swipeIndex + 1] && (
-              <div style={{ position: 'absolute', width: '90%', height: '300px', borderRadius: '20px', background: 'var(--slate-800)', border: '1px solid rgba(255,255,255,0.06)', transform: 'scale(0.95)', opacity: 0.5 }}></div>
+              <div
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  width: '92%',
+                  maxWidth: '380px',
+                  height: '315px',
+                  borderRadius: '20px',
+                  overflow: 'hidden',
+                  background: 'var(--slate-900)',
+                  border: '1px solid rgba(255,255,255,0.06)',
+                  transform: `scale(${0.94 + Math.min(0.06, Math.abs(swipeOffset) / 1200)}) translateY(10px)`,
+                  opacity: 0.45 + Math.min(0.35, Math.abs(swipeOffset) / 600),
+                  transition: isDragging ? 'none' : 'transform 0.25s ease, opacity 0.25s ease',
+                  pointerEvents: 'none',
+                  zIndex: 5,
+                }}
+              >
+                <div
+                  style={{
+                    height: '55%',
+                    backgroundImage: `url(${matchingCommunities[swipeIndex + 1].image || 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=400'})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    filter: 'brightness(0.6)',
+                  }}
+                />
+              </div>
             )}
-            {/* Active card */}
+
+            {/* Active draggable card */}
             <div
-              onMouseDown={handleSwipePointerDown}
-              onMouseMove={handleSwipePointerMove}
-              onMouseUp={handleSwipePointerUp}
-              onTouchStart={handleSwipePointerDown}
-              onTouchMove={handleSwipePointerMove}
-              onTouchEnd={handleSwipePointerUp}
+              onPointerDown={handlePointerDown}
+              onPointerMove={handlePointerMove}
+              onPointerUp={handlePointerUp}
+              onPointerCancel={handlePointerCancel}
               style={{
-                position: 'absolute', width: '90%', height: '300px',
-                borderRadius: '20px', overflow: 'hidden',
-                background: 'var(--slate-900)', border: '1px solid rgba(255,255,255,0.08)',
-                boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
-                transform: `translateX(${swipeOffset}px) rotate(${swipeOffset * 0.03}deg)`,
-                transition: isDragging ? 'none' : 'transform 0.25s ease, opacity 0.25s ease',
-                cursor: 'grab', userSelect: 'none',
+                position: 'absolute',
+                top: 0,
+                width: '92%',
+                maxWidth: '380px',
+                height: '315px',
+                borderRadius: '20px',
+                overflow: 'hidden',
+                background: 'var(--slate-900)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                boxShadow: '0 12px 36px rgba(0,0,0,0.45)',
+                transform: `translateX(${swipeOffset}px) rotate(${swipeOffset * 0.04}deg)`,
+                opacity: swipeLeaveDir ? 0 : 1,
+                transition: isDragging ? 'none' : 'transform 0.25s ease-out, opacity 0.25s ease-out',
+                cursor: isDragging ? 'grabbing' : 'grab',
+                userSelect: 'none',
+                touchAction: 'none',
+                willChange: 'transform',
+                zIndex: 10,
               }}
             >
-              <div style={{ height: '55%', backgroundImage: `url(${currentSwipeCommunity.image || 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=400'})`, backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative' }}>
-                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.9))' }}></div>
-                {/* Like/Nope indicators */}
-                {swipeOffset > 40 && (
-                  <div style={{ position: 'absolute', top: '20px', left: '20px', padding: '8px 20px', border: '3px solid #22c55e', borderRadius: '8px', color: '#22c55e', fontWeight: 800, fontSize: '1.4rem', transform: 'rotate(-15deg)' }}>LIKE</div>
-                )}
-                {swipeOffset < -40 && (
-                  <div style={{ position: 'absolute', top: '20px', right: '20px', padding: '8px 20px', border: '3px solid #ef4444', borderRadius: '8px', color: '#ef4444', fontWeight: 800, fontSize: '1.4rem', transform: 'rotate(15deg)' }}>NOPE</div>
-                )}
-                <div style={{ position: 'absolute', bottom: '14px', left: '16px', right: '16px' }}>
-                  <div style={{ fontWeight: 800, fontSize: '1.3rem', color: 'var(--white)' }}>{currentSwipeCommunity.name}</div>
+              {/* Image banner */}
+              <div
+                style={{
+                  height: '55%',
+                  backgroundImage: `url(${currentSwipeCommunity.image || 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=400'})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  position: 'relative',
+                }}
+              >
+                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 30%, rgba(15,23,42,0.95))' }} />
+
+                {/* LIKE indicator */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '16px',
+                    left: '16px',
+                    padding: '6px 16px',
+                    border: '3px solid #22c55e',
+                    borderRadius: '8px',
+                    color: '#22c55e',
+                    fontWeight: 800,
+                    fontSize: '1.25rem',
+                    transform: 'rotate(-12deg)',
+                    opacity: swipeOffset > 25 ? Math.min(1, (swipeOffset - 25) / 50) : 0,
+                    transition: isDragging ? 'none' : 'opacity 0.15s ease',
+                    pointerEvents: 'none',
+                    zIndex: 20,
+                  }}
+                >
+                  LIKE
+                </div>
+
+                {/* PASS indicator */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '16px',
+                    right: '16px',
+                    padding: '6px 16px',
+                    border: '3px solid #ef4444',
+                    borderRadius: '8px',
+                    color: '#ef4444',
+                    fontWeight: 800,
+                    fontSize: '1.25rem',
+                    transform: 'rotate(12deg)',
+                    opacity: swipeOffset < -25 ? Math.min(1, (-swipeOffset - 25) / 50) : 0,
+                    transition: isDragging ? 'none' : 'opacity 0.15s ease',
+                    pointerEvents: 'none',
+                    zIndex: 20,
+                  }}
+                >
+                  PASS
+                </div>
+
+                <div style={{ position: 'absolute', bottom: '12px', left: '16px', right: '16px' }}>
+                  <div style={{ fontWeight: 800, fontSize: '1.25rem', color: 'var(--white)', lineHeight: 1.2 }}>
+                    {currentSwipeCommunity.name}
+                  </div>
                   <div style={{ fontSize: '0.8rem', color: 'var(--slate-300)', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px' }}>
                     <MapPin size={12} /> {currentSwipeCommunity.location || 'Local community'}
                   </div>
                 </div>
               </div>
-              <div style={{ padding: '14px 16px' }}>
-                <p style={{ color: 'var(--slate-300)', fontSize: '0.85rem', lineHeight: 1.5, margin: '0 0 10px 0', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{currentSwipeCommunity.description || 'A community near you'}</p>
-                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+
+              {/* Community info */}
+              <div style={{ padding: '12px 16px', height: '45%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                <p
+                  style={{
+                    color: 'var(--slate-300)',
+                    fontSize: '0.85rem',
+                    lineHeight: 1.45,
+                    margin: 0,
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
+                    overflow: 'hidden',
+                  }}
+                >
+                  {currentSwipeCommunity.description || 'A community near you'}
+                </p>
+                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '6px' }}>
                   {(currentSwipeCommunity.tags || []).slice(0, 4).map(tag => (
-                    <span key={tag} style={{ padding: '3px 10px', borderRadius: '99px', background: 'rgba(20,184,166,0.1)', color: 'var(--teal-300)', fontSize: '0.7rem', fontWeight: 600 }}>{tag}</span>
+                    <span
+                      key={tag}
+                      style={{
+                        padding: '3px 10px',
+                        borderRadius: '99px',
+                        background: 'rgba(20,184,166,0.12)',
+                        color: 'var(--teal-300)',
+                        fontSize: '0.7rem',
+                        fontWeight: 600,
+                      }}
+                    >
+                      {tag}
+                    </span>
                   ))}
                 </div>
               </div>
             </div>
 
-            {/* Swipe buttons */}
-            <div style={{ position: 'absolute', bottom: '-10px', display: 'flex', gap: '24px', justifyContent: 'center', width: '100%' }}>
-              <button onClick={() => doSwipe('left')} className="interactive-press" style={{ width: '52px', height: '52px', borderRadius: '50%', background: 'rgba(239,68,68,0.1)', border: '2px solid rgba(239,68,68,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#ef4444' }}>
-                <XIcon size={24} />
+            {/* Swipe Action Buttons */}
+            <div style={{ position: 'absolute', bottom: '8px', display: 'flex', gap: '28px', justifyContent: 'center', width: '100%', zIndex: 30 }}>
+              <button
+                type="button"
+                onClick={() => doSwipe('left')}
+                className="interactive-press"
+                aria-label="Pass"
+                style={{
+                  width: '56px',
+                  height: '56px',
+                  borderRadius: '50%',
+                  background: 'rgba(239,68,68,0.12)',
+                  border: '2px solid rgba(239,68,68,0.3)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  color: '#ef4444',
+                  boxShadow: '0 4px 16px rgba(0,0,0,0.35)',
+                }}
+              >
+                <XIcon size={24} strokeWidth={2.5} />
               </button>
-              <button onClick={() => doSwipe('right')} className="interactive-press" style={{ width: '52px', height: '52px', borderRadius: '50%', background: 'rgba(34,197,94,0.1)', border: '2px solid rgba(34,197,94,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#22c55e' }}>
-                <Heart size={24} />
+              <button
+                type="button"
+                onClick={() => doSwipe('right')}
+                className="interactive-press"
+                aria-label="Save to shortlist"
+                style={{
+                  width: '56px',
+                  height: '56px',
+                  borderRadius: '50%',
+                  background: 'rgba(34,197,94,0.12)',
+                  border: '2px solid rgba(34,197,94,0.3)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  color: '#22c55e',
+                  boxShadow: '0 4px 16px rgba(0,0,0,0.35)',
+                }}
+              >
+                <Heart size={24} strokeWidth={2.5} fill="#22c55e" fillOpacity={0.2} />
               </button>
             </div>
           </>
         ) : (
-          <div style={{ textAlign: 'center', padding: '40px 20px' }}>
-            <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(20,184,166,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+          <div style={{ textAlign: 'center', padding: '36px 20px', maxWidth: '360px', margin: '0 auto' }}>
+            <div
+              style={{
+                width: '64px',
+                height: '64px',
+                borderRadius: '50%',
+                background: 'rgba(20,184,166,0.12)',
+                border: '1px solid rgba(20,184,166,0.25)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 16px',
+              }}
+            >
               <Sparkles size={28} color="var(--teal-400)" />
             </div>
-            <h3 style={{ color: 'var(--white)', margin: '0 0 8px 0', fontSize: '1.2rem' }}>All done!</h3>
-            <p style={{ color: 'var(--slate-400)', fontSize: '0.85rem', margin: 0 }}>
-              {swipedLiked.length > 0 ? `You liked ${swipedLiked.length} communities — we'll use this to personalise your feed.` : 'Tap Continue to set up your profile.'}
+            <h3 style={{ color: 'var(--white)', margin: '0 0 8px 0', fontSize: '1.3rem', fontFamily: 'var(--font-heading)' }}>
+              {swipedLiked.length > 0 ? "You're all set!" : "All caught up!"}
+            </h3>
+            <p style={{ color: 'var(--slate-400)', fontSize: '0.88rem', margin: '0 0 16px 0', lineHeight: 1.5 }}>
+              {swipedLiked.length > 0
+                ? `You saved ${swipedLiked.length} ${swipedLiked.length === 1 ? 'community' : 'communities'} to your shortlist. We'll add them to your feed!`
+                : "You've reviewed the available communities for now. Tap Continue to set up your profile."}
             </p>
+            {swipedLiked.length > 0 && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', justifyContent: 'center' }}>
+                {swipedLiked.map(c => (
+                  <span
+                    key={c.id}
+                    style={{
+                      padding: '4px 10px',
+                      borderRadius: '99px',
+                      background: 'rgba(20,184,166,0.15)',
+                      color: 'var(--teal-300)',
+                      fontSize: '0.75rem',
+                      fontWeight: 600,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                    }}
+                  >
+                    💚 {c.name}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>
 
       {/* Progress indicator */}
-      <div style={{ textAlign: 'center', fontSize: '0.8rem', color: 'var(--slate-500)' }}>
-        {currentSwipeCommunity ? `${swipeIndex + 1} of ${matchingCommunities.length}` : ''}
-        {swipedLiked.length > 0 && <span style={{ color: 'var(--teal-400)', marginLeft: '8px' }}>💚 {swipedLiked.length} liked</span>}
+      <div style={{ textAlign: 'center', fontSize: '0.8rem', color: 'var(--slate-500)', minHeight: '20px' }}>
+        {currentSwipeCommunity ? <span>Card {swipeIndex + 1} of {matchingCommunities.length}</span> : null}
+        {swipedLiked.length > 0 && (
+          <span style={{ color: 'var(--teal-400)', marginLeft: '10px', fontWeight: 600 }}>
+            💚 {swipedLiked.length} saved
+          </span>
+        )}
       </div>
     </div>,
 

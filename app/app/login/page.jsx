@@ -6,10 +6,20 @@ import { useAuth } from '../../src/context/AuthContext';
 import { FALLBACK_IMAGES, LAUNCH_CITY } from '../../src/lib/constants';
 
 function LoginScreenContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTarget = searchParams?.get('redirect') || '/app';
+  const isJoinInvite = Boolean(
+    redirectTarget.includes('/community/') || 
+    redirectTarget.includes('/events/') || 
+    searchParams?.get('action') === 'join' ||
+    searchParams?.get('mode') === 'signup'
+  );
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
-  const [isSignUp, setIsSignUp] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(() => isJoinInvite);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [resetEmailSent, setResetEmailSent] = useState(false);
   const [signUpEmailSent, setSignUpEmailSent] = useState(false);
@@ -17,9 +27,6 @@ function LoginScreenContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const { signInWithEmail, signUpWithEmail, resetPassword, resendConfirmationEmail } = useAuth();
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const redirectTarget = searchParams?.get('redirect') || '/app';
 
   const formatAuthError = (err) => {
     if (!err) return null;
@@ -205,6 +212,25 @@ function LoginScreenContent() {
 
         {/* Login / Reset form */}
         <div style={{ width: '100%' }}>
+          {isJoinInvite && !isForgotPassword && !resetEmailSent && !signUpEmailSent && (
+            <div style={{
+              background: 'linear-gradient(135deg, rgba(20,184,166,0.15) 0%, rgba(56,189,248,0.1) 100%)',
+              border: '1px solid rgba(20,184,166,0.3)',
+              borderRadius: '16px',
+              padding: '14px 16px',
+              marginBottom: '16px',
+              textAlign: 'center'
+            }}>
+              <div style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--white)', marginBottom: '4px' }}>
+                👋 Welcome to More Community!
+              </div>
+              <div style={{ fontSize: '0.82rem', color: 'var(--slate-300)', lineHeight: 1.4 }}>
+                {isSignUp 
+                  ? 'Create your free account below to join your community in seconds.' 
+                  : 'Sign in to access your community.'}
+              </div>
+            </div>
+          )}
           {isForgotPassword ? (
             <div style={{ marginBottom: '20px' }}>
               {resetEmailSent ? (

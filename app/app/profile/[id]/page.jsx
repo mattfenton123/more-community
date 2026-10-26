@@ -6,11 +6,11 @@ import { useChat } from '../../../src/context/ChatContext';
 import { useAuth } from '../../../src/context/AuthContext';
 import { ArrowLeft, Users, Calendar, MapPin, Settings, Camera, Check, X, MessageCircle, Edit3, Trophy, Flame, Plus, Compass, Star, LogOut, ChevronRight, Shield, BarChart2, Heart, Eye } from 'lucide-react';
 import AppHeader from '../../../src/components/AppHeader';
-import BottomNav from '../../../src/components/BottomNav';
 import { useToast } from '../../../src/components/Toast';
 import GamificationPanel, { BadgeRow, useGamification } from '../../../src/components/Gamification';
 import { FALLBACK_IMAGES } from '../../../src/lib/constants';
 import ProfileImageModal from '../../../src/components/ProfileImageModal';
+import { getEventPath } from '../../../src/lib/eventLinks';
 
 export default function UserProfile() {
   const { id } = useParams();
@@ -163,6 +163,50 @@ export default function UserProfile() {
                 </button>
               </>
             )}
+            {isOwnProfile && isEditing && (
+              <>
+                <button 
+                  className="interactive-press" 
+                  onClick={() => setIsEditing(false)} 
+                  style={{ 
+                    height: '32px', 
+                    padding: '0 12px', 
+                    borderRadius: '16px', 
+                    background: 'rgba(255,255,255,0.08)', 
+                    border: '1px solid rgba(255,255,255,0.15)', 
+                    color: 'var(--slate-300)', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '4px', 
+                    cursor: 'pointer', 
+                    fontSize: '0.8rem',
+                    fontWeight: 600
+                  }}
+                >
+                  <X size={14} /> Cancel
+                </button>
+                <button 
+                  className="interactive-press" 
+                  onClick={handleSave} 
+                  style={{ 
+                    height: '32px', 
+                    padding: '0 14px', 
+                    borderRadius: '16px', 
+                    background: 'var(--teal-500)', 
+                    border: 'none', 
+                    color: '#090d16', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '6px', 
+                    cursor: 'pointer', 
+                    fontWeight: 700, 
+                    fontSize: '0.82rem' 
+                  }}
+                >
+                  <Check size={14} strokeWidth={2.5} /> Save
+                </button>
+              </>
+            )}
           </div>
         }
       />
@@ -271,6 +315,44 @@ export default function UserProfile() {
                 onChange={e => setEditForm({ ...editForm, interests: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })}
                 style={{ textAlign: 'center' }} 
               />
+              <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
+                <button 
+                  type="button"
+                  onClick={() => setIsEditing(false)} 
+                  className="interactive-press"
+                  style={{ 
+                    flex: 1, 
+                    padding: '12px', 
+                    borderRadius: '12px', 
+                    background: 'rgba(255,255,255,0.06)', 
+                    border: '1px solid rgba(255,255,255,0.12)', 
+                    color: 'var(--slate-300)', 
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    fontSize: '0.9rem'
+                  }}
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="button"
+                  onClick={handleSave} 
+                  className="btn btn-primary interactive-press"
+                  style={{ 
+                    flex: 2, 
+                    padding: '12px', 
+                    borderRadius: '12px', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    gap: '6px',
+                    fontWeight: 700,
+                    fontSize: '0.95rem'
+                  }}
+                >
+                  <Check size={16} strokeWidth={2.5} /> Save Changes
+                </button>
+              </div>
             </div>
           ) : (
             <>
@@ -468,7 +550,7 @@ export default function UserProfile() {
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {events.filter(e => savedItems.includes(e.id)).map(event => (
-                  <div key={event.id} onClick={() => navigate.push(`/events/${event.id}`)} className="interactive-press" style={{ display: 'flex', gap: '12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '12px', cursor: 'pointer' }}>
+                  <div key={event.id} onClick={() => navigate.push(getEventPath(event, events))} className="interactive-press" style={{ display: 'flex', gap: '12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '12px', cursor: 'pointer' }}>
                     <div style={{ width: '60px', height: '60px', borderRadius: '8px', background: 'var(--slate-800)', flexShrink: 0, overflow: 'hidden' }}>
                       <img src={event.image || FALLBACK_IMAGES.community} alt={event.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     </div>
@@ -509,7 +591,6 @@ export default function UserProfile() {
           onClose={() => setSelectedImageModal(null)}
         />
       )}
-      <BottomNav />
     </div>
   );
 }

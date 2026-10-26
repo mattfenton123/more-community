@@ -10,6 +10,7 @@ import AppHeader from '../../src/components/AppHeader';
 import SwipeDiscovery from '../../src/components/SwipeDiscovery';
 import { isEventUpcoming, isEventPast, parseEventDateTime } from '../../src/lib/calendar';
 import { cleanLocationName } from '../../src/lib/location';
+import { getEventPath } from '../../src/lib/eventLinks';
 
 export default function EventsHub() {
   const router = useRouter();
@@ -276,7 +277,7 @@ export default function EventsHub() {
     return (
       <div 
         key={event.id} 
-        onClick={() => router.push(`/events/${event.id}`)}
+        onClick={() => router.push(getEventPath(event, events))}
         className="interactive-press stagger-item" 
         style={{ 
           cursor: 'pointer', marginBottom: '20px', borderRadius: '20px', overflow: 'hidden', 

@@ -1,7 +1,7 @@
 "use client";
 import { useState, useRef, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Share2, Users, Calendar, Settings, ChevronDown, ChevronUp, Image as ImageIcon, ExternalLink, Camera, Mail, Activity, Sparkles, MapPin, Clock, Star, MessageCircle, Heart, BadgeCheck, Globe, Trash2, Flag, Search, Briefcase, Check, X, MessageSquare, Lightbulb, Info, Megaphone, Video, Plus, Shield, Play, Smile, Archive } from 'lucide-react';
-import { useRouter as useNavigate, useParams } from 'next/navigation';
+import { useRouter as useNavigate, useParams, useSearchParams } from 'next/navigation';
 import { useAppContext } from '../../../src/context/AppContext';
 import { useFeed } from '../../../src/context/FeedContext';
 import { useToast } from '../../../src/components/Toast';
@@ -19,6 +19,7 @@ import ReelViewer from '../../../src/components/ReelViewer';
 import dynamic from 'next/dynamic';
 import { downloadIcs, getCalendarFeedUrls, isEventUpcoming, isEventPast, parseEventDateTime } from '../../../src/lib/calendar';
 import { cleanLocationName } from '../../../src/lib/location';
+import { getEventPath } from '../../../src/lib/eventLinks';
 
 const VideoUploader = dynamic(() => import('../../../src/components/VideoUploader'), { ssr: false });
 const EmojiPicker = dynamic(() => import('emoji-picker-react'), { ssr: false });
@@ -108,9 +109,18 @@ export default function CommunityProfile() {
   const [showPostEmojiPicker, setShowPostEmojiPicker] = useState(false);
   const [showCalendarModal, setShowCalendarModal] = useState(false);
   const fileInputRef = useRef(null);
+  const searchParams = useSearchParams();
+  const autoJoinParam = searchParams?.get('autoJoin');
   
   const communityId = id || (user?.joinedCommunities?.length > 0 ? user.joinedCommunities[0] : 'tw-tech-meetup');
   const community = communities.find(c => c.id === communityId);
+
+  useEffect(() => {
+    if (user && !user?.joinedCommunities?.includes(communityId) && autoJoinParam === 'true') {
+      setShowJoinGuidelinesModal(true);
+      toast.info('Almost there!', 'Review the community guidelines to finish joining.');
+    }
+  }, [user, communityId, autoJoinParam]);
 
   if (!community) {
     return <div style={{ padding: '40px', color: 'var(--white)', textAlign: 'center' }}>Loading...</div>;
@@ -195,7 +205,7 @@ export default function CommunityProfile() {
 
   const handleJoinLeave = async () => {
     if (!user) {
-      navigate.push(`/login?redirect=/community/${communityId}`);
+      navigate.push(`/login?redirect=${encodeURIComponent(`/community/${communityId}?autoJoin=true`)}&mode=signup`);
       return;
     }
     try {
@@ -802,7 +812,7 @@ export default function CommunityProfile() {
                                       <Sparkles size={14} /> Goal Reached! Waiting for Leader to schedule.
                                     </div>
                                     {isLeader && (
-                                      <button onClick={() => navigate.push(`/community/${communityId}/create-event?experienceId=${campaignExp.id}`)} className="btn btn-primary interactive-press" style={{ padding: '6px 12px', fontSize: '0.8rem', width: 'fit-content', borderRadius: '8px' }}>
+                                      <button onClick={() => navigate.push(`/dashboard?community=${communityId}&tab=events`)} className="btn btn-primary interactive-press" style={{ padding: '6px 12px', fontSize: '0.8rem', width: 'fit-content', borderRadius: '8px' }}>
                                         Set Date & Schedule
                                       </button>
                                     )}
@@ -1066,7 +1076,7 @@ export default function CommunityProfile() {
                                   <Sparkles size={14} /> Goal Reached! Waiting for Leader to schedule.
                                 </div>
                                 {isLeader && (
-                                  <button onClick={() => navigate.push(`/community/${communityId}/create-event?experienceId=${campaignExp.id}`)} className="btn btn-primary interactive-press" style={{ padding: '6px 12px', fontSize: '0.8rem', width: 'fit-content', borderRadius: '8px' }}>
+                                  <button onClick={() => navigate.push(`/dashboard?community=${communityId}&tab=events`)} className="btn btn-primary interactive-press" style={{ padding: '6px 12px', fontSize: '0.8rem', width: 'fit-content', borderRadius: '8px' }}>
                                     Set Date & Schedule
                                   </button>
                                 )}
@@ -1427,7 +1437,7 @@ export default function CommunityProfile() {
                   {upcomingEvents.map(evt => (
                     <div 
                       key={evt.id}
-                      onClick={() => navigate.push(`/events/${evt.id}`)} 
+                      onClick={() => navigate.push(getEventPath(evt, events))} 
                       className="interactive-press"
                       style={{ borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.02)', cursor: 'pointer', display: 'flex' }}
                     >
@@ -1687,25 +1697,40 @@ export default function CommunityProfile() {
               <h3 style={{ fontSize: '1.3rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Calendar size={20} color="var(--teal-400)" /> Upcoming Events ({upcomingEvents.length})
               </h3>
-              <button 
-                onClick={() => setShowCalendarModal(true)}
-                className="interactive-press"
-                style={{
-                  display: 'flex', alignItems: 'center', gap: '6px',
-                  background: 'rgba(20,184,166,0.1)', border: '1px solid rgba(20,184,166,0.3)',
-                  color: 'var(--teal-400)', padding: '6px 14px', borderRadius: '99px',
-                  fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer'
-                }}
-              >
-                <Calendar size={14} /> Subscribe to Calendar
-              </button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                {isLeader && (
+                  <button 
+                    onClick={() => navigate.push(`/dashboard?community=${community.id}&tab=events`)}
+                    className="btn btn-primary interactive-press"
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '6px',
+                      padding: '6px 14px', borderRadius: '99px',
+                      fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer'
+                    }}
+                  >
+                    <Plus size={14} /> Schedule Event
+                  </button>
+                )}
+                <button 
+                  onClick={() => setShowCalendarModal(true)}
+                  className="interactive-press"
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '6px',
+                    background: 'rgba(20,184,166,0.1)', border: '1px solid rgba(20,184,166,0.3)',
+                    color: 'var(--teal-400)', padding: '6px 14px', borderRadius: '99px',
+                    fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer'
+                  }}
+                >
+                  <Calendar size={14} /> Subscribe
+                </button>
+              </div>
             </div>
             {upcomingEvents.length > 0 ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '24px' }}>
                 {upcomingEvents.map(event => {
                   const rsvps = eventRsvps[event.id] || [];
                   return (
-                    <div key={event.id} onClick={() => navigate.push(`/events/${event.id}`)} className="interactive-press" style={{ borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)', cursor: 'pointer' }}>
+                    <div key={event.id} onClick={() => navigate.push(getEventPath(event, events))} className="interactive-press" style={{ borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)', cursor: 'pointer' }}>
                       {event.image && (
                         <div style={{ height: '140px', background: `url(${event.image})`, backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative' }}>
                           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.6))' }}></div>
@@ -1774,7 +1799,7 @@ export default function CommunityProfile() {
                   {pastEvents.map(event => {
                     const rsvps = eventRsvps[event.id] || [];
                     return (
-                      <div key={event.id} onClick={() => navigate.push(`/events/${event.id}`)} className="interactive-press" style={{ borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)', background: 'rgba(255,255,255,0.015)', opacity: 0.85, cursor: 'pointer' }}>
+                      <div key={event.id} onClick={() => navigate.push(getEventPath(event, events))} className="interactive-press" style={{ borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)', background: 'rgba(255,255,255,0.015)', opacity: 0.85, cursor: 'pointer' }}>
                         {event.image && (
                           <div style={{ height: '120px', background: `url(${event.image})`, backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative', filter: 'saturate(0.8)' }}>
                             <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 40%, rgba(15,23,42,0.8))' }}></div>

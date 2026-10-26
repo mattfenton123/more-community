@@ -1476,7 +1476,7 @@ export function AppProvider({ children }) {
     });
     
     // Strip frontend-only mock fields before sending to db
-    const { affinityProfile, ...dbUpdates } = updates;
+    const { affinityProfile, banner, ...dbUpdates } = updates;
     
     try {
       let token = session?.access_token;

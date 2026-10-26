@@ -15,6 +15,8 @@ import {
   geocodeLocation,
   DEFAULT_TW_CENTER
 } from '../../../src/lib/location';
+import { findEventByParam, getEventPath, getEventUrl } from '../../../src/lib/eventLinks';
+import ShareModal from '../../../src/components/ShareModal';
 
 function EventLocationMap({ location, event }) {
   const mapRef = useRef(null);
@@ -255,6 +257,7 @@ export default function EventClient({ id }) {
   const [showTicket, setShowTicket] = useState(null);
   const [showScanner, setShowScanner] = useState(false);
   const [showRsvpSuccessModal, setShowRsvpSuccessModal] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
 
   const isLeader = user?.ledCommunities?.includes(event?.communityId) || user?.isAdmin;
 
@@ -277,11 +280,20 @@ export default function EventClient({ id }) {
 
   useEffect(() => {
     if (events && communities) {
-      const e = events.find(ev => ev.id === id);
+      const e = findEventByParam(events, id);
       if (e) {
         setEvent(e);
         const c = communities.find(c => c.id === e.communityId);
         setCommunity(c);
+
+        // Address bar normalization: if accessed via UUID, update URL to clean slug
+        try {
+          const cleanPath = getEventPath(e, events);
+          if (typeof window !== 'undefined' && window.location.pathname !== cleanPath) {
+            window.history.replaceState(null, '', cleanPath + window.location.search);
+          }
+        } catch (err) {}
+
         // Cache event and community locally for offline zero-signal access on trails
         try {
           localStorage.setItem(`more_cached_event_${id}`, JSON.stringify({ event: e, community: c, ts: Date.now() }));
@@ -378,7 +390,7 @@ export default function EventClient({ id }) {
       return;
     }
     if (typeof window !== 'undefined') {
-      const url = `${window.location.origin}/events/${event.id}?ref=${user.id}`;
+      const url = getEventUrl(event, { allEvents: events, origin: window.location.origin, ref: user.id });
       navigator.clipboard.writeText(url);
       toast.success('Link Copied!', `Share this link to earn £${event.profitShareAmount} per ticket.`);
     }
@@ -392,7 +404,7 @@ export default function EventClient({ id }) {
       {/* Header / Hero Image */}
       <div style={{ position: 'relative', width: '100%', height: '300px', background: 'var(--slate-900)' }}>
         <img 
-          src={event.image || community.cover_image || 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=1200&q=80'} 
+          src={event.image || community?.cover_image || 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=1200&q=80'} 
           alt={event.title} 
           style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
         />
@@ -400,7 +412,12 @@ export default function EventClient({ id }) {
           <button onClick={() => router.back()} className="interactive-press" style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(10px)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', cursor: 'pointer' }}>
             <ChevronLeft size={24} />
           </button>
-          <button className="interactive-press" style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(10px)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', cursor: 'pointer' }}>
+          <button 
+            onClick={() => setShowShareModal(true)} 
+            aria-label="Share Event"
+            className="interactive-press" 
+            style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(10px)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', cursor: 'pointer' }}
+          >
             <Share size={20} />
           </button>
         </div>
@@ -523,7 +540,7 @@ export default function EventClient({ id }) {
                   return (
                     <button
                       key={se.id}
-                      onClick={() => { if (!isCurrent) router.push(`/events/${se.id}`); }}
+                      onClick={() => { if (!isCurrent) router.push(getEventPath(se, events)); }}
                       style={{
                         padding: '8px 12px',
                         borderRadius: '10px',
@@ -1077,6 +1094,17 @@ export default function EventClient({ id }) {
         <QRScanner 
           onScan={handleScan}
           onClose={() => setShowScanner(false)}
+        />
+      )}
+
+      {/* Share Modal */}
+      {showShareModal && (
+        <ShareModal 
+          isOpen={showShareModal} 
+          onClose={() => setShowShareModal(false)} 
+          title={event?.title || 'Community Event'} 
+          text={`Join us for ${event?.title || 'this event'} with ${community?.name || 'More Community'}!`} 
+          url={event ? getEventUrl(event, { allEvents: events, origin: typeof window !== 'undefined' ? window.location.origin : undefined }) : ''} 
         />
       )}
     </div>

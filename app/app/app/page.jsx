@@ -11,6 +11,7 @@ import GettingStarted from '../../src/views/GettingStarted';
 import { useToast } from '../../src/components/Toast';
 import { isEventUpcoming, isEventPast } from '../../src/lib/calendar';
 import { cleanLocationName } from '../../src/lib/location';
+import { getEventPath } from '../../src/lib/eventLinks';
 
 export default function HomeFeed() {
   const { user, communities, events, users, eventRsvps, isLoading, notifications, sponsors, sponsorshipAssignments } = useAppContext();
@@ -284,10 +285,20 @@ export default function HomeFeed() {
                   <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 30%, rgba(15,23,42,0.9))' }} />
                 </div>
                 <div style={{ padding: '10px 12px' }}>
-                  <div style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--white)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <div style={{
+                    fontWeight: 700,
+                    fontSize: '0.85rem',
+                    color: 'var(--white)',
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
+                    overflow: 'hidden',
+                    lineHeight: 1.3,
+                    minHeight: '2.4em'
+                  }}>
                     {community.name}
                   </div>
-                  <div style={{ fontSize: '0.7rem', color: 'var(--slate-400)', marginTop: '2px' }}>
+                  <div style={{ fontSize: '0.7rem', color: 'var(--slate-400)', marginTop: '4px' }}>
                     {community.members || '—'} members
                   </div>
                 </div>
@@ -313,8 +324,20 @@ export default function HomeFeed() {
                   <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 40%, rgba(15,23,42,0.9))' }} />
                 </div>
                 <div style={{ padding: '8px 10px' }}>
-                  <div style={{ fontWeight: 700, fontSize: '0.75rem', color: 'var(--white)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.name}</div>
-                  <div style={{ fontSize: '0.65rem', color: 'var(--slate-500)', marginTop: '2px' }}>{c.members || '—'} members</div>
+                  <div style={{
+                    fontWeight: 700,
+                    fontSize: '0.78rem',
+                    color: 'var(--white)',
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
+                    overflow: 'hidden',
+                    lineHeight: 1.3,
+                    minHeight: '2.4em'
+                  }}>
+                    {c.name}
+                  </div>
+                  <div style={{ fontSize: '0.65rem', color: 'var(--slate-500)', marginTop: '3px' }}>{c.members || '—'} members</div>
                 </div>
               </div>
             ))}
@@ -629,7 +652,7 @@ export default function HomeFeed() {
                     </>
                   )}
                 </div>
-                <div onClick={() => router.push(`/events/${event.id}`)} className="interactive-press" style={{ cursor: 'pointer' }}>
+                <div onClick={() => router.push(getEventPath(event, events))} className="interactive-press" style={{ cursor: 'pointer' }}>
                   {event.image && (
                     <div style={{ height: '160px', background: `url(${event.image})`, backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative' }}>
                       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 40%, rgba(15,23,42,0.9))' }}></div>

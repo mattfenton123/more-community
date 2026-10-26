@@ -1,6 +1,32 @@
 import EventClient from './client-page';
 import { initialExperiences } from '../../../src/lib/constants';
 import { supabase } from '../../../src/lib/supabaseClient';
+import { formatEventDate } from '../../../src/lib/recurrence';
+import { SITE_ORIGIN, getEventUrl, eventMatchesSlug, isUuidLike, parseSlugDate } from '../../../src/lib/eventLinks';
+
+const EVENT_SELECT = '*, communities(name, image)';
+
+// Resolve the URL segment to an event. It can be a clean slug
+// (bewl-water-community-walk-31st-october-2026) or a legacy id / UUID.
+async function loadEventForParam(param) {
+  const byId = async () => {
+    const { data } = await supabase.from('events').select(EVENT_SELECT).eq('id', param).maybeSingle();
+    return data || null;
+  };
+
+  if (isUuidLike(param)) return byId();
+
+  // Slug: narrow by the date embedded in the slug, then match title + date.
+  const isoDate = parseSlugDate(param);
+  if (isoDate) {
+    const { data: sameDay } = await supabase.from('events').select(EVENT_SELECT).eq('date', isoDate);
+    const hit = (sameDay || []).find(e => eventMatchesSlug(e, param));
+    if (hit) return hit;
+  }
+  const { data: rows } = await supabase.from('events').select(EVENT_SELECT).limit(1000);
+  const hit = (rows || []).find(e => eventMatchesSlug(e, param));
+  return hit || byId();
+}
 
 export async function generateMetadata({ params }) {
   const resolvedParams = await params;
@@ -11,11 +37,7 @@ export async function generateMetadata({ params }) {
   let communityName = 'More Community';
 
   try {
-    const { data: dbEvent } = await supabase
-      .from('events')
-      .select('*, communities(name, image)')
-      .eq('id', id)
-      .maybeSingle();
+    const dbEvent = await loadEventForParam(id);
 
     if (dbEvent) {
       event = dbEvent;
@@ -40,12 +62,12 @@ export async function generateMetadata({ params }) {
   }
 
   // Construct OG image URL
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://www.morecommunity.app';
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || SITE_ORIGIN;
   const ogUrl = new URL(`${baseUrl}/api/og`);
   ogUrl.searchParams.set('title', event.title);
   ogUrl.searchParams.set('community', communityName);
   ogUrl.searchParams.set('type', 'event');
-  ogUrl.searchParams.set('date', event.date ? `${event.date}${event.time ? ` at ${event.time}` : ''}` : (event.duration || ''));
+  ogUrl.searchParams.set('date', event.date ? `${formatEventDate(event.date)}${event.time ? ` at ${event.time}` : ''}` : (event.duration || ''));
   if (event.location) ogUrl.searchParams.set('location', event.location);
   const eventImg = event.image || event.communities?.image;
   if (eventImg) {
@@ -53,13 +75,16 @@ export async function generateMetadata({ params }) {
   }
 
   const desc = event.description || `Join us for ${event.title} with ${communityName} on More Community. RSVP, view event details, and connect with your local community in real life.`;
+  const canonicalUrl = getEventUrl(event, { origin: baseUrl });
 
   return {
     title: `${event.title} | ${communityName}`,
     description: desc,
+    alternates: { canonical: canonicalUrl },
     openGraph: {
       title: `${event.title} | ${communityName}`,
       description: desc,
+      url: canonicalUrl,
       siteName: 'More Community',
       images: [
         {
