@@ -15,13 +15,50 @@ if (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
   }
 }
 
-// Instantiate Supabase client using Service Role Key (bypasses RLS)
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://xasaxxjxxkdruuqbrcmf.supabase.co';
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_QMPEXQKfkPDK1XktnEOIDQ_Fhs_p7rQ';
+function isValidServiceRoleKey(key, url) {
+  if (!key) return false;
+  try {
+    const parts = key.split('.');
+    if (parts.length !== 3) return false;
+    const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString('utf8'));
+    if (payload.ref) {
+      const urlHost = new URL(url).hostname;
+      if (!urlHost.includes(payload.ref)) {
+        console.warn(`[Supabase] Service role key ref (${payload.ref}) does not match URL host (${urlHost}). Falling back to safe client.`);
+        return false;
+      }
+    }
+    return payload.role === 'service_role';
+  } catch (e) {
+    return false;
+  }
+}
 
-const supabaseAdmin = createClient(supabaseUrl, supabaseKey, {
+// Instantiate Supabase client using Service Role Key (bypasses RLS) if valid, or Anon Key
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://xasaxxjxxkdruuqbrcmf.supabase.co';
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_QMPEXQKfkPDK1XktnEOIDQ_Fhs_p7rQ';
+
+const rawServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const hasValidServiceKey = isValidServiceRoleKey(rawServiceKey, supabaseUrl);
+const serviceRoleKey = hasValidServiceKey ? rawServiceKey : null;
+
+const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey || supabaseAnonKey, {
   auth: { autoRefreshToken: false, persistSession: false }
 });
+
+// Returns a client scoped to the user's bearer token so Postgres RLS can inspect auth.uid()
+function getSupabaseClient(token) {
+  if (hasValidServiceKey) {
+    return supabaseAdmin;
+  }
+  if (token) {
+    return createClient(supabaseUrl, supabaseAnonKey, {
+      auth: { autoRefreshToken: false, persistSession: false },
+      global: { headers: { Authorization: `Bearer ${token}` } }
+    });
+  }
+  return supabaseAdmin;
+}
 
 const ADMIN_EMAILS = [
   'msf199@hotmail.com',
@@ -36,7 +73,10 @@ const ADMIN_EMAILS = [
 
 async function verifyUser(token, expectedUserId) {
   if (!token) throw new Error("Missing authentication token");
-  const { data: { user }, error } = await supabaseAdmin.auth.getUser(token);
+  const authClient = hasValidServiceKey
+    ? supabaseAdmin
+    : createClient(supabaseUrl, supabaseAnonKey, { auth: { autoRefreshToken: false, persistSession: false } });
+  const { data: { user }, error } = await authClient.auth.getUser(token);
   if (error || !user) throw new Error("Invalid or expired token");
   if (expectedUserId && user.id !== expectedUserId) throw new Error("Unauthorized: User ID mismatch");
   return user;
@@ -55,19 +95,24 @@ function isAdminUser(user) {
 }
 
 // Returns 'Leader' | 'Co-Leader' | 'Member' | null for a user in a community.
-// Falls back to communities.leader_id so a creator is never locked out of their own group.
-async function getCommunityRole(userId, communityId) {
+// Checks communities.leader_id first so a creator/leader is never locked out of their own group.
+async function getCommunityRole(userId, communityId, client) {
   if (!userId || !communityId) return null;
-  const { data: membership } = await supabaseAdmin.from('community_memberships')
+  const db = client || supabaseAdmin;
+
+  const { data: community } = await db.from('communities')
+    .select('leader_id')
+    .eq('id', communityId)
+    .maybeSingle();
+  if (community?.leader_id === userId) return 'Leader';
+
+  const { data: membership } = await db.from('community_memberships')
     .select('role')
     .match({ user_id: userId, community_id: communityId })
     .maybeSingle();
   if (membership?.role) return membership.role;
-  const { data: community } = await supabaseAdmin.from('communities')
-    .select('leader_id')
-    .eq('id', communityId)
-    .maybeSingle();
-  return community?.leader_id === userId ? 'Leader' : null;
+
+  return null;
 }
 
 // Requires the caller to be a Leader/Co-Leader (or Leader only) of the community, or a platform admin.
@@ -230,24 +275,44 @@ export async function ensureLeadersNetworkAction() {
 }
 
 export async function createEventAction(eventData, token) {
-  await verifyCommunityManager(token, eventData.communityId);
+  const { user, isAdmin } = await verifyCommunityManager(token, eventData.communityId);
+  const db = getSupabaseClient(token);
+
+  // Ensure caller has Leader/Co-Leader membership in community_memberships so Postgres RLS allows the insert
+  if (user?.id) {
+    try {
+      const { data: mem } = await db.from('community_memberships')
+        .select('role')
+        .match({ user_id: user.id, community_id: eventData.communityId })
+        .maybeSingle();
+      if (!mem || (mem.role !== 'Leader' && mem.role !== 'Co-Leader')) {
+        await db.from('community_memberships').upsert([{
+          community_id: eventData.communityId,
+          user_id: user.id,
+          role: isAdmin ? 'Co-Leader' : 'Leader'
+        }], { onConflict: 'community_id,user_id' });
+      }
+    } catch (e) {
+      console.warn('Membership sync in createEventAction:', e?.message || e);
+    }
+  }
 
   const payload = {
     id: eventData.id || crypto.randomUUID(),
     community_id: eventData.communityId,
-    title: eventData.title,
+    title: String(eventData.title).trim(),
     date: eventData.date,
     time: eventData.time,
-    location: eventData.location,
+    location: String(eventData.location).trim(),
     image: eventData.image || null,
     attendees: eventData.attendees || 0,
     description: eventData.description || '',
     status: eventData.status || 'published',
-    max_capacity: eventData.maxCapacity || null,
-    ticket_price: eventData.ticketPrice != null ? Number(eventData.ticketPrice) : (eventData.ticket_price != null ? Number(eventData.ticket_price) : 0)
+    max_capacity: eventData.maxCapacity ? parseInt(eventData.maxCapacity, 10) : null,
+    ticket_price: eventData.ticketPrice != null ? Math.max(0, Number(eventData.ticketPrice)) : (eventData.ticket_price != null ? Math.max(0, Number(eventData.ticket_price)) : 0)
   };
 
-  const { data, error } = await supabaseAdmin.from('events').insert(payload).select().single();
+  const { data, error } = await db.from('events').insert(payload).select().single();
 
   if (error) {
     console.error('Event creation failed:', error);
@@ -270,7 +335,26 @@ export async function createEventsBatchAction(eventsData, token) {
     throw new Error("Unauthorized: All events in a batch must belong to the same community.");
   }
 
-  await verifyCommunityManager(token, communityId);
+  const { user, isAdmin } = await verifyCommunityManager(token, communityId);
+  const db = getSupabaseClient(token);
+
+  if (user?.id) {
+    try {
+      const { data: mem } = await db.from('community_memberships')
+        .select('role')
+        .match({ user_id: user.id, community_id: communityId })
+        .maybeSingle();
+      if (!mem || (mem.role !== 'Leader' && mem.role !== 'Co-Leader')) {
+        await db.from('community_memberships').upsert([{
+          community_id: communityId,
+          user_id: user.id,
+          role: isAdmin ? 'Co-Leader' : 'Leader'
+        }], { onConflict: 'community_id,user_id' });
+      }
+    } catch (e) {
+      console.warn('Membership sync in createEventsBatchAction:', e?.message || e);
+    }
+  }
 
   const payloads = eventsData.map(eventData => {
     if (!eventData.title || !eventData.date || !eventData.time || !eventData.location) {
@@ -292,7 +376,7 @@ export async function createEventsBatchAction(eventsData, token) {
     };
   });
 
-  const { data, error } = await supabaseAdmin.from('events').insert(payloads).select();
+  const { data, error } = await db.from('events').insert(payloads).select();
 
   if (error) {
     console.error('Batch event creation failed:', error);
@@ -368,7 +452,8 @@ export async function uploadImageAction(formData, token) {
   const arrayBuffer = await file.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);
   
-  const { data, error } = await supabaseAdmin.storage
+  const db = getSupabaseClient(token);
+  const { data, error } = await db.storage
     .from('uploads')
     .upload(fileName, buffer, {
       contentType: file.type,
@@ -378,7 +463,7 @@ export async function uploadImageAction(formData, token) {
     
   if (error) throw new Error(error.message);
   
-  const { data: publicData } = supabaseAdmin.storage
+  const { data: publicData } = db.storage
     .from('uploads')
     .getPublicUrl(fileName);
     
@@ -400,7 +485,8 @@ export async function uploadVideoAction(formData, token) {
   const arrayBuffer = await file.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);
   
-  const { data, error } = await supabaseAdmin.storage
+  const db = getSupabaseClient(token);
+  const { data, error } = await db.storage
     .from('uploads')
     .upload(fileName, buffer, {
       contentType: file.type,
@@ -410,7 +496,7 @@ export async function uploadVideoAction(formData, token) {
     
   if (error) throw new Error(error.message);
   
-  const { data: publicData } = supabaseAdmin.storage
+  const { data: publicData } = db.storage
     .from('uploads')
     .getPublicUrl(fileName);
     
@@ -418,7 +504,8 @@ export async function uploadVideoAction(formData, token) {
 }
 
 export async function updateEventAction(eventId, updates, token) {
-  const { data: existingEvent } = await supabaseAdmin.from('events').select('community_id').eq('id', eventId).maybeSingle();
+  const db = getSupabaseClient(token);
+  const { data: existingEvent } = await db.from('events').select('community_id').eq('id', eventId).maybeSingle();
   if (!existingEvent) throw new Error("Event not found");
   await verifyCommunityManager(token, existingEvent.community_id);
   
@@ -435,7 +522,7 @@ export async function updateEventAction(eventId, updates, token) {
   if (updates.ticketPrice !== undefined) dbUpdates.ticket_price = Number(updates.ticketPrice);
   if (updates.ticket_price !== undefined) dbUpdates.ticket_price = Number(updates.ticket_price);
   
-  const { data, error } = await supabaseAdmin.from('events').update(dbUpdates).eq('id', eventId).select().single();
+  const { data, error } = await db.from('events').update(dbUpdates).eq('id', eventId).select().single();
   if (error) {
     console.error('Event update failed:', error);
     throw new Error(error.message);
@@ -514,15 +601,17 @@ export async function updateCommunityAction(communityId, updates, token) {
   if (updates.is_banned !== undefined) dbUpdates.is_banned = updates.is_banned;
   if (updates.verified !== undefined) dbUpdates.verified = updates.verified;
   
-  const { data, error } = await supabaseAdmin.from('communities').update(dbUpdates).eq('id', communityId).select().single();
+  const db = getSupabaseClient(token);
+  const { data, error } = await db.from('communities').update(dbUpdates).eq('id', communityId).select().single();
   if (error) throw new Error(error.message);
   return data;
 }
 
 export async function createChannelAction(channelData, token) {
-  await verifyUser(token);
+  await verifyCommunityManager(token, channelData.communityId);
+  const db = getSupabaseClient(token);
   
-  const { data, error } = await supabaseAdmin.from('channels').insert({
+  const { data, error } = await db.from('channels').insert({
     id: channelData.id,
     community_id: channelData.communityId,
     name: channelData.name,

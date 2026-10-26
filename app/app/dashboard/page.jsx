@@ -84,7 +84,7 @@ function getEngagementScore(member, events, eventRsvps, messages, communityId) {
 
 // ─── Component ──────────────────────────────────────────────────
 export default function LeaderDashboard({ initialCommunityId }) {
-  const { user, communities, events, updateCommunity, deleteCommunity, users, communityMemberships, createEvent, createEventsBatch, updateEvent, cancelEvent, uploadImage, eventRsvps, whatsappSettings, setWhatsappSettings, promoteMember, removeMember, checkInMember, broadcastNotification, sendEventReminder, experiences, setExperiences } = useAppContext();
+  const { user, communities, events, updateCommunity, deleteCommunity, users, communityMemberships, createEvent, createEventsBatch, updateEvent, cancelEvent, uploadImage, eventRsvps, whatsappSettings, setWhatsappSettings, promoteMember, removeMember, checkInMember, broadcastNotification, sendEventReminder, experiences, setExperiences, isLoading } = useAppContext();
     const { messages } = useChat();
   const { toast } = useToast();
   const router = useRouter();
@@ -124,6 +124,13 @@ export default function LeaderDashboard({ initialCommunityId }) {
         comm.id === activeCommunityId ||
         (communityMemberships[comm.id] || []).some(m => (m.userId === user?.id || m.user_id === user?.id) && (m.role === 'co-founder' || m.role === 'Leader' || m.role === 'Co-Leader' || m.role === 'Admin'))
       );
+
+  useEffect(() => {
+    if (!activeCommunityId && availableCommunities.length > 0) {
+      setActiveCommunityId(availableCommunities[0].id);
+    }
+  }, [availableCommunities, activeCommunityId]);
+
   const communityIdLed = activeCommunityId || availableCommunities[0]?.id || user?.ledCommunities?.[0] || (user?.isAdmin && communities.length > 0 ? communities[0].id : null);
   const community = communities.find(c => c.id === communityIdLed);
   const memberList = community ? (communityMemberships[community.id] || []) : [];
@@ -677,6 +684,8 @@ export default function LeaderDashboard({ initialCommunityId }) {
         imageUrl = await uploadImage(imageFile, 'events');
       }
       
+      const finalImage = imageUrl || community?.cover_image || community?.image || null;
+
       if (dates.length === 1) {
         await createEvent(community.id, {
           ...eventForm,
@@ -685,7 +694,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
           ticketPrice: eventForm.ticketPrice ? parseFloat(eventForm.ticketPrice) : 0,
           autoReminders: eventForm.autoReminders,
           autoFeedback: eventForm.autoFeedback,
-          image: imageUrl
+          image: finalImage
         });
         toast.success('Event created!', `${eventForm.title} has been published`);
       } else {
@@ -696,7 +705,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
           ticketPrice: eventForm.ticketPrice ? parseFloat(eventForm.ticketPrice) : 0,
           autoReminders: eventForm.autoReminders,
           autoFeedback: eventForm.autoFeedback,
-          image: imageUrl
+          image: finalImage
         }));
         await createEventsBatch(community.id, eventsList);
         toast.success(`${dates.length} events created!`, `${eventForm.title} recurring schedule published`);
@@ -1245,14 +1254,21 @@ export default function LeaderDashboard({ initialCommunityId }) {
       {/* Main Content Area */}
       <div className="dashboard-main">
       {!community ? (
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px', color: 'var(--white)', textAlign: 'center' }}>
-          <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem', marginBottom: '16px' }}>Lead a Community</h2>
-          <p style={{ color: 'var(--slate-400)', marginBottom: '32px' }}>You do not lead any communities yet. Start one today!</p>
-          <button onClick={() => setModalType('community')} className="btn btn-primary interactive-press" style={{ padding: '16px 32px', borderRadius: '16px', fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Plus size={20} /> Create Community
-          </button>
-          {modalType === 'community' && <CommunityOnboardingFlow onComplete={() => setModalType(null)} />}
-        </div>
+        isLoading ? (
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px 40px', color: 'var(--slate-400)', textAlign: 'center' }}>
+            <div className="spinner" style={{ width: '32px', height: '32px', border: '3px solid rgba(20,184,166,0.2)', borderTopColor: 'var(--teal-400)', borderRadius: '50%', animation: 'spin 0.8s linear infinite', marginBottom: '16px' }} />
+            <div style={{ fontSize: '0.95rem' }}>Loading Leader Dashboard...</div>
+          </div>
+        ) : (
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px', color: 'var(--white)', textAlign: 'center' }}>
+            <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem', marginBottom: '16px' }}>Lead a Community</h2>
+            <p style={{ color: 'var(--slate-400)', marginBottom: '32px' }}>You do not lead any communities yet. Start one today!</p>
+            <button onClick={() => setModalType('community')} className="btn btn-primary interactive-press" style={{ padding: '16px 32px', borderRadius: '16px', fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Plus size={20} /> Create Community
+            </button>
+            {modalType === 'community' && <CommunityOnboardingFlow onComplete={() => setModalType(null)} />}
+          </div>
+        )
       ) : (
         <>
           <div className="mobile-only">
