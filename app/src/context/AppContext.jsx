@@ -338,6 +338,15 @@ export function AppProvider({ children }) {
           ensureLeadersNetworkAction().catch(e => console.error("Error ensuring leaders network:", e));
         }
 
+        const memberCountsMap = {};
+        if (memRes?.data) {
+          memRes.data.forEach(m => {
+            if (m.community_id) {
+              memberCountsMap[m.community_id] = (memberCountsMap[m.community_id] || 0) + 1;
+            }
+          });
+        }
+
         setCommunities(comms.map((c) => {
           let storedGuidelines = [];
           if (Array.isArray(c.guidelines) && c.guidelines.length > 0) {
@@ -349,13 +358,17 @@ export function AppProvider({ children }) {
             } catch (e) {}
           }
 
+          const count = memberCountsMap[c.id] || (c.leader_id ? 1 : 1);
+
           return {
             ...c, // pass through ALL columns from Supabase
+            members: count,
+            memberCount: count,
             guidelines: storedGuidelines,
             tags: c.tags || [],
             image: c.image || c.cover_image, // support both column names
             category: (c.tags && c.tags.length > 0) ? c.tags[0] : 'All',
-            metrics: { members: 1, cost: c.cost || 'Free', eventsRun: 0 },
+            metrics: { members: count, cost: c.cost || 'Free', eventsRun: 0 },
             colors: ['#3b82f6', '#14b8a6'], // fallback gradient
             highlights: c.highlights || []
           };

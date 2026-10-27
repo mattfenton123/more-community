@@ -5,6 +5,7 @@ import { useAppContext } from '../context/AppContext';
 import { useToast } from '../components/Toast';
 import { Compass, Users, MapPin, Check, ArrowRight, Sparkles, Activity } from 'lucide-react';
 import { FALLBACK_IMAGES } from '../lib/constants';
+import { getCommunityLocation } from '../lib/location';
 
 export default function GettingStarted() {
   const { user, communities, users, communityMemberships, joinCommunity, events } = useAppContext();
@@ -294,13 +295,11 @@ export default function GettingStarted() {
                     fontSize: '0.8rem', color: 'var(--slate-400)',
                   }}>
                     <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <Users size={14} color="var(--slate-500)" /> {memberCount} members
+                      <Users size={14} color="var(--slate-500)" /> {memberCount} member{memberCount === 1 ? '' : 's'}
                     </span>
-                    {comm.location_name && (
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <MapPin size={14} color="var(--slate-500)" /> {comm.location_name}
-                      </span>
-                    )}
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <MapPin size={14} color="var(--slate-500)" /> {getCommunityLocation(comm)}
+                    </span>
                     {comm.activity_level && (
                       <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                         <Activity size={14} color="var(--teal-500)" /> {comm.activity_level}

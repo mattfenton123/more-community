@@ -12,6 +12,7 @@ const MapView = dynamic(() => import('../components/MapView'), { ssr: false, loa
 import AppHeader from '../components/AppHeader';
 import SwipeDiscovery from '../components/SwipeDiscovery';
 import { isEventUpcoming } from '../lib/calendar';
+import { getCommunityLocation } from '../lib/location';
 
 export default function Discover() {
   const { communities, user, users, communityMemberships, joinCommunity, isLoading, events, getAffinityScore, sponsors, sponsorshipAssignments } = useAppContext();
@@ -444,7 +445,10 @@ export default function Discover() {
                           </p>
                           <div style={{ display: 'flex', gap: '10px', fontSize: '0.8rem', color: 'var(--slate-400)', alignItems: 'center', flexWrap: 'wrap' }}>
                             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                              <Users size={13} color="var(--teal-400)" /> {memberCount}
+                              <Users size={13} color="var(--teal-400)" /> {memberCount} member{memberCount === 1 ? '' : 's'}
+                            </span>
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--slate-300)' }}>
+                              <MapPin size={13} color="var(--teal-400)" /> {getCommunityLocation(community)}
                             </span>
                             {community.upcomingEvents > 0 && (
                               <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#f59e0b' }}>

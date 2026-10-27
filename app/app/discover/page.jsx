@@ -12,6 +12,7 @@ const MapView = dynamic(() => import('../../src/components/MapView'), { ssr: fal
 import AppHeader from '../../src/components/AppHeader';
 import SwipeDiscovery from '../../src/components/SwipeDiscovery';
 import { isEventUpcoming } from '../../src/lib/calendar';
+import { getCommunityLocation } from '../../src/lib/location';
 
 export default function Discover() {
   const [activePill, setActivePill] = useState('All');
@@ -116,7 +117,13 @@ export default function Discover() {
     
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
-      list = list.filter(c => c.name?.toLowerCase().includes(q) || c.description?.toLowerCase().includes(q) || c.tags?.some(t => t.toLowerCase().includes(q)));
+      list = list.filter(c => 
+        c.name?.toLowerCase().includes(q) || 
+        c.description?.toLowerCase().includes(q) || 
+        c.tags?.some(t => t.toLowerCase().includes(q)) ||
+        getCommunityLocation(c).toLowerCase().includes(q) ||
+        (c.location_name && c.location_name.toLowerCase().includes(q))
+      );
     }
 
     // Apply sorting
@@ -543,7 +550,10 @@ export default function Discover() {
                           </p>
                           <div style={{ display: 'flex', gap: '10px', fontSize: '0.8rem', color: 'var(--slate-400)', alignItems: 'center', flexWrap: 'wrap' }}>
                             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                              <Users size={13} color="var(--teal-400)" /> {memberCount}
+                              <Users size={13} color="var(--teal-400)" /> {memberCount} member{memberCount === 1 ? '' : 's'}
+                            </span>
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--slate-300)' }}>
+                              <MapPin size={13} color="var(--teal-400)" /> {getCommunityLocation(community)}
                             </span>
                             {community.upcomingEvents > 0 && (
                               <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#f59e0b' }}>

@@ -3,18 +3,18 @@ import { useMemo, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppContext } from '../../src/context/AppContext';
 import { useFeed } from '../../src/context/FeedContext';
-import { Heart, MessageCircle, Share2, Calendar, MapPin, Clock, Compass, Plus, Megaphone, Edit3, Briefcase, ChevronUp, Shield, ArrowRight, Sparkles, Archive } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Calendar, MapPin, Clock, Compass, Plus, Megaphone, Edit3, Briefcase, ChevronUp, Shield, ArrowRight, Sparkles, Archive, Users, Search } from 'lucide-react';
 import { SkeletonList, SkeletonCard } from '../../src/components/SkeletonCard';
 import InlineComments from '../../src/components/InlineComments';
 import AppHeader from '../../src/components/AppHeader';
 import GettingStarted from '../../src/views/GettingStarted';
 import { useToast } from '../../src/components/Toast';
 import { isEventUpcoming, isEventPast } from '../../src/lib/calendar';
-import { cleanLocationName } from '../../src/lib/location';
+import { cleanLocationName, getCommunityLocation } from '../../src/lib/location';
 import { getEventPath } from '../../src/lib/eventLinks';
 
 export default function HomeFeed() {
-  const { user, communities, events, users, eventRsvps, isLoading, notifications, sponsors, sponsorshipAssignments } = useAppContext();
+  const { user, communities, events, users, eventRsvps, isLoading, notifications, sponsors, sponsorshipAssignments, communityMemberships } = useAppContext();
   const { feedPosts, likeFeedPost } = useFeed();
   const router = useRouter();
   const { toast } = useToast();
@@ -23,6 +23,17 @@ export default function HomeFeed() {
   const [installPrompt, setInstallPrompt] = useState(null);
   const [showInstallBanner, setShowInstallBanner] = useState(() => typeof window !== 'undefined' && !localStorage.getItem('pwa-dismissed'));
   const [showIOSInstallBanner, setShowIOSInstallBanner] = useState(false);
+  const [selectedLocationFilter, setSelectedLocationFilter] = useState('All');
+  const [communitySearch, setCommunitySearch] = useState('');
+
+  const getMemberCount = (comm) => {
+    if (!comm) return 1;
+    const fromMap = (communityMemberships?.[comm.id] || []).length;
+    if (fromMap > 0) return fromMap;
+    if (comm.members && typeof comm.members === 'number') return comm.members;
+    if (comm.memberCount && typeof comm.memberCount === 'number') return comm.memberCount;
+    return 1;
+  };
 
   // Capture PWA install prompt & iOS detection
   useEffect(() => {
@@ -84,6 +95,32 @@ export default function HomeFeed() {
 
   const unreadCount = notifications ? notifications.filter(n => !n.is_read).length : 0;
   const joinedCommunities = communities?.filter(c => user?.joinedCommunities?.includes(c.id)) || [];
+
+  const platformCommunities = useMemo(() => {
+    return (communities || []).filter(c => c.id !== 'more-leaders-network' || user?.isAdmin || user?.ledCommunities?.length > 0);
+  }, [communities, user]);
+
+  const filteredCommunities = useMemo(() => {
+    let list = platformCommunities;
+    if (selectedLocationFilter !== 'All') {
+      const targetLoc = selectedLocationFilter.toLowerCase();
+      list = list.filter(c => {
+        const loc = getCommunityLocation(c).toLowerCase();
+        return loc.includes(targetLoc);
+      });
+    }
+    if (communitySearch.trim()) {
+      const q = communitySearch.toLowerCase().trim();
+      list = list.filter(c => {
+        const name = (c.name || '').toLowerCase();
+        const desc = (c.description || '').toLowerCase();
+        const loc = getCommunityLocation(c).toLowerCase();
+        const tags = (c.tags || []).join(' ').toLowerCase();
+        return name.includes(q) || desc.includes(q) || loc.includes(q) || tags.includes(q);
+      });
+    }
+    return list;
+  }, [platformCommunities, selectedLocationFilter, communitySearch]);
 
   // Determine Daily Briefing
   const todayEvents = events?.filter(e => {
@@ -298,8 +335,15 @@ export default function HomeFeed() {
                   }}>
                     {community.name}
                   </div>
-                  <div style={{ fontSize: '0.7rem', color: 'var(--slate-400)', marginTop: '4px' }}>
-                    {community.members || '—'} members
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', marginTop: '6px' }}>
+                    <div style={{ fontSize: '0.72rem', color: 'var(--teal-400)', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 600 }}>
+                      <Users size={12} />
+                      <span>{getMemberCount(community)} member{getMemberCount(community) === 1 ? '' : 's'}</span>
+                    </div>
+                    <div style={{ fontSize: '0.7rem', color: 'var(--slate-400)', display: 'flex', alignItems: 'center', gap: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <MapPin size={11} color="var(--slate-400)" style={{ flexShrink: 0 }} />
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{getCommunityLocation(community)}</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -337,13 +381,156 @@ export default function HomeFeed() {
                   }}>
                     {c.name}
                   </div>
-                  <div style={{ fontSize: '0.65rem', color: 'var(--slate-500)', marginTop: '3px' }}>{c.members || '—'} members</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', marginTop: '4px' }}>
+                    <div style={{ fontSize: '0.68rem', color: 'var(--teal-400)', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 600 }}>
+                      <Users size={11} />
+                      <span>{getMemberCount(c)} member{getMemberCount(c) === 1 ? '' : 's'}</span>
+                    </div>
+                    <div style={{ fontSize: '0.65rem', color: 'var(--slate-400)', display: 'flex', alignItems: 'center', gap: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <MapPin size={10} color="var(--slate-400)" style={{ flexShrink: 0 }} />
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{getCommunityLocation(c)}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             ))}
           </div>
         </div>
       )}
+
+      {/* Explore Groups & Location Filter */}
+      <div style={{ padding: '16px 20px 20px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Compass size={18} color="var(--teal-400)" />
+            <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.05rem', color: 'var(--white)', margin: 0 }}>Local Communities</h2>
+          </div>
+          <button onClick={() => router.push('/discover')} style={{ background: 'none', border: 'none', color: 'var(--teal-400)', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
+            Map View →
+          </button>
+        </div>
+
+        {/* Location Filter Pills */}
+        <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', WebkitOverflowScrolling: 'touch', paddingBottom: '6px', marginBottom: '10px' }}>
+          {['All', 'Tunbridge Wells', 'Bewl Water', 'Heathfield', 'St Leonards-on-Sea'].map(loc => {
+            const isSelected = selectedLocationFilter === loc;
+            return (
+              <button
+                key={loc}
+                onClick={() => setSelectedLocationFilter(loc)}
+                className="interactive-press"
+                style={{
+                  padding: '5px 12px',
+                  borderRadius: '99px',
+                  fontSize: '0.75rem',
+                  fontWeight: isSelected ? 700 : 500,
+                  whiteSpace: 'nowrap',
+                  background: isSelected ? 'rgba(20,184,166,0.2)' : 'rgba(255,255,255,0.04)',
+                  color: isSelected ? 'var(--teal-300)' : 'var(--slate-400)',
+                  border: isSelected ? '1px solid var(--teal-400)' : '1px solid rgba(255,255,255,0.08)',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}
+              >
+                {loc !== 'All' && <MapPin size={11} color={isSelected ? 'var(--teal-400)' : 'var(--slate-500)'} />}
+                <span>{loc}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Filter / Search input */}
+        <div style={{ position: 'relative', marginBottom: '12px' }}>
+          <Search size={14} color="var(--slate-500)" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
+          <input
+            type="text"
+            placeholder="Filter by group name or location..."
+            value={communitySearch}
+            onChange={e => setCommunitySearch(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '8px 12px 8px 34px',
+              borderRadius: '10px',
+              background: 'rgba(255,255,255,0.03)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              color: 'var(--white)',
+              fontSize: '0.8rem',
+              outline: 'none'
+            }}
+          />
+        </div>
+
+        {/* Filtered Communities Grid */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '10px' }}>
+          {filteredCommunities.length === 0 ? (
+            <div style={{ gridColumn: '1 / -1', padding: '16px', textAlign: 'center', color: 'var(--slate-500)', fontSize: '0.8rem' }}>
+              No communities found in this area.
+            </div>
+          ) : (
+            filteredCommunities.map(c => {
+              const isMember = user?.joinedCommunities?.includes(c.id);
+              const memberCount = getMemberCount(c);
+              const locText = getCommunityLocation(c);
+
+              return (
+                <div
+                  key={c.id}
+                  onClick={() => router.push(`/community/${c.id}`)}
+                  className="interactive-press"
+                  style={{
+                    display: 'flex',
+                    gap: '12px',
+                    padding: '10px 12px',
+                    borderRadius: '14px',
+                    background: 'rgba(255,255,255,0.02)',
+                    border: '1px solid rgba(255,255,255,0.07)',
+                    cursor: 'pointer',
+                    alignItems: 'center'
+                  }}
+                >
+                  <div style={{
+                    width: '56px',
+                    height: '56px',
+                    borderRadius: '10px',
+                    background: `url(${c.image || c.cover_image}) center/cover`,
+                    flexShrink: 0
+                  }} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{
+                      fontWeight: 700,
+                      fontSize: '0.86rem',
+                      color: 'var(--white)',
+                      lineHeight: 1.25,
+                      marginBottom: '3px',
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden'
+                    }}>
+                      {c.name}
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.72rem', color: 'var(--teal-400)', fontWeight: 600, marginBottom: '2px' }}>
+                      <Users size={12} />
+                      <span>{memberCount} member{memberCount === 1 ? '' : 's'}</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.7rem', color: 'var(--slate-400)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      <MapPin size={11} color="var(--slate-400)" style={{ flexShrink: 0 }} />
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{locText}</span>
+                    </div>
+                  </div>
+                  {isMember ? (
+                    <span style={{ fontSize: '0.68rem', color: 'var(--teal-400)', background: 'rgba(20,184,166,0.12)', padding: '3px 7px', borderRadius: '99px', fontWeight: 600, flexShrink: 0 }}>Joined</span>
+                  ) : (
+                    <span style={{ fontSize: '0.75rem', color: 'var(--slate-400)', flexShrink: 0 }}>→</span>
+                  )}
+                </div>
+              );
+            })
+          )}
+        </div>
+      </div>
 
       {/* PWA Install Banner */}
       {installPrompt && showInstallBanner && (

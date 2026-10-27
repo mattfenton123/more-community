@@ -3,13 +3,14 @@ import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppContext } from '../context/AppContext';
 import { useFeed } from '../context/FeedContext';
-import { Heart, MessageCircle, Share2, Calendar, MapPin, Clock, Compass, Plus, Megaphone, Edit3, Briefcase, ChevronUp } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Calendar, MapPin, Clock, Compass, Plus, Megaphone, Edit3, Briefcase, ChevronUp, Users } from 'lucide-react';
+import { getCommunityLocation } from '../lib/location';
 import { SkeletonList, SkeletonCard } from '../components/SkeletonCard';
 import InlineComments from '../components/InlineComments';
 import AppHeader from '../components/AppHeader';
 
 export default function HomeFeed() {
-  const { user, communities, events, users, eventRsvps, isLoading, notifications, sponsors, sponsorshipAssignments } = useAppContext();
+  const { user, communities, events, users, eventRsvps, isLoading, notifications, sponsors, sponsorshipAssignments, communityMemberships } = useAppContext();
   const { feedPosts, likeFeedPost } = useFeed();
   const router = useRouter();
   const [expandedComments, setExpandedComments] = useState({});
@@ -158,9 +159,17 @@ export default function HomeFeed() {
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
                     <h3 style={{ margin: 0, fontFamily: 'var(--font-heading)', fontSize: '1.2rem', color: 'var(--white)' }}>{comm.name}</h3>
                   </div>
-                  <p style={{ margin: '0 0 16px 0', fontSize: '0.85rem', color: 'var(--slate-400)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                  <p style={{ margin: '0 0 12px 0', fontSize: '0.85rem', color: 'var(--slate-400)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                     {comm.description}
                   </p>
+                  <div style={{ display: 'flex', gap: '12px', fontSize: '0.8rem', color: 'var(--slate-400)', alignItems: 'center' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--teal-400)', fontWeight: 600 }}>
+                      <Users size={13} /> {(communityMemberships?.[comm.id] || []).length || comm.members || 1} member{((communityMemberships?.[comm.id] || []).length || comm.members || 1) === 1 ? '' : 's'}
+                    </span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <MapPin size={13} color="var(--slate-400)" /> {getCommunityLocation(comm)}
+                    </span>
+                  </div>
                 </div>
               </div>
             ))}

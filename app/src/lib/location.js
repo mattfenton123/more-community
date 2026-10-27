@@ -365,6 +365,26 @@ export function encodeLocationWithCoords(name, lat, lng, radius = null) {
 }
 
 /**
+ * Resolves a clear, human-friendly location display text for a community.
+ */
+export function getCommunityLocation(comm) {
+  if (!comm) return 'Kent & East Sussex';
+  const raw = comm.location_name || comm.location || '';
+  const cleaned = cleanLocationName(raw);
+  const lower = cleaned.toLowerCase();
+  if (cleaned && lower !== 'global' && lower !== 'various locations - check events' && lower !== 'various locations') {
+    return cleaned;
+  }
+  if (comm.id === 'ruth-breathes-acut8') return 'St Leonards-on-Sea, East Sussex';
+  if (comm.id === 'mankind-heathfield-ymow0') return 'The Community Hub, Heathfield';
+  if (comm.id === 'more-shades-of-golden-0rhnh') return 'Heathfield & Cuckoo Trail';
+  if (comm.id === 'more-community-walks-qubcx') return 'Bewl Water, Kent & East Sussex';
+  if (comm.id === 'more-performance-bresthing-6i2uv') return 'Tunbridge Wells, Kent';
+  if (comm.id === 'more-leaders-network') return 'Kent & East Sussex (Regional)';
+  return cleaned || 'Tunbridge Wells & surrounding';
+}
+
+/**
  * Searches local verified spot registry.
  */
 export function findKnownLocation(query) {
