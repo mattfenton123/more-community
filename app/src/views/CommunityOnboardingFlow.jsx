@@ -6,6 +6,12 @@ import { useToast } from '../components/Toast';
 import { COMMUNITY_TAG_CATEGORIES, ALL_COMMUNITY_TAGS } from '../lib/constants';
 import './CommunityOnboardingFlow.css';
 
+import dynamic from 'next/dynamic';
+import { cleanLocationName, parseLocationCoords, DEFAULT_TW_CENTER, geocodeLocation } from '../lib/location';
+
+const CommunityRegionPicker = dynamic(() => import('../components/CommunityRegionPicker'), { ssr: false });
+const LocationPicker = dynamic(() => import('../components/LocationPicker'), { ssr: false });
+
 const SEGMENT_ICONS = {
   'Sports & Fitness': '⚽',
   'Social & Lifestyle': '☕',
@@ -60,7 +66,7 @@ function StepBasics({ name, setName, description, setDescription }) {
   );
 }
 
-function StepDetails({ targetAudience, setTargetAudience, cost, setCost, activityLevel, setActivityLevel, locationName, setLocationName }) {
+function StepDetails({ targetAudience, setTargetAudience, cost, setCost, activityLevel, setActivityLevel, locationName, setLocationName, regionCoords, setRegionCoords, regionRadius, setRegionRadius }) {
   return (
     <div className="step-wrapper">
       <div className="step-header">
@@ -106,13 +112,14 @@ function StepDetails({ targetAudience, setTargetAudience, cost, setCost, activit
       </div>
 
       <div className="input-group">
-        <label className="input-label">General Location</label>
-        <input
-          type="text"
-          placeholder="e.g. Tunbridge Wells, Kent"
-          value={locationName}
-          onChange={e => setLocationName(e.target.value)}
-          className="text-input"
+        <label className="input-label">Community Hub & Regional Area</label>
+        <CommunityRegionPicker
+          locationName={locationName}
+          setLocationName={setLocationName}
+          coords={regionCoords}
+          onCoordsChange={setRegionCoords}
+          radius={regionRadius}
+          onRadiusChange={setRegionRadius}
         />
       </div>
     </div>
@@ -424,13 +431,10 @@ function StepEvent({ eventTitle, setEventTitle, eventDate, setEventDate, eventTi
         </div>
 
         <div className="input-group">
-          <label className="input-label">Location</label>
-          <input
-            type="text"
-            placeholder="e.g. The Pantiles Cafe"
-            value={eventLocation}
-            onChange={e => setEventLocation(e.target.value)}
-            className="text-input"
+          <label className="input-label">Meeting Point / Pinpoint Location</label>
+          <LocationPicker
+            locationName={eventLocation}
+            setLocationName={setEventLocation}
           />
         </div>
         
@@ -504,6 +508,8 @@ export default function CommunityOnboardingFlow({ onComplete }) {
   const [cost, setCost] = useState('Free');
   const [activityLevel, setActivityLevel] = useState('Active');
   const [locationName, setLocationName] = useState('');
+  const [regionCoords, setRegionCoords] = useState(null);
+  const [regionRadius, setRegionRadius] = useState(5);
   
   // Step 3: Aesthetics
   const [tags, setTags] = useState([]);
@@ -591,6 +597,31 @@ export default function CommunityOnboardingFlow({ onComplete }) {
         formattedInstagram = `@${formattedInstagram}`;
       }
 
+      // Resolve lat & lng for community region
+      let finalLat = regionCoords ? Number(regionCoords[0]) : null;
+      let finalLng = regionCoords ? Number(regionCoords[1]) : null;
+
+      if (!finalLat || !finalLng) {
+        const parsed = parseLocationCoords(locationName);
+        if (parsed) {
+          finalLat = parsed.lat;
+          finalLng = parsed.lng;
+        } else if (locationName) {
+          try {
+            const geo = await geocodeLocation(cleanLocationName(locationName));
+            if (geo && geo.lat && geo.lng) {
+              finalLat = geo.lat;
+              finalLng = geo.lng;
+            }
+          } catch (e) {}
+        }
+      }
+
+      if (!finalLat || !finalLng) {
+        finalLat = DEFAULT_TW_CENTER[0];
+        finalLng = DEFAULT_TW_CENTER[1];
+      }
+
       // Verified is now false by default
       const communityData = {
         name: name.trim(),
@@ -604,7 +635,9 @@ export default function CommunityOnboardingFlow({ onComplete }) {
         activity_level: activityLevel,
         cost: cost.trim(),
         target_audience: targetAudience.trim(),
-        location_name: locationName.trim()
+        location_name: locationName.trim(),
+        lat: finalLat,
+        lng: finalLng
       };
 
       // Create Community
@@ -665,7 +698,21 @@ export default function CommunityOnboardingFlow({ onComplete }) {
 
   const steps = [
     <StepBasics key="basics" name={name} setName={setName} description={description} setDescription={setDescription} />,
-    <StepDetails key="details" targetAudience={targetAudience} setTargetAudience={setTargetAudience} cost={cost} setCost={setCost} activityLevel={activityLevel} setActivityLevel={setActivityLevel} locationName={locationName} setLocationName={setLocationName} />,
+    <StepDetails 
+      key="details" 
+      targetAudience={targetAudience} 
+      setTargetAudience={setTargetAudience} 
+      cost={cost} 
+      setCost={setCost} 
+      activityLevel={activityLevel} 
+      setActivityLevel={setActivityLevel} 
+      locationName={locationName} 
+      setLocationName={setLocationName}
+      regionCoords={regionCoords}
+      setRegionCoords={setRegionCoords}
+      regionRadius={regionRadius}
+      setRegionRadius={setRegionRadius}
+    />,
     <StepTags key="tags" tags={tags} toggleTag={toggleTag} addCustomTag={addCustomTag} removeTag={removeTag} />,
     <StepCoverPhoto key="cover" coverImagePreview={coverImagePreview} handleImageSelect={handleImageSelect} fileInputRef={fileInputRef} />,
     <StepEvent key="event" eventTitle={eventTitle} setEventTitle={setEventTitle} eventDate={eventDate} setEventDate={setEventDate} eventTime={eventTime} setEventTime={setEventTime} eventLocation={eventLocation} setEventLocation={setEventLocation} />,

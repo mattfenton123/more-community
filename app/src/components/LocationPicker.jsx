@@ -16,27 +16,27 @@ import {
 } from '../lib/location';
 
 const TOP_PRESETS = [
+  { name: 'Bewl Water Car Park', query: 'Bewl Water Car Park & Visitor Centre' },
   { name: 'Cuckoo Trail, Heathfield', query: 'Cuckoo Trail Car Park, Heathfield' },
   { name: 'The Pantiles', query: 'The Pantiles' },
   { name: 'Dunorlan Park', query: 'Dunorlan Park' },
   { name: 'Calverley Grounds', query: 'Calverley Grounds' },
-  { name: 'Bewl Water', query: 'Bewl Water / Bewl Reservoir' },
   { name: 'TW Common', query: 'Tunbridge Wells Common' }
 ];
 
 function createPinIcon() {
   return L.divIcon({
     html: `<div style="
-      width: 40px; height: 40px; border-radius: 50%;
+      width: 42px; height: 42px; border-radius: 50%;
       background: #0d9488; border: 3px solid #ffffff;
-      box-shadow: 0 4px 18px rgba(0,0,0,0.45), 0 0 0 7px rgba(13,148,136,0.3);
+      box-shadow: 0 4px 18px rgba(0,0,0,0.5), 0 0 0 8px rgba(13,148,136,0.3);
       display: flex; align-items: center; justify-content: center;
-      color: white; font-size: 20px; cursor: grab;
+      color: white; font-size: 22px; cursor: grab;
       transition: transform 0.15s ease;
     ">📍</div>`,
     className: '',
-    iconSize: [40, 40],
-    iconAnchor: [20, 20]
+    iconSize: [42, 42],
+    iconAnchor: [21, 21]
   });
 }
 
@@ -66,7 +66,7 @@ function MapController({ coords }) {
 function MapInteractionHandler({ onLocationChosen }) {
   useMapEvents({
     click(e) {
-      onLocationChosen(e.latlng.lat, e.latlng.lng);
+      onLocationChosen(e.latlng.lat, e.latlng.lng, true);
     }
   });
   return null;
@@ -96,26 +96,33 @@ export default function LocationPicker({ locationName, setLocationName, coords: 
   const [pinAddress, setPinAddress] = useState(cleanLocationName(locationName) || '');
   const [searchNotFound, setSearchNotFound] = useState(false);
   const [areaLabel, setAreaLabel] = useState('');
+  const [isManualPin, setIsManualPin] = useState(() => Boolean(parseLocationCoords(locationName)));
+  const isManualPinRef = useRef(Boolean(parseLocationCoords(locationName)));
+  const markerRef = useRef(null);
 
   // Keep internal query aligned if parent prop changes externally
   useEffect(() => {
     if (locationName) {
       const parsed = parseLocationCoords(locationName);
-      const known = findKnownLocation(locationName);
       const clean = cleanLocationName(locationName);
 
       if (parsed) {
         setCoords([parsed.lat, parsed.lng]);
-      } else if (known) {
-        setCoords([known.lat, known.lng]);
-        setAreaLabel(known.area || '');
-      } else if (clean && clean !== searchQuery) {
-        // Geocode in background to align map
-        geocodeLocation(clean).then(res => {
-          if (res && res.lat && res.lng) {
-            setCoords([res.lat, res.lng]);
-          }
-        });
+        setIsManualPin(true);
+        isManualPinRef.current = true;
+      } else if (!isManualPinRef.current) {
+        const known = findKnownLocation(locationName);
+        if (known) {
+          setCoords([known.lat, known.lng]);
+          setAreaLabel(known.area || '');
+        } else if (clean && clean !== searchQuery) {
+          // Geocode in background to align map
+          geocodeLocation(clean).then(res => {
+            if (res && res.lat && res.lng && !isManualPinRef.current) {
+              setCoords([res.lat, res.lng]);
+            }
+          });
+        }
       }
 
       setSearchQuery(clean);
@@ -130,11 +137,11 @@ export default function LocationPicker({ locationName, setLocationName, coords: 
 
   // Reverse geocoding helper with Nominatim fallback
   const reverseGeocode = async (lat, lng) => {
-    // Check known spots within 300 meters first
+    // Check known spots within 250 meters first
     for (const spot of REGIONAL_KNOWN_LOCATIONS) {
       const dLat = Math.abs(spot.lat - lat);
       const dLng = Math.abs(spot.lng - lng);
-      if (dLat < 0.003 && dLng < 0.003) {
+      if (dLat < 0.0025 && dLng < 0.0025) {
         return { name: spot.name, area: spot.area };
       }
     }
@@ -153,21 +160,32 @@ export default function LocationPicker({ locationName, setLocationName, coords: 
     } catch (e) {
       console.warn("Reverse geocode failed, using coordinate fallback:", e);
     }
-    return { name: `Location (${lat.toFixed(4)}, ${lng.toFixed(4)})`, area: '' };
+    return { name: `Spot (${lat.toFixed(4)}, ${lng.toFixed(4)})`, area: '' };
   };
 
-  const handleLocationChosen = async (lat, lng, customTitle = null) => {
+  const handleLocationChosen = async (lat, lng, isManual = false, customTitle = null) => {
     setCoords([lat, lng]);
     setShowMap(true);
     setSearchNotFound(false);
+    if (isManual) {
+      setIsManualPin(true);
+      isManualPinRef.current = true;
+    }
     if (onCoordsChange) onCoordsChange([lat, lng]);
 
-    const resolved = await reverseGeocode(lat, lng);
-    const chosenName = customTitle || resolved.name;
-    setSearchQuery(chosenName);
-    setPinAddress(chosenName);
-    setAreaLabel(resolved.area || '');
+    // If user already entered a descriptive title, preserve it instead of overriding with generic coordinates
+    let chosenName = customTitle;
+    if (!chosenName) {
+      if (searchQuery && searchQuery.trim() && !searchQuery.startsWith('Spot (') && !searchQuery.startsWith('Location (')) {
+        chosenName = searchQuery.trim();
+      } else {
+        const resolved = await reverseGeocode(lat, lng);
+        chosenName = resolved.name;
+        if (resolved.area) setAreaLabel(resolved.area);
+      }
+    }
 
+    setPinAddress(chosenName);
     const encoded = encodeLocationWithCoords(chosenName, lat, lng);
     setLocationName(encoded);
   };
@@ -280,12 +298,18 @@ export default function LocationPicker({ locationName, setLocationName, coords: 
       <div style={{ display: 'flex', gap: '8px', position: 'relative' }}>
         <input 
           className="form-input" 
-          placeholder="Search start location (e.g. Cuckoo Trail, The Pantiles, Bewl Water)..." 
+          placeholder="Search start location (e.g. Bewl Water Car Park, The Pantiles)..." 
           value={searchQuery}
           onChange={(e) => {
-            setSearchQuery(e.target.value);
-            // Also keep parent updated with human name
-            setLocationName(e.target.value);
+            const val = e.target.value;
+            setSearchQuery(val);
+            setPinAddress(val);
+            // If coordinates were already chosen/pinned, keep them locked while updating the human name
+            if (coords && coords[0] != null && coords[1] != null) {
+              setLocationName(encodeLocationWithCoords(val, coords[0], coords[1]));
+            } else {
+              setLocationName(val);
+            }
           }}
           onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(e); }}
           style={{ padding: '13px 16px', flex: 1, borderRadius: '12px', fontSize: '0.92rem' }} 
@@ -325,6 +349,37 @@ export default function LocationPicker({ locationName, setLocationName, coords: 
         </button>
       </div>
 
+      {/* Manual Pin Lock Indicator */}
+      {isManualPin && (
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '7px 12px', background: 'rgba(20, 184, 166, 0.12)',
+          border: '1px solid rgba(20, 184, 166, 0.3)', borderRadius: '10px',
+          fontSize: '0.78rem', color: '#2dd4bf'
+        }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Crosshair size={14} />
+            <span>Pinned meeting spot: <strong>{coords[0].toFixed(4)}°, {coords[1].toFixed(4)}°</strong> (Drag pin or tap map to adjust)</span>
+          </span>
+          <button
+            type="button"
+            onClick={() => {
+              isManualPinRef.current = false;
+              setIsManualPin(false);
+              if (searchQuery) handleSearch();
+            }}
+            className="interactive-press"
+            style={{
+              background: 'rgba(255,255,255,0.08)', border: 'none', color: 'var(--slate-300)',
+              borderRadius: '6px', padding: '3px 8px', fontSize: '0.7rem', cursor: 'pointer',
+              marginLeft: '8px', whiteSpace: 'nowrap'
+            }}
+          >
+            Re-center
+          </button>
+        </div>
+      )}
+
       {/* Preset spot quick-chips */}
       <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '2px', scrollbarWidth: 'none' }}>
         {TOP_PRESETS.map((preset, idx) => (
@@ -335,7 +390,9 @@ export default function LocationPicker({ locationName, setLocationName, coords: 
               setSearchQuery(preset.query);
               const spot = findKnownLocation(preset.query);
               if (spot) {
-                handleLocationChosen(spot.lat, spot.lng, spot.name);
+                handleLocationChosen(spot.lat, spot.lng, false, spot.name);
+              } else {
+                handleSearch();
               }
             }}
             className="interactive-press"
@@ -426,14 +483,17 @@ export default function LocationPicker({ locationName, setLocationName, coords: 
               />
               {markerIcon && (
                 <Marker 
+                  ref={markerRef}
                   position={coords} 
                   icon={markerIcon}
                   draggable={true}
                   eventHandlers={{
-                    dragend: (e) => {
-                      const marker = e.target;
-                      const position = marker.getLatLng();
-                      handleLocationChosen(position.lat, position.lng);
+                    dragend: () => {
+                      const marker = markerRef.current;
+                      if (marker) {
+                        const pos = marker.getLatLng();
+                        handleLocationChosen(pos.lat, pos.lng, true);
+                      }
                     }
                   }}
                 />

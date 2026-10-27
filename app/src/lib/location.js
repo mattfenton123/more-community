@@ -28,22 +28,49 @@ export const REGIONAL_KNOWN_LOCATIONS = [
     area: 'East Sussex',
     lat: 50.9680,
     lng: 0.2530,
-    aliases: ['heathfield', 'heathfield high street', 'heathfield east sussex']
+    aliases: ['heathfield', 'heathfield high street', 'heathfield east sussex', 'mankind heathfield']
+  },
+  {
+    name: 'Heathfield Community Hub, High Street',
+    area: 'Heathfield, East Sussex',
+    lat: 50.9680,
+    lng: 0.2530,
+    aliases: ['community hub heathfield', 'heathfield hub', 'high st heathfield']
   },
 
-  // Bewl Water & Surrounds
+  // Bewl Water & Surrounds (Visitor Centre & Main Car Park)
   {
-    name: 'Bewl Water / Bewl Reservoir',
+    name: 'Bewl Water Car Park & Visitor Centre',
     area: 'Lamberhurst / Wadhurst',
-    lat: 51.0676,
-    lng: 0.4049,
+    lat: 51.0763,
+    lng: 0.3875,
     aliases: [
       'bewl',
       'bewl reservoir',
       'bewl water',
       'bewl water reservoir',
+      'bewl water car park',
+      'bewl car park',
+      'bewl visitor centre',
       'bewl water visitor centre',
+      'bewl water / bewl reservoir',
+      'bewlbridge lane',
       'lamberhurst'
+    ]
+  },
+
+  // Coastal / St Leonards & Hastings
+  {
+    name: 'St Leonards-on-Sea',
+    area: 'East Sussex Coast',
+    lat: 50.8560,
+    lng: 0.5560,
+    aliases: [
+      'st leonards',
+      'st leonards-on-sea',
+      'st leonards on sea',
+      'ruth breathes',
+      'hastings'
     ]
   },
 
@@ -292,8 +319,23 @@ export function parseLocationCoords(locationStr) {
 }
 
 /**
- * Cleans the human-facing location string by removing internal coordinate tokens.
- * e.g. "Cuckoo Trail Car Park opp. Waitrose • @50.96850,0.25200" -> "Cuckoo Trail Car Park opp. Waitrose"
+ * Extracts radius in km embedded in a community location string:
+ * e.g. "Bewl Water & High Weald [r=6km]" -> 6
+ * e.g. "Tunbridge Wells (5km radius)" -> 5
+ */
+export function parseLocationRadius(locationStr) {
+  if (!locationStr || typeof locationStr !== 'string') return 4;
+  const match = locationStr.match(/\[r=(\d+(?:\.\d+)?)km\]/i) || locationStr.match(/(\d+(?:\.\d+)?)\s*km\s*radius/i);
+  if (match) {
+    const r = parseFloat(match[1]);
+    if (!isNaN(r) && r > 0) return r;
+  }
+  return 4; // default 4km radius for local communities
+}
+
+/**
+ * Cleans the human-facing location string by removing internal coordinate and radius tokens.
+ * e.g. "Bewl Water Car Park opp. Visitor Centre [r=5km] • @51.07630,0.38750" -> "Bewl Water Car Park opp. Visitor Centre"
  */
 export function cleanLocationName(locationStr) {
   if (!locationStr || typeof locationStr !== 'string') return '';
@@ -301,17 +343,25 @@ export function cleanLocationName(locationStr) {
     .replace(/\s*•\s*@(-?\d+\.\d+),\s*(-?\d+\.\d+)/g, '')
     .replace(/@(-?\d+\.\d+),\s*(-?\d+\.\d+)/g, '')
     .replace(/[\[\(]-?\d+\.\d+,\s*-?\d+\.\d+[\]\)]/g, '')
+    .replace(/\s*\[r=\d+(?:\.\d+)?km\]/gi, '')
+    .replace(/\s*\(\d+(?:\.\d+)?km\s*radius\)/gi, '')
     .trim()
     .replace(/\s*•\s*$/, '');
 }
 
 /**
- * Encodes human name with precise pinpoint coordinates.
+ * Encodes human name with precise pinpoint coordinates and optional coverage radius.
  */
-export function encodeLocationWithCoords(name, lat, lng) {
+export function encodeLocationWithCoords(name, lat, lng, radius = null) {
   const clean = cleanLocationName(name) || 'Selected Location';
-  if (lat == null || lng == null) return clean;
-  return `${clean} • @${Number(lat).toFixed(5)},${Number(lng).toFixed(5)}`;
+  let result = clean;
+  if (radius && radius > 0) {
+    result += ` [r=${radius}km]`;
+  }
+  if (lat != null && lng != null) {
+    result += ` • @${Number(lat).toFixed(5)},${Number(lng).toFixed(5)}`;
+  }
+  return result;
 }
 
 /**
@@ -321,15 +371,23 @@ export function findKnownLocation(query) {
   if (!query || typeof query !== 'string') return null;
   const qLower = query.toLowerCase().trim();
 
-  // Try exact alias match or substring containment
+  // 1. Try exact match first
   for (const spot of REGIONAL_KNOWN_LOCATIONS) {
     if (spot.name.toLowerCase() === qLower) return spot;
-    if (qLower.includes(spot.name.toLowerCase())) return spot;
-
     if (spot.aliases) {
       for (const alias of spot.aliases) {
-        if (qLower === alias || qLower.includes(alias) || alias.includes(qLower)) {
-          return spot;
+        if (qLower === alias.toLowerCase()) return spot;
+      }
+    }
+  }
+
+  // 2. Substring matching (only if query is descriptive enough)
+  if (qLower.length >= 4) {
+    for (const spot of REGIONAL_KNOWN_LOCATIONS) {
+      if (qLower.includes(spot.name.toLowerCase())) return spot;
+      if (spot.aliases) {
+        for (const alias of spot.aliases) {
+          if (qLower.includes(alias.toLowerCase())) return spot;
         }
       }
     }

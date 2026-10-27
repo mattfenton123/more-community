@@ -4,24 +4,36 @@ import { useRouter as useNavigate } from 'next/navigation';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { isEventUpcoming } from '../lib/calendar';
-import { cleanLocationName, parseLocationCoords } from '../lib/location';
+import { cleanLocationName, parseLocationCoords, parseLocationRadius } from '../lib/location';
 
 // Regional anchor center: High Weald / Kent & East Sussex border
 const REGION_CENTER = [51.0800, 0.3000];
 
 // Verified geographic coordinates for all known communities and event venues
 const KNOWN_LOCATIONS = [
-  // Heathfield & Cuckoo Trail (More Shades of Golden & walks)
+  // Heathfield & Cuckoo Trail (More Shades of Golden, Mankind & walks)
   { name: 'cuckoo trail car park', lat: 50.9685, lng: 0.2520 },
   { name: 'cuckoo trail', lat: 50.9685, lng: 0.2520 },
+  { name: 'heathfield community hub', lat: 50.9680, lng: 0.2530 },
+  { name: 'community hub heathfield', lat: 50.9680, lng: 0.2530 },
+  { name: 'high st, heathfield', lat: 50.9680, lng: 0.2530 },
   { name: 'heathfield', lat: 50.9680, lng: 0.2530 },
   
-  // Bewl Water (More Community Walks)
-  { name: 'bewl water reservoir', lat: 51.0676, lng: 0.4049 },
-  { name: 'bewl reservoir', lat: 51.0676, lng: 0.4049 },
-  { name: 'bewl water', lat: 51.0676, lng: 0.4049 },
-  { name: 'bewl', lat: 51.0676, lng: 0.4049 },
+  // Bewl Water (More Community Walks - Visitor Centre & Main Car Park)
+  { name: 'bewl water car park', lat: 51.0763, lng: 0.3875 },
+  { name: 'bewl car park', lat: 51.0763, lng: 0.3875 },
+  { name: 'bewl visitor centre', lat: 51.0763, lng: 0.3875 },
+  { name: 'bewl water reservoir', lat: 51.0763, lng: 0.3875 },
+  { name: 'bewl reservoir', lat: 51.0763, lng: 0.3875 },
+  { name: 'bewl water', lat: 51.0763, lng: 0.3875 },
+  { name: 'bewl', lat: 51.0763, lng: 0.3875 },
   { name: 'lamberhurst', lat: 51.0990, lng: 0.3950 },
+
+  // St Leonards-on-Sea & Hastings Coast (Ruth Breathes)
+  { name: 'st leonards-on-sea', lat: 50.8560, lng: 0.5560 },
+  { name: 'st leonards on sea', lat: 50.8560, lng: 0.5560 },
+  { name: 'st leonards', lat: 50.8560, lng: 0.5560 },
+  { name: 'hastings', lat: 50.8540, lng: 0.5730 },
 
   // Tunbridge Wells landmarks & spots
   { name: 'pantiles', lat: 51.1280, lng: 0.2620 },
@@ -72,8 +84,10 @@ const KNOWN_LOCATIONS = [
 // Direct accurate coordinates for our active platform communities
 const COMMUNITY_COORDS_MAP = {
   'more-shades-of-golden-0rhnh': [50.9680, 0.2530],       // Heathfield, East Sussex
-  'more-community-walks-qubcx': [51.0676, 0.4049],        // Bewl Water / High Weald
+  'mankind-heathfield-ymow0': [50.9680, 0.2530],          // Heathfield, East Sussex
+  'more-community-walks-qubcx': [51.0763, 0.3875],        // Bewl Water Car Park / High Weald
   'more-performance-bresthing-6i2uv': [51.1322, 0.2637],   // Tunbridge Wells, Kent
+  'ruth-breathes-acut8': [50.8560, 0.5560],                // St Leonards-on-Sea
 };
 
 /**
@@ -82,6 +96,11 @@ const COMMUNITY_COORDS_MAP = {
 function resolveCommunityCoords(comm, index) {
   if (comm.lat && comm.lng && !isNaN(Number(comm.lat)) && !isNaN(Number(comm.lng))) {
     return [Number(comm.lat), Number(comm.lng)];
+  }
+
+  const parsed = parseLocationCoords(comm.location_name);
+  if (parsed) {
+    return [parsed.lat, parsed.lng];
   }
 
   if (comm.id && COMMUNITY_COORDS_MAP[comm.id]) {
@@ -257,20 +276,43 @@ export default function MapView({ communities = [], events = [], onSelect }) {
 
     const allCoords = [];
 
-    // 2. Add Community Markers
+    // 2. Add Community Markers & Regional Coverage Circles
     if (filterType === 'all' || filterType === 'communities') {
       activeCommunities.forEach((comm, idx) => {
         const [lat, lng] = resolveCommunityCoords(comm, idx);
         allCoords.push([lat, lng]);
+
+        const radiusKm = parseLocationRadius(comm.location_name) || 5;
+
+        // Render soft semi-transparent glowing coverage circle for the group's region
+        const circle = L.circle([lat, lng], {
+          radius: radiusKm * 1000,
+          color: '#0d9488',
+          fillColor: '#14b8a6',
+          fillOpacity: 0.15,
+          weight: 1.8,
+          dashArray: '6, 6'
+        }).addTo(markersGroup);
+
+        circle.on('mouseover', () => {
+          circle.setStyle({ fillOpacity: 0.28, weight: 2.5, color: '#2dd4bf' });
+        });
+        circle.on('mouseout', () => {
+          circle.setStyle({ fillOpacity: 0.15, weight: 1.8, color: '#0d9488' });
+        });
 
         const emoji = comm.category?.split(' ')[0] || comm.tags?.[0]?.split(' ')[0] || (comm.name?.toLowerCase().includes('golden') ? '🐶' : comm.name?.toLowerCase().includes('walk') ? '🚶' : '🧘');
         const marker = L.marker([lat, lng], {
           icon: createCommunityIcon(emoji),
         }).addTo(markersGroup);
 
+        circle.on('click', () => {
+          marker.openPopup();
+        });
+
         const memberCount = comm.memberCount || comm.metrics?.members || comm.members || 1;
         const costBadge = comm.cost || comm.metrics?.cost || 'Free';
-        const locationText = comm.location_name || (comm.id === 'more-shades-of-golden-0rhnh' ? 'Heathfield, East Sussex' : comm.id === 'more-community-walks-qubcx' ? 'Bewl Water, Kent & East Sussex' : 'Tunbridge Wells, Kent');
+        const locationText = cleanLocationName(comm.location_name) || (comm.id === 'more-shades-of-golden-0rhnh' ? 'Heathfield, East Sussex' : comm.id === 'more-community-walks-qubcx' ? 'Bewl Water, Kent & East Sussex' : 'Tunbridge Wells, Kent');
 
         const popupHtml = `
           <div style="
@@ -284,7 +326,7 @@ export default function MapView({ communities = [], events = [], onSelect }) {
             box-shadow: 0 12px 30px rgba(0,0,0,0.6);
           ">
             <div style="display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 99px; background: rgba(20,184,166,0.15); color: #2dd4bf; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; margin-bottom: 8px;">
-              <span>Community</span>
+              <span>Community Area • ~${radiusKm}km radius</span>
             </div>
             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
               <span style="font-size: 1.25rem;">${emoji}</span>

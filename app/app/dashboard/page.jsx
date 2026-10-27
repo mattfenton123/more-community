@@ -17,6 +17,8 @@ import EventFlyerGenerator from '../../src/components/EventFlyerGenerator';
 import LeaderSetupChecklist from '../../src/components/LeaderSetupChecklist';
 import dynamic from 'next/dynamic';
 const LocationPicker = dynamic(() => import('../../src/components/LocationPicker'), { ssr: false });
+const CommunityRegionPicker = dynamic(() => import('../../src/components/CommunityRegionPicker'), { ssr: false });
+import { cleanLocationName, parseLocationCoords, geocodeLocation } from '../../src/lib/location';
 import RecurringSchedulePicker from '../../src/components/RecurringSchedulePicker';
 import { formatEventDate } from '../../src/lib/recurrence';
 import { COMMUNITY_TAG_CATEGORIES, ALL_COMMUNITY_TAGS } from '../../src/lib/constants';
@@ -94,7 +96,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
   const [isEditing, setIsEditing] = useState(false);
   const [modalType, setModalType] = useState(null);
   const [editForm, setEditForm] = useState({ 
-    name: '', category: '', description: '', location_name: '', cost: 'Free', target_audience: '', activity_level: 'Active', tags: [], customTagInput: '', whatsapp_group: '', instagram_handle: '' 
+    name: '', category: '', description: '', location_name: '', lat: null, lng: null, cost: 'Free', target_audience: '', activity_level: 'Active', tags: [], customTagInput: '', whatsapp_group: '', instagram_handle: '' 
   });
   const [editTagCategory, setEditTagCategory] = useState('All');
   const [activeTab, setActiveTab] = useState(searchParams?.get('tab') || 'overview');
@@ -144,6 +146,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
     date: '', 
     time: '', 
     location: '', 
+    coords: null,
     maxCapacity: '', 
     ticketPrice: '', 
     collabCommunityIds: [],
@@ -519,6 +522,8 @@ export default function LeaderDashboard({ initialCommunityId }) {
         category: community.category || currentTags[0] || '',
         description: community.description || '', 
         location_name: community.location_name || '',
+        lat: community.lat || null,
+        lng: community.lng || null,
         cost: community.cost || 'Free',
         target_audience: community.target_audience || '',
         activity_level: community.activity_level || 'Active',
@@ -604,12 +609,32 @@ export default function LeaderDashboard({ initialCommunityId }) {
       : (typeof editForm.tags === 'string' ? editForm.tags.split(',') : []);
     const cleanedTags = currentTags.map(t => t.trim()).filter(Boolean);
 
+    let finalLat = editForm.lat || null;
+    let finalLng = editForm.lng || null;
+    if (!finalLat || !finalLng) {
+      const parsed = parseLocationCoords(editForm.location_name);
+      if (parsed) {
+        finalLat = parsed.lat;
+        finalLng = parsed.lng;
+      } else if (editForm.location_name) {
+        try {
+          const geo = await geocodeLocation(cleanLocationName(editForm.location_name));
+          if (geo && geo.lat && geo.lng) {
+            finalLat = geo.lat;
+            finalLng = geo.lng;
+          }
+        } catch (e) {}
+      }
+    }
+
     await updateCommunity(community.id, {
       name: editForm.name.trim(),
       category: editForm.category.trim() || cleanedTags[0] || 'General',
       description: editForm.description.trim(),
       tags: cleanedTags,
       location_name: editForm.location_name.trim(),
+      lat: finalLat,
+      lng: finalLng,
       cost: editForm.cost.trim() || 'Free',
       target_audience: editForm.target_audience.trim(),
       activity_level: editForm.activity_level || 'Active',
@@ -725,10 +750,12 @@ export default function LeaderDashboard({ initialCommunityId }) {
 
   const handleEditEvent = (event) => {
     setEditingEventId(event.id);
+    const parsedCoords = parseLocationCoords(event.location);
     setEventForm({
       title: event.title || '', description: event.description || '',
       date: event.date || '', time: event.time || '',
       location: event.location || '',
+      coords: parsedCoords || (event.lat && event.lng ? { lat: event.lat, lng: event.lng } : null),
       maxCapacity: event.maxCapacity ? event.maxCapacity.toString() : '',
       ticketPrice: event.ticketPrice ? event.ticketPrice.toString() : '',
       collabCommunityIds: event.collabCommunityIds || [],
@@ -1002,7 +1029,12 @@ export default function LeaderDashboard({ initialCommunityId }) {
             <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <MapPin size={14} color="#3b82f6" /> Location <span style={{ color: 'var(--rose-400)', fontSize: '0.7rem' }}>*</span>
             </label>
-            <LocationPicker locationName={eventForm.location} setLocationName={(loc) => setEventForm({...eventForm, location: loc})} />
+            <LocationPicker 
+              locationName={eventForm.location} 
+              setLocationName={(loc) => setEventForm(prev => ({...prev, location: loc}))} 
+              coords={eventForm.coords}
+              onCoordsChange={(coords) => setEventForm(prev => ({...prev, coords}))}
+            />
           </div>
         </>
       )}
@@ -3239,31 +3271,30 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   </div>
                 </div>
 
-                {/* 3. Location & Cadence */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                  <div>
-                    <label style={{ display: 'block', marginBottom: '8px', color: 'var(--slate-300)', fontSize: '0.85rem', fontWeight: 600 }}>Location / Area</label>
-                    <input 
-                      type="text" 
-                      placeholder="e.g. Tunbridge Wells, Kent" 
-                      value={editForm.location_name} 
-                      onChange={(e) => setEditForm({ ...editForm, location_name: e.target.value })} 
-                      style={{ width: '100%', padding: '12px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'var(--white)', fontSize: '0.9rem' }} 
-                    />
-                  </div>
-                  <div>
-                    <label style={{ display: 'block', marginBottom: '8px', color: 'var(--slate-300)', fontSize: '0.85rem', fontWeight: 600 }}>How Often? (Cadence)</label>
-                    <select
-                      value={editForm.activity_level}
-                      onChange={(e) => setEditForm({ ...editForm, activity_level: e.target.value })}
-                      style={{ width: '100%', padding: '12px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'var(--white)', fontSize: '0.9rem', appearance: 'none' }}
-                    >
-                      <option value="Very Active">Very Active (Weekly)</option>
-                      <option value="Active">Active (Fortnightly)</option>
-                      <option value="Casual">Casual (Monthly or less)</option>
-                      <option value="Flexible">Flexible / Pop-up</option>
-                    </select>
-                  </div>
+                {/* 3. Cadence */}
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={{ display: 'block', marginBottom: '8px', color: 'var(--slate-300)', fontSize: '0.85rem', fontWeight: 600 }}>How Often? (Cadence)</label>
+                  <select
+                    value={editForm.activity_level}
+                    onChange={(e) => setEditForm({ ...editForm, activity_level: e.target.value })}
+                    style={{ width: '100%', padding: '12px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'var(--white)', fontSize: '0.9rem', appearance: 'none' }}
+                  >
+                    <option value="Very Active">Very Active (Weekly)</option>
+                    <option value="Active">Active (Fortnightly)</option>
+                    <option value="Casual">Casual (Monthly or less)</option>
+                    <option value="Flexible">Flexible / Pop-up</option>
+                  </select>
+                </div>
+
+                {/* 4. Community Region & Coverage Area */}
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={{ display: 'block', marginBottom: '8px', color: 'var(--slate-300)', fontSize: '0.85rem', fontWeight: 600 }}>Community Hub & Region Radius</label>
+                  <CommunityRegionPicker
+                    locationName={editForm.location_name}
+                    setLocationName={(loc) => setEditForm(prev => ({ ...prev, location_name: loc }))}
+                    coords={editForm.lat && editForm.lng ? [Number(editForm.lat), Number(editForm.lng)] : null}
+                    onCoordsChange={(coords) => setEditForm(prev => ({ ...prev, lat: coords[0], lng: coords[1] }))}
+                  />
                 </div>
 
                 {/* 4. Target Audience & Cost */}
