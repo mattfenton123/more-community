@@ -96,7 +96,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
   const [isEditing, setIsEditing] = useState(false);
   const [modalType, setModalType] = useState(null);
   const [editForm, setEditForm] = useState({ 
-    name: '', category: '', description: '', location_name: '', lat: null, lng: null, cost: 'Free', target_audience: '', activity_level: 'Active', tags: [], customTagInput: '', whatsapp_group: '', instagram_handle: '' 
+    name: '', category: '', description: '', location_name: '', lat: null, lng: null, cost: 'Free', target_audience: '', activity_level: 'Active', tags: [], customTagInput: '', website: '', whatsapp_group: '', instagram_handle: '' 
   });
   const [editTagCategory, setEditTagCategory] = useState('All');
   const [activeTab, setActiveTab] = useState(searchParams?.get('tab') || 'overview');
@@ -529,6 +529,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
         activity_level: community.activity_level || 'Active',
         tags: currentTags,
         customTagInput: '',
+        website: community.website || '',
         whatsapp_group: community.whatsapp_group || '',
         instagram_handle: community.instagram_handle || ''
       });
@@ -627,6 +628,32 @@ export default function LeaderDashboard({ initialCommunityId }) {
       }
     }
 
+    // Sanitize and validate website link if provided
+    let cleanWebsite = (editForm.website || '').trim();
+    if (cleanWebsite) {
+      if (!/^https?:\/\//i.test(cleanWebsite)) {
+        cleanWebsite = 'https://' + cleanWebsite;
+      }
+      try {
+        const parsedUrl = new URL(cleanWebsite);
+        if (parsedUrl.protocol !== 'https:' && parsedUrl.protocol !== 'http:') {
+          toast.error('Invalid website', 'Please provide a valid website URL starting with https://');
+          setIsUploading(false);
+          return;
+        }
+        const blockedHosts = ['bit.ly', 'tinyurl.com', 't.co', 'is.gd', 'ow.ly', 'cutt.ly', 'rb.gy'];
+        if (blockedHosts.some(h => parsedUrl.hostname.toLowerCase().includes(h))) {
+          toast.error('Direct link required', 'URL shorteners (e.g. bit.ly, tinyurl) are blocked to protect community members from scams.');
+          setIsUploading(false);
+          return;
+        }
+      } catch (e) {
+        toast.error('Invalid website address', 'Please enter a valid domain (e.g. yourcommunity.co.uk)');
+        setIsUploading(false);
+        return;
+      }
+    }
+
     await updateCommunity(community.id, {
       name: editForm.name.trim(),
       category: editForm.category.trim() || cleanedTags[0] || 'General',
@@ -638,6 +665,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
       cost: editForm.cost.trim() || 'Free',
       target_audience: editForm.target_audience.trim(),
       activity_level: editForm.activity_level || 'Active',
+      website: cleanWebsite,
       whatsapp_group: wa,
       instagram_handle: ig,
       cover_image: coverUrl,
@@ -3250,7 +3278,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                     style={{ width: '100%', padding: '12px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'var(--white)', fontSize: '0.95rem' }} 
                   />
                   <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '8px' }}>
-                    {['⚽ Sports', '🏃 Running', '🚶 Walking', '🧘 Wellness', '⛰️ Adventure', '🎨 Creative', '🍷 Food & Drink', '💻 Tech & Gaming'].map(cat => (
+                    {['⚽ Sports', '🏃 Running', '🚶 Walking', '🐕 Dog Walking', '🧘 Wellness', '⛰️ Adventure', '🎨 Creative', '🍷 Food & Drink', '💻 Tech & Gaming'].map(cat => (
                       <button
                         key={cat}
                         type="button"
@@ -3453,7 +3481,14 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   </div>
                 </div>
 
-                {/* 8. Social Links */}
+                {/* 8. Links & External Website */}
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', color: 'var(--slate-300)', fontSize: '0.9rem', fontWeight: 600 }}>Official Website</label>
+                  <input type="url" placeholder="https://yourgroup.co.uk" value={editForm.website || ''} onChange={(e) => setEditForm({...editForm, website: e.target.value})} style={{ width: '100%', padding: '12px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'var(--white)', fontSize: '0.9rem' }} />
+                  <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--slate-400)', marginTop: '4px' }}>
+                    🔒 Direct HTTPS links only. URL shorteners (bit.ly, etc.) are blocked for member safety.
+                  </span>
+                </div>
                 <div>
                   <label style={{ display: 'block', marginBottom: '8px', color: 'var(--slate-300)', fontSize: '0.9rem', fontWeight: 600 }}>WhatsApp Group Link</label>
                   <input type="url" placeholder="https://chat.whatsapp.com/..." value={editForm.whatsapp_group} onChange={(e) => setEditForm({...editForm, whatsapp_group: e.target.value})} style={{ width: '100%', padding: '12px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'var(--white)', fontSize: '0.9rem' }} />

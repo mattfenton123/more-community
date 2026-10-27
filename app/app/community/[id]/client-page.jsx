@@ -1571,7 +1571,14 @@ export default function CommunityProfile() {
                   </a>
                 )}
                 {community.website && (
-                  <a href={community.website} target="_blank" rel="noreferrer" className="btn btn-outline interactive-press" style={{ flex: 1, padding: '12px', fontSize: '0.85rem', display: 'flex', justifyContent: 'center', gap: '6px', borderRadius: '12px', minWidth: '120px' }}>
+                  <a 
+                    href={community.website.startsWith('http') ? community.website : `https://${community.website}`} 
+                    target="_blank" 
+                    rel="noopener noreferrer nofollow" 
+                    className="btn btn-outline interactive-press" 
+                    style={{ flex: 1, padding: '12px', fontSize: '0.85rem', display: 'flex', justifyContent: 'center', gap: '6px', borderRadius: '12px', minWidth: '120px' }}
+                    title={`Visit official website: ${community.website}`}
+                  >
                     <ExternalLink size={16} /> Website
                   </a>
                 )}

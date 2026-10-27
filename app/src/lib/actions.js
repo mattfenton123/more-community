@@ -585,6 +585,7 @@ export async function updateCommunityAction(communityId, updates, token) {
   if (updates.require_approval !== undefined) dbUpdates.require_approval = updates.require_approval;
   if (updates.external_links !== undefined) dbUpdates.external_links = updates.external_links;
   if (updates.gallery_photos !== undefined) dbUpdates.gallery_photos = updates.gallery_photos;
+  if (updates.website !== undefined) dbUpdates.website = updates.website;
   if (updates.whatsapp_group !== undefined) dbUpdates.whatsapp_group = updates.whatsapp_group;
   if (updates.instagram_handle !== undefined) dbUpdates.instagram_handle = updates.instagram_handle;
   if (updates.location_name !== undefined) dbUpdates.location_name = updates.location_name;

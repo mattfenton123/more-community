@@ -20,7 +20,7 @@ export default function Discover() {
   const [viewMode, setViewMode] = useState('list'); // 'list' or 'map'
   const [sortBy, setSortBy] = useState('trending');
   const [showSwipe, setShowSwipe] = useState(false);
-  const pills = ['All', 'For You', '❤️ Saved', '📍 Nearby', '🔥 Trending', '🚶 Walking', '🏃 Running', '🧘 Wellness', '⛰️ Adventure', '🤝 Volunteering', '🎨 Creative', '💼 Business'];
+  const pills = ['All', 'For You', '❤️ Saved', '📍 Nearby', '🔥 Trending', '🚶 Walking', '🐕 Dog Walking', '🏃 Running', '🧘 Wellness', '⛰️ Adventure', '🤝 Volunteering', '🎨 Creative', '💼 Business'];
   const { communities, user, users, communityMemberships, joinCommunity, isLoading, events, theme, setTheme, saveItem, savedItems, unsaveItem, sponsors, sponsorshipAssignments } = useAppContext();
     const { messages } = useChat();
   const { toast } = useToast();
@@ -110,8 +110,14 @@ export default function Discover() {
       );
     } else {
       list = enrichedCommunities.filter(c => {
-        if (activePill !== 'All' && c.category !== activePill) return false;
-        return true;
+        if (activePill === 'All') return true;
+        if (c.category === activePill || c.tags?.includes(activePill)) return true;
+        if (activePill === '🐕 Dog Walking') {
+          return c.tags?.some(t => t.toLowerCase().includes('dog')) ||
+                 c.name?.toLowerCase().includes('dog') ||
+                 c.description?.toLowerCase().includes('dog');
+        }
+        return false;
       });
     }
     

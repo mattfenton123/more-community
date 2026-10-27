@@ -22,7 +22,7 @@ export default function Discover() {
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState('list'); // 'list' | 'map' | 'swipe'
   const [sortBy, setSortBy] = useState('trending');
-  const pills = ['All', 'For You', '🔥 Trending', '🚶 Walking', '🏃 Running', '🧘 Wellness', '⛰️ Adventure', '🤝 Volunteering', '🎨 Creative', '💼 Business'];
+  const pills = ['All', 'For You', '🔥 Trending', '🚶 Walking', '🐕 Dog Walking', '🏃 Running', '🧘 Wellness', '⛰️ Adventure', '🤝 Volunteering', '🎨 Creative', '💼 Business'];
     const { messages } = useChat();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -130,8 +130,14 @@ export default function Discover() {
       list = [...enrichedCommunities].sort((a, b) => b.activityScore - a.activityScore);
     } else {
       list = enrichedCommunities.filter(c => {
-        if (activePill !== 'All' && c.category !== activePill) return false;
-        return true;
+        if (activePill === 'All') return true;
+        if (c.category === activePill || c.tags?.includes(activePill)) return true;
+        if (activePill === '🐕 Dog Walking') {
+          return c.tags?.some(t => t.toLowerCase().includes('dog')) ||
+                 c.name?.toLowerCase().includes('dog') ||
+                 c.description?.toLowerCase().includes('dog');
+        }
+        return false;
       });
     }
     // Apply geolocation filter

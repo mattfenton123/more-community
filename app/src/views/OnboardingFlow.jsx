@@ -5,7 +5,7 @@ import { useAppContext } from '../context/AppContext';
 import { useToast } from '../components/Toast';
 
 const INTEREST_PILLS = [
-  '🏃 Fitness', '🚶 Walking', '🧘 Wellness', '⛰️ Outdoors',
+  '🏃 Fitness', '🚶 Walking', '🐕 Dog Walking', '🧘 Wellness', '⛰️ Outdoors',
   '🤝 Volunteering', '🎨 Creative', '💼 Professional', '🎵 Music',
   '📚 Book Club', '🍳 Cooking', '🌱 Gardening', '👶 Parenting',
   '🎓 Learning', '🎮 Gaming', '🎭 Theatre & Arts', '🎸 Gigs & Live Music',
@@ -29,6 +29,7 @@ const cleanText = (str) => {
 const INTEREST_SYNONYMS = {
   fitness: ['fitness', 'gym', 'sports', 'running', 'exercise', 'workout', 'training', 'athletics', 'pilates', 'yoga'],
   walking: ['walking', 'hiking', 'walk', 'rambling', 'steps', 'outdoors', 'trails', 'nature'],
+  dogwalking: ['dog', 'dogs', 'puppy', 'puppies', 'pet', 'pets', 'canine', 'dog walking', 'dog walker', 'hound'],
   wellness: ['wellness', 'wellbeing', 'health', 'mental health', 'mindfulness', 'meditation', 'breathing', 'breathwork', 'chill', 'relax', 'peer support'],
   outdoors: ['outdoors', 'outdoor', 'adventure', 'walking', 'hiking', 'nature', 'camping', 'wild'],
   volunteering: ['volunteering', 'volunteer', 'charity', 'community', 'support', 'giving back', 'peer support', 'help'],

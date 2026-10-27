@@ -103,13 +103,13 @@ export const initialExperiences = [
 
 export const COMMUNITY_TAG_CATEGORIES = {
   'Sports & Fitness': [
-    '⚽ Sports', '🏃 Running', '🚶 Walking', '🚴 Cycling', '🎾 Tennis & Padel',
+    '⚽ Sports', '🏃 Running', '🚶 Walking', '🐕 Dog Walking', '🚴 Cycling', '🎾 Tennis & Padel',
     '🏊 Swimming', '🧗 Climbing & Bouldering', '🏋️ Fitness & Gym', '🧘 Yoga & Pilates',
     '🥊 Boxing & Martial Arts', '🏄 Watersports', '⛳ Golf', '🛹 Skate & Roller', '🥾 Hiking'
   ],
   'Social & Lifestyle': [
-    '☕ Coffee & Chat', '🍻 Social Drinks', '🍷 Food & Drink', '🍳 Cooking & Baking',
-    '🐶 Dog Walkers', '👶 Parenting & Families', '🤝 Volunteering', '💬 Discussion & Debates',
+    '☕ Coffee & Chat', '🍻 Social Drinks', '🐕 Dog Walking', '🐶 Dog Walkers', '🍷 Food & Drink', '🍳 Cooking & Baking',
+    '👶 Parenting & Families', '🤝 Volunteering', '💬 Discussion & Debates',
     '🏳️‍🌈 LGBTQ+', '🌱 Vegan & Plant-Based', '✨ Mindfulness & Meditation', '🌟 Chill Vibes'
   ],
   'Arts & Creative': [
@@ -118,7 +118,7 @@ export const COMMUNITY_TAG_CATEGORIES = {
     '🎵 Music & Jamming', '🎤 Choir & Singing', '💃 Dance & Movement'
   ],
   'Outdoors & Nature': [
-    '⛰️ Adventure', '🌲 Trails & Woodlands', '🏕️ Camping', '🌱 Gardening',
+    '⛰️ Adventure', '🌲 Trails & Woodlands', '🐕 Dog Walking', '🏕️ Camping', '🌱 Gardening',
     '🌊 Wild Swimming', '🎣 Angling & Fishing', '🦅 Birdwatching', '🌿 Ecology & Nature'
   ],
   'Tech, Games & Learning': [
