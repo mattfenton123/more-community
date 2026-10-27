@@ -762,11 +762,11 @@ export default function EventClient({ id }) {
               </div>
             )}
 
-            {/* Vibe / Activity Level */}
+            {/* What to Expect / Activity Level */}
             {event.activityLevel && (
               <div style={{ background: 'rgba(255,255,255,0.02)', padding: '20px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
                 <h4 style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--white)', margin: '0 0 12px 0', fontSize: '1.1rem' }}>
-                  <Activity size={18} color="#ec4899" /> Vibe & Level
+                  <Activity size={18} color="#ec4899" /> What to Expect
                 </h4>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <span style={{ padding: '6px 16px', background: 'rgba(236,72,153,0.1)', color: '#f9a8d4', borderRadius: '99px', fontSize: '0.9rem', fontWeight: 600 }}>
