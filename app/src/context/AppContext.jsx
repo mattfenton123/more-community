@@ -1524,7 +1524,6 @@ export function AppProvider({ children }) {
             localStorage.setItem(`more_community_guidelines_${communityId}`, JSON.stringify(updates.guidelines));
           } catch (e) {}
         }
-        delete dbUpdates.guidelines; // Stored client-side until DB migration is run
       }
       // Prevent throwing error for non-existent mock CRM columns
       delete dbUpdates.autoWelcomeEnabled;

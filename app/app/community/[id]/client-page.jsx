@@ -226,6 +226,30 @@ export default function CommunityProfile() {
   const confirmJoinWithGuidelines = async () => {
     setIsJoining(true);
     try {
+      if (Number(community.subscription_price || 0) > 0 && user?.id) {
+        try {
+          const res = await fetch('/api/stripe/checkout', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              type: 'subscription',
+              communityId: community.id,
+              userId: user.id,
+              price: Number(community.subscription_price),
+              title: `${community.name} Membership`,
+              leaderStripeAccountId: community.stripe_account_id || null
+            })
+          });
+          const data = await res.json();
+          if (res.ok && data?.url && !data?.simulated) {
+            window.location.href = data.url;
+            return;
+          }
+        } catch (stripeErr) {
+          console.warn('Stripe subscription checkout fallback:', stripeErr);
+        }
+      }
+
       await joinCommunity(community.id);
       setShowJoinGuidelinesModal(false);
       try {

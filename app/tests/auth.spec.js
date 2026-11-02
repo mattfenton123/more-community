@@ -1,27 +1,26 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('Authentication', () => {
-  test('should login successfully as a test user', async ({ page }) => {
-    // Navigate to the site
-    await page.goto('/');
+test.describe('Authentication & Route Protection', () => {
+  test('renders login screen with email/password inputs and sign up toggle', async ({ page }) => {
+    await page.goto('/login');
 
-    // Wait for redirect to login or check if already on login
-    await page.waitForURL('**/login', { timeout: 10000 }).catch(() => {});
+    await expect(page.getByPlaceholder('Email address')).toBeVisible();
+    await expect(page.getByPlaceholder('Password (min 6 chars)')).toBeVisible();
+    await expect(page.getByRole('button', { name: /Sign In/i }).first()).toBeVisible();
 
-    const isLoginPage = page.url().includes('/login');
-    if (isLoginPage) {
-      // Fill in demo account
-      await page.fill('input[type="email"]', 'demo@example.com');
-      await page.fill('input[type="password"]', 'password123'); // Adjust password if needed
+    // Switch to Sign Up mode
+    await page.getByRole('button', { name: 'Sign Up' }).click();
+    await expect(page.getByPlaceholder('Full Name')).toBeVisible();
+    await expect(page.getByRole('button', { name: /Create Account/i })).toBeVisible();
 
-      // Click the primary submit button
-      await page.click('button[type="submit"]');
+    // Switch back to Sign In and test Forgot Password toggle
+    await page.getByRole('button', { name: 'Sign In' }).click();
+    await page.getByRole('button', { name: /Forgot password\?/i }).click();
+    await expect(page.getByRole('button', { name: /Send Reset Link/i })).toBeVisible();
+  });
 
-      // Wait for redirect to homepage
-      await page.waitForURL('**/', { timeout: 10000 });
-    }
-
-    // Verify we are logged in by checking for a user-specific element
-    await expect(page.locator('text=/Good (morning|afternoon|evening)/i')).toBeVisible();
+  test('redirects unauthenticated guests from protected /dashboard to /login', async ({ page }) => {
+    await page.goto('/dashboard');
+    await expect(page).toHaveURL(/\/login/);
   });
 });

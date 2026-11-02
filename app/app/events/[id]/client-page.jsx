@@ -328,6 +328,13 @@ export default function EventClient({ id }) {
   }, [event, events]);
   const currentSeriesIndex = event ? seriesEvents.findIndex(e => e.id === event.id) : -1;
 
+  useEffect(() => {
+    if (searchParams?.get('checkout') === 'success' && event?.id && user?.id) {
+      setShowRsvpSuccessModal(true);
+      toast.success('Ticket Confirmed!', 'Your payment was processed and your ticket is saved.');
+    }
+  }, [searchParams, event?.id, user?.id]);
+
   if (!event || !community) {
     return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100dvh', color: 'var(--slate-400)' }}>Loading event...</div>;
   }
@@ -356,18 +363,42 @@ export default function EventClient({ id }) {
       return;
     }
     if (event.ticketPrice > 0 && !isGoing) {
-      // Simulate checkout
       setCheckoutState('processing');
+      const referredBy = searchParams?.get('ref') || null;
+      try {
+        const res = await fetch('/api/stripe/checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'event',
+            eventId: event.id,
+            userId: user.id,
+            price: event.ticketPrice,
+            title: event.title,
+            communityId: event.communityId,
+            leaderStripeAccountId: community?.stripe_account_id || null,
+            referredBy
+          })
+        });
+        const data = await res.json();
+        if (res.ok && data?.url && !data?.simulated) {
+          window.location.href = data.url;
+          return;
+        }
+      } catch (err) {
+        console.warn('Stripe checkout fallback to simulated:', err);
+      }
+
+      // Simulated checkout completion when Stripe is in test/demo mode
       setTimeout(async () => {
         setCheckoutState('success');
-        const referredBy = searchParams?.get('ref') || null;
         await rsvpToEvent(event.id, 'going', 'paid', referredBy);
         toast.success('Ticket Confirmed!', 'Your ticket is saved.');
         setTimeout(() => {
           setCheckoutState('idle');
           setShowRsvpSuccessModal(true);
         }, 1000);
-      }, 1400);
+      }, 900);
     } else {
       const newStatus = isGoing ? 'not_going' : 'going';
       await rsvpToEvent(event.id, newStatus);

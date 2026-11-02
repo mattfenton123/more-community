@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { parseEventDateTime } from '../../../../src/lib/calendar';
+import { cleanLocationName } from '../../../../src/lib/location';
+import { sendPushNotificationAction } from '../../../../src/lib/actions';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,8 +24,6 @@ export async function GET(req) {
     }
 
     const now = Date.now();
-    const twentyFourHoursFromNow = now + 24 * 60 * 60 * 1000;
-    const twoHoursFromNow = now + 2 * 60 * 60 * 1000;
 
     // Fetch active upcoming events
     const { data: events, error: eventErr } = await supabase
@@ -42,6 +42,7 @@ export async function GET(req) {
 
       const eventTime = dt.getTime();
       const diffHours = (eventTime - now) / (1000 * 60 * 60);
+      const cleanLoc = cleanLocationName(event.location);
 
       // Determine reminder tier (24h or 2h)
       let reminderType = null;
@@ -51,11 +52,11 @@ export async function GET(req) {
       if (diffHours > 0 && diffHours <= 2.5) {
         reminderType = 'reminder_2h';
         reminderTitle = `⏳ Starting Soon: ${event.title}`;
-        reminderMessage = `${event.title} begins in less than 2 hours! Head to ${event.location || 'the meeting point'}. Looking forward to seeing you.`;
+        reminderMessage = `${event.title} begins in less than 2 hours! Head to ${cleanLoc || 'the meeting point'}. Looking forward to seeing you.`;
       } else if (diffHours > 2.5 && diffHours <= 26) {
         reminderType = 'reminder_24h';
         reminderTitle = `⏰ Tomorrow: ${event.title}`;
-        reminderMessage = `Reminder: ${event.title} is taking place tomorrow at ${event.time || '10:00'}${event.location ? ' at ' + event.location : ''}. Check your digital pass in the app!`;
+        reminderMessage = `Reminder: ${event.title} is taking place tomorrow at ${event.time || '10:00'}${cleanLoc ? ' at ' + cleanLoc : ''}. Check your digital pass in the app!`;
       }
 
       if (!reminderType) continue;
@@ -93,6 +94,11 @@ export async function GET(req) {
 
         if (!insertErr) {
           notificationsCreated++;
+          sendPushNotificationAction(attendee.user_id, {
+            title: reminderTitle,
+            body: reminderMessage,
+            url: `/events/${event.id}`
+          }).catch(() => {});
         }
       }
 
