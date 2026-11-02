@@ -67,15 +67,34 @@ export default function AppHeader({ title, subtitle, rightElement, showBack = fa
           </div>
         )}
       </div>
-      {user && (
+      {user?.id ? (
         <div 
           className="interactive-press" 
-          onClick={() => navigate.push('/profile')}
+          onClick={() => navigate.push(`/profile/${user.id}`)}
           style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
           title="Profile"
         >
           <img src={user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || 'User')}&background=14b8a6&color=fff`} alt={user.name || 'User'} style={{ width: '28px', height: '28px', borderRadius: '50%', border: '2px solid var(--slate-800)', objectFit: 'cover' }} />
         </div>
+      ) : (
+        <button
+          onClick={() => navigate.push('/login')}
+          className="interactive-press"
+          style={{
+            padding: '5px 10px',
+            borderRadius: '999px',
+            background: 'rgba(255, 255, 255, 0.06)',
+            border: '1px solid rgba(255, 255, 255, 0.12)',
+            color: 'var(--slate-200)',
+            fontSize: '0.75rem',
+            fontWeight: 600,
+            cursor: 'pointer',
+            whiteSpace: 'nowrap',
+            flexShrink: 0
+          }}
+        >
+          Sign In
+        </button>
       )}
     </div>
   );

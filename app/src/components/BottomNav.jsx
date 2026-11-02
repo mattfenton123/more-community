@@ -64,7 +64,7 @@ export default function BottomNav() {
     { id: 'chat', label: 'Chat', icon: MessageCircle, href: '/chat', badge: unreadChatCount },
     ...(user?.isAdmin ? [{ id: 'admin', label: 'Admin', icon: Shield, href: '/admin' }] : []),
     { id: 'leader', label: isLeader ? 'Leader' : 'Start', icon: Shield, href: isLeader ? '/dashboard' : '/create-community' },
-    { id: 'profile', label: 'Profile', icon: User, href: `/profile/${user?.id || ''}` },
+    { id: 'profile', label: 'Profile', icon: User, href: user?.id ? `/profile/${user.id}` : '/login' },
   ];
 
   return (

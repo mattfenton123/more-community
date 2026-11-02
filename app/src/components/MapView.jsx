@@ -71,7 +71,7 @@ const KNOWN_LOCATIONS = [
   { name: 'groombridge', lat: 51.1189, lng: 0.1878 },
   { name: 'penshurst place', lat: 51.1744, lng: 0.1828 },
   { name: 'penshurst', lat: 51.1744, lng: 0.1828 },
-  { name: 'haysden country park', lat: 51.1895, lon: 0.2520 },
+  { name: 'haysden country park', lat: 51.1895, lng: 0.2520 },
   { name: 'tonbridge castle', lat: 51.1965, lng: 0.2740 },
   { name: 'tonbridge', lat: 51.1965, lng: 0.2740 },
   { name: 'sevenoaks', lat: 51.2720, lng: 0.1880 },

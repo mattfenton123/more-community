@@ -1,4 +1,5 @@
 import { supabase } from '../../../src/lib/supabaseClient';
+import { cleanLocationName } from '../../../src/lib/location';
 import CommunityClient from './client-page';
 
 // Next.js 15 requires params to be awaited
@@ -24,7 +25,7 @@ export async function generateMetadata({ params }) {
   ogUrl.searchParams.set('title', community.name);
   ogUrl.searchParams.set('community', 'More Community');
   ogUrl.searchParams.set('type', 'community');
-  if (community.location || community.location_name) ogUrl.searchParams.set('location', community.location || community.location_name);
+  if (community.location || community.location_name) ogUrl.searchParams.set('location', cleanLocationName(community.location || community.location_name));
   if (community.members) ogUrl.searchParams.set('members', `${community.members} members`);
   const image = community.image || community.cover_image;
   if (image) {

@@ -339,7 +339,7 @@ export default function EventClient({ id }) {
   const isMember = user?.joinedCommunities?.includes(event.communityId);
 
   const handleJoinAndRSVP = async () => {
-    if (!user) {
+    if (!user?.id) {
       router.push(`/login?redirect=/events/${id}`);
       return;
     }
@@ -351,7 +351,7 @@ export default function EventClient({ id }) {
   };
 
   const handleRSVP = async () => {
-    if (!user) {
+    if (!user?.id) {
       router.push(`/login?redirect=/events/${id}`);
       return;
     }
@@ -877,21 +877,21 @@ export default function EventClient({ id }) {
                   </button>
                 )}
                 <button  
-                  onClick={!user ? () => router.push(`/login?redirect=/events/${id}`) : (!isMember && !isGoing ? handleJoinAndRSVP : handleRSVP)}
-                disabled={checkoutState === 'processing' || (spotsLeft === 0 && !isGoing && user)}
+                  onClick={!user?.id ? () => router.push(`/login?redirect=/events/${id}`) : (!isMember && !isGoing ? handleJoinAndRSVP : handleRSVP)}
+                disabled={checkoutState === 'processing' || (spotsLeft === 0 && !isGoing && Boolean(user?.id))}
                 className="interactive-press"
                 style={{ 
                   background: isGoing ? 'rgba(255,255,255,0.1)' : 'var(--teal-500)', 
                   color: isGoing ? 'var(--white)' : '#0f172a', 
                   border: isGoing ? '1px solid rgba(255,255,255,0.2)' : 'none',
                   padding: '12px 32px', borderRadius: '99px', fontSize: '1rem', fontWeight: 700, 
-                  cursor: (checkoutState === 'processing' || (spotsLeft === 0 && !isGoing && user)) ? 'not-allowed' : 'pointer',
-                  opacity: (checkoutState === 'processing' || (spotsLeft === 0 && !isGoing && user)) ? 0.7 : 1,
+                  cursor: (checkoutState === 'processing' || (spotsLeft === 0 && !isGoing && Boolean(user?.id))) ? 'not-allowed' : 'pointer',
+                  opacity: (checkoutState === 'processing' || (spotsLeft === 0 && !isGoing && Boolean(user?.id))) ? 0.7 : 1,
                   display: 'flex', alignItems: 'center', gap: '8px',
                   minWidth: '140px', justifyContent: 'center'
                 }}
               >
-                {!user ? (event.ticketPrice > 0 ? 'Sign In to Buy Ticket' : 'Sign In to RSVP') :
+                {!user?.id ? (event.ticketPrice > 0 ? 'Sign In to Buy Ticket' : 'Sign In to RSVP') :
                  checkoutState === 'processing' ? 'Processing...' : 
                  isGoing ? 'Cancel RSVP' : 
                  spotsLeft === 0 ? 'Sold Out' :

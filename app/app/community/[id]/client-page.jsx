@@ -116,7 +116,7 @@ export default function CommunityProfile() {
   const community = communities.find(c => c.id === communityId);
 
   useEffect(() => {
-    if (user && !user?.joinedCommunities?.includes(communityId) && autoJoinParam === 'true') {
+    if (user?.id && !user?.joinedCommunities?.includes(communityId) && autoJoinParam === 'true') {
       setShowJoinGuidelinesModal(true);
       toast.info('Almost there!', 'Review the community guidelines to finish joining.');
     }
@@ -126,13 +126,17 @@ export default function CommunityProfile() {
     return <div style={{ padding: '40px', color: 'var(--white)', textAlign: 'center' }}>Loading...</div>;
   }
 
-  const isMember = Boolean(user?.joinedCommunities?.includes(communityId));
-  const isLeader = community.leader_id === user?.id || 
-                   community.creator_id === user?.id ||
-                   community.creatorId === user?.id ||
-                   user?.ledCommunities?.includes(communityId) || 
-                   user?.isAdmin ||
-                   (communityMemberships[communityId] || []).some(m => (m.userId === user?.id || m.user_id === user?.id) && (m.role === 'co-founder' || m.role === 'Leader' || m.role === 'Co-Leader' || m.role === 'Admin'));
+  const isMember = Boolean(user?.id && user?.joinedCommunities?.includes(communityId));
+  const isLeader = Boolean(
+    user?.id && (
+      (community.leader_id && community.leader_id === user.id) ||
+      (community.creator_id && community.creator_id === user.id) ||
+      (community.creatorId && community.creatorId === user.id) ||
+      user.ledCommunities?.includes(communityId) ||
+      user.isAdmin ||
+      (communityMemberships[communityId] || []).some(m => (m.userId === user.id || m.user_id === user.id) && (m.role === 'co-founder' || m.role === 'Leader' || m.role === 'Co-Leader' || m.role === 'Admin'))
+    )
+  );
   const communityEvents = events.filter(e => e.communityId === communityId || e.collabCommunityIds?.includes(communityId));
   const upcomingEvents = communityEvents
     .filter(e => isEventUpcoming(e) && e.status !== 'cancelled')
@@ -204,7 +208,7 @@ export default function CommunityProfile() {
   };
 
   const handleJoinLeave = async () => {
-    if (!user) {
+    if (!user?.id) {
       navigate.push(`/login?redirect=${encodeURIComponent(`/community/${communityId}?autoJoin=true`)}&mode=signup`);
       return;
     }
@@ -373,13 +377,23 @@ export default function CommunityProfile() {
           </div>
           <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
             <button 
-              onClick={() => {
+              onClick={async () => {
+                if (!user?.id) {
+                  navigate.push(`/login?redirect=/community/${community.id}`);
+                  return;
+                }
                 if (window.confirm('Are you sure you want to flag this community for review?')) {
-                  import('../../../src/lib/actions').then(m => {
-                    m.flagCommunityAction(community.id).then(() => {
-                      toast.success('Community Flagged', 'Our moderation team will review this community.');
-                    }).catch(err => toast.error('Error', err.message));
-                  });
+                  try {
+                    const [{ flagCommunityAction }, { supabase }] = await Promise.all([
+                      import('../../../src/lib/actions'),
+                      import('../../../src/lib/supabaseClient')
+                    ]);
+                    const { data: sessionData } = await supabase.auth.getSession();
+                    await flagCommunityAction(community.id, 'Flagged by user', sessionData?.session?.access_token);
+                    toast.success('Community Flagged', 'Our moderation team will review this community.');
+                  } catch (err) {
+                    toast.error('Error', err.message || 'Could not flag community.');
+                  }
                 }
               }} 
               className="interactive-press" 
@@ -445,7 +459,7 @@ export default function CommunityProfile() {
           
           {/* Meta strip */}
           <div style={{ display: 'flex', gap: '16px', fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)', marginBottom: '16px', flexWrap: 'wrap' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><MapPin size={14} /> {community.location_name || 'Tunbridge Wells'}</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><MapPin size={14} /> {cleanLocationName(community.location_name) || 'Tunbridge Wells'}</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Users size={14} /> {community.members || memberList.length || 1} members</span>
             {community.activity_level && (
               <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Activity size={14} color="var(--teal-400)" /> {community.activity_level === 'Very Active' ? 'Very Active (Weekly)' : community.activity_level === 'Active' ? 'Active (Fortnightly)' : community.activity_level === 'Casual' ? 'Casual (Monthly)' : community.activity_level}</span>
@@ -494,7 +508,7 @@ export default function CommunityProfile() {
                     style={{ position: 'relative', zIndex: 100, width: '100%', padding: '16px', fontSize: '1.05rem', fontWeight: 700, borderRadius: '14px', boxShadow: '0 8px 24px rgba(20,184,166,0.3)', cursor: 'pointer' }}
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleJoinLeave(); }}
                   >
-                    {!user ? (isPaid ? `Sign In to Join — £${subPrice}/month` : 'Sign In to Join (Free)') :
+                    {!user?.id ? (isPaid ? `Sign In to Join — £${subPrice}/month` : 'Sign In to Join (Free)') :
                      isPaid ? `Join — £${subPrice}/month` : 'Join this Community — it\'s free'}
                   </button>
                 )}
@@ -731,9 +745,9 @@ export default function CommunityProfile() {
                       </div>
                     )}
                     <div style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <img onClick={() => author && navigate(`/profile/${author.id}`)} src={author?.avatar || 'https://i.pravatar.cc/40'} alt={author?.name} style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', cursor: author ? 'pointer' : 'default' }} />
+                      <img onClick={() => author && navigate.push(`/profile/${author.id}`)} src={author?.avatar || 'https://i.pravatar.cc/40'} alt={author?.name} style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', cursor: author ? 'pointer' : 'default' }} />
                       <div style={{ flex: 1 }}>
-                        <div onClick={() => author && navigate(`/profile/${author.id}`)} style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '6px', cursor: author ? 'pointer' : 'default' }}>
+                        <div onClick={() => author && navigate.push(`/profile/${author.id}`)} style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '6px', cursor: author ? 'pointer' : 'default' }}>
                           {author?.name || 'Community Leader'}
                           {post.text?.includes('💡 **SUGGESTION:**') && (
                             <span style={{ fontSize: '0.65rem', background: 'rgba(234,179,8,0.2)', color: 'var(--yellow-400)', padding: '2px 6px', borderRadius: '6px', fontWeight: 700, textTransform: 'uppercase' }}>Idea</span>
@@ -1345,7 +1359,7 @@ export default function CommunityProfile() {
                   <MapPin size={20} />
                 </div>
                 <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px', letterSpacing: '0.05em' }}>Location</div>
-                <div style={{ fontSize: '0.9rem', color: 'var(--white)', fontWeight: 500, lineHeight: 1.4 }}>{community.location_name || 'Tunbridge Wells, Kent'}</div>
+                <div style={{ fontSize: '0.9rem', color: 'var(--white)', fontWeight: 500, lineHeight: 1.4 }}>{cleanLocationName(community.location_name) || 'Tunbridge Wells, Kent'}</div>
               </div>
             </div>
 

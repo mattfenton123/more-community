@@ -1,6 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 import { initialExperiences } from '../../../../src/lib/constants';
 import { parseEventDateTime } from '../../../../src/lib/calendar';
+import { cleanLocationName } from '../../../../src/lib/location';
+import { getEventUrl } from '../../../../src/lib/eventLinks';
 
 export const dynamic = 'force-dynamic';
 
@@ -84,7 +86,7 @@ export async function GET(request, { params }) {
     const startTime = parseEventDateTime(event.date, event.time) || new Date(event.date);
     // Default duration 2 hours
     const endTime = new Date(startTime.getTime() + 2 * 60 * 60 * 1000);
-    const eventUrl = `${baseUrl}/events/${event.id}`;
+    const eventUrl = getEventUrl(event, { allEvents: events, origin: baseUrl });
 
     lines.push('BEGIN:VEVENT');
     lines.push(`UID:more-${event.id}@morecommunity.app`);
@@ -102,7 +104,7 @@ export async function GET(request, { params }) {
     
     lines.push(`DESCRIPTION:${escapeIcsText(desc)}`);
     if (event.location) {
-      lines.push(`LOCATION:${escapeIcsText(event.location)}`);
+      lines.push(`LOCATION:${escapeIcsText(cleanLocationName(event.location))}`);
     }
     lines.push(`URL:${eventUrl}`);
     lines.push('STATUS:CONFIRMED');

@@ -68,7 +68,7 @@ export function AuthProvider({ children }) {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: window.location.origin + import.meta.env.BASE_URL,
+        redirectTo: typeof window !== 'undefined' ? window.location.origin : undefined,
       }
     });
     return { error };
@@ -78,7 +78,7 @@ export function AuthProvider({ children }) {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'apple',
       options: {
-        redirectTo: window.location.origin + import.meta.env.BASE_URL,
+        redirectTo: typeof window !== 'undefined' ? window.location.origin : undefined,
       }
     });
     return { error };
@@ -88,14 +88,14 @@ export function AuthProvider({ children }) {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'facebook',
       options: {
-        redirectTo: window.location.origin + import.meta.env.BASE_URL,
+        redirectTo: typeof window !== 'undefined' ? window.location.origin : undefined,
       }
     });
     return { error };
   };
 
   const resetPassword = async (email) => {
-    const redirectTo = typeof window !== 'undefined' ? `${window.location.origin}/app/update-password` : undefined;
+    const redirectTo = typeof window !== 'undefined' ? `${window.location.origin}/update-password` : undefined;
     const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo,
     });

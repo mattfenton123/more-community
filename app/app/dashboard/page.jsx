@@ -1177,7 +1177,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.95rem', marginBottom: '2px' }}>{eventForm.title}</div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                     {eventForm.time && <span>🕐 {eventForm.time}</span>}
-                    {eventForm.location && <span>📍 {eventForm.location}</span>}
+                    {eventForm.location && <span>📍 {cleanLocationName(eventForm.location)}</span>}
                     {eventForm.ticketPrice && parseFloat(eventForm.ticketPrice) > 0 ? <span>💷 £{eventForm.ticketPrice}</span> : <span>🎟️ Free</span>}
                   </div>
                 </div>
@@ -1920,7 +1920,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                       <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '1rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{stats.nextEvent.title}</div>
                       <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', display: 'flex', gap: '8px', marginTop: '2px' }}>
                         <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}><Clock size={11} /> {stats.nextEvent.time}</span>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}><MapPin size={11} /> {stats.nextEvent.location}</span>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}><MapPin size={11} /> {cleanLocationName(stats.nextEvent.location)}</span>
                       </div>
                     </div>
                     <ChevronRight size={18} color="var(--teal-400)" />
@@ -2194,7 +2194,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                                 {/* Meta row */}
                                 <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', fontSize: '0.75rem', color: 'var(--slate-400)', marginBottom: '6px' }}>
                                   <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}><Clock size={11} /> {event.time}</span>
-                                  <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}><MapPin size={11} /> {event.location}</span>
+                                  <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}><MapPin size={11} /> {cleanLocationName(event.location)}</span>
                                 </div>
                                 
                                 {/* Stats row */}
@@ -2410,7 +2410,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                               <>
                                 <span>•</span>
                                 <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                  <MapPin size={12} /> {event.location}
+                                  <MapPin size={12} /> {cleanLocationName(event.location)}
                                 </span>
                               </>
                             )}

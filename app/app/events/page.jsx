@@ -214,8 +214,9 @@ export default function EventsHub() {
     }
     const endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000);
 
+    const cleanLoc = cleanLocationName(selectedEvent.location || '') || 'TBA';
     const title = encodeURIComponent(selectedEvent.title);
-    const location = encodeURIComponent(selectedEvent.location || 'TBA');
+    const location = encodeURIComponent(cleanLoc);
     const description = encodeURIComponent(`Hosted by ${selectedEvent.communityName || 'more.'}\n\nJoin us at ${window.location.href}`);
 
     if (type === 'google') {
@@ -233,7 +234,7 @@ export default function EventsHub() {
         `DTEND:${formatIcsDate(endDate)}`,
         `SUMMARY:${selectedEvent.title}`,
         `DESCRIPTION:Hosted by ${selectedEvent.communityName}.`,
-        `LOCATION:${selectedEvent.location || ''}`,
+        `LOCATION:${cleanLoc}`,
         "END:VEVENT",
         "END:VCALENDAR"
       ].join('\\n');

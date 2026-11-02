@@ -2,6 +2,7 @@ import EventClient from './client-page';
 import { initialExperiences } from '../../../src/lib/constants';
 import { supabase } from '../../../src/lib/supabaseClient';
 import { formatEventDate } from '../../../src/lib/recurrence';
+import { cleanLocationName } from '../../../src/lib/location';
 import { SITE_ORIGIN, getEventUrl, eventMatchesSlug, isUuidLike, parseSlugDate } from '../../../src/lib/eventLinks';
 
 const EVENT_SELECT = '*, communities(name, image)';
@@ -68,7 +69,7 @@ export async function generateMetadata({ params }) {
   ogUrl.searchParams.set('community', communityName);
   ogUrl.searchParams.set('type', 'event');
   ogUrl.searchParams.set('date', event.date ? `${formatEventDate(event.date)}${event.time ? ` at ${event.time}` : ''}` : (event.duration || ''));
-  if (event.location) ogUrl.searchParams.set('location', event.location);
+  if (event.location) ogUrl.searchParams.set('location', cleanLocationName(event.location));
   const eventImg = event.image || event.communities?.image;
   if (eventImg) {
     ogUrl.searchParams.set('image', eventImg.startsWith('http') ? eventImg : `${baseUrl}${eventImg}`);

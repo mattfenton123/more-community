@@ -539,8 +539,9 @@ export function AppProvider({ children }) {
                 const notifKey = `more_reminded_24h_${e.id}_${authUser.id}`;
                 if (typeof window !== 'undefined' && !localStorage.getItem(notifKey)) {
                   localStorage.setItem(notifKey, 'true');
+                  const cleanLoc = e.location ? String(e.location).replace(/\s*•\s*@-?\d+\.?\d*,-?\d+\.?\d*/g, '').replace(/\s*\[r=\d+\.?\d*km\]/gi, '').trim() : '';
                   const title = `⏰ Reminder: ${e.title} is coming up!`;
-                  const message = `Get ready! ${e.title} takes place ${e.time ? 'at ' + e.time : 'tomorrow'}${e.location ? ' at ' + e.location : ''}. See you there!`;
+                  const message = `Get ready! ${e.title} takes place ${e.time ? 'at ' + e.time : 'tomorrow'}${cleanLoc ? ' at ' + cleanLoc : ''}. See you there!`;
                   
                   showSafeNotification(title, { body: message });
 
@@ -765,6 +766,7 @@ export function AppProvider({ children }) {
   };
 
   const joinCommunity = async (communityId) => {
+    if (!user?.id) throw new Error("Please sign in to join a community");
     if (user.joinedCommunities.includes(communityId)) return;
     
     // Optimistic update

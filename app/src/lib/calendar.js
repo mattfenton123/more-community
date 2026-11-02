@@ -1,6 +1,11 @@
+import { cleanLocationName } from './location';
+import { getEventUrl } from './eventLinks';
+
 export function downloadIcs(event, communityName) {
   const startTime = parseDateTime(event.date, event.time);
   const endTime = new Date(startTime.getTime() + 2 * 60 * 60 * 1000); // Assume 2 hours duration
+  const cleanLoc = cleanLocationName(event.location || '');
+  const eventUrl = getEventUrl(event);
 
   const formatDate = (date) => {
     return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
@@ -16,8 +21,8 @@ export function downloadIcs(event, communityName) {
     `DTSTART:${formatDate(startTime)}`,
     `DTEND:${formatDate(endTime)}`,
     `SUMMARY:${event.title} - ${communityName}`,
-    `DESCRIPTION:${event.description || ''}\\n\\nView on more.: https://www.morecommunity.app/events/${event.id}`,
-    `LOCATION:${event.location || ''}`,
+    `DESCRIPTION:${event.description || ''}\\n\\nView on more.: ${eventUrl}`,
+    `LOCATION:${cleanLoc}`,
     'END:VEVENT',
     'END:VCALENDAR'
   ].join('\r\n');
@@ -47,18 +52,22 @@ export function getGoogleCalendarEventUrl(event, communityName) {
   const formatDate = (date) => date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
   const startStr = formatDate(startTime);
   const endStr = formatDate(endTime);
+  const eventUrl = getEventUrl(event);
+  const cleanLoc = cleanLocationName(event.location || '');
   const title = encodeURIComponent(`${event.title} - ${communityName || 'more. Community'}`);
-  const details = encodeURIComponent(`${event.description || ''}\n\nJoin on more.: https://www.morecommunity.app/events/${event.id}`);
-  const location = encodeURIComponent(event.location || '');
+  const details = encodeURIComponent(`${event.description || ''}\n\nJoin on more.: ${eventUrl}`);
+  const location = encodeURIComponent(cleanLoc);
   return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startStr}/${endStr}&details=${details}&location=${location}`;
 }
 
 export function getWhatsAppShareUrl(event, communityName) {
+  const eventUrl = getEventUrl(event);
+  const cleanLoc = cleanLocationName(event.location || '') || 'Location on map';
   const text = encodeURIComponent(
     `Hey everyone! I'm attending ${event.title}${communityName ? ` with ${communityName}` : ''}! 🎉\n\n` +
     `📅 ${event.date} at ${event.time || '10:00'}\n` +
-    `📍 ${event.location || 'Location on map'}\n\n` +
-    `Come join me: https://www.morecommunity.app/events/${event.id}`
+    `📍 ${cleanLoc}\n\n` +
+    `Come join me: ${eventUrl}`
   );
   return `https://api.whatsapp.com/send?text=${text}`;
 }

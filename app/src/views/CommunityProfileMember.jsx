@@ -116,13 +116,17 @@ export default function CommunityProfile() {
     return <div style={{ padding: '40px', color: 'var(--white)', textAlign: 'center' }}>Loading...</div>;
   }
 
-  const isMember = user.joinedCommunities.includes(communityId);
-  const isLeader = community.leader_id === user?.id || 
-                   community.creator_id === user?.id ||
-                   community.creatorId === user?.id ||
-                   user?.ledCommunities?.includes(communityId) || 
-                   user?.isAdmin ||
-                   (communityMemberships[communityId] || []).some(m => (m.userId === user?.id || m.user_id === user?.id) && (m.role === 'co-founder' || m.role === 'Leader' || m.role === 'Co-Leader' || m.role === 'Admin'));
+  const isMember = Boolean(user?.id && user?.joinedCommunities?.includes(communityId));
+  const isLeader = Boolean(
+    user?.id && (
+      (community.leader_id && community.leader_id === user.id) ||
+      (community.creator_id && community.creator_id === user.id) ||
+      (community.creatorId && community.creatorId === user.id) ||
+      user.ledCommunities?.includes(communityId) ||
+      user.isAdmin ||
+      (communityMemberships[communityId] || []).some(m => (m.userId === user.id || m.user_id === user.id) && (m.role === 'co-founder' || m.role === 'Leader' || m.role === 'Co-Leader' || m.role === 'Admin'))
+    )
+  );
   const communityEvents = events.filter(e => e.communityId === communityId);
   const upcomingEvents = communityEvents
     .filter(e => isEventUpcoming(e))

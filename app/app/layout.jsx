@@ -82,6 +82,7 @@ function MainLayout({ children }) {
     currentPath?.startsWith('/events/') ||
     currentPath?.startsWith('/community/') ||
     currentPath?.startsWith('/legal/') ||
+    currentPath === '/experiences' ||
     currentPath?.startsWith('/sponsors/') ||
     currentPath?.startsWith('/experiences/')
   );
