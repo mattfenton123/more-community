@@ -212,7 +212,6 @@ export default function HomeFeed() {
         }
         return null;
       })()}
-      </div>
     </div>
   );
 }

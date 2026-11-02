@@ -1,11 +1,12 @@
 {
-  "gradle.nestedProjects": [
-    "app/android"
-  ],
+  "gradle.autoDetect": "off",
+  "gradle.nestedProjects": [],
+  "java.import.gradle.enabled": false,
+  "java.gradle.buildServer.enabled": "off",
   "java.import.exclusions": [
     "**/node_modules/**",
+    "**/android/**",
     "**/.git/**",
     "**/.next/**"
-  ],
-  "java.import.gradle.java.home": "C:\\Program Files\\Android\\Android Studio\\jbr"
+  ]
 }
