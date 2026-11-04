@@ -13,27 +13,25 @@ export default function SpecialistVaultModal({ isOpen, onClose, specialist, mode
     tradingName: '',
     email: '',
     phone: '',
-    region: 'Kent & South East',
+    region: '',
     bio: '',
     website: '',
-    ngbBody: 'Mountain Training UK (MLT)',
-    ngbNumber: '',
-    insurer: 'Hiscox UK',
+    category: 'Outdoor & Adventure',
+    qualifications: '',
+    hasInsurance: true,
+    insurer: '',
     policyNumber: '',
-    coverAmount: '£5,000,000',
-    policyExpiry: '2027-11-01',
-    firstAidDate: '2025-06-12',
-    dbsNumber: '',
+    safetyNotes: '',
     pitchTitle: '',
     pitchCategory: 'Outdoor Skills & Hiking',
     pitchSummary: '',
-    duration: '3 hours',
-    maxCapacity: '12',
-    standardRrp: '35',
-    communityPrice: '22',
+    duration: '2 hours',
+    maxCapacity: '15',
+    standardRrp: '30',
+    communityPrice: '20',
     communityCut: '3.50',
-    equipmentProvided: 'Compasses, OS 1:25k laminated maps',
-    memberNeeds: 'Walking boots, headtorch, warm layers'
+    equipmentProvided: '',
+    memberNeeds: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -331,7 +329,7 @@ export default function SpecialistVaultModal({ isOpen, onClose, specialist, mode
                     Application &amp; Pitch Received!
                   </h3>
                   <p style={{ color: 'var(--slate-300)', fontSize: '0.9rem', maxWidth: '480px', margin: '0 auto 24px auto', lineHeight: 1.5 }}>
-                    Thank you, {formData.fullName}. Our trust and safety team will verify your {formData.ngbBody} qualification and £5M insurance policy number within 48 hours.
+                    Thank you, {formData.fullName}. Your proposed session has been delivered directly to the community leader's dashboard inbox. They will review your pitch and date proposal.
                   </p>
                   <div style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '14px', padding: '16px', maxWidth: '440px', margin: '0 auto 24px auto', textAlign: 'left' }}>
                     <div style={{ fontSize: '0.8rem', color: 'var(--teal-400)', fontWeight: 600, textTransform: 'uppercase' }}>Queued Pitch</div>
@@ -353,9 +351,9 @@ export default function SpecialistVaultModal({ isOpen, onClose, specialist, mode
                   {/* Step indicators */}
                   <div style={{ display: 'flex', gap: '8px', borderBottom: '1px solid rgba(255, 255, 255, 0.08)', paddingBottom: '16px' }}>
                     {[
-                      { num: 1, title: 'Profile & Region' },
-                      { num: 2, title: 'NGB & Insurance' },
-                      { num: 3, title: 'Activity Pitch & Economics' }
+                      { num: 1, title: 'Profile & Links' },
+                      { num: 2, title: 'Background & Safety' },
+                      { num: 3, title: 'Session & Economics' }
                     ].map(s => (
                       <button
                         type="button"
@@ -463,92 +461,82 @@ export default function SpecialistVaultModal({ isOpen, onClose, specialist, mode
                           className="btn btn-primary"
                           style={{ padding: '8px 18px', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}
                         >
-                          Next: NGB &amp; Insurance <ChevronRight size={16} />
+                          Next: Background &amp; Safety <ChevronRight size={16} />
                         </button>
                       </div>
                     </div>
                   )}
 
-                  {/* Step 2: NGB & Insurance */}
+                  {/* Step 2: Background, Qualifications & Safety */}
                   {step === 2 && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                       <div style={{ background: 'rgba(20, 184, 166, 0.05)', border: '1px solid rgba(45, 212, 191, 0.2)', padding: '12px 14px', borderRadius: '12px', fontSize: '0.82rem', color: 'var(--teal-200)', lineHeight: 1.4 }}>
-                        🔒 <strong>The Anti-Spam Guarantee:</strong> More Community leaders only see proposals from verified, insured professionals with £5M+ active Public Liability cover.
+                        ✨ <strong>Leader Autonomy:</strong> Community leaders review all proposals directly. Tell them about your background, any qualifications or experience you hold, and how you keep sessions safe.
                       </div>
 
-                      <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '12px' }}>
-                        <div>
-                          <label style={{ fontSize: '0.8rem', color: 'var(--slate-300)', display: 'block', marginBottom: '6px' }}>Accrediting NGB / Body *</label>
-                          <select
-                            value={formData.ngbBody}
-                            onChange={(e) => setFormData({ ...formData, ngbBody: e.target.value })}
-                            style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', background: 'var(--slate-800)', border: '1px solid rgba(255, 255, 255, 0.1)', color: '#fff', fontSize: '0.9rem' }}
-                          >
-                            <option value="Mountain Training UK (MLT)">Mountain Training UK (Summer/Winter ML)</option>
-                            <option value="British Cycling Coach">British Cycling (L2/L3 Coach / MTB Leader)</option>
-                            <option value="CIMSPA Fitness / Yoga Coach">CIMSPA Movement &amp; Fitness Professional</option>
-                            <option value="Association of Foragers (AoF)">Association of Foragers (AoF)</option>
-                            <option value="HCPC Chartered Physiotherapy">HCPC Registered Physiotherapist</option>
-                            <option value="Forest School Association">Forest School Association Leader</option>
-                            <option value="Other Accredited Body">Other Accredited Body</option>
-                          </select>
-                        </div>
-                        <div>
-                          <label style={{ fontSize: '0.8rem', color: 'var(--slate-300)', display: 'block', marginBottom: '6px' }}>Registration / License ID *</label>
-                          <input 
-                            required
-                            type="text"
-                            placeholder="e.g. MLT-49102"
-                            value={formData.ngbNumber}
-                            onChange={(e) => setFormData({ ...formData, ngbNumber: e.target.value })}
-                            style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.1)', color: '#fff', fontSize: '0.9rem' }}
-                          />
-                        </div>
+                      <div>
+                        <label style={{ fontSize: '0.8rem', color: 'var(--slate-300)', display: 'block', marginBottom: '6px' }}>Session Discipline / Category *</label>
+                        <select
+                          value={formData.category}
+                          onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                          style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', background: 'var(--slate-800)', border: '1px solid rgba(255, 255, 255, 0.1)', color: '#fff', fontSize: '0.9rem' }}
+                        >
+                          <option value="Outdoor &amp; Adventure">Outdoor, Hiking &amp; Navigation</option>
+                          <option value="Fitness &amp; Movement">Fitness, Running &amp; Movement</option>
+                          <option value="Mind &amp; Breathwork">Mindfulness, Breathwork &amp; Yoga</option>
+                          <option value="Nature &amp; Foraging">Nature, Foraging &amp; Ecology</option>
+                          <option value="Creative &amp; Photography">Photography, Art &amp; Creative Skills</option>
+                          <option value="Dog Training &amp; Agility">Dog Training, Behaviour &amp; Agility</option>
+                          <option value="Food &amp; Craft">Food, Coffee &amp; Craft Tasters</option>
+                          <option value="Other Experience">Other Local Workshop or Experience</option>
+                        </select>
                       </div>
 
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                        <div>
-                          <label style={{ fontSize: '0.8rem', color: 'var(--slate-300)', display: 'block', marginBottom: '6px' }}>Commercial Insurer *</label>
-                          <input 
-                            required
-                            type="text"
-                            placeholder="e.g. Hiscox / Balens / Zurich"
-                            value={formData.insurer}
-                            onChange={(e) => setFormData({ ...formData, insurer: e.target.value })}
-                            style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.1)', color: '#fff', fontSize: '0.9rem' }}
-                          />
-                        </div>
-                        <div>
-                          <label style={{ fontSize: '0.8rem', color: 'var(--slate-300)', display: 'block', marginBottom: '6px' }}>PLI Policy Number *</label>
-                          <input 
-                            required
-                            type="text"
-                            placeholder="e.g. HX-994218"
-                            value={formData.policyNumber}
-                            onChange={(e) => setFormData({ ...formData, policyNumber: e.target.value })}
-                            style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.1)', color: '#fff', fontSize: '0.9rem' }}
-                          />
-                        </div>
+                      <div>
+                        <label style={{ fontSize: '0.8rem', color: 'var(--slate-300)', display: 'block', marginBottom: '6px' }}>
+                          Qualifications, Certifications or Practical Experience (Optional)
+                        </label>
+                        <textarea 
+                          rows={2}
+                          placeholder="e.g. Mountain Leader (Summer ML), British Athletics Coach, Yoga Alliance 200hr, or 8 years self-taught foraging experience..."
+                          value={formData.qualifications}
+                          onChange={(e) => setFormData({ ...formData, qualifications: e.target.value })}
+                          style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.1)', color: '#fff', fontSize: '0.9rem' }}
+                        />
                       </div>
 
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                        <div>
-                          <label style={{ fontSize: '0.8rem', color: 'var(--slate-300)', display: 'block', marginBottom: '6px' }}>Cover Limit</label>
+                      {/* Flexible Insurance & Safety */}
+                      <div style={{ padding: '14px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px' }}>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', marginBottom: formData.hasInsurance ? '12px' : '0' }}>
                           <input 
-                            readOnly
-                            value="£5,000,000 Minimum Public Liability"
-                            style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', background: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255, 255, 255, 0.08)', color: 'var(--teal-300)', fontSize: '0.85rem' }}
+                            type="checkbox" 
+                            checked={formData.hasInsurance} 
+                            onChange={(e) => setFormData({ ...formData, hasInsurance: e.target.checked })}
+                            style={{ width: '18px', height: '18px', accentColor: 'var(--teal-500)' }}
                           />
-                        </div>
-                        <div>
-                          <label style={{ fontSize: '0.8rem', color: 'var(--slate-300)', display: 'block', marginBottom: '6px' }}>Policy Expiry Date *</label>
-                          <input 
-                            type="date"
-                            value={formData.policyExpiry}
-                            onChange={(e) => setFormData({ ...formData, policyExpiry: e.target.value })}
-                            style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.1)', color: '#fff', fontSize: '0.9rem' }}
-                          />
-                        </div>
+                          <span style={{ fontSize: '0.85rem', color: '#fff', fontWeight: 600 }}>
+                            I hold active Public Liability Insurance or professional cover
+                          </span>
+                        </label>
+
+                        {formData.hasInsurance && (
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '8px' }}>
+                            <input 
+                              type="text"
+                              placeholder="Insurer name (e.g. Hiscox, Balens)"
+                              value={formData.insurer}
+                              onChange={(e) => setFormData({ ...formData, insurer: e.target.value })}
+                              style={{ padding: '8px 12px', borderRadius: '8px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '0.82rem' }}
+                            />
+                            <input 
+                              type="text"
+                              placeholder="Policy number / ref (optional)"
+                              value={formData.policyNumber}
+                              onChange={(e) => setFormData({ ...formData, policyNumber: e.target.value })}
+                              style={{ padding: '8px 12px', borderRadius: '8px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '0.82rem' }}
+                            />
+                          </div>
+                        )}
                       </div>
 
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px' }}>
@@ -566,7 +554,7 @@ export default function SpecialistVaultModal({ isOpen, onClose, specialist, mode
                           className="btn btn-primary"
                           style={{ padding: '8px 18px', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}
                         >
-                          Next: Activity Pitch <ChevronRight size={16} />
+                          Next: Session Pitch <ChevronRight size={16} />
                         </button>
                       </div>
                     </div>

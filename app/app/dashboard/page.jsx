@@ -1735,21 +1735,23 @@ export default function LeaderDashboard({ initialCommunityId }) {
                           <Shield size={22} color="#fbbf24" />
                         </div>
                         <div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <span style={{ fontWeight: 700, color: 'var(--white)', fontSize: '0.92rem' }}>Venue Compliance Pack & 2% Reduced Fees</span>
-                            <span style={{ fontSize: '0.65rem', background: 'rgba(245,158,11,0.2)', color: '#fbbf24', padding: '1px 6px', borderRadius: '4px', fontWeight: 700 }}>PRO TIER</span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{ fontWeight: 800, color: 'var(--white)', fontSize: '1rem', letterSpacing: '-0.01em' }}>Upgrade to Leader Pro</span>
+                            <span style={{ fontSize: '0.68rem', background: '#f59e0b', color: '#000', padding: '2px 7px', borderRadius: '5px', fontWeight: 800, letterSpacing: '0.04em' }}>PRO</span>
                           </div>
-                          <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', marginTop: '2px' }}>
-                            Council venue RAMS, attendee safety waivers, and 2% ticket fees (save 60%).
+                          <div style={{ fontSize: '0.76rem', color: 'var(--slate-300)', marginTop: '3px', display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', lineHeight: 1.3 }}>
+                            <span><strong>✓ 2% ticket fee</strong> (save 60%)</span>
+                            <span><strong>✓ Council venue RAMS</strong></span>
+                            <span><strong>✓ Digital attendee waivers</strong></span>
                           </div>
                         </div>
                       </div>
                       <button 
                         onClick={() => setShowShieldModal(true)} 
                         className="btn btn-primary interactive-press"
-                        style={{ padding: '8px 14px', fontSize: '0.8rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}
+                        style={{ padding: '9px 16px', fontSize: '0.84rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px', borderRadius: '10px' }}
                       >
-                        <Sparkles size={14} /> Upgrade (£16.50/mo)
+                        <Crown size={15} /> Upgrade to Pro (£16.50/mo)
                       </button>
                     </div>
                   );
@@ -1761,7 +1763,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 {[
                   { key: 'members',   value: stats.totalMembers || 0,                                                                    label: 'Total Members',     icon: Users,     color: 'white' },
                   { key: 'active',    value: stats.activeMembers || 0,                                                                   label: 'Active Members',    icon: Activity,  color: '#22c55e', accent: '#22c55e' },
-                  { key: 'revenue',   value: `\u00a3${stats.totalRevenue || 0}`,                                                          label: 'Total Revenue',     icon: DollarSign,color: '#f59e0b', accent: '#f59e0b' },
+                  { key: 'revenue',   value: `£${stats.totalRevenue || 0}`,                                                          label: 'Total Revenue',     icon: DollarSign,color: '#f59e0b', accent: '#f59e0b' },
                   { key: 'events',    value: stats.eventsThisMonth || 0,                                                                 label: 'Events This Month', icon: Calendar,  color: 'var(--teal-400)' },
                   { key: 'checkin',   value: `${stats.checkinRate || 0}%`,                                                               label: 'Check-in Rate',     icon: ScanLine,  color: '#3b82f6', accent: '#3b82f6' },
                   { key: 'next',      value: stats.daysToNext !== null ? (stats.daysToNext === 0 ? 'Today!' : `${stats.daysToNext}d`) : '\u2014', label: 'Next Event', icon: Zap, color: '#a78bfa', accent: '#a78bfa' },
@@ -1832,7 +1834,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                           </div>
                         </div>
                       ))}
-                      <button onClick={() => { setActiveTab('people'); setLeaderDrillDown(null); }} style={{ marginTop: '14px', background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--slate-300)', borderRadius: '8px', padding: '8px 16px', fontSize: '0.8rem', cursor: 'pointer', width: '100%', fontWeight: 600 }}>Manage Members \u2192</button>
+                      <button onClick={() => { setActiveTab('people'); setLeaderDrillDown(null); }} style={{ marginTop: '14px', background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--slate-300)', borderRadius: '8px', padding: '8px 16px', fontSize: '0.8rem', cursor: 'pointer', width: '100%', fontWeight: 600 }}>Manage Members →</button>
                     </>
                   )}
 
@@ -1855,7 +1857,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                       <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)', lineHeight: 1.6, marginBottom: '14px' }}>
                         Members are marked active if they have attended an event or sent a message. Use CRM to re-engage dormant members with a broadcast.
                       </div>
-                      <button onClick={() => { setActiveTab('people'); setPeopleSubTab('crm'); setLeaderDrillDown(null); }} style={{ background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--slate-300)', borderRadius: '8px', padding: '8px 16px', fontSize: '0.8rem', cursor: 'pointer', width: '100%', fontWeight: 600 }}>Open CRM & Broadcast \u2192</button>
+                      <button onClick={() => { setActiveTab('people'); setPeopleSubTab('crm'); setLeaderDrillDown(null); }} style={{ background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--slate-300)', borderRadius: '8px', padding: '8px 16px', fontSize: '0.8rem', cursor: 'pointer', width: '100%', fontWeight: 600 }}>Open CRM & Broadcast →</button>
                     </>
                   )}
 
@@ -1867,11 +1869,11 @@ export default function LeaderDashboard({ initialCommunityId }) {
                       </div>
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '16px' }}>
                         <div style={{ padding: '14px', background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)', borderRadius: '12px' }}>
-                          <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#f59e0b', fontFamily: 'var(--font-heading)' }}>\u00a3{stats.totalRevenue || 0}</div>
+                          <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#f59e0b', fontFamily: 'var(--font-heading)' }}>£{stats.totalRevenue || 0}</div>
                           <div style={{ fontSize: '0.65rem', color: 'var(--slate-400)', textTransform: 'uppercase', fontWeight: 600 }}>All Time</div>
                         </div>
                         <div style={{ padding: '14px', background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: '12px' }}>
-                          <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#22c55e', fontFamily: 'var(--font-heading)' }}>\u00a3{stats.monthRevenue || 0}</div>
+                          <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#22c55e', fontFamily: 'var(--font-heading)' }}>£{stats.monthRevenue || 0}</div>
                           <div style={{ fontSize: '0.65rem', color: 'var(--slate-400)', textTransform: 'uppercase', fontWeight: 600 }}>This Month</div>
                         </div>
                       </div>
@@ -1882,16 +1884,16 @@ export default function LeaderDashboard({ initialCommunityId }) {
                           <div key={e.id} style={{ padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
                               <span style={{ fontSize: '0.85rem', color: 'var(--white)' }}>{e.title}</span>
-                              <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#f59e0b' }}>\u00a3{r.revenue}</span>
+                              <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#f59e0b' }}>£{r.revenue}</span>
                             </div>
-                            <div style={{ fontSize: '0.7rem', color: 'var(--slate-500)' }}>{r.rsvpCount} tickets \u00d7 \u00a3{r.price}</div>
+                            <div style={{ fontSize: '0.7rem', color: 'var(--slate-500)' }}>{r.rsvpCount} tickets × £{r.price}</div>
                           </div>
                         );
                       })}
                       {communityEvents.filter(e => (e.ticketPrice || 0) > 0).length === 0 && (
                         <div style={{ color: 'var(--slate-500)', fontSize: '0.85rem', textAlign: 'center', padding: '16px' }}>No paid events yet. Add a ticket price when creating your next event.</div>
                       )}
-                      <button onClick={() => { setActiveTab('monetisation'); setLeaderDrillDown(null); }} style={{ marginTop: '14px', background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--slate-300)', borderRadius: '8px', padding: '8px 16px', fontSize: '0.8rem', cursor: 'pointer', width: '100%', fontWeight: 600 }}>Revenue Hub \u2192</button>
+                      <button onClick={() => { setActiveTab('monetisation'); setLeaderDrillDown(null); }} style={{ marginTop: '14px', background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--slate-300)', borderRadius: '8px', padding: '8px 16px', fontSize: '0.8rem', cursor: 'pointer', width: '100%', fontWeight: 600 }}>Revenue Hub →</button>
                     </>
                   )}
 
@@ -1921,14 +1923,14 @@ export default function LeaderDashboard({ initialCommunityId }) {
                               </div>
                               <div style={{ flex: 1, minWidth: 0 }}>
                                 <div style={{ fontSize: '0.85rem', color: 'var(--white)', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{e.title}</div>
-                                <div style={{ fontSize: '0.7rem', color: 'var(--slate-500)' }}>{r.rsvpCount} going{r.revenue > 0 ? ` \u00b7 \u00a3${r.revenue}` : ''}</div>
+                                <div style={{ fontSize: '0.7rem', color: 'var(--slate-500)' }}>{r.rsvpCount} going{r.revenue > 0 ? ` · £${r.revenue}` : ''}</div>
                               </div>
                               <span style={{ fontSize: '0.65rem', fontWeight: 600, color: isPast ? 'var(--slate-500)' : '#22c55e', background: isPast ? 'rgba(107,114,128,0.1)' : 'rgba(34,197,94,0.1)', padding: '3px 7px', borderRadius: '6px' }}>{isPast ? 'Past' : 'Upcoming'}</span>
                             </div>
                           );
                         });
                       })()}
-                      <button onClick={() => { setActiveTab('events'); setLeaderDrillDown(null); }} style={{ marginTop: '14px', background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--slate-300)', borderRadius: '8px', padding: '8px 16px', fontSize: '0.8rem', cursor: 'pointer', width: '100%', fontWeight: 600 }}>View All Events \u2192</button>
+                      <button onClick={() => { setActiveTab('events'); setLeaderDrillDown(null); }} style={{ marginTop: '14px', background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--slate-300)', borderRadius: '8px', padding: '8px 16px', fontSize: '0.8rem', cursor: 'pointer', width: '100%', fontWeight: 600 }}>View All Events →</button>
                     </>
                   )}
 
@@ -2085,7 +2087,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                             </div>
                             <div style={{ flex: 1, minWidth: 0 }}>
                               <div style={{ fontSize: '0.85rem', color: 'var(--white)', fontWeight: 600 }}>{e.title}</div>
-                              <div style={{ fontSize: '0.7rem', color: 'var(--slate-500)' }}>{e.time} \u00b7 {r.rsvpCount} going</div>
+                              <div style={{ fontSize: '0.7rem', color: 'var(--slate-500)' }}>{e.time} · {r.rsvpCount} going</div>
                             </div>
                           </div>
                         );
@@ -2093,7 +2095,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                       {publishedEvents.filter(e => daysUntil(e.date) !== null).length === 0 && (
                         <div style={{ color: 'var(--slate-500)', fontSize: '0.85rem', textAlign: 'center', padding: '16px' }}>No upcoming events. Create one to get your community moving!</div>
                       )}
-                      <button onClick={() => { setActiveTab('events'); setLeaderDrillDown(null); }} style={{ marginTop: '14px', background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--slate-300)', borderRadius: '8px', padding: '8px 16px', fontSize: '0.8rem', cursor: 'pointer', width: '100%', fontWeight: 600 }}>Manage Events \u2192</button>
+                      <button onClick={() => { setActiveTab('events'); setLeaderDrillDown(null); }} style={{ marginTop: '14px', background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--slate-300)', borderRadius: '8px', padding: '8px 16px', fontSize: '0.8rem', cursor: 'pointer', width: '100%', fontWeight: 600 }}>Manage Events →</button>
                     </>
                   )}
 

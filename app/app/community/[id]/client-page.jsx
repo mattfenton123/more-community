@@ -1636,16 +1636,16 @@ export default function CommunityProfile() {
             }}>
               <div style={{ maxWidth: '460px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                  <Shield size={16} color="var(--teal-400)" />
+                  <Sparkles size={16} color="var(--teal-400)" />
                   <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--teal-300)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                    Specialist Partner Network · Phase 2
+                    Guest Collaborations & Experiences
                   </span>
                 </div>
                 <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#fff', marginBottom: '2px' }}>
-                  Are you an accredited guide, instructor, or tutor?
+                  Are you a local instructor, guide, or creator?
                 </div>
                 <div style={{ fontSize: '0.8rem', color: 'var(--slate-300)', lineHeight: 1.4 }}>
-                  Pitch certified workshops to {community?.name} with verified NGB qualifications, £5M PLI insurance, and built-in club fundraising.
+                  Propose a workshop, guest session, or meetup experience to {community?.name}. Leaders review directly with built-in club fundraising.
                 </div>
               </div>
               <button
@@ -2107,22 +2107,57 @@ export default function CommunityProfile() {
                         <div key={srv.id} style={{ background: 'var(--slate-800)', border: '1px solid var(--amber-500)', borderRadius: '12px', padding: '16px' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                             <div>
-                              <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '1rem' }}>{srv.title}</div>
-                              <div style={{ fontSize: '0.8rem', color: 'var(--amber-400)', marginBottom: '8px' }}>By {srvUser.name} • {srv.category} {srv.isPremium ? '• Requested Premium Placement' : ''}</div>
-                              <p style={{ margin: '0 0 12px 0', fontSize: '0.9rem', color: 'var(--slate-300)' }}>{srv.description}</p>
+                              <div style={{ fontWeight: 700, color: 'var(--white)', fontSize: '1.05rem' }}>{srv.title}</div>
+                              <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)', marginBottom: '8px' }}>By {srvUser.name} • {srv.category}</div>
+
+                              {srv.isPremium ? (
+                                <div style={{ 
+                                  background: 'rgba(245, 158, 11, 0.1)', 
+                                  border: '1px solid rgba(245, 158, 11, 0.3)', 
+                                  borderRadius: '8px', 
+                                  padding: '6px 10px', 
+                                  fontSize: '0.78rem', 
+                                  color: '#fbbf24', 
+                                  fontWeight: 700, 
+                                  marginBottom: '10px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'space-between',
+                                  flexWrap: 'wrap',
+                                  gap: '6px'
+                                }}>
+                                  <span>💰 £15.00/mo Sponsor Offer</span>
+                                  <span style={{ color: '#34d399' }}>You earn £12.00/mo for club fund (80%)</span>
+                                </div>
+                              ) : (
+                                <div style={{ 
+                                  background: 'rgba(56, 189, 248, 0.08)', 
+                                  border: '1px solid rgba(56, 189, 248, 0.25)', 
+                                  borderRadius: '8px', 
+                                  padding: '5px 8px', 
+                                  fontSize: '0.75rem', 
+                                  color: '#7dd3fc', 
+                                  marginBottom: '10px',
+                                  display: 'inline-block'
+                                }}>
+                                  Community Perk Offer (Free listing)
+                                </div>
+                              )}
+
+                              <p style={{ margin: '0 0 12px 0', fontSize: '0.9rem', color: 'var(--slate-300)', lineHeight: 1.4 }}>{srv.description}</p>
                               {srv.perk && (
-                                <div style={{ background: 'rgba(234,179,8,0.1)', padding: '8px', borderRadius: '8px', color: 'var(--amber-300)', fontSize: '0.85rem', marginBottom: '12px' }}>
-                                  🎁 Perk: {srv.perk}
+                                <div style={{ background: 'rgba(234,179,8,0.1)', padding: '8px 12px', borderRadius: '8px', color: 'var(--amber-300)', fontSize: '0.85rem', marginBottom: '12px' }}>
+                                  🎁 Exclusive Member Perk: {srv.perk}
                                 </div>
                               )}
                             </div>
                           </div>
                           <div style={{ display: 'flex', gap: '8px' }}>
-                            <button onClick={() => updateServiceStatus(srv.id, 'approved')} className="btn interactive-press" style={{ flex: 1, padding: '8px', borderRadius: '8px', background: 'var(--teal-500)', color: 'var(--white)', border: 'none', fontWeight: 600, display: 'flex', justifyContent: 'center', gap: '4px' }}>
-                              <Check size={16} /> Approve
+                            <button onClick={() => updateServiceStatus(srv.id, 'approved')} className="btn interactive-press" style={{ flex: 1, padding: '9px', borderRadius: '10px', background: srv.isPremium ? 'linear-gradient(135deg, #10b981 0%, #14b8a6 100%)' : 'var(--teal-500)', color: '#090d16', border: 'none', fontWeight: 700, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px' }}>
+                              <Check size={16} /> {srv.isPremium ? 'Accept Sponsor (£12/mo)' : 'Approve Perk'}
                             </button>
-                            <button onClick={() => updateServiceStatus(srv.id, 'rejected')} className="btn interactive-press" style={{ flex: 1, padding: '8px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', color: 'var(--slate-300)', border: '1px solid rgba(255,255,255,0.1)', fontWeight: 600, display: 'flex', justifyContent: 'center', gap: '4px' }}>
-                              <X size={16} /> Reject
+                            <button onClick={() => updateServiceStatus(srv.id, 'rejected')} className="btn interactive-press" style={{ flex: 1, padding: '9px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', color: 'var(--slate-300)', border: '1px solid rgba(255,255,255,0.1)', fontWeight: 600, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px' }}>
+                              <X size={16} /> Decline (Quietly)
                             </button>
                           </div>
                         </div>

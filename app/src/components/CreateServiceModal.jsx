@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Briefcase, CreditCard, X, Store, Coffee, Paintbrush, Dumbbell, Stethoscope } from 'lucide-react';
+import { Briefcase, CreditCard, X, Store, Coffee, Paintbrush, Dumbbell, Stethoscope, Shield, CheckCircle2 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { useToast } from './Toast';
 
@@ -151,30 +151,56 @@ export default function CreateServiceModal({ isOpen, onClose, communityId }) {
             />
           </div>
 
-          <div style={{ padding: '16px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
+          <div style={{ 
+            padding: '16px', 
+            background: isPremium ? 'rgba(245, 158, 11, 0.08)' : 'rgba(255,255,255,0.03)', 
+            borderRadius: '16px', 
+            border: isPremium ? '1.5px solid rgba(245, 158, 11, 0.35)' : '1px solid rgba(255,255,255,0.06)',
+            transition: 'all 0.2s ease'
+          }}>
             <label style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', cursor: 'pointer' }}>
               <input 
                 type="checkbox" 
                 checked={isPremium} 
                 onChange={e => setIsPremium(e.target.checked)}
-                style={{ marginTop: '4px', width: '20px', height: '20px', accentColor: 'var(--teal-500)' }}
+                style={{ marginTop: '4px', width: '20px', height: '20px', accentColor: '#f59e0b' }}
               />
-              <div>
-                <div style={{ color: 'var(--white)', fontWeight: 600, fontSize: '1rem', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  Premium Placement <span style={{ fontSize: '0.7rem', background: 'var(--amber-500)', color: 'var(--white)', padding: '2px 6px', borderRadius: '6px', fontWeight: 700, textTransform: 'uppercase' }}>£15/mo</span>
+              <div style={{ flex: 1 }}>
+                <div style={{ color: 'var(--white)', fontWeight: 700, fontSize: '0.98rem', marginBottom: '4px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '6px' }}>
+                  <span>Sponsor & Featured Placement</span>
+                  <span style={{ fontSize: '0.75rem', background: '#f59e0b', color: '#000', padding: '2px 8px', borderRadius: '6px', fontWeight: 800 }}>£15.00/mo</span>
                 </div>
-                <div style={{ color: 'var(--slate-400)', fontSize: '0.85rem', lineHeight: 1.4 }}>
-                  Pin your service to the top of the directory with a highlighted gold border to attract more clients. Cancel anytime.
+                <div style={{ color: 'var(--slate-300)', fontSize: '0.82rem', lineHeight: 1.4, marginBottom: '8px' }}>
+                  Pin your service to the top of the community directory with a gold Featured badge to attract local clients.
+                </div>
+                
+                {/* Transparent Fundraising Split */}
+                <div style={{ 
+                  background: 'rgba(0,0,0,0.25)', 
+                  borderRadius: '10px', 
+                  padding: '8px 12px', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'space-between',
+                  fontSize: '0.78rem',
+                  color: 'var(--slate-300)'
+                }}>
+                  <span><strong style={{ color: '#34d399' }}>£12.00/mo (80%)</strong> to Club Leader Fund</span>
+                  <span><strong style={{ color: 'var(--slate-400)' }}>£3.00/mo (20%)</strong> platform</span>
                 </div>
               </div>
             </label>
             
             {isPremium && (
-              <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--slate-300)', fontSize: '0.9rem' }}>
-                <CreditCard size={18} color="var(--slate-400)" />
-                We will use the payment method on file ending in <strong>4242</strong>.
+              <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--slate-400)', fontSize: '0.8rem' }}>
+                <Shield size={14} color="#34d399" />
+                <span>Zero hassle: Billing only starts after the community leader accepts your pitch. Cancel anytime.</span>
               </div>
             )}
+          </div>
+
+          <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', textAlign: 'center', lineHeight: 1.4 }}>
+            Leaders review pitches in their dashboard inbox. Direct marketing DMs are disabled to protect leader focus.
           </div>
 
           <button type="submit" disabled={isSubmitting} className="btn btn-primary interactive-press" style={{ padding: '16px', borderRadius: '12px', fontSize: '1.1rem', fontWeight: 700, marginTop: '8px', opacity: isSubmitting ? 0.7 : 1 }}>
