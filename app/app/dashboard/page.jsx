@@ -29,6 +29,9 @@ import EventReminderModal from '../../src/components/EventReminderModal';
 import NetworkEventPreviewModal from '../../src/components/NetworkEventPreviewModal';
 import ProfileImageModal from '../../src/components/ProfileImageModal';
 import LeaderShieldModal from '../../src/components/LeaderShieldModal';
+import LeaderProposalsInbox from '../../src/components/LeaderProposalsInbox';
+import SpecialistVaultModal from '../../src/components/SpecialistVaultModal';
+import CouncilImpactMetrics from '../../src/components/CouncilImpactMetrics';
 import { generatePliCertificatePdf, generateRamsPdf } from '../../src/lib/insurance';
 
 // ─── Stat Card Component ──────────────────────────────────
@@ -104,6 +107,8 @@ export default function LeaderDashboard({ initialCommunityId }) {
   const [editTagCategory, setEditTagCategory] = useState('All');
   const [activeTab, setActiveTab] = useState(searchParams?.get('tab') || 'overview');
   const [showShieldModal, setShowShieldModal] = useState(false);
+  const [specialistModalState, setSpecialistModalState] = useState({ isOpen: false, mode: 'inspect', specialist: null });
+  const [experiencesSubTab, setExperiencesSubTab] = useState('pitches'); // 'pitches' | 'trips' | 'council'
   const [activeCommunityId, setActiveCommunityId] = useState(
     initialCommunityId || searchParams?.get('community') || user?.ledCommunities?.[0] || null
   );
@@ -1328,7 +1333,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
               { id: 'events', icon: Calendar, label: 'Events' },
               { id: 'people', icon: Users, label: 'People' },
               { id: 'monetisation', icon: DollarSign, label: 'Revenue' },
-              { id: 'experiences', icon: Globe, label: 'Experiences' },
+              { id: 'experiences', icon: Globe, label: 'Specialists & Experiences' },
               { id: 'social hub', icon: Heart, label: 'Social Hub' },
               { id: 'network', icon: Map, label: 'Network' },
               { id: 'settings', icon: Settings, label: 'Settings' }
@@ -4058,6 +4063,16 @@ export default function LeaderDashboard({ initialCommunityId }) {
           </div>
         </div>
       )}
+
+      <SpecialistVaultModal
+        isOpen={specialistModalState.isOpen}
+        onClose={() => setSpecialistModalState({ ...specialistModalState, isOpen: false })}
+        specialist={specialistModalState.specialist}
+        mode={specialistModalState.mode}
+        onProposalSubmitted={() => {
+          toast.success('Your specialist pitch has been dispatched to local leaders!');
+        }}
+      />
 
       <LeaderShieldModal
         isOpen={showShieldModal}

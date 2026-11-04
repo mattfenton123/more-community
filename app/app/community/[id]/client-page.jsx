@@ -26,6 +26,7 @@ const EmojiPicker = dynamic(() => import('emoji-picker-react'), { ssr: false });
 import confetti from 'canvas-confetti';
 import LeaderSetupChecklist from '../../../src/components/LeaderSetupChecklist';
 import TownCrossPollination from '../../../src/components/TownCrossPollination';
+import SpecialistVaultModal from '../../../src/components/SpecialistVaultModal';
 
 // Category-specific gallery photos (generated unique images)
 const IMG = '/images/communities';
@@ -1599,6 +1600,58 @@ export default function CommunityProfile() {
               </div>
             )}
 
+            {/* Town Cross-Pollination (Local Sister Groups) */}
+            <div style={{ marginBottom: '32px' }}>
+              <TownCrossPollination currentCommunity={community} />
+            </div>
+
+            {/* Specialist & Guide Partner Pitch Card */}
+            <div style={{
+              marginBottom: '32px',
+              padding: '18px 20px',
+              borderRadius: '16px',
+              background: 'linear-gradient(135deg, rgba(20, 184, 166, 0.08) 0%, rgba(15, 23, 42, 0.4) 100%)',
+              border: '1px solid rgba(45, 212, 191, 0.25)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '16px',
+              flexWrap: 'wrap'
+            }}>
+              <div style={{ maxWidth: '460px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                  <Shield size={16} color="var(--teal-400)" />
+                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--teal-300)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    Specialist Partner Network · Phase 2
+                  </span>
+                </div>
+                <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#fff', marginBottom: '2px' }}>
+                  Are you an accredited guide, instructor, or tutor?
+                </div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--slate-300)', lineHeight: 1.4 }}>
+                  Pitch certified workshops to {community?.name} with verified NGB qualifications, £5M PLI insurance, and built-in club fundraising.
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowSpecialistApply(true)}
+                className="btn btn-outline interactive-press"
+                style={{
+                  fontSize: '0.82rem',
+                  padding: '8px 16px',
+                  borderRadius: '10px',
+                  background: 'rgba(255, 255, 255, 0.04)',
+                  border: '1px solid rgba(45, 212, 191, 0.3)',
+                  color: 'var(--teal-300)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                <Sparkles size={14} /> Pitch Your Activity
+              </button>
+            </div>
+
             {/* Reviews */}
             <div style={{ marginBottom: '32px' }}>
               <h3 style={{ fontSize: '1.1rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: '0 0 16px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -2268,6 +2321,15 @@ export default function CommunityProfile() {
           }}
         />
       )}
+      <SpecialistVaultModal
+        isOpen={showSpecialistApply}
+        onClose={() => setShowSpecialistApply(false)}
+        mode="apply"
+        onProposalSubmitted={() => {
+          toast.success('Your workshop pitch was submitted to this community!');
+        }}
+      />
+
       {/* Calendar Subscription Modal */}
       {showCalendarModal && (
         <div className="modal-overlay" onClick={() => setShowCalendarModal(false)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', zIndex: 10000 }}>

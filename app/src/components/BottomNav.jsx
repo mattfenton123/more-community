@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Compass, MessageCircle, User, Activity, Calendar, Shield } from 'lucide-react';
+import { Compass, MessageCircle, User, Activity, Calendar, Shield, Crown } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { useChat } from '../context/ChatContext';
 
@@ -35,7 +35,7 @@ export default function BottomNav() {
                      currentPath.match(/^\/chat\/dm\/[^/]+$/) ||
                      currentPath === '/settings';
   
-  const hideBottomNav = currentPath === '/login' || currentPath === '/onboarding' || isDeepPage || hasModalOpen || currentPath?.startsWith('/admin');
+  const hideBottomNav = currentPath === '/login' || currentPath === '/onboarding' || isDeepPage || hasModalOpen;
   
   if (hideBottomNav) return null;
 
@@ -62,15 +62,19 @@ export default function BottomNav() {
     { id: 'discover', label: 'Discover', icon: Compass, href: '/discover' },
     { id: 'events', label: 'Events', icon: Calendar, href: '/events' },
     { id: 'chat', label: 'Chat', icon: MessageCircle, href: '/chat', badge: unreadChatCount },
-    ...(user?.isAdmin ? [{ id: 'admin', label: 'Admin', icon: Shield, href: '/admin' }] : []),
-    { id: 'leader', label: isLeader ? 'Leader' : 'Start', icon: Shield, href: isLeader ? '/dashboard' : '/create-community' },
+    ...((user?.isAdmin || currentPath?.startsWith('/admin')) ? [{ id: 'admin', label: 'Admin', icon: Shield, href: '/admin' }] : []),
+    { id: 'leader', label: isLeader ? 'Leader' : 'Start', icon: Crown, href: isLeader ? '/dashboard' : '/create-community' },
     { id: 'profile', label: 'Profile', icon: User, href: user?.id ? `/profile/${user.id}` : '/login' },
   ];
 
   return (
-    <div className="bottom-nav">
+    <div className="bottom-nav" style={{ maxWidth: navItems.length > 5 ? '480px' : '400px' }}>
       {navItems.map(item => {
-        const isActive = currentPath === item.href || (item.id === 'home' && (currentPath === '/app' || currentPath === '/')) || (item.id === 'chat' && currentPath?.startsWith('/chat'));
+        const isActive = currentPath === item.href || 
+          (item.id === 'home' && (currentPath === '/app' || currentPath === '/')) || 
+          (item.id === 'chat' && currentPath?.startsWith('/chat')) || 
+          (item.id === 'admin' && currentPath?.startsWith('/admin')) ||
+          (item.id === 'leader' && (currentPath?.startsWith('/dashboard') || (currentPath?.startsWith('/community/') && currentPath?.includes('/admin'))));
         const Icon = item.icon;
         
         return (
