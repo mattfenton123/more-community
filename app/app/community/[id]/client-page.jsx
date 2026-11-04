@@ -25,6 +25,7 @@ const VideoUploader = dynamic(() => import('../../../src/components/VideoUploade
 const EmojiPicker = dynamic(() => import('emoji-picker-react'), { ssr: false });
 import confetti from 'canvas-confetti';
 import LeaderSetupChecklist from '../../../src/components/LeaderSetupChecklist';
+import TownCrossPollination from '../../../src/components/TownCrossPollination';
 
 // Category-specific gallery photos (generated unique images)
 const IMG = '/images/communities';
@@ -594,8 +595,22 @@ export default function CommunityProfile() {
             style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--teal-500)', cursor: leaderUser ? 'pointer' : 'default' }} 
           />
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: '0.75rem', color: 'var(--teal-400)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Organised by</div>
-            <div style={{ fontWeight: 700, color: 'var(--white)', fontSize: '1rem' }}>{leaderUser?.name || 'Community Team'}</div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--teal-400)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              Organised by
+              <span style={{ background: 'rgba(20,184,166,0.15)', color: '#2dd4bf', padding: '1px 6px', borderRadius: '4px', fontSize: '0.65rem' }}>Leader &amp; Co-Hosts</span>
+            </div>
+            <div style={{ fontWeight: 700, color: 'var(--white)', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span>{leaderUser?.name || 'Community Team'}</span>
+              {isLeader && (
+                <span 
+                  onClick={() => navigate.push(`/dashboard?community=${community.id}&tab=members`)}
+                  style={{ fontSize: '0.7rem', color: 'var(--teal-400)', cursor: 'pointer', fontWeight: 500, textDecoration: 'underline' }}
+                  title="Appoint a Co-Leader to share hosting duties"
+                >
+                  + Add Co-Host
+                </span>
+              )}
+            </div>
           </div>
           <button onClick={() => leaderUser && navigate.push(`/chat/dm/${leaderUser.id}`)} className="btn btn-outline interactive-press" style={{ padding: '8px 14px', borderRadius: '10px', fontSize: '0.8rem', display: 'flex', gap: '4px', alignItems: 'center' }}>
             <MessageCircle size={14} /> Message
