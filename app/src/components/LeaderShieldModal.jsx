@@ -280,7 +280,17 @@ export default function LeaderShieldModal({ isOpen, onClose, community, leaderUs
               color: 'var(--slate-300)',
               lineHeight: 1.5
             }}>
-              <strong style={{ color: 'var(--white)' }}>Why Leaders Love This:</strong> Council parks, churches, and private venues require documented risk assessments (RAMS) and attendee waivers. <strong>MORE Leader Pro</strong> auto-generates venue-ready compliance packs, collects digital attendee waivers, and drops your platform ticket fee to just 2% (saving 60% vs standard 5%).
+              <strong style={{ color: 'var(--white)', display: 'block', marginBottom: '6px' }}>Do You Actually Need Leader Pro?</strong>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '0.75rem', marginTop: '8px' }}>
+                <div style={{ background: 'rgba(255,255,255,0.03)', padding: '8px 10px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <span style={{ color: '#2dd4bf', fontWeight: 700, display: 'block' }}>Stay on Free if:</span>
+                  You run social walks, book clubs, or café meetups. The venue already covers the premises, and volunteer leaders are protected under the UK SARAH Act 2015.
+                </div>
+                <div style={{ background: 'rgba(20,184,166,0.08)', padding: '8px 10px', borderRadius: '8px', border: '1px solid rgba(45,212,191,0.2)' }}>
+                  <span style={{ color: '#fbbf24', fontWeight: 700, display: 'block' }}>Upgrade to Pro if:</span>
+                  You hire council community halls or schools (needs RAMS packs), run fitness coaching, or sell &gt;£550/mo in tickets (saves you money with 2% fees).
+                </div>
+              </div>
             </div>
 
             {/* Billing Interval Switch */}

@@ -603,8 +603,24 @@ function StepPlan({ selectedTier, setSelectedTier, billingInterval, setBillingIn
         </div>
       </div>
 
+      <div style={{ padding: '14px 16px', background: 'rgba(255,255,255,0.02)', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.08)', marginBottom: '14px' }}>
+        <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#fff', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span>💡 Which tier does your activity need?</span>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '0.75rem', lineHeight: 1.45 }}>
+          <div style={{ background: 'rgba(255,255,255,0.02)', padding: '10px 12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.05)' }}>
+            <strong style={{ color: '#2dd4bf', display: 'block', marginBottom: '3px' }}>✓ Free Tier is 100% fine for:</strong>
+            <span style={{ color: 'var(--slate-300)' }}>Book clubs, coffee meetups, casual walking groups, board games, pub socials. Venue insurance covers cafes/pubs, and UK law protects volunteer leaders in public spaces.</span>
+          </div>
+          <div style={{ background: 'rgba(20,184,166,0.05)', padding: '10px 12px', borderRadius: '10px', border: '1px solid rgba(45,212,191,0.2)' }}>
+            <strong style={{ color: '#fbbf24', display: 'block', marginBottom: '3px' }}>⭐ Upgrade to Pro when you:</strong>
+            <span style={{ color: 'var(--slate-300)' }}>Hire council community halls or schools (needs RAMS/waivers), run paid coaching/fitness, have a local sponsor, or sell £550+/mo in tickets (saves cash at 2% fees).</span>
+          </div>
+        </div>
+      </div>
+
       <div style={{ padding: '12px 16px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)', fontSize: '0.78rem', color: 'var(--slate-400)', lineHeight: 1.5 }}>
-        <strong style={{ color: 'var(--slate-200)' }}>Clear Fee Transparency:</strong> MORE Community charges 5% on ticket sales for Free Leaders, or just 2% for Leader Pro.  Standard Stripe card processing (~1.5% + 20p UK) is deducted directly by Stripe from payouts. Attendees pay zero extra booking fees.
+        <strong style={{ color: 'var(--slate-200)' }}>Fee Transparency:</strong> MORE Community charges 5% on ticket sales for Free Leaders, or just 2% for Leader Pro. Standard Stripe card processing (~1.5% + 20p UK) is deducted directly by Stripe from payouts. Attendees pay zero extra booking fees.
       </div>
     </div>
   );
