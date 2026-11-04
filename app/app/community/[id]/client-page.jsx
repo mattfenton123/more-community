@@ -110,6 +110,7 @@ export default function CommunityProfile() {
   const [showUploader, setShowUploader] = useState(false);
   const [showPostEmojiPicker, setShowPostEmojiPicker] = useState(false);
   const [showCalendarModal, setShowCalendarModal] = useState(false);
+  const [showSpecialistApply, setShowSpecialistApply] = useState(false);
   const fileInputRef = useRef(null);
   const searchParams = useSearchParams();
   const autoJoinParam = searchParams?.get('autoJoin');

@@ -478,7 +478,7 @@ export default function EventClient({ id }) {
       {/* Content Body */}
       <div style={{ padding: '24px 20px', maxWidth: '800px', margin: '0 auto' }}>
         
-        <EventRecapShareCard event={event} community={community} attendeeCount={attendees.length} />
+        <EventRecapShareCard event={event} community={community} attendeeCount={rsvps.filter(r => r.status === 'going').length || event?.attendees || 0} />
         {isEventPast(event) && (
           <div style={{ background: 'rgba(148,163,184,0.08)', border: '1px solid rgba(148,163,184,0.2)', borderRadius: '14px', padding: '14px 18px', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
             <Archive size={22} color="var(--slate-400)" style={{ flexShrink: 0 }} />
