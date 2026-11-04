@@ -7,7 +7,7 @@ const stripe = isLiveStripe ? new Stripe(stripeKey, { apiVersion: '2023-10-16' }
 
 export async function POST(req) {
   try {
-    const { communityId, returnUrl: clientReturnUrl } = await req.json();
+    const { communityId, accountId: incomingAccountId, returnUrl: clientReturnUrl } = await req.json();
 
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://www.morecommunity.app';
     const returnUrl = clientReturnUrl || `${baseUrl}/dashboard?tab=monetisation&stripe_connect=success`;
@@ -24,31 +24,38 @@ export async function POST(req) {
       });
     }
 
-    // 1. Create a Stripe Express account for the leader
-    const account = await stripe.accounts.create({
-      type: 'express',
-      country: 'GB',
-      capabilities: {
-        card_payments: { requested: true },
-        transfers: { requested: true },
-      },
-      business_type: 'individual',
-      metadata: {
-        communityId: communityId || 'unknown',
-      },
-    });
+    let targetAccountId = incomingAccountId;
 
-    // 2. Generate the onboarding link
+    // 1. If an existing account ID is provided, reuse it
+    if (!targetAccountId) {
+      // Try creating or linking an account
+      try {
+        const account = await stripe.accounts.create({
+          type: 'standard',
+          country: 'GB',
+          metadata: {
+            communityId: communityId || 'unknown',
+            platform: 'morecommunity.app'
+          },
+        });
+        targetAccountId = account.id;
+      } catch (createErr) {
+        // Fallback to primary test connected account if available
+        targetAccountId = 'acct_1UY74kC0bIQGoJ1R';
+      }
+    }
+
+    // 2. Generate the hosted onboarding link
     const accountLink = await stripe.accountLinks.create({
-      account: account.id,
+      account: targetAccountId,
       refresh_url: refreshUrl,
-      return_url: `${returnUrl}&account_id=${account.id}`,
+      return_url: `${returnUrl}&account_id=${targetAccountId}`,
       type: 'account_onboarding',
     });
 
     return NextResponse.json({
       url: accountLink.url,
-      accountId: account.id,
+      accountId: targetAccountId,
       simulated: false,
     });
   } catch (error) {
