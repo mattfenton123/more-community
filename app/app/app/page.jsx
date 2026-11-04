@@ -7,6 +7,7 @@ import { Heart, MessageCircle, Share2, Calendar, MapPin, Clock, Compass, Plus, M
 import { SkeletonList, SkeletonCard } from '../../src/components/SkeletonCard';
 import InlineComments from '../../src/components/InlineComments';
 import AppHeader from '../../src/components/AppHeader';
+import CreateIdeaModal from '../../src/components/CreateIdeaModal';
 import GettingStarted from '../../src/views/GettingStarted';
 import { useToast } from '../../src/components/Toast';
 import { isEventUpcoming, isEventPast } from '../../src/lib/calendar';
@@ -20,6 +21,7 @@ export default function HomeFeed() {
   const { toast } = useToast();
   const [expandedComments, setExpandedComments] = useState({});
   const [activeFeedTab, setActiveFeedTab] = useState('Feed');
+  const [showIdeaModal, setShowIdeaModal] = useState(false);
   const [installPrompt, setInstallPrompt] = useState(null);
   const [showInstallBanner, setShowInstallBanner] = useState(() => typeof window !== 'undefined' && !localStorage.getItem('pwa-dismissed'));
   const [showIOSInstallBanner, setShowIOSInstallBanner] = useState(false);
