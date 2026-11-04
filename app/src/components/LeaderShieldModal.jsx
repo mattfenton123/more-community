@@ -1,4 +1,5 @@
 "use client";
+import { supabase } from '../lib/supabaseClient';
 import { useState } from 'react';
 import { Shield, Check, Download, FileText, ArrowRight, X, Sparkles, AlertCircle, ExternalLink, Award, DollarSign } from 'lucide-react';
 import { LEADER_PRO_CONFIG, generatePliCertificatePdf, generateRamsPdf } from '../lib/insurance';
@@ -13,47 +14,44 @@ export default function LeaderShieldModal({ isOpen, onClose, community, leaderUs
 
   const isInsured = Boolean(
     community.is_insured || 
-    community.insurance_tier === 'pro' ||
-    (typeof window !== 'undefined' && localStorage.getItem(`more_community_insured_${community.id}`) === 'true')
+    community.insurance_tier === 'pro'
   );
 
-  const policyNumber = community.insurance_policy_number || `MC-PLI-2026-${community.id.slice(0, 6).toUpperCase()}`;
+  const policyNumber = community.insurance_policy_number || `MC-SAFE-2026-${community.id.slice(0, 6).toUpperCase()}`;
   const price = billingInterval === 'annual' ? LEADER_PRO_CONFIG.annualPrice : LEADER_PRO_CONFIG.monthlyPrice;
 
   const handleUpgrade = async () => {
     setIsProcessing(true);
     try {
+      let authHeader = {};
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.access_token) authHeader = { 'Authorization': `Bearer ${session.access_token}` };
+      } catch (e) {}
+
       const res = await fetch('/api/stripe/checkout', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...authHeader
+        },
         body: JSON.stringify({
           type: 'leader_pro',
           communityId: community.id,
           userId: leaderUser?.id || 'leader',
           interval: billingInterval,
           price: price,
-          title: `MORE Leader Pro & Shield (${billingInterval === 'annual' ? 'Annual' : 'Monthly'})`
+          title: `MORE Leader Pro (${billingInterval === 'annual' ? 'Annual' : 'Monthly'})`
         })
       });
       const data = await res.json();
 
-      if (data?.url && !data?.simulated) {
+      if (res.ok && data?.url && !data?.simulated) {
         window.location.href = data.url;
         return;
       }
 
-      // Simulated activation when Stripe is in test/demo mode
-      if (typeof window !== 'undefined') {
-        localStorage.setItem(`more_community_insured_${community.id}`, 'true');
-      }
-      toast.success('Leader Pro Activated! 🛡️', 'Your £5M Public Liability cover is active.');
-      if (onUpgradeSuccess) {
-        onUpgradeSuccess({
-          is_insured: true,
-          insurance_tier: 'pro',
-          insurance_policy_number: policyNumber
-        });
-      }
+      toast.error('Checkout Error', data?.error || 'Could not initiate checkout session.');
     } catch (err) {
       console.error('Upgrade error:', err);
       toast.error('Upgrade Failed', err.message || 'Could not complete upgrade.');
@@ -179,7 +177,7 @@ export default function LeaderShieldModal({ isOpen, onClose, community, leaderUs
               </span>
             </div>
             <p style={{ margin: '2px 0 0 0', fontSize: '0.82rem', color: 'var(--slate-400)' }}>
-              {isInsured ? 'Comprehensive £5M Public Liability & Venue Compliance' : 'Complete InsurTech & Compliance protection for your community'}
+              {isInsured ? 'Venue Compliance, RAMS & 0% Platform Ticket Fees' : 'Complete venue compliance, risk assessments, attendee waivers, and 0% platform ticket fees.'}
             </p>
           </div>
         </div>
@@ -211,7 +209,7 @@ export default function LeaderShieldModal({ isOpen, onClose, community, leaderUs
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '0.8rem', color: 'var(--slate-300)' }}>
                 <div>
                   <span style={{ color: 'var(--slate-500)', fontSize: '0.72rem', display: 'block' }}>Indemnity Limit</span>
-                  <strong style={{ color: 'var(--white)' }}>£5,000,000 PLI</strong>
+                  <strong style={{ color: 'var(--white)' }}>Full Venue Compliance</strong>
                 </div>
                 <div>
                   <span style={{ color: 'var(--slate-500)', fontSize: '0.72rem', display: 'block' }}>Territory</span>
@@ -244,7 +242,7 @@ export default function LeaderShieldModal({ isOpen, onClose, community, leaderUs
                   fontSize: '0.92rem'
                 }}
               >
-                <Download size={16} /> Download Official £5M PLI Certificate (PDF)
+                <Download size={16} /> Download Venue Safety Declaration (PDF)
               </button>
 
               <button
@@ -265,7 +263,7 @@ export default function LeaderShieldModal({ isOpen, onClose, community, leaderUs
             </div>
 
             <p style={{ textAlign: 'center', fontSize: '0.72rem', color: 'var(--slate-500)', margin: 0 }}>
-              Underwritten by MORE Community Mutual Syndicate for registered leisure & community organizers.
+              Adheres to standard UK Health & Safety Executive (HSE) risk assessment frameworks for community gatherings.
             </p>
           </div>
         ) : (
@@ -282,7 +280,7 @@ export default function LeaderShieldModal({ isOpen, onClose, community, leaderUs
               color: 'var(--slate-300)',
               lineHeight: 1.5
             }}>
-              <strong style={{ color: 'var(--white)' }}>Why Leaders Love This:</strong> Standalone UK PLI quotes run ~£150/year with zero venue tools or waivers. <strong>MORE Leader Pro</strong> bundles £5M PLI, instant council RAMS, digital waivers, and 0% ticket fees for roughly the same price.
+              <strong style={{ color: 'var(--white)' }}>Why Leaders Love This:</strong> Council parks, churches, and private venues require documented risk assessments (RAMS) and attendee waivers. <strong>MORE Leader Pro</strong> auto-generates venue-ready compliance packs, collects digital attendee waivers, and drops your platform ticket fee to 0%.
             </div>
 
             {/* Billing Interval Switch */}
@@ -401,7 +399,7 @@ export default function LeaderShieldModal({ isOpen, onClose, community, leaderUs
             </button>
 
             <div style={{ textAlign: 'center', fontSize: '0.72rem', color: 'var(--slate-500)' }}>
-              🔒 Instant activation • Cancel anytime • Includes immediate downloadable £5M certificate
+              🔒 Instant activation • Cancel anytime • Includes instant downloadable venue compliance pack
             </div>
           </div>
         )}

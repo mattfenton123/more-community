@@ -4,16 +4,10 @@ import { cleanLocationName } from './location';
 export const LEADER_PRO_CONFIG = {
   monthlyPrice: 16.50,
   annualPrice: 165.00,
-  coverAmount: '£5,000,000',
-  underwriter: 'MORE Community Mutual Syndicate (UK)',
-  schemeName: 'Community Leader Shield Group Policy',
+  coverAmount: 'Full Venue Compliance',
+  underwriter: 'MORE Community Safety & Compliance Standards',
+  schemeName: 'Community Leader Compliance & Safety Pack',
   perks: [
-    {
-      id: 'pli',
-      title: '£5M Public Liability Insurance (PLI)',
-      badge: 'Venue & Council Approved',
-      desc: 'Full indemnity cover for outdoor walks, sports, social meetups, workshops, and private/council venue hire across England & Wales.'
-    },
     {
       id: 'rams',
       title: '1-Click Venue RAMS Generator',
@@ -34,25 +28,31 @@ export const LEADER_PRO_CONFIG = {
     },
     {
       id: 'badge',
-      title: 'Verified & Insured Trust Shield',
-      badge: 'Higher Attendance',
-      desc: 'Display the gold trust badge on your community microsite and event listings, reassuring new members and venues.'
+      title: 'Verified Leader & Safety Badge',
+      badge: 'Higher Trust',
+      desc: 'Display the verified trust shield on your community microsite and event listings, reassuring new members and venues.'
     },
     {
       id: 'boost',
       title: 'Priority Local Discovery',
       badge: 'Growth Engine',
       desc: 'Featured placement in the Tunbridge Wells discovery feed, search suggestions, and weekly member digests.'
+    },
+    {
+      id: 'guidance',
+      title: 'Venue Compliance & Insurance Guidance',
+      badge: 'Venue Ready',
+      desc: 'Guidance and document checklist for council and venue permits, with direct access to recommended community group PLI brokers if required.'
     }
   ]
 };
 
-export const STANDARD_LIABILITY_WAIVER = `By RSVPing and attending this community event, I acknowledge that participation is voluntary. I confirm that I am in suitable health and physical condition to take part. I agree to adhere to all safety guidelines and instructions provided by the community organizers. I understand that the organizers carry Public Liability Insurance, but I remain personally responsible for my own safety, belongings, and well-being during the event.`;
+export const STANDARD_LIABILITY_WAIVER = `By RSVPing and attending this community event, I acknowledge that participation is voluntary. I confirm that I am in suitable health and physical condition to take part. I agree to adhere to all safety guidelines and instructions provided by the community organizers. I understand that the organizers carry out risk assessments and safety protocols, but I remain personally responsible for my own safety, belongings, and well-being during the event.`;
 
 /**
- * Generates an official, branded Certificate of Public Liability Insurance PDF using vector drawing.
+ * Generates an official, branded Venue Safety & Compliance Declaration PDF using vector drawing.
  */
-export function generatePliCertificatePdf({ community, leaderName, policyNumber, expiryDate }) {
+export function generateSafetyDeclarationPdf({ community, leaderName, policyNumber, expiryDate }) {
   const pdf = new jsPDF({
     orientation: 'portrait',
     unit: 'mm',
@@ -61,7 +61,7 @@ export function generatePliCertificatePdf({ community, leaderName, policyNumber,
 
   const commName = community?.name || 'Community';
   const organizer = leaderName || 'Registered Community Leader';
-  const policyNo = policyNumber || `MC-PLI-2026-${(community?.id || 'COMM').slice(0, 6).toUpperCase()}`;
+  const policyNo = policyNumber || `MC-SAFE-2026-${(community?.id || 'COMM').slice(0, 6).toUpperCase()}`;
   const validUntil = expiryDate || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
   const issueDate = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 
@@ -81,22 +81,22 @@ export function generatePliCertificatePdf({ community, leaderName, policyNumber,
   pdf.setFont('helvetica', 'bold');
   pdf.setFontSize(16);
   pdf.setTextColor(255, 255, 255);
-  pdf.text('MORE COMMUNITY SHIELD', 105, 24, { align: 'center' });
+  pdf.text('MORE COMMUNITY COMPLIANCE', 105, 24, { align: 'center' });
 
   pdf.setFontSize(8.5);
   pdf.setTextColor(45, 212, 191); // Teal accent
-  pdf.text('CERTIFICATE OF PUBLIC & PRODUCTS LIABILITY INSURANCE', 105, 32, { align: 'center' });
+  pdf.text('VENUE SAFETY & RISK MANAGEMENT DECLARATION', 105, 32, { align: 'center' });
 
   // Certificate Intro
   pdf.setTextColor(30, 41, 59);
   pdf.setFont('helvetica', 'bold');
   pdf.setFontSize(11);
-  pdf.text('TO WHOM IT MAY CONCERN', 105, 48, { align: 'center' });
+  pdf.text('TO VENUE MANAGERS & LOCAL AUTHORITIES', 105, 48, { align: 'center' });
 
   pdf.setFont('helvetica', 'normal');
   pdf.setFontSize(9.5);
-  pdf.text('This is to certify that the community organization named below is a covered entity under the', 105, 54, { align: 'center' });
-  pdf.text('MORE Community Leader Shield Master Policy arranged for sanctioned community activities.', 105, 59, { align: 'center' });
+  pdf.text('This document certifies that the community group named below operates under', 105, 54, { align: 'center' });
+  pdf.text('MORE Community Leader Pro Health, Safety & Venue Risk Management Standards.', 105, 59, { align: 'center' });
 
   // Details Table Box
   pdf.setFillColor(248, 250, 252);
@@ -106,14 +106,14 @@ export function generatePliCertificatePdf({ community, leaderName, policyNumber,
   const rows = [
     ['Named Community:', commName],
     ['Lead Organizer:', organizer],
-    ['Policy Reference:', policyNo],
-    ['Master Policyholder:', 'MORE Community Ltd & Affiliated Group Leaders'],
-    ['Underwriting Syndicate:', 'MORE Community Mutual Facility (UK)'],
-    ['Limit of Indemnity:', '£5,000,000 (Five Million Pounds) any one occurrence'],
-    ['Cover Type:', 'Public & Products Liability Insurance'],
-    ['Insured Activities:', 'Community social gatherings, guided walks, amateur fitness, creative workshops, networking & venue hire'],
+    ['Compliance Reference:', policyNo],
+    ['Operating Framework:', 'MORE Leader Pro Safety & Venue Compliance Pack'],
+    ['Attendee Safety Protocol:', 'Digital liability waiver & emergency contact required on RSVP'],
+    ['Risk Assessment (RAMS):', 'Full 5-step hazard identification & control measures filed'],
+    ['First Aid & Escalation:', 'Designated first aid protocol & 999 emergency procedure'],
+    ['Sanctioned Activities:', 'Community social gatherings, guided walks, amateur fitness, creative workshops, networking & venue hire'],
     ['Territorial Limits:', 'Great Britain, Northern Ireland, the Channel Islands and Isle of Man'],
-    ['Period of Insurance:', `From ${issueDate} to ${validUntil} (12 Months)`]
+    ['Validity Period:', `From ${issueDate} to ${validUntil} (12 Months)`]
   ];
 
   let currentY = 78;
@@ -145,15 +145,15 @@ export function generatePliCertificatePdf({ community, leaderName, policyNumber,
   pdf.setFont('helvetica', 'bold');
   pdf.setFontSize(9);
   pdf.setTextColor(15, 118, 110);
-  pdf.text('SPECIAL POLICY CLAUSES & VENUE COMPLIANCE', 26, 204);
+  pdf.text('VENUE CO-OPERATION & RISK PROTOCOLS', 26, 204);
 
   pdf.setFont('helvetica', 'normal');
   pdf.setFontSize(8);
   pdf.setTextColor(51, 65, 85);
   const notes = [
-    '• Indemnity to Principals: This policy extends indemnity to any Principal (Local Authority, Council, Landowner or Venue Proprietor) where required by written hire contract.',
-    '• Risk Management: Organizers maintain documented event risk assessments and participant briefing procedures for all scheduled events.',
-    '• Verification: Authenticity of this certificate may be confirmed instantly via the MORE Community verification engine or by contacting compliance@morecommunity.app.'
+    '• Risk Management: Organizers maintain documented event risk assessments (RAMS) and participant briefing procedures for all scheduled events.',
+    '• Attendee Waivers: All participants acknowledge health, safety, and personal responsibility disclaimers prior to admission.',
+    '• Independent Insurance Notice: Where a venue requires commercial Public Liability Insurance, organizers attach their independent insurance certificate to this compliance pack. Contact compliance@morecommunity.app for verification.'
   ];
   let noteY = 211;
   notes.forEach(note => {
@@ -171,19 +171,22 @@ export function generatePliCertificatePdf({ community, leaderName, policyNumber,
   pdf.setFont('helvetica', 'bold');
   pdf.setFontSize(8);
   pdf.setTextColor(30, 41, 59);
-  pdf.text('Authorized Scheme Representative', 26, 270);
+  pdf.text('MORE Community Standards', 26, 270);
   pdf.text('Registered Community Organizer', 125, 270);
 
   pdf.setFont('helvetica', 'normal');
   pdf.setFontSize(7.5);
   pdf.setTextColor(100, 116, 139);
-  pdf.text(`Issued on behalf of MORE Community Scheme • ${issueDate}`, 26, 274);
+  pdf.text(`Issued on behalf of MORE Community Platform • ${issueDate}`, 26, 274);
   pdf.text(organizer, 125, 274);
 
   // Save PDF
-  const cleanFileName = `MORE-PLI-Certificate-${commName.replace(/[^a-zA-Z0-9]/g, '-')}.pdf`;
+  const cleanFileName = `MORE-Venue-Compliance-${commName.replace(/[^a-zA-Z0-9]/g, '-')}.pdf`;
   pdf.save(cleanFileName);
 }
+
+// Backwards-compatible alias for existing callers
+export const generatePliCertificatePdf = generateSafetyDeclarationPdf;
 
 /**
  * Generates an official 2-Page Risk Assessment & Method Statement (RAMS) PDF for venue and council approvals.
@@ -201,7 +204,7 @@ export function generateRamsPdf({ community, event, leaderName, policyNumber }) 
   const evTime = event?.time || '10:00';
   const evLoc = cleanLocationName(event?.location || 'Designated Venue / Meeting Point');
   const lead = leaderName || 'Lead Organizer';
-  const policyNo = policyNumber || `MC-PLI-2026-${(community?.id || 'COMM').slice(0, 6).toUpperCase()}`;
+  const policyNo = policyNumber || `MC-SAFE-2026-${(community?.id || 'COMM').slice(0, 6).toUpperCase()}`;
   const capacity = event?.maxCapacity || event?.attendees || 25;
 
   // Header Box
@@ -234,7 +237,7 @@ export function generateRamsPdf({ community, event, leaderName, policyNumber }) 
     ['Venue / Start Point:', evLoc],
     ['Lead Organizer:', lead],
     ['Expected Attendees:', `Approx. ${capacity} participants`],
-    ['Public Liability Cover:', `£5M PLI (Policy: ${policyNo})`],
+    ['Safety Compliance:', `Venue RAMS & Waivers (Ref: ${policyNo})`],
     ['First Aider on Site:', `${lead} (First Aid Kit Carried)`]
   ];
 
@@ -362,7 +365,7 @@ export function generateRamsPdf({ community, event, leaderName, policyNumber }) 
     '1. Primary Care: Assess airway, breathing, circulation. Administer basic first aid from kit.',
     '2. Emergency Services: Call 999/112 immediately if condition is critical, head trauma, or fracture suspected.',
     '3. What3Words / Exact Coordinates: Provide precise GPS pin to paramedics from the MORE event map pin.',
-    '4. Incident Reporting: File an incident report within 24 hours on the MORE Community Leader dashboard for insurance log.'
+    '4. Incident Reporting: File an incident report within 24 hours on the MORE Community Leader dashboard for compliance log.'
   ];
 
   pdf.setFont('helvetica', 'bold');

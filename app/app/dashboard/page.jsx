@@ -1,4 +1,5 @@
 "use client";
+import { supabase } from '../../src/lib/supabaseClient';
 import { useState, useRef, useMemo, useEffect } from 'react';
 import { Users, Calendar, MessageCircle, TrendingUp, Search, Plus, MapPin, Image as ImageIcon, CreditCard, ChevronRight, ChevronLeft, Download, Activity, Globe, Heart, Crown, Info, X, Map, Zap, Mail, Trash2, UserCheck, Ban, ChevronDown, ChevronUp, Settings, Megaphone, QrCode, BarChart3, Ticket, ScanLine, UserPlus, DollarSign, Clock, Edit3, Check, CheckCircle2, Eye, EyeOff, Shield, Star, Sparkles, BookOpen, ListChecks, Bell, Archive } from 'lucide-react';
 import AppHeader from '../../src/components/AppHeader';
@@ -113,7 +114,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
     const comm = searchParams?.get('community');
     if (comm) setActiveCommunityId(comm);
     if (searchParams?.get('shield') === 'success') {
-      toast.success('Leader Pro & Shield Active! 🛡️', 'Your £5M Public Liability cover and venue RAMS are active.');
+      toast.success('Leader Pro Active! 🛡️', 'Your Venue Compliance RAMS, Attendee Waivers and 0% Platform Fee are active.');
     }
   }, [searchParams]);
 
@@ -266,9 +267,18 @@ export default function LeaderDashboard({ initialCommunityId }) {
     if (!community?.id) return;
     try {
       setIsConnectingStripe(true);
+      let authHeader = {};
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.access_token) authHeader = { 'Authorization': `Bearer ${session.access_token}` };
+      } catch (e) {}
+
       const res = await fetch('/api/stripe/connect', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...authHeader
+        },
         body: JSON.stringify({
           communityId: community.id,
           returnUrl: `${window.location.origin}/dashboard?tab=monetisation&stripe_connect=success`,
@@ -1607,7 +1617,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                         </div>
                         <div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <span style={{ fontWeight: 700, color: 'var(--white)', fontSize: '0.92rem' }}>Protect Your Group with £5M PLI</span>
+                            <span style={{ fontWeight: 700, color: 'var(--white)', fontSize: '0.92rem' }}>Venue Compliance Pack & 0% Platform Fees</span>
                             <span style={{ fontSize: '0.65rem', background: 'rgba(245,158,11,0.2)', color: '#fbbf24', padding: '1px 6px', borderRadius: '4px', fontWeight: 700 }}>PRO TIER</span>
                           </div>
                           <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', marginTop: '2px' }}>

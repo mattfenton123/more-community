@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
+import { checkRateLimit } from '../../../../src/lib/rateLimit';
 
 const stripeKey = process.env.STRIPE_SECRET_KEY;
 const isLiveStripe = Boolean(
@@ -19,63 +20,143 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 export async function POST(req) {
   try {
+    // 1. Rate limiting guard
+    const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || req.headers.get('x-real-ip') || 'anon';
+    const rateCheck = checkRateLimit(`checkout_${ip}`, 25, 60000);
+    if (!rateCheck.success) {
+      return NextResponse.json({ error: 'Too many checkout requests. Please wait a moment.' }, { status: 429 });
+    }
+
+    const authHeader = req.headers.get('authorization');
+    const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
+
+    let authUser = null;
+    if (token) {
+      const { data, error } = await supabase.auth.getUser(token);
+      if (!error && data?.user) {
+        authUser = data.user;
+      }
+    }
+
     const {
       type = 'event',
       eventId,
-      userId,
-      price: clientPrice,
-      title: clientTitle,
-      communityId,
-      leaderStripeAccountId,
-      referredBy,
-      interval = 'annual'
+      userId: incomingUserId,
+      communityId: incomingCommunityId,
+      interval = 'annual',
+      referredBy
     } = await req.json();
 
-    if (!userId || (type === 'event' && !eventId) || ((type === 'subscription' || type === 'leader_pro') && !communityId)) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    // Authenticated user ID takes precedence over body
+    const userId = authUser?.id || incomingUserId;
+    if (!userId) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+
+    if ((type === 'event' && !eventId) || ((type === 'subscription' || type === 'leader_pro') && !incomingCommunityId)) {
+      return NextResponse.json({ error: 'Missing required parameters' }, { status: 400 });
     }
 
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://www.morecommunity.app';
-    let verifiedPrice = Number(clientPrice || 0);
-    let verifiedTitle = clientTitle || (type === 'subscription' ? 'Community Membership' : 'Event Ticket');
+    let verifiedPrice = 0;
+    let verifiedTitle = '';
+    let communityId = incomingCommunityId || '';
+    let leaderStripeAccountId = null;
+    let isSubscription = false;
+    let recurringInterval = 'month';
+    let feePercent = 5; // Default 5% standard platform fee
 
+    // 2. Fetch and strictly verify price from database
     if (type === 'leader_pro') {
-      const isAnnual = interval === 'annual';
-      verifiedPrice = isAnnual ? 165 : 16.50;
-      verifiedTitle = `MORE Leader Pro & Shield (${isAnnual ? 'Annual' : 'Monthly'})`;
-    } else if (type === 'subscription') {
-      const { data: commData } = await supabase
+      const { data: commData, error: commErr } = await supabase
         .from('communities')
-        .select('name, subscription_price')
+        .select('id, name, created_by, leader_id')
         .eq('id', communityId)
         .maybeSingle();
 
-      if (commData) {
-        if (commData.subscription_price != null && Number(commData.subscription_price) > 0) {
-          verifiedPrice = Number(commData.subscription_price);
-        }
-        if (commData.name) verifiedTitle = `${commData.name} Membership`;
+      if (commErr || !commData) {
+        return NextResponse.json({ error: 'Community not found' }, { status: 404 });
       }
+
+      // Verify leader authorization if session is authenticated
+      if (authUser && commData.created_by && authUser.id !== commData.created_by && authUser.id !== commData.leader_id) {
+        return NextResponse.json({ error: 'Only community leaders can activate Leader Pro' }, { status: 403 });
+      }
+
+      const isAnnual = interval === 'annual';
+      verifiedPrice = isAnnual ? 165.00 : 16.50;
+      verifiedTitle = `MORE Leader Pro (${isAnnual ? 'Annual' : 'Monthly'})`;
+      recurringInterval = isAnnual ? 'year' : 'month';
+      isSubscription = true;
+      leaderStripeAccountId = null; // Direct to platform
+      feePercent = 0;
+    } else if (type === 'subscription') {
+      const { data: commData, error: commErr } = await supabase
+        .from('communities')
+        .select('id, name, subscription_price, stripe_account_id, is_insured, insurance_tier')
+        .eq('id', communityId)
+        .maybeSingle();
+
+      if (commErr || !commData) {
+        return NextResponse.json({ error: 'Community not found' }, { status: 404 });
+      }
+
+      verifiedPrice = Number(commData.subscription_price || 0);
+      if (verifiedPrice <= 0) {
+        return NextResponse.json({ error: 'Community does not offer a paid membership tier' }, { status: 400 });
+      }
+
+      verifiedTitle = `${commData.name} Membership`;
+      isSubscription = true;
+      recurringInterval = 'month';
+
+      // Look up leader connected account strictly from database
+      if (commData.stripe_account_id && !commData.stripe_account_id.startsWith('acct_express_demo')) {
+        leaderStripeAccountId = commData.stripe_account_id;
+      }
+
+      // Pro leaders get 0% platform fee, standard leaders pay 5%
+      const isProLeader = Boolean(commData.is_insured || commData.insurance_tier === 'pro');
+      feePercent = isProLeader ? 0 : 5;
     } else {
-      const { data: eventData } = await supabase
+      // Event Ticket
+      const { data: eventData, error: eventErr } = await supabase
         .from('events')
-        .select('title, ticket_price')
+        .select('id, title, ticket_price, community_id')
         .eq('id', eventId)
         .maybeSingle();
 
-      if (eventData) {
-        if (eventData.ticket_price != null && Number(eventData.ticket_price) > 0) {
-          verifiedPrice = Number(eventData.ticket_price);
+      if (eventErr || !eventData) {
+        return NextResponse.json({ error: 'Event not found' }, { status: 404 });
+      }
+
+      verifiedPrice = Number(eventData.ticket_price || 0);
+      if (verifiedPrice <= 0) {
+        return NextResponse.json({ error: 'Event does not require paid tickets' }, { status: 400 });
+      }
+
+      verifiedTitle = eventData.title;
+      communityId = eventData.community_id;
+      isSubscription = false;
+
+      // Look up community leader's Stripe Connect account & Pro status from database
+      if (communityId) {
+        const { data: commData } = await supabase
+          .from('communities')
+          .select('stripe_account_id, is_insured, insurance_tier')
+          .eq('id', communityId)
+          .maybeSingle();
+
+        if (commData) {
+          if (commData.stripe_account_id && !commData.stripe_account_id.startsWith('acct_express_demo')) {
+            leaderStripeAccountId = commData.stripe_account_id;
+          }
+          const isProLeader = Boolean(commData.is_insured || commData.insurance_tier === 'pro');
+          feePercent = isProLeader ? 0 : 5;
         }
-        if (eventData.title) verifiedTitle = eventData.title;
       }
     }
 
-    if (!verifiedPrice || Number(verifiedPrice) <= 0) {
-      return NextResponse.json({ error: 'Invalid or missing price' }, { status: 400 });
-    }
-
-    // Graceful simulated mode when live Stripe keys are not yet configured
     if (!isLiveStripe) {
       return NextResponse.json({
         simulated: true,
@@ -86,15 +167,8 @@ export async function POST(req) {
       });
     }
 
-    const isSubscription = type === 'subscription' || type === 'leader_pro';
-    const hasConnectedLeader = Boolean(
-      leaderStripeAccountId &&
-      !leaderStripeAccountId.startsWith('acct_express_demo') &&
-      type !== 'leader_pro'
-    );
-
-    const isAnnualLeaderPro = type === 'leader_pro' && interval === 'annual';
-    const recurringInterval = isAnnualLeaderPro ? 'year' : 'month';
+    const unitAmountPence = Math.round(verifiedPrice * 100);
+    const hasConnectedLeader = Boolean(leaderStripeAccountId);
 
     const getSuccessUrl = () => {
       if (type === 'leader_pro') {
@@ -116,6 +190,14 @@ export async function POST(req) {
       return `${baseUrl}/events/${eventId}?checkout=cancelled`;
     };
 
+    const sessionMetadata = {
+      type,
+      eventId: eventId || '',
+      userId,
+      communityId: communityId || '',
+      referredBy: referredBy || ''
+    };
+
     const sessionConfig = {
       payment_method_types: ['card'],
       line_items: [
@@ -123,12 +205,12 @@ export async function POST(req) {
           price_data: {
             currency: 'gbp',
             product_data: {
-              name: isSubscription ? verifiedTitle : `Ticket for ${verifiedTitle}`,
-              description: type === 'leader_pro' 
-                ? 'Includes £5,000,000 Public Liability Insurance, Venue RAMS, Attendee Waivers & 0% Platform Fees'
+              name: isSubscription ? verifiedTitle : `Ticket: ${verifiedTitle}`,
+              description: type === 'leader_pro'
+                ? 'Venue RAMS Generator, Attendee Waivers, Verified Trust Badge & 0% Platform Ticket Fees'
                 : (isSubscription ? 'Monthly community membership' : 'Community event ticket'),
             },
-            unit_amount: Math.round(Number(verifiedPrice) * 100), // convert to pence
+            unit_amount: unitAmountPence,
             ...(isSubscription ? { recurring: { interval: recurringInterval } } : {}),
           },
           quantity: 1,
@@ -141,33 +223,28 @@ export async function POST(req) {
       success_url: getSuccessUrl(),
       cancel_url: getCancelUrl(),
       client_reference_id: `${userId}_${communityId || eventId}`,
-      metadata: {
-        type,
-        eventId: eventId || '',
-        userId,
-        communityId: communityId || '',
-        referredBy: referredBy || ''
-      },
+      metadata: sessionMetadata,
     };
 
-    if (hasConnectedLeader) {
-      if (isSubscription) {
-        sessionConfig.subscription_data = {
-          application_fee_percent: 5,
+    if (isSubscription) {
+      sessionConfig.subscription_data = {
+        metadata: sessionMetadata,
+        ...(hasConnectedLeader ? {
+          application_fee_percent: feePercent,
           transfer_data: { destination: leaderStripeAccountId },
-        };
-      } else {
-        sessionConfig.payment_intent_data = {
-          application_fee_amount: Math.round(Number(verifiedPrice) * 100 * 0.05), // 5% platform fee
-          transfer_data: { destination: leaderStripeAccountId },
-        };
-      }
+        } : {})
+      };
+    } else if (hasConnectedLeader) {
+      sessionConfig.payment_intent_data = {
+        application_fee_amount: feePercent > 0 ? Math.round(unitAmountPence * (feePercent / 100)) : 0,
+        transfer_data: { destination: leaderStripeAccountId },
+      };
     }
 
     const session = await stripe.checkout.sessions.create(sessionConfig);
     return NextResponse.json({ sessionId: session.id, url: session.url, simulated: false });
   } catch (error) {
     console.error('Stripe checkout error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: error.message || 'Payment initiation failed' }, { status: 500 });
   }
 }

@@ -1,4 +1,5 @@
 "use client";
+import { supabase } from '../../../src/lib/supabaseClient';
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ChevronLeft, Share, MapPin, Calendar, Clock, Users, CheckCircle2, Info, List, Activity, Check, Map, Ticket, DollarSign, Copy, ExternalLink, Navigation, Video, AlertTriangle, Image as ImageIcon, ScanLine, Archive, Repeat, MessageCircle } from 'lucide-react';
@@ -366,9 +367,18 @@ export default function EventClient({ id }) {
       setCheckoutState('processing');
       const referredBy = searchParams?.get('ref') || null;
       try {
+        let authHeader = {};
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session?.access_token) authHeader = { 'Authorization': `Bearer ${session.access_token}` };
+        } catch (e) {}
+
         const res = await fetch('/api/stripe/checkout', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            ...authHeader
+          },
           body: JSON.stringify({
             type: 'event',
             eventId: event.id,
@@ -376,7 +386,6 @@ export default function EventClient({ id }) {
             price: event.ticketPrice,
             title: event.title,
             communityId: event.communityId,
-            leaderStripeAccountId: community?.stripe_account_id || null,
             referredBy
           })
         });
@@ -385,20 +394,13 @@ export default function EventClient({ id }) {
           window.location.href = data.url;
           return;
         }
+        toast.error('Ticket Checkout Failed', data?.error || 'Unable to open checkout session.');
       } catch (err) {
-        console.warn('Stripe checkout fallback to simulated:', err);
+        console.error('Stripe checkout error:', err);
+        toast.error('Checkout Error', 'Unable to connect to payment server. Please try again.');
+      } finally {
+        setCheckoutState('idle');
       }
-
-      // Simulated checkout completion when Stripe is in test/demo mode
-      setTimeout(async () => {
-        setCheckoutState('success');
-        await rsvpToEvent(event.id, 'going', 'paid', referredBy);
-        toast.success('Ticket Confirmed!', 'Your ticket is saved.');
-        setTimeout(() => {
-          setCheckoutState('idle');
-          setShowRsvpSuccessModal(true);
-        }, 1000);
-      }, 900);
     } else {
       const newStatus = isGoing ? 'not_going' : 'going';
       await rsvpToEvent(event.id, newStatus);
@@ -530,10 +532,14 @@ export default function EventClient({ id }) {
               </>
             )}
 
-            <span style={{ color: 'var(--slate-600)', fontSize: '0.85rem' }}>•</span>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '3px 10px', background: 'rgba(20,184,166,0.1)', border: '1px solid rgba(20,184,166,0.25)', borderRadius: '99px', fontSize: '0.75rem', color: '#2dd4bf', fontWeight: 600 }}>
-              <Shield size={12} color="#2dd4bf" /> Covered by MORE Leader Shield (£5M PLI)
-            </div>
+            {(community?.is_insured || community?.insurance_tier === 'pro') && (
+              <>
+                <span style={{ color: 'var(--slate-600)', fontSize: '0.85rem' }}>•</span>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '3px 10px', background: 'rgba(20,184,166,0.1)', border: '1px solid rgba(20,184,166,0.25)', borderRadius: '99px', fontSize: '0.75rem', color: '#2dd4bf', fontWeight: 600 }}>
+                  <Shield size={12} color="#2dd4bf" /> Verified Leader • Safety & RAMS Compliant
+                </div>
+              </>
+            )}
           </div>
           <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem', color: 'var(--white)', margin: '0 0 16px 0', lineHeight: 1.1 }}>
             {event.title}

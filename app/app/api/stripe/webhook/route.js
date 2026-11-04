@@ -36,10 +36,17 @@ export async function POST(req) {
     // 1. Checkout Session Completed
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object;
+
+      // Security check: Only fulfill if payment has actually settled as 'paid'
+      if (session.payment_status !== 'paid') {
+        console.log(`Checkout session ${session.id} payment_status is '${session.payment_status}'. Awaiting confirmation.`);
+        return NextResponse.json({ received: true });
+      }
+
       const { type, eventId, userId, communityId, referredBy } = session.metadata || {};
 
       if (type === 'leader_pro' && communityId) {
-        const policyNo = `MC-PLI-2026-${communityId.slice(0, 6).toUpperCase()}`;
+        const policyNo = `MC-SAFE-2026-${communityId.slice(0, 6).toUpperCase()}`;
         const { error } = await supabaseAdmin.from('communities').update({
           is_insured: true,
           insurance_tier: 'pro',
@@ -86,6 +93,13 @@ export async function POST(req) {
           insurance_tier: 'free'
         }).eq('id', communityId);
         console.log(`Leader Pro ended for community ${communityId}`);
+      } else if (type === 'subscription' && communityId && userId) {
+        // Remove or deactivate paid membership
+        await supabaseAdmin.from('community_memberships').delete().match({
+          community_id: communityId,
+          user_id: userId
+        });
+        console.log(`Paid membership ended for user ${userId} in community ${communityId}`);
       }
     }
 

@@ -14,12 +14,16 @@ export async function GET(req) {
   try {
     const authHeader = req.headers.get('authorization');
     const cronSecret = process.env.CRON_SECRET;
-    
-    // If CRON_SECRET is configured, enforce security
-    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
-      const url = new URL(req.url);
-      if (url.searchParams.get('key') !== cronSecret) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const url = new URL(req.url);
+    const keyParam = url.searchParams.get('key');
+
+    // Secure cron: reject if CRON_SECRET is missing or unauthorized
+    const isAuthorized = cronSecret && (authHeader === `Bearer ${cronSecret}` || keyParam === cronSecret);
+
+    // Strictly enforce authorization in production or whenever CRON_SECRET is configured
+    if (process.env.NODE_ENV === 'production' || cronSecret) {
+      if (!isAuthorized) {
+        return NextResponse.json({ error: 'Unauthorized: Valid CRON_SECRET required' }, { status: 401 });
       }
     }
 
@@ -98,28 +102,27 @@ export async function GET(req) {
             title: reminderTitle,
             body: reminderMessage,
             url: `/events/${event.id}`
-          }).catch(() => {});
+          }).catch(e => console.error('Push error:', e));
         }
       }
 
       eventReports.push({
-        eventId: event.id,
+        id: event.id,
         title: event.title,
-        diffHours: Math.round(diffHours * 10) / 10,
-        reminderType,
-        attendeeCount: attendees.length
+        attendeeCount: attendees.length,
+        tier: reminderType
       });
     }
 
     return NextResponse.json({
-      success: true,
+      status: 'ok',
       timestamp: new Date().toISOString(),
       notificationsCreated,
       eventsProcessed: eventReports.length,
-      reports: eventReports
+      details: eventReports
     });
-  } catch (error) {
-    console.error('Cron reminders error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (err) {
+    console.error('Reminder cron error:', err);
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

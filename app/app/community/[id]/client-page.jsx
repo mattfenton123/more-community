@@ -228,16 +228,24 @@ export default function CommunityProfile() {
     try {
       if (Number(community.subscription_price || 0) > 0 && user?.id) {
         try {
+          let authHeader = {};
+          try {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session?.access_token) authHeader = { 'Authorization': `Bearer ${session.access_token}` };
+          } catch (e) {}
+
           const res = await fetch('/api/stripe/checkout', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+              'Content-Type': 'application/json',
+              ...authHeader
+            },
             body: JSON.stringify({
               type: 'subscription',
               communityId: community.id,
               userId: user.id,
               price: Number(community.subscription_price),
-              title: `${community.name} Membership`,
-              leaderStripeAccountId: community.stripe_account_id || null
+              title: `${community.name} Membership`
             })
           });
           const data = await res.json();
@@ -245,8 +253,12 @@ export default function CommunityProfile() {
             window.location.href = data.url;
             return;
           }
+          toast.error('Membership Checkout Failed', data?.error || 'Unable to start checkout session.');
+          return;
         } catch (stripeErr) {
-          console.warn('Stripe subscription checkout fallback:', stripeErr);
+          console.error('Stripe subscription checkout error:', stripeErr);
+          toast.error('Payment Error', 'Unable to reach payment gateway. Please try again.');
+          return;
         }
       }
 
@@ -491,22 +503,22 @@ export default function CommunityProfile() {
           </div>
 
           {/* InsurTech Shield Badge */}
-          {(community.is_insured || community.insurance_tier === 'pro' || ['tw-tech-meetup', 'tw-parkrun', 'c_tw_ramblers', 'c_tw_run_club', 'c_mindful_miles', 'more-leaders-network'].includes(community.id)) && (
+          {Boolean(community.is_insured || community.insurance_tier === 'pro') && (
             <div style={{
               display: 'inline-flex',
               alignItems: 'center',
               gap: '6px',
-              background: 'rgba(20,184,166,0.12)',
-              border: '1px solid rgba(20,184,166,0.3)',
-              borderRadius: '20px',
-              padding: '4px 12px',
-              fontSize: '0.78rem',
+              padding: '6px 14px',
+              background: 'rgba(20,184,166,0.1)',
+              border: '1px solid rgba(20,184,166,0.25)',
+              borderRadius: '99px',
+              fontSize: '0.82rem',
               color: '#2dd4bf',
               fontWeight: 600,
               marginBottom: '16px',
               width: 'fit-content'
             }}>
-              <Shield size={14} color="#2dd4bf" /> Verified Insured Community (£5M Public Liability)
+              <Shield size={14} color="#2dd4bf" /> Verified Leader • Safety & RAMS Compliant
             </div>
           )}
 
