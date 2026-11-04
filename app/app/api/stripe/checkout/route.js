@@ -115,9 +115,9 @@ export async function POST(req) {
         leaderStripeAccountId = commData.stripe_account_id;
       }
 
-      // Pro leaders get 0% platform fee, standard leaders pay 5%
+      // Pro leaders get 2% reduced platform fee (60% discount), standard leaders pay 5%
       const isProLeader = Boolean(commData.is_insured || commData.insurance_tier === 'pro');
-      feePercent = isProLeader ? 0 : 5;
+      feePercent = isProLeader ? 2 : 5;
     } else {
       // Event Ticket
       const { data: eventData, error: eventErr } = await supabase
@@ -152,7 +152,7 @@ export async function POST(req) {
             leaderStripeAccountId = commData.stripe_account_id;
           }
           const isProLeader = Boolean(commData.is_insured || commData.insurance_tier === 'pro');
-          feePercent = isProLeader ? 0 : 5;
+          feePercent = isProLeader ? 2 : 5;
         }
       }
     }
@@ -207,7 +207,7 @@ export async function POST(req) {
             product_data: {
               name: isSubscription ? verifiedTitle : `Ticket: ${verifiedTitle}`,
               description: type === 'leader_pro'
-                ? 'Venue RAMS Generator, Attendee Waivers, Verified Trust Badge & 0% Platform Ticket Fees'
+                ? 'Venue RAMS Generator, Attendee Waivers, Verified Trust Badge & 2% Reduced Platform Fees'
                 : (isSubscription ? 'Monthly community membership' : 'Community event ticket'),
             },
             unit_amount: unitAmountPence,

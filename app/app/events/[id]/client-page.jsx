@@ -848,6 +848,11 @@ export default function EventClient({ id }) {
                 <div style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--white)' }}>
                   {event.ticketPrice > 0 ? `£${event.ticketPrice.toFixed(2)}` : 'Free'}
                 </div>
+                {event.ticketPrice > 0 && (
+                  <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', marginTop: '2px' }}>
+                    No extra booking fees • Secure Stripe card checkout
+                  </div>
+                )}
                 {spotsLeft !== null && (
                   <div style={{ fontSize: '0.8rem', color: spotsLeft < 5 ? 'var(--rose-400)' : 'var(--slate-400)', fontWeight: 600 }}>
                     {spotsLeft === 0 ? 'Sold Out' : `${spotsLeft} spots left`}

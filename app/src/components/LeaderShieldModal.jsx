@@ -177,7 +177,7 @@ export default function LeaderShieldModal({ isOpen, onClose, community, leaderUs
               </span>
             </div>
             <p style={{ margin: '2px 0 0 0', fontSize: '0.82rem', color: 'var(--slate-400)' }}>
-              {isInsured ? 'Venue Compliance, RAMS & 0% Platform Ticket Fees' : 'Complete venue compliance, risk assessments, attendee waivers, and 0% platform ticket fees.'}
+              {isInsured ? 'Venue Compliance, RAMS & 2% Reduced Platform Fees' : 'Complete venue compliance, risk assessments, attendee waivers, and 2% reduced platform fees (save 60%).'}
             </p>
           </div>
         </div>
@@ -217,7 +217,7 @@ export default function LeaderShieldModal({ isOpen, onClose, community, leaderUs
                 </div>
                 <div>
                   <span style={{ color: 'var(--slate-500)', fontSize: '0.72rem', display: 'block' }}>Platform Fees</span>
-                  <strong style={{ color: '#4ade80' }}>0% Commission (Active)</strong>
+                  <strong style={{ color: '#4ade80' }}>2% Reduced Fee (Active)</strong>
                 </div>
                 <div>
                   <span style={{ color: 'var(--slate-500)', fontSize: '0.72rem', display: 'block' }}>Status</span>
@@ -280,7 +280,7 @@ export default function LeaderShieldModal({ isOpen, onClose, community, leaderUs
               color: 'var(--slate-300)',
               lineHeight: 1.5
             }}>
-              <strong style={{ color: 'var(--white)' }}>Why Leaders Love This:</strong> Council parks, churches, and private venues require documented risk assessments (RAMS) and attendee waivers. <strong>MORE Leader Pro</strong> auto-generates venue-ready compliance packs, collects digital attendee waivers, and drops your platform ticket fee to 0%.
+              <strong style={{ color: 'var(--white)' }}>Why Leaders Love This:</strong> Council parks, churches, and private venues require documented risk assessments (RAMS) and attendee waivers. <strong>MORE Leader Pro</strong> auto-generates venue-ready compliance packs, collects digital attendee waivers, and drops your platform ticket fee to just 2% (saving 60% vs standard 5%).
             </div>
 
             {/* Billing Interval Switch */}

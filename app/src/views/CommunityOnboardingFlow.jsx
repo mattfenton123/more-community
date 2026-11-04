@@ -1,4 +1,5 @@
 "use client";
+import { supabase } from '../lib/supabaseClient';
 import React, { useState, useRef } from 'react';
 import { ArrowRight, Camera, Check, Link as LinkIcon, Calendar, Image as ImageIcon, MessageCircle, ChevronLeft, Plus, X, Search } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
@@ -496,8 +497,123 @@ function StepVerification({ instagram, setInstagram, whatsapp, setWhatsapp }) {
   );
 }
 
+
+function StepPlan({ selectedTier, setSelectedTier, billingInterval, setBillingInterval }) {
+  return (
+    <div className="step-wrapper">
+      <div className="step-header">
+        <h2 className="step-title">Choose Your Leader Plan</h2>
+        <p className="step-subtitle">Start free or unlock 2% reduced ticket fees & venue compliance tools.</p>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '16px', marginBottom: '20px' }}>
+        {/* Free Plan */}
+        <div 
+          onClick={() => setSelectedTier('free')}
+          className="interactive-press"
+          style={{
+            padding: '20px',
+            borderRadius: '16px',
+            background: selectedTier === 'free' ? 'rgba(20, 184, 166, 0.1)' : 'rgba(255, 255, 255, 0.03)',
+            border: selectedTier === 'free' ? '2px solid var(--teal-400)' : '1px solid rgba(255, 255, 255, 0.08)',
+            cursor: 'pointer',
+            position: 'relative'
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+            <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--slate-300)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Standard Leader</span>
+            {selectedTier === 'free' && <CheckCircle2 size={18} color="var(--teal-400)" />}
+          </div>
+          <div style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--white)', marginBottom: '4px' }}>Free <span style={{ fontSize: '0.85rem', color: 'var(--slate-400)', fontWeight: 500 }}>/ forever</span></div>
+          <p style={{ fontSize: '0.8rem', color: 'var(--slate-400)', marginBottom: '14px', lineHeight: 1.4 }}>
+            Everything you need to launch and grow a thriving local community.
+          </p>
+          <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 14px 0', fontSize: '0.8rem', color: 'var(--slate-300)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <li style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>✓ Unlimited events & RSVPs</li>
+            <li style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>✓ Member chat & community feed</li>
+            <li style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>✓ <strong>5% platform fee</strong> on paid tickets</li>
+            <li style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>✓ Standard Stripe card fees apply</li>
+          </ul>
+        </div>
+
+        {/* Pro Plan */}
+        <div 
+          onClick={() => setSelectedTier('pro')}
+          className="interactive-press"
+          style={{
+            padding: '20px',
+            borderRadius: '16px',
+            background: selectedTier === 'pro' ? 'linear-gradient(135deg, rgba(20, 184, 166, 0.15) 0%, rgba(59, 130, 246, 0.1) 100%)' : 'rgba(255, 255, 255, 0.03)',
+            border: selectedTier === 'pro' ? '2px solid #2dd4bf' : '1px solid rgba(255, 255, 255, 0.08)',
+            cursor: 'pointer',
+            position: 'relative'
+          }}
+        >
+          <div style={{ position: 'absolute', top: '-10px', right: '16px', background: 'linear-gradient(135deg, #2dd4bf, #0284c7)', color: '#0f172a', fontSize: '0.68rem', fontWeight: 800, padding: '2px 8px', borderRadius: '99px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            Recommended
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+            <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#2dd4bf', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Leader Pro</span>
+            {selectedTier === 'pro' && <CheckCircle2 size={18} color="#2dd4bf" />}
+          </div>
+          <div style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--white)', marginBottom: '4px' }}>
+            {billingInterval === 'annual' ? '£165' : '£16.50'}
+            <span style={{ fontSize: '0.82rem', color: 'var(--slate-400)', fontWeight: 500 }}>
+              /{billingInterval === 'annual' ? 'year (Save 17%)' : 'month'}
+            </span>
+          </div>
+          <p style={{ fontSize: '0.8rem', color: 'var(--slate-400)', marginBottom: '14px', lineHeight: 1.4 }}>
+            Zero ticket fees, instant council/venue RAMS & verified trust shield.
+          </p>
+          <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 14px 0', fontSize: '0.8rem', color: 'var(--slate-300)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <li style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>✨ <strong>2% Reduced ticket fees</strong> (Save 60% vs 5% standard)</li>
+            <li style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>📄 <strong>1-Click Venue RAMS</strong> (Council-ready PDF)</li>
+            <li style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>🛡️ <strong>Attendee Safety Waivers</strong> on RSVP</li>
+            <li style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>⭐ <strong>Verified Leader Trust Shield</strong></li>
+          </ul>
+
+          {selectedTier === 'pro' && (
+            <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); setBillingInterval('annual'); }}
+                style={{
+                  flex: 1, padding: '6px', fontSize: '0.75rem', fontWeight: 600, borderRadius: '8px',
+                  background: billingInterval === 'annual' ? 'var(--teal-500)' : 'rgba(255,255,255,0.06)',
+                  color: billingInterval === 'annual' ? '#0f172a' : 'var(--slate-300)',
+                  border: 'none', cursor: 'pointer'
+                }}
+              >
+                Annual (£165/yr)
+              </button>
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); setBillingInterval('monthly'); }}
+                style={{
+                  flex: 1, padding: '6px', fontSize: '0.75rem', fontWeight: 600, borderRadius: '8px',
+                  background: billingInterval === 'monthly' ? 'var(--teal-500)' : 'rgba(255,255,255,0.06)',
+                  color: billingInterval === 'monthly' ? '#0f172a' : 'var(--slate-300)',
+                  border: 'none', cursor: 'pointer'
+                }}
+              >
+                Monthly (£16.50/mo)
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div style={{ padding: '12px 16px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)', fontSize: '0.78rem', color: 'var(--slate-400)', lineHeight: 1.5 }}>
+        <strong style={{ color: 'var(--slate-200)' }}>Clear Fee Transparency:</strong> MORE Community charges 5% on ticket sales for Free Leaders, or just 2% for Leader Pro.  Standard Stripe card processing (~1.5% + 20p UK) is deducted directly by Stripe from payouts. Attendees pay zero extra booking fees.
+      </div>
+    </div>
+  );
+}
+
 export default function CommunityOnboardingFlow({ onComplete }) {
   const [step, setStep] = useState(0);
+  const [selectedTier, setSelectedTier] = useState('free'); // 'free' | 'pro'
+  const [billingInterval, setBillingInterval] = useState('annual'); // 'annual' | 'monthly'
   
   // Step 1: Basics
   const [name, setName] = useState('');
@@ -663,6 +779,35 @@ export default function CommunityOnboardingFlow({ onComplete }) {
         toast.success('Community Created!', 'You are ready to go.');
       }
 
+      if (selectedTier === 'pro') {
+        try {
+          let authHeader = {};
+          try {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session?.access_token) authHeader = { 'Authorization': `Bearer ${session.access_token}` };
+          } catch (e) {}
+
+          const res = await fetch('/api/stripe/checkout', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', ...authHeader },
+            body: JSON.stringify({
+              type: 'leader_pro',
+              communityId: newCommunityId,
+              interval: billingInterval,
+              price: billingInterval === 'annual' ? 165 : 16.50,
+              title: `MORE Leader Pro (${billingInterval === 'annual' ? 'Annual' : 'Monthly'})`
+            })
+          });
+          const checkoutData = await res.json();
+          if (res.ok && checkoutData?.url && !checkoutData?.simulated) {
+            window.location.href = checkoutData.url;
+            return;
+          }
+        } catch (checkoutErr) {
+          console.error('Pro checkout redirect error:', checkoutErr);
+        }
+      }
+
       window.location.href = `/community/${newCommunityId}`;
     } catch (err) {
       console.error(err);
@@ -678,7 +823,7 @@ export default function CommunityOnboardingFlow({ onComplete }) {
   const isValidIg = instagram.trim() === '' || /^[@a-zA-Z0-9._]+$/.test(instagram.trim()) || instagram.includes('instagram.com');
   const isValidWa = whatsapp.trim() === '' || whatsapp.includes('chat.whatsapp.com') || whatsapp.includes('wa.me');
 
-  const TOTAL_STEPS = 6;
+  const TOTAL_STEPS = 7;
   const isStep1Valid = name.trim().length >= 3 && description.trim().length >= 10;
   const isStep2Valid = true;
   const isStep3Valid = tags.length > 0;

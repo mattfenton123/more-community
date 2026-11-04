@@ -727,11 +727,20 @@ export default function AdminDashboard() {
                           {c.verified && <BadgeCheck size={16} color="#3b82f6" />}
                           {c.featured && <Star size={14} color="#f59e0b" fill="#f59e0b" />}
                         </div>
-                        <div style={{ display: 'flex', gap: '12px', fontSize: '0.75rem', color: 'var(--slate-400)', flexWrap: 'wrap' }}>
+                        <div style={{ display: 'flex', gap: '8px', fontSize: '0.75rem', color: 'var(--slate-400)', flexWrap: 'wrap', alignItems: 'center' }}>
                           <span>{c.members} members</span>
                           <span>{c.cEvents} events</span>
                           {c.cRevenue > 0 && <span style={{ color: '#f59e0b', fontWeight: 600 }}>£{c.cRevenue} Gross</span>}
-                          {c.category && <span style={{ color: 'var(--slate-500)' }}>• {c.category}</span>}
+                          {Boolean(c.is_insured || c.insurance_tier === 'pro') ? (
+                            <span style={{ background: 'rgba(20,184,166,0.15)', border: '1px solid rgba(20,184,166,0.3)', color: '#2dd4bf', padding: '1px 6px', borderRadius: '4px', fontSize: '0.68rem', fontWeight: 700 }}>LEADER PRO</span>
+                          ) : (
+                            <span style={{ background: 'rgba(255,255,255,0.06)', color: 'var(--slate-400)', padding: '1px 6px', borderRadius: '4px', fontSize: '0.68rem' }}>FREE TIER</span>
+                          )}
+                          {c.stripe_account_id ? (
+                            <span style={{ background: 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.3)', color: '#60a5fa', padding: '1px 6px', borderRadius: '4px', fontSize: '0.68rem', fontWeight: 600 }}>STRIPE LINKED</span>
+                          ) : (
+                            <span style={{ background: 'rgba(245,158,11,0.1)', color: '#fbbf24', padding: '1px 6px', borderRadius: '4px', fontSize: '0.68rem' }}>NO PAYOUT BANK</span>
+                          )}
                         </div>
                       </div>
 

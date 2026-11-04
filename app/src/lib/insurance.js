@@ -22,9 +22,9 @@ export const LEADER_PRO_CONFIG = {
     },
     {
       id: 'fees',
-      title: '0% Platform Ticket Fee',
-      badge: 'Save 5% per Ticket',
-      desc: 'Keep 100% of your paid event ticket revenue (standard Stripe payment processing fees apply).'
+      title: '2% Reduced Platform Ticket Fee',
+      badge: 'Save 60% on Fees',
+      desc: 'Keep 98% of your paid event ticket revenue (reduced from 5% standard; standard Stripe card processing fees apply).'
     },
     {
       id: 'badge',

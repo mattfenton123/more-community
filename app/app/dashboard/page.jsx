@@ -114,7 +114,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
     const comm = searchParams?.get('community');
     if (comm) setActiveCommunityId(comm);
     if (searchParams?.get('shield') === 'success') {
-      toast.success('Leader Pro Active! 🛡️', 'Your Venue Compliance RAMS, Attendee Waivers and 0% Platform Fee are active.');
+      toast.success('Leader Pro Active! 🛡️', 'Your Venue Compliance RAMS, Attendee Waivers and 2% Reduced Platform Fee are active.');
     }
   }, [searchParams]);
 
@@ -1581,7 +1581,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                             <span style={{ fontSize: '0.65rem', background: 'rgba(34,197,94,0.2)', color: '#4ade80', padding: '1px 6px', borderRadius: '4px', fontWeight: 700 }}>£5M COVER</span>
                           </div>
                           <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', marginTop: '2px' }}>
-                            Policy #{policyNo} • 0% Ticket Platform Fees
+                            Policy #{policyNo} • 2% Reduced Ticket Fees (Save 60%)
                           </div>
                         </div>
                       </div>
@@ -1617,11 +1617,11 @@ export default function LeaderDashboard({ initialCommunityId }) {
                         </div>
                         <div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <span style={{ fontWeight: 700, color: 'var(--white)', fontSize: '0.92rem' }}>Venue Compliance Pack & 0% Platform Fees</span>
+                            <span style={{ fontWeight: 700, color: 'var(--white)', fontSize: '0.92rem' }}>Venue Compliance Pack & 2% Reduced Fees</span>
                             <span style={{ fontSize: '0.65rem', background: 'rgba(245,158,11,0.2)', color: '#fbbf24', padding: '1px 6px', borderRadius: '4px', fontWeight: 700 }}>PRO TIER</span>
                           </div>
                           <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', marginTop: '2px' }}>
-                            Council venue RAMS, attendee safety waivers, and 0% ticket fees.
+                            Council venue RAMS, attendee safety waivers, and 2% ticket fees (save 60%).
                           </div>
                         </div>
                       </div>
@@ -2724,8 +2724,8 @@ export default function LeaderDashboard({ initialCommunityId }) {
                       </div>
                       <div style={{ background: 'rgba(255,255,255,0.02)', padding: '14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
                         <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '4px' }}>Platform Split</div>
-                        <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#38bdf8' }}>95% / 5%</div>
-                        <div style={{ fontSize: '0.75rem', color: 'var(--slate-500)', marginTop: '2px' }}>Zero upfront fees</div>
+                        <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#38bdf8' }}>{isShieldActive ? '98% / 2%' : '95% / 5%'}</div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--slate-500)', marginTop: '2px' }}>{isShieldActive ? '2% reduced fee (Pro)' : '5% standard platform fee'}</div>
                       </div>
                     </div>
 
@@ -2759,7 +2759,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                         Get Paid Directly to Your UK Bank Account
                       </h4>
                       <p style={{ color: 'var(--slate-300)', margin: 0, fontSize: '0.88rem', lineHeight: 1.5 }}>
-                        Connect your bank account via Stripe Express in under 2 minutes. Receive 95% of every event ticket and subscription directly into your account with automatic daily payouts.
+                        Connect your bank account via Stripe Express in under 2 minutes. Receive 95% of every event ticket and subscription directly into your account with automatic daily payouts. Standard Stripe card processing (~1.5% + 20p UK) is deducted by Stripe directly from payouts. Upgrade to Leader Pro to reduce platform ticket fees to just 2% (saving 60%).
                       </p>
                     </div>
                     <button

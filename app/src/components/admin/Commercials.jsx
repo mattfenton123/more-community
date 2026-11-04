@@ -130,8 +130,8 @@ export default function Commercials({ platformStats, handleExportCSV, revenueByC
     .filter(s => s.status === 'Active')
     .reduce((sum, s) => sum + (Number(s.monthlyFee) || 0), 0);
 
-  const platformTakeRate = 0.15; // 15% platform fee
-  const leaderTakeRate = 0.85;   // 85% to leaders
+  const platformTakeRate = 0.05; // 5% standard platform fee (0% for Pro)
+  const leaderTakeRate = 0.95;   // 95% to standard leaders (100% for Pro)
 
   const totalGrossTicketRevenue = platformStats.totalRevenue || 0;
   const platformGrossCut = Math.round(totalGrossTicketRevenue * platformTakeRate);
@@ -183,7 +183,7 @@ export default function Commercials({ platformStats, handleExportCSV, revenueByC
         </div>
 
         <div className="glass-panel" style={{ padding: '16px', border: '1px solid rgba(59,130,246,0.2)', background: 'linear-gradient(135deg, rgba(59,130,246,0.08) 0%, rgba(59,130,246,0.01) 100%)' }}>
-          <div style={{ fontSize: '0.7rem', color: 'var(--slate-400)', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px' }}>Platform Take (15%)</div>
+          <div style={{ fontSize: '0.7rem', color: 'var(--slate-400)', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px' }}>Platform Take (5% Standard / 2% Pro)</div>
           <div style={{ fontSize: '1.7rem', fontWeight: 700, color: '#60a5fa', fontFamily: 'var(--font-heading)' }}>£{platformGrossCut}</div>
           <div style={{ fontSize: '0.7rem', color: 'var(--slate-500)', marginTop: '4px' }}>Net fee revenue retained</div>
         </div>
@@ -293,8 +293,10 @@ export default function Commercials({ platformStats, handleExportCSV, revenueByC
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '12px' }}>
               {revenueByComm.map(c => {
-                const commPlatformTake = Math.round(c.cRevenue * platformTakeRate);
-                const commLeaderNet = Math.round(c.cRevenue * leaderTakeRate);
+                const isPro = Boolean(c.is_insured || c.insurance_tier === 'pro');
+                const rate = isPro ? 0.02 : 0.05;
+                const commPlatformTake = Math.round(c.cRevenue * rate);
+                const commLeaderNet = Math.round(c.cRevenue * (1 - rate));
                 return (
                   <div key={c.id} className="glass-panel interactive-hover" style={{ padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div style={{ minWidth: 0, flex: 1, paddingRight: '12px' }}>
@@ -303,7 +305,7 @@ export default function Commercials({ platformStats, handleExportCSV, revenueByC
                         {c.cEvents} events • {c.members} members
                       </div>
                       <div style={{ display: 'flex', gap: '10px', fontSize: '0.7rem', marginTop: '6px' }}>
-                        <span style={{ color: '#60a5fa' }}>Take (15%): £{commPlatformTake}</span>
+                        <span style={{ color: '#60a5fa' }}>Platform Take: £{commPlatformTake}</span>
                         <span style={{ color: '#4ade80' }}>Leader (85%): £{commLeaderNet}</span>
                       </div>
                     </div>
@@ -429,7 +431,9 @@ export default function Commercials({ platformStats, handleExportCSV, revenueByC
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {revenueByComm.map(c => {
               const gross = c.cRevenue;
-              const leaderShare = Math.round(gross * leaderTakeRate);
+              const isPro = Boolean(c.is_insured || c.insurance_tier === 'pro');
+                    const leaderShare = Math.round(gross * (isPro ? 0.98 : 0.95));
+                    const platformCut = gross - leaderShare;
               const isPaid = payoutStatuses[c.id] === 'Paid';
               return (
                 <div key={c.id} className="glass-panel" style={{ padding: '14px 16px', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
