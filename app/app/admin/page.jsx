@@ -738,8 +738,10 @@ export default function AdminDashboard() {
                           )}
                           {c.stripe_account_id ? (
                             <span style={{ background: 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.3)', color: '#60a5fa', padding: '1px 6px', borderRadius: '4px', fontSize: '0.68rem', fontWeight: 600 }}>STRIPE LINKED</span>
+                          ) : (c.cRevenue > 0 || (events.filter(e => e.communityId === c.id && (e.ticketPrice || 0) > 0).length > 0)) ? (
+                            <span style={{ background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)', color: '#f87171', padding: '1px 6px', borderRadius: '4px', fontSize: '0.68rem', fontWeight: 700 }}>⚠️ PAYOUT BANK NEEDED</span>
                           ) : (
-                            <span style={{ background: 'rgba(245,158,11,0.1)', color: '#fbbf24', padding: '1px 6px', borderRadius: '4px', fontSize: '0.68rem' }}>NO PAYOUT BANK</span>
+                            <span style={{ background: 'rgba(255,255,255,0.04)', color: 'var(--slate-400)', padding: '1px 6px', borderRadius: '4px', fontSize: '0.68rem' }}>FREE GROUP (NO BANK NEEDED)</span>
                           )}
                         </div>
                       </div>

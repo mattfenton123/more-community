@@ -1716,6 +1716,7 @@ export function AppProvider({ children }) {
       setExperiences,
       services,
       reviews,
+      addReview,
       savedItems,
       saveItem,
       unsaveItem,

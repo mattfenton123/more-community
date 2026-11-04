@@ -744,6 +744,12 @@ export default function LeaderDashboard({ initialCommunityId }) {
       return;
     }
 
+    if (parseFloat(eventForm.ticketPrice) > 0 && !stripeConnected) {
+      toast.error('Payout Account Required', 'To charge for event tickets, you must connect a UK payout bank account via Stripe Express.');
+      handleConnectStripe();
+      return;
+    }
+
     const todayStr = new Date().toISOString().split('T')[0];
     if (dates.length === 1 && dates[0] < todayStr) {
       const proceed = window.confirm('The date you selected is in the past. This event will be archived immediately under Past Events. Do you wish to publish it anyway?');
@@ -820,6 +826,11 @@ export default function LeaderDashboard({ initialCommunityId }) {
 
   const handleSaveEvent = async () => {
     if (!eventForm.title || !eventForm.date || !eventForm.time || !eventForm.location) return;
+    if (parseFloat(eventForm.ticketPrice) > 0 && !stripeConnected) {
+      toast.error('Payout Account Required', 'To charge for event tickets, you must connect a UK payout bank account via Stripe Express.');
+      handleConnectStripe();
+      return;
+    }
     setIsUploading(true);
     let imageUrl;
     if (imageFile) {
@@ -1105,6 +1116,52 @@ export default function LeaderDashboard({ initialCommunityId }) {
               <input type="number" className="form-input" placeholder="0 = Free" value={eventForm.ticketPrice} onChange={e => setEventForm({...eventForm, ticketPrice: e.target.value})} min="0" step="0.50" style={{ padding: '14px 16px' }} />
             </div>
           </div>
+
+          {/* Stripe Payout Account Requirement Guard */}
+          {parseFloat(eventForm.ticketPrice) > 0 && (
+            <div style={{
+              marginBottom: '16px',
+              padding: '14px 16px',
+              borderRadius: '14px',
+              background: stripeConnected ? 'rgba(20, 184, 166, 0.08)' : 'rgba(245, 158, 11, 0.1)',
+              border: stripeConnected ? '1px solid rgba(45, 212, 191, 0.3)' : '1px solid rgba(245, 158, 11, 0.35)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '10px'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                <CreditCard size={18} color={stripeConnected ? 'var(--teal-400)' : '#fbbf24'} style={{ flexShrink: 0, marginTop: '2px' }} />
+                <div>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 700, color: stripeConnected ? 'var(--teal-200)' : '#fef08a' }}>
+                    {stripeConnected ? '✓ Stripe Payout Account Active' : 'Payout Account Required to Charge Tickets'}
+                  </div>
+                  <div style={{ fontSize: '0.78rem', color: 'var(--slate-300)', marginTop: '2px', lineHeight: 1.4 }}>
+                    {stripeConnected 
+                      ? 'Ticket sales will automatically transfer directly to your connected UK bank account via Faster Payments.'
+                      : `To charge £${eventForm.ticketPrice} per ticket, you must link your UK bank account so ticket sales pay out directly to you.`}
+                  </div>
+                </div>
+              </div>
+              {!stripeConnected && (
+                <button
+                  type="button"
+                  onClick={handleConnectStripe}
+                  disabled={isConnectingStripe}
+                  className="btn btn-primary interactive-press"
+                  style={{
+                    padding: '8px 14px',
+                    borderRadius: '10px',
+                    fontSize: '0.82rem',
+                    fontWeight: 700,
+                    alignSelf: 'flex-start'
+                  }}
+                >
+                  {isConnectingStripe ? 'Opening Stripe Express...' : 'Connect Bank Account (Stripe Express)'}
+                </button>
+              )}
+            </div>
+          )}
+
           <div className="form-group">
             <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><ImageIcon size={14} color="#f59e0b" /> Cover Image</label>
             <div>

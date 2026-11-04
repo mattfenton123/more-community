@@ -1057,20 +1057,115 @@ textarea.form-input {
 }
 
 
-/* Dashboard layout wrapper (Mobile style forced on Desktop) */
-.desktop-only {
-  display: none !important;
-}
+/* ============================================================
+   RESPONSIVE DESKTOP & MOBILE NAVIGATION & DASHBOARD
+   ============================================================ */
+
+/* Base (Mobile-first) defaults */
 .dashboard-layout {
   display: flex;
   flex-direction: column;
   min-height: 100dvh;
+  width: 100%;
 }
 .dashboard-sidebar {
   display: none;
 }
 .dashboard-main {
   flex: 1;
+  min-width: 0;
+}
+
+@media (max-width: 1023px) {
+  .desktop-only {
+    display: none !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .mobile-only {
+    display: none !important;
+  }
+
+  .desktop-only {
+    display: block !important;
+  }
+
+  .desktop-only.dashboard-sidebar {
+    display: flex !important;
+  }
+
+  .dashboard-layout {
+    display: flex !important;
+    flex-direction: row !important;
+    min-height: 100vh;
+    width: 100%;
+    align-items: stretch;
+  }
+
+  .dashboard-sidebar {
+    display: flex !important;
+    flex-direction: column;
+    width: 290px;
+    min-width: 290px;
+    background: linear-gradient(180deg, rgba(15, 23, 42, 0.98) 0%, rgba(10, 16, 28, 0.98) 100%);
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 24px 18px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    box-sizing: border-box;
+    z-index: 40;
+    overflow-y: auto;
+  }
+
+  .dashboard-sidebar-header {
+    padding-bottom: 20px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .dashboard-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--slate-400);
+    font-size: 0.92rem;
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    margin-bottom: 6px;
+  }
+
+  .dashboard-nav-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--white);
+  }
+
+  .dashboard-nav-item.active {
+    background: rgba(20, 184, 166, 0.15);
+    border-color: rgba(45, 212, 191, 0.35);
+    color: var(--teal-300);
+    font-weight: 700;
+  }
+
+  .dashboard-main {
+    flex: 1;
+    min-width: 0;
+    padding: 32px 36px 60px;
+    box-sizing: border-box;
+    overflow-y: auto;
+  }
+
+  .dashboard-content-scroll {
+    overflow: visible;
+  }
 }
 /* Microsite Desktop Layout */
 @media (min-width: 1024px) {
@@ -1157,10 +1252,32 @@ textarea.form-input {
   }
 
   .app-container.desktop-mode {
-    max-width: 1320px !important;
-    width: 100%;
+    max-width: 1440px !important;
+    width: 100% !important;
     border-left: 1px solid rgba(255,255,255,0.08);
     border-right: 1px solid rgba(255,255,255,0.08);
+    transform: none !important; /* Prevents trapping fixed modals within mobile container bounds */
+  }
+
+  /* Desktop Modal Centering */
+  .modal-overlay {
+    position: fixed !important;
+    inset: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 24px !important;
+    z-index: 100000 !important;
+    background: rgba(2, 6, 23, 0.88) !important;
+    backdrop-filter: blur(12px) !important;
+  }
+
+  .modal-overlay .modal-content {
+    border-radius: 24px !important;
+    max-height: 90vh !important;
+    overflow-y: auto !important;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7) !important;
+    margin: auto !important;
   }
 }
 

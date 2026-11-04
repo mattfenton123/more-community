@@ -129,7 +129,16 @@ export default function CommunityProfile() {
     return <div style={{ padding: '40px', color: 'var(--white)', textAlign: 'center' }}>Loading...</div>;
   }
 
-  const isMember = Boolean(user?.id && user?.joinedCommunities?.includes(communityId));
+  const isMember = Boolean(
+    user?.id && (
+      user?.joinedCommunities?.includes(communityId) ||
+      community.leader_id === user.id ||
+      community.creator_id === user.id ||
+      community.creatorId === user.id ||
+      user.ledCommunities?.includes(communityId) ||
+      (communityMemberships[communityId] || []).some(m => (m.userId === user.id || m.user_id === user.id))
+    )
+  );
   const isLeader = Boolean(
     user?.id && (
       (community.leader_id && community.leader_id === user.id) ||
@@ -1221,11 +1230,17 @@ export default function CommunityProfile() {
         {/* ===== REVIEWS TAB ===== */}
         {activeTab === 'reviews' && (
           <ReviewsList communityId={communityId} onAddReview={() => {
-            if (!isMember) {
-              toast.error('Members Only', 'You must be a member to leave a review.');
-            } else {
-              setShowReviewForm(true);
+            if (!user?.id) {
+              toast.info('Please sign in', 'Sign in to leave a review.');
+              navigate.push(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
+              return;
             }
+            if (!isMember) {
+              setShowJoinGuidelinesModal(true);
+              toast.info('Join community first', 'Join this group to share your member review.');
+              return;
+            }
+            setShowReviewForm(true);
           }} />
         )}
 
@@ -1655,9 +1670,31 @@ export default function CommunityProfile() {
 
             {/* Reviews */}
             <div style={{ marginBottom: '32px' }}>
-              <h3 style={{ fontSize: '1.1rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: '0 0 16px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Star size={18} color="var(--amber-400)" /> What members say
-              </h3>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
+                <h3 style={{ fontSize: '1.1rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Star size={18} color="var(--amber-400)" /> What members say
+                </h3>
+                <button 
+                  type="button"
+                  onClick={() => {
+                    if (!user?.id) {
+                      toast.info('Please sign in', 'Sign in to leave a review.');
+                      navigate.push(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
+                      return;
+                    }
+                    if (!isMember) {
+                      setShowJoinGuidelinesModal(true);
+                      toast.info('Join community first', 'Join this group to share your member review.');
+                      return;
+                    }
+                    setShowReviewForm(true);
+                  }}
+                  className="btn btn-outline interactive-press"
+                  style={{ padding: '6px 14px', fontSize: '0.82rem', borderRadius: '10px' }}
+                >
+                  Leave a Review
+                </button>
+              </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {topReviews.length > 0 ? topReviews.map((review) => {
                   const author = users.find(u => u.id === review.user_id) || { name: 'Community Member', avatar: 'https://i.pravatar.cc/150' };
