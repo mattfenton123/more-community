@@ -232,12 +232,14 @@ export async function POST(req) {
         ...(hasConnectedLeader ? {
           application_fee_percent: feePercent,
           transfer_data: { destination: leaderStripeAccountId },
+          on_behalf_of: leaderStripeAccountId,
         } : {})
       };
     } else if (hasConnectedLeader) {
       sessionConfig.payment_intent_data = {
         application_fee_amount: feePercent > 0 ? Math.round(unitAmountPence * (feePercent / 100)) : 0,
         transfer_data: { destination: leaderStripeAccountId },
+        on_behalf_of: leaderStripeAccountId,
       };
     }
 
