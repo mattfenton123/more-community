@@ -1095,6 +1095,17 @@ textarea.form-input {
     display: flex !important;
   }
 
+  /* Prevent bottom nav floating over desktop sidebar layout */
+  .dashboard-layout ~ .bottom-nav,
+  .dashboard-sidebar ~ .bottom-nav,
+  .app-container:has(.dashboard-sidebar) .bottom-nav,
+  .app-container:has(.dashboard-layout) .bottom-nav,
+  body:has(.dashboard-sidebar) .bottom-nav,
+  body:has(.dashboard-layout) .bottom-nav,
+  .desktop-mode:has(.dashboard-sidebar) .bottom-nav {
+    display: none !important;
+  }
+
   .dashboard-layout {
     display: flex !important;
     flex-direction: row !important;

@@ -155,6 +155,12 @@ export default function LeaderDashboard({ initialCommunityId }) {
   const publishedEvents = communityEvents.filter(e => e.status !== 'cancelled');
   const communityMessages = community ? messages.filter(m => m.communityId === community.id) : [];
 
+  const isShieldActive = Boolean(
+    community?.is_insured || 
+    community?.insurance_tier === 'pro' ||
+    (typeof window !== 'undefined' && community?.id && localStorage.getItem(`more_community_insured_${community.id}`) === 'true')
+  );
+
   const emptyEventForm = { 
     title: '', 
     description: '', 

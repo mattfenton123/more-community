@@ -14,6 +14,14 @@ export default function BottomNav() {
   const isLeader = user?.ledCommunities?.length > 0;
 
   const [hasModalOpen, setHasModalOpen] = React.useState(false);
+  const [isDesktop, setIsDesktop] = React.useState(false);
+
+  React.useEffect(() => {
+    const handleResize = () => setIsDesktop(typeof window !== 'undefined' && window.innerWidth >= 1024);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   React.useEffect(() => {
     const checkModal = () => {
@@ -35,7 +43,11 @@ export default function BottomNav() {
                      currentPath.match(/^\/chat\/dm\/[^/]+$/) ||
                      currentPath === '/settings';
   
-  const hideBottomNav = currentPath === '/login' || currentPath === '/onboarding' || isDeepPage || hasModalOpen;
+  const isDashboardPage = currentPath?.startsWith('/dashboard') || 
+                          currentPath?.startsWith('/admin') || 
+                          currentPath?.startsWith('/council-dashboard');
+
+  const hideBottomNav = currentPath === '/login' || currentPath === '/onboarding' || isDeepPage || hasModalOpen || (isDashboardPage && isDesktop);
   
   if (hideBottomNav) return null;
 
