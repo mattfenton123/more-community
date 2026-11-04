@@ -31,6 +31,8 @@ import ProfileImageModal from '../../src/components/ProfileImageModal';
 import LeaderShieldModal from '../../src/components/LeaderShieldModal';
 import LeaderProposalsInbox from '../../src/components/LeaderProposalsInbox';
 import SpecialistVaultModal from '../../src/components/SpecialistVaultModal';
+import PayoutBankModal from '../../src/components/PayoutBankModal';
+import { Banknote } from 'lucide-react';
 import CouncilImpactMetrics from '../../src/components/CouncilImpactMetrics';
 import { generatePliCertificatePdf, generateRamsPdf } from '../../src/lib/insurance';
 
@@ -108,7 +110,8 @@ export default function LeaderDashboard({ initialCommunityId }) {
   const [activeTab, setActiveTab] = useState(searchParams?.get('tab') || 'overview');
   const [showShieldModal, setShowShieldModal] = useState(false);
   const [specialistModalState, setSpecialistModalState] = useState({ isOpen: false, mode: 'inspect', specialist: null });
-  const [experiencesSubTab, setExperiencesSubTab] = useState('pitches'); // 'pitches' | 'trips' | 'council'
+  const [experiencesSubTab, setExperiencesSubTab] = useState('pitches');
+  const [showPayoutBankModal, setShowPayoutBankModal] = useState(false); // 'pitches' | 'trips' | 'council'
   const [activeCommunityId, setActiveCommunityId] = useState(
     initialCommunityId || searchParams?.get('community') || user?.ledCommunities?.[0] || null
   );
@@ -160,7 +163,8 @@ export default function LeaderDashboard({ initialCommunityId }) {
     location: '', 
     coords: null,
     maxCapacity: '', 
-    ticketPrice: '', 
+    ticketPrice: '',
+    allowCash: false, 
     collabCommunityIds: [],
     autoReminders: true, 
     autoFeedback: true,
@@ -268,8 +272,12 @@ export default function LeaderDashboard({ initialCommunityId }) {
     }
   }, [searchParams, community?.id]);
 
-  const handleConnectStripe = async () => {
+  const handleConnectStripe = async (preferStripeExpress = false) => {
     if (!community?.id) return;
+    if (!preferStripeExpress) {
+      setShowPayoutBankModal(true);
+      return;
+    }
     try {
       setIsConnectingStripe(true);
       let authHeader = {};
@@ -744,9 +752,9 @@ export default function LeaderDashboard({ initialCommunityId }) {
       return;
     }
 
-    if (parseFloat(eventForm.ticketPrice) > 0 && !stripeConnected) {
-      toast.error('Payout Account Required', 'To charge for event tickets, you must connect a UK payout bank account via Stripe Express.');
-      handleConnectStripe();
+    if (parseFloat(eventForm.ticketPrice) > 0 && !stripeConnected && !eventForm.allowCash) {
+      toast.error('Payout Account or Cash Option Required', 'Please register a payout account or check "Allow Pay in Cash" to publish a paid event.');
+      setShowPayoutBankModal(true);
       return;
     }
 
@@ -813,6 +821,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
       coords: parsedCoords || (event.lat && event.lng ? { lat: event.lat, lng: event.lng } : null),
       maxCapacity: event.maxCapacity ? event.maxCapacity.toString() : '',
       ticketPrice: event.ticketPrice ? event.ticketPrice.toString() : '',
+      allowCash: Boolean(event.allowCash || event.allow_cash),
       collabCommunityIds: event.collabCommunityIds || [],
       autoReminders: event.autoReminders ?? true,
       autoFeedback: event.autoFeedback ?? true,
@@ -826,9 +835,9 @@ export default function LeaderDashboard({ initialCommunityId }) {
 
   const handleSaveEvent = async () => {
     if (!eventForm.title || !eventForm.date || !eventForm.time || !eventForm.location) return;
-    if (parseFloat(eventForm.ticketPrice) > 0 && !stripeConnected) {
-      toast.error('Payout Account Required', 'To charge for event tickets, you must connect a UK payout bank account via Stripe Express.');
-      handleConnectStripe();
+    if (parseFloat(eventForm.ticketPrice) > 0 && !stripeConnected && !eventForm.allowCash) {
+      toast.error('Payout Account or Cash Option Required', 'Please register a payout account or check "Allow Pay in Cash" to publish a paid event.');
+      setShowPayoutBankModal(true);
       return;
     }
     setIsUploading(true);
@@ -843,6 +852,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
       date: eventForm.date, time: eventForm.time, location: eventForm.location,
       maxCapacity: eventForm.maxCapacity ? parseInt(eventForm.maxCapacity, 10) : null,
       ticketPrice: eventForm.ticketPrice ? parseFloat(eventForm.ticketPrice) : 0,
+      allowCash: Boolean(eventForm.allowCash),
       collabCommunityIds: eventForm.collabCommunityIds || [],
       autoReminders: eventForm.autoReminders,
       autoFeedback: eventForm.autoFeedback
@@ -1117,48 +1127,89 @@ export default function LeaderDashboard({ initialCommunityId }) {
             </div>
           </div>
 
-          {/* Stripe Payout Account Requirement Guard */}
+          {/* Cash on Arrival & Payout Bank Controls */}
           {parseFloat(eventForm.ticketPrice) > 0 && (
-            <div style={{
-              marginBottom: '16px',
-              padding: '14px 16px',
-              borderRadius: '14px',
-              background: stripeConnected ? 'rgba(20, 184, 166, 0.08)' : 'rgba(245, 158, 11, 0.1)',
-              border: stripeConnected ? '1px solid rgba(45, 212, 191, 0.3)' : '1px solid rgba(245, 158, 11, 0.35)',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '10px'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
-                <CreditCard size={18} color={stripeConnected ? 'var(--teal-400)' : '#fbbf24'} style={{ flexShrink: 0, marginTop: '2px' }} />
+            <div style={{ marginBottom: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {/* Allow Cash Checkbox */}
+              <label 
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  padding: '12px 14px',
+                  borderRadius: '12px',
+                  background: 'rgba(255, 255, 255, 0.03)',
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  cursor: 'pointer'
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={eventForm.allowCash || false}
+                  onChange={e => setEventForm({ ...eventForm, allowCash: e.target.checked })}
+                  style={{ width: '18px', height: '18px', accentColor: 'var(--teal-500)', cursor: 'pointer' }}
+                />
                 <div>
-                  <div style={{ fontSize: '0.85rem', fontWeight: 700, color: stripeConnected ? 'var(--teal-200)' : '#fef08a' }}>
-                    {stripeConnected ? '✓ Stripe Payout Account Active' : 'Payout Account Required to Charge Tickets'}
+                  <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Banknote size={16} color="#fbbf24" /> Allow Pay in Cash at Venue (£{eventForm.ticketPrice})
                   </div>
-                  <div style={{ fontSize: '0.78rem', color: 'var(--slate-300)', marginTop: '2px', lineHeight: 1.4 }}>
-                    {stripeConnected 
-                      ? 'Ticket sales will automatically transfer directly to your connected UK bank account via Faster Payments.'
-                      : `To charge £${eventForm.ticketPrice} per ticket, you must link your UK bank account so ticket sales pay out directly to you.`}
+                  <div style={{ fontSize: '0.78rem', color: 'var(--slate-400)', marginTop: '2px' }}>
+                    Members can reserve a spot and hand you cash directly on arrival.
                   </div>
                 </div>
+              </label>
+
+              {/* Payout Account Status Banner */}
+              <div style={{
+                padding: '14px 16px',
+                borderRadius: '14px',
+                background: stripeConnected ? 'rgba(20, 184, 166, 0.08)' : (eventForm.allowCash ? 'rgba(245, 158, 11, 0.08)' : 'rgba(239, 68, 68, 0.1)'),
+                border: stripeConnected ? '1px solid rgba(45, 212, 191, 0.3)' : (eventForm.allowCash ? '1px solid rgba(245, 158, 11, 0.25)' : '1px solid rgba(239, 68, 68, 0.3)'),
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '10px'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                  <CreditCard size={18} color={stripeConnected ? 'var(--teal-400)' : (eventForm.allowCash ? '#fbbf24' : '#f87171')} style={{ flexShrink: 0, marginTop: '2px' }} />
+                  <div>
+                    <div style={{ fontSize: '0.85rem', fontWeight: 700, color: stripeConnected ? 'var(--teal-200)' : (eventForm.allowCash ? '#fef08a' : '#fca5a5') }}>
+                      {stripeConnected 
+                        ? '✓ Payout Account Active (Faster Payments)' 
+                        : (eventForm.allowCash ? 'Cash on Arrival Enabled' : 'Register a Payout Account to Sell Tickets Online')}
+                    </div>
+                    <div style={{ fontSize: '0.78rem', color: 'var(--slate-300)', marginTop: '2px', lineHeight: 1.4 }}>
+                      {stripeConnected 
+                        ? 'Ticket revenue will automatically transfer directly to your registered UK bank account via Faster Payments.' 
+                        : (eventForm.allowCash 
+                            ? 'You can collect cash in person at the meetup. To also accept online card payments, register a payout account.' 
+                            : `To charge £${eventForm.ticketPrice} online, register your UK bank account so ticket sales transfer to you directly.`)}
+                    </div>
+                  </div>
+                </div>
+
+                {!stripeConnected && (
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    <button
+                      type="button"
+                      onClick={() => setShowPayoutBankModal(true)}
+                      className="btn btn-primary interactive-press"
+                      style={{ padding: '8px 14px', borderRadius: '10px', fontSize: '0.82rem', fontWeight: 700 }}
+                    >
+                      Register Payout Account
+                    </button>
+                    {!eventForm.allowCash && (
+                      <button
+                        type="button"
+                        onClick={() => setEventForm({ ...eventForm, allowCash: true })}
+                        className="btn btn-outline interactive-press"
+                        style={{ padding: '8px 14px', borderRadius: '10px', fontSize: '0.82rem' }}
+                      >
+                        Allow Cash on Arrival
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
-              {!stripeConnected && (
-                <button
-                  type="button"
-                  onClick={handleConnectStripe}
-                  disabled={isConnectingStripe}
-                  className="btn btn-primary interactive-press"
-                  style={{
-                    padding: '8px 14px',
-                    borderRadius: '10px',
-                    fontSize: '0.82rem',
-                    fontWeight: 700,
-                    alignSelf: 'flex-start'
-                  }}
-                >
-                  {isConnectingStripe ? 'Opening Stripe Express...' : 'Connect Bank Account (Stripe Express)'}
-                </button>
-              )}
             </div>
           )}
 
@@ -2792,13 +2843,21 @@ export default function LeaderDashboard({ initialCommunityId }) {
                     </div>
 
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', padding: '12px 16px', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.04)' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--teal-400)' }}></div>
-                        <span style={{ fontSize: '0.85rem', color: 'var(--slate-300)' }}>Payouts route automatically via Stripe Express to your UK bank account.</span>
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--teal-400)' }}></div>
+                          <span style={{ fontSize: '0.85rem', color: 'var(--slate-200)', fontWeight: 600 }}>
+                            {community?.payout_bank ? `${community.payout_bank.bankName || 'UK Bank'} Linked` : 'Payout Bank Linked'}
+                          </span>
+                        </div>
+                        <div style={{ fontSize: '0.78rem', color: 'var(--slate-400)', marginTop: '4px' }}>
+                          {community?.payout_bank 
+                            ? `Account: ${community.payout_bank.accountName} • Sort: ${community.payout_bank.sortCodeMasked || '••-••-••'} • Acc: ${community.payout_bank.accountMasked || '••••'}` 
+                            : 'Payouts route automatically via UK Faster Payments directly to your bank.'}
+                        </div>
                       </div>
                       <button
-                        onClick={handleConnectStripe}
-                        disabled={isConnectingStripe}
+                        onClick={() => setShowPayoutBankModal(true)}
                         className="interactive-press"
                         style={{
                           padding: '8px 14px', borderRadius: '8px',
@@ -2806,7 +2865,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                           color: 'var(--white)', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer'
                         }}
                       >
-                        {isConnectingStripe ? 'Opening Stripe...' : 'Manage Bank Account'}
+                        Manage Payout Account
                       </button>
                     </div>
                   </>
@@ -2818,7 +2877,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   }}>
                     <div style={{ marginBottom: '16px' }}>
                       <h4 style={{ color: 'var(--white)', margin: '0 0 6px 0', fontSize: '1.05rem', fontWeight: 700 }}>
-                        Get Paid Directly to Your UK Bank Account
+                        Register Your Payout Account
                       </h4>
                       <p style={{ color: 'var(--slate-300)', margin: 0, fontSize: '0.88rem', lineHeight: 1.5 }}>
                         Connect your bank account via Stripe Express in under 2 minutes. Receive 95% of every event ticket and subscription directly into your account with automatic daily payouts. Standard Stripe card processing (~1.5% + 20p UK) is deducted by Stripe directly from payouts. Upgrade to Leader Pro to reduce platform ticket fees to just 2% (saving 60%).
@@ -2836,7 +2895,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                       }}
                     >
                       <DollarSign size={18} />
-                      {isConnectingStripe ? 'Opening Stripe Express...' : 'Connect Bank Account (Stripe Express)'}
+                      {isConnectingStripe ? 'Opening Stripe Express...' : 'Register Payout Account'}
                     </button>
                   </div>
                 )}
@@ -4128,6 +4187,24 @@ export default function LeaderDashboard({ initialCommunityId }) {
         mode={specialistModalState.mode}
         onProposalSubmitted={() => {
           toast.success('Your specialist pitch has been dispatched to local leaders!');
+        }}
+      />
+
+      <PayoutBankModal
+        isOpen={showPayoutBankModal}
+        onClose={() => setShowPayoutBankModal(false)}
+        community={community}
+        onBankSaved={(bankData) => {
+          setStripeConnected(true);
+          if (community?.id) {
+            updateCommunity(community.id, {
+              stripe_account_id: `acct_payout_${Date.now()}`,
+              payout_bank: bankData
+            });
+            try {
+              localStorage.setItem(`more_stripe_connected_${community.id}`, 'true');
+            } catch (e) {}
+          }
         }}
       />
 

@@ -2,7 +2,7 @@
 import { supabase } from '../../../src/lib/supabaseClient';
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ChevronLeft, Share, MapPin, Calendar, Clock, Users, CheckCircle2, Info, List, Activity, Check, Map, Ticket, DollarSign, Copy, ExternalLink, Navigation, Video, AlertTriangle, Image as ImageIcon, ScanLine, Archive, Repeat, MessageCircle } from 'lucide-react';
+import { ChevronLeft, Share, MapPin, Calendar, Clock, Users, CheckCircle2, Info, List, Activity, Check, Map, Ticket, DollarSign, Copy, ExternalLink, Navigation, Video, AlertTriangle, Image as ImageIcon, ScanLine, Archive, Repeat, MessageCircle, Banknote, CreditCard } from 'lucide-react';
 import { useAppContext } from '../../../src/context/AppContext';
 import { useToast } from '../../../src/components/Toast';
 import DigitalTicket from '../../../src/components/DigitalTicket';
@@ -258,6 +258,7 @@ export default function EventClient({ id }) {
   const [checkoutState, setCheckoutState] = useState('idle');
   const [showTicket, setShowTicket] = useState(null);
   const [showScanner, setShowScanner] = useState(false);
+  const [showPaymentChoiceModal, setShowPaymentChoiceModal] = useState(false);
   const [showRsvpSuccessModal, setShowRsvpSuccessModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
 
@@ -344,6 +345,7 @@ export default function EventClient({ id }) {
   const rsvps = eventRsvps[event.id] || [];
   const myRsvp = rsvps.find(r => r.userId === user?.id);
   const isGoing = myRsvp?.status === 'going';
+  const isCashAttendee = myRsvp?.ticketType === 'cash_on_arrival';
   const spotsLeft = event.maxCapacity ? Math.max(0, event.maxCapacity - rsvps.filter(r => r.status === 'going').length) : null;
   const isMember = user?.joinedCommunities?.includes(event.communityId);
 
@@ -359,49 +361,73 @@ export default function EventClient({ id }) {
     handleRSVP();
   };
 
+  const executeStripeCheckout = async () => {
+    setCheckoutState('processing');
+    const referredBy = searchParams?.get('ref') || null;
+    try {
+      let authHeader = {};
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.access_token) authHeader = { 'Authorization': `Bearer ${session.access_token}` };
+      } catch (e) {}
+
+      const res = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...authHeader
+        },
+        body: JSON.stringify({
+          type: 'event',
+          eventId: event.id,
+          userId: user.id,
+          price: event.ticketPrice,
+          title: event.title,
+          communityId: event.communityId,
+          referredBy
+        })
+      });
+      const data = await res.json();
+      if (res.ok && data?.url && !data?.simulated) {
+        window.location.href = data.url;
+        return;
+      }
+      toast.error('Ticket Checkout Failed', data?.error || 'Unable to open checkout session.');
+    } catch (err) {
+      console.error('Stripe checkout error:', err);
+      toast.error('Checkout Error', 'Unable to connect to payment server. Please try again.');
+    } finally {
+      setCheckoutState('idle');
+    }
+  };
+
+  const executeCashRsvp = async () => {
+    setCheckoutState('processing');
+    try {
+      const referredBy = searchParams?.get('ref') || null;
+      await rsvpToEvent(event.id, 'going', 'cash_on_arrival', referredBy);
+      setShowPaymentChoiceModal(false);
+      setShowRsvpSuccessModal(true);
+      toast.success('Spot Reserved!', `Please bring £${event.ticketPrice.toFixed(2)} cash on arrival.`);
+    } catch (err) {
+      console.error('Cash RSVP error:', err);
+      toast.error('Reservation Error', 'Unable to reserve spot. Please try again.');
+    } finally {
+      setCheckoutState('idle');
+    }
+  };
+
   const handleRSVP = async () => {
     if (!user?.id) {
       router.push(`/login?redirect=/events/${id}`);
       return;
     }
     if (event.ticketPrice > 0 && !isGoing) {
-      setCheckoutState('processing');
-      const referredBy = searchParams?.get('ref') || null;
-      try {
-        let authHeader = {};
-        try {
-          const { data: { session } } = await supabase.auth.getSession();
-          if (session?.access_token) authHeader = { 'Authorization': `Bearer ${session.access_token}` };
-        } catch (e) {}
-
-        const res = await fetch('/api/stripe/checkout', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            ...authHeader
-          },
-          body: JSON.stringify({
-            type: 'event',
-            eventId: event.id,
-            userId: user.id,
-            price: event.ticketPrice,
-            title: event.title,
-            communityId: event.communityId,
-            referredBy
-          })
-        });
-        const data = await res.json();
-        if (res.ok && data?.url && !data?.simulated) {
-          window.location.href = data.url;
-          return;
-        }
-        toast.error('Ticket Checkout Failed', data?.error || 'Unable to open checkout session.');
-      } catch (err) {
-        console.error('Stripe checkout error:', err);
-        toast.error('Checkout Error', 'Unable to connect to payment server. Please try again.');
-      } finally {
-        setCheckoutState('idle');
+      if (event.allowCash || event.allow_cash) {
+        setShowPaymentChoiceModal(true);
+        return;
       }
+      executeStripeCheckout();
     } else {
       const newStatus = isGoing ? 'not_going' : 'going';
       await rsvpToEvent(event.id, newStatus);
@@ -912,7 +938,7 @@ export default function EventClient({ id }) {
               <>
                 {isGoing && (
                   <button
-                    onClick={() => setShowTicket(event)}
+                    onClick={() => setShowTicket({ ...event, isCashOnArrival: isCashAttendee, ticketType: isCashAttendee ? 'cash_on_arrival' : 'paid' })}
                     className="interactive-press"
                     style={{
                       background: 'rgba(20,184,166,0.18)',
@@ -952,6 +978,138 @@ export default function EventClient({ id }) {
           </div>
         </div>
       </div>
+
+      {/* Payment Choice Modal (Card vs Cash at Door) */}
+      {showPaymentChoiceModal && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 100000,
+          background: 'rgba(2, 6, 23, 0.85)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px'
+        }}>
+          <div style={{
+            width: '100%', maxWidth: '440px',
+            background: 'linear-gradient(180deg, #0f172a 0%, #090d16 100%)',
+            border: '1px solid rgba(45, 212, 191, 0.35)',
+            borderRadius: '24px', padding: '24px',
+            boxShadow: '0 20px 50px rgba(0,0,0,0.7), 0 0 40px rgba(20, 184, 166, 0.15)',
+            position: 'relative'
+          }}>
+            <button
+              onClick={() => setShowPaymentChoiceModal(false)}
+              style={{
+                position: 'absolute', top: '16px', right: '16px',
+                background: 'rgba(255,255,255,0.06)', border: 'none', borderRadius: '50%',
+                width: '32px', height: '32px', color: 'var(--slate-400)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer'
+              }}
+            >
+              ✕
+            </button>
+
+            <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+              <div style={{
+                width: '54px', height: '54px', borderRadius: '50%',
+                background: 'rgba(20, 184, 166, 0.15)', border: '1px solid rgba(20, 184, 166, 0.35)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                margin: '0 auto 12px', color: 'var(--teal-400)'
+              }}>
+                <Ticket size={28} />
+              </div>
+              <h3 style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--white)', margin: '0 0 6px 0', fontFamily: 'var(--font-heading)' }}>
+                Select Payment Option
+              </h3>
+              <p style={{ color: 'var(--slate-300)', fontSize: '0.88rem', margin: 0 }}>
+                Ticket price: <strong style={{ color: 'var(--white)' }}>£{event.ticketPrice.toFixed(2)}</strong> for {event.title}
+              </p>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '20px' }}>
+              {/* Option 1: Online Card */}
+              <button
+                type="button"
+                onClick={() => {
+                  setShowPaymentChoiceModal(false);
+                  executeStripeCheckout();
+                }}
+                disabled={checkoutState === 'processing'}
+                className="interactive-press"
+                style={{
+                  width: '100%',
+                  padding: '16px',
+                  borderRadius: '16px',
+                  background: 'rgba(20, 184, 166, 0.08)',
+                  border: '1.5px solid rgba(45, 212, 191, 0.4)',
+                  textAlign: 'left',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '14px',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                <div style={{
+                  width: '40px', height: '40px', borderRadius: '12px',
+                  background: 'rgba(20, 184, 166, 0.2)', color: 'var(--teal-300)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
+                }}>
+                  <CreditCard size={20} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <span style={{ fontWeight: 700, color: 'var(--white)', fontSize: '0.98rem' }}>Pay Online via Card</span>
+                    <span style={{ fontWeight: 800, color: 'var(--teal-300)', fontSize: '0.95rem' }}>£{event.ticketPrice.toFixed(2)}</span>
+                  </div>
+                  <p style={{ margin: '4px 0 0 0', fontSize: '0.8rem', color: 'var(--slate-300)', lineHeight: 1.35 }}>
+                    Instant confirmation pass. Fast check-in and digital receipt.
+                  </p>
+                </div>
+              </button>
+
+              {/* Option 2: Cash at Venue */}
+              <button
+                type="button"
+                onClick={executeCashRsvp}
+                disabled={checkoutState === 'processing'}
+                className="interactive-press"
+                style={{
+                  width: '100%',
+                  padding: '16px',
+                  borderRadius: '16px',
+                  background: 'rgba(245, 158, 11, 0.08)',
+                  border: '1.5px solid rgba(245, 158, 11, 0.35)',
+                  textAlign: 'left',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '14px',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                <div style={{
+                  width: '40px', height: '40px', borderRadius: '12px',
+                  background: 'rgba(245, 158, 11, 0.2)', color: '#fbbf24',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
+                }}>
+                  <Banknote size={20} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <span style={{ fontWeight: 700, color: 'var(--white)', fontSize: '0.98rem' }}>Pay in Cash at Venue</span>
+                    <span style={{ fontWeight: 800, color: '#fbbf24', fontSize: '0.95rem' }}>£{event.ticketPrice.toFixed(2)}</span>
+                  </div>
+                  <p style={{ margin: '4px 0 0 0', fontSize: '0.8rem', color: 'var(--slate-300)', lineHeight: 1.35 }}>
+                    Reserve your spot right now. Please bring exact cash to the organiser upon arrival.
+                  </p>
+                </div>
+              </button>
+            </div>
+
+            <div style={{ textAlign: 'center', fontSize: '0.76rem', color: 'var(--slate-400)' }}>
+              Spot is reserved under your name upon selection.
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* RSVP Success & WhatsApp Welcome Bridge Modal */}
       {showRsvpSuccessModal && (
@@ -1013,6 +1171,42 @@ export default function EventClient({ id }) {
                 </div>
               )}
             </div>
+
+            {/* Payment Summary Banner */}
+            {event.ticketPrice > 0 && (
+              <div style={{
+                background: isCashAttendee ? 'rgba(245,158,11,0.1)' : 'rgba(20,184,166,0.1)',
+                border: isCashAttendee ? '1px solid rgba(245,158,11,0.35)' : '1px solid rgba(20,184,166,0.35)',
+                borderRadius: '14px', padding: '12px 14px', marginBottom: '16px',
+                display: 'flex', alignItems: 'center', gap: '10px'
+              }}>
+                {isCashAttendee ? (
+                  <>
+                    <Banknote size={20} color="#fbbf24" style={{ flexShrink: 0 }} />
+                    <div>
+                      <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#fbbf24' }}>
+                        Cash Due at Door: £{event.ticketPrice.toFixed(2)}
+                      </div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--slate-300)', marginTop: '2px' }}>
+                        Please bring exact cash to the organiser upon arrival. Your spot is reserved.
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 size={20} color="#2dd4bf" style={{ flexShrink: 0 }} />
+                    <div>
+                      <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#2dd4bf' }}>
+                        Ticket Paid Online: £{event.ticketPrice.toFixed(2)}
+                      </div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--slate-300)', marginTop: '2px' }}>
+                        Your digital pass is ready. Show the QR code at check-in.
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
 
             {/* WhatsApp Community Bridge */}
             <div style={{ marginBottom: '16px' }}>
@@ -1098,7 +1292,7 @@ export default function EventClient({ id }) {
               <button
                 onClick={() => {
                   setShowRsvpSuccessModal(false);
-                  setShowTicket(event);
+                  setShowTicket({ ...event, isCashOnArrival: isCashAttendee, ticketType: isCashAttendee ? 'cash_on_arrival' : 'paid' });
                 }}
                 className="interactive-press"
                 style={{

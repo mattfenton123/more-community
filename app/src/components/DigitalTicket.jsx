@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { X, Calendar, MapPin, Clock, Ticket, WifiOff, CheckCircle2, Navigation, Download, Copy, Share2, Sparkles, Users } from 'lucide-react';
+import { X, Calendar, MapPin, Clock, Ticket, WifiOff, CheckCircle2, Navigation, Download, Copy, Share2, Sparkles, Users, Banknote } from 'lucide-react';
 import QRCode from 'qrcode';
 
 export default function DigitalTicket({ event, community, user, onClose }) {
@@ -229,6 +229,30 @@ export default function DigitalTicket({ event, community, user, onClose }) {
               </div>
             </div>
           </div>
+
+          {event.ticketPrice > 0 && (
+            <div style={{ marginTop: '12px' }}>
+              {(event.isCashOnArrival || event.ticketType === 'cash_on_arrival') ? (
+                <div style={{
+                  display: 'inline-flex', alignItems: 'center', gap: '6px',
+                  padding: '6px 12px', borderRadius: '99px',
+                  background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.35)',
+                  color: '#fbbf24', fontSize: '0.78rem', fontWeight: 700
+                }}>
+                  <Banknote size={14} /> Cash Due at Door: £{event.ticketPrice.toFixed(2)}
+                </div>
+              ) : (
+                <div style={{
+                  display: 'inline-flex', alignItems: 'center', gap: '6px',
+                  padding: '6px 12px', borderRadius: '99px',
+                  background: 'rgba(20,184,166,0.15)', border: '1px solid rgba(20,184,166,0.35)',
+                  color: '#2dd4bf', fontSize: '0.78rem', fontWeight: 700
+                }}>
+                  <CheckCircle2 size={14} /> Paid Online &bull; £{event.ticketPrice.toFixed(2)}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Perforated Divider */}
