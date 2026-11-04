@@ -27,6 +27,8 @@ import { PREMADE_GUIDELINE_PACKS, QUICK_INSPIRATION_RULES } from '../../src/lib/
 import EventReminderModal from '../../src/components/EventReminderModal';
 import NetworkEventPreviewModal from '../../src/components/NetworkEventPreviewModal';
 import ProfileImageModal from '../../src/components/ProfileImageModal';
+import LeaderShieldModal from '../../src/components/LeaderShieldModal';
+import { generatePliCertificatePdf, generateRamsPdf } from '../../src/lib/insurance';
 
 // ─── Stat Card Component ──────────────────────────────────
 const StatCard = ({ value, label, color, icon: Icon, accent }) => (
@@ -100,6 +102,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
   });
   const [editTagCategory, setEditTagCategory] = useState('All');
   const [activeTab, setActiveTab] = useState(searchParams?.get('tab') || 'overview');
+  const [showShieldModal, setShowShieldModal] = useState(false);
   const [activeCommunityId, setActiveCommunityId] = useState(
     initialCommunityId || searchParams?.get('community') || user?.ledCommunities?.[0] || null
   );
@@ -109,6 +112,9 @@ export default function LeaderDashboard({ initialCommunityId }) {
     if (tab) setActiveTab(tab);
     const comm = searchParams?.get('community');
     if (comm) setActiveCommunityId(comm);
+    if (searchParams?.get('shield') === 'success') {
+      toast.success('Leader Pro & Shield Active! 🛡️', 'Your £5M Public Liability cover and venue RAMS are active.');
+    }
   }, [searchParams]);
 
   useEffect(() => {
@@ -1238,6 +1244,25 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 <div style={{ position: 'absolute', width: '20px', height: '20px', background: 'white', borderRadius: '50%', top: '2px', left: eventForm.autoFeedback ? '22px' : '2px', transition: 'all 0.3s' }} />
               </div>
             </div>
+
+            <div 
+              className="interactive-press"
+              onClick={() => setEventForm({...eventForm, requireWaiver: eventForm.requireWaiver === false ? true : false})}
+              style={{ padding: '16px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ width: '40px', height: '40px', background: 'rgba(20,184,166,0.1)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Shield size={18} color="var(--teal-400)" />
+                </div>
+                <div>
+                  <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.9rem' }}>Attendee Safety & Liability Waiver</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>Require member safety declaration on RSVP</div>
+                </div>
+              </div>
+              <div style={{ width: '44px', height: '24px', background: eventForm.requireWaiver !== false ? 'var(--teal-500)' : 'rgba(255,255,255,0.1)', borderRadius: '12px', position: 'relative', transition: 'all 0.3s' }}>
+                <div style={{ position: 'absolute', width: '20px', height: '20px', background: 'white', borderRadius: '50%', top: '2px', left: eventForm.requireWaiver !== false ? '22px' : '2px', transition: 'all 0.3s' }} />
+              </div>
+            </div>
           </div>
         </>
       )}
@@ -1507,6 +1532,99 @@ export default function LeaderDashboard({ initialCommunityId }) {
                     if (section === 'guidelines') setIsGuidelinesExpanded(true);
                   }}
                 />
+              </div>
+
+              {/* Leader Shield & InsurTech Compliance Card */}
+              <div style={{ padding: '0 20px', marginBottom: '16px' }}>
+                {(() => {
+                  const isShieldActive = Boolean(
+                    community.is_insured || 
+                    community.insurance_tier === 'pro' ||
+                    (typeof window !== 'undefined' && localStorage.getItem(`more_community_insured_${community.id}`) === 'true')
+                  );
+                  const policyNo = community.insurance_policy_number || `MC-PLI-2026-${community.id.slice(0, 6).toUpperCase()}`;
+
+                  return isShieldActive ? (
+                    <div style={{
+                      background: 'linear-gradient(135deg, rgba(20,184,166,0.14), rgba(15,23,42,0.92))',
+                      border: '1px solid rgba(20,184,166,0.35)',
+                      borderRadius: '16px',
+                      padding: '16px 18px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: '12px',
+                      flexWrap: 'wrap'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div style={{
+                          width: '42px', height: '42px', borderRadius: '12px',
+                          background: 'rgba(20,184,166,0.2)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          flexShrink: 0
+                        }}>
+                          <Shield size={22} color="#2dd4bf" />
+                        </div>
+                        <div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <span style={{ fontWeight: 700, color: 'var(--white)', fontSize: '0.92rem' }}>MORE Leader Shield Active</span>
+                            <span style={{ fontSize: '0.65rem', background: 'rgba(34,197,94,0.2)', color: '#4ade80', padding: '1px 6px', borderRadius: '4px', fontWeight: 700 }}>£5M COVER</span>
+                          </div>
+                          <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', marginTop: '2px' }}>
+                            Policy #{policyNo} • 0% Ticket Platform Fees
+                          </div>
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button onClick={() => setShowShieldModal(true)} className="btn btn-outline interactive-press" style={{ padding: '8px 12px', fontSize: '0.75rem' }}>
+                          Manage
+                        </button>
+                        <button onClick={() => generatePliCertificatePdf({ community, leaderName: user?.name, policyNumber: policyNo })} className="btn btn-primary interactive-press" style={{ padding: '8px 12px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <Download size={13} /> Certificate
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div style={{
+                      background: 'linear-gradient(135deg, rgba(245,158,11,0.12), rgba(15,23,42,0.92))',
+                      border: '1px solid rgba(245,158,11,0.3)',
+                      borderRadius: '16px',
+                      padding: '16px 18px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: '12px',
+                      flexWrap: 'wrap'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div style={{
+                          width: '42px', height: '42px', borderRadius: '12px',
+                          background: 'rgba(245,158,11,0.2)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          flexShrink: 0
+                        }}>
+                          <Shield size={22} color="#fbbf24" />
+                        </div>
+                        <div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <span style={{ fontWeight: 700, color: 'var(--white)', fontSize: '0.92rem' }}>Protect Your Group with £5M PLI</span>
+                            <span style={{ fontSize: '0.65rem', background: 'rgba(245,158,11,0.2)', color: '#fbbf24', padding: '1px 6px', borderRadius: '4px', fontWeight: 700 }}>PRO TIER</span>
+                          </div>
+                          <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', marginTop: '2px' }}>
+                            Council venue RAMS, attendee safety waivers, and 0% ticket fees.
+                          </div>
+                        </div>
+                      </div>
+                      <button 
+                        onClick={() => setShowShieldModal(true)} 
+                        className="btn btn-primary interactive-press"
+                        style={{ padding: '8px 14px', fontSize: '0.8rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}
+                      >
+                        <Sparkles size={14} /> Upgrade (£16.50/mo)
+                      </button>
+                    </div>
+                  );
+                })()}
               </div>
 
               {/* Stats Grid 2x3 — clickable for drill-down */}
@@ -2224,6 +2342,14 @@ export default function LeaderDashboard({ initialCommunityId }) {
                                     </button>
                                     <button onClick={() => setFlyerEvent(event)} className="btn btn-outline interactive-press" style={{ padding: '6px 12px', fontSize: '0.75rem', color: '#a78bfa', borderColor: 'rgba(167,139,250,0.3)' }}>
                                       <ImageIcon size={12} style={{ marginRight: '4px' }} /> Flyer
+                                    </button>
+                                    <button 
+                                      onClick={() => generateRamsPdf({ community, event, leaderName: user?.name, policyNumber: community.insurance_policy_number })} 
+                                      className="btn btn-outline interactive-press" 
+                                      style={{ padding: '6px 12px', fontSize: '0.75rem', color: '#2dd4bf', borderColor: 'rgba(20,184,166,0.3)' }}
+                                      title="Download Venue Risk Assessment & Method Statement (RAMS) PDF"
+                                    >
+                                      <Shield size={12} style={{ marginRight: '4px' }} /> RAMS
                                     </button>
                                     <button onClick={() => setExpandedEventId(isExpanded ? null : event.id)} className="btn btn-outline interactive-press" style={{ padding: '6px 12px', fontSize: '0.75rem' }}>
                                       {isExpanded ? <ChevronUp size={12} style={{ marginRight: '4px' }} /> : <ChevronDown size={12} style={{ marginRight: '4px' }} />}
@@ -3922,6 +4048,18 @@ export default function LeaderDashboard({ initialCommunityId }) {
           </div>
         </div>
       )}
+
+      <LeaderShieldModal
+        isOpen={showShieldModal}
+        onClose={() => setShowShieldModal(false)}
+        community={community}
+        leaderUser={user}
+        onUpgradeSuccess={(updates) => {
+          if (community?.id) {
+            updateCommunity(community.id, updates);
+          }
+        }}
+      />
 
       <style dangerouslySetInnerHTML={{__html: `
         @keyframes spin { to { transform: rotate(360deg); } }

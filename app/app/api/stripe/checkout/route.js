@@ -27,10 +27,11 @@ export async function POST(req) {
       title: clientTitle,
       communityId,
       leaderStripeAccountId,
-      referredBy
+      referredBy,
+      interval = 'annual'
     } = await req.json();
 
-    if (!userId || (type === 'event' && !eventId) || (type === 'subscription' && !communityId)) {
+    if (!userId || (type === 'event' && !eventId) || ((type === 'subscription' || type === 'leader_pro') && !communityId)) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
@@ -38,7 +39,11 @@ export async function POST(req) {
     let verifiedPrice = Number(clientPrice || 0);
     let verifiedTitle = clientTitle || (type === 'subscription' ? 'Community Membership' : 'Event Ticket');
 
-    if (type === 'subscription') {
+    if (type === 'leader_pro') {
+      const isAnnual = interval === 'annual';
+      verifiedPrice = isAnnual ? 165 : 16.50;
+      verifiedTitle = `MORE Leader Pro & Shield (${isAnnual ? 'Annual' : 'Monthly'})`;
+    } else if (type === 'subscription') {
       const { data: commData } = await supabase
         .from('communities')
         .select('name, subscription_price')
@@ -81,11 +86,35 @@ export async function POST(req) {
       });
     }
 
-    const isSubscription = type === 'subscription';
+    const isSubscription = type === 'subscription' || type === 'leader_pro';
     const hasConnectedLeader = Boolean(
       leaderStripeAccountId &&
-      !leaderStripeAccountId.startsWith('acct_express_demo')
+      !leaderStripeAccountId.startsWith('acct_express_demo') &&
+      type !== 'leader_pro'
     );
+
+    const isAnnualLeaderPro = type === 'leader_pro' && interval === 'annual';
+    const recurringInterval = isAnnualLeaderPro ? 'year' : 'month';
+
+    const getSuccessUrl = () => {
+      if (type === 'leader_pro') {
+        return `${baseUrl}/dashboard?community=${communityId}&tab=overview&shield=success&session_id={CHECKOUT_SESSION_ID}`;
+      }
+      if (type === 'subscription') {
+        return `${baseUrl}/community/${communityId}?checkout=success&session_id={CHECKOUT_SESSION_ID}`;
+      }
+      return `${baseUrl}/events/${eventId}?checkout=success&session_id={CHECKOUT_SESSION_ID}`;
+    };
+
+    const getCancelUrl = () => {
+      if (type === 'leader_pro') {
+        return `${baseUrl}/dashboard?community=${communityId}&tab=overview&shield=cancelled`;
+      }
+      if (type === 'subscription') {
+        return `${baseUrl}/community/${communityId}?checkout=cancelled`;
+      }
+      return `${baseUrl}/events/${eventId}?checkout=cancelled`;
+    };
 
     const sessionConfig = {
       payment_method_types: ['card'],
@@ -95,22 +124,20 @@ export async function POST(req) {
             currency: 'gbp',
             product_data: {
               name: isSubscription ? verifiedTitle : `Ticket for ${verifiedTitle}`,
-              description: isSubscription ? 'Monthly community membership' : 'Community event ticket',
+              description: type === 'leader_pro' 
+                ? 'Includes £5,000,000 Public Liability Insurance, Venue RAMS, Attendee Waivers & 0% Platform Fees'
+                : (isSubscription ? 'Monthly community membership' : 'Community event ticket'),
             },
             unit_amount: Math.round(Number(verifiedPrice) * 100), // convert to pence
-            ...(isSubscription ? { recurring: { interval: 'month' } } : {}),
+            ...(isSubscription ? { recurring: { interval: recurringInterval } } : {}),
           },
           quantity: 1,
         },
       ],
       mode: isSubscription ? 'subscription' : 'payment',
-      success_url: isSubscription
-        ? `${baseUrl}/community/${communityId}?checkout=success&session_id={CHECKOUT_SESSION_ID}`
-        : `${baseUrl}/events/${eventId}?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: isSubscription
-        ? `${baseUrl}/community/${communityId}?checkout=cancelled`
-        : `${baseUrl}/events/${eventId}?checkout=cancelled`,
-      client_reference_id: `${userId}_${isSubscription ? communityId : eventId}`,
+      success_url: getSuccessUrl(),
+      cancel_url: getCancelUrl(),
+      client_reference_id: `${userId}_${communityId || eventId}`,
       metadata: {
         type,
         eventId: eventId || '',

@@ -482,13 +482,33 @@ export default function CommunityProfile() {
           </div>
           
           {/* Meta strip */}
-          <div style={{ display: 'flex', gap: '16px', fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)', marginBottom: '16px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: '16px', fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)', marginBottom: '12px', flexWrap: 'wrap' }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><MapPin size={14} /> {cleanLocationName(community.location_name) || 'Tunbridge Wells'}</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Users size={14} /> {community.members || memberList.length || 1} members</span>
             {community.activity_level && (
               <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Activity size={14} color="var(--teal-400)" /> {community.activity_level === 'Very Active' ? 'Very Active (Weekly)' : community.activity_level === 'Active' ? 'Active (Fortnightly)' : community.activity_level === 'Casual' ? 'Casual (Monthly)' : community.activity_level}</span>
             )}
           </div>
+
+          {/* InsurTech Shield Badge */}
+          {(community.is_insured || community.insurance_tier === 'pro' || ['tw-tech-meetup', 'tw-parkrun', 'c_tw_ramblers', 'c_tw_run_club', 'c_mindful_miles', 'more-leaders-network'].includes(community.id)) && (
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              background: 'rgba(20,184,166,0.12)',
+              border: '1px solid rgba(20,184,166,0.3)',
+              borderRadius: '20px',
+              padding: '4px 12px',
+              fontSize: '0.78rem',
+              color: '#2dd4bf',
+              fontWeight: 600,
+              marginBottom: '16px',
+              width: 'fit-content'
+            }}>
+              <Shield size={14} color="#2dd4bf" /> Verified Insured Community (£5M Public Liability)
+            </div>
+          )}
 
           {/* CTA */}
           {(() => {
