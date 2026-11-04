@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>More Community — Commercials & Competitor Analysis 2026</title>
+<title>More Community to Commercials & Competitor Analysis 2026</title>
 <meta name="description" content="More Community: In-depth commercial analysis, competitor deep-dive, unit economics and 5-year financial projections.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,7 +20,7 @@
   --font-body:'Plus Jakarta Sans',sans-serif;
   --font-display:'Instrument Serif',serif;
 }
-*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+*, *:before, *:after { margin: 0; padding: 0; box-sizing: border-box; }
 html { -webkit-font-smoothing: antialiased; }
 body {
   font-family: var(--font-body);
@@ -30,29 +30,25 @@ body {
   font-weight: 300;
 }
 
-/* ── PAGE LAYOUT ── */
-.page {
+/* ── PAGE LAYOUT ── */.page {
   max-width: 900px;
   margin: 0 auto;
   padding: 60px 48px;
 }
 @media print {
-  html, body { background: #020617 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; height: auto !important; }
-  .page { max-width: 100%; padding: 0 !important; }
-  .page-break { page-break-before: always; }
+  html, body { background: #020617 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; height: auto !important; }.page { max-width: 100%; padding: 0 !important; }.page-break { page-break-before: always; }
   
-  h1, h2, h3, h4, h5, .section-label {
+  h1, h2, h3, h4, h5,.section-label {
     break-after: avoid !important;
     page-break-after: avoid !important;
   }
-  p, li, .stat-grid, .stat-card, table, tr, .comp-grid, .comp-card, .callout {
+  p, li,.stat-grid,.stat-card, table, tr,.comp-grid,.comp-card,.callout {
     break-inside: avoid !important;
     page-break-inside: avoid !important;
   }
 }
 
-/* ── COVER ── */
-.cover {
+/* ── COVER ── */.cover {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -61,38 +57,32 @@ body {
   text-align: center;
   padding: 80px 48px;
   background: radial-gradient(ellipse at 50% 40%, rgba(20,184,166,0.08) 0%, transparent 60%);
-}
-.cover-logo { height: 48px; margin-bottom: 32px; opacity: 0.9; }
-.cover-title {
+}.cover-logo { height: 48px; margin-bottom: 32px; opacity: 0.9; }.cover-title {
   font-family: var(--font-display);
   font-style: italic;
   font-size: 3.2rem;
   line-height: 1.15;
   color: var(--white);
   margin-bottom: 12px;
-}
-.cover-sub {
+}.cover-sub {
   font-family: var(--font-heading);
   font-size: 1rem;
   font-weight: 400;
   color: var(--slate-400);
   max-width: 480px;
   margin-bottom: 40px;
-}
-.cover-divider {
+}.cover-divider {
   width: 60px; height: 1px;
   background: linear-gradient(90deg, transparent, var(--teal-400), transparent);
   margin: 0 auto 28px;
-}
-.cover-meta {
+}.cover-meta {
   display: flex; gap: 32px; justify-content: center;
   font-family: var(--font-heading); font-size: 0.7rem;
   font-weight: 600; color: var(--slate-500);
   text-transform: uppercase; letter-spacing: 2px;
 }
 
-/* ── SECTION HEADERS ── */
-.section-label {
+/* ── SECTION HEADERS ── */.section-label {
   font-family: var(--font-heading);
   font-size: 0.65rem;
   font-weight: 700;
@@ -101,13 +91,11 @@ body {
   color: var(--teal-400);
   display: flex; align-items: center; gap: 10px;
   margin-bottom: 12px;
-}
-.section-label::before {
+}.section-label:before {
   content: ''; width: 20px; height: 2px;
   background: linear-gradient(90deg, var(--teal-400), var(--amber-400));
   border-radius: 2px;
-}
-.section-num {
+}.section-num {
   display: inline-flex; align-items: center; justify-content: center;
   width: 24px; height: 24px; border-radius: 6px;
   background: rgba(20,184,166,0.12); color: var(--teal-400);
@@ -138,8 +126,7 @@ h3 {
 }
 p { margin-bottom: 16px; font-size: 0.88rem; }
 
-/* ── GRADIENT TEXT ── */
-.grad {
+/* ── GRADIENT TEXT ── */.grad {
   background: linear-gradient(135deg, var(--teal-400), var(--amber-400));
   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -169,113 +156,82 @@ td {
   color: var(--slate-300);
   vertical-align: top;
 }
-tr:hover td { background: rgba(255,255,255,0.01); }
-.highlight-row td { color: var(--white); font-weight: 600; background: rgba(20,184,166,0.04); }
-.total-row td { color: var(--white); font-weight: 700; border-top: 2px solid rgba(20,184,166,0.3); border-bottom: none; font-size: 0.85rem; }
-.positive { color: var(--teal-400) !important; font-weight: 600; }
-.negative { color: var(--rose-400) !important; font-weight: 600; }
+tr:hover td { background: rgba(255,255,255,0.01); }.highlight-row td { color: var(--white); font-weight: 600; background: rgba(20,184,166,0.04); }.total-row td { color: var(--white); font-weight: 700; border-top: 2px solid rgba(20,184,166,0.3); border-bottom: none; font-size: 0.85rem; }.positive { color: var(--teal-400) !important; font-weight: 600; }.negative { color: var(--rose-400) !important; font-weight: 600; }
 
-/* ── STAT CARDS ── */
-.stat-grid {
+/* ── STAT CARDS ── */.stat-grid {
   display: grid; grid-template-columns: repeat(4, 1fr);
   gap: 12px; margin: 24px 0;
-}
-.stat-card {
+}.stat-card {
   background: rgba(255,255,255,0.02);
   border: 1px solid rgba(255,255,255,0.06);
   border-radius: 12px; padding: 18px;
-}
-.stat-card-value {
+}.stat-card-value {
   font-family: var(--font-heading);
   font-weight: 800; font-size: 1.6rem;
   letter-spacing: -0.04em; line-height: 1;
   margin-bottom: 4px;
-}
-.stat-card-label {
+}.stat-card-label {
   font-family: var(--font-heading);
   font-size: 0.65rem; font-weight: 600;
   color: var(--slate-500);
   text-transform: uppercase; letter-spacing: 1px;
 }
 
-/* ── COMPETITOR CARDS ── */
-.comp-grid {
+/* ── COMPETITOR CARDS ── */.comp-grid {
   display: grid; grid-template-columns: 1fr 1fr;
   gap: 14px; margin: 20px 0;
-}
-.comp-card {
+}.comp-card {
   background: rgba(255,255,255,0.02);
   border: 1px solid rgba(255,255,255,0.06);
   border-radius: 14px; padding: 20px;
   position: relative;
-}
-.comp-card-header {
+}.comp-card-header {
   display: flex; align-items: center; gap: 10px;
   margin-bottom: 10px;
-}
-.comp-name {
+}.comp-name {
   font-family: var(--font-heading);
   font-size: 0.95rem; font-weight: 700;
   color: var(--white);
-}
-.comp-category {
+}.comp-category {
   font-size: 0.6rem; font-weight: 600;
   text-transform: uppercase; letter-spacing: 1.5px;
   color: var(--teal-400);
-}
-.comp-body { font-size: 0.78rem; color: var(--slate-400); line-height: 1.5; margin-bottom: 10px; }
-.comp-pricing {
+}.comp-body { font-size: 0.78rem; color: var(--slate-400); line-height: 1.5; margin-bottom: 10px; }.comp-pricing {
   font-size: 0.75rem; color: var(--amber-400);
   font-weight: 500; padding-top: 10px;
   border-top: 1px dashed rgba(255,255,255,0.08);
-}
-.comp-edge {
+}.comp-edge {
   font-size: 0.72rem; color: var(--teal-300);
   font-weight: 500; margin-top: 6px;
-}
-.comp-badge {
+}.comp-badge {
   position: absolute; top: 12px; right: 12px;
   font-family: var(--font-heading);
   font-size: 0.55rem; font-weight: 700;
   text-transform: uppercase; letter-spacing: 1px;
   padding: 3px 8px; border-radius: 6px;
-}
-.badge-direct { background: rgba(239,68,68,0.12); color: var(--rose-400); }
-.badge-adjacent { background: rgba(245,158,11,0.12); color: var(--amber-400); }
-.badge-indirect { background: rgba(100,116,139,0.15); color: var(--slate-400); }
+}.badge-direct { background: rgba(239,68,68,0.12); color: var(--rose-400); }.badge-adjacent { background: rgba(245,158,11,0.12); color: var(--amber-400); }.badge-indirect { background: rgba(100,116,139,0.15); color: var(--slate-400); }
 
-/* ── FEATURE MATRIX ── */
-.matrix-table th { font-size: 0.6rem; text-align: center; padding: 10px 8px; }
-.matrix-table td { text-align: center; font-size: 0.75rem; padding: 10px 8px; }
-.matrix-table td:first-child { text-align: left; color: var(--white); font-weight: 500; }
-.check { color: var(--teal-400); font-weight: 700; }
-.cross { color: var(--slate-600); }
-.partial { color: var(--amber-400); }
+/* ── FEATURE MATRIX ── */.matrix-table th { font-size: 0.6rem; text-align: center; padding: 10px 8px; }.matrix-table td { text-align: center; font-size: 0.75rem; padding: 10px 8px; }.matrix-table td:first-child { text-align: left; color: var(--white); font-weight: 500; }.check { color: var(--teal-400); font-weight: 700; }.cross { color: var(--slate-600); }.partial { color: var(--amber-400); }
 
-/* ── CALLOUTS ── */
-.callout {
+/* ── CALLOUTS ── */.callout {
   border-radius: 12px; padding: 18px 20px;
   margin: 20px 0; font-size: 0.85rem;
-}
-.callout-teal {
+}.callout-teal {
   background: rgba(20,184,166,0.06);
   border: 1px solid rgba(20,184,166,0.15);
   color: var(--teal-300);
-}
-.callout-amber {
+}.callout-amber {
   background: rgba(245,158,11,0.06);
   border: 1px solid rgba(245,158,11,0.15);
   color: var(--amber-300);
-}
-.callout-label {
+}.callout-label {
   font-family: var(--font-heading);
   font-size: 0.7rem; font-weight: 700;
   text-transform: uppercase; letter-spacing: 1.5px;
   margin-bottom: 8px;
 }
 
-/* ── PULL QUOTE ── */
-.pull-quote {
+/* ── PULL QUOTE ── */.pull-quote {
   border-left: 3px solid var(--teal-400);
   padding: 8px 0 8px 20px;
   font-family: var(--font-display);
@@ -284,24 +240,16 @@ tr:hover td { background: rgba(255,255,255,0.01); }
   margin: 24px 0;
 }
 
-/* ── UNIT ECON TABLE ── */
-.unit-table td:not(:first-child) { text-align: right; font-variant-numeric: tabular-nums; }
-.unit-table th:not(:first-child) { text-align: right; }
+/* ── UNIT ECON TABLE ── */.unit-table td:not(:first-child) { text-align: right; font-variant-numeric: tabular-nums; }.unit-table th:not(:first-child) { text-align: right; }
 
-/* ── TAM/SAM/SOM ── */
-.tam-stack {
+/* ── TAM/SAM/SOM ── */.tam-stack {
   display: flex; flex-direction: column; align-items: center;
   gap: 8px; margin: 28px 0;
-}
-.tam-ring {
+}.tam-ring {
   display: flex; align-items: center; justify-content: center;
   border-radius: 16px; text-align: center; padding: 20px 40px;
   font-family: var(--font-heading); font-weight: 700;
-}
-.tam-ring.tam { width: 100%; background: rgba(20,184,166,0.04); border: 1px solid rgba(20,184,166,0.12); color: var(--teal-300); font-size: 1.1rem; }
-.tam-ring.sam { width: 75%; background: rgba(245,158,11,0.04); border: 1px solid rgba(245,158,11,0.12); color: var(--amber-300); font-size: 1rem; }
-.tam-ring.som { width: 50%; background: rgba(20,184,166,0.08); border: 1px solid rgba(20,184,166,0.2); color: var(--teal-400); font-size: 0.95rem; }
-.tam-label { font-size: 0.55rem; font-weight: 600; text-transform: uppercase; letter-spacing: 2px; color: var(--slate-500); display: block; margin-top: 4px; }
+}.tam-ring.tam { width: 100%; background: rgba(20,184,166,0.04); border: 1px solid rgba(20,184,166,0.12); color: var(--teal-300); font-size: 1.1rem; }.tam-ring.sam { width: 75%; background: rgba(245,158,11,0.04); border: 1px solid rgba(245,158,11,0.12); color: var(--amber-300); font-size: 1rem; }.tam-ring.som { width: 50%; background: rgba(20,184,166,0.08); border: 1px solid rgba(20,184,166,0.2); color: var(--teal-400); font-size: 0.95rem; }.tam-label { font-size: 0.55rem; font-weight: 600; text-transform: uppercase; letter-spacing: 2px; color: var(--slate-500); display: block; margin-top: 4px; }
 </style>
 </head>
 <body>
@@ -322,7 +270,7 @@ tr:hover td { background: rgba(255,255,255,0.01); }
 </div>
 
 <!-- ══════════════════════════════════════════════════════════════
-     1 — EXECUTIVE SUMMARY
+     1 to EXECUTIVE SUMMARY
      ══════════════════════════════════════════════════════════════ -->
 <div class="page">
   <div class="section-label"><span class="section-num">01</span>Executive Summary</div>
@@ -351,12 +299,12 @@ tr:hover td { background: rgba(255,255,255,0.01); }
 
   <div class="callout callout-teal">
     <div class="callout-label">Key Thesis</div>
-    Community infrastructure is an emerging category. Unlike platforms that charge the people building communities (Meetup, Mighty Networks), More Community monetises the commercial ecosystem around those communities — keeping the platform free and maximising network effects.
+    Community infrastructure is an emerging category. Unlike platforms that charge the people building communities (Meetup, Mighty Networks), More Community monetises the commercial ecosystem around those communities to keeping the platform free and maximising network effects.
   </div>
 </div>
 
 <!-- ══════════════════════════════════════════════════════════════
-     2 — REVENUE MODEL BREAKDOWN
+     2 to REVENUE MODEL BREAKDOWN
      ══════════════════════════════════════════════════════════════ -->
 <div class="page page-break">
   <div class="section-label"><span class="section-num">02</span>Revenue Model</div>
@@ -452,21 +400,21 @@ tr:hover td { background: rgba(255,255,255,0.01); }
 
   <h2>Revenue Stream Analysis</h2>
 
-  <h3>Local Sponsorship (Core — 45% of Yr5 Revenue)</h3>
+  <h3>Local Sponsorship (Core to 45% of Yr5 Revenue)</h3>
   <p>Each town generates ~£13,000/year from 3-4 local business sponsors across tiered packages (Headline £5-6k, Support £2-3k). This is priced well below the average UK SME annual marketing budget of £38,000 (Statista 2025). Sponsors receive branded presence across community events, the local microsite, and in-app placements. This stream scales linearly with town count and is the commercial backbone of the model.</p>
 
-  <h3>NHS & Council Contracts (Enterprise — 10% of Yr5)</h3>
-  <p>The NHS Long Term Plan mandates social prescribing across all 42 Integrated Care Systems (ICSs). More Community provides the digital infrastructure for these programmes — connecting link workers to community activities. At £50k per contract (below typical NHS SaaS procurement), this is a high-margin, sticky B2G revenue stream with multi-year renewal rates.</p>
+  <h3>NHS & Council Contracts (Enterprise to 10% of Yr5)</h3>
+  <p>The NHS Long Term Plan mandates social prescribing across all 42 Integrated Care Systems (ICSs). More Community provides the digital infrastructure for these programmes to connecting link workers to community activities. At £50k per contract (below typical NHS SaaS procurement), this is a high-margin, sticky B2G revenue stream with multi-year renewal rates.</p>
 
-  <h3>Council Performance Dashboard (Growth — 17% of Yr5)</h3>
-  <p>From Year 3, we provide local authorities with a real-time community health and engagement dashboard. Councils currently pay £10k–£20k for static, manual community audit reports; More Community replaces this with live, anonymised data on local connection and wellbeing for £5k per town per year. This represents high-margin recurring revenue that grows with the network without incremental sales effort.</p>
+  <h3>Council Performance Dashboard (Growth to 17% of Yr5)</h3>
+  <p>From Year 3, we provide local authorities with a real-time community health and engagement dashboard. Councils currently pay £10k to £20k for static, manual community audit reports; More Community replaces this with live, anonymised data on local connection and wellbeing for £5k per town per year. This represents high-margin recurring revenue that grows with the network without incremental sales effort.</p>
 
-  <h3>Experiences Marketplace (New — 10% of Yr5)</h3>
-  <p>Community leaders curate and promote day experiences — skydiving, retreats, away days, theatre, wellness — to their groups. More Community earns a 10–15% base commission (industry standard for experience aggregators like Viator/GetYourGuide), while leaders choose their own markup (typically 5–20%), creating a direct earning opportunity that incentivises promotion. Year 1 focuses on single-day experiences; Year 2 expands to multi-day packages. At scale, this stream generates approximately £3,000 per town per year.</p>
+  <h3>Experiences Marketplace (New to 10% of Yr5)</h3>
+  <p>Community leaders curate and promote day experiences to skydiving, retreats, away days, theatre, wellness to to their groups. More Community earns a 10 to 15% base commission (industry standard for experience aggregators like Viator/GetYourGuide), while leaders choose their own markup (typically 5 to 20%), creating a direct earning opportunity that incentivises promotion. Year 1 focuses on single-day experiences; Year 2 expands to multi-day packages. At scale, this stream generates approximately £3,000 per town per year.</p>
 </div>
 
 <!-- ══════════════════════════════════════════════════════════════
-     3 — 5-YEAR P&L
+     3 to 5-YEAR P&L
      ══════════════════════════════════════════════════════════════ -->
 <div class="page page-break">
   <div class="section-label"><span class="section-num">03</span>5-Year P&L</div>
@@ -562,7 +510,7 @@ tr:hover td { background: rgba(255,255,255,0.01); }
 
   <div class="callout callout-teal">
     <div class="callout-label">Path to Profitability</div>
-    Year 1 is an investment year (£107k burn, covered by seed). Year 2 crosses break-even at 15 towns — validating unit economics before aggressive scaling. By Year 3 the business generates £1.47M EBITDA at 67% margin. The model's capital efficiency comes from community leaders doing the activation work — More Community provides the tools, sponsors fund the ecosystem.
+    Year 1 is an investment year (£107k burn, covered by seed). Year 2 crosses break-even at 15 towns to validating unit economics before aggressive scaling. By Year 3 the business generates £1.47M EBITDA at 67% margin. The model's capital efficiency comes from community leaders doing the activation work to More Community provides the tools, sponsors fund the ecosystem.
   </div>
 
   <div class="callout callout-amber" style="margin-top: 1rem;">
@@ -572,13 +520,13 @@ tr:hover td { background: rgba(255,255,255,0.01); }
 </div>
 
 <!-- ══════════════════════════════════════════════════════════════
-     4 — UNIT ECONOMICS
+     4 to UNIT ECONOMICS
      ══════════════════════════════════════════════════════════════ -->
 <div class="page page-break">
   <div class="section-label"><span class="section-num">04</span>Unit Economics</div>
   <h1>Per-town <span class="grad">contribution margin.</span></h1>
 
-  <p>Each town operates as a micro-economy. The marginal cost of adding a new town is minimal once the platform and playbook exist — the primary cost is marketing activation and community manager support.</p>
+  <p>Each town operates as a micro-economy. The marginal cost of adding a new town is minimal once the platform and playbook exist to the primary cost is marketing activation and community manager support.</p>
 
   <table class="unit-table">
     <thead>
@@ -630,7 +578,7 @@ tr:hover td { background: rgba(255,255,255,0.01); }
   </table>
 
   <div class="pull-quote">
-    "Once a town is live and active, the economics are extraordinary — 95% gross margin with £24k revenue per town per year."
+    "Once a town is live and active, the economics are extraordinary to 95% gross margin with £24k revenue per town per year."
   </div>
 
   <h2>Headcount Model</h2>
@@ -676,13 +624,13 @@ tr:hover td { background: rgba(255,255,255,0.01); }
 </div>
 
 <!-- ══════════════════════════════════════════════════════════════
-     5 — COMPETITOR DEEP-DIVE
+     5 to COMPETITOR DEEP-DIVE
      ══════════════════════════════════════════════════════════════ -->
 <div class="page page-break">
   <div class="section-label"><span class="section-num">05</span>Competitive Landscape</div>
   <h1>No platform does <span class="grad">what we do.</span></h1>
 
-  <p>The competitive landscape is fragmented. Existing platforms address individual elements of community — event management, social networking, communication — but none combine founder tools, local discovery and real-world community infrastructure in a single free platform. Below is an in-depth analysis of eight key competitors.</p>
+  <p>The competitive landscape is fragmented. Existing platforms address individual elements of community to event management, social networking, communication to but none combine founder tools, local discovery and real-world community infrastructure in a single free platform. Below is an in-depth analysis of eight key competitors.</p>
 
   <div class="comp-grid">
     <!-- Nextdoor -->
@@ -694,7 +642,7 @@ tr:hover td { background: rgba(255,255,255,0.01); }
           <div class="comp-category">Hyperlocal Social Network</div>
         </div>
       </div>
-      <div class="comp-body">The largest neighbourhood network globally. Verified-residency model creates trust but the platform is advertising-driven, creating a cluttered, Facebook-like experience. Limited community tools — no event ticketing, no leader analytics, no community creation workflow.</div>
+      <div class="comp-body">The largest neighbourhood network globally. Verified-residency model creates trust but the platform is advertising-driven, creating a cluttered, Facebook-like experience. Limited community tools to no event ticketing, no leader analytics, no community creation workflow.</div>
       <div class="comp-pricing">💰 Revenue: Advertising-led. Neighbourhood Ads, sponsored posts. Users are the product. Recently achieved profitability through AI-powered ad optimisation.</div>
       <div class="comp-edge">🎯 Our edge: Community-first not ad-first. Purpose-built founder tools. Free for leaders. No advertising clutter.</div>
     </div>
@@ -778,7 +726,7 @@ tr:hover td { background: rgba(255,255,255,0.01); }
           <div class="comp-category">Event Management & Ticketing</div>
         </div>
       </div>
-      <div class="comp-body">The dominant event ticketing platform. Strong for one-off events but purely transactional — no community layer, no member relationships, no ongoing engagement tools. Each event is isolated with no continuity between them.</div>
+      <div class="comp-body">The dominant event ticketing platform. Strong for one-off events but purely transactional to no community layer, no member relationships, no ongoing engagement tools. Each event is isolated with no continuity between them.</div>
       <div class="comp-pricing">💰 Revenue: Transaction fees. 3.7% + £0.79 per paid ticket (UK). Free events are free to list. No community features, analytics or CRM at any tier.</div>
       <div class="comp-edge">🎯 Our edge: Community layer that creates ongoing member relationships. Free event ticketing with integrated CRM. Leaders keep attendees, not just ticket sales.</div>
     </div>
@@ -793,14 +741,14 @@ tr:hover td { background: rgba(255,255,255,0.01); }
         </div>
       </div>
       <div class="comp-body">Still the default for many UK community groups, but rapidly declining among under-35s. Cluttered UX, algorithmic feed manipulation, no dedicated founder tools, no event ticketing, no analytics, and growing privacy concerns.</div>
-      <div class="comp-pricing">💰 Revenue: Indirect — Facebook Groups are a retention feature for Meta's advertising platform. Groups admin tools are minimal and underfunded.</div>
+      <div class="comp-pricing">💰 Revenue: Indirect to Facebook Groups are a retention feature for Meta's advertising platform. Groups admin tools are minimal and underfunded.</div>
       <div class="comp-edge">🎯 Our edge: Purpose-built for founders with analytics, CRM, flyer gen. Clean UX. No ads. No algorithmic interference. Real local discovery.</div>
     </div>
   </div>
 </div>
 
 <!-- ══════════════════════════════════════════════════════════════
-     6 — FEATURE COMPARISON MATRIX
+     6 to FEATURE COMPARISON MATRIX
      ══════════════════════════════════════════════════════════════ -->
 <div class="page page-break">
   <div class="section-label"><span class="section-num">06</span>Feature Comparison</div>
@@ -879,7 +827,7 @@ tr:hover td { background: rgba(255,255,255,0.01); }
 </div>
 
 <!-- ══════════════════════════════════════════════════════════════
-     7 — MARKET SIZE
+     7 to MARKET SIZE
      ══════════════════════════════════════════════════════════════ -->
 <div class="page page-break">
   <div class="section-label"><span class="section-num">07</span>Market Size</div>
@@ -887,35 +835,35 @@ tr:hover td { background: rgba(255,255,255,0.01); }
 
   <div class="tam-stack">
     <div class="tam-ring tam">
-      £4.2B <span class="tam-label">TAM — Global Community Platform Market (2026)</span>
+      £4.2B <span class="tam-label">TAM to Global Community Platform Market (2026)</span>
     </div>
     <div class="tam-ring sam">
-      £680M <span class="tam-label">SAM — UK Local Community & Social Prescribing</span>
+      £680M <span class="tam-label">SAM to UK Local Community & Social Prescribing</span>
     </div>
     <div class="tam-ring som">
-      £14.3M <span class="tam-label">SOM — 500 UK Towns × £28.6k Revenue Target</span>
+      £14.3M <span class="tam-label">SOM to 500 UK Towns × £28.6k Revenue Target</span>
     </div>
   </div>
 
   <h2>Market Breakdown</h2>
 
-  <h3>TAM — £4.2B</h3>
+  <h3>TAM to £4.2B</h3>
   <p>The global community platform market is projected at $5.3B (£4.2B) in 2026, growing at 13.7% CAGR (Grand View Research). This includes enterprise community platforms, event management, and social prescribing infrastructure across developed markets.</p>
 
-  <h3>SAM — £680M</h3>
+  <h3>SAM to £680M</h3>
   <p>Our serviceable market is the UK local community infrastructure segment: ~1,800 towns with 10,000+ population, 42 NHS ICSs requiring social prescribing platforms, ~5.5M small businesses spending on local marketing, and the emerging council data insights market.</p>
 
-  <h3>SOM — £14.3M</h3>
-  <p>Our initial achievable market is 500 towns within 5 years, each generating ~£28.6k revenue from sponsorship, ticketing, SaaS and data. At 500 towns this represents £14.3M revenue — roughly 30% of SOM, with significant room for pricing uplift and new revenue streams.</p>
+  <h3>SOM to £14.3M</h3>
+  <p>Our initial achievable market is 500 towns within 5 years, each generating ~£28.6k revenue from sponsorship, ticketing, SaaS and data. At 500 towns this represents £14.3M revenue to roughly 30% of SOM, with significant room for pricing uplift and new revenue streams.</p>
 
   <div class="callout callout-teal">
     <div class="callout-label">Why This Market Is Defensible</div>
-    Community infrastructure has a powerful network effect: each active community in a town attracts more members, which attracts more communities, which attracts more sponsors. Once a town is "live" with 10+ communities, switching costs become very high. This creates a natural geographic monopoly — the same dynamic that made Nextdoor dominant in neighbourhood social networking.
+    Community infrastructure has a powerful network effect: each active community in a town attracts more members, which attracts more communities, which attracts more sponsors. Once a town is "live" with 10+ communities, switching costs become very high. This creates a natural geographic monopoly to the same dynamic that made Nextdoor dominant in neighbourhood social networking.
   </div>
 </div>
 
 <!-- ══════════════════════════════════════════════════════════════
-     8 — PRICING STRATEGY
+     8 to PRICING STRATEGY
      ══════════════════════════════════════════════════════════════ -->
 <div class="page page-break">
   <div class="section-label"><span class="section-num">08</span>Pricing Strategy</div>
@@ -988,7 +936,7 @@ tr:hover td { background: rgba(255,255,255,0.01); }
   </div>
 
   <div class="pull-quote" style="margin-top: 28px;">
-    "We don't sell ads — we sell authentic community connection. Sponsors become part of the community, not interruptions to it."
+    "We don't sell ads to we sell authentic community connection. Sponsors become part of the community, not interruptions to it."
   </div>
 </div>
 
