@@ -261,8 +261,8 @@ export default function LeaderShieldModal({ isOpen, onClose, community, leaderUs
             </div>
             <p style={{ margin: '3px 0 0 0', fontSize: '0.84rem', color: 'var(--slate-300)', lineHeight: 1.4 }}>
               {isInsured 
-                ? '?5M Organiser Legal Protection, Council Safety Packs & 2% Ticket Fees' 
-                : 'Built-in ?5,000,000 Organiser Legal Protection, Council & Venue Safety Packs, Digital Attendee Waivers & 2% Ticket Fees.'}
+                ? '£5M Organiser Legal Protection, Council Safety Packs & 2% Ticket Fees' 
+                : 'Built-in £5,000,000 Organiser Legal Protection, Council & Venue Safety Packs, Digital Attendee Waivers & 2% Ticket Fees.'}
             </p>
           </div>
         </div>
@@ -320,7 +320,7 @@ export default function LeaderShieldModal({ isOpen, onClose, community, leaderUs
                 </div>
                 <div>
                   <span style={{ color: 'var(--slate-400)', fontSize: '0.7rem', display: 'block' }}>Indemnity Limit</span>
-                  <strong style={{ color: '#2dd4bf' }}>?5,000,000 Organiser Liability Protection</strong>
+                  <strong style={{ color: '#2dd4bf' }}>£5,000,000 Organiser Liability Protection</strong>
                 </div>
                 <div>
                   <span style={{ color: 'var(--slate-400)', fontSize: '0.7rem', display: 'block' }}>Territory</span>
@@ -434,8 +434,8 @@ export default function LeaderShieldModal({ isOpen, onClose, community, leaderUs
                   gap: '6px'
                 }}
               >
-                <span>Annual (?165 / yr)</span>
-                <span style={{ fontSize: '0.65rem', background: 'rgba(0,0,0,0.25)', color: 'var(--white)', padding: '2px 6px', borderRadius: '4px', fontWeight: 800 }}>SAVE ?33</span>
+                <span>Annual (£165 / yr)</span>
+                <span style={{ fontSize: '0.65rem', background: 'rgba(0,0,0,0.25)', color: 'var(--white)', padding: '2px 6px', borderRadius: '4px', fontWeight: 800 }}>SAVE £33</span>
               </button>
               <button
                 onClick={() => setBillingInterval('monthly')}
@@ -452,7 +452,7 @@ export default function LeaderShieldModal({ isOpen, onClose, community, leaderUs
                   cursor: 'pointer'
                 }}
               >
-                Monthly (?16.50 / mo)
+                Monthly (£16.50 / mo)
               </button>
             </div>
 
@@ -518,11 +518,11 @@ export default function LeaderShieldModal({ isOpen, onClose, community, leaderUs
                 marginBottom: '10px'
               }}
             >
-              {isProcessing ? 'Connecting to Stripe...' : `Upgrade to Leader Pro ? ${billingInterval === 'annual' ? '?165/year' : '?16.50/month'}`} <ArrowRight size={18} />
+              {isProcessing ? 'Connecting to Stripe...' : `Upgrade to Leader Pro • ${billingInterval === 'annual' ? '£165/year' : '£16.50/month'}`} <ArrowRight size={18} />
             </button>
 
             <div style={{ textAlign: 'center', fontSize: '0.72rem', color: 'var(--slate-500)' }}>
-              ?? Instant activation ? Cancel anytime ? Includes instant downloadable venue compliance pack
+              ✓ Instant activation • Cancel anytime • Includes instant downloadable venue compliance pack
             </div>
           </div>
         )}

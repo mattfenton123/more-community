@@ -4,7 +4,7 @@ import { cleanLocationName } from './location';
 export const LEADER_PRO_CONFIG = {
   monthlyPrice: 16.50,
   annualPrice: 165.00,
-  coverAmount: '?5M Organiser Legal Protection',
+  coverAmount: '£5M Organiser Legal Protection',
   underwriter: 'MORE Community Safety & Legal Protection Standards',
   schemeName: 'Community Organiser Legal Cover & Safety Pack',
   perks: [

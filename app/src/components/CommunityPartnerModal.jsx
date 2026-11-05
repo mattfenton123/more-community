@@ -5,7 +5,7 @@ import {
   Store, Coffee, Paintbrush, Dumbbell, Stethoscope, Briefcase, 
   ArrowRight, ArrowLeft, Users, ChevronRight, Check, Heart, ExternalLink,
   Eye, Image as ImageIcon, Sliders, UserCheck, HelpCircle, Compass,
-  Layers, MapPin, Tag, CheckCircle, Info
+  Layers, Clock, MapPin, Tag, CheckCircle, Info
 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { useToast } from './Toast';
@@ -226,7 +226,7 @@ export default function CommunityPartnerModal({
           notifyCommunityLeaders(
             commId,
             'New Sponsor & Perk Offer',
-            sponsorForm.businessName + ' offered: "' + sponsorForm.perk + '" (' + (sponsorForm.tier === 'headline' ? '?49 Headline Sponsor' : '?15 Directory Sponsor') + ')',
+            sponsorForm.businessName + ' offered: "' + sponsorForm.perk + '" (' + (sponsorForm.tier === 'headline' ? '£49 Headline Sponsor' : '£15 Directory Sponsor') + ')',
             '/community/' + commId
           );
         }
@@ -370,7 +370,7 @@ export default function CommunityPartnerModal({
                     justifyContent: 'center',
                     flexShrink: 0
                   }}>
-                    {isPast ? '?' : idx + 1}
+                    {isPast ? <Check size={11} strokeWidth={3} /> : idx + 1}
                   </div>
                   <span style={{ fontSize: '0.74rem', fontWeight: 600, color: isCurrent ? '#fff' : 'var(--slate-300)', whiteSpace: 'nowrap' }}>
                     {s.label}
@@ -516,7 +516,7 @@ export default function CommunityPartnerModal({
                           </div>
                           <div>
                             <div style={{ fontSize: '0.95rem', fontWeight: 800, color: 'var(--white)' }}>Local Business Sponsor</div>
-                            <div style={{ fontSize: '0.78rem', color: '#2dd4bf', fontWeight: 600, marginTop: '2px' }}>From ?15/mo ? 80% to club fund</div>
+                            <div style={{ fontSize: '0.78rem', color: '#2dd4bf', fontWeight: 600, marginTop: '2px' }}>From £15/mo • 80% to club fund</div>
                           </div>
                           <p style={{ fontSize: '0.78rem', color: 'var(--slate-400)', lineHeight: 1.4, margin: 0 }}>
                             Feature your brand ad in the club feed and offer an exclusive perk to members on meetup days (cafes, physios, gear shops).
@@ -546,7 +546,7 @@ export default function CommunityPartnerModal({
                           </div>
                           <div>
                             <div style={{ fontSize: '0.95rem', fontWeight: 800, color: 'var(--white)' }}>Guest Session or Masterclass</div>
-                            <div style={{ fontSize: '0.78rem', color: '#38bdf8', fontWeight: 600, marginTop: '2px' }}>Ticketed Experience ? Escrow protected</div>
+                            <div style={{ fontSize: '0.78rem', color: '#38bdf8', fontWeight: 600, marginTop: '2px' }}>Ticketed Experience • Escrow protected</div>
                           </div>
                           <p style={{ fontSize: '0.78rem', color: 'var(--slate-400)', lineHeight: 1.4, margin: 0 }}>
                             Pitch a co-hosted masterclass, coaching clinic, or special outdoor workshop with set min/max capacities and safe post-event payouts.
@@ -606,8 +606,8 @@ export default function CommunityPartnerModal({
                               </span>
                             </div>
                             <div style={{ fontSize: '0.78rem', color: 'var(--slate-400)', marginTop: '2px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                              <span>?? {targetCommunity.location_name || 'Local Town'}</span>
-                              <span>?? {targetCommunity.member_count || '50+'} active members</span>
+                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><MapPin size={12} color="#2dd4bf" /> {targetCommunity.location_name || 'Local Town'}</span>
+                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><Users size={12} color="#2dd4bf" /> {targetCommunity.member_count || '50+'} active members</span>
                             </div>
                           </div>
                         </div>
@@ -636,10 +636,10 @@ export default function CommunityPartnerModal({
                           >
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
                               <span style={{ fontWeight: 800, color: 'var(--white)', fontSize: '0.88rem' }}>Club Directory Sponsor</span>
-                              <span style={{ fontWeight: 800, color: '#2dd4bf', fontSize: '0.9rem' }}>?15<span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>/mo</span></span>
+                              <span style={{ fontWeight: 800, color: '#2dd4bf', fontSize: '0.9rem' }}>£15<span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>/mo</span></span>
                             </div>
                             <p style={{ fontSize: '0.75rem', color: 'var(--slate-400)', margin: 0, lineHeight: 1.4 }}>
-                              Placement inside {targetCommunity?.name || 'this club'}'s feed. ?12/mo goes straight to the club fund.
+                              Placement inside {targetCommunity?.name || 'this club'}'s feed. £12/mo goes straight to the club fund.
                             </p>
                           </div>
 
@@ -655,10 +655,10 @@ export default function CommunityPartnerModal({
                           >
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
                               <span style={{ fontWeight: 800, color: 'var(--white)', fontSize: '0.88rem' }}>Town Bundle Headline Sponsor</span>
-                              <span style={{ fontWeight: 800, color: '#f59e0b', fontSize: '0.9rem' }}>?49<span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>/mo</span></span>
+                              <span style={{ fontWeight: 800, color: '#f59e0b', fontSize: '0.9rem' }}>£49<span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>/mo</span></span>
                             </div>
                             <p style={{ fontSize: '0.75rem', color: 'var(--slate-400)', margin: 0, lineHeight: 1.4 }}>
-                              Top banner placement cross-promoted across all local clubs in this town. ?39/mo goes to clubs.
+                              Top banner placement cross-promoted across all local clubs in this town. £39/mo goes to clubs.
                             </p>
                           </div>
                         </div>
@@ -718,7 +718,7 @@ export default function CommunityPartnerModal({
                             >
                               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 <span style={{ fontSize: '0.82rem', fontWeight: 700, color: isSelected ? '#fff' : 'var(--slate-200)' }}>{c.name}</span>
-                                <span style={{ fontSize: '0.7rem', color: 'var(--slate-400)' }}>? {c.location_name || 'UK'}</span>
+                                <span style={{ fontSize: '0.7rem', color: 'var(--slate-400)', display: 'inline-flex', alignItems: 'center', gap: '3px' }}><MapPin size={11} color="var(--slate-400)" /> {c.location_name || 'UK'}</span>
                               </div>
                               <span style={{ fontSize: '0.72rem', color: isSelected ? '#2dd4bf' : 'var(--slate-400)' }}>
                                 {isSelected ? 'Selected' : 'Select'}
@@ -1061,7 +1061,7 @@ export default function CommunityPartnerModal({
                                 alignItems: 'center',
                                 gap: '6px'
                               }}>
-                                <span>??</span> {sponsorForm.perk || '15% off for all members'}
+                                <Tag size={13} color="#2dd4bf" /> {sponsorForm.perk || '15% off for all members'}
                               </div>
                               <button
                                 type="button"
@@ -1143,7 +1143,7 @@ export default function CommunityPartnerModal({
                                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                               />
                               <div style={{ position: 'absolute', top: '10px', right: '10px', background: '#38bdf8', color: '#0f172a', fontSize: '0.68rem', fontWeight: 800, padding: '2px 8px', borderRadius: '99px' }}>
-                                ?{sessionForm.ticketPrice} / person
+                                £{sessionForm.ticketPrice} / person
                               </div>
                             </div>
                             <div style={{ padding: '16px' }}>
@@ -1151,8 +1151,8 @@ export default function CommunityPartnerModal({
                                 {sessionForm.title || 'Your Session Title'}
                               </div>
                               <div style={{ display: 'flex', gap: '6px', fontSize: '0.72rem', color: '#94a3b8', marginBottom: '10px' }}>
-                                <span>?? {sessionForm.duration}</span>
-                                <span>?? Min {sessionForm.minCapacity} ? Max {sessionForm.maxCapacity}</span>
+                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><Clock size={12} color="#38bdf8" /> {sessionForm.duration}</span>
+                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><Users size={12} color="#38bdf8" /> Min {sessionForm.minCapacity} • Max {sessionForm.maxCapacity}</span>
                               </div>
                               <p style={{ fontSize: '0.76rem', color: 'var(--slate-400)', margin: '0 0 12px', lineHeight: 1.4 }}>
                                 {sessionForm.summary || 'Summary of what members will learn...'}
@@ -1193,7 +1193,7 @@ export default function CommunityPartnerModal({
                           <span style={{ color: 'var(--slate-400)', display: 'block', fontSize: '0.74rem' }}>Target Community</span>
                           <strong style={{ color: 'var(--white)', fontSize: '0.95rem' }}>{targetCommunity?.name}</strong>
                           <span style={{ color: '#2dd4bf', display: 'block', fontSize: '0.74rem', marginTop: '2px' }}>
-                            {targetCommunity?.location_name || 'Local Town'} ? {targetCommunity?.member_count || '50+'} members
+                            {targetCommunity?.location_name || 'Local Town'} • {targetCommunity?.member_count || '50+'} members
                           </span>
                         </div>
                         <div>
@@ -1220,7 +1220,7 @@ export default function CommunityPartnerModal({
                               <strong style={{ color: 'var(--white)' }}>Session:</strong> {sessionForm.title} ({sessionForm.duration})
                             </div>
                             <div style={{ color: 'var(--slate-400)' }}>
-                              Capacity: Min {sessionForm.minCapacity} to Max {sessionForm.maxCapacity} participants ? Ticket: ?{sessionForm.ticketPrice}
+                              Capacity: Min {sessionForm.minCapacity} to Max {sessionForm.maxCapacity} participants • Ticket: £{sessionForm.ticketPrice}
                             </div>
                           </div>
                         )}
@@ -1238,7 +1238,7 @@ export default function CommunityPartnerModal({
                             {partnerMode === 'sponsor' ? 'Monthly Investment:' : 'Post-Event Escrow Terms:'}
                           </span>
                           <span style={{ fontWeight: 800, color: '#2dd4bf', fontSize: '0.95rem' }}>
-                            {partnerMode === 'sponsor' ? (sponsorForm.tier === 'headline' ? '?49/month' : '?15/month') : 'Stripe 24-48h Hold'}
+                            {partnerMode === 'sponsor' ? (sponsorForm.tier === 'headline' ? '£49/month' : '£15/month') : 'Stripe 24-48h Hold'}
                           </span>
                         </div>
                         <p style={{ margin: '4px 0 0', fontSize: '0.74rem', color: 'var(--slate-400)', lineHeight: 1.4 }}>

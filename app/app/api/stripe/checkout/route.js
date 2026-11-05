@@ -207,7 +207,7 @@ export async function POST(req) {
             product_data: {
               name: isSubscription ? verifiedTitle : `Ticket: ${verifiedTitle}`,
               description: type === 'leader_pro'
-                ? '?5M Organiser Legal Protection, Council Safety Packs, Digital Waivers, Verified Trust Shield & 2% Reduced Ticket Fees'
+                ? '£5M Organiser Legal Protection, Council Safety Packs, Digital Waivers, Verified Trust Shield & 2% Reduced Ticket Fees'
                 : (isSubscription ? 'Monthly community membership' : 'Community event ticket'),
             },
             unit_amount: unitAmountPence,

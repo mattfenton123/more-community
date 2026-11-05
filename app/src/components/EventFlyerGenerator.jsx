@@ -105,6 +105,7 @@ export default function EventFlyerGenerator({ event, community, onClose, uploadI
   const [exportStatus, setExportStatus] = useState(null);
   const [titleColor, setTitleColor] = useState('#ffffff');
   const [titleSizeMultiplier, setTitleSizeMultiplier] = useState(1);
+  const [overlayOpacity, setOverlayOpacity] = useState(0.85);
   const [activePanel, setActivePanel] = useState('template');
   const [showFontDropdown, setShowFontDropdown] = useState(false);
 
@@ -180,7 +181,7 @@ export default function EventFlyerGenerator({ event, community, onClose, uploadI
       });
     }
 
-    // Draw overlay gradient
+    // Draw overlay gradient with customizable opacity
     const hexToRgb = (hex) => {
       const r = parseInt(hex.slice(1, 3), 16);
       const g = parseInt(hex.slice(3, 5), 16);
@@ -188,6 +189,9 @@ export default function EventFlyerGenerator({ event, community, onClose, uploadI
       return { r, g, b };
     };
     const accentRgb = hexToRgb(accent);
+
+    ctx.save();
+    ctx.globalAlpha = overlayOpacity;
 
     if (template === 'bold') {
       const grad = ctx.createLinearGradient(0, 0, width, height);
@@ -205,6 +209,7 @@ export default function EventFlyerGenerator({ event, community, onClose, uploadI
       ctx.fillStyle = grad;
     }
     ctx.fillRect(0, 0, width, height);
+    ctx.restore();
 
     // Subtitle
     ctx.font = `600 30px "${font}", sans-serif`;
@@ -430,7 +435,13 @@ export default function EventFlyerGenerator({ event, community, onClose, uploadI
             }} />
             
             {/* Overlay */}
-            <div style={{ position: 'absolute', inset: 0, background: tmpl.overlay(accent) }} />
+            <div style={{ 
+              position: 'absolute', 
+              inset: 0, 
+              background: tmpl.overlay(accent), 
+              opacity: overlayOpacity,
+              transition: 'opacity 0.15s ease' 
+            }} />
 
             {/* Content */}
             <div style={{
@@ -632,13 +643,38 @@ export default function EventFlyerGenerator({ event, community, onClose, uploadI
                   />
                 ))}
               </div>
-              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '14px' }}>
                 <label style={{ fontSize: '0.75rem', color: 'var(--slate-400)', fontWeight: 600 }}>Custom:</label>
                 <input type="color" value={customColour}
                   onChange={(e) => { setCustomColour(e.target.value); setAccent(e.target.value); }}
                   style={{ width: '36px', height: '36px', border: 'none', borderRadius: '8px', cursor: 'pointer', background: 'none' }}
                 />
                 <span style={{ fontSize: '0.75rem', color: 'var(--slate-500)', fontFamily: 'monospace' }}>{accent}</span>
+              </div>
+
+              {/* Transparency / Opacity Slider */}
+              <div style={{ background: 'rgba(255,255,255,0.03)', padding: '12px 14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <label style={{ fontSize: '0.78rem', color: 'var(--slate-300)', fontWeight: 600 }}>
+                    Colour Overlay Transparency
+                  </label>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--teal-300)', fontWeight: 700, fontFamily: 'monospace' }}>
+                    {Math.round(overlayOpacity * 100)}%
+                  </span>
+                </div>
+                <input 
+                  type="range" 
+                  min="0.05" 
+                  max="1" 
+                  step="0.05" 
+                  value={overlayOpacity}
+                  onChange={(e) => setOverlayOpacity(parseFloat(e.target.value))}
+                  style={{ width: '100%', accentColor: 'var(--teal-400)', cursor: 'pointer' }} 
+                />
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.68rem', color: 'var(--slate-500)', marginTop: '4px' }}>
+                  <span>Transparent (Photo Focus)</span>
+                  <span>Solid Tint</span>
+                </div>
               </div>
             </div>
           )}
@@ -670,6 +706,31 @@ export default function EventFlyerGenerator({ event, community, onClose, uploadI
                 ))}
               </div>
               <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleImageUpload} />
+
+              {/* Overlay Transparency Slider on Image Tab */}
+              <div style={{ background: 'rgba(255,255,255,0.03)', padding: '12px 14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <label style={{ fontSize: '0.78rem', color: 'var(--slate-300)', fontWeight: 600 }}>
+                    Overlay Transparency on Image
+                  </label>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--teal-300)', fontWeight: 700, fontFamily: 'monospace' }}>
+                    {Math.round(overlayOpacity * 100)}%
+                  </span>
+                </div>
+                <input 
+                  type="range" 
+                  min="0.05" 
+                  max="1" 
+                  step="0.05" 
+                  value={overlayOpacity}
+                  onChange={(e) => setOverlayOpacity(parseFloat(e.target.value))}
+                  style={{ width: '100%', accentColor: 'var(--teal-400)', cursor: 'pointer' }} 
+                />
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.68rem', color: 'var(--slate-500)', marginTop: '4px' }}>
+                  <span>More Image Visible (5%)</span>
+                  <span>Heavy Overlay (100%)</span>
+                </div>
+              </div>
             </div>
           )}
 

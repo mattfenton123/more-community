@@ -422,17 +422,32 @@ export default function AdminDashboard() {
             </div>
           </div>
           
-          <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+          <div style={{ display: 'flex', gap: '6px', marginTop: '12px' }}>
+            <button 
+              onClick={() => {
+                setSimulatedPersona('member');
+                navigate.push('/app');
+              }}
+              className="interactive-press"
+              style={{ 
+                flex: 1, padding: '7px 8px', borderRadius: '8px', fontSize: '0.72rem', 
+                background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.3)', 
+                color: '#4ade80', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', cursor: 'pointer' 
+              }}
+              title="Open Member User View (/app)"
+            >
+              <Users size={12} color="#4ade80" /> Member View →
+            </button>
             <button 
               onClick={() => navigate.push('/dashboard')}
               className="interactive-press"
               style={{ 
-                flex: 1, padding: '7px 10px', borderRadius: '8px', fontSize: '0.74rem', 
+                flex: 1, padding: '7px 8px', borderRadius: '8px', fontSize: '0.72rem', 
                 background: 'rgba(20,184,166,0.12)', border: '1px solid rgba(20,184,166,0.3)', 
                 color: 'var(--teal-300)', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', cursor: 'pointer' 
               }}
             >
-              <Crown size={12} color="var(--teal-400)" /> Leader View ?
+              <Crown size={12} color="var(--teal-400)" /> Leader View →
             </button>
             <button 
               onClick={() => handleExportCSV('revenue')}
@@ -525,13 +540,24 @@ export default function AdminDashboard() {
             </div>
           </div>
           
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
             <button 
               onClick={() => handleExportCSV('revenue')}
               className="btn btn-outline interactive-press"
               style={{ padding: '8px 12px', borderRadius: '10px', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--white)' }}
             >
               <Download size={14} color="var(--teal-400)" /> Export Data
+            </button>
+            <button 
+              onClick={() => {
+                setSimulatedPersona('member');
+                navigate.push('/app');
+              }}
+              className="btn interactive-press"
+              style={{ padding: '8px 14px', borderRadius: '10px', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.3)', color: '#4ade80', fontWeight: 600 }}
+              title="Open Member User View (/app)"
+            >
+              <Users size={14} color="#4ade80" /> Member / User View →
             </button>
             <button 
               onClick={() => navigate.push('/dashboard')}
@@ -741,16 +767,28 @@ export default function AdminDashboard() {
                     How everyday community members find events, RSVP with passes, and enjoy local sponsor perks.
                   </p>
                 </div>
-                <button
-                  onClick={() => {
-                    setSimulatedPersona('member');
-                    navigate.push('/discover');
-                  }}
-                  className="btn btn-primary interactive-press"
-                  style={{ padding: '10px 18px', borderRadius: '12px', fontSize: '0.88rem', fontWeight: 700 }}
-                >
-                  Simulate Whole App as Member →
-                </button>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  <button
+                    onClick={() => {
+                      setSimulatedPersona('member');
+                      navigate.push('/app');
+                    }}
+                    className="btn btn-primary interactive-press"
+                    style={{ padding: '10px 18px', borderRadius: '12px', fontSize: '0.88rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}
+                  >
+                    <Users size={15} /> Open Member Home Feed (/app) →
+                  </button>
+                  <button
+                    onClick={() => {
+                      setSimulatedPersona('member');
+                      navigate.push('/discover');
+                    }}
+                    className="btn btn-outline interactive-press"
+                    style={{ padding: '10px 18px', borderRadius: '12px', fontSize: '0.88rem', fontWeight: 700, border: '1px solid rgba(255,255,255,0.2)', color: 'white', display: 'flex', alignItems: 'center', gap: '6px' }}
+                  >
+                    <Globe size={15} color="var(--teal-400)" /> Browse Discover (/discover) →
+                  </button>
+                </div>
               </div>
 
               {/* Member Perks & RSVP Passes */}

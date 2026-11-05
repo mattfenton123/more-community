@@ -1,6 +1,6 @@
 "use client";
 import { useState, useRef, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Share2, Users, Calendar, Settings, ChevronDown, ChevronUp, Image as ImageIcon, ExternalLink, Camera, Mail, Activity, Sparkles, MapPin, Clock, Star, MessageCircle, Heart, BadgeCheck, Globe, Trash2, Flag, Search, Briefcase, Check, X, MessageSquare, Lightbulb, Info, Megaphone, Video, Plus, Shield, Play, Smile, Archive, Store } from 'lucide-react';
+import { LayoutDashboard, Edit3, ChevronLeft, ChevronRight, Share2, Users, Calendar, Settings, ChevronDown, ChevronUp, Image as ImageIcon, ExternalLink, Camera, Mail, Activity, Sparkles, MapPin, Clock, Star, MessageCircle, Heart, BadgeCheck, Globe, Trash2, Flag, Search, Briefcase, Check, X, MessageSquare, Lightbulb, Info, Megaphone, Video, Plus, Shield, Play, Smile, Archive, Store } from 'lucide-react';
 import { useRouter as useNavigate, useParams, useSearchParams } from 'next/navigation';
 import { useAppContext } from '../../../src/context/AppContext';
 import { useFeed } from '../../../src/context/FeedContext';
@@ -415,6 +415,76 @@ export default function CommunityProfile() {
 
   return (
     <div className="view-profile" style={{ background: 'var(--slate-950)', minHeight: '100dvh', paddingBottom: '80px', width: '100%' }}>
+      {/* Sticky Leader Admin Bar */}
+      {isLeader && (
+        <div style={{
+          position: 'sticky',
+          top: 0,
+          zIndex: 9999,
+          background: 'linear-gradient(90deg, #0f172a 0%, #0d9488 100%)',
+          borderBottom: '1.5px solid rgba(45,212,191,0.5)',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
+          padding: '10px 18px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '12px',
+          flexWrap: 'wrap'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span style={{ fontSize: '1.15rem' }}>👑</span>
+            <div>
+              <div style={{ fontSize: '0.84rem', fontWeight: 800, color: '#ffffff', lineHeight: 1.2 }}>
+                Community Leader Mode
+              </div>
+              <div style={{ fontSize: '0.72rem', color: '#ccfbf1' }}>
+                You are viewing the live public microsite for <strong>{community.name}</strong>
+              </div>
+            </div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+            <button
+              onClick={() => navigate.push(`/dashboard?community=${community.id}&edit=true`)}
+              className="interactive-press"
+              style={{
+                background: '#ffffff',
+                color: '#0f172a',
+                border: 'none',
+                padding: '7px 14px',
+                borderRadius: '8px',
+                fontSize: '0.78rem',
+                fontWeight: 800,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
+              }}
+            >
+              <Edit3 size={14} /> Edit Microsite Profile
+            </button>
+            <button
+              onClick={() => navigate.push(`/dashboard?community=${community.id}`)}
+              className="interactive-press"
+              style={{
+                background: 'rgba(255,255,255,0.18)',
+                color: '#ffffff',
+                border: '1px solid rgba(255,255,255,0.35)',
+                padding: '7px 14px',
+                borderRadius: '8px',
+                fontSize: '0.78rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}
+            >
+              <LayoutDashboard size={14} /> Leader Dashboard
+            </button>
+          </div>
+        </div>
+      )}
       <div className="microsite-container">
         
         {/* ===== HERO SECTION ===== */}

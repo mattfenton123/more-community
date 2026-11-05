@@ -620,6 +620,13 @@ export default function LeaderDashboard({ initialCommunityId }) {
     setIsEditing(true);
   };
 
+  // Automatically trigger edit modal when arriving with ?edit=true
+  useEffect(() => {
+    if (searchParams?.get('edit') === 'true' && community) {
+      handleEditClick();
+    }
+  }, [searchParams, community?.id]);
+
   const toggleEditTag = (tag) => {
     setEditForm(prev => {
       const currentTags = Array.isArray(prev.tags) ? prev.tags : [];
@@ -1668,7 +1675,45 @@ export default function LeaderDashboard({ initialCommunityId }) {
                       <h3 style={{ margin: 0, color: 'white', fontSize: '1.2rem', fontFamily: 'var(--font-heading)' }}>{community.name}</h3>
                       <span style={{ fontSize: '0.75rem', color: 'var(--teal-300)', fontWeight: 500 }}>Public Community Microsite</span>
                     </div>
-                    <div>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                      <a 
+                        href={`/community/${community.id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn btn-outline interactive-press"
+                        style={{ 
+                          background: 'rgba(15,23,42,0.85)', 
+                          backdropFilter: 'blur(8px)',
+                          border: '1px solid rgba(45,212,191,0.4)', 
+                          color: 'var(--teal-300)',
+                          padding: '8px 12px',
+                          borderRadius: '8px',
+                          fontSize: '0.75rem',
+                          fontWeight: 600,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          textDecoration: 'none'
+                        }}
+                      >
+                        <ExternalLink size={14} color="var(--teal-300)" /> View Live Microsite ↗
+                      </a>
+                      <button 
+                        onClick={handleEditClick}
+                        className="btn btn-primary interactive-press"
+                        style={{ 
+                          padding: '8px 14px',
+                          borderRadius: '8px',
+                          fontSize: '0.75rem',
+                          fontWeight: 700,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        <Edit3 size={14} /> Edit Microsite Profile
+                      </button>
                       <input 
                         type="file" 
                         ref={bannerFileInputRef} 
