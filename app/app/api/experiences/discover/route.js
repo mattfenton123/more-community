@@ -123,7 +123,9 @@ export async function GET(request) {
           || p.images?.[0]?.variants?.[0]?.url 
           || 'https://images.unsplash.com/photo-1533105079780-92b9be482077?w=800&q=80';
 
-        const basePrice = Math.max(10, Math.round(p.pricing?.summary?.fromPrice || 25));
+        const supplierBase = Math.max(10, Math.round(p.pricing?.summary?.fromPrice || 25));
+        const moreMargin = Math.max(2, Math.round(supplierBase * 0.10));
+        const basePrice = supplierBase + moreMargin; // Inflated by More's 10% platform markup
         const rating = p.reviews?.combinedAverageRating ? Number(p.reviews.combinedAverageRating.toFixed(1)) : 4.8;
         const reviewsCount = p.reviews?.totalReviews || (10 + (idx % 15));
 

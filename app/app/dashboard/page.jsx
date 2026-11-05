@@ -3447,64 +3447,81 @@ export default function LeaderDashboard({ initialCommunityId }) {
                       </button>
                     </div>
 
-                    {/* 3-Pillar Breakdown */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                      {/* 1. Supplier */}
-                      <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '12px', padding: '14px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                          <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#fff' }}>1. Experience Supplier (Base Price)</div>
-                          <div style={{ fontSize: '1rem', fontWeight: 800, color: '#38bdf8' }}>£{markupInfoExp.basePrice}.00</div>
-                        </div>
-                        <p style={{ fontSize: '0.8rem', color: 'var(--slate-300)', margin: 0, lineHeight: 1.45 }}>
-                          Goes 100% directly to the licensed experience operator (e.g. UK Axe Throwing Centre / Viator partner). Covers certified venue lanes, expert instructors, equipment, and on-site insurance.
-                        </p>
-                      </div>
+                    {/* 3-Pillar Breakdown with More 10% Wholesale Split */}
+                    {(() => {
+                      const basePrice = markupInfoExp.basePrice || 40;
+                      const supplierBase = markupInfoExp.supplierBase || Math.round(basePrice / 1.10);
+                      const moreMargin = markupInfoExp.moreMargin || (basePrice - supplierBase);
+                      const markupPct = markupInfoExp.leaderMarkup ?? 15;
+                      const leaderProfit = Math.round((basePrice * markupPct) / 100);
+                      const memberFinalPrice = basePrice + leaderProfit;
 
-                      {/* 2. Leader Markup */}
-                      <div style={{ background: 'rgba(20, 184, 166, 0.08)', border: '1px solid rgba(20, 184, 166, 0.25)', borderRadius: '12px', padding: '14px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                          <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#2dd4bf' }}>2. Your Community Leader Cut (+{markupInfoExp.leaderMarkup ?? 15}%)</div>
-                          <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#34d399' }}>
-                            +£{((markupInfoExp.basePrice * (markupInfoExp.leaderMarkup ?? 15)) / 100).toFixed(2)}
+                      return (
+                        <>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            {/* 1. Supplier Base */}
+                            <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '12px', padding: '14px' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                                <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#fff' }}>1. Supplier Wholesale Rate</div>
+                                <div style={{ fontSize: '1rem', fontWeight: 800, color: '#38bdf8' }}>£{supplierBase}.00</div>
+                              </div>
+                              <p style={{ fontSize: '0.8rem', color: 'var(--slate-300)', margin: 0, lineHeight: 1.45 }}>
+                                Goes 100% directly to the licensed experience operator or venue (Viator partner, Hotel du Vin, or local provider). Covers certified facilities, hosts, and equipment.
+                              </p>
+                            </div>
+
+                            {/* 2. More Platform Margin (10%) */}
+                            <div style={{ background: 'rgba(168, 85, 247, 0.08)', border: '1px solid rgba(168, 85, 247, 0.25)', borderRadius: '12px', padding: '14px' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                                <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#c084fc' }}>2. More Platform Margin (10%)</div>
+                                <div style={{ fontSize: '1rem', fontWeight: 800, color: '#c084fc' }}>+£{moreMargin}.00</div>
+                              </div>
+                              <p style={{ fontSize: '0.8rem', color: 'var(--slate-300)', margin: 0, lineHeight: 1.45 }}>
+                                More adds a 10% platform wholesale markup to the raw supplier rate before displaying it. This covers marketplace curation, booking escrow, API connectivity, and payment processing fees.
+                              </p>
+                            </div>
+
+                            {/* 3. Leader Markup */}
+                            <div style={{ background: 'rgba(20, 184, 166, 0.08)', border: '1px solid rgba(20, 184, 166, 0.25)', borderRadius: '12px', padding: '14px' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                                <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#2dd4bf' }}>3. Your Community Leader Cut (+{markupPct}%)</div>
+                                <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#34d399' }}>
+                                  +£{leaderProfit}.00
+                                </div>
+                              </div>
+                              <p style={{ fontSize: '0.8rem', color: 'var(--slate-300)', margin: 0, lineHeight: 1.45 }}>
+                                100% of your added markup goes straight into your Community Club Fund. More does not deduct anything from your leader cut. Payouts transfer to your bank via Stripe Faster Payments.
+                              </p>
+                            </div>
                           </div>
-                        </div>
-                        <p style={{ fontSize: '0.8rem', color: 'var(--slate-300)', margin: 0, lineHeight: 1.45 }}>
-                          100% of your markup is paid straight to your Community Club Fund. Zero deductions taken by More from your leader earnings. You can cash out to your bank account via Stripe anytime, or use it to subsidise member passes, buy community kit, and host free social sessions.
-                        </p>
-                      </div>
 
-                      {/* 3. More Platform */}
-                      <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '12px', padding: '14px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                          <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#fff' }}>3. More Platform Fee</div>
-                          <div style={{ fontSize: '0.95rem', fontWeight: 800, color: '#a78bfa' }}>£0.00 from your markup</div>
-                        </div>
-                        <p style={{ fontSize: '0.8rem', color: 'var(--slate-300)', margin: 0, lineHeight: 1.45 }}>
-                          More never takes a percentage of your leader markup. Standard ticket payment checkout processing covers merchant and insurance fees, ensuring community creation and hosting stays 100% free for leaders.
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Live Example Calculation */}
-                    <div style={{ background: 'rgba(15, 23, 42, 0.6)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '14px' }}>
-                      <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.04em', marginBottom: '8px' }}>
-                        Live Ticket Summary at +{markupInfoExp.leaderMarkup ?? 15}% Markup
-                      </div>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '0.85rem' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--slate-300)' }}>
-                          <span>Supplier Base Rate:</span>
-                          <span>£{markupInfoExp.basePrice}.00</span>
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', color: '#34d399' }}>
-                          <span>Your Community Club Earnings:</span>
-                          <span>+£{((markupInfoExp.basePrice * (markupInfoExp.leaderMarkup ?? 15)) / 100).toFixed(2)}</span>
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '6px', fontWeight: 800, color: '#fff', fontSize: '0.95rem' }}>
-                          <span>Member Ticket Price:</span>
-                          <span>£{(markupInfoExp.basePrice + Math.round(markupInfoExp.basePrice * ((markupInfoExp.leaderMarkup ?? 15) / 100))).toFixed(2)}</span>
-                        </div>
-                      </div>
-                    </div>
+                          {/* Live Example Calculation */}
+                          <div style={{ background: 'rgba(15, 23, 42, 0.6)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '14px' }}>
+                            <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.04em', marginBottom: '8px' }}>
+                              Stripe Payment Breakdown (Member Pays £{memberFinalPrice}.00)
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '0.85rem' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--slate-300)' }}>
+                                <span>Supplier Receives:</span>
+                                <span>£{supplierBase}.00</span>
+                              </div>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', color: '#c084fc' }}>
+                                <span>More Platform Gross Profit (10%):</span>
+                                <span>+£{moreMargin}.00</span>
+                              </div>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', color: '#34d399' }}>
+                                <span>Your Community Fund (+{markupPct}%):</span>
+                                <span style={{ fontWeight: 700 }}>+£{leaderProfit}.00</span>
+                              </div>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '6px', fontWeight: 800, color: '#fff', fontSize: '0.95rem' }}>
+                                <span>Member Ticket Price:</span>
+                                <span>£{memberFinalPrice}.00</span>
+                              </div>
+                            </div>
+                          </div>
+                        </>
+                      );
+                    })()}
 
                     {/* Close Button */}
                     <button
