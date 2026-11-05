@@ -13,6 +13,7 @@ import {
   findKnownLocation,
   geocodeLocation
 } from '../lib/location';
+import { loadGoogleMaps, getPlacePredictions, getPlaceDetails, DARK_MAP_STYLES } from '../lib/googleMaps';
 
 const REGIONAL_HUB_PRESETS = [
   { name: 'Tunbridge Wells', query: 'Tunbridge Wells, Kent', lat: 51.1322, lng: 0.2637, defaultRadius: 5 },
@@ -110,12 +111,100 @@ export default function CommunityRegionPicker({
   const [searchResults, setSearchResults] = useState([]);
   const markerRef = useRef(null);
 
+  // Native Google Maps References
+  const googleMapContainerRef = useRef(null);
+  const mapInstanceRef = useRef(null);
+  const markerInstanceRef = useRef(null);
+  const circleInstanceRef = useRef(null);
+  const [useLeafletFallback, setUseLeafletFallback] = useState(false);
+
   // Sync coords if external prop updates
   useEffect(() => {
     if (externalCoords && externalCoords[0] != null && externalCoords[1] != null) {
       setCoords([Number(externalCoords[0]), Number(externalCoords[1])]);
     }
   }, [externalCoords]);
+
+  // Native Google Maps Initialization and Synchronization
+  useEffect(() => {
+    let isMounted = true;
+    if (useLeafletFallback) return;
+
+    loadGoogleMaps()
+      .then(maps => {
+        if (!isMounted || !googleMapContainerRef.current) return;
+
+        const isLight = typeof document !== 'undefined' && document.documentElement.getAttribute('data-theme') === 'light';
+
+        if (!mapInstanceRef.current) {
+          const map = new maps.Map(googleMapContainerRef.current, {
+            center: { lat: coords[0], lng: coords[1] },
+            zoom: radiusKm <= 3 ? 14 : radiusKm <= 6 ? 13 : radiusKm <= 10 ? 12 : 11,
+            mapTypeControl: false,
+            streetViewControl: false,
+            fullscreenControl: false,
+            zoomControl: true,
+            styles: isLight ? [] : DARK_MAP_STYLES
+          });
+
+          const circle = new maps.Circle({
+            strokeColor: '#0d9488',
+            strokeOpacity: 0.85,
+            strokeWeight: 2,
+            fillColor: '#14b8a6',
+            fillOpacity: 0.16,
+            map: map,
+            center: { lat: coords[0], lng: coords[1] },
+            radius: radiusKm * 1000
+          });
+
+          const marker = new maps.Marker({
+            position: { lat: coords[0], lng: coords[1] },
+            map: map,
+            draggable: true,
+            animation: maps.Animation.DROP,
+            title: 'Drag to adjust community town center'
+          });
+
+          marker.addListener('dragend', () => {
+            const pos = marker.getPosition();
+            if (pos) {
+              circle.setCenter(pos);
+              handleCenterChosen(pos.lat(), pos.lng());
+            }
+          });
+
+          map.addListener('click', (e) => {
+            if (e.latLng) {
+              marker.setPosition(e.latLng);
+              circle.setCenter(e.latLng);
+              handleCenterChosen(e.latLng.lat(), e.latLng.lng());
+            }
+          });
+
+          mapInstanceRef.current = map;
+          circleInstanceRef.current = circle;
+          markerInstanceRef.current = marker;
+        } else {
+          mapInstanceRef.current.panTo({ lat: coords[0], lng: coords[1] });
+          if (markerInstanceRef.current) {
+            markerInstanceRef.current.setPosition({ lat: coords[0], lng: coords[1] });
+          }
+          if (circleInstanceRef.current) {
+            circleInstanceRef.current.setCenter({ lat: coords[0], lng: coords[1] });
+            circleInstanceRef.current.setRadius(radiusKm * 1000);
+          }
+        }
+      })
+      .catch(err => {
+        console.warn('Google Maps region fallback to Leaflet:', err);
+        setUseLeafletFallback(true);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [coords, radiusKm, useLeafletFallback]);
 
   const markerIcon = useMemo(() => {
     if (typeof window === 'undefined') return null;
@@ -149,18 +238,33 @@ export default function CommunityRegionPicker({
     if (e) e.preventDefault();
     if (!searchQuery.trim()) return;
 
-    const qClean = cleanLocationName(searchQuery).toLowerCase().trim();
-    const matchedSpot = findKnownLocation(qClean);
-    if (matchedSpot) {
-      const newCoords = [matchedSpot.lat, matchedSpot.lng];
-      setCoords(newCoords);
-      setSearchResults([]);
-      updateLocationPayload(matchedSpot.name, matchedSpot.lat, matchedSpot.lng, radiusKm);
-      return;
-    }
-
     setIsSearching(true);
     try {
+      const googleResults = await getPlacePredictions(searchQuery, coords);
+      if (googleResults && googleResults.length > 0) {
+        const first = googleResults[0];
+        const details = await getPlaceDetails(first.placeId);
+        if (details && details.lat != null && details.lng != null) {
+          const newCoords = [details.lat, details.lng];
+          setCoords(newCoords);
+          setSearchResults([]);
+          updateLocationPayload(first.name, details.lat, details.lng, radiusKm);
+          setIsSearching(false);
+          return;
+        }
+      }
+
+      const qClean = cleanLocationName(searchQuery).toLowerCase().trim();
+      const matchedSpot = findKnownLocation(qClean);
+      if (matchedSpot) {
+        const newCoords = [matchedSpot.lat, matchedSpot.lng];
+        setCoords(newCoords);
+        setSearchResults([]);
+        updateLocationPayload(matchedSpot.name, matchedSpot.lat, matchedSpot.lng, radiusKm);
+        setIsSearching(false);
+        return;
+      }
+
       const res = await geocodeLocation(qClean);
       if (res && res.lat && res.lng) {
         const newCoords = [res.lat, res.lng];
@@ -330,68 +434,76 @@ export default function CommunityRegionPicker({
         </div>
       </div>
 
-      {/* Interactive Leaflet Map with Circle Radius */}
+      {/* Interactive Google Map with Circle Radius */}
       <div style={{
         borderRadius: '14px', overflow: 'hidden',
         border: '1px solid rgba(255,255,255,0.12)',
         background: '#020617', zIndex: 0,
-        boxShadow: '0 4px 16px rgba(0,0,0,0.3)'
+        boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
+        position: 'relative'
       }}>
         <div style={{ height: '240px', width: '100%', position: 'relative' }}>
-          <MapContainer 
-            center={coords} 
-            zoom={12} 
-            style={{ height: '100%', width: '100%', backgroundColor: '#020617' }} 
-            zoomControl={true}
-            attributionControl={false}
-          >
-            <TileLayer
-              url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-              maxZoom={19}
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+          {!useLeafletFallback ? (
+            <div 
+              ref={googleMapContainerRef} 
+              style={{ height: '100%', width: '100%', background: '#020617' }} 
             />
-            {/* Regional Coverage Circle */}
-            <Circle
-              center={coords}
-              radius={radiusKm * 1000}
-              pathOptions={{
-                color: '#0d9488',
-                fillColor: '#14b8a6',
-                fillOpacity: 0.16,
-                weight: 2,
-                dashArray: '6, 6'
-              }}
-            />
-            {markerIcon && (
-              <Marker 
-                ref={markerRef}
-                position={coords} 
-                icon={markerIcon}
-                draggable={true}
-                eventHandlers={{
-                  dragend: () => {
-                    const marker = markerRef.current;
-                    if (marker) {
-                      const pos = marker.getLatLng();
-                      handleCenterChosen(pos.lat, pos.lng);
-                    }
-                  }
+          ) : (
+            <MapContainer 
+              center={coords} 
+              zoom={12} 
+              style={{ height: '100%', width: '100%', backgroundColor: '#020617' }} 
+              zoomControl={true}
+              attributionControl={false}
+            >
+              <TileLayer
+                url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+                maxZoom={19}
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+              />
+              <Circle
+                center={coords}
+                radius={radiusKm * 1000}
+                pathOptions={{
+                  color: '#0d9488',
+                  fillColor: '#14b8a6',
+                  fillOpacity: 0.16,
+                  weight: 2,
+                  dashArray: '6, 6'
                 }}
               />
-            )}
-            <RegionMapController coords={coords} />
-            <RegionMapInteractionHandler onCenterChosen={handleCenterChosen} />
-          </MapContainer>
+              {markerIcon && (
+                <Marker 
+                  ref={markerRef}
+                  position={coords} 
+                  icon={markerIcon}
+                  draggable={true}
+                  eventHandlers={{
+                    dragend: () => {
+                      const marker = markerRef.current;
+                      if (marker) {
+                        const pos = marker.getLatLng();
+                        handleCenterChosen(pos.lat, pos.lng);
+                      }
+                    }
+                  }}
+                />
+              )}
+              <RegionMapController coords={coords} />
+              <RegionMapInteractionHandler onCenterChosen={handleCenterChosen} />
+            </MapContainer>
+          )}
 
           {/* Quick helper badge overlay */}
           <div style={{
-            position: 'absolute', top: '10px', right: '10px', zIndex: 400,
+            position: 'absolute', top: '10px', right: '10px', zIndex: 10,
             background: 'rgba(15, 23, 42, 0.88)', backdropFilter: 'blur(8px)',
-            padding: '5px 10px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.15)',
+            padding: '5px 11px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.18)',
             fontSize: '0.72rem', color: '#2dd4bf', display: 'flex', alignItems: 'center', gap: '5px',
             pointerEvents: 'none'
           }}>
-            <Crosshair size={12} /> Tap map or drag marker to set hub
+            <Compass size={12} color="#2dd4bf" />
+            <span>Google Maps • Catchment Area</span>
           </div>
         </div>
 

@@ -14,7 +14,7 @@ import {
   findKnownLocation,
   geocodeLocation
 } from '../lib/location';
-import { getPlacePredictions, getPlaceDetails } from '../lib/googleMaps';
+import { loadGoogleMaps, getPlacePredictions, getPlaceDetails, DARK_MAP_STYLES } from '../lib/googleMaps';
 
 const TOP_PRESETS = [
   { name: 'Bewl Water Car Park', query: 'Bewl Water Car Park & Visitor Centre' },
@@ -101,6 +101,13 @@ export default function LocationPicker({ locationName, setLocationName, coords: 
   const isManualPinRef = useRef(Boolean(parseLocationCoords(locationName)));
   const markerRef = useRef(null);
 
+  // Native Google Maps References
+  const googleMapContainerRef = useRef(null);
+  const mapInstanceRef = useRef(null);
+  const markerInstanceRef = useRef(null);
+  const [useLeafletFallback, setUseLeafletFallback] = useState(false);
+  const [isGoogleMapReady, setIsGoogleMapReady] = useState(false);
+
   // Keep internal query aligned if parent prop changes externally
   useEffect(() => {
     if (locationName) {
@@ -135,6 +142,70 @@ export default function LocationPicker({ locationName, setLocationName, coords: 
       isManualPinRef.current = false;
     }
   }, [locationName]);
+
+  // Native Google Maps Initialization and Synchronization
+  useEffect(() => {
+    let isMounted = true;
+    if (!showMap || useLeafletFallback) return;
+
+    loadGoogleMaps()
+      .then(maps => {
+        if (!isMounted || !googleMapContainerRef.current) return;
+
+        const isLight = typeof document !== 'undefined' && document.documentElement.getAttribute('data-theme') === 'light';
+
+        if (!mapInstanceRef.current) {
+          const map = new maps.Map(googleMapContainerRef.current, {
+            center: { lat: coords[0], lng: coords[1] },
+            zoom: 16,
+            mapTypeControl: false,
+            streetViewControl: false,
+            fullscreenControl: false,
+            zoomControl: true,
+            styles: isLight ? [] : DARK_MAP_STYLES
+          });
+
+          const marker = new maps.Marker({
+            position: { lat: coords[0], lng: coords[1] },
+            map: map,
+            draggable: true,
+            animation: maps.Animation.DROP,
+            title: 'Drag to adjust exact meeting point'
+          });
+
+          marker.addListener('dragend', () => {
+            const pos = marker.getPosition();
+            if (pos) {
+              handleLocationChosen(pos.lat(), pos.lng(), true);
+            }
+          });
+
+          map.addListener('click', (e) => {
+            if (e.latLng) {
+              marker.setPosition(e.latLng);
+              handleLocationChosen(e.latLng.lat(), e.latLng.lng(), true);
+            }
+          });
+
+          mapInstanceRef.current = map;
+          markerInstanceRef.current = marker;
+          setIsGoogleMapReady(true);
+        } else {
+          mapInstanceRef.current.panTo({ lat: coords[0], lng: coords[1] });
+          if (markerInstanceRef.current) {
+            markerInstanceRef.current.setPosition({ lat: coords[0], lng: coords[1] });
+          }
+        }
+      })
+      .catch(err => {
+        console.warn('Google Maps display fallback to Leaflet:', err);
+        setUseLeafletFallback(true);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [showMap, coords, useLeafletFallback]);
 
   const markerIcon = useMemo(() => {
     if (typeof window === 'undefined') return null;
@@ -580,57 +651,66 @@ export default function LocationPicker({ locationName, setLocationName, coords: 
         </div>
       )}
 
-      {/* Interactive Leaflet Map for Pinpointing */}
+      {/* Interactive Google Map for Pinpointing */}
       {showMap && (
         <div style={{
           borderRadius: '14px', overflow: 'hidden',
           border: '1px solid rgba(255,255,255,0.12)',
           background: '#020617', zIndex: 0,
-          boxShadow: '0 4px 16px rgba(0,0,0,0.3)'
+          boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
+          position: 'relative'
         }}>
           <div style={{ height: '230px', width: '100%', position: 'relative' }}>
-            <MapContainer 
-              center={coords} 
-              zoom={15} 
-              style={{ height: '100%', width: '100%', backgroundColor: '#020617' }} 
-              zoomControl={true}
-              attributionControl={false}
-            >
-              <TileLayer
-                url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-                maxZoom={19}
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            {!useLeafletFallback ? (
+              <div 
+                ref={googleMapContainerRef} 
+                style={{ height: '100%', width: '100%', background: '#020617' }} 
               />
-              {markerIcon && (
-                <Marker 
-                  ref={markerRef}
-                  position={coords} 
-                  icon={markerIcon}
-                  draggable={true}
-                  eventHandlers={{
-                    dragend: () => {
-                      const marker = markerRef.current;
-                      if (marker) {
-                        const pos = marker.getLatLng();
-                        handleLocationChosen(pos.lat, pos.lng, true);
-                      }
-                    }
-                  }}
+            ) : (
+              <MapContainer 
+                center={coords} 
+                zoom={15} 
+                style={{ height: '100%', width: '100%', backgroundColor: '#020617' }} 
+                zoomControl={true}
+                attributionControl={false}
+              >
+                <TileLayer
+                  url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  maxZoom={19}
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                 />
-              )}
-              <MapController coords={coords} />
-              <MapInteractionHandler onLocationChosen={handleLocationChosen} />
-            </MapContainer>
+                {markerIcon && (
+                  <Marker 
+                    ref={markerRef}
+                    position={coords} 
+                    icon={markerIcon}
+                    draggable={true}
+                    eventHandlers={{
+                      dragend: () => {
+                        const marker = markerRef.current;
+                        if (marker) {
+                          const pos = marker.getLatLng();
+                          handleLocationChosen(pos.lat, pos.lng, true);
+                        }
+                      }
+                    }}
+                  />
+                )}
+                <MapController coords={coords} />
+                <MapInteractionHandler onLocationChosen={handleLocationChosen} />
+              </MapContainer>
+            )}
 
             {/* Quick helper badge overlay */}
             <div style={{
-              position: 'absolute', top: '10px', right: '10px', zIndex: 400,
-              background: 'rgba(15, 23, 42, 0.85)', backdropFilter: 'blur(8px)',
-              padding: '5px 10px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.15)',
+              position: 'absolute', top: '10px', right: '10px', zIndex: 10,
+              background: 'rgba(15, 23, 42, 0.88)', backdropFilter: 'blur(8px)',
+              padding: '5px 11px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.18)',
               fontSize: '0.72rem', color: '#2dd4bf', display: 'flex', alignItems: 'center', gap: '5px',
               pointerEvents: 'none'
             }}>
-              <Crosshair size={12} /> Tap map or drag pin to fine-tune
+              <Sparkles size={12} color="#2dd4bf" />
+              <span>Google Maps • Tap or drag pin to adjust</span>
             </div>
           </div>
 
