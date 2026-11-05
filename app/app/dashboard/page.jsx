@@ -3440,153 +3440,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
               </div>
 
               {/* ═══ MARKUP EXPLANATION MODAL ═══ */}
-              {markupInfoExp && (
-                <div 
-                  onClick={() => setMarkupInfoExp(null)}
-                  style={{
-                    position: 'fixed',
-                    inset: 0,
-                    zIndex: 99999,
-                    background: 'rgba(2, 6, 23, 0.85)',
-                    backdropFilter: 'blur(8px)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    padding: '16px'
-                  }}
-                >
-                  <div 
-                    onClick={e => e.stopPropagation()}
-                    style={{
-                      background: '#0f172a',
-                      border: '1px solid rgba(255,255,255,0.14)',
-                      borderRadius: '20px',
-                      maxWidth: '560px',
-                      width: '100%',
-                      maxHeight: '90vh',
-                      overflowY: 'auto',
-                      boxShadow: '0 25px 50px -12px rgba(0,0,0,0.7)',
-                      padding: '24px',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '20px',
-                      position: 'relative'
-                    }}
-                  >
-                    {/* Header */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                      <div>
-                        <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--teal-400)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                          Transparent Financial Breakdown
-                        </span>
-                        <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#fff', margin: '4px 0 0', fontFamily: 'var(--font-heading)' }}>
-                          How Your Markup Works
-                        </h3>
-                        <p style={{ fontSize: '0.82rem', color: 'var(--slate-400)', margin: '4px 0 0' }}>
-                          {markupInfoExp.title}
-                        </p>
-                      </div>
-                      <button 
-                        onClick={() => setMarkupInfoExp(null)}
-                        className="interactive-press"
-                        style={{
-                          width: '32px', height: '32px', borderRadius: '50%',
-                          background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)',
-                          color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          cursor: 'pointer'
-                        }}
-                      >
-                        <X size={18} />
-                      </button>
-                    </div>
-
-                    {/* 3-Pillar Breakdown with More 10% Wholesale Split */}
-                    {(() => {
-                      const basePrice = markupInfoExp.basePrice || 40;
-                      const supplierBase = markupInfoExp.supplierBase || Math.round(basePrice / 1.10);
-                      const moreMargin = markupInfoExp.moreMargin || (basePrice - supplierBase);
-                      const markupPct = markupInfoExp.leaderMarkup ?? 15;
-                      const leaderProfit = Math.round((basePrice * markupPct) / 100);
-                      const memberFinalPrice = basePrice + leaderProfit;
-
-                      return (
-                        <>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                            {/* 1. Supplier Base */}
-                            <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '12px', padding: '14px' }}>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                                <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#fff' }}>1. Supplier Wholesale Rate</div>
-                                <div style={{ fontSize: '1rem', fontWeight: 800, color: '#38bdf8' }}>£{supplierBase}.00</div>
-                              </div>
-                              <p style={{ fontSize: '0.8rem', color: 'var(--slate-300)', margin: 0, lineHeight: 1.45 }}>
-                                Goes 100% directly to the licensed experience operator or venue (Viator partner, Hotel du Vin, or local provider). Covers certified facilities, hosts, and equipment.
-                              </p>
-                            </div>
-
-                            {/* 2. More Platform Margin (10%) */}
-                            <div style={{ background: 'rgba(168, 85, 247, 0.08)', border: '1px solid rgba(168, 85, 247, 0.25)', borderRadius: '12px', padding: '14px' }}>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                                <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#c084fc' }}>2. More Platform Margin (10%)</div>
-                                <div style={{ fontSize: '1rem', fontWeight: 800, color: '#c084fc' }}>+£{moreMargin}.00</div>
-                              </div>
-                              <p style={{ fontSize: '0.8rem', color: 'var(--slate-300)', margin: 0, lineHeight: 1.45 }}>
-                                More adds a 10% platform wholesale markup to the raw supplier rate before displaying it. This covers marketplace curation, booking escrow, API connectivity, and payment processing fees.
-                              </p>
-                            </div>
-
-                            {/* 3. Leader Markup */}
-                            <div style={{ background: 'rgba(20, 184, 166, 0.08)', border: '1px solid rgba(20, 184, 166, 0.25)', borderRadius: '12px', padding: '14px' }}>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                                <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#2dd4bf' }}>3. Your Community Leader Cut (+{markupPct}%)</div>
-                                <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#34d399' }}>
-                                  +£{leaderProfit}.00
-                                </div>
-                              </div>
-                              <p style={{ fontSize: '0.8rem', color: 'var(--slate-300)', margin: 0, lineHeight: 1.45 }}>
-                                100% of your added markup goes straight into your Community Club Fund. More does not deduct anything from your leader cut. Payouts transfer to your bank via Stripe Faster Payments.
-                              </p>
-                            </div>
-                          </div>
-
-                          {/* Live Example Calculation */}
-                          <div style={{ background: 'rgba(15, 23, 42, 0.6)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '14px' }}>
-                            <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.04em', marginBottom: '8px' }}>
-                              Stripe Payment Breakdown (Member Pays £{memberFinalPrice}.00)
-                            </div>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '0.85rem' }}>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--slate-300)' }}>
-                                <span>Supplier Receives:</span>
-                                <span>£{supplierBase}.00</span>
-                              </div>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', color: '#c084fc' }}>
-                                <span>More Platform Gross Profit (10%):</span>
-                                <span>+£{moreMargin}.00</span>
-                              </div>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', color: '#34d399' }}>
-                                <span>Your Community Fund (+{markupPct}%):</span>
-                                <span style={{ fontWeight: 700 }}>+£{leaderProfit}.00</span>
-                              </div>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '6px', fontWeight: 800, color: '#fff', fontSize: '0.95rem' }}>
-                                <span>Member Ticket Price:</span>
-                                <span>£{memberFinalPrice}.00</span>
-                              </div>
-                            </div>
-                          </div>
-                        </>
-                      );
-                    })()}
-
-                    {/* Close Button */}
-                    <button
-                      onClick={() => setMarkupInfoExp(null)}
-                      className="btn btn-primary interactive-press"
-                      style={{ width: '100%', padding: '12px', borderRadius: '12px', fontWeight: 700, fontSize: '0.9rem' }}
-                    >
-                      Got it, thanks!
-                    </button>
-                  </div>
-                </div>
-              )}
+              
             </div>
           )}
 
@@ -4922,80 +4776,132 @@ export default function LeaderDashboard({ initialCommunityId }) {
 
       {/* Discovery Modal */}
       {isDiscoveryModalOpen && (
-        <div className="modal-overlay" style={{ display: 'flex', flexDirection: 'column' }}>
-          <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h2 style={{ margin: 0, fontSize: '1.2rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Globe color="var(--teal-400)" size={20} /> Third-Party Discovery
-            </h2>
-            <button onClick={() => setIsDiscoveryModalOpen(false)} style={{ background: 'none', border: 'none', color: 'var(--slate-400)', cursor: 'pointer' }}><X size={24} /></button>
-          </div>
-          <div style={{ padding: '20px', flex: 1, overflowY: 'auto' }}>
-            <p style={{ color: 'var(--slate-400)', fontSize: '0.9rem', marginBottom: '20px' }}>
-              Search for premium experiences from our partners to offer your community members.
-            </p>
-            
-            <div style={{ display: 'flex', gap: '12px', marginBottom: '24px' }}>
-              <select 
-                value={discoveryProvider} 
-                onChange={e => setDiscoveryProvider(e.target.value)}
-                style={{ width: '150px', padding: '12px', background: 'var(--slate-900)', border: '1px solid var(--slate-700)', color: 'var(--white)', borderRadius: '12px' }}
-              >
-                <option value="viator">Viator Partner</option>
-                <option value="google">Google Places</option>
-              </select>
-              <input 
-                type="text" 
-                placeholder="Search destination (e.g. Tunbridge Wells)" 
-                value={discoverySearchTerm} 
-                onChange={e => setDiscoverySearchTerm(e.target.value)} 
-                onKeyDown={e => e.key === 'Enter' && handleSimulateApiSearch()}
-                style={{ flex: 1, padding: '12px', background: 'var(--slate-900)', border: '1px solid var(--slate-700)', color: 'var(--white)', borderRadius: '12px' }} 
-              />
+        <div 
+          className="modal-overlay" 
+          onClick={() => setIsDiscoveryModalOpen(false)}
+          style={{ 
+            position: 'fixed', 
+            inset: 0, 
+            zIndex: 99999, 
+            background: 'rgba(2, 6, 23, 0.85)', 
+            backdropFilter: 'blur(8px)', 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            padding: '16px' 
+          }}
+        >
+          <div 
+            onClick={e => e.stopPropagation()}
+            className="modal-content"
+            style={{ 
+              background: '#0f172a', 
+              border: '1px solid rgba(255,255,255,0.14)', 
+              borderRadius: '20px', 
+              maxWidth: '740px', 
+              width: '100%', 
+              maxHeight: '90vh', 
+              display: 'flex', 
+              flexDirection: 'column', 
+              overflow: 'hidden', 
+              boxShadow: '0 25px 50px -12px rgba(0,0,0,0.7)' 
+            }}
+          >
+            {/* Header */}
+            <div style={{ padding: '18px 22px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h2 style={{ margin: 0, fontSize: '1.2rem', fontFamily: 'Outfit, sans-serif', color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Globe color="#2dd4bf" size={20} /> Third-Party Discovery
+              </h2>
               <button 
-                onClick={handleSimulateApiSearch}
-                disabled={isDiscovering || !discoverySearchTerm.trim()}
-                className="btn btn-primary interactive-press" 
-                style={{ padding: '0 24px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '8px', opacity: (isDiscovering || !discoverySearchTerm.trim()) ? 0.7 : 1 }}
+                onClick={() => setIsDiscoveryModalOpen(false)} 
+                className="interactive-press" 
+                style={{ 
+                  background: 'rgba(255,255,255,0.06)', 
+                  border: '1px solid rgba(255,255,255,0.1)', 
+                  color: '#94a3b8', 
+                  cursor: 'pointer', 
+                  borderRadius: '50%', 
+                  width: '32px', 
+                  height: '32px', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center' 
+                }}
               >
-                {isDiscovering ? <span className="spinner" style={{ width: '16px', height: '16px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: 'white', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></span> : <Search size={16} />}
-                Search
+                <X size={18} />
               </button>
             </div>
-
-            {isDiscovering && (
-              <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--slate-400)' }}>
-                <div className="spinner" style={{ width: '32px', height: '32px', border: '3px solid rgba(255,255,255,0.1)', borderTopColor: 'var(--teal-400)', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 16px' }}></div>
-                Querying {discoveryProvider === 'viator' ? 'Viator Partner API' : 'Google Places API'}...
+            
+            {/* Scrollable Body */}
+            <div style={{ padding: '20px 22px', flex: 1, overflowY: 'auto' }}>
+              <p style={{ color: '#94a3b8', fontSize: '0.88rem', margin: '0 0 16px 0', lineHeight: 1.5 }}>
+                Search for premium experiences from our partners to offer your community members.
+              </p>
+              
+              {/* Responsive Search Controls - Fits width-ways cleanly on all screens */}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '24px' }}>
+                <select 
+                  value={discoveryProvider} 
+                  onChange={e => setDiscoveryProvider(e.target.value)}
+                  style={{ flex: '1 1 140px', minWidth: '130px', padding: '12px 14px', background: '#0f172a', border: '1px solid #334155', color: '#fff', borderRadius: '12px', fontSize: '0.9rem' }}
+                >
+                  <option value="viator">Viator Partner</option>
+                  <option value="google">Google Places</option>
+                </select>
+                <input 
+                  type="text" 
+                  placeholder="Search destination (e.g. Tunbridge Wells)" 
+                  value={discoverySearchTerm} 
+                  onChange={e => setDiscoverySearchTerm(e.target.value)} 
+                  onKeyDown={e => e.key === 'Enter' && handleSimulateApiSearch()}
+                  style={{ flex: '2 1 200px', minWidth: '180px', padding: '12px 16px', background: '#0f172a', border: '1px solid #334155', color: '#fff', borderRadius: '12px', fontSize: '0.9rem' }} 
+                />
+                <button 
+                  onClick={handleSimulateApiSearch}
+                  disabled={isDiscovering || !discoverySearchTerm.trim()}
+                  className="btn btn-primary interactive-press" 
+                  style={{ flex: '1 1 110px', minWidth: '100px', padding: '12px 20px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', opacity: (isDiscovering || !discoverySearchTerm.trim()) ? 0.7 : 1 }}
+                >
+                  {isDiscovering ? <span className="spinner" style={{ width: '16px', height: '16px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: 'white', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></span> : <Search size={16} />}
+                  Search
+                </button>
               </div>
-            )}
 
-            {!isDiscovering && discoveryResults && (
-              <div>
-                <h3 style={{ fontSize: '1rem', color: 'var(--white)', marginBottom: '16px' }}>Results ({discoveryResults.length})</h3>
-                <div style={{ display: 'grid', gap: '16px' }}>
-                  {discoveryResults.map(exp => (
-                    <div key={exp.id} style={{ display: 'flex', gap: '16px', padding: '16px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px' }}>
-                      <img src={exp.image} alt={exp.title} style={{ width: '100px', height: '100px', objectFit: 'cover', borderRadius: '8px' }} />
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: '0.75rem', color: 'var(--teal-400)', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px' }}>{exp.category} • {exp.source}</div>
-                        <h4 style={{ color: 'var(--white)', margin: '0 0 4px 0', fontSize: '1rem' }}>{exp.title}</h4>
-                        <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)', marginBottom: '8px' }}>{exp.description}</div>
-                        <div style={{ display: 'flex', gap: '12px', fontSize: '0.8rem', color: 'var(--slate-400)' }}>
-                          <span>{exp.duration}</span>
-                          <span>⭐ {exp.rating}</span>
-                          <span style={{ color: 'var(--white)', fontWeight: 600 }}>£{exp.basePrice} base</span>
+              {isDiscovering && (
+                <div style={{ textAlign: 'center', padding: '40px 0', color: '#94a3b8' }}>
+                  <div className="spinner" style={{ width: '32px', height: '32px', border: '3px solid rgba(255,255,255,0.1)', borderTopColor: '#2dd4bf', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 16px' }}></div>
+                  Querying {discoveryProvider === 'viator' ? 'Viator Partner API' : 'Google Places API'}...
+                </div>
+              )}
+
+              {!isDiscovering && discoveryResults && (
+                <div>
+                  <h3 style={{ fontSize: '1rem', color: '#fff', marginBottom: '16px' }}>Results ({discoveryResults.length})</h3>
+                  <div style={{ display: 'grid', gap: '14px' }}>
+                    {discoveryResults.map(exp => (
+                      <div key={exp.id} style={{ display: 'flex', flexWrap: 'wrap', gap: '14px', padding: '14px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px', alignItems: 'center' }}>
+                        <img src={exp.image} alt={exp.title} style={{ width: '90px', height: '90px', objectFit: 'cover', borderRadius: '10px', flexShrink: 0 }} />
+                        <div style={{ flex: '1 1 240px', minWidth: 0 }}>
+                          <div style={{ fontSize: '0.72rem', color: '#2dd4bf', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px' }}>{exp.category} • {exp.source}</div>
+                          <h4 style={{ color: '#fff', margin: '0 0 4px 0', fontSize: '0.95rem', lineHeight: 1.3 }}>{exp.title}</h4>
+                          <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginBottom: '8px', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{exp.description}</div>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', fontSize: '0.78rem', color: '#94a3b8' }}>
+                            <span>{exp.duration}</span>
+                            <span>⭐ {exp.rating}</span>
+                            <span style={{ color: '#fff', fontWeight: 600 }}>£{exp.basePrice} base</span>
+                          </div>
+                        </div>
+                        <div style={{ flexShrink: 0, width: '100%', maxWidth: '160px', display: 'flex', justifyContent: 'flex-end' }}>
+                          <button onClick={() => handleImportExperience(exp)} className="btn btn-outline interactive-press" style={{ width: '100%', padding: '8px 14px', borderRadius: '8px', fontSize: '0.82rem', whiteSpace: 'nowrap' }}>
+                            Import
+                          </button>
                         </div>
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'center' }}>
-                        <button onClick={() => handleImportExperience(exp)} className="btn btn-outline interactive-press" style={{ padding: '8px 16px', borderRadius: '8px', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
-                          Import to Community
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
       )}
@@ -5039,6 +4945,157 @@ export default function LeaderDashboard({ initialCommunityId }) {
           }
         }}
       />
+
+      
+
+      {/* MARKUP MODAL FIXED VIEWPORT */}
+      {markupInfoExp && (
+                <div 
+                  onClick={() => setMarkupInfoExp(null)}
+                  style={{
+                    position: 'fixed',
+                    inset: 0,
+                    zIndex: 99999,
+                    background: 'rgba(2, 6, 23, 0.85)',
+                    backdropFilter: 'blur(8px)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '16px'
+                  }}
+                >
+                  <div 
+                    onClick={e => e.stopPropagation()}
+                    style={{
+                      background: '#0f172a',
+                      border: '1px solid rgba(255,255,255,0.14)',
+                      borderRadius: '20px',
+                      maxWidth: '560px',
+                      width: '100%',
+                      maxHeight: '90vh',
+                      overflowY: 'auto',
+                      boxShadow: '0 25px 50px -12px rgba(0,0,0,0.7)',
+                      padding: '24px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '20px',
+                      position: 'relative'
+                    }}
+                  >
+                    {/* Header */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <div>
+                        <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--teal-400)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                          Transparent Financial Breakdown
+                        </span>
+                        <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#fff', margin: '4px 0 0', fontFamily: 'var(--font-heading)' }}>
+                          How Your Markup Works
+                        </h3>
+                        <p style={{ fontSize: '0.82rem', color: 'var(--slate-400)', margin: '4px 0 0' }}>
+                          {markupInfoExp.title}
+                        </p>
+                      </div>
+                      <button 
+                        onClick={() => setMarkupInfoExp(null)}
+                        className="interactive-press"
+                        style={{
+                          width: '32px', height: '32px', borderRadius: '50%',
+                          background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)',
+                          color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        <X size={18} />
+                      </button>
+                    </div>
+
+                    {/* 3-Pillar Breakdown with More 10% Wholesale Split */}
+                    {(() => {
+                      const basePrice = markupInfoExp.basePrice || 40;
+                      const supplierBase = markupInfoExp.supplierBase || Math.round(basePrice / 1.10);
+                      const moreMargin = markupInfoExp.moreMargin || (basePrice - supplierBase);
+                      const markupPct = markupInfoExp.leaderMarkup ?? 15;
+                      const leaderProfit = Math.round((basePrice * markupPct) / 100);
+                      const memberFinalPrice = basePrice + leaderProfit;
+
+                      return (
+                        <>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            {/* 1. Supplier Base */}
+                            <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '12px', padding: '14px' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                                <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#fff' }}>1. Supplier Wholesale Rate</div>
+                                <div style={{ fontSize: '1rem', fontWeight: 800, color: '#38bdf8' }}>£{supplierBase}.00</div>
+                              </div>
+                              <p style={{ fontSize: '0.8rem', color: 'var(--slate-300)', margin: 0, lineHeight: 1.45 }}>
+                                Goes 100% directly to the licensed experience operator or venue (Viator partner, Hotel du Vin, or local provider). Covers certified facilities, hosts, and equipment.
+                              </p>
+                            </div>
+
+                            {/* 2. More Platform Margin (10%) */}
+                            <div style={{ background: 'rgba(168, 85, 247, 0.08)', border: '1px solid rgba(168, 85, 247, 0.25)', borderRadius: '12px', padding: '14px' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                                <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#c084fc' }}>2. More Platform Margin (10%)</div>
+                                <div style={{ fontSize: '1rem', fontWeight: 800, color: '#c084fc' }}>+£{moreMargin}.00</div>
+                              </div>
+                              <p style={{ fontSize: '0.8rem', color: 'var(--slate-300)', margin: 0, lineHeight: 1.45 }}>
+                                More adds a 10% platform wholesale markup to the raw supplier rate before displaying it. This covers marketplace curation, booking escrow, API connectivity, and payment processing fees.
+                              </p>
+                            </div>
+
+                            {/* 3. Leader Markup */}
+                            <div style={{ background: 'rgba(20, 184, 166, 0.08)', border: '1px solid rgba(20, 184, 166, 0.25)', borderRadius: '12px', padding: '14px' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                                <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#2dd4bf' }}>3. Your Community Leader Cut (+{markupPct}%)</div>
+                                <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#34d399' }}>
+                                  +£{leaderProfit}.00
+                                </div>
+                              </div>
+                              <p style={{ fontSize: '0.8rem', color: 'var(--slate-300)', margin: 0, lineHeight: 1.45 }}>
+                                100% of your added markup goes straight into your Community Club Fund. More does not deduct anything from your leader cut. Payouts transfer to your bank via Stripe Faster Payments.
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Live Example Calculation */}
+                          <div style={{ background: 'rgba(15, 23, 42, 0.6)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '14px' }}>
+                            <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.04em', marginBottom: '8px' }}>
+                              Stripe Payment Breakdown (Member Pays £{memberFinalPrice}.00)
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '0.85rem' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--slate-300)' }}>
+                                <span>Supplier Receives:</span>
+                                <span>£{supplierBase}.00</span>
+                              </div>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', color: '#c084fc' }}>
+                                <span>More Platform Gross Profit (10%):</span>
+                                <span>+£{moreMargin}.00</span>
+                              </div>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', color: '#34d399' }}>
+                                <span>Your Community Fund (+{markupPct}%):</span>
+                                <span style={{ fontWeight: 700 }}>+£{leaderProfit}.00</span>
+                              </div>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '6px', fontWeight: 800, color: '#fff', fontSize: '0.95rem' }}>
+                                <span>Member Ticket Price:</span>
+                                <span>£{memberFinalPrice}.00</span>
+                              </div>
+                            </div>
+                          </div>
+                        </>
+                      );
+                    })()}
+
+                    {/* Close Button */}
+                    <button
+                      onClick={() => setMarkupInfoExp(null)}
+                      className="btn btn-primary interactive-press"
+                      style={{ width: '100%', padding: '12px', borderRadius: '12px', fontWeight: 700, fontSize: '0.9rem' }}
+                    >
+                      Got it, thanks!
+                    </button>
+                  </div>
+                </div>
+              )}
 
       <style dangerouslySetInnerHTML={{__html: `
         @keyframes spin { to { transform: rotate(360deg); } }

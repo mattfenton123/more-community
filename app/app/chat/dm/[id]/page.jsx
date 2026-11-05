@@ -5,6 +5,12 @@ import { useAppContext } from '../../../../src/context/AppContext';
 import { useChat } from '../../../../src/context/ChatContext';
 import { useRouter, useParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
+import SafeChatText from '../../../../src/components/SafeChatText';
+import LinkSafetyModal from '../../../../src/components/LinkSafetyModal';
+import ChatTrustModal from '../../../../src/components/ChatTrustModal';
+import { calculateUserTrustLevel, checkRateLimit } from '../../../../src/lib/chatSecurity';
+import { Shield, Flag } from 'lucide-react';
+
 
 const EmojiPicker = dynamic(() => import('emoji-picker-react'), { ssr: false });
 
@@ -23,6 +29,9 @@ export default function DirectMessage() {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showThreadEmojiPicker, setShowThreadEmojiPicker] = useState(false);
   const [activeThreadId, setActiveThreadId] = useState(null);
+  const [selectedLinkAnalysis, setSelectedLinkAnalysis] = useState(null);
+  const [showTrustModal, setShowTrustModal] = useState(false);
+
   
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -31,6 +40,9 @@ export default function DirectMessage() {
   const { directMessages, sendDirectMessage, reactToMessage, markChatRead } = useChat();
 
   const targetUser = users.find(u => u.id === targetUserId);
+  const { communityMemberships = {}, events = [], eventRsvps = [] } = useAppContext();
+  const trustLevel = calculateUserTrustLevel(targetUser, communityMemberships, events, eventRsvps);
+
 
   const activeMessages = directMessages.filter(m =>
     (m.senderId === user?.id && m.receiverId === targetUserId) ||
@@ -49,6 +61,12 @@ export default function DirectMessage() {
 
   const handleSend = async () => {
     if (!inputText.trim() && !imageFile) return;
+    const rateCheck = checkRateLimit(user?.id);
+    if (!rateCheck.allowed) {
+      alert(rateCheck.message);
+      return;
+    }
+
     let imageUrl = null;
     if (imageFile) {
       setIsUploading(true);
@@ -100,9 +118,44 @@ export default function DirectMessage() {
           onClick={() => router.push(`/profile/${targetUserId}`)}
           style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover', cursor: 'pointer' }}
         />
-        <div style={{ flex: 1 }}>
-          <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.95rem' }}>{targetUser.name}</div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--slate-500)' }}>Direct Message</div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.95rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{targetUser.name}</div>
+            <span style={{ fontSize: '0.68rem', fontWeight: 700, padding: '2px 8px', borderRadius: '99px', background: `${trustLevel.badgeColor}22`, color: trustLevel.badgeColor, border: `1px solid ${trustLevel.badgeColor}44`, whiteSpace: 'nowrap' }}>
+              {trustLevel.badge}
+            </span>
+          </div>
+          <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            {trustLevel.description}
+          </div>
+        </div>
+        <button 
+          onClick={() => setShowTrustModal(true)} 
+          className="interactive-press"
+          style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--slate-400)', cursor: 'pointer', borderRadius: '50%', width: '34px', height: '34px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          title="Report or Block User"
+        >
+          <Flag size={16} />
+        </button>
+      </div>
+
+      {/* First-Contact Safety Notice / Shield Harbor */}
+      <div style={{
+        background: 'linear-gradient(90deg, rgba(20,184,166,0.12) 0%, rgba(59,130,246,0.08) 100%)',
+        borderBottom: '1px solid rgba(20,184,166,0.2)',
+        padding: '10px 16px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: '12px',
+        fontSize: '0.78rem',
+        color: '#cbd5e1'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Shield size={16} color="var(--teal-400)" style={{ flexShrink: 0 }} />
+          <span>
+            <strong>Shield Harbor:</strong> Keep all ticket payments and bookings on More Community. Never send money, wire transfers, or crypto directly.
+          </span>
         </div>
       </div>
 
@@ -177,7 +230,7 @@ export default function DirectMessage() {
                           <img src={msg.image} alt="" style={{ maxWidth: '100%', borderRadius: '8px', marginBottom: msg.text ? '8px' : 0 }} />
                         )
                       )}
-                      {msg.text && <div>{msg.text}</div>}
+                      {msg.text && <SafeChatText text={msg.text} onLinkClick={setSelectedLinkAnalysis} isOwn={isOwn} />}
                     </div>
 
                     {Object.keys(reactionMap).length > 0 && (
@@ -387,6 +440,19 @@ export default function DirectMessage() {
           </div>
         </div>
       )}
+
+      <LinkSafetyModal
+        isOpen={Boolean(selectedLinkAnalysis)}
+        onClose={() => setSelectedLinkAnalysis(null)}
+        linkAnalysis={selectedLinkAnalysis}
+      />
+
+      <ChatTrustModal
+        isOpen={showTrustModal}
+        onClose={() => setShowTrustModal(false)}
+        targetUser={targetUser}
+        onUserBlocked={() => router.push('/chat')}
+      />
     </div>
   );
 }

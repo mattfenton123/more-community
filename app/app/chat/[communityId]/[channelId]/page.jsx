@@ -9,6 +9,11 @@ import { SkeletonChatBubble, SkeletonLine, SkeletonAvatar } from '../../../../sr
 import { useToast } from '../../../../src/components/Toast';
 import { FALLBACK_IMAGES } from '../../../../src/lib/constants';
 import dynamic from 'next/dynamic';
+import SafeChatText from '../../../../src/components/SafeChatText';
+import LinkSafetyModal from '../../../../src/components/LinkSafetyModal';
+import { checkRateLimit } from '../../../../src/lib/chatSecurity';
+import { Shield, ShieldCheck } from 'lucide-react';
+
 
 const EmojiPicker = dynamic(() => import('emoji-picker-react'), { ssr: false });
 
@@ -28,6 +33,7 @@ export default function Chat() {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [reactionMsgId, setReactionMsgId] = useState(null);
   const [activeThreadId, setActiveThreadId] = useState(null);
+  const [selectedLinkAnalysis, setSelectedLinkAnalysis] = useState(null);
   
   const onEmojiClick = (emojiObject) => {
     if (reactionMsgId) {
@@ -315,6 +321,12 @@ export default function Chat() {
   
   const handleSend = async () => {
     if ((!inputText.trim() && imageFiles.length === 0) || isReadOnly) return;
+    const rateCheck = checkRateLimit(user?.id);
+    if (!rateCheck.allowed) {
+      alert(rateCheck.message);
+      return;
+    }
+
     
     setIsUploading(true);
     let imageUrls = [];
@@ -348,7 +360,7 @@ export default function Chat() {
       
       <AppHeader 
         title={isDirectMessage ? targetUser?.name : (currentChannelObj?.name || channelId)}
-        subtitle={isDirectMessage ? 'Direct Message' : community?.name}
+        subtitle={isDirectMessage ? 'Direct Message' : `${community?.name || ''} · 🛡️ Shield Guard Active`}
         showBack={true}
         onBack={() => navigate.push('/chat')}
       />
@@ -487,7 +499,7 @@ export default function Chat() {
                         </div>
                       )}
                       
-                      {cleanText && <div>{cleanText}</div>}
+                      {cleanText && <SafeChatText text={cleanText} onLinkClick={setSelectedLinkAnalysis} isOwn={isMe} />}
                       
                       {Object.keys(reactionsMap).length > 0 && (
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '4px' }}>
@@ -674,6 +686,12 @@ export default function Chat() {
           </div>
         </div>
       )}
+
+      <LinkSafetyModal
+        isOpen={Boolean(selectedLinkAnalysis)}
+        onClose={() => setSelectedLinkAnalysis(null)}
+        linkAnalysis={selectedLinkAnalysis}
+      />
     </div>
   );
 }

@@ -2,6 +2,10 @@
 import { useState, useRef, useEffect } from 'react';
 import { Send, Menu, MessageCircle, ChevronLeft, Plus, Users, Hash, Image as ImageIcon, X, Smile, Megaphone, Lock } from 'lucide-react';
 import dynamic from 'next/dynamic';
+import SafeChatText from '../components/SafeChatText';
+import LinkSafetyModal from '../components/LinkSafetyModal';
+import { checkRateLimit } from '../lib/chatSecurity';
+
 import AppHeader from '../components/AppHeader';
 import { useAppContext } from '../context/AppContext';
 import { useChat } from '../context/ChatContext';
@@ -31,6 +35,7 @@ export default function Chat() {
   const [createChannelCommunityId, setCreateChannelCommunityId] = useState(null);
   const [selectedMembers, setSelectedMembers] = useState([]);
   const [userSearchTerm, setUserSearchTerm] = useState('');
+  const [selectedLinkAnalysis, setSelectedLinkAnalysis] = useState(null);
   
   const { user, communities, users, communityMemberships, uploadImage, channels, createChannel, isLoading, whatsappSettings } = useAppContext();
   const { messages, directMessages, sendMessage, sendDirectMessage, chatReadReceipts, markChatRead } = useChat();
@@ -524,7 +529,7 @@ export default function Chat() {
                       position: 'relative'
                     }}>
                       {msg.image && <img src={msg.image} alt="Attachment" style={{ width: '100%', borderRadius: '8px', maxHeight: '250px', objectFit: 'cover' }} />}
-                      {msg.text && <div>{msg.text}</div>}
+                      {msg.text && <SafeChatText text={msg.text} onLinkClick={setSelectedLinkAnalysis} isOwn={isMe} />}
                       {isLastConsecutive && (
                         <div style={{ fontSize: '0.65rem', alignSelf: 'flex-end', opacity: 0.7, marginTop: '2px' }}>
                           {msg.timestamp?.split(' ')[1] || ''}
@@ -595,6 +600,12 @@ export default function Chat() {
           Only community leaders can send messages to this announcement channel.
         </div>
       )}
+
+      <LinkSafetyModal
+        isOpen={Boolean(selectedLinkAnalysis)}
+        onClose={() => setSelectedLinkAnalysis(null)}
+        linkAnalysis={selectedLinkAnalysis}
+      />
     </div>
   );
 }

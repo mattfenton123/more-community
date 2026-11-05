@@ -325,8 +325,12 @@ export default function EventClient({ id }) {
   const rsvps = eventRsvps[event.id] || [];
   const myRsvp = rsvps.find(r => r.userId === user?.id);
   const isGoing = myRsvp?.status === 'going';
+  const isWaitlisted = myRsvp?.status === 'waitlist';
+  const waitlist = rsvps.filter(r => r.status === 'waitlist');
+  const myWaitlistPos = isWaitlisted ? waitlist.findIndex(r => r.userId === user?.id) + 1 : 0;
   const isCashAttendee = myRsvp?.ticketType === 'cash_on_arrival';
   const spotsLeft = event.maxCapacity ? Math.max(0, event.maxCapacity - rsvps.filter(r => r.status === 'going').length) : null;
+  const isSoldOut = spotsLeft !== null && spotsLeft <= 0;
   const isMember = user?.joinedCommunities?.includes(event.communityId);
 
   const handleJoinAndRSVP = async () => {
@@ -400,6 +404,16 @@ export default function EventClient({ id }) {
   const handleRSVP = async () => {
     if (!user?.id) {
       router.push(`/login?redirect=/events/${id}`);
+      return;
+    }
+    if (isWaitlisted) {
+      await rsvpToEvent(event.id, 'not_going');
+      toast.info('Left Waitlist', 'You have been removed from the waitlist.');
+      return;
+    }
+    if (isSoldOut && !isGoing) {
+      await rsvpToEvent(event.id, 'waitlist');
+      toast.success('Joined Waitlist!', `You are #${waitlist.length + 1} in line. If a spot opens up, we will notify you.`);
       return;
     }
     if (event.ticketPrice > 0 && !isGoing) {
@@ -1054,7 +1068,7 @@ export default function EventClient({ id }) {
               <>
                 <button
                   onClick={!user?.id ? () => router.push(`/login?redirect=/events/${id}`) : (!isMember && !isGoing ? handleJoinAndRSVP : handleRSVP)}
-                  disabled={checkoutState === 'processing' || (spotsLeft === 0 && !isGoing && Boolean(user?.id))}
+                  disabled={checkoutState === 'processing'}
                   className="interactive-press"
                   style={{
                     width: '100%',
@@ -1071,7 +1085,8 @@ export default function EventClient({ id }) {
                   {!user?.id ? (event.ticketPrice > 0 ? 'Sign In to Buy Ticket' : 'Sign In to RSVP') :
                    checkoutState === 'processing' ? 'Processing...' :
                    isGoing ? 'Cancel RSVP' :
-                   spotsLeft === 0 ? 'Sold Out' :
+                   isWaitlisted ? `On Waitlist #${myWaitlistPos} (Leave)` :
+                   isSoldOut ? (waitlist.length > 0 ? `Join Waitlist (${waitlist.length} in line)` : 'Join Waitlist (Full)') :
                    !isMember ? 'Join Community & ' + (event.ticketPrice > 0 ? 'Buy Ticket' : 'RSVP') :
                    event.ticketPrice > 0 ? 'Buy Ticket' : 'RSVP Spot'}
                 </button>
@@ -1282,7 +1297,7 @@ export default function EventClient({ id }) {
                 )}
                 <button  
                   onClick={!user?.id ? () => router.push(`/login?redirect=/events/${id}`) : (!isMember && !isGoing ? handleJoinAndRSVP : handleRSVP)}
-                disabled={checkoutState === 'processing' || (spotsLeft === 0 && !isGoing && Boolean(user?.id))}
+                disabled={checkoutState === 'processing'}
                 className="interactive-press"
                 style={{ 
                   background: isGoing ? 'rgba(255,255,255,0.1)' : 'var(--teal-500)', 
