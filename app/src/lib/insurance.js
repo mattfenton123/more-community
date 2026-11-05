@@ -4,10 +4,16 @@ import { cleanLocationName } from './location';
 export const LEADER_PRO_CONFIG = {
   monthlyPrice: 16.50,
   annualPrice: 165.00,
-  coverAmount: 'Full Venue Compliance',
-  underwriter: 'MORE Community Safety & Compliance Standards',
-  schemeName: 'Community Leader Compliance & Safety Pack',
+  coverAmount: 'Built-in Public Liability Insurance (PLI)',
+  underwriter: 'MORE Community Safety & Insurance Standards',
+  schemeName: 'Community Leader Insurance & Compliance Pack',
   perks: [
+    {
+      id: 'pli',
+      title: 'Built-in Public Liability Insurance (PLI)',
+      badge: 'Launch Feature',
+      desc: 'Protects you from personal liability if an accident, injury, or property damage occurs on your walks or meetups. Eliminates £100s/yr in standalone broker costs.'
+    },
     {
       id: 'rams',
       title: '1-Click Venue RAMS Generator',

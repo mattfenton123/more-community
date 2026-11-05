@@ -5,7 +5,7 @@ import {
   TrendingUp, DollarSign, Calendar, Eye, Ban, Crown, ChevronDown, ChevronUp, 
   MessageCircle, Bell, Download, Settings, Database, Megaphone, Flag,
   BarChart3, UserCheck, Zap, Star, Globe, Lock, Mail, Clock, AlertTriangle,
-  ChevronRight, ScanLine, Ticket, Copy, ExternalLink, RefreshCw, Radio
+  ChevronRight, ScanLine, Ticket, Copy, Store, Sparkles, Coffee, Compass, ExternalLink, RefreshCw, Radio
 } from 'lucide-react';
 import { useAppContext } from '../../src/context/AppContext';
 import { useFeed } from '../../src/context/FeedContext';
@@ -150,6 +150,8 @@ export default function AdminDashboard() {
   const [isSending, setIsSending] = useState(false);
   const [verifyingCommunityId, setVerifyingCommunityId] = useState(null);
   const [updatingEventId, setUpdatingEventId] = useState(null);
+  const [simulatedPersona, setSimulatedPersona] = useState('admin');
+  const [simulatedCommunityId, setSimulatedCommunityId] = useState(null);
 
   React.useEffect(() => {
     if (!isLoading && (!user || !user.isAdmin)) {
@@ -426,6 +428,76 @@ export default function AdminDashboard() {
       </div>
 
       {/* ═══ TAB NAVIGATION ═══ */}
+
+      {/* ROLE & PERSPECTIVE SIMULATOR BAR */}
+      <div style={{
+        padding: '12px 24px',
+        background: 'linear-gradient(90deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.95) 100%)',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
+        gap: '12px'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+          <span style={{ fontSize: '0.74rem', color: 'var(--slate-400)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Eye size={13} color="var(--teal-400)" /> Perspective Simulator:
+          </span>
+          {[
+            { key: 'admin', label: 'Admin Console', icon: Shield, color: '#3b82f6' },
+            { key: 'leader', label: 'Leader View', icon: Crown, color: '#f59e0b' },
+            { key: 'member', label: 'Community User', icon: Users, color: '#10b981' },
+            { key: 'sponsor', label: 'Local Sponsor', icon: Store, color: '#fbbf24' },
+            { key: 'partner', label: 'Experience Host', icon: Calendar, color: '#06b6d4' }
+          ].map(p => (
+            <button
+              key={p.key}
+              onClick={() => setSimulatedPersona(p.key)}
+              className="interactive-press"
+              style={{
+                padding: '6px 13px',
+                borderRadius: '99px',
+                border: simulatedPersona === p.key ? `1.5px solid ${p.color}` : '1px solid rgba(255, 255, 255, 0.08)',
+                background: simulatedPersona === p.key ? `${p.color}22` : 'rgba(255, 255, 255, 0.03)',
+                color: simulatedPersona === p.key ? '#fff' : 'var(--slate-400)',
+                fontSize: '0.74rem',
+                fontWeight: simulatedPersona === p.key ? 700 : 500,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              <p.icon size={13} color={p.color} />
+              <span>{p.label}</span>
+            </button>
+          ))}
+        </div>
+
+        {simulatedPersona !== 'admin' && (
+          <button
+            onClick={() => setSimulatedPersona('admin')}
+            className="interactive-press"
+            style={{
+              background: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              borderRadius: '8px',
+              padding: '5px 10px',
+              color: 'var(--slate-300)',
+              fontSize: '0.72rem',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px'
+            }}
+          >
+            <X size={12} /> Back to Admin Console
+          </button>
+        )}
+      </div>
+
       <div style={{ display: 'flex', gap: '6px', padding: '14px 24px', overflowX: 'auto', borderBottom: '1px solid rgba(255,255,255,0.05)', WebkitOverflowScrolling: 'touch' }}>
         {tabs.map(tab => (
           <button 
@@ -447,6 +519,225 @@ export default function AdminDashboard() {
       </div>
 
       <div style={{ padding: '24px' }}>
+
+        {/* SIMULATED PERSPECTIVE VIEWS */}
+        {simulatedPersona === 'leader' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div style={{
+              background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(15, 23, 42, 0.6) 100%)',
+              border: '1px solid rgba(245, 158, 11, 0.3)',
+              borderRadius: '18px',
+              padding: '24px'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', marginBottom: '16px' }}>
+                <div>
+                  <span style={{ fontSize: '0.74rem', fontWeight: 700, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    Leader Perspective Preview
+                  </span>
+                  <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#fff', margin: '4px 0 0', fontFamily: 'var(--font-heading)' }}>
+                    Leading More Shades of Golden
+                  </h2>
+                  <p style={{ fontSize: '0.84rem', color: 'var(--slate-300)', margin: '4px 0 0' }}>
+                    How community organizers experience event RSVPs, the club fund, and guest pitches.
+                  </p>
+                </div>
+                <button
+                  onClick={() => navigate.push('/dashboard')}
+                  className="btn btn-primary interactive-press"
+                  style={{ padding: '10px 18px', borderRadius: '12px', fontSize: '0.88rem', fontWeight: 700 }}
+                >
+                  Open Live Leader Dashboard ?
+                </button>
+              </div>
+
+              {/* Leader KPI Snapshot */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px' }}>
+                <div style={{ background: 'rgba(255,255,255,0.04)', padding: '14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', textTransform: 'uppercase' }}>Active Members</div>
+                  <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#fff', marginTop: '2px' }}>248</div>
+                  <div style={{ fontSize: '0.7rem', color: '#34d399', marginTop: '4px' }}>+12 this week</div>
+                </div>
+                <div style={{ background: 'rgba(255,255,255,0.04)', padding: '14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', textTransform: 'uppercase' }}>Club Fund Balance</div>
+                  <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#34d399', marginTop: '2px' }}>?180.00</div>
+                  <div style={{ fontSize: '0.7rem', color: 'var(--slate-400)', marginTop: '4px' }}>Ready for bank transfer</div>
+                </div>
+                <div style={{ background: 'rgba(255,255,255,0.04)', padding: '14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', textTransform: 'uppercase' }}>Collaborations & Pitches</div>
+                  <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#fbbf24', marginTop: '2px' }}>2 Pending</div>
+                  <div style={{ fontSize: '0.7rem', color: 'var(--slate-400)', marginTop: '4px' }}>1 session, 1 sponsor perk</div>
+                </div>
+                <div style={{ background: 'rgba(255,255,255,0.04)', padding: '14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', textTransform: 'uppercase' }}>Leader Shield Pro</div>
+                  <div style={{ fontSize: '1rem', fontWeight: 800, color: '#38bdf8', marginTop: '4px' }}>PLI Insured</div>
+                  <div style={{ fontSize: '0.7rem', color: '#38bdf8', marginTop: '4px' }}>Council RAMS + 2% fees</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {simulatedPersona === 'member' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div style={{
+              background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(15, 23, 42, 0.6) 100%)',
+              border: '1px solid rgba(16, 185, 129, 0.3)',
+              borderRadius: '18px',
+              padding: '24px'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', marginBottom: '16px' }}>
+                <div>
+                  <span style={{ fontSize: '0.74rem', fontWeight: 700, color: '#34d399', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    Community Member Perspective Preview
+                  </span>
+                  <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#fff', margin: '4px 0 0', fontFamily: 'var(--font-heading)' }}>
+                    Attendee & Discover Experience
+                  </h2>
+                  <p style={{ fontSize: '0.84rem', color: 'var(--slate-300)', margin: '4px 0 0' }}>
+                    How everyday community members find events, RSVP with passes, and enjoy local sponsor perks.
+                  </p>
+                </div>
+                <button
+                  onClick={() => navigate.push('/discover')}
+                  className="btn btn-primary interactive-press"
+                  style={{ padding: '10px 18px', borderRadius: '12px', fontSize: '0.88rem', fontWeight: 700 }}
+                >
+                  Open Live Discover Page ?
+                </button>
+              </div>
+
+              {/* Member Perks & RSVP Passes */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+                <div style={{ background: 'rgba(255,255,255,0.03)', padding: '16px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#34d399', marginBottom: '8px' }}>??? Your Active Event Ticket Pass</div>
+                  <div style={{ fontWeight: 700, color: '#fff', fontSize: '0.98rem' }}>Saturday Morning Ridge Walk & Coffee</div>
+                  <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)', marginTop: '4px' }}>Tomorrow at 09:30 ? Dunorlan Park</div>
+                  <div style={{ marginTop: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ background: 'rgba(34,197,94,0.15)', color: '#4ade80', fontSize: '0.72rem', padding: '2px 8px', borderRadius: '99px', fontWeight: 700 }}>Confirmed RSVP</span>
+                    <span style={{ fontSize: '0.72rem', color: 'var(--slate-400)' }}>Waiver signed digitally</span>
+                  </div>
+                </div>
+
+                <div style={{ background: 'rgba(255,255,255,0.03)', padding: '16px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#fbbf24', marginBottom: '8px' }}>?? Unlocked Member Perks in Tunbridge Wells</div>
+                  <div style={{ fontWeight: 700, color: '#fff', fontSize: '0.95rem' }}>15% off at The Pantiles Coffee Roastery</div>
+                  <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)', marginTop: '4px' }}>Exclusive discount on meetup mornings for group members</div>
+                  <div style={{ marginTop: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ background: 'rgba(245,158,11,0.15)', color: '#fbbf24', fontSize: '0.72rem', padding: '2px 8px', borderRadius: '99px', fontWeight: 700 }}>Show Pass in Shop</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {simulatedPersona === 'sponsor' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div style={{
+              background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(15, 23, 42, 0.6) 100%)',
+              border: '1px solid rgba(245, 158, 11, 0.3)',
+              borderRadius: '18px',
+              padding: '24px'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', marginBottom: '16px' }}>
+                <div>
+                  <span style={{ fontSize: '0.74rem', fontWeight: 700, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    Local Business Sponsor Perspective Preview
+                  </span>
+                  <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#fff', margin: '4px 0 0', fontFamily: 'var(--font-heading)' }}>
+                    The Pantiles Coffee Roastery
+                  </h2>
+                  <p style={{ fontSize: '0.84rem', color: 'var(--slate-300)', margin: '4px 0 0' }}>
+                    Partnered with More Shades of Golden ? ?15.00/mo Featured Tier
+                  </p>
+                </div>
+                <button
+                  onClick={() => navigate.push('/partner')}
+                  className="btn btn-primary interactive-press"
+                  style={{ padding: '10px 18px', borderRadius: '12px', fontSize: '0.88rem', fontWeight: 700 }}
+                >
+                  Explore Town Partner Hub ?
+                </button>
+              </div>
+
+              {/* Sponsor Performance Metrics */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px', marginBottom: '18px' }}>
+                <div style={{ background: 'rgba(255,255,255,0.04)', padding: '14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', textTransform: 'uppercase' }}>Community Impressions</div>
+                  <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#fff', marginTop: '2px' }}>186</div>
+                  <div style={{ fontSize: '0.7rem', color: 'var(--slate-400)', marginTop: '4px' }}>Seen in group feed & header</div>
+                </div>
+                <div style={{ background: 'rgba(255,255,255,0.04)', padding: '14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', textTransform: 'uppercase' }}>In-Store Perk Redemptions</div>
+                  <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#fbbf24', marginTop: '2px' }}>24</div>
+                  <div style={{ fontSize: '0.7rem', color: '#34d399', marginTop: '4px' }}>Real customer footfall</div>
+                </div>
+                <div style={{ background: 'rgba(255,255,255,0.04)', padding: '14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', textTransform: 'uppercase' }}>Club Fund Support</div>
+                  <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#34d399', marginTop: '2px' }}>?12.00 / mo</div>
+                  <div style={{ fontSize: '0.7rem', color: 'var(--slate-400)', marginTop: '4px' }}>Directly funding local club equipment</div>
+                </div>
+                <div style={{ background: 'rgba(255,255,255,0.04)', padding: '14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', textTransform: 'uppercase' }}>Monthly Receipt</div>
+                  <div style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--white)', marginTop: '4px' }}>Paid ? ?15.00</div>
+                  <div style={{ fontSize: '0.7rem', color: 'var(--teal-300)', marginTop: '4px' }}>VAT receipt available</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {simulatedPersona === 'partner' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div style={{
+              background: 'linear-gradient(135deg, rgba(6, 182, 212, 0.12) 0%, rgba(15, 23, 42, 0.6) 100%)',
+              border: '1px solid rgba(6, 182, 212, 0.3)',
+              borderRadius: '18px',
+              padding: '24px'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', marginBottom: '16px' }}>
+                <div>
+                  <span style={{ fontSize: '0.74rem', fontWeight: 700, color: '#22d3ee', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    Experience Host / Specialist Perspective Preview
+                  </span>
+                  <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#fff', margin: '4px 0 0', fontFamily: 'var(--font-heading)' }}>
+                    Peak & Trail Navigation Skills
+                  </h2>
+                  <p style={{ fontSize: '0.84rem', color: 'var(--slate-300)', margin: '4px 0 0' }}>
+                    Session: Trail Navigation & Mountain Mastery ? Min: 6 / Max: 14 Attendees
+                  </p>
+                </div>
+                <button
+                  onClick={() => navigate.push('/partner')}
+                  className="btn btn-primary interactive-press"
+                  style={{ padding: '10px 18px', borderRadius: '12px', fontSize: '0.88rem', fontWeight: 700 }}
+                >
+                  Explore Town Collaborations ?
+                </button>
+              </div>
+
+              {/* Host Performance Metrics */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px', marginBottom: '18px' }}>
+                <div style={{ background: 'rgba(255,255,255,0.04)', padding: '14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', textTransform: 'uppercase' }}>Bookings & Capacity</div>
+                  <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#22d3ee', marginTop: '2px' }}>9 / 14</div>
+                  <div style={{ fontSize: '0.7rem', color: '#34d399', marginTop: '4px' }}>Min threshold reached (Session Confirmed)</div>
+                </div>
+                <div style={{ background: 'rgba(255,255,255,0.04)', padding: '14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', textTransform: 'uppercase' }}>Your Payout (After Club Cut)</div>
+                  <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#34d399', marginTop: '2px' }}>?144.00</div>
+                  <div style={{ fontSize: '0.7rem', color: 'var(--slate-400)', marginTop: '4px' }}>?36.00 raised for club fund</div>
+                </div>
+                <div style={{ background: 'rgba(255,255,255,0.04)', padding: '14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', textTransform: 'uppercase' }}>Escrow Status</div>
+                  <div style={{ fontSize: '0.98rem', fontWeight: 800, color: '#38bdf8', marginTop: '4px' }}>Held in Escrow</div>
+                  <div style={{ fontSize: '0.7rem', color: 'var(--slate-400)', marginTop: '4px' }}>Releases 24h after session completes</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
 
         {/* ═══════════════════════════════════════════════════ */}
         {/* TAB 1: OVERVIEW                                    */}
@@ -882,7 +1173,7 @@ export default function AdminDashboard() {
         )}
 
         {/* ═══════════════════════════════════════════════════ */}
-        {/* TAB 3: USERS — User Directory & Roles              */}
+        {/* TAB 3: USERS  -  User Directory & Roles              */}
         {/* ═══════════════════════════════════════════════════ */}
         {activeTab === 'users' && (
           <div>
@@ -1127,7 +1418,7 @@ export default function AdminDashboard() {
                       style={{ display: 'flex', gap: '14px', padding: '14px 16px', cursor: 'pointer', alignItems: 'center' }}
                     >
                       <div style={{ width: '46px', height: '50px', background: 'rgba(20,184,166,0.1)', borderRadius: '10px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: '1px solid rgba(20,184,166,0.2)' }}>
-                        <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--white)', lineHeight: 1 }}>{e.date ? new Date(e.date + 'T00:00:00').getDate() : '—'}</div>
+                        <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--white)', lineHeight: 1 }}>{e.date ? new Date(e.date + 'T00:00:00').getDate() : ' - '}</div>
                         <div style={{ fontSize: '0.6rem', color: 'var(--teal-400)', fontWeight: 600, textTransform: 'uppercase', marginTop: '2px' }}>{e.date ? new Date(e.date + 'T00:00:00').toLocaleDateString('en-GB', { month: 'short' }) : ''}</div>
                       </div>
 

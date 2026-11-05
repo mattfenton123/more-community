@@ -89,3 +89,48 @@ Rather than charging prohibitive software subscriptions to non-profit organizers
 ## 6. Long-Term Roadmap & Grant Integrations
 - **Civic & Town Council Funding**: Connecting town council cultural and physical activity grants directly into local club funds on More.
 - **NHS Social Prescribing Directory**: Enabling local GPs and link workers to prescribe certified community walking, art, and wellness groups, opening institutional commissioning revenue.
+---
+
+## 7. The Legal Reality of Paid Communities & The Leader Pro PLI Moat
+
+### The "Volunteer" vs. Charging Reality
+A critical point of legal exposure for community organizers in the UK and worldwide:
+- **Free Informal Gatherings**: If an organizer runs a 100% free casual social walk where friends chat, courts generally view it as an informal gathering, and volunteer protections (such as the UK SARAH Act 2015) offer standard defence.
+- **The Moment Money is Charged**: The second an organizer charges an entry fee, ticket price, or recurring membership (even if framed as a "donation" or "subsidy"), the legal relationship shifts to a **contractual and commercial service**. The organizer assumes a strict legal **Duty of Care**.
+
+### Why Waivers and Disclaimers Do Not Shield Negligence
+- Under the **UK Unfair Contract Terms Act 1977 (s.2(1))** and the **Consumer Rights Act 2015 (s.65)**, it is legally impossible for an organizer to exclude or restrict liability for death or personal injury resulting from negligence.
+- If a participant twists an ankle, suffers hypothermia on an un-checked route, or damages third-party property (e.g. open livestock gate), the organizer can be sued personally. Defence costs alone can bankrupt an individual volunteer.
+
+### Landowner and Venue Mandates
+- Local councils, nature reserves, National Parks, and village halls mandate proof of **?5M to ?10M Public Liability Insurance (PLI)** before granting permissions or permits.
+- Standalone broker policies cost individual clubs **?100 to ?150 / year**, requiring tedious underwriting forms, annual declarations, and policy exclusions.
+
+### Leader Pro as the Platform Retention Moat
+By bundling **Built-in Public Liability Insurance (PLI)** directly into Leader Pro (?16.50 / month or ?165 / year):
+- More absorbs the terrifying legal and paperwork headache for community leaders.
+- Leaders receive instant ?5M / ?10M policy certificates for council venues, automated RAMS packs, attendee digital waivers, and 2% platform ticket fees (saving 60% on ticketing).
+- This creates an invincible competitive moat: organizers cannot migrate to WhatsApp, Facebook, or Meetup because none of those platforms provide group insurance or council compliance.
+
+---
+
+## 8. Two-Way Scam & Trust Protection Architecture
+
+To ensure the platform cannot be exploited by either rogue guest partners OR rogue community leaders:
+
+1. **Universal Post-Event Ticket Escrow**:
+   - Applies symmetrically to both Community Leaders and Guest Session Partners.
+   - All ticket payments are collected via Stripe and held in platform escrow until **24 hours after the scheduled event completes**.
+   - If a host no-shows, cancels, or misrepresents the session, attendees receive an automatic single-tap 100% refund. Scammers have zero ability to cash out.
+
+2. **Sponsor Monthly Activity Lock**:
+   - Sponsor contributions (?15/mo or ?49/mo) are disbursed on a rolling 30-day payout cycle and require an **Active Community Status**.
+   - If a community leader goes dormant (no events hosted or scheduled for 30 days) or deletes the group, the sponsor subscription is automatically paused/refunded and the sponsor is alerted. A bad actor cannot collect sponsor money without running an active community.
+
+3. **Stripe Identity Verification & KYC for All Withdrawals**:
+   - Before any leader or instructor can withdraw even ?1 from their Club Fund or ticket payout, they must complete verified Stripe Connect onboarding (Government Photo ID, National Insurance / Tax ID, Proof of Address, and bank account).
+   - Anonymous fraudulent accounts cannot withdraw funds.
+
+4. **Admin Multi-Persona Simulator**:
+   - Platform super-admins can toggle their live perspective across all 5 operational roles (Admin Console, Leader View, Member View, Local Sponsor View, Experience Host View).
+   - Enables instant auditing of how any community, ticket pass, or sponsor perk appears to end-users in real time.

@@ -1740,6 +1740,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                             <span style={{ fontSize: '0.68rem', background: '#f59e0b', color: '#000', padding: '2px 7px', borderRadius: '5px', fontWeight: 800, letterSpacing: '0.04em' }}>PRO</span>
                           </div>
                           <div style={{ fontSize: '0.76rem', color: 'var(--slate-300)', marginTop: '3px', display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', lineHeight: 1.3 }}>
+                            <span style={{ color: '#38bdf8' }}><strong>✓ Built-in Public Liability Insurance (PLI)</strong> included</span>
                             <span><strong>✓ 2% ticket fee</strong> (save 60%)</span>
                             <span><strong>✓ Council venue RAMS</strong></span>
                             <span><strong>✓ Digital attendee waivers</strong></span>
