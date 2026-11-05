@@ -266,6 +266,110 @@ export default function LeaderDashboard({ initialCommunityId }) {
   const [isListening, setIsListening] = useState(false);
   const [speechSupported, setSpeechSupported] = useState(false);
   const recognitionRef = useRef(null);
+  const [isDictatingDescription, setIsDictatingDescription] = useState(false);
+  const [isExpandingDescription, setIsExpandingDescription] = useState(false);
+  const descRecognitionRef = useRef(null);
+
+  const handleToggleDictateDescription = () => {
+    if (typeof window === 'undefined') return;
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      toast.info('Voice Not Supported', 'Voice dictation is not supported in this browser. Try Chrome or Safari.');
+      return;
+    }
+
+    if (isDictatingDescription) {
+      if (descRecognitionRef.current) {
+        try { descRecognitionRef.current.stop(); } catch (e) {}
+      }
+      setIsDictatingDescription(false);
+      return;
+    }
+
+    try {
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'en-US';
+      recognition.interimResults = true;
+      recognition.maxAlternatives = 1;
+
+      recognition.onstart = () => {
+        setIsDictatingDescription(true);
+        toast.info('Dictating Description...', 'Speak your walk notes or bullet points aloud.');
+      };
+
+      recognition.onresult = (event) => {
+        let transcript = '';
+        for (let i = 0; i < event.results.length; i++) {
+          transcript += event.results[i][0].transcript;
+        }
+        setEventForm(prev => {
+          const current = (prev.description || '').trim();
+          const separator = current && !current.endsWith('\n') ? '\n' : '';
+          return {
+            ...prev,
+            description: current ? `${current}${separator}• ${transcript}` : `• ${transcript}`
+          };
+        });
+      };
+
+      recognition.onerror = (event) => {
+        console.warn('Description dictation error:', event.error);
+        setIsDictatingDescription(false);
+        if (event.error === 'not-allowed') {
+          toast.error('Microphone Denied', 'Please allow microphone access in your browser to dictate.');
+        }
+      };
+
+      recognition.onend = () => {
+        setIsDictatingDescription(false);
+      };
+
+      descRecognitionRef.current = recognition;
+      recognition.start();
+    } catch (err) {
+      console.error('Description speech recognition error:', err);
+      setIsDictatingDescription(false);
+    }
+  };
+
+  const handleExpandDescriptionWithAI = async () => {
+    const rawText = (eventForm.description || '').trim();
+    if (!rawText) {
+      toast.info('Add Some Notes', 'Type or dictate a few bullet points first (e.g. "• 10am at gate", "• dogs welcome", "• coffee after").');
+      return;
+    }
+    setIsExpandingDescription(true);
+    try {
+      const res = await fetch('/api/ai/generate-event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mode: 'expand-description',
+          prompt: rawText,
+          communityName: community?.name,
+          communityLocation: community?.location_name
+        })
+      });
+      const data = await res.json();
+      if (data.description) {
+        setEventForm(prev => ({
+          ...prev,
+          description: data.description
+        }));
+        toast.success(
+          data.fallback ? 'Description Expanded!' : '✨ Polished by Gemini!',
+          data.fallback ? 'Your bullet points have been structured into a full event.' : 'Your notes have been expanded into a warm, engaging description.'
+        );
+      } else {
+        toast.error('Could not expand notes', 'Please try again or edit manually.');
+      }
+    } catch (err) {
+      console.error('Expand description error:', err);
+      toast.error('Connection error', 'Could not reach AI assistant.');
+    } finally {
+      setIsExpandingDescription(false);
+    }
+  };
 
   useEffect(() => {
     if (typeof window !== 'undefined' && ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)) {
@@ -1374,8 +1478,74 @@ export default function LeaderDashboard({ initialCommunityId }) {
             <input className="form-input" placeholder="e.g. Saturday Morning Walk" value={eventForm.title} onChange={e => setEventForm({...eventForm, title: e.target.value})} autoFocus style={{ fontSize: '1.05rem', padding: '14px 16px' }} />
           </div>
           <div className="form-group">
-            <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><MessageCircle size={14} color="var(--slate-400)" /> Description</label>
-            <textarea className="form-input" placeholder="Tell people what to expect, what to bring, who it's for..." value={eventForm.description} onChange={e => setEventForm({...eventForm, description: e.target.value})} rows={5} style={{ minHeight: '120px', lineHeight: 1.5 }} />
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+              <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
+                <MessageCircle size={14} color="var(--slate-400)" /> Description & Notes
+              </label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                {speechSupported && (
+                  <button
+                    type="button"
+                    onClick={handleToggleDictateDescription}
+                    title={isDictatingDescription ? "Stop dictation" : "Dictate your description or bullet points"}
+                    style={{
+                      background: isDictatingDescription ? '#ef4444' : 'rgba(255,255,255,0.08)',
+                      border: '1px solid ' + (isDictatingDescription ? '#ef4444' : 'rgba(255,255,255,0.14)'),
+                      borderRadius: '999px',
+                      padding: '3px 9px',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      cursor: 'pointer',
+                      color: isDictatingDescription ? '#ffffff' : '#c4b5fd',
+                      fontSize: '0.72rem',
+                      fontWeight: 600,
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    {isDictatingDescription ? <MicOff size={12} /> : <Mic size={12} />}
+                    <span>{isDictatingDescription ? 'Listening...' : 'Dictate'}</span>
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={handleExpandDescriptionWithAI}
+                  disabled={isExpandingDescription || !(eventForm.description || '').trim()}
+                  title="Turn rough notes or bullet points into an engaging, structured community description"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(139,92,246,0.3), rgba(217,70,239,0.3))',
+                    border: '1px solid rgba(168,85,247,0.5)',
+                    borderRadius: '999px',
+                    padding: '3px 11px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    cursor: isExpandingDescription ? 'wait' : 'pointer',
+                    color: '#f3e8ff',
+                    fontSize: '0.72rem',
+                    fontWeight: 600,
+                    opacity: !(eventForm.description || '').trim() && !isExpandingDescription ? 0.5 : 1,
+                    transition: 'all 0.2s'
+                  }}
+                  className="interactive-press"
+                >
+                  {isExpandingDescription ? (
+                    <div className="spinner" style={{ width: '12px', height: '12px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#ffffff', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+                  ) : (
+                    <Sparkles size={12} color="#d8b4fe" />
+                  )}
+                  <span>{isExpandingDescription ? 'Expanding...' : '✨ Expand Bullets with AI'}</span>
+                </button>
+              </div>
+            </div>
+            <textarea 
+              className="form-input" 
+              placeholder="Drop rough notes or speak aloud (e.g. • 10am at south gate • 5k flat loop • dogs welcome • cafe after) - then tap 'Expand Bullets with AI' to polish!" 
+              value={eventForm.description} 
+              onChange={e => setEventForm({...eventForm, description: e.target.value})} 
+              rows={6} 
+              style={{ minHeight: '130px', lineHeight: 1.5 }} 
+            />
 
             {/* Quick Polish Actions */}
             <div style={{ marginTop: '8px' }}>

@@ -84,16 +84,93 @@ function resolveEventTime(prompt) {
 export async function POST(request) {
   try {
     const body = await request.json();
-    const prompt = body.prompt || '';
+    const prompt = body.prompt || body.description || '';
     const communityName = body.communityName || 'More Community';
     const communityLocation = body.communityLocation || '';
     const communityTags = Array.isArray(body.communityTags) ? body.communityTags : [];
+    const mode = body.mode || 'full-event';
 
     if (!prompt.trim()) {
-      return NextResponse.json({ error: 'Prompt is required' }, { status: 400 });
+      return NextResponse.json({ error: 'Prompt or notes are required' }, { status: 400 });
     }
 
     const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_AI_API_KEY;
+    const models = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
+
+    // Specialized Mode: Expand rough bullet points into an enticing description
+    if (mode === 'expand-description') {
+      if (!apiKey) {
+        return NextResponse.json({
+          success: true,
+          fallback: true,
+          mode: 'smart-template',
+          description: expandLocalBullets(prompt, communityName, communityLocation)
+        });
+      }
+
+      const expandPrompt = `You are an expert community walk director and copywriter for "${communityName}"${communityLocation ? ` based in ${communityLocation}` : ''}.
+The host provided these rough notes/bullet points:
+"""
+${prompt}
+"""
+
+Expand and polish these rough notes into a warm, inviting community walk description.
+Preserve all factual points (times, meetup landmarks, pace, dogs, coffee, gear, rules).
+Format with clean markdown:
+- An enthusiastic, welcoming opening hook encouraging regulars and newcomers.
+- "**The Route & Vibe:**" (pace, distance, terrain, accessibility)
+- "**Meeting Point:**" (exact landmark and gathering details)
+- "**What to Bring:**" (bullet points of gear, water, footwear)
+- "**Post-Walk Social:**" (cafe, pub, or casual chats)
+
+Return ONLY a valid JSON object with the single key "description" containing the markdown string.`;
+
+      for (const model of models) {
+        try {
+          const response = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                contents: [{ role: 'user', parts: [{ text: expandPrompt }] }],
+                generationConfig: {
+                  temperature: 0.7,
+                  maxOutputTokens: 1024,
+                  responseMimeType: 'application/json'
+                }
+              })
+            }
+          );
+
+          if (response.ok) {
+            const geminiData = await response.json();
+            const text = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (text) {
+              const cleaned = text.replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim();
+              const parsed = JSON.parse(cleaned);
+              if (parsed.description) {
+                return NextResponse.json({
+                  success: true,
+                  fallback: false,
+                  mode: 'gemini',
+                  description: parsed.description
+                });
+              }
+            }
+          }
+        } catch (err) {
+          console.warn(`Gemini expand description with ${model} failed:`, err.message);
+        }
+      }
+
+      return NextResponse.json({
+        success: true,
+        fallback: true,
+        mode: 'smart-template',
+        description: expandLocalBullets(prompt, communityName, communityLocation)
+      });
+    }
 
     if (!apiKey) {
       return NextResponse.json({
@@ -130,7 +207,6 @@ Return ONLY a valid JSON object with the following fields:
 `;
 
     // Attempt Gemini call with fallback models
-    const models = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
     let geminiData = null;
 
     for (const model of models) {
@@ -294,4 +370,63 @@ ${social} Everyone is invited to stay on!`;
     autoReminders: true,
     autoFeedback: true
   };
+}
+
+/**
+ * Local deterministic bullet points expander.
+ * Takes user notes and formats them into an attractive community walk description.
+ */
+function expandLocalBullets(bullets, communityName, communityLocation = '') {
+  const locBase = communityLocation || (communityName ? communityName : 'Local Area');
+  const lines = (bullets || '')
+    .split('\n')
+    .map(l => l.replace(/^[•\-\*\d\.]+\s*/, '').trim())
+    .filter(Boolean);
+
+  const lower = (bullets || '').toLowerCase();
+  const hasDogs = lower.includes('dog') || lower.includes('pup');
+  const hasCoffee = lower.includes('coffee') || lower.includes('cafe');
+  const hasPub = lower.includes('pub') || lower.includes('drink');
+
+  let meetingPoint = `Main Entrance Gates, ${locBase}`;
+  let routeNotes = 'A gentle, conversational route suitable for all paces.';
+  let kitNotes = ['Comfortable walking shoes', 'Water bottle', 'Weather-appropriate layers'];
+  let socialNotes = hasCoffee 
+    ? 'Grabbing warm drinks and pastries at a local cafe afterwards.'
+    : hasPub 
+      ? 'Wrapping up at a nearby pub garden for relaxed conversation.'
+      : 'Casual post-walk chat with fellow members.';
+
+  lines.forEach(line => {
+    const l = line.toLowerCase();
+    if (l.includes('meet') || l.includes('start') || l.includes('location') || l.includes('gate') || l.includes('car park') || l.includes('station')) {
+      meetingPoint = line;
+    } else if (l.includes('bring') || l.includes('wear') || l.includes('shoes') || l.includes('water') || l.includes('rain') || l.includes('jacket')) {
+      kitNotes.push(line);
+    } else if (l.includes('cafe') || l.includes('coffee') || l.includes('pub') || l.includes('social') || l.includes('drink')) {
+      socialNotes = line;
+    } else {
+      routeNotes += ` ${line}.`;
+    }
+  });
+
+  if (hasDogs) {
+    kitNotes.push('Dog lead & waste bags');
+  }
+
+  const uniqueKit = Array.from(new Set(kitNotes));
+
+  return `Join us for a friendly, welcoming community walk in ${locBase}! Whether you are a regular or joining for the very first time, this is a relaxed space to disconnect from screens, get some fresh air, and meet great people from your local area.
+
+**The Route & Vibe:**
+${routeNotes.trim()} All fitness levels and newcomers are warmly welcomed!
+
+**Meeting Point:**
+📍 ${meetingPoint}. Look out for the group - we usually gather 5-10 minutes before start time.
+
+**What to Bring:**
+${uniqueKit.map(k => `• ${k}`).join('\n')}
+
+**Post-Walk Social:**
+${socialNotes} Everyone is invited to stay on!`;
 }
