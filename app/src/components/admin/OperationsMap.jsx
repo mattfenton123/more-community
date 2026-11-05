@@ -1,7 +1,10 @@
 "use client";
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
 import { 
-  MapPin, Activity, Users, Calendar, ArrowUpRight, 
+  MapPin, Activity, Users, Calendar, 
   ExternalLink, Layers, Navigation, Globe, CheckCircle2, Shield
 } from 'lucide-react';
 
@@ -9,6 +12,7 @@ const CLUSTERS = [
   { id: 'all', label: 'All South East', lat: 51.0500, lng: 0.3500, zoom: 9 },
   { id: 'heathfield', label: 'Heathfield Cluster', lat: 50.9680, lng: 0.2530, zoom: 14 },
   { id: 'tunbridge-wells', label: 'Tunbridge Wells', lat: 51.1322, lng: 0.2637, zoom: 14 },
+  { id: 'bewl-water', label: 'Bewl Water Trail', lat: 51.0763, lng: 0.3875, zoom: 13 },
   { id: 'st-leonards', label: 'St Leonards & Coast', lat: 50.8560, lng: 0.5560, zoom: 14 },
   { id: 'london', label: 'London Region', lat: 51.5074, lng: -0.1278, zoom: 12 }
 ];
@@ -23,20 +27,130 @@ const KNOWN_COORDS = {
   'more-leaders-network': { lat: 51.1322, lng: 0.2637, town: 'Regional Hub', area: 'Kent & East Sussex' }
 };
 
+// Town coordinates dictionary for dynamic communities
+const TOWN_COORDS = {
+  'heathfield': { lat: 50.9680, lng: 0.2530 },
+  'tunbridge wells': { lat: 51.1322, lng: 0.2637 },
+  'royal tunbridge wells': { lat: 51.1322, lng: 0.2637 },
+  'bewl water': { lat: 51.0763, lng: 0.3875 },
+  'st leonards': { lat: 50.8560, lng: 0.5560 },
+  'st leonards-on-sea': { lat: 50.8560, lng: 0.5560 },
+  'hastings': { lat: 50.8542, lng: 0.5735 },
+  'eastbourne': { lat: 50.7680, lng: 0.2900 },
+  'brighton': { lat: 50.8225, lng: -0.1372 },
+  'london': { lat: 51.5074, lng: -0.1278 },
+  'sevenoaks': { lat: 51.2720, lng: 0.1880 },
+  'tonbridge': { lat: 51.1940, lng: 0.2740 },
+  'maidstone': { lat: 51.2704, lng: 0.5227 },
+  'crowborough': { lat: 51.0600, lng: 0.1600 }
+};
+
+function createPinIcon(color, glowColor) {
+  return L.divIcon({
+    html: `
+      <div style="
+        position: relative;
+        width: 32px; height: 32px;
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer;
+      ">
+        <div style="
+          position: absolute;
+          width: 32px; height: 32px;
+          border-radius: 50%;
+          background: ${glowColor};
+          opacity: 0.45;
+          filter: blur(5px);
+        "></div>
+        <div style="
+          width: 22px; height: 22px;
+          border-radius: 50%;
+          background: ${color};
+          border: 2.5px solid #ffffff;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+          display: flex; align-items: center; justify-content: center;
+        ">
+          <div style="width: 6px; height: 6px; border-radius: 50%; background: #ffffff;"></div>
+        </div>
+      </div>
+    `,
+    className: '',
+    iconSize: [32, 32],
+    iconAnchor: [16, 16],
+    popupAnchor: [0, -18]
+  });
+}
+
+function MapInvalidator() {
+  const map = useMap();
+  useEffect(() => {
+    const t1 = setTimeout(() => map.invalidateSize(), 150);
+    const t2 = setTimeout(() => map.invalidateSize(), 500);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+  }, [map]);
+  return null;
+}
+
+function MapFlyController({ target, zoom }) {
+  const map = useMap();
+  useEffect(() => {
+    if (target && !isNaN(target.lat) && !isNaN(target.lng)) {
+      map.flyTo([target.lat, target.lng], zoom || 13, { duration: 1.2 });
+    }
+  }, [target, zoom, map]);
+  return null;
+}
+
 export default function OperationsMap({ platformStats }) {
-  const [mapType, setMapType] = useState('m'); // 'm' = Roadmap, 'k' = Satellite, 'p' = Terrain
+  const [mapLayer, setMapLayer] = useState('street'); // 'street' | 'satellite'
   const [activeCluster, setActiveCluster] = useState('all');
   const [selectedCommunityId, setSelectedCommunityId] = useState(null);
+  const markerRefs = useRef({});
+
+  const activeIcon = useMemo(() => createPinIcon('#22c55e', 'rgba(34, 197, 94, 0.8)'), []);
+  const moderateIcon = useMemo(() => createPinIcon('#f59e0b', 'rgba(245, 158, 11, 0.8)'), []);
+  const dormantIcon = useMemo(() => createPinIcon('#ef4444', 'rgba(239, 68, 68, 0.8)'), []);
 
   const healthList = platformStats?.communityHealth || [];
 
   const communities = useMemo(() => {
     return healthList.map((c, idx) => {
       const known = KNOWN_COORDS[c.id];
-      const lat = known ? known.lat : (c.lat && !isNaN(Number(c.lat)) ? Number(c.lat) : 51.1322 + (idx * 0.05));
-      const lng = known ? known.lng : (c.lng && !isNaN(Number(c.lng)) ? Number(c.lng) : 0.2637 + (idx * 0.05));
-      const town = known ? known.town : (c.location_name || 'South East');
-      const area = known ? known.area : (c.location || 'Active Hub');
+      let lat, lng, town, area;
+      if (known) {
+        lat = known.lat;
+        lng = known.lng;
+        town = known.town;
+        area = known.area;
+      } else if (c.lat && c.lng && !isNaN(Number(c.lat)) && !isNaN(Number(c.lng))) {
+        lat = Number(c.lat);
+        lng = Number(c.lng);
+        town = c.location_name || 'South East';
+        area = c.location || 'Local Hub';
+      } else {
+        const locLower = (c.location_name || c.location || '').toLowerCase();
+        let matchedTown = null;
+        for (const [key, coords] of Object.entries(TOWN_COORDS)) {
+          if (locLower.includes(key)) {
+            matchedTown = { key, ...coords };
+            break;
+          }
+        }
+        if (matchedTown) {
+          lat = matchedTown.lat + (idx % 3) * 0.003;
+          lng = matchedTown.lng + (idx % 3) * 0.003;
+          town = c.location_name || matchedTown.key;
+          area = c.location || 'Local Area';
+        } else {
+          lat = 51.0500 + ((idx * 0.035) % 0.25);
+          lng = 0.2500 + ((idx * 0.045) % 0.35);
+          town = c.location_name || 'Kent & Sussex';
+          area = c.location || 'Active Region';
+        }
+      }
       return {
         ...c,
         lat,
@@ -51,20 +165,40 @@ export default function OperationsMap({ platformStats }) {
     if (selectedCommunityId) {
       const match = communities.find(c => c.id === selectedCommunityId);
       if (match) {
-        return { lat: match.lat, lng: match.lng, zoom: 15, name: match.name, town: match.town };
+        return { lat: match.lat, lng: match.lng, zoom: 14, name: match.name, town: match.town };
       }
     }
     const cluster = CLUSTERS.find(c => c.id === activeCluster) || CLUSTERS[0];
     return { lat: cluster.lat, lng: cluster.lng, zoom: cluster.zoom, name: cluster.label, town: cluster.label };
   }, [selectedCommunityId, activeCluster, communities]);
 
-  // Google Maps interactive embed URL
-  const googleEmbedUrl = `https://maps.google.com/maps?q=${currentFocus.lat},${currentFocus.lng}&t=${mapType}&z=${currentFocus.zoom}&hl=en&output=embed`;
-
-  const googleMapsExternalUrl = `https://www.google.com/maps/search/?api=1&query=${currentFocus.lat},${currentFocus.lng}`;
+  const handleSelectCommunity = (id) => {
+    setSelectedCommunityId(id);
+    const marker = markerRefs.current[id];
+    if (marker) {
+      marker.openPopup();
+    }
+  };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', height: '100%' }}>
+      <style>{`
+        .operations-map-popup .leaflet-popup-content-wrapper {
+          background: #0f172a !important;
+          border: 1px solid rgba(255,255,255,0.14) !important;
+          border-radius: 14px !important;
+          box-shadow: 0 12px 36px rgba(0,0,0,0.7) !important;
+          padding: 0 !important;
+        }
+        .operations-map-popup .leaflet-popup-content {
+          margin: 0 !important;
+        }
+        .operations-map-popup .leaflet-popup-tip {
+          background: #0f172a !important;
+          border: 1px solid rgba(255,255,255,0.14) !important;
+        }
+      `}</style>
+
       {/* Header with Cluster & Map Layer Controls */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
         <div>
@@ -72,38 +206,38 @@ export default function OperationsMap({ platformStats }) {
             <MapPin size={20} color="#2dd4bf" /> Geographic Operations Map
           </h2>
           <p style={{ color: 'var(--slate-400)', fontSize: '0.85rem', margin: 0 }}>
-            Live Google Maps geospatial tracking of community density, health, and event participation.
+            Live geospatial tracking with {communities.length} community markers across South East England.
           </p>
         </div>
 
-        {/* Google Maps Layer Toggle: Roadmap vs Satellite */}
+        {/* Map Layer Toggle: Street vs Satellite */}
         <div style={{ display: 'flex', gap: '4px', background: 'rgba(255,255,255,0.06)', padding: '3px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)' }}>
           <button
             type="button"
-            onClick={() => setMapType('m')}
+            onClick={() => setMapLayer('street')}
             style={{
-              background: mapType === 'm' ? '#2dd4bf' : 'transparent',
-              color: mapType === 'm' ? '#0f172a' : 'var(--slate-300)',
+              background: mapLayer === 'street' ? '#2dd4bf' : 'transparent',
+              color: mapLayer === 'street' ? '#0f172a' : 'var(--slate-300)',
               border: 'none',
               borderRadius: '8px',
-              padding: '5px 12px',
+              padding: '6px 14px',
               fontSize: '0.78rem',
               fontWeight: 700,
               cursor: 'pointer',
               transition: 'all 0.15s ease'
             }}
           >
-            Google Map
+            Clear Street
           </button>
           <button
             type="button"
-            onClick={() => setMapType('k')}
+            onClick={() => setMapLayer('satellite')}
             style={{
-              background: mapType === 'k' ? '#2dd4bf' : 'transparent',
-              color: mapType === 'k' ? '#0f172a' : 'var(--slate-300)',
+              background: mapLayer === 'satellite' ? '#2dd4bf' : 'transparent',
+              color: mapLayer === 'satellite' ? '#0f172a' : 'var(--slate-300)',
               border: 'none',
               borderRadius: '8px',
-              padding: '5px 12px',
+              padding: '6px 14px',
               fontSize: '0.78rem',
               fontWeight: 700,
               cursor: 'pointer',
@@ -115,8 +249,8 @@ export default function OperationsMap({ platformStats }) {
         </div>
       </div>
 
-      {/* Cluster Quick-Jump Bar */}
-      <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '4px', WebkitOverflowScrolling: 'touch' }}>
+      {/* Cluster Filter Buttons */}
+      <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
         {CLUSTERS.map(c => {
           const isSelected = activeCluster === c.id && !selectedCommunityId;
           return (
@@ -146,28 +280,115 @@ export default function OperationsMap({ platformStats }) {
         })}
       </div>
 
-      {/* Google Maps Main Container */}
+      {/* Interactive Map Container */}
       <div style={{ 
-        width: '100%', height: '480px', borderRadius: '18px', 
+        width: '100%', height: '520px', borderRadius: '18px', 
         overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)',
         background: '#090d16', boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
         position: 'relative'
       }}>
-        <iframe
-          title="Google Operations Map"
-          width="100%"
-          height="100%"
-          style={{ border: 0, width: '100%', height: '100%', display: 'block' }}
-          loading="lazy"
-          allowFullScreen
-          referrerPolicy="no-referrer-when-downgrade"
-          src={googleEmbedUrl}
-        />
+        <MapContainer 
+          center={[currentFocus.lat, currentFocus.lng]} 
+          zoom={currentFocus.zoom} 
+          scrollWheelZoom={true} 
+          style={{ height: '100%', width: '100%', backgroundColor: '#090d16' }}
+          attributionControl={false}
+        >
+          {mapLayer === 'satellite' ? (
+            <TileLayer
+              url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+              maxZoom={19}
+            />
+          ) : (
+            <TileLayer
+              url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+              maxZoom={19}
+            />
+          )}
 
-        {/* Floating Active Focus Pill & Open in Google Maps */}
+          <MapInvalidator />
+          <MapFlyController target={currentFocus} zoom={currentFocus.zoom} />
+
+          {communities.map(c => {
+            let icon = moderateIcon;
+            let statusColor = '#f59e0b';
+            if (c.health === 'active') {
+              icon = activeIcon;
+              statusColor = '#22c55e';
+            } else if (c.health === 'dormant') {
+              icon = dormantIcon;
+              statusColor = '#ef4444';
+            }
+
+            return (
+              <Marker 
+                key={c.id || Math.random()} 
+                position={[c.lat, c.lng]} 
+                icon={icon}
+                ref={el => { if (el) markerRefs.current[c.id] = el; }}
+                eventHandlers={{
+                  click: () => setSelectedCommunityId(c.id)
+                }}
+              >
+                <Popup className="operations-map-popup">
+                  <div style={{ padding: '16px 18px', minWidth: '220px', color: 'white', fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '8px' }}>
+                      <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: 'white' }}>{c.name}</h3>
+                      <span style={{ 
+                        fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase',
+                        padding: '2px 8px', borderRadius: '999px',
+                        background: `${statusColor}22`, color: statusColor, border: `1px solid ${statusColor}44`
+                      }}>
+                        {c.health}
+                      </span>
+                    </div>
+
+                    <div style={{ fontSize: '0.8rem', color: '#94a3b8', display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '12px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <MapPin size={13} color="#2dd4bf" /> 
+                        <span style={{ color: '#e2e8f0', fontWeight: 600 }}>{c.town}</span> 
+                        <span style={{ color: '#64748b' }}>({c.area})</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <Users size={13} color="#38bdf8" /> 
+                        <span><strong>{c.members || 0}</strong> members</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <Calendar size={13} color="#f59e0b" /> 
+                        <span><strong>{c.cEvents || 0}</strong> meetups scheduled</span>
+                      </div>
+                      {c.cRevenue > 0 && (
+                        <div style={{ color: '#2dd4bf', fontWeight: 600 }}>
+                          💰 £{c.cRevenue} total ticket revenue
+                        </div>
+                      )}
+                    </div>
+
+                    <a 
+                      href={`/community/${c.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                        width: '100%', padding: '8px 12px', borderRadius: '8px',
+                        background: 'rgba(20, 184, 166, 0.2)', border: '1px solid rgba(20, 184, 166, 0.4)',
+                        color: 'var(--teal-300)', fontSize: '0.78rem', fontWeight: 700, textDecoration: 'none'
+                      }}
+                    >
+                      <span>View Live Page</span>
+                      <ExternalLink size={12} />
+                    </a>
+                  </div>
+                </Popup>
+              </Marker>
+            );
+          })}
+        </MapContainer>
+
+        {/* Floating Active Focus Pill */}
         <div style={{
-          position: 'absolute', bottom: '14px', left: '14px', zIndex: 10,
-          background: 'rgba(15, 23, 42, 0.88)', backdropFilter: 'blur(10px)',
+          position: 'absolute', bottom: '14px', left: '14px', zIndex: 1000,
+          background: 'rgba(15, 23, 42, 0.92)', backdropFilter: 'blur(10px)',
           padding: '6px 14px', borderRadius: '99px', border: '1px solid rgba(255,255,255,0.15)',
           display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.78rem'
         }}>
@@ -176,94 +397,59 @@ export default function OperationsMap({ platformStats }) {
           <span style={{ color: 'var(--slate-400)' }}>•</span>
           <span style={{ color: '#2dd4bf', fontFamily: 'monospace' }}>{currentFocus.lat.toFixed(4)}°, {currentFocus.lng.toFixed(4)}°</span>
         </div>
-
-        <a
-          href={googleMapsExternalUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{
-            position: 'absolute', top: '14px', right: '14px', zIndex: 10,
-            background: 'rgba(15, 23, 42, 0.88)', backdropFilter: 'blur(10px)',
-            padding: '6px 12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)',
-            color: 'var(--white)', fontSize: '0.76rem', fontWeight: 600,
-            display: 'flex', alignItems: 'center', gap: '6px', textDecoration: 'none'
-          }}
-        >
-          <span>Open Full Google Maps</span>
-          <ExternalLink size={13} color="#2dd4bf" />
-        </a>
       </div>
 
-      {/* Community Geospatial Pinpoints Tray */}
+      {/* Community Pinpoints Tray */}
       <div>
         <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--slate-300)', marginBottom: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span>Active Geospatial Communities ({communities.length})</span>
-          <span style={{ fontSize: '0.74rem', color: 'var(--slate-400)', fontWeight: 500 }}>Click any club to pinpoint location on Google Maps</span>
+          <span style={{ fontSize: '0.72rem', color: 'var(--slate-400)' }}>Click any community to zoom and open pin info</span>
         </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '10px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '10px' }}>
           {communities.map(c => {
             const isSelected = selectedCommunityId === c.id;
-            let statusColor = '#22c55e';
-            let statusLabel = 'Active';
-            if (c.health === 'moderate') {
-              statusColor = '#f59e0b';
-              statusLabel = 'Moderate';
-            } else if (c.health === 'dormant') {
-              statusColor = '#ef4444';
-              statusLabel = 'Dormant';
-            }
-
+            const statusColor = c.health === 'active' ? '#22c55e' : c.health === 'dormant' ? '#ef4444' : '#f59e0b';
             return (
               <div
                 key={c.id}
-                onClick={() => setSelectedCommunityId(isSelected ? null : c.id)}
+                onClick={() => handleSelectCommunity(c.id)}
+                className="interactive-press"
                 style={{
-                  background: isSelected ? 'rgba(45, 212, 191, 0.12)' : 'rgba(255, 255, 255, 0.02)',
-                  border: isSelected ? '1.5px solid #2dd4bf' : '1px solid rgba(255, 255, 255, 0.06)',
-                  borderRadius: '12px',
                   padding: '12px 14px',
+                  borderRadius: '12px',
+                  background: isSelected ? 'rgba(45, 212, 191, 0.12)' : 'rgba(255, 255, 255, 0.02)',
+                  border: isSelected ? '1px solid #2dd4bf' : '1px solid rgba(255, 255, 255, 0.06)',
                   cursor: 'pointer',
                   display: 'flex',
-                  flexDirection: 'column',
-                  gap: '6px',
+                  alignItems: 'center',
+                  gap: '12px',
                   transition: 'all 0.15s ease'
                 }}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <strong style={{ color: 'var(--white)', fontSize: '0.86rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                <div style={{
+                  width: '10px', height: '10px', borderRadius: '50%',
+                  background: statusColor, boxShadow: `0 0 8px ${statusColor}`,
+                  flexShrink: 0
+                }}></div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--white)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {c.name}
-                  </strong>
-                  <span style={{
-                    fontSize: '0.65rem',
-                    fontWeight: 700,
-                    textTransform: 'uppercase',
-                    padding: '2px 6px',
-                    borderRadius: '99px',
-                    background: statusColor + '20',
-                    color: statusColor,
-                    border: '1px solid ' + statusColor + '40'
-                  }}>
-                    {statusLabel}
-                  </span>
+                  </div>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', display: 'flex', gap: '8px' }}>
+                    <span>📍 {c.town}</span>
+                    <span>•</span>
+                    <span>👥 {c.members || 0} members</span>
+                  </div>
                 </div>
-
-                <div style={{ fontSize: '0.74rem', color: 'var(--slate-400)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <MapPin size={12} color="#2dd4bf" />
-                  <span>{c.town} • {c.area}</span>
-                </div>
-
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.74rem', color: 'var(--slate-300)', marginTop: '2px', paddingTop: '6px', borderTop: '1px solid rgba(255,255,255,0.04)' }}>
-                  <span>👥 {c.members || 12} members</span>
-                  <span>📅 {c.cEvents || 0} events</span>
-                  <span style={{ color: '#2dd4bf', fontWeight: 600 }}>{isSelected ? '📍 Pinpointed' : 'Click to view'}</span>
-                </div>
+                <span style={{ fontSize: '0.75rem', color: isSelected ? '#2dd4bf' : 'var(--slate-500)', fontWeight: 600 }}>
+                  Pin →
+                </span>
               </div>
             );
           })}
         </div>
       </div>
-      
+
       {/* Legend */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '20px', fontSize: '0.8rem', color: 'var(--slate-400)', padding: '0 4px', flexWrap: 'wrap' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>

@@ -435,6 +435,23 @@ export default function EventClient({ id }) {
     }
   };
 
+  const handleBack = () => {
+    if (typeof window !== 'undefined') {
+      const hasHistory = window.history.length > 1;
+      const isFromSameHost = document.referrer && document.referrer.includes(window.location.host);
+
+      if (!hasHistory || !isFromSameHost) {
+        if (event?.communityId) {
+          router.push(`/community/${event.communityId}`);
+        } else {
+          router.push('/events');
+        }
+        return;
+      }
+      router.back();
+    }
+  };
+
   const itineraryItems = parseList(event.itinerary);
   const whatToBringItems = event.whatToBring ? event.whatToBring.split(',').map(i => i.trim()).filter(i => i) : [];
 
@@ -448,7 +465,7 @@ export default function EventClient({ id }) {
           style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
         />
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, padding: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, transparent 100%)' }}>
-          <button onClick={() => router.back()} className="interactive-press" style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(10px)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', cursor: 'pointer' }}>
+          <button onClick={handleBack} aria-label="Go Back" className="interactive-press" style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(10px)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', cursor: 'pointer' }}>
             <ChevronLeft size={24} />
           </button>
           <button 

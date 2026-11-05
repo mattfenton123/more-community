@@ -5,6 +5,7 @@ import { ExternalLink, HelpCircle, Users, Calendar, MessageCircle, TrendingUp, S
 import AppHeader from '../../src/components/AppHeader';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { isEventUpcoming, isEventPast, parseEventDateTime } from '../../src/lib/calendar';
+import { getEventPath } from '../../src/lib/eventLinks';
 import { useAppContext } from '../../src/context/AppContext';
 import { useChat } from '../../src/context/ChatContext';
 import { useToast } from '../../src/components/Toast';
