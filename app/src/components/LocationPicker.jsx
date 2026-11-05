@@ -14,6 +14,7 @@ import {
   findKnownLocation,
   geocodeLocation
 } from '../lib/location';
+import { getPlacePredictions, getPlaceDetails } from '../lib/googleMaps';
 
 const TOP_PRESETS = [
   { name: 'Bewl Water Car Park', query: 'Bewl Water Car Park & Visitor Centre' },
@@ -219,6 +220,28 @@ export default function LocationPicker({ locationName, setLocationName, coords: 
 
     setIsSearching(true);
     try {
+      // 2. Try Google Places first
+      const googleResults = await getPlacePredictions(searchQuery, coords);
+      if (googleResults && googleResults.length > 0) {
+        setSearchResults(googleResults);
+        // Auto-select first match on explicit enter/submit
+        const first = googleResults[0];
+        const details = await getPlaceDetails(first.placeId);
+        if (details && details.lat != null && details.lng != null) {
+          const newCoords = [details.lat, details.lng];
+          setCoords(newCoords);
+          setSearchQuery(first.name);
+          setPinAddress(first.name);
+          setAreaLabel(first.area || '');
+          setShowMap(true);
+          if (onCoordsChange) onCoordsChange(newCoords);
+          setLocationName(encodeLocationWithCoords(first.name, newCoords[0], newCoords[1]));
+          setIsSearching(false);
+          return;
+        }
+      }
+
+      // 3. Fallback to OpenStreetMap / Nominatim
       const normalized = qClean
         .replace(/\bopp\.?\b/gi, '')
         .replace(/\bopposite\b/gi, '')
@@ -239,23 +262,43 @@ export default function LocationPicker({ locationName, setLocationName, coords: 
         const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
         const data = await res.json();
         if (data && data.length > 0) {
-          foundData = data;
+          foundData = data.map(d => ({
+            id: d.place_id,
+            name: d.display_name.split(',').slice(0, 2).join(',').trim(),
+            address: d.display_name,
+            lat: parseFloat(d.lat),
+            lon: parseFloat(d.lon),
+            source: 'osm'
+          }));
           break;
         }
       }
 
-      setSearchResults(foundData || []);
+      const combined = (googleResults && googleResults.length > 0) ? googleResults : foundData;
+      setSearchResults(combined || []);
 
-      if (foundData && foundData.length > 0) {
-        const best = foundData[0];
-        const newCoords = [parseFloat(best.lat), parseFloat(best.lon)];
-        setCoords(newCoords);
-        const shortName = best.display_name.split(',').slice(0, 2).join(',').trim();
-        setSearchQuery(shortName);
-        setPinAddress(shortName);
-        setShowMap(true);
-        if (onCoordsChange) onCoordsChange(newCoords);
-        setLocationName(encodeLocationWithCoords(shortName, newCoords[0], newCoords[1]));
+      if (combined && combined.length > 0) {
+        const best = combined[0];
+        if (best.source === 'google') {
+          const details = await getPlaceDetails(best.placeId);
+          if (details) {
+            const newCoords = [details.lat, details.lng];
+            setCoords(newCoords);
+            setSearchQuery(best.name);
+            setPinAddress(best.name);
+            setShowMap(true);
+            if (onCoordsChange) onCoordsChange(newCoords);
+            setLocationName(encodeLocationWithCoords(best.name, newCoords[0], newCoords[1]));
+          }
+        } else {
+          const newCoords = [best.lat, best.lon];
+          setCoords(newCoords);
+          setSearchQuery(best.name);
+          setPinAddress(best.name);
+          setShowMap(true);
+          if (onCoordsChange) onCoordsChange(newCoords);
+          setLocationName(encodeLocationWithCoords(best.name, newCoords[0], newCoords[1]));
+        }
       } else {
         setSearchNotFound(true);
         setShowMap(true);
@@ -268,16 +311,38 @@ export default function LocationPicker({ locationName, setLocationName, coords: 
     }
   };
 
-  const selectResult = (result) => {
-    const newCoords = [parseFloat(result.lat), parseFloat(result.lon)];
-    const shortName = result.display_name.split(',').slice(0, 2).join(',').trim();
-    setCoords(newCoords);
-    setSearchQuery(shortName);
-    setPinAddress(shortName);
-    setSearchResults([]);
-    setShowMap(true);
-    if (onCoordsChange) onCoordsChange(newCoords);
-    setLocationName(encodeLocationWithCoords(shortName, newCoords[0], newCoords[1]));
+  const selectResult = async (result) => {
+    if (result.source === 'google' && result.placeId) {
+      setIsSearching(true);
+      try {
+        const details = await getPlaceDetails(result.placeId);
+        if (details && details.lat != null && details.lng != null) {
+          const newCoords = [details.lat, details.lng];
+          setCoords(newCoords);
+          setSearchQuery(result.name);
+          setPinAddress(result.name);
+          setAreaLabel(result.area || '');
+          setSearchResults([]);
+          setShowMap(true);
+          if (onCoordsChange) onCoordsChange(newCoords);
+          setLocationName(encodeLocationWithCoords(result.name, newCoords[0], newCoords[1]));
+        }
+      } catch (err) {
+        console.error("Place details error:", err);
+      } finally {
+        setIsSearching(false);
+      }
+    } else {
+      const newCoords = [parseFloat(result.lat), parseFloat(result.lon)];
+      const shortName = result.name || result.display_name?.split(',').slice(0, 2).join(',').trim();
+      setCoords(newCoords);
+      setSearchQuery(shortName);
+      setPinAddress(shortName);
+      setSearchResults([]);
+      setShowMap(true);
+      if (onCoordsChange) onCoordsChange(newCoords);
+      setLocationName(encodeLocationWithCoords(shortName, newCoords[0], newCoords[1]));
+    }
   };
 
   const handleUseCurrentLocation = () => {
@@ -475,27 +540,41 @@ export default function LocationPicker({ locationName, setLocationName, coords: 
 
       {/* Autocomplete / Search Suggestions */}
       {searchResults.length > 0 && (
-        <div style={{ 
-          background: '#0f172a', border: '1px solid rgba(255,255,255,0.12)', 
+        <div className="places-dropdown" style={{ 
+          background: 'var(--slate-900)', border: '1px solid var(--slate-700)', 
           borderRadius: '12px', overflow: 'hidden', marginTop: '-4px',
-          boxShadow: '0 8px 24px rgba(0,0,0,0.5)', zIndex: 10
+          boxShadow: '0 8px 24px rgba(0,0,0,0.3)', zIndex: 10
         }}>
           {searchResults.map((res, i) => (
             <div 
-              key={i} 
+              key={res.id || i} 
               onClick={() => selectResult(res)}
               className="interactive-press"
               style={{ 
                 padding: '11px 16px',
                 borderBottom: i < searchResults.length - 1 ? '1px solid rgba(255,255,255,0.06)' : 'none',
-                cursor: 'pointer', fontSize: '0.86rem', color: 'var(--slate-200)',
-                display: 'flex', alignItems: 'center', gap: '8px'
+                cursor: 'pointer', fontSize: '0.86rem', color: 'var(--white)',
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px'
               }}
             >
-              <MapPin size={15} color="#2dd4bf" style={{ flexShrink: 0 }} />
-              <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {res.display_name}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+                <MapPin size={16} color="var(--teal-400)" style={{ flexShrink: 0 }} />
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.88rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {res.name || res.display_name?.split(',')[0]}
+                  </div>
+                  {(res.area || res.address) && (
+                    <div style={{ fontSize: '0.74rem', color: 'var(--slate-400)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginTop: '1px' }}>
+                      {res.area || res.address}
+                    </div>
+                  )}
+                </div>
               </div>
+              {res.source === 'google' && (
+                <span style={{ fontSize: '0.62rem', fontWeight: 700, padding: '2px 6px', borderRadius: '4px', background: 'rgba(20,184,166,0.15)', color: 'var(--teal-300)', textTransform: 'uppercase', letterSpacing: '0.04em', flexShrink: 0 }}>
+                  Google
+                </span>
+              )}
             </div>
           ))}
         </div>

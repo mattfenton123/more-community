@@ -1723,3 +1723,19 @@ button:disabled, [role="button"][aria-disabled="true"] {
 [data-theme="light"] .onboarding-container .btn-back:hover {
   color: #0f172a !important;
 }
+
+
+[data-theme="light"] .places-dropdown {
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08) !important;
+}
+
+[data-theme="light"] .places-dropdown > div {
+  border-bottom-color: #f1f5f9 !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .places-dropdown > div:hover {
+  background: #f8fafc !important;
+}
