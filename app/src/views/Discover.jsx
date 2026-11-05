@@ -1,4 +1,5 @@
 "use client";
+import Link from 'next/link';
 import { useState, useMemo, useEffect } from 'react';
 import { Compass, Users, MapPin, Search, Calendar, ChevronRight, X, List, Map as MapIcon, Sparkles, BadgeCheck, TrendingUp, Activity, Zap, Navigation } from 'lucide-react';
 import { useRouter as useNavigate } from 'next/navigation';
@@ -258,6 +259,32 @@ export default function Discover() {
             <ChevronRight size={20} color="#0f172a" />
           </button>
         </div>
+
+        {/* Local Partner Hub Banner */}
+        <Link 
+          href="/partner"
+          className="interactive-press"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '10px 14px',
+            marginTop: '12px',
+            borderRadius: '12px',
+            background: 'linear-gradient(135deg, rgba(20, 184, 166, 0.12) 0%, rgba(245, 158, 11, 0.08) 100%)',
+            border: '1px solid rgba(45, 212, 191, 0.25)',
+            textDecoration: 'none',
+            color: 'var(--white)'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Sparkles size={15} color="var(--teal-400)" />
+            <span style={{ fontSize: '0.8rem', fontWeight: 600 }}>Are you an instructor, guide or local business?</span>
+          </div>
+          <span style={{ fontSize: '0.74rem', color: 'var(--teal-300)', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+            Partner Hub →
+          </span>
+        </Link>
         
         {/* Regional Headline Sponsor */}
         {(() => {
@@ -401,7 +428,7 @@ export default function Discover() {
                       Experiences Marketplace
                     </div>
                     <div style={{ fontSize: '0.7rem', color: 'var(--slate-400)', lineHeight: 1.4 }}>
-                      Skydiving, retreats, theatre & more — curated by your community leaders
+                      Skydiving, retreats, theatre & more  -  curated by your community leaders
                     </div>
                   </div>
                   <ChevronRight size={16} style={{ color: 'var(--teal-400)', flexShrink: 0 }} />

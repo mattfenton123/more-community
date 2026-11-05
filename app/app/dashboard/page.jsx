@@ -49,7 +49,7 @@ const StatCard = ({ value, label, color, icon: Icon, accent }) => (
 
 // ─── Utilities ──────────────────────────────────────────────────
 function parseDateParts(dateStr) {
-  if (!dateStr) return { day: '—', month: '' };
+  if (!dateStr) return { day: ' - ', month: '' };
   if (dateStr.includes('-')) {
     const d = new Date(dateStr + 'T00:00:00');
     if (!isNaN(d)) return { day: d.getDate().toString(), month: d.toLocaleDateString('en-GB', { month: 'short' }) };
@@ -914,7 +914,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
         setAiPrompt('');
         toast.success(
           data.fallback ? 'Event Drafted!' : '✨ AI Generated!',
-          data.fallback ? 'Smart template applied — review and publish.' : 'Gemini crafted your event — review and publish.'
+          data.fallback ? 'Smart template applied  -  review and publish.' : 'Gemini crafted your event  -  review and publish.'
         );
       } else {
         toast.error('Generation failed', 'Please try again or fill in manually.');
@@ -1120,7 +1120,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
         <>
           <div style={{ background: 'rgba(245,158,11,0.05)', border: '1px solid rgba(245,158,11,0.15)', borderRadius: '12px', padding: '14px', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
             <Zap size={16} color="#f59e0b" style={{ flexShrink: 0 }} />
-            <span style={{ fontSize: '0.8rem', color: '#fcd34d', lineHeight: 1.4 }}>These are optional — you can always edit them later.</span>
+            <span style={{ fontSize: '0.8rem', color: '#fcd34d', lineHeight: 1.4 }}>These are optional  -  you can always edit them later.</span>
           </div>
           <div className="form-row">
             <div className="form-group">
@@ -1305,7 +1305,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
               </div>
               <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
                 <div style={{ width: '44px', height: '48px', background: 'rgba(20,184,166,0.1)', borderRadius: '10px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--white)', lineHeight: 1 }}>{eventForm.date ? new Date(eventForm.date + 'T00:00:00').getDate() : '—'}</div>
+                  <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--white)', lineHeight: 1 }}>{eventForm.date ? new Date(eventForm.date + 'T00:00:00').getDate() : ' - '}</div>
                   <div style={{ fontSize: '0.6rem', color: 'var(--teal-400)', fontWeight: 600, textTransform: 'uppercase' }}>{eventForm.date ? new Date(eventForm.date + 'T00:00:00').toLocaleDateString('en-GB', { month: 'short' }) : ''}</div>
                 </div>
                 <div style={{ flex: 1 }}>
@@ -1575,7 +1575,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
           </div>
 
           {/* ══════════════════════════════════════════════════════ */}
-          {/* TAB: OVERVIEW — Command Centre                       */}
+          {/* TAB: OVERVIEW  -  Command Centre                       */}
           {/* ══════════════════════════════════════════════════════ */}
           {activeTab === 'overview' && (
             <>
@@ -1758,7 +1758,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 })()}
               </div>
 
-              {/* Stats Grid 2x3 — clickable for drill-down */}
+              {/* Stats Grid 2x3  -  clickable for drill-down */}
               <div style={{ padding: '0 20px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: leaderDrillDown ? '0' : '24px' }}>
                 {[
                   { key: 'members',   value: stats.totalMembers || 0,                                                                    label: 'Total Members',     icon: Users,     color: 'white' },
@@ -2177,7 +2177,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 </div>
               )}
 
-              {/* Create Event — Prominent CTA when no upcoming events */}
+              {/* Create Event  -  Prominent CTA when no upcoming events */}
               {!stats.nextEvent && (
                 <div style={{ padding: '0 20px', marginBottom: '20px' }}>
                   <div 
@@ -2306,7 +2306,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                       <div style={{ fontSize: '0.7rem', color: 'var(--slate-600)', whiteSpace: 'nowrap' }}>{a.time}</div>
                     </div>
                   )) : (
-                    <div style={{ padding: '24px', textAlign: 'center', color: 'var(--slate-500)', fontSize: '0.85rem' }}>No recent activity yet — create your first event!</div>
+                    <div style={{ padding: '24px', textAlign: 'center', color: 'var(--slate-500)', fontSize: '0.85rem' }}>No recent activity yet  -  create your first event!</div>
                   )}
                 </div>
               </div>
@@ -3098,7 +3098,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
           )}
 
           {/* ══════════════════════════════════════════════════════ */}
-          {/* TAB: SETTINGS — Full Config                          */}
+          {/* TAB: SETTINGS  -  Full Config                          */}
           {/* ══════════════════════════════════════════════════════ */}
           {activeTab === 'settings' && (
             <div style={{ padding: '0 20px', display: 'flex', flexDirection: 'column', gap: '8px', paddingBottom: '40px' }}>
@@ -3461,6 +3461,28 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 </button>
               </div>
 
+              {/* Accept Collaborations & Sponsor Pitches Toggle */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px' }}>
+                <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(20,184,166,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--teal-400)' }}>
+                  <Sparkles size={20} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 500, color: 'var(--white)', marginBottom: '2px' }}>Accept Guest Sessions & Sponsor Pitches</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>Allow local guides, instructors & businesses to pitch sessions or member perks</div>
+                </div>
+                <button onClick={() => { 
+                    const newVal = !(community.accepts_pitches ?? true);
+                    updateCommunity(community.id, { accepts_pitches: newVal });
+                    toast.info(newVal ? 'Collaborations Enabled' : 'Collaborations Disabled', newVal ? 'Instructors & sponsors can propose sessions' : 'Incoming pitches hidden from your page'); 
+                  }} style={{
+                  width: '44px', height: '24px', borderRadius: '99px', border: 'none',
+                  background: (community.accepts_pitches ?? true) ? 'var(--teal-500)' : 'rgba(255,255,255,0.1)',
+                  position: 'relative', cursor: 'pointer', transition: 'background 0.2s'
+                }}>
+                  <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: 'white', position: 'absolute', top: '2px', left: (community.accepts_pitches ?? true) ? '22px' : '2px', transition: 'left 0.2s' }}></div>
+                </button>
+              </div>
+
               {/* Export Data */}
               <button onClick={handleExportCSV} className="interactive-press" style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', color: 'var(--white)', width: '100%', cursor: 'pointer', textAlign: 'left' }}>
                 <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(20,184,166,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--teal-400)' }}>
@@ -3818,7 +3840,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
               </div>
             )}
 
-            {/* Co-Leader Promotion — FIXED */}
+            {/* Co-Leader Promotion  -  FIXED */}
             {modalType === 'coleader' && (
               <div style={{ color: 'var(--white)' }}>
                 <p style={{ color: 'var(--slate-400)', marginBottom: '12px' }}>Search for a member to promote to Co-Leader.</p>

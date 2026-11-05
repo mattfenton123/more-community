@@ -27,6 +27,7 @@ import confetti from 'canvas-confetti';
 import LeaderSetupChecklist from '../../../src/components/LeaderSetupChecklist';
 import TownCrossPollination from '../../../src/components/TownCrossPollination';
 import SpecialistVaultModal from '../../../src/components/SpecialistVaultModal';
+import CommunityPartnerModal from '../../../src/components/CommunityPartnerModal';
 
 // Category-specific gallery photos (generated unique images)
 const IMG = '/images/communities';
@@ -111,6 +112,8 @@ export default function CommunityProfile() {
   const [showPostEmojiPicker, setShowPostEmojiPicker] = useState(false);
   const [showCalendarModal, setShowCalendarModal] = useState(false);
   const [showSpecialistApply, setShowSpecialistApply] = useState(false);
+  const [showPartnerModal, setShowPartnerModal] = useState(false);
+  const [partnerModalTab, setPartnerModalTab] = useState('session');
   const fileInputRef = useRef(null);
   const searchParams = useSearchParams();
   const autoJoinParam = searchParams?.get('autoJoin');
@@ -576,8 +579,8 @@ export default function CommunityProfile() {
                     style={{ position: 'relative', zIndex: 100, width: '100%', padding: '16px', fontSize: '1.05rem', fontWeight: 700, borderRadius: '14px', boxShadow: '0 8px 24px rgba(20,184,166,0.3)', cursor: 'pointer' }}
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleJoinLeave(); }}
                   >
-                    {!user?.id ? (isPaid ? `Sign In to Join — £${subPrice}/month` : 'Sign In to Join (Free)') :
-                     isPaid ? `Join — £${subPrice}/month` : 'Join this Community — it\'s free'}
+                    {!user?.id ? (isPaid ? `Sign In to Join  -  £${subPrice}/month` : 'Sign In to Join (Free)') :
+                     isPaid ? `Join  -  £${subPrice}/month` : 'Join this Community  -  it\'s free'}
                   </button>
                 )}
                 {isPaid && !isMember && (
@@ -1621,52 +1624,79 @@ export default function CommunityProfile() {
               <TownCrossPollination currentCommunity={community} />
             </div>
 
-            {/* Specialist & Guide Partner Pitch Card */}
-            <div style={{
-              marginBottom: '32px',
-              padding: '18px 20px',
-              borderRadius: '16px',
-              background: 'linear-gradient(135deg, rgba(20, 184, 166, 0.08) 0%, rgba(15, 23, 42, 0.4) 100%)',
-              border: '1px solid rgba(45, 212, 191, 0.25)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: '16px',
-              flexWrap: 'wrap'
-            }}>
-              <div style={{ maxWidth: '460px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                  <Sparkles size={16} color="var(--teal-400)" />
-                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--teal-300)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                    Guest Collaborations & Experiences
-                  </span>
+            {/* Unified Partner & Collaborate Card (Respects leader setting) */}
+            {(community.accepts_pitches !== false) && (
+              <div style={{
+                marginBottom: '32px',
+                padding: '20px',
+                borderRadius: '18px',
+                background: 'linear-gradient(135deg, rgba(20, 184, 166, 0.1) 0%, rgba(15, 23, 42, 0.6) 100%)',
+                border: '1px solid rgba(45, 212, 191, 0.3)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '16px',
+                flexWrap: 'wrap'
+              }}>
+                <div style={{ maxWidth: '480px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                    <Sparkles size={16} color="var(--teal-400)" />
+                    <span style={{ fontSize: '0.74rem', fontWeight: 700, color: 'var(--teal-300)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                      Partner or Host with Us
+                    </span>
+                  </div>
+                  <div style={{ fontSize: '1rem', fontWeight: 800, color: '#fff', marginBottom: '3px' }}>
+                    Are you a local instructor, coach, or business?
+                  </div>
+                  <div style={{ fontSize: '0.82rem', color: 'var(--slate-300)', lineHeight: 1.45 }}>
+                    Host an in-person guest workshop, or sponsor {community?.name} with an exclusive member perk. Leaders review all pitches directly with single-tap privacy.
+                  </div>
                 </div>
-                <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#fff', marginBottom: '2px' }}>
-                  Are you a local instructor, guide, or creator?
-                </div>
-                <div style={{ fontSize: '0.8rem', color: 'var(--slate-300)', lineHeight: 1.4 }}>
-                  Propose a workshop, guest session, or meetup experience to {community?.name}. Leaders review directly with built-in club fundraising.
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPartnerModalTab('session');
+                      setShowPartnerModal(true);
+                    }}
+                    className="btn btn-outline interactive-press"
+                    style={{
+                      fontSize: '0.82rem',
+                      padding: '9px 16px',
+                      borderRadius: '10px',
+                      background: 'rgba(255, 255, 255, 0.04)',
+                      border: '1px solid rgba(45, 212, 191, 0.35)',
+                      color: 'var(--teal-300)',
+                      fontWeight: 700,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px'
+                    }}
+                  >
+                    <Calendar size={14} /> Host a Session
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPartnerModalTab('sponsor');
+                      setShowPartnerModal(true);
+                    }}
+                    className="btn btn-primary interactive-press"
+                    style={{
+                      fontSize: '0.82rem',
+                      padding: '9px 16px',
+                      borderRadius: '10px',
+                      fontWeight: 700,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px'
+                    }}
+                  >
+                    <Store size={14} /> Sponsor & Offer Perk
+                  </button>
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={() => setShowSpecialistApply(true)}
-                className="btn btn-outline interactive-press"
-                style={{
-                  fontSize: '0.82rem',
-                  padding: '8px 16px',
-                  borderRadius: '10px',
-                  background: 'rgba(255, 255, 255, 0.04)',
-                  border: '1px solid rgba(45, 212, 191, 0.3)',
-                  color: 'var(--teal-300)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px'
-                }}
-              >
-                <Sparkles size={14} /> Pitch Your Activity
-              </button>
-            </div>
+            )}
 
             {/* Reviews */}
             <div style={{ marginBottom: '32px' }}>
@@ -2221,11 +2251,14 @@ export default function CommunityProfile() {
 
             {isMember && (
               <button 
-                onClick={() => setIsServiceModalOpen(true)}
+                onClick={() => {
+                  setPartnerModalTab('sponsor');
+                  setShowPartnerModal(true);
+                }}
                 className="btn btn-primary interactive-press" 
                 style={{ width: '100%', marginTop: '24px', padding: '16px', borderRadius: '14px', fontSize: '1.05rem', fontWeight: 700, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', boxShadow: '0 8px 24px rgba(20,184,166,0.2)' }}
               >
-                <Briefcase size={18} /> Pitch a Service or Perk
+                <Store size={18} /> Offer a Member Perk or Sponsor (£15/mo)
               </button>
             )}
           </>
@@ -2242,6 +2275,13 @@ export default function CommunityProfile() {
         isOpen={showIdeaModal} 
         onClose={() => setShowIdeaModal(false)} 
         communityId={communityId} 
+      />
+
+      <CommunityPartnerModal
+        isOpen={showPartnerModal}
+        onClose={() => setShowPartnerModal(false)}
+        community={community}
+        initialTab={partnerModalTab}
       />
       
       {showReviewForm && (
