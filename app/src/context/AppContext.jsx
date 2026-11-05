@@ -1860,6 +1860,7 @@ export function AppProvider({ children }) {
       likeFeedPost,
       createFeedComment,
       whatsappSettings,
+      setWhatsappSettings,
       broadcastNotification,
       platformBroadcast,
       checkInMember,

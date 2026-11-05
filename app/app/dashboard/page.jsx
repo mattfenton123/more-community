@@ -103,6 +103,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
   // ─── State ──────────────────────────────────────────────────
   const [isEditing, setIsEditing] = useState(false);
   const [modalType, setModalType] = useState(null);
+  const [waConfig, setWaConfig] = useState({ businessConnected: false, groupLink: '' });
   const [editForm, setEditForm] = useState({ 
     name: '', category: '', description: '', location_name: '', lat: null, lng: null, cost: 'Free', target_audience: '', activity_level: 'Active', tags: [], customTagInput: '', website: '', whatsapp_group: '', instagram_handle: '' 
   });
@@ -3691,60 +3692,94 @@ export default function LeaderDashboard({ initialCommunityId }) {
           {/* TAB: SETTINGS  -  Full Config                          */}
           {/* ══════════════════════════════════════════════════════ */}
           {activeTab === 'settings' && (
-            <div style={{ padding: '0 20px', display: 'flex', flexDirection: 'column', gap: '8px', paddingBottom: '40px' }}>
-              {/* Edit Profile */}
-              <button onClick={handleEditClick} className="interactive-press" style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', color: 'var(--white)', width: '100%', cursor: 'pointer', textAlign: 'left' }}>
-                <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(236,72,153,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ec4899' }}>
+            <div style={{ padding: '0 20px', display: 'flex', flexDirection: 'column', gap: '14px', paddingBottom: '50px' }}>
+              {/* Header Title */}
+              <div style={{ marginBottom: '6px', paddingTop: '4px' }}>
+                <h2 style={{ margin: 0, fontFamily: 'var(--font-heading)', fontSize: '1.35rem', fontWeight: 700, color: 'var(--white)' }}>
+                  Settings & Controls
+                </h2>
+                <p style={{ margin: '4px 0 0', fontFamily: 'var(--font-body)', fontSize: '0.85rem', color: 'var(--slate-400)', lineHeight: 1.45 }}>
+                  Manage community identity, guidelines, messaging channels, and privacy.
+                </p>
+              </div>
+
+              {/* ─── GROUP 1: BRANDING & GUIDELINES ─── */}
+              <div style={{ fontFamily: 'var(--font-heading)', fontSize: '0.78rem', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--teal-300)', marginTop: '4px' }}>
+                Branding & Guidelines
+              </div>
+
+              {/* Edit Microsite Profile */}
+              <button 
+                type="button"
+                onClick={handleEditClick} 
+                className="interactive-press" 
+                style={{ 
+                  display: 'flex', alignItems: 'center', gap: '16px', padding: '16px 18px', 
+                  background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)', 
+                  borderRadius: '14px', color: 'var(--white)', width: '100%', cursor: 'pointer', textAlign: 'left',
+                  transition: 'border-color 0.2s, background 0.2s'
+                }}
+              >
+                <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(236,72,153,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ec4899', flexShrink: 0 }}>
                   <Edit3 size={20} />
                 </div>
-                <span style={{ flex: 1, fontWeight: 500 }}>Edit Microsite Profile</span>
-                <ChevronRight size={16} color="var(--slate-500)" />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontFamily: 'var(--font-heading)', fontSize: '0.98rem', fontWeight: 600, color: 'var(--white)', marginBottom: '2px' }}>
+                    Edit Microsite Profile
+                  </div>
+                  <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.82rem', color: 'var(--slate-400)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    Cover photo, story description, location radius, cadence & links
+                  </div>
+                </div>
+                <ChevronRight size={18} color="var(--slate-500)" style={{ flexShrink: 0 }} />
               </button>
 
-              {/* Community Guidelines & Norms */}
-              <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', overflow: 'hidden' }}>
+              {/* Community Guidelines & Norms Accordion */}
+              <div style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px', overflow: 'hidden' }}>
                 <button
                   type="button"
                   onClick={() => setIsGuidelinesExpanded(!isGuidelinesExpanded)}
                   className="interactive-press"
                   style={{
-                    display: 'flex', alignItems: 'center', gap: '16px', padding: '16px',
+                    display: 'flex', alignItems: 'center', gap: '16px', padding: '16px 18px',
                     width: '100%', background: 'transparent', border: 'none',
                     color: 'var(--white)', cursor: 'pointer', textAlign: 'left'
                   }}
                 >
-                  <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(20,184,166,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--teal-400)' }}>
+                  <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(20,184,166,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--teal-400)', flexShrink: 0 }}>
                     <BookOpen size={20} />
                   </div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                      <span style={{ fontWeight: 500, color: 'var(--white)', fontSize: '0.95rem' }}>Community Guidelines & Norms</span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '2px' }}>
+                      <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, color: 'var(--white)', fontSize: '0.98rem' }}>
+                        Community Guidelines & Norms
+                      </span>
                       {guidelinesDraft.length > 0 ? (
-                        <span style={{ fontSize: '0.7rem', padding: '2px 8px', borderRadius: '999px', background: 'rgba(20,184,166,0.2)', color: 'var(--teal-300)', fontWeight: 600 }}>
+                        <span style={{ fontFamily: 'var(--font-body)', fontSize: '0.72rem', padding: '2px 8px', borderRadius: '999px', background: 'rgba(20,184,166,0.2)', color: 'var(--teal-300)', fontWeight: 600 }}>
                           {guidelinesDraft.length} {guidelinesDraft.length === 1 ? 'Rule' : 'Rules'} Active
                         </span>
                       ) : (
-                        <span style={{ fontSize: '0.7rem', padding: '2px 8px', borderRadius: '999px', background: 'rgba(245,158,11,0.2)', color: '#fbbf24', fontWeight: 600 }}>
+                        <span style={{ fontFamily: 'var(--font-body)', fontSize: '0.72rem', padding: '2px 8px', borderRadius: '999px', background: 'rgba(245,158,11,0.2)', color: '#fbbf24', fontWeight: 600 }}>
                           Not Set
                         </span>
                       )}
                     </div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', marginTop: '2px' }}>
+                    <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.82rem', color: 'var(--slate-400)' }}>
                       Set safety expectations, pet etiquette, and welcoming norms
                     </div>
                   </div>
-                  {isGuidelinesExpanded ? <ChevronUp size={18} color="var(--slate-400)" /> : <ChevronDown size={18} color="var(--slate-400)" />}
+                  {isGuidelinesExpanded ? <ChevronUp size={18} color="var(--slate-400)" style={{ flexShrink: 0 }} /> : <ChevronDown size={18} color="var(--slate-400)" style={{ flexShrink: 0 }} />}
                 </button>
 
                 {isGuidelinesExpanded && (
-                  <div style={{ padding: '0 16px 20px 16px', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', gap: '16px', paddingTop: '16px' }}>
+                  <div style={{ padding: '0 18px 20px 18px', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', gap: '16px', paddingTop: '16px' }}>
                     {/* Pre-made template pack selector */}
                     <div>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', flexWrap: 'wrap', gap: '4px' }}>
-                        <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--teal-300)', textTransform: 'uppercase', letterSpacing: '0.04em', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ fontFamily: 'var(--font-heading)', fontSize: '0.8rem', fontWeight: 700, color: 'var(--teal-300)', textTransform: 'uppercase', letterSpacing: '0.04em', display: 'flex', alignItems: 'center', gap: '6px' }}>
                           <Sparkles size={14} /> Starter Rule Packs
                         </span>
-                        <span style={{ fontSize: '0.72rem', color: 'var(--slate-400)' }}>Pick a pack to load pre-written rules, then customize them below</span>
+                        <span style={{ fontFamily: 'var(--font-body)', fontSize: '0.75rem', color: 'var(--slate-400)' }}>Pick a pack to load pre-written rules, then customize them below</span>
                       </div>
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '8px' }}>
                         {PREMADE_GUIDELINE_PACKS.map(pack => {
@@ -3770,15 +3805,15 @@ export default function LeaderDashboard({ initialCommunityId }) {
                             >
                               <div>
                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-                                  <span style={{ fontWeight: 600, fontSize: '0.82rem', color: 'var(--white)' }}>{pack.name}</span>
+                                  <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: '0.85rem', color: 'var(--white)' }}>{pack.name}</span>
                                   {isRecommended && (
-                                    <span style={{ fontSize: '0.65rem', padding: '1px 6px', borderRadius: '4px', background: 'rgba(245,158,11,0.25)', color: '#fbbf24', fontWeight: 700 }}>
+                                    <span style={{ fontFamily: 'var(--font-body)', fontSize: '0.68rem', padding: '1px 6px', borderRadius: '4px', background: 'rgba(245,158,11,0.25)', color: '#fbbf24', fontWeight: 700 }}>
                                       Best Fit
                                     </span>
                                   )}
                                 </div>
-                                <p style={{ fontSize: '0.72rem', color: 'var(--slate-400)', margin: '0 0 6px 0', lineHeight: 1.4 }}>{pack.desc}</p>
-                                <div style={{ fontSize: '0.7rem', color: 'var(--slate-500)' }}>
+                                <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.75rem', color: 'var(--slate-400)', margin: '0 0 6px 0', lineHeight: 1.4 }}>{pack.desc}</p>
+                                <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.72rem', color: 'var(--slate-500)' }}>
                                   • {pack.rules.length} pre-written rules
                                 </div>
                               </div>
@@ -3792,7 +3827,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                                       width: '100%', padding: '8px 12px', borderRadius: '8px', border: 'none',
                                       background: isSelected ? 'var(--teal-500)' : 'rgba(20,184,166,0.2)',
                                       color: isSelected ? '#000' : 'var(--teal-300)',
-                                      fontSize: '0.76rem', fontWeight: 700, cursor: 'pointer',
+                                      fontFamily: 'var(--font-body)', fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer',
                                       display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px'
                                     }}
                                   >
@@ -3809,7 +3844,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                                         border: '1px solid rgba(20,184,166,0.3)',
                                         background: 'rgba(20,184,166,0.15)',
                                         color: 'var(--teal-300)',
-                                        fontSize: '0.74rem', fontWeight: 700, cursor: 'pointer',
+                                        fontFamily: 'var(--font-body)', fontSize: '0.76rem', fontWeight: 700, cursor: 'pointer',
                                         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px'
                                       }}
                                     >
@@ -3828,7 +3863,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                                         border: '1px solid rgba(255,255,255,0.08)',
                                         background: 'rgba(255,255,255,0.03)',
                                         color: 'var(--slate-400)',
-                                        fontSize: '0.68rem', fontWeight: 500, cursor: 'pointer',
+                                        fontFamily: 'var(--font-body)', fontSize: '0.72rem', fontWeight: 500, cursor: 'pointer',
                                         textAlign: 'center'
                                       }}
                                     >
@@ -3845,7 +3880,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
 
                     {/* Quick Inspiration Chips */}
                     <div>
-                      <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--slate-300)', marginBottom: '8px' }}>
+                      <div style={{ fontFamily: 'var(--font-heading)', fontSize: '0.78rem', fontWeight: 600, color: 'var(--slate-300)', marginBottom: '8px' }}>
                         💡 Tap any rule to add instantly:
                       </div>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
@@ -3859,12 +3894,12 @@ export default function LeaderDashboard({ initialCommunityId }) {
                               disabled={isAlreadyAdded}
                               className="interactive-press"
                               style={{
-                                padding: '5px 10px',
+                                padding: '6px 12px',
                                 borderRadius: '999px',
                                 border: isAlreadyAdded ? '1px solid rgba(255,255,255,0.04)' : '1px solid rgba(20,184,166,0.3)',
                                 background: isAlreadyAdded ? 'rgba(255,255,255,0.02)' : 'rgba(20,184,166,0.08)',
                                 color: isAlreadyAdded ? 'var(--slate-500)' : 'var(--teal-300)',
-                                fontSize: '0.72rem',
+                                fontFamily: 'var(--font-body)', fontSize: '0.75rem',
                                 cursor: isAlreadyAdded ? 'default' : 'pointer',
                                 display: 'flex',
                                 alignItems: 'center',
@@ -3882,7 +3917,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                     {/* Active Guidelines Draft List */}
                     <div>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                        <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--white)' }}>
+                        <span style={{ fontFamily: 'var(--font-heading)', fontSize: '0.85rem', fontWeight: 700, color: 'var(--white)' }}>
                           Your Group Guidelines ({guidelinesDraft.length})
                         </span>
                         {guidelinesDraft.length > 0 && (
@@ -3891,7 +3926,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                             onClick={() => {
                               if (confirm('Clear all draft guidelines?')) setGuidelinesDraft([]);
                             }}
-                            style={{ background: 'none', border: 'none', color: 'var(--rose-400)', fontSize: '0.72rem', cursor: 'pointer', padding: 0 }}
+                            style={{ background: 'none', border: 'none', color: 'var(--rose-400)', fontFamily: 'var(--font-body)', fontSize: '0.75rem', cursor: 'pointer', padding: 0 }}
                           >
                             Clear all
                           </button>
@@ -3899,7 +3934,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                       </div>
 
                       {guidelinesDraft.length === 0 ? (
-                        <div style={{ padding: '20px', borderRadius: '10px', background: 'rgba(255,255,255,0.02)', border: '1px dashed rgba(255,255,255,0.1)', textAlign: 'center', color: 'var(--slate-400)', fontSize: '0.8rem' }}>
+                        <div style={{ padding: '20px', borderRadius: '10px', background: 'rgba(255,255,255,0.02)', border: '1px dashed rgba(255,255,255,0.1)', textAlign: 'center', color: 'var(--slate-400)', fontFamily: 'var(--font-body)', fontSize: '0.82rem' }}>
                           No guidelines set yet. Choose a starter pack above or type a custom rule below.
                         </div>
                       ) : (
@@ -3909,11 +3944,11 @@ export default function LeaderDashboard({ initialCommunityId }) {
                               key={idx}
                               style={{
                                 display: 'flex', alignItems: 'center', gap: '10px',
-                                padding: '8px 12px', background: 'rgba(255,255,255,0.03)',
-                                border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px'
+                                padding: '10px 14px', background: 'rgba(255,255,255,0.03)',
+                                border: '1px solid rgba(255,255,255,0.06)', borderRadius: '10px'
                               }}
                             >
-                              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--teal-400)', minWidth: '22px' }}>
+                              <span style={{ fontFamily: 'var(--font-heading)', fontSize: '0.78rem', fontWeight: 700, color: 'var(--teal-400)', minWidth: '22px' }}>
                                 #{idx + 1}
                               </span>
                               <input
@@ -3925,7 +3960,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                                 }}
                                 style={{
                                   flex: 1, background: 'transparent', border: 'none',
-                                  color: 'var(--white)', fontSize: '0.82rem', outline: 'none'
+                                  color: 'var(--white)', fontFamily: 'var(--font-body)', fontSize: '0.85rem', outline: 'none'
                                 }}
                               />
                               <button
@@ -3952,7 +3987,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                         style={{
                           flex: 1, padding: '10px 14px', background: 'rgba(255,255,255,0.04)',
                           border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px',
-                          color: 'var(--white)', fontSize: '0.82rem', outline: 'none'
+                          color: 'var(--white)', fontFamily: 'var(--font-body)', fontSize: '0.85rem', outline: 'none'
                         }}
                       />
                       <button
@@ -3963,7 +3998,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                           padding: '0 16px', background: newGuidelineInput.trim() ? 'rgba(20,184,166,0.2)' : 'rgba(255,255,255,0.05)',
                           border: newGuidelineInput.trim() ? '1px solid rgba(20,184,166,0.4)' : '1px solid rgba(255,255,255,0.08)',
                           borderRadius: '8px', color: newGuidelineInput.trim() ? 'var(--teal-300)' : 'var(--slate-500)',
-                          fontSize: '0.8rem', fontWeight: 700, cursor: newGuidelineInput.trim() ? 'pointer' : 'default',
+                          fontFamily: 'var(--font-body)', fontSize: '0.82rem', fontWeight: 700, cursor: newGuidelineInput.trim() ? 'pointer' : 'default',
                           display: 'flex', alignItems: 'center', gap: '4px'
                         }}
                       >
@@ -3973,7 +4008,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
 
                     {/* Save Guidelines Action Bar */}
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '8px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                      <span style={{ fontSize: '0.72rem', color: 'var(--slate-400)' }}>
+                      <span style={{ fontFamily: 'var(--font-body)', fontSize: '0.75rem', color: 'var(--slate-400)' }}>
                         Changes are published to your community microsite immediately.
                       </span>
                       <button
@@ -3982,7 +4017,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                         disabled={isSavingGuidelines}
                         className="btn btn-primary interactive-press"
                         style={{
-                          padding: '8px 18px', fontSize: '0.82rem', borderRadius: '8px',
+                          padding: '8px 18px', fontSize: '0.85rem', borderRadius: '8px',
                           display: 'flex', alignItems: 'center', gap: '6px'
                         }}
                       >
@@ -3993,34 +4028,87 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 )}
               </div>
 
-              {/* WhatsApp */}
-              <button onClick={() => { setWaConfig(whatsappSettings[community.id] || { businessConnected: false, groupLink: community.whatsapp_group || '' }); setModalType('whatsapp'); }} className="interactive-press" style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', color: 'var(--white)', width: '100%', cursor: 'pointer', textAlign: 'left' }}>
-                <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(34,197,94,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#22c55e' }}>
-                  <MessageCircle size={20} />
+              {/* ─── GROUP 2: CHAT & MESSAGING ─── */}
+              <div style={{ fontFamily: 'var(--font-heading)', fontSize: '0.78rem', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--teal-300)', marginTop: '8px' }}>
+                Communication & Messaging
+              </div>
+
+              {/* WhatsApp Integration Button */}
+              <button 
+                type="button"
+                onClick={() => { 
+                  const existingWa = (whatsappSettings && community?.id && whatsappSettings[community.id]) || {};
+                  setWaConfig({ 
+                    businessConnected: Boolean(existingWa.businessConnected), 
+                    groupLink: existingWa.groupLink || community?.whatsapp_group || '' 
+                  }); 
+                  setModalType('whatsapp'); 
+                }} 
+                className="interactive-press" 
+                style={{ 
+                  display: 'flex', alignItems: 'center', gap: '16px', padding: '16px 18px', 
+                  background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)', 
+                  borderRadius: '14px', color: 'var(--white)', width: '100%', cursor: 'pointer', textAlign: 'left',
+                  transition: 'border-color 0.2s, background 0.2s'
+                }}
+              >
+                <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(37,211,102,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#25D366', flexShrink: 0 }}>
+                  <MessageCircle size={22} />
                 </div>
-                <span style={{ flex: 1, fontWeight: 500 }}>WhatsApp Integration</span>
-                <ChevronRight size={16} color="var(--slate-500)" />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '2px' }}>
+                    <span style={{ fontFamily: 'var(--font-heading)', fontSize: '0.98rem', fontWeight: 600, color: 'var(--white)' }}>
+                      WhatsApp Integration
+                    </span>
+                    {community?.whatsapp_group || (whatsappSettings && community?.id && whatsappSettings[community.id]?.groupLink) ? (
+                      <span style={{ fontFamily: 'var(--font-body)', fontSize: '0.72rem', padding: '2px 8px', borderRadius: '999px', background: 'rgba(37,211,102,0.2)', color: '#25D366', fontWeight: 600 }}>
+                        Active Link
+                      </span>
+                    ) : (
+                      <span style={{ fontFamily: 'var(--font-body)', fontSize: '0.72rem', padding: '2px 8px', borderRadius: '999px', background: 'rgba(255,255,255,0.06)', color: 'var(--slate-400)', fontWeight: 600 }}>
+                        Not Set
+                      </span>
+                    )}
+                  </div>
+                  <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.82rem', color: 'var(--slate-400)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    Connect official group chat link & toggle WhatsApp meetup alerts
+                  </div>
+                </div>
+                <ChevronRight size={18} color="var(--slate-500)" style={{ flexShrink: 0 }} />
               </button>
 
+              {/* ─── GROUP 3: ACCESS & SAFETY ─── */}
+              <div style={{ fontFamily: 'var(--font-heading)', fontSize: '0.78rem', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--teal-300)', marginTop: '8px' }}>
+                Access & Collaboration
+              </div>
+
               {/* Community Visibility */}
-              <div style={{ padding: '16px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px' }}>
+              <div style={{ padding: '16px 18px', background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '12px' }}>
-                  <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(59,130,246,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3b82f6' }}>
+                  <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(59,130,246,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3b82f6', flexShrink: 0 }}>
                     {communityVisibility === 'public' ? <Eye size={20} /> : <EyeOff size={20} />}
                   </div>
-                  <span style={{ fontWeight: 500, color: 'var(--white)' }}>Community Visibility</span>
+                  <div>
+                    <div style={{ fontFamily: 'var(--font-heading)', fontSize: '0.98rem', fontWeight: 600, color: 'var(--white)', marginBottom: '2px' }}>
+                      Community Visibility
+                    </div>
+                    <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.82rem', color: 'var(--slate-400)' }}>
+                      Control who can discover and preview your group
+                    </div>
+                  </div>
                 </div>
-                <div style={{ display: 'flex', gap: '6px' }}>
+                <div style={{ display: 'flex', gap: '8px' }}>
                   {['public', 'private', 'invite-only'].map(v => (
                     <button key={v} onClick={() => { 
                       setCommunityVisibility(v);
                       updateCommunity(community.id, { visibility: v });
                       toast.info('Visibility updated', `Community is now ${v}`);
                     }} className="interactive-press" style={{
-                      flex: 1, padding: '10px', borderRadius: '8px', border: 'none',
-                      background: communityVisibility === v ? 'rgba(20,184,166,0.15)' : 'rgba(255,255,255,0.03)',
+                      flex: 1, padding: '10px 12px', borderRadius: '8px', border: 'none',
+                      background: communityVisibility === v ? 'rgba(20,184,166,0.2)' : 'rgba(255,255,255,0.03)',
+                      border: communityVisibility === v ? '1px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.05)',
                       color: communityVisibility === v ? 'var(--teal-300)' : 'var(--slate-400)',
-                      fontSize: '0.75rem', fontWeight: 600, textTransform: 'capitalize', cursor: 'pointer'
+                      fontFamily: 'var(--font-body)', fontSize: '0.78rem', fontWeight: 600, textTransform: 'capitalize', cursor: 'pointer'
                     }}>
                       {v}
                     </button>
@@ -4029,72 +4117,113 @@ export default function LeaderDashboard({ initialCommunityId }) {
               </div>
 
               {/* Member Approval */}
-              <div style={{ padding: '16px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '16px' }}>
-                <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(139,92,246,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#a78bfa' }}>
+              <div style={{ padding: '16px 18px', background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px', display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(139,92,246,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#a78bfa', flexShrink: 0 }}>
                   <Shield size={20} />
                 </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 500, color: 'var(--white)', marginBottom: '2px' }}>Require Approval</div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--slate-500)' }}>New members must be approved</div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontFamily: 'var(--font-heading)', fontSize: '0.98rem', fontWeight: 600, color: 'var(--white)', marginBottom: '2px' }}>
+                    Require Member Approval
+                  </div>
+                  <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.82rem', color: 'var(--slate-400)' }}>
+                    New members must be vetted and approved before accessing chat
+                  </div>
                 </div>
-                <button onClick={() => { 
+                <button 
+                  type="button"
+                  onClick={() => { 
                     const newVal = !requireApproval;
                     setRequireApproval(newVal); 
                     updateCommunity(community.id, { require_approval: newVal });
                     toast.info(newVal ? 'Approval required' : 'Auto-approve enabled', newVal ? 'You\'ll review join requests' : 'Members join instantly'); 
-                  }} style={{
-                  width: '44px', height: '24px', borderRadius: '99px', border: 'none',
-                  background: requireApproval ? 'var(--teal-500)' : 'rgba(255,255,255,0.1)',
-                  position: 'relative', cursor: 'pointer', transition: 'background 0.2s'
-                }}>
-                  <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: 'white', position: 'absolute', top: '2px', left: requireApproval ? '22px' : '2px', transition: 'left 0.2s' }}></div>
+                  }} 
+                  style={{
+                    width: '46px', height: '26px', borderRadius: '99px', border: 'none',
+                    background: requireApproval ? 'var(--teal-500)' : 'rgba(255,255,255,0.1)',
+                    position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0
+                  }}
+                >
+                  <div style={{ width: '22px', height: '22px', borderRadius: '50%', background: 'white', position: 'absolute', top: '2px', left: requireApproval ? '22px' : '2px', transition: 'left 0.2s' }}></div>
                 </button>
               </div>
 
-              {/* Accept Collaborations & Sponsor Pitches Toggle */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px' }}>
-                <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(20,184,166,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--teal-400)' }}>
+              {/* Accept Guest Sessions & Sponsor Pitches Toggle */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px 18px', background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px' }}>
+                <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(20,184,166,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--teal-400)', flexShrink: 0 }}>
                   <Sparkles size={20} />
                 </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 500, color: 'var(--white)', marginBottom: '2px' }}>Accept Guest Sessions & Sponsor Pitches</div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>Allow local guides, instructors & businesses to pitch sessions or member perks</div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontFamily: 'var(--font-heading)', fontSize: '0.98rem', fontWeight: 600, color: 'var(--white)', marginBottom: '2px' }}>
+                    Accept Guest Sessions & Sponsor Pitches
+                  </div>
+                  <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.82rem', color: 'var(--slate-400)' }}>
+                    Allow local guides, instructors & businesses to pitch sessions or member perks
+                  </div>
                 </div>
-                <button onClick={() => { 
+                <button 
+                  type="button"
+                  onClick={() => { 
                     const newVal = !(community.accepts_pitches ?? true);
                     updateCommunity(community.id, { accepts_pitches: newVal });
                     toast.info(newVal ? 'Collaborations Enabled' : 'Collaborations Disabled', newVal ? 'Instructors & sponsors can propose sessions' : 'Incoming pitches hidden from your page'); 
-                  }} style={{
-                  width: '44px', height: '24px', borderRadius: '99px', border: 'none',
-                  background: (community.accepts_pitches ?? true) ? 'var(--teal-500)' : 'rgba(255,255,255,0.1)',
-                  position: 'relative', cursor: 'pointer', transition: 'background 0.2s'
-                }}>
-                  <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: 'white', position: 'absolute', top: '2px', left: (community.accepts_pitches ?? true) ? '22px' : '2px', transition: 'left 0.2s' }}></div>
+                  }} 
+                  style={{
+                    width: '46px', height: '26px', borderRadius: '99px', border: 'none',
+                    background: (community.accepts_pitches ?? true) ? 'var(--teal-500)' : 'rgba(255,255,255,0.1)',
+                    position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0
+                  }}
+                >
+                  <div style={{ width: '22px', height: '22px', borderRadius: '50%', background: 'white', position: 'absolute', top: '2px', left: (community.accepts_pitches ?? true) ? '22px' : '2px', transition: 'left 0.2s' }}></div>
                 </button>
               </div>
 
+              {/* ─── GROUP 4: DATA & ADVANCED ─── */}
+              <div style={{ fontFamily: 'var(--font-heading)', fontSize: '0.78rem', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--teal-300)', marginTop: '8px' }}>
+                Data & Advanced
+              </div>
+
               {/* Export Data */}
-              <button onClick={handleExportCSV} className="interactive-press" style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', color: 'var(--white)', width: '100%', cursor: 'pointer', textAlign: 'left' }}>
-                <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(20,184,166,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--teal-400)' }}>
+              <button 
+                type="button"
+                onClick={handleExportCSV} 
+                className="interactive-press" 
+                style={{ 
+                  display: 'flex', alignItems: 'center', gap: '16px', padding: '16px 18px', 
+                  background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)', 
+                  borderRadius: '14px', color: 'var(--white)', width: '100%', cursor: 'pointer', textAlign: 'left',
+                  transition: 'border-color 0.2s, background 0.2s'
+                }}
+              >
+                <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(20,184,166,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--teal-400)', flexShrink: 0 }}>
                   <Download size={20} />
                 </div>
-                <span style={{ flex: 1, fontWeight: 500 }}>Export Member Data (CSV)</span>
-                <ChevronRight size={16} color="var(--slate-500)" />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontFamily: 'var(--font-heading)', fontSize: '0.98rem', fontWeight: 600, color: 'var(--white)', marginBottom: '2px' }}>
+                    Export Member Roster (CSV)
+                  </div>
+                  <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.82rem', color: 'var(--slate-400)' }}>
+                    Download member names, join dates, and engagement stats
+                  </div>
+                </div>
+                <ChevronRight size={18} color="var(--slate-500)" style={{ flexShrink: 0 }} />
               </button>
 
               {/* Danger Zone */}
-              <div style={{ marginTop: '16px', padding: '16px', background: 'rgba(239,68,68,0.03)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '14px' }}>
+              <div style={{ marginTop: '8px', padding: '18px 20px', background: 'rgba(239,68,68,0.03)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: '14px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
                   <Trash2 size={16} color="#ef4444" />
-                  <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#ef4444', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Danger Zone</div>
+                  <div style={{ fontFamily: 'var(--font-heading)', fontSize: '0.82rem', fontWeight: 700, color: '#ef4444', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                    Danger Zone
+                  </div>
                 </div>
-                <p style={{ color: 'var(--slate-400)', fontSize: '0.85rem', margin: '0 0 14px 0', lineHeight: 1.5 }}>
+                <p style={{ fontFamily: 'var(--font-body)', color: 'var(--slate-400)', fontSize: '0.84rem', margin: '0 0 14px 0', lineHeight: 1.5 }}>
                   Permanently delete this community, its upcoming events, tickets, discussion channels, and member relationships.
                 </p>
                 <button 
+                  type="button"
                   onClick={() => { setIsDeleteModalOpen(true); setDeleteConfirmText(''); setDeleteConfirmChecked(false); }} 
                   className="btn btn-danger interactive-press" 
-                  style={{ width: '100%', padding: '12px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontWeight: 600 }}
+                  style={{ width: '100%', padding: '12px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontWeight: 600, fontFamily: 'var(--font-body)', fontSize: '0.88rem' }}
                 >
                   <Trash2 size={16} /> Delete Community
                 </button>
@@ -4110,19 +4239,31 @@ export default function LeaderDashboard({ initialCommunityId }) {
       {/* MODALS                                                   */}
       {/* ══════════════════════════════════════════════════════════ */}
       {(isEditing || (modalType && modalType !== 'community')) && (
-        <div className="modal-overlay" style={{ display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
-          <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h2 style={{ margin: 0, fontSize: '1.2rem', fontFamily: 'var(--font-heading)', color: 'var(--white)' }}>
-              {isEditing ? 'Edit Profile' : 
-               modalType === 'event' ? (eventForm.resolvedDates && eventForm.resolvedDates.length > 1 ? `Create Schedule (${eventForm.resolvedDates.length} Events)` : 'Create Event') : 
-               modalType === 'edit-event' ? 'Edit Event' :
-               modalType === 'members' ? 'Manage Members' : 
-               modalType === 'whatsapp' ? 'WhatsApp Integration' : 'Promote Co-Leader'}
-            </h2>
-            <button onClick={() => { setIsEditing(false); setModalType(null); setEditingEventId(null); setCoLeaderSearch(''); }} className="interactive-press" style={{ background: 'rgba(255,255,255,0.05)', border: 'none', color: 'var(--white)', cursor: 'pointer', width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <X size={18} />
-            </button>
-          </div>
+        <div className="modal-overlay" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', zIndex: 10000 }}>
+          <div className="glass-panel" style={{
+            width: '100%',
+            maxWidth: modalType === 'whatsapp' ? '540px' : modalType === 'coleader' ? '540px' : (isEditing || modalType === 'event' || modalType === 'edit-event') ? '680px' : '580px',
+            maxHeight: '90vh',
+            display: 'flex',
+            flexDirection: 'column',
+            borderRadius: '20px',
+            background: '#0b1120',
+            border: '1px solid rgba(255,255,255,0.12)',
+            boxShadow: '0 25px 60px rgba(0,0,0,0.7)',
+            overflow: 'hidden'
+          }}>
+            <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h2 style={{ margin: 0, fontSize: '1.2rem', fontFamily: 'var(--font-heading)', color: 'var(--white)' }}>
+                {isEditing ? 'Edit Profile' : 
+                 modalType === 'event' ? (eventForm.resolvedDates && eventForm.resolvedDates.length > 1 ? `Create Schedule (${eventForm.resolvedDates.length} Events)` : 'Create Event') : 
+                 modalType === 'edit-event' ? 'Edit Event' :
+                 modalType === 'members' ? 'Manage Members' : 
+                 modalType === 'whatsapp' ? 'WhatsApp Integration' : 'Promote Co-Leader'}
+              </h2>
+              <button onClick={() => { setIsEditing(false); setModalType(null); setEditingEventId(null); setCoLeaderSearch(''); }} className="interactive-press" style={{ background: 'rgba(255,255,255,0.05)', border: 'none', color: 'var(--white)', cursor: 'pointer', width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <X size={18} />
+              </button>
+            </div>
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', flex: 1, overflowY: 'auto', padding: '20px' }}>
             {/* Edit Profile */}
@@ -4471,20 +4612,71 @@ export default function LeaderDashboard({ initialCommunityId }) {
 
             {/* WhatsApp Settings */}
             {modalType === 'whatsapp' && (
-              <div style={{ color: 'var(--white)' }}>
-                <p style={{ color: 'var(--slate-400)', marginBottom: '24px', fontSize: '0.9rem' }}>Bridge your community with WhatsApp. Enable the Business API for native chat sync, or provide a group link as a fallback.</p>
-                <div style={{ marginBottom: '24px', padding: '16px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                    <div style={{ fontWeight: 600 }}>Business API Sync (CRM)</div>
-                    <button onClick={() => setWaConfig({...waConfig, businessConnected: !waConfig.businessConnected})} style={{ background: waConfig.businessConnected ? 'var(--teal-500)' : 'var(--slate-700)', border: 'none', borderRadius: '16px', width: '40px', height: '24px', position: 'relative', cursor: 'pointer', transition: 'background 0.2s' }}>
-                      <div style={{ position: 'absolute', top: '2px', left: waConfig.businessConnected ? '18px' : '2px', width: '20px', height: '20px', background: 'white', borderRadius: '50%', transition: 'left 0.2s' }}></div>
+              <div style={{ color: 'var(--white)', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '16px', background: 'rgba(37,211,102,0.08)', border: '1px solid rgba(37,211,102,0.25)', borderRadius: '14px' }}>
+                  <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: '#25D366', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#000', flexShrink: 0 }}>
+                    <MessageCircle size={24} />
+                  </div>
+                  <div>
+                    <h4 style={{ margin: 0, fontFamily: 'var(--font-heading)', fontSize: '1.05rem', fontWeight: 700, color: 'var(--white)' }}>
+                      WhatsApp & Community Chat Bridge
+                    </h4>
+                    <p style={{ margin: '2px 0 0', fontFamily: 'var(--font-body)', fontSize: '0.82rem', color: 'var(--slate-300)', lineHeight: 1.4 }}>
+                      Bridge your community with WhatsApp so members can stay connected in your group chat and receive automated meetup alerts.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Section 1: Official Group Invite Link */}
+                <div style={{ padding: '16px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px' }}>
+                  <label style={{ display: 'block', fontFamily: 'var(--font-heading)', fontSize: '0.92rem', fontWeight: 600, color: 'var(--white)', marginBottom: '4px' }}>
+                    WhatsApp Group Invite Link
+                  </label>
+                  <p style={{ margin: '0 0 10px', fontFamily: 'var(--font-body)', fontSize: '0.8rem', color: 'var(--slate-400)' }}>
+                    Members can tap this link directly from your community microsite and event pages to join your WhatsApp chat.
+                  </p>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <input
+                      type="url"
+                      placeholder="https://chat.whatsapp.com/..."
+                      value={waConfig.groupLink || ''}
+                      onChange={e => setWaConfig(prev => ({ ...prev, groupLink: e.target.value }))}
+                      style={{ flex: 1, padding: '12px 14px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '10px', color: 'var(--white)', fontFamily: 'var(--font-body)', fontSize: '0.88rem' }}
+                    />
+                    {waConfig.groupLink?.trim() && (
+                      <a
+                        href={waConfig.groupLink.startsWith('http') ? waConfig.groupLink : `https://${waConfig.groupLink}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn btn-outline interactive-press"
+                        style={{ padding: '10px 14px', borderRadius: '10px', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap', textDecoration: 'none', color: '#25D366', borderColor: 'rgba(37,211,102,0.4)' }}
+                      >
+                        <ExternalLink size={14} /> Test
+                      </a>
+                    )}
+                  </div>
+                </div>
+
+                {/* Section 2: Automated WhatsApp Reminders & CRM Sync */}
+                <div style={{ padding: '16px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                    <div style={{ fontFamily: 'var(--font-heading)', fontSize: '0.92rem', fontWeight: 600, color: 'var(--white)' }}>
+                      Automated Meetup Reminders (WhatsApp Cloud API)
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setWaConfig(prev => ({ ...prev, businessConnected: !prev.businessConnected }))}
+                      style={{
+                        background: waConfig.businessConnected ? 'var(--teal-500)' : 'var(--slate-700)',
+                        border: 'none', borderRadius: '16px', width: '44px', height: '24px', position: 'relative', cursor: 'pointer', transition: 'background 0.2s'
+                      }}
+                    >
+                      <div style={{ position: 'absolute', top: '2px', left: waConfig.businessConnected ? '22px' : '2px', width: '20px', height: '20px', background: 'white', borderRadius: '50%', transition: 'left 0.2s' }}></div>
                     </button>
                   </div>
-                  <p style={{ fontSize: '0.8rem', color: 'var(--slate-400)', margin: 0 }}>Syncs app chat with members' personal WhatsApp numbers.</p>
-                </div>
-                <div style={{ marginBottom: '16px' }}>
-                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', fontWeight: 600 }}>Fallback Group Link</label>
-                  <input placeholder="https://chat.whatsapp.com/..." value={waConfig.groupLink} onChange={e => setWaConfig({...waConfig, groupLink: e.target.value})} style={{ width: '100%', padding: '12px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'var(--white)' }} />
+                  <p style={{ margin: 0, fontFamily: 'var(--font-body)', fontSize: '0.8rem', color: 'var(--slate-400)', lineHeight: 1.4 }}>
+                    When enabled, More Community automatically sends registered attendees a polite WhatsApp reminder 24 hours and 2 hours before every scheduled meetup.
+                  </p>
                 </div>
               </div>
             )}
@@ -4546,6 +4738,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
               </button>
             </div>
           ) : null}
+          </div> {/* closes inner modal card */}
         </div>
       )}
 

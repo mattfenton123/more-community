@@ -1445,30 +1445,99 @@ textarea.form-input {
   }
 }
 /* Global App Desktop Layout overrides */
-@media (min-width: 768px) {
+@media (min-width: 1024px) {
   body {
-    background: #000;
+    background: #020617;
   }
   
   .app-container {
-    max-width: 480px !important;
+    max-width: 1280px !important;
+    width: 100% !important;
     margin: 0 auto;
-    border-left: 1px solid rgba(255,255,255,0.1);
-    border-right: 1px solid rgba(255,255,255,0.1);
+    border-left: 1px solid rgba(255,255,255,0.06);
+    border-right: 1px solid rgba(255,255,255,0.06);
     position: relative;
-    transform: translateZ(0); /* Forces position: fixed to be relative to this container */
+    transform: none !important;
     height: 100dvh;
     background: var(--slate-950);
-    box-shadow: 0 0 50px rgba(0,0,0,0.5);
+    box-shadow: 0 0 60px rgba(0,0,0,0.6);
   }
 
   .app-container.desktop-mode {
-    max-width: 1440px !important;
+    max-width: 1400px !important;
     width: 100% !important;
     border-left: 1px solid rgba(255,255,255,0.08);
     border-right: 1px solid rgba(255,255,255,0.08);
-    transform: none !important; /* Prevents trapping fixed modals within mobile container bounds */
+    transform: none !important;
   }
+
+  /* Desktop Header Nav Bar */
+  .desktop-nav-bar {
+    display: flex !important;
+  }
+
+  /* Hide floating bottom phone navigation bar on desktop */
+  .bottom-nav {
+    display: none !important;
+  }
+
+  .app-content {
+    padding-bottom: 24px !important;
+  }
+
+  /* Desktop Feed 2-Column Layout */
+  .desktop-feed-layout {
+    display: flex !important;
+    gap: 28px !important;
+    align-items: flex-start !important;
+    max-width: 1140px !important;
+    margin: 0 auto !important;
+  }
+
+  .desktop-feed-main {
+    flex: 1 !important;
+    min-width: 0 !important;
+    max-width: 720px !important;
+  }
+
+  .desktop-feed-sidebar {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 20px !important;
+    width: 360px !important;
+    flex-shrink: 0 !important;
+    position: sticky !important;
+    top: 20px !important;
+  }
+
+  /* Responsive Grids on Desktop */
+  .desktop-grid-layout {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)) !important;
+    gap: 20px !important;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  body {
+    background: #020617;
+  }
+  
+  .app-container {
+    max-width: 680px !important;
+    margin: 0 auto;
+    border-left: 1px solid rgba(255,255,255,0.08);
+    border-right: 1px solid rgba(255,255,255,0.08);
+    position: relative;
+    transform: none !important;
+    height: 100dvh;
+    background: var(--slate-950);
+  }
+
+  .app-container.desktop-mode {
+    max-width: 760px !important;
+  }
+}
 
   /* Desktop Modal Centering */
   .modal-overlay {
@@ -1490,7 +1559,6 @@ textarea.form-input {
     box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7) !important;
     margin: auto !important;
   }
-}
 
 button, [role="button"] {
   cursor: pointer;

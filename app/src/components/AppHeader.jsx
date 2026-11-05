@@ -1,10 +1,13 @@
 "use client";
-import { useRouter as useNavigate } from 'next/navigation';
+import { useRouter as useNavigate, usePathname } from 'next/navigation';
+import Link from 'next/link';
+import { Activity, Compass, Calendar, Sparkles, MessageCircle } from 'lucide-react';
 import { ChevronLeft, Bell, Sun, Moon, Monitor } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 
 export default function AppHeader({ title, subtitle, rightElement, showBack = false, onBack, avatar, onAvatarClick }) {
   const navigate = useNavigate();
+  const currentPath = usePathname();
   const { user, notifications, theme, setTheme } = useAppContext();
   const unreadCount = notifications ? notifications.filter(n => !n.is_read).length : 0;
 

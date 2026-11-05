@@ -599,8 +599,10 @@ export default function HomeFeed() {
         )}
       </div>
 
-      {/* Segmented Feed Control */}
-      <div style={{ padding: '0 20px' }}>
+      <div className="desktop-feed-layout">
+        <div className="desktop-feed-main">
+          {/* Segmented Feed Control */}
+          <div style={{ padding: '0 20px' }}>
         <div className="segmented-control">
           {['Feed', 'Events', 'Ideas'].map(tab => (
             <button 
@@ -908,6 +910,120 @@ export default function HomeFeed() {
           </div>
         )}
       </div>
+    </div>
+
+    {/* Desktop Sidebar (visible on screens >= 1024px) */}
+    <div className="desktop-feed-sidebar" style={{ display: 'none' }}>
+      {/* Upcoming Events Card */}
+      <div style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '18px 16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+          <div style={{ fontFamily: 'var(--font-heading)', fontSize: '0.95rem', fontWeight: 700, color: 'var(--white)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Calendar size={16} color="var(--teal-400)" /> Upcoming Meetups
+          </div>
+          <button onClick={() => router.push('/events')} style={{ background: 'none', border: 'none', color: 'var(--teal-300)', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', padding: 0 }}>
+            View all →
+          </button>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          {events?.filter(e => isEventUpcoming(e)).slice(0, 3).map(ev => {
+            const comm = communities.find(c => c.id === ev.communityId);
+            return (
+              <div
+                key={ev.id}
+                onClick={() => router.push(getEventPath(ev, events))}
+                className="interactive-press"
+                style={{
+                  display: 'flex', gap: '12px', alignItems: 'center', padding: '10px',
+                  borderRadius: '10px', background: 'rgba(255,255,255,0.02)',
+                  border: '1px solid rgba(255,255,255,0.04)', cursor: 'pointer'
+                }}
+              >
+                <div style={{
+                  width: '42px', height: '42px', borderRadius: '10px',
+                  background: 'rgba(20,184,166,0.15)', border: '1px solid rgba(20,184,166,0.3)',
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                  flexShrink: 0
+                }}>
+                  <span style={{ fontSize: '0.62rem', fontWeight: 700, color: 'var(--teal-400)', textTransform: 'uppercase' }}>
+                    {(ev.date || '').split(' ')?.[1]?.slice(0, 3) || 'Meet'}
+                  </span>
+                  <span style={{ fontSize: '0.88rem', fontWeight: 800, color: 'var(--white)', lineHeight: 1 }}>
+                    {(ev.date || '').split(' ')?.[0] || '•'}
+                  </span>
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontFamily: 'var(--font-heading)', fontSize: '0.85rem', fontWeight: 600, color: 'var(--white)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {ev.title}
+                  </div>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {comm?.name || cleanLocationName(ev.location)}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Recommended Clubs Nearby */}
+      <div style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '18px 16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+          <div style={{ fontFamily: 'var(--font-heading)', fontSize: '0.95rem', fontWeight: 700, color: 'var(--white)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Compass size={16} color="var(--teal-400)" /> Local Clubs
+          </div>
+          <button onClick={() => router.push('/discover')} style={{ background: 'none', border: 'none', color: 'var(--teal-300)', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', padding: 0 }}>
+            Explore →
+          </button>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          {communities?.slice(0, 3).map(comm => (
+            <div
+              key={comm.id}
+              onClick={() => router.push(`/community/${comm.id}`)}
+              className="interactive-press"
+              style={{
+                display: 'flex', gap: '12px', alignItems: 'center', padding: '10px',
+                borderRadius: '10px', background: 'rgba(255,255,255,0.02)',
+                border: '1px solid rgba(255,255,255,0.04)', cursor: 'pointer'
+              }}
+            >
+              <img
+                src={comm.image || 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=80&q=80'}
+                alt={comm.name}
+                style={{ width: '38px', height: '38px', borderRadius: '10px', objectFit: 'cover', flexShrink: 0 }}
+              />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontFamily: 'var(--font-heading)', fontSize: '0.85rem', fontWeight: 600, color: 'var(--white)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {comm.name}
+                </div>
+                <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)' }}>
+                  {comm.location || 'Local Community'}
+                </div>
+              </div>
+              <span style={{ fontSize: '0.75rem', color: 'var(--teal-300)', fontWeight: 600 }}>View</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Start a Community Hub Card */}
+      <div style={{ background: 'linear-gradient(135deg, rgba(20,184,166,0.12), rgba(59,130,246,0.08))', border: '1px solid rgba(20,184,166,0.25)', borderRadius: '16px', padding: '18px 16px' }}>
+        <div style={{ fontFamily: 'var(--font-heading)', fontSize: '0.95rem', fontWeight: 700, color: 'var(--white)', marginBottom: '4px' }}>
+          Start Your Own Community
+        </div>
+        <p style={{ margin: '0 0 12px 0', fontFamily: 'var(--font-body)', fontSize: '0.78rem', color: 'var(--slate-300)', lineHeight: 1.45 }}>
+          Free microsite, zero fees, ticketing, and member management. 100% free forever for local leaders.
+        </p>
+        <button
+          onClick={() => router.push('/create-community')}
+          className="btn btn-primary interactive-press"
+          style={{ width: '100%', padding: '10px', borderRadius: '10px', fontSize: '0.82rem', fontWeight: 700 }}
+        >
+          + Launch a Club in 60s
+        </button>
+      </div>
+    </div>
+  </div>
     </div>
   );
 }

@@ -382,7 +382,7 @@ export default function Discover() {
           
           {activePill === 'For You' && (
             <>
-              <div style={{ margin: '0 20px 16px', fontSize: '0.85rem', color: 'var(--teal-400)', background: 'rgba(20,184,166,0.1)', padding: '8px 12px', borderRadius: '8px', border: '1px solid rgba(20,184,166,0.2)' }}>
+              <div style={{ margin: '0 0 16px', fontSize: '0.85rem', color: 'var(--teal-400)', background: 'rgba(20,184,166,0.1)', padding: '8px 12px', borderRadius: '8px', border: '1px solid rgba(20,184,166,0.2)' }}>
                 Based on your interests, location, and similar users in your area.
               </div>
               <SwipeDiscovery 
@@ -469,6 +469,7 @@ export default function Discover() {
                   </div>
                 </div>
               )}
+              <div className="desktop-grid-layout" style={{ padding: '0 20px' }}>
               {filteredCommunities.map((community, index) => {
                 const isMember = Boolean(user?.joinedCommunities?.includes(community.id));
                 const memberCount = getMemberCount(community.id);
@@ -485,7 +486,7 @@ export default function Discover() {
                       <div 
                         onClick={() => navigate.push('/sponsors/' + globalSponsor.id)} 
                         className="stagger-item interactive-press" 
-                        style={{ margin: '0 20px 16px', borderRadius: '16px', overflow: 'hidden', background: 'rgba(234,179,8,0.05)', backdropFilter: 'blur(10px)', boxShadow: '0 4px 16px rgba(0,0,0,0.1)', border: '1px solid rgba(234,179,8,0.3)', transition: 'all 0.3s', cursor: 'pointer', position: 'relative' }}
+                        style={{ margin: '0 0 16px', borderRadius: '16px', overflow: 'hidden', background: 'rgba(234,179,8,0.05)', backdropFilter: 'blur(10px)', boxShadow: '0 4px 16px rgba(0,0,0,0.1)', border: '1px solid rgba(234,179,8,0.3)', transition: 'all 0.3s', cursor: 'pointer', position: 'relative' }}
                         onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(234,179,8,0.6)'; e.currentTarget.style.transform = 'scale(1.02)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.2)'; }}
                         onMouseOut={e => { e.currentTarget.style.borderColor = 'rgba(234,179,8,0.3)'; e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.1)'; }}
                       >
@@ -518,7 +519,7 @@ export default function Discover() {
 
                     <div 
                       className="stagger-item interactive-press" 
-                      style={{ margin: '0 20px 16px', borderRadius: '16px', overflow: 'hidden', background: 'rgba(255,255,255,0.02)', backdropFilter: 'blur(10px)', boxShadow: '0 4px 16px rgba(0,0,0,0.1)', border: '1px solid rgba(255,255,255,0.06)', transition: 'all 0.3s', cursor: 'pointer' }}
+                      style={{ margin: '0 0 16px', borderRadius: '16px', overflow: 'hidden', background: 'rgba(255,255,255,0.02)', backdropFilter: 'blur(10px)', boxShadow: '0 4px 16px rgba(0,0,0,0.1)', border: '1px solid rgba(255,255,255,0.06)', transition: 'all 0.3s', cursor: 'pointer' }}
                     onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'; e.currentTarget.style.transform = 'scale(1.02)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.2)'; }}
                     onMouseOut={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)'; e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = 'none'; }}
                   >
@@ -619,6 +620,8 @@ export default function Discover() {
                   <p style={{ fontSize: '0.9rem' }}>Try a different search or filter.</p>
                 </div>
               )}
+
+              </div> {/* closes desktop-grid-layout */}
 
               {/* Create CTA */}
               <div 

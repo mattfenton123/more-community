@@ -144,7 +144,7 @@ function MainLayout({ children }) {
   const isDashboard = currentPath?.startsWith('/dashboard') || currentPath?.startsWith('/council-dashboard') || currentPath?.startsWith('/admin');
   const isChatRoom = currentPath?.match(/^\/chat\/.+/);
   const hideTabBar = currentPath === '/login' || currentPath === '/onboarding' || isChatRoom;
-  const isDesktopFriendly = isDashboard || currentPath?.startsWith('/community/');
+  const isDesktopFriendly = true;
 
   const isPublicRoute = Boolean(
     currentPath === '/' ||
