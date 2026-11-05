@@ -95,7 +95,7 @@ function getEngagementScore(member, events, eventRsvps, messages, communityId) {
 
 // ─── Component ──────────────────────────────────────────────────
 export default function LeaderDashboard({ initialCommunityId }) {
-  const { user, communities, events, updateCommunity, deleteCommunity, users, communityMemberships, createEvent, createEventsBatch, updateEvent, cancelEvent, uploadImage, eventRsvps, whatsappSettings, setWhatsappSettings, promoteMember, removeMember, checkInMember, broadcastNotification, sendEventReminder, experiences, setExperiences, isLoading } = useAppContext();
+  const { user, communities, events, updateCommunity, deleteCommunity, users, communityMemberships, createEvent, createEventsBatch, updateEvent, cancelEvent, uploadImage, eventRsvps, whatsappSettings, setWhatsappSettings, promoteMember, removeMember, checkInMember, broadcastNotification, sendEventReminder, experiences, setExperiences, isLoading, services = [], updateServiceStatus } = useAppContext();
     const { messages } = useChat();
   const { toast } = useToast();
   const router = useRouter();
@@ -205,6 +205,12 @@ export default function LeaderDashboard({ initialCommunityId }) {
   };
 
   const [selectedNetworkEvent, setSelectedNetworkEvent] = useState(null);
+  const communityPitches = useMemo(() => {
+    return (services || []).filter(s => s.communityId === community?.id);
+  }, [services, community]);
+  const pendingPitchesCount = useMemo(() => {
+    return communityPitches.filter(s => s.status === 'pending').length;
+  }, [communityPitches]);
   const [isCoHostingNetworkEvent, setIsCoHostingNetworkEvent] = useState(false);
   const [selectedProfileImage, setSelectedProfileImage] = useState(null);
 
