@@ -880,12 +880,21 @@ export default function LeaderDashboard({ initialCommunityId }) {
   };
 
   const handlePromote = async (memberUser) => {
-    await promoteMember(community.id, memberUser.id, 'Co-Leader');
+    try {
+      await promoteMember(community.id, memberUser.id, 'Co-Leader');
+      toast.success('Co-Leader Appointed! ??', `${memberUser.name} is now a Co-Leader of ${community.name}`);
+    } catch (err) {
+      toast.error('Could not appoint co-leader', err.message || 'Please try again.');
+    }
   };
   
   const handleDemote = async (memberUser) => {
-    await promoteMember(community.id, memberUser.id, 'Member');
-    toast.success('Demoted', `${memberUser.name} is now a regular Member`);
+    try {
+      await promoteMember(community.id, memberUser.id, 'Member');
+      toast.success('Demoted', `${memberUser.name} is now a regular Member`);
+    } catch (err) {
+      toast.error('Could not update role', err.message || 'Please try again.');
+    }
   };
 
   const handleRemove = async (memberUser) => {

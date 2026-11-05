@@ -813,16 +813,33 @@ export async function createSelfNotificationAction(notification, token) {
 }
 
 export async function promoteMemberAction(communityId, memberId, newRole, token) {
-  const { user } = await verifyCommunityManager(token, communityId, { leaderOnly: true });
+  const { user, isAdmin } = await verifyCommunityManager(token, communityId, { leaderOnly: true });
   if (!['Member', 'Co-Leader'].includes(newRole)) throw new Error("Invalid role");
-  if (memberId === user.id) throw new Error("You cannot change your own role");
+  if (memberId === user.id && !isAdmin) throw new Error("You cannot change your own role");
+  
   const targetRole = await getCommunityRole(memberId, communityId);
-  if (!targetRole) throw new Error("User is not a member of this community");
   if (targetRole === 'Leader') throw new Error("The community leader's role cannot be changed");
-  const { error } = await supabaseAdmin.from('community_memberships')
-    .update({ role: newRole })
-    .match({ community_id: communityId, user_id: memberId });
-  if (error) throw new Error(error.message);
+  
+  // Check if membership row exists
+  const { data: existing } = await supabaseAdmin.from('community_memberships')
+    .select('id')
+    .match({ community_id: communityId, user_id: memberId })
+    .maybeSingle();
+
+  if (existing) {
+    const { error } = await supabaseAdmin.from('community_memberships')
+      .update({ role: newRole })
+      .eq('id', existing.id);
+    if (error) throw new Error(error.message);
+  } else {
+    const { error } = await supabaseAdmin.from('community_memberships').insert({
+      community_id: communityId,
+      user_id: memberId,
+      role: newRole,
+      joined_at: new Date().toISOString()
+    });
+    if (error) throw new Error(error.message);
+  }
   return true;
 }
 

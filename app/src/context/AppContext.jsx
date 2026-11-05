@@ -496,7 +496,7 @@ export function AppProvider({ children }) {
 
     fetchAllData();
 
-    // Safe notification helper — uses Service Worker on mobile, falls back to Notification API
+    // Safe notification helper  -  uses Service Worker on mobile, falls back to Notification API
     const showSafeNotification = async (title, options = {}) => {
       try {
         if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
@@ -833,15 +833,24 @@ export function AppProvider({ children }) {
   const promoteMember = async (communityId, memberId, newRole) => {
     setCommunityMemberships(prev => {
       const commMembers = prev[communityId] || [];
-      return {
-        ...prev,
-        [communityId]: commMembers.map(m => m.userId === memberId ? { ...m, role: newRole } : m)
-      };
+      const exists = commMembers.some(m => m.userId === memberId || m.user_id === memberId);
+      if (exists) {
+        return {
+          ...prev,
+          [communityId]: commMembers.map(m => (m.userId === memberId || m.user_id === memberId) ? { ...m, role: newRole, userId: memberId, user_id: memberId } : m)
+        };
+      } else {
+        return {
+          ...prev,
+          [communityId]: [...commMembers, { userId: memberId, user_id: memberId, role: newRole, communityId, community_id: communityId }]
+        };
+      }
     });
     try {
       await promoteMemberAction(communityId, memberId, newRole, session?.access_token);
     } catch (err) {
       console.error('Failed to promote member', err);
+      throw err;
     }
   };
 

@@ -546,7 +546,7 @@ export default function AdminDashboard() {
                   className="btn btn-primary interactive-press"
                   style={{ padding: '10px 18px', borderRadius: '12px', fontSize: '0.88rem', fontWeight: 700 }}
                 >
-                  Open Live Leader Dashboard ?
+                  Open Live Leader Dashboard →
                 </button>
               </div>
 
@@ -559,7 +559,7 @@ export default function AdminDashboard() {
                 </div>
                 <div style={{ background: 'rgba(255,255,255,0.04)', padding: '14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
                   <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', textTransform: 'uppercase' }}>Club Fund Balance</div>
-                  <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#34d399', marginTop: '2px' }}>?180.00</div>
+                  <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#34d399', marginTop: '2px' }}>£180.00</div>
                   <div style={{ fontSize: '0.7rem', color: 'var(--slate-400)', marginTop: '4px' }}>Ready for bank transfer</div>
                 </div>
                 <div style={{ background: 'rgba(255,255,255,0.04)', padding: '14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
@@ -569,7 +569,7 @@ export default function AdminDashboard() {
                 </div>
                 <div style={{ background: 'rgba(255,255,255,0.04)', padding: '14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
                   <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', textTransform: 'uppercase' }}>Leader Shield Pro</div>
-                  <div style={{ fontSize: '1rem', fontWeight: 800, color: '#38bdf8', marginTop: '4px' }}>?5M Organiser Insured</div>
+                  <div style={{ fontSize: '1rem', fontWeight: 800, color: '#38bdf8', marginTop: '4px' }}>£5M Organiser Insured</div>
                   <div style={{ fontSize: '0.7rem', color: '#38bdf8', marginTop: '4px' }}>Council Safety Packs + 2% fees</div>
                 </div>
               </div>
@@ -602,16 +602,16 @@ export default function AdminDashboard() {
                   className="btn btn-primary interactive-press"
                   style={{ padding: '10px 18px', borderRadius: '12px', fontSize: '0.88rem', fontWeight: 700 }}
                 >
-                  Open Live Discover Page ?
+                  Open Live Discover Page →
                 </button>
               </div>
 
               {/* Member Perks & RSVP Passes */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
                 <div style={{ background: 'rgba(255,255,255,0.03)', padding: '16px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                  <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#34d399', marginBottom: '8px' }}>??? Your Active Event Ticket Pass</div>
+                  <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#34d399', marginBottom: '8px' }}>✓ Your Active Event Ticket Pass</div>
                   <div style={{ fontWeight: 700, color: '#fff', fontSize: '0.98rem' }}>Saturday Morning Ridge Walk & Coffee</div>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)', marginTop: '4px' }}>Tomorrow at 09:30 ? Dunorlan Park</div>
+                  <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)', marginTop: '4px' }}>Tomorrow at 09:30 • Dunorlan Park</div>
                   <div style={{ marginTop: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span style={{ background: 'rgba(34,197,94,0.15)', color: '#4ade80', fontSize: '0.72rem', padding: '2px 8px', borderRadius: '99px', fontWeight: 700 }}>Confirmed RSVP</span>
                     <span style={{ fontSize: '0.72rem', color: 'var(--slate-400)' }}>Waiver signed digitally</span>
@@ -619,7 +619,7 @@ export default function AdminDashboard() {
                 </div>
 
                 <div style={{ background: 'rgba(255,255,255,0.03)', padding: '16px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                  <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#fbbf24', marginBottom: '8px' }}>?? Unlocked Member Perks in Tunbridge Wells</div>
+                  <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#fbbf24', marginBottom: '8px' }}>★ Unlocked Member Perks in Tunbridge Wells</div>
                   <div style={{ fontWeight: 700, color: '#fff', fontSize: '0.95rem' }}>15% off at The Pantiles Coffee Roastery</div>
                   <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)', marginTop: '4px' }}>Exclusive discount on meetup mornings for group members</div>
                   <div style={{ marginTop: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -648,7 +648,7 @@ export default function AdminDashboard() {
                     The Pantiles Coffee Roastery
                   </h2>
                   <p style={{ fontSize: '0.84rem', color: 'var(--slate-300)', margin: '4px 0 0' }}>
-                    Partnered with More Shades of Golden ? ?15.00/mo Featured Tier
+                    Partnered with More Shades of Golden • £15.00/mo Featured Tier
                   </p>
                 </div>
                 <button
@@ -656,7 +656,7 @@ export default function AdminDashboard() {
                   className="btn btn-primary interactive-press"
                   style={{ padding: '10px 18px', borderRadius: '12px', fontSize: '0.88rem', fontWeight: 700 }}
                 >
-                  Explore Town Partner Hub ?
+                  Explore Town Partner Hub →
                 </button>
               </div>
 
@@ -674,12 +674,12 @@ export default function AdminDashboard() {
                 </div>
                 <div style={{ background: 'rgba(255,255,255,0.04)', padding: '14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
                   <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', textTransform: 'uppercase' }}>Club Fund Support</div>
-                  <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#34d399', marginTop: '2px' }}>?12.00 / mo</div>
+                  <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#34d399', marginTop: '2px' }}>£12.00 / mo</div>
                   <div style={{ fontSize: '0.7rem', color: 'var(--slate-400)', marginTop: '4px' }}>Directly funding local club equipment</div>
                 </div>
                 <div style={{ background: 'rgba(255,255,255,0.04)', padding: '14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
                   <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', textTransform: 'uppercase' }}>Monthly Receipt</div>
-                  <div style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--white)', marginTop: '4px' }}>Paid ? ?15.00</div>
+                  <div style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--white)', marginTop: '4px' }}>Paid • £15.00</div>
                   <div style={{ fontSize: '0.7rem', color: 'var(--teal-300)', marginTop: '4px' }}>VAT receipt available</div>
                 </div>
               </div>
@@ -704,7 +704,7 @@ export default function AdminDashboard() {
                     Peak & Trail Navigation Skills
                   </h2>
                   <p style={{ fontSize: '0.84rem', color: 'var(--slate-300)', margin: '4px 0 0' }}>
-                    Session: Trail Navigation & Mountain Mastery ? Min: 6 / Max: 14 Attendees
+                    Session: Trail Navigation & Mountain Mastery • Min: 6 / Max: 14 Attendees
                   </p>
                 </div>
                 <button
@@ -712,7 +712,7 @@ export default function AdminDashboard() {
                   className="btn btn-primary interactive-press"
                   style={{ padding: '10px 18px', borderRadius: '12px', fontSize: '0.88rem', fontWeight: 700 }}
                 >
-                  Explore Town Collaborations ?
+                  Explore Town Collaborations →
                 </button>
               </div>
 
@@ -725,8 +725,8 @@ export default function AdminDashboard() {
                 </div>
                 <div style={{ background: 'rgba(255,255,255,0.04)', padding: '14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
                   <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', textTransform: 'uppercase' }}>Your Payout (After Club Cut)</div>
-                  <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#34d399', marginTop: '2px' }}>?144.00</div>
-                  <div style={{ fontSize: '0.7rem', color: 'var(--slate-400)', marginTop: '4px' }}>?36.00 raised for club fund</div>
+                  <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#34d399', marginTop: '2px' }}>£144.00</div>
+                  <div style={{ fontSize: '0.7rem', color: 'var(--slate-400)', marginTop: '4px' }}>£36.00 raised for club fund</div>
                 </div>
                 <div style={{ background: 'rgba(255,255,255,0.04)', padding: '14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
                   <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', textTransform: 'uppercase' }}>Escrow Status</div>

@@ -162,6 +162,35 @@ export default function CommunityProfile() {
   const leaderUser = users.find(u => u.id === community.leader_id);
   const memberList = (communityMemberships[communityId] || []).map(m => users.find(u => u.id === m.userId || u.id === m.user_id)).filter(Boolean);
   
+  // Derive Co-Hosts & Co-Leaders
+  const coHostMemberships = (communityMemberships[communityId] || []).filter(m => 
+    (m.role === 'Co-Leader' || m.role === 'Co-Host' || m.role === 'co-founder' || m.role === 'Admin') &&
+    (m.userId !== community.leader_id && m.user_id !== community.leader_id)
+  );
+  const coHostUsers = [];
+  coHostMemberships.forEach(m => {
+    const u = users.find(user => user.id === (m.userId || m.user_id));
+    if (u && u.id !== community.leader_id && !coHostUsers.some(existing => existing.id === u.id)) {
+      coHostUsers.push(u);
+    }
+  });
+  if (Array.isArray(community.co_host_ids)) {
+    community.co_host_ids.forEach(id => {
+      const u = users.find(user => user.id === id);
+      if (u && u.id !== community.leader_id && !coHostUsers.some(existing => existing.id === u.id)) {
+        coHostUsers.push(u);
+      }
+    });
+  }
+  if (Array.isArray(community.co_hosts)) {
+    community.co_hosts.forEach(ch => {
+      const u = typeof ch === 'string' ? users.find(user => user.id === ch) : ch;
+      if (u && u.id !== community.leader_id && !coHostUsers.some(existing => existing.id === u.id)) {
+        coHostUsers.push(u);
+      }
+    });
+  }
+  
   // Only provide fallback stock photos for the default initial demo seed communities if they have no uploaded photos.
   // Newly created communities start with an empty gallery and shouldn't display mock "past event" photos.
   const SEED_COMMUNITY_IDS = [
@@ -626,10 +655,38 @@ export default function CommunityProfile() {
               )}
             </div>
           </div>
-          <button onClick={() => leaderUser && navigate.push(`/chat/dm/${leaderUser.id}`)} className="btn btn-outline interactive-press" style={{ padding: '8px 14px', borderRadius: '10px', fontSize: '0.8rem', display: 'flex', gap: '4px', alignItems: 'center' }}>
+          <button onClick={() => leaderUser && navigate.push(`/chat/dm/${leaderUser.id}`)} className="btn btn-outline interactive-press" style={{ padding: '8px 14px', borderRadius: '10px', fontSize: '0.8rem', display: 'flex', gap: '4px', alignItems: 'center', flexShrink: 0 }}>
             <MessageCircle size={14} /> Message
           </button>
         </div>
+        {coHostUsers.length > 0 && (
+          <div style={{ marginTop: '10px', paddingTop: '10px', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+            <span style={{ fontSize: '0.72rem', color: 'var(--slate-400)', fontWeight: 600 }}>Co-Hosts:</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              {coHostUsers.map(coHost => (
+                <div 
+                  key={coHost.id} 
+                  onClick={() => navigate.push(`/profile/${coHost.id}`)}
+                  className="interactive-press"
+                  style={{ 
+                    display: 'inline-flex', alignItems: 'center', gap: '6px', 
+                    padding: '3px 9px', borderRadius: '99px', 
+                    background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
+                    cursor: 'pointer', fontSize: '0.76rem', color: 'var(--white)'
+                  }}
+                  title={`View ${coHost.name}'s profile`}
+                >
+                  <img 
+                    src={coHost.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(coHost.name || 'Co-Host')}&background=0D8B93&color=fff`} 
+                    alt={coHost.name} 
+                    style={{ width: '18px', height: '18px', borderRadius: '50%', objectFit: 'cover' }} 
+                  />
+                  <span style={{ fontWeight: 600 }}>{coHost.name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ===== LEADER SETUP CHECKLIST (Visible to Community Leaders) ===== */}
@@ -1286,6 +1343,50 @@ export default function CommunityProfile() {
               >
                 <MessageCircle size={18} /> Message Organizer
               </button>
+
+              {/* Co-Hosts & Leadership Team */}
+              {coHostUsers.length > 0 && (
+                <div style={{ width: '100%', marginTop: '24px', paddingTop: '20px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+                  <div style={{ fontSize: '0.74rem', color: 'var(--teal-400)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                    <Users size={14} /> Co-Host{coHostUsers.length > 1 ? 's' : ''} ({coHostUsers.length})
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: coHostUsers.length === 1 ? '1fr' : 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', width: '100%', maxWidth: '520px', margin: '0 auto' }}>
+                    {coHostUsers.map(coHost => (
+                      <div 
+                        key={coHost.id}
+                        className="glass-panel"
+                        style={{ padding: '14px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', borderRadius: '14px' }}
+                      >
+                        <img 
+                          src={coHost.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(coHost.name || 'Co-Host')}&background=0D8B93&color=fff`} 
+                          alt={coHost.name}
+                          onClick={() => navigate.push(`/profile/${coHost.id}`)}
+                          style={{ width: '56px', height: '56px', borderRadius: '50%', objectFit: 'cover', border: '2px solid rgba(45,212,191,0.5)', marginBottom: '8px', cursor: 'pointer' }}
+                        />
+                        <div 
+                          onClick={() => navigate.push(`/profile/${coHost.id}`)}
+                          style={{ fontWeight: 700, fontSize: '0.98rem', color: 'var(--white)', cursor: 'pointer', marginBottom: '2px' }}
+                        >
+                          {coHost.name}
+                        </div>
+                        <div style={{ fontSize: '0.72rem', color: '#a78bfa', fontWeight: 600, marginBottom: '6px' }}>Co-Host</div>
+                        {coHost.bio && (
+                          <p style={{ fontSize: '0.78rem', color: 'var(--slate-300)', lineHeight: 1.4, margin: '0 0 10px 0', maxWidth: '240px' }}>
+                            {coHost.bio}
+                          </p>
+                        )}
+                        <button 
+                          onClick={() => navigate.push(`/chat/dm/${coHost.id}`)}
+                          className="btn btn-outline interactive-press"
+                          style={{ padding: '6px 14px', borderRadius: '8px', fontSize: '0.78rem', display: 'flex', alignItems: 'center', gap: '4px', marginTop: 'auto' }}
+                        >
+                          <MessageCircle size={13} /> Message
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Welcome Video */}
