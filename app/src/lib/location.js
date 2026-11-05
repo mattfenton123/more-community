@@ -486,3 +486,127 @@ export async function geocodeLocation(query, options = {}) {
   geocodeCache.set(cacheKey, fallback);
   return fallback;
 }
+
+/**
+ * Regional hierarchy mapping for UK county & broad region searches.
+ * Enables sponsors (e.g., law firms, clinics, regional brands) to search
+ * broad catchments like 'Kent', 'East Sussex', or 'South East' and match all
+ * local towns and clubs operating within that region.
+ */
+export const UK_REGIONAL_CATCHMENTS = {
+  'south east': [
+    'kent', 'east sussex', 'west sussex', 'sussex', 'surrey', 'london',
+    'tunbridge wells', 'heathfield', 'bewl water', 'st leonards', 'hastings',
+    'tonbridge', 'sevenoaks', 'brighton', 'lewes', 'cuckoo trail', 'bedgebury',
+    'high weald', 'lamberhurst', 'wadhurst', 'crowborough', 'regional'
+  ],
+  'se': [
+    'kent', 'east sussex', 'west sussex', 'sussex', 'tunbridge wells',
+    'heathfield', 'bewl water', 'st leonards', 'hastings', 'tonbridge'
+  ],
+  'kent': [
+    'tunbridge wells', 'tonbridge', 'sevenoaks', 'bewl water', 'lamberhurst',
+    'bedgebury', 'goudhurst', 'maidstone', 'canterbury', 'ashford', 'folkestone',
+    'dover', 'dartford', 'kent & east sussex', 'high weald', 'royal tunbridge wells'
+  ],
+  'east sussex': [
+    'heathfield', 'st leonards', 'st leonards-on-sea', 'hastings', 'eastbourne',
+    'lewes', 'rye', 'battle', 'crowborough', 'uckfield', 'cuckoo trail',
+    'bexhill', 'high weald', 'kent & east sussex'
+  ],
+  'sussex': [
+    'heathfield', 'st leonards', 'st leonards-on-sea', 'hastings', 'eastbourne',
+    'lewes', 'rye', 'battle', 'crowborough', 'uckfield', 'cuckoo trail',
+    'bexhill', 'crawley', 'horsham', 'worthing', 'chichester'
+  ],
+  'west sussex': [
+    'crawley', 'horsham', 'worthing', 'chichester', 'haywards heath', 'burgess hill'
+  ],
+  'london': [
+    'london', 'greater london', 'south london', 'capital'
+  ]
+};
+
+/**
+ * Returns comprehensive searchable location and regional keywords for a community.
+ */
+export function getCommunitySearchText(comm) {
+  if (!comm) return '';
+  const parts = [
+    comm.name,
+    comm.description,
+    comm.category,
+    comm.location_name,
+    comm.location,
+    comm.city,
+    comm.county,
+    comm.region,
+    comm.postcode,
+    ...(Array.isArray(comm.tags) ? comm.tags : [])
+  ];
+
+  const id = comm.id || '';
+  if (id.includes('mankind') || id.includes('heathfield') || id.includes('golden')) {
+    parts.push('heathfield', 'east sussex', 'sussex', 'high weald', 'south east', 'se', 'cuckoo trail');
+  }
+  if (id.includes('walks') || id.includes('bewl')) {
+    parts.push('bewl water', 'lamberhurst', 'kent', 'east sussex', 'sussex', 'south east', 'se', 'wadhurst');
+  }
+  if (id.includes('breathe') || id.includes('ruth') || id.includes('acut8')) {
+    parts.push('st leonards', 'st leonards-on-sea', 'hastings', 'east sussex', 'sussex', 'coast', 'south east', 'se');
+  }
+  if (id.includes('performance') || id.includes('6i2uv') || id.includes('tunbridge')) {
+    parts.push('tunbridge wells', 'kent', 'south east', 'se', 'pantiles', 'common');
+  }
+  if (id.includes('network') || id.includes('leaders')) {
+    parts.push('kent', 'east sussex', 'west sussex', 'sussex', 'south east', 'se', 'regional', 'uk', 'global', 'all');
+  }
+
+  const locName = ((comm.location_name || comm.location || '')).toLowerCase();
+  if (locName.includes('heathfield')) {
+    parts.push('east sussex', 'sussex', 'south east', 'high weald');
+  }
+  if (locName.includes('tunbridge wells') || locName.includes('tonbridge') || locName.includes('sevenoaks')) {
+    parts.push('kent', 'south east');
+  }
+  if (locName.includes('st leonards') || locName.includes('hastings') || locName.includes('eastbourne')) {
+    parts.push('east sussex', 'sussex', 'south east', 'coast');
+  }
+  if (locName.includes('bewl')) {
+    parts.push('kent', 'east sussex', 'sussex', 'south east');
+  }
+
+  return parts.filter(Boolean).join(' ').toLowerCase();
+}
+
+/**
+ * Intelligent regional & keyword matcher for partner and discovery searches.
+ * Handles exact town names, club names, county names, and broad umbrella regions
+ * (e.g. 'South East', 'Kent', 'Sussex').
+ */
+export function matchCommunityLocation(comm, query) {
+  if (!query || !query.trim()) return true;
+  const q = query.trim().toLowerCase();
+
+  const searchCorpus = getCommunitySearchText(comm);
+
+  // 1. Direct substring match
+  if (searchCorpus.includes(q)) return true;
+
+  // 2. Check catchment expansions (e.g. 'south east', 'kent', 'sussex')
+  for (const [region, subTerms] of Object.entries(UK_REGIONAL_CATCHMENTS)) {
+    if (q === region || q.includes(region) || region.includes(q)) {
+      if (subTerms.some(term => searchCorpus.includes(term))) {
+        return true;
+      }
+    }
+  }
+
+  // 3. Multi-word search (every token >= 2 chars must match)
+  const tokens = q.split(/\s+/).filter(t => t.length > 1);
+  if (tokens.length > 1 && tokens.every(t => searchCorpus.includes(t))) {
+    return true;
+  }
+
+  return false;
+}

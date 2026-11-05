@@ -11,6 +11,7 @@ import { useAppContext } from '../context/AppContext';
 import { useToast } from './Toast';
 import { useRouter } from 'next/navigation';
 import UnsplashImagePicker from './UnsplashImagePicker';
+import { matchCommunityLocation } from '../lib/location';
 
 const BUSINESS_CATEGORIES = [
   { id: 'Food & Drink', icon: Coffee, label: 'Cafe, Food & Hospitality' },
@@ -48,6 +49,63 @@ const SPONSOR_PRESET_IMAGES = [
   { label: 'Pet Spa & Care', url: 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=800&q=80' },
   { label: 'Craft & Design', url: 'https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b?w=800&q=80' }
 ];
+
+// Interactive (i) explanation tooltip supporting both hover and mobile tap
+const FieldInfo = ({ text, title }) => {
+  const [show, setShow] = useState(false);
+  return (
+    <span style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', marginLeft: '5px', verticalAlign: 'middle' }}>
+      <button
+        type="button"
+        onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShow(prev => !prev); }}
+        onMouseEnter={() => setShow(true)}
+        onMouseLeave={() => setShow(false)}
+        style={{
+          background: show ? 'rgba(45, 212, 191, 0.25)' : 'rgba(255, 255, 255, 0.08)',
+          border: '1px solid rgba(255, 255, 255, 0.18)',
+          borderRadius: '50%',
+          width: '16px',
+          height: '16px',
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: show ? '#2dd4bf' : 'var(--slate-400)',
+          cursor: 'pointer',
+          padding: 0,
+          transition: 'all 0.15s ease'
+        }}
+        title={title ? `${title}: ${text}` : text}
+        aria-label={title || 'More information'}
+      >
+        <Info size={10} strokeWidth={2.5} />
+      </button>
+      {show && (
+        <span style={{
+          position: 'absolute',
+          bottom: 'calc(100% + 6px)',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: '240px',
+          padding: '8px 10px',
+          background: '#090d16',
+          border: '1px solid rgba(45, 212, 191, 0.45)',
+          borderRadius: '10px',
+          fontSize: '0.72rem',
+          color: '#e2e8f0',
+          lineHeight: 1.4,
+          zIndex: 99999,
+          boxShadow: '0 10px 25px rgba(0,0,0,0.8), 0 0 15px rgba(20,184,166,0.2)',
+          pointerEvents: 'none',
+          textAlign: 'left'
+        }}>
+          {title && <strong style={{ color: '#2dd4bf', display: 'block', marginBottom: '2px', fontSize: '0.74rem' }}>{title}</strong>}
+          <span>{text}</span>
+        </span>
+      )}
+    </span>
+  );
+};
+
 
 const COLOR_THEMES = [
   { name: 'Warm Amber', hex: '#f59e0b' },
@@ -120,6 +178,7 @@ export default function CommunityPartnerModal({
     tier: 'directory',
     contactEmail: user?.email || '',
     website: '',
+    ctaUrl: '',
     bannerUrl: SPONSOR_PRESET_IMAGES[0].url,
     accentColor: COLOR_THEMES[0].hex,
     fontStyle: 'modern',
@@ -218,7 +277,8 @@ export default function CommunityPartnerModal({
           accentColor: sponsorForm.accentColor,
           fontStyle: sponsorForm.fontStyle,
           ctaText: sponsorForm.ctaText,
-          website: sponsorForm.website,
+          ctaUrl: sponsorForm.ctaUrl.trim() || sponsorForm.website.trim(),
+          website: sponsorForm.website.trim(),
           status: 'pending'
         });
 
@@ -246,8 +306,7 @@ export default function CommunityPartnerModal({
 
   const filteredCommunities = (communities || []).filter(c => {
     if (!communitySearch.trim()) return true;
-    const q = communitySearch.toLowerCase();
-    return c.name?.toLowerCase().includes(q) || c.location_name?.toLowerCase().includes(q) || c.category?.toLowerCase().includes(q);
+    return matchCommunityLocation(c, communitySearch.trim());
   });
 
   return (
@@ -737,7 +796,7 @@ export default function CommunityPartnerModal({
                     {partnerMode === 'sponsor' ? (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                         <div>
-                          <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--slate-300)', marginBottom: '6px' }}>Business Name *</label>
+                          <label style={{ display: 'flex', alignItems: 'center', fontSize: '0.8rem', fontWeight: 600, color: 'var(--slate-300)', marginBottom: '6px' }}>Business Name * <FieldInfo title="Business Name" text="Your official trading or public business name as members will see it on your banner." /></label>
                           <input
                             type="text"
                             placeholder="e.g. The Bakehouse & Espresso Bar"
@@ -773,7 +832,7 @@ export default function CommunityPartnerModal({
                         <div>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
                             <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--slate-300)' }}>
-                              Exclusive Member Perk (Optional)
+                              Exclusive Member Perk (Optional) <FieldInfo title="Member Perk" text="An exclusive discount or welcome gift for members on meetup days (optional). Leave blank if sponsoring as a brand supporter without a discount." />
                             </label>
                             <span style={{ fontSize: '0.7rem', color: '#2dd4bf', background: 'rgba(45,212,191,0.1)', padding: '1px 6px', borderRadius: '4px', fontWeight: 600 }}>Optional</span>
                           </div>
@@ -790,7 +849,7 @@ export default function CommunityPartnerModal({
                         </div>
 
                         <div>
-                          <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--slate-300)', marginBottom: '6px' }}>Short About / Pitch</label>
+                          <label style={{ display: 'flex', alignItems: 'center', fontSize: '0.8rem', fontWeight: 600, color: 'var(--slate-300)', marginBottom: '6px' }}>Short About / Pitch <FieldInfo title="Your Pitch" text="Tell the community leader why you love their group and how partnering together helps local members." /></label>
                           <textarea
                             rows={3}
                             placeholder="Tell the community leader why your business is a great fit for their group..."
@@ -803,7 +862,9 @@ export default function CommunityPartnerModal({
                     ) : (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                         <div>
-                          <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--slate-300)', marginBottom: '6px' }}>Session Title *</label>
+                          <label style={{ display: 'flex', alignItems: 'center', fontSize: '0.8rem', fontWeight: 600, color: 'var(--slate-300)', marginBottom: '6px' }}>
+                            Session Title * <FieldInfo title="Session Title" text="A clear, exciting name for your masterclass, clinic, or guided workshop that members will see." />
+                          </label>
                           <input
                             type="text"
                             placeholder="e.g. Trail Navigation & Map Reading Masterclass"
@@ -815,7 +876,9 @@ export default function CommunityPartnerModal({
 
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                           <div>
-                            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--slate-300)', marginBottom: '6px' }}>Discipline</label>
+                            <label style={{ display: 'flex', alignItems: 'center', fontSize: '0.8rem', fontWeight: 600, color: 'var(--slate-300)', marginBottom: '6px' }}>
+                              Discipline <FieldInfo title="Activity Discipline" text="Select the primary discipline so the leader and members know what skill or topic will be covered." />
+                            </label>
                             <select
                               value={sessionForm.discipline}
                               onChange={e => setSessionForm({ ...sessionForm, discipline: e.target.value })}
@@ -825,7 +888,9 @@ export default function CommunityPartnerModal({
                             </select>
                           </div>
                           <div>
-                            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--slate-300)', marginBottom: '6px' }}>Duration</label>
+                            <label style={{ display: 'flex', alignItems: 'center', fontSize: '0.8rem', fontWeight: 600, color: 'var(--slate-300)', marginBottom: '6px' }}>
+                              Duration <FieldInfo title="Session Duration" text="Total duration including welcome briefing, practical activity, and post-session questions." />
+                            </label>
                             <input
                               type="text"
                               placeholder="e.g. 2 hours"
@@ -837,7 +902,9 @@ export default function CommunityPartnerModal({
                         </div>
 
                         <div>
-                          <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--slate-300)', marginBottom: '6px' }}>Summary & What Members Learn *</label>
+                          <label style={{ display: 'flex', alignItems: 'center', fontSize: '0.8rem', fontWeight: 600, color: 'var(--slate-300)', marginBottom: '6px' }}>
+                            Summary & What Members Learn * <FieldInfo title="Session Summary" text="Detail the exact itinerary, gear/footwear required, and what skills or knowledge participants take away." />
+                          </label>
                           <textarea
                             rows={3}
                             placeholder="Describe what will happen, route or venue details, and key takeaways..."
@@ -847,52 +914,118 @@ export default function CommunityPartnerModal({
                           />
                         </div>
 
-                        {/* Capacity limits (Min and Max) */}
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
+                        {/* Capacity Limits: Min and Max Attendees */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                           <div>
-                            <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: 'var(--slate-300)', marginBottom: '4px' }}>Min Attendees</label>
+                            <label style={{ display: 'flex', alignItems: 'center', fontSize: '0.78rem', fontWeight: 600, color: 'var(--slate-300)', marginBottom: '4px' }}>
+                              Min Attendees <FieldInfo title="Minimum Attendees" text="The minimum number of RSVPs needed for the session to run. If not reached 24 hours prior, attendees are fully refunded." />
+                            </label>
                             <input
                               type="number"
                               min="1"
+                              placeholder="e.g. 5"
                               value={sessionForm.minCapacity}
                               onChange={e => setSessionForm({ ...sessionForm, minCapacity: e.target.value })}
-                              style={{ width: '100%', padding: '10px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: 'var(--white)', fontSize: '0.85rem' }}
+                              style={{ width: '100%', padding: '10px 12px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: 'var(--white)', fontSize: '0.85rem' }}
                             />
                           </div>
                           <div>
-                            <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: 'var(--slate-300)', marginBottom: '4px' }}>Max Attendees</label>
+                            <label style={{ display: 'flex', alignItems: 'center', fontSize: '0.78rem', fontWeight: 600, color: 'var(--slate-300)', marginBottom: '4px' }}>
+                              Max Attendees <FieldInfo title="Maximum Attendees" text="The maximum group size limit to maintain safety, coaching quality, and personal attention." />
+                            </label>
                             <input
                               type="number"
                               min="1"
+                              placeholder="e.g. 15"
                               value={sessionForm.maxCapacity}
                               onChange={e => setSessionForm({ ...sessionForm, maxCapacity: e.target.value })}
-                              style={{ width: '100%', padding: '10px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: 'var(--white)', fontSize: '0.85rem' }}
-                            />
-                          </div>
-                          <div>
-                            <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: 'var(--slate-300)', marginBottom: '4px' }}>Ticket Price (?)</label>
-                            <input
-                              type="number"
-                              step="0.5"
-                              value={sessionForm.ticketPrice}
-                              onChange={e => setSessionForm({ ...sessionForm, ticketPrice: e.target.value })}
-                              style={{ width: '100%', padding: '10px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: 'var(--white)', fontSize: '0.85rem' }}
-                            />
-                          </div>
-                          <div>
-                            <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: 'var(--slate-300)', marginBottom: '4px' }}>Club Share (?)</label>
-                            <input
-                              type="number"
-                              step="0.5"
-                              value={sessionForm.clubCut}
-                              onChange={e => setSessionForm({ ...sessionForm, clubCut: e.target.value })}
-                              style={{ width: '100%', padding: '10px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: 'var(--white)', fontSize: '0.85rem' }}
+                              style={{ width: '100%', padding: '10px 12px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: 'var(--white)', fontSize: '0.85rem' }}
                             />
                           </div>
                         </div>
 
+                        {/* Financial Economics: Ticket Price & Club Share */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                          <div>
+                            <label style={{ display: 'flex', alignItems: 'center', fontSize: '0.78rem', fontWeight: 600, color: 'var(--slate-300)', marginBottom: '4px' }}>
+                              Ticket Price (£) <FieldInfo title="Ticket Price" text="The total price charged to each community member at checkout. Held securely in Stripe post-event escrow until 24-48 hours after the session is completed." />
+                            </label>
+                            <div style={{ position: 'relative' }}>
+                              <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#2dd4bf', fontWeight: 700, fontSize: '0.9rem' }}>£</span>
+                              <input
+                                type="number"
+                                step="0.5"
+                                min="0"
+                                placeholder="22.00"
+                                value={sessionForm.ticketPrice}
+                                onChange={e => setSessionForm({ ...sessionForm, ticketPrice: e.target.value })}
+                                style={{ width: '100%', padding: '10px 12px 10px 28px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: 'var(--white)', fontSize: '0.85rem' }}
+                              />
+                            </div>
+                          </div>
+                          <div>
+                            <label style={{ display: 'flex', alignItems: 'center', fontSize: '0.78rem', fontWeight: 600, color: 'var(--slate-300)', marginBottom: '4px' }}>
+                              Club Fund Share (£) <FieldInfo title="Club Fund Share" text="The portion of each ticket paid straight to the community club treasury. Leaders are eager to approve and promote sessions that contribute directly to their club fund." />
+                            </label>
+                            <div style={{ position: 'relative' }}>
+                              <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#4ade80', fontWeight: 700, fontSize: '0.9rem' }}>£</span>
+                              <input
+                                type="number"
+                                step="0.5"
+                                min="0"
+                                placeholder="4.00"
+                                value={sessionForm.clubCut}
+                                onChange={e => setSessionForm({ ...sessionForm, clubCut: e.target.value })}
+                                style={{ width: '100%', padding: '10px 12px 10px 28px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: 'var(--white)', fontSize: '0.85rem' }}
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Live Financial Settlement Split Box */}
+                        {(() => {
+                          const price = Number(sessionForm.ticketPrice) || 0;
+                          const clubCut = Number(sessionForm.clubCut) || 0;
+                          const hostCut = Math.max(0, price - clubCut);
+                          const minGuests = Number(sessionForm.minCapacity) || 1;
+                          const maxGuests = Number(sessionForm.maxCapacity) || 10;
+                          return (
+                            <div style={{
+                              background: 'rgba(45, 212, 191, 0.08)',
+                              border: '1px solid rgba(45, 212, 191, 0.25)',
+                              borderRadius: '14px',
+                              padding: '12px 16px',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: '6px'
+                            }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <span style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--white)' }}>
+                                  Per-Ticket Settlement Split:
+                                </span>
+                                <span style={{ fontSize: '0.82rem', fontWeight: 800, color: '#2dd4bf' }}>
+                                  Member pays £{price.toFixed(2)}
+                                </span>
+                              </div>
+                              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '0.74rem' }}>
+                                <div style={{ color: '#4ade80' }}>
+                                  • Club Treasury: <strong>+£{clubCut.toFixed(2)}</strong> / ticket ({targetCommunity?.name || 'Club'} fund)
+                                </div>
+                                <div style={{ color: '#38bdf8' }}>
+                                  • Your Host Payout: <strong>£{hostCut.toFixed(2)}</strong> / ticket (paid after session)
+                                </div>
+                              </div>
+                              <div style={{ fontSize: '0.7rem', color: 'var(--slate-400)', marginTop: '2px' }}>
+                                Protected by Stripe post-event escrow. Total host payout: £{(hostCut * minGuests).toFixed(2)} (at min {minGuests} guests) up to £{(hostCut * maxGuests).toFixed(2)} (at full {maxGuests} cap).
+                              </div>
+                            </div>
+                          );
+                        })()}
+
                         <div>
-                          <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--slate-300)', marginBottom: '6px' }}>Host Bio & Credentials</label>
+                          <label style={{ display: 'flex', alignItems: 'center', fontSize: '0.8rem', fontWeight: 600, color: 'var(--slate-300)', marginBottom: '6px' }}>
+                            Host Bio & Credentials <FieldInfo title="Host Credentials" text="Share your coaching certifications, mountaineering licenses, or years of experience to give leaders and participants trust." />
+                          </label>
                           <input
                             type="text"
                             placeholder="e.g. Certified Mountain Leader & Outdoor First Aider (8 yrs exp)"
@@ -1008,15 +1141,39 @@ export default function CommunityPartnerModal({
                             </div>
                           </div>
 
-                          {/* CTA Button Text */}
-                          <div>
-                            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--slate-300)', marginBottom: '6px' }}>CTA Button Label</label>
-                            <input
-                              type="text"
-                              value={sponsorForm.ctaText}
-                              onChange={e => setSponsorForm({ ...sponsorForm, ctaText: e.target.value })}
-                              style={{ width: '100%', padding: '10px 12px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: 'var(--white)', fontSize: '0.82rem' }}
-                            />
+                          {/* CTA Button Text & Destination URL */}
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                            <div>
+                              <label style={{ display: 'flex', alignItems: 'center', fontSize: '0.8rem', fontWeight: 600, color: 'var(--slate-300)', marginBottom: '6px' }}>
+                                CTA Button Label <FieldInfo title="CTA Button Label" text="Action text displayed directly on your ad button (e.g. 'Redeem Member Perk', 'Visit Website', 'Book a Table', 'Shop Online', 'Claim 15% Off')." />
+                              </label>
+                              <input
+                                type="text"
+                                placeholder="e.g. Redeem Member Perk"
+                                value={sponsorForm.ctaText}
+                                onChange={e => setSponsorForm({ ...sponsorForm, ctaText: e.target.value })}
+                                style={{ width: '100%', padding: '10px 12px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: 'var(--white)', fontSize: '0.82rem' }}
+                              />
+                            </div>
+
+                            <div>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                                <label style={{ display: 'flex', alignItems: 'center', fontSize: '0.8rem', fontWeight: 600, color: 'var(--slate-300)' }}>
+                                  CTA Destination Link (URL) <FieldInfo title="CTA Destination URL" text="The external website, booking page, or offer link members visit when clicking your CTA button. If left blank, it automatically uses your main website or Instagram from Step 2." />
+                                </label>
+                                <span style={{ fontSize: '0.7rem', color: '#2dd4bf', background: 'rgba(45,212,191,0.1)', padding: '1px 6px', borderRadius: '4px', fontWeight: 600 }}>Optional</span>
+                              </div>
+                              <input
+                                type="text"
+                                placeholder={sponsorForm.website || 'https://yourbusiness.com/deal or @instagram'}
+                                value={sponsorForm.ctaUrl}
+                                onChange={e => setSponsorForm({ ...sponsorForm, ctaUrl: e.target.value })}
+                                style={{ width: '100%', padding: '10px 12px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: 'var(--white)', fontSize: '0.82rem' }}
+                              />
+                              <span style={{ fontSize: '0.72rem', color: 'var(--slate-400)', marginTop: '4px', display: 'block' }}>
+                                Optional: Where the button sends members. {sponsorForm.website ? 'Defaults to "' + sponsorForm.website + '" if left blank.' : 'Defaults to your main website or social link.'}
+                              </span>
+                            </div>
                           </div>
                         </div>
 
@@ -1095,11 +1252,21 @@ export default function CommunityPartnerModal({
                                   fontWeight: 800,
                                   fontSize: '0.82rem',
                                   border: 'none',
-                                  cursor: 'pointer'
+                                  cursor: 'pointer',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  gap: '6px'
                                 }}
                               >
-                                {sponsorForm.ctaText}
+                                <span>{sponsorForm.ctaText || 'Visit Partner'}</span>
+                                <ExternalLink size={13} strokeWidth={2.5} />
                               </button>
+                              {(sponsorForm.ctaUrl || sponsorForm.website) && (
+                                <div style={{ fontSize: '0.69rem', color: 'var(--slate-400)', textAlign: 'center', marginTop: '6px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', padding: '0 4px' }}>
+                                  ↳ Links to: <span style={{ color: '#38bdf8' }}>{sponsorForm.ctaUrl || sponsorForm.website}</span>
+                                </div>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -1240,6 +1407,12 @@ export default function CommunityPartnerModal({
                                 <strong>Sponsorship:</strong> Brand Supporter (No Member Perk)
                               </div>
                             )}
+                            <div style={{ color: 'var(--slate-400)', fontSize: '0.78rem', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                              <strong style={{ color: 'var(--slate-300)' }}>CTA Button:</strong>
+                              <span style={{ color: '#38bdf8' }}>"{sponsorForm.ctaText || 'Visit Partner'}"</span>
+                              <span>→</span>
+                              <span style={{ color: '#2dd4bf' }}>{sponsorForm.ctaUrl || sponsorForm.website || 'Direct Link'}</span>
+                            </div>
                           </div>
                         ) : (
                           <div>

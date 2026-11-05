@@ -6,6 +6,7 @@ import {
   Check, CheckCircle2, Shield, Filter, ChevronRight, X 
 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
+import { matchCommunityLocation, UK_REGIONAL_CATCHMENTS } from '../lib/location';
 import { useToast } from '../components/Toast';
 import CommunityPartnerModal from '../components/CommunityPartnerModal';
 import Link from 'next/link';
@@ -28,6 +29,7 @@ export default function PartnerHub() {
   const [partnerType, setPartnerType] = useState('all'); // 'all' | 'instructor' | 'business'
   const [selectedNiche, setSelectedNiche] = useState('All');
   const [locationSearch, setLocationSearch] = useState('');
+  const [selectedRegion, setSelectedRegion] = useState('All Regions');
   const [activePartnerCommunity, setActivePartnerCommunity] = useState(null);
   const [activeModalTab, setActiveModalTab] = useState('session');
 
@@ -40,7 +42,7 @@ export default function PartnerHub() {
     return (communities || []).filter(c => c.accepts_pitches !== false);
   }, [communities]);
 
-  // Filter based on niche and location
+  // Filter based on niche, broad region catchment, and search terms
   const filteredCommunities = useMemo(() => {
     return availableCommunities.filter(comm => {
       // Niche filter
@@ -53,17 +55,20 @@ export default function PartnerHub() {
         }
       }
 
-      // Location filter
+      // Regional Preset filter
+      if (selectedRegion !== 'All Regions') {
+        const regionQuery = selectedRegion === 'South East (All)' ? 'south east' : selectedRegion;
+        if (!matchCommunityLocation(comm, regionQuery)) return false;
+      }
+
+      // Broad location and catchment search
       if (locationSearch.trim()) {
-        const q = locationSearch.toLowerCase();
-        const locStr = (comm.location_name || comm.location || comm.city || '').toLowerCase();
-        const nameStr = (comm.name || '').toLowerCase();
-        if (!locStr.includes(q) && !nameStr.includes(q)) return false;
+        if (!matchCommunityLocation(comm, locationSearch.trim())) return false;
       }
 
       return true;
     });
-  }, [availableCommunities, selectedNiche, locationSearch]);
+  }, [availableCommunities, selectedNiche, selectedRegion, locationSearch]);
 
   const toggleClubSelection = (clubId) => {
     setSelectedClubIds(prev => 
@@ -130,12 +135,12 @@ export default function PartnerHub() {
 
       <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px 20px 0' }}>
         {/* Search & Catchment Filter */}
-        <div style={{ display: 'flex', gap: '10px', marginBottom: '16px', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '10px', marginBottom: '12px', flexWrap: 'wrap' }}>
           <div style={{ flex: 1, minWidth: '220px', position: 'relative' }}>
             <Search size={16} color="var(--slate-400)" style={{ position: 'absolute', left: '12px', top: '13px' }} />
             <input
               type="text"
-              placeholder="Search by town, region, or club name..."
+              placeholder="Search by town (e.g. Heathfield, St Leonards) or region (Kent, South East, Sussex)..."
               value={locationSearch}
               onChange={(e) => setLocationSearch(e.target.value)}
               style={{
@@ -147,6 +152,42 @@ export default function PartnerHub() {
               }}
             />
           </div>
+        </div>
+
+        {/* Regional Quick Filter Catchment Chips */}
+        <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '8px', marginBottom: '14px', WebkitOverflowScrolling: 'touch' }}>
+          {['All Regions', 'South East (All)', 'Kent', 'East Sussex', 'London'].map(reg => {
+            const isSelected = selectedRegion === reg;
+            const matchCount = reg === 'All Regions' 
+              ? availableCommunities.length 
+              : availableCommunities.filter(c => matchCommunityLocation(c, reg === 'South East (All)' ? 'south east' : reg)).length;
+            return (
+              <button
+                key={reg}
+                type="button"
+                onClick={() => setSelectedRegion(reg)}
+                style={{
+                  padding: '5px 12px',
+                  borderRadius: '99px',
+                  background: isSelected ? 'rgba(56, 189, 248, 0.2)' : 'rgba(255, 255, 255, 0.04)',
+                  border: isSelected ? '1px solid #38bdf8' : '1px solid rgba(255, 255, 255, 0.08)',
+                  color: isSelected ? '#38bdf8' : 'var(--slate-300)',
+                  fontSize: '0.78rem',
+                  fontWeight: isSelected ? 700 : 500,
+                  whiteSpace: 'nowrap',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '5px'
+                }}
+              >
+                <span>{reg}</span>
+                <span style={{ fontSize: '0.7rem', opacity: 0.7, background: 'rgba(255,255,255,0.08)', padding: '1px 6px', borderRadius: '10px' }}>
+                  {matchCount}
+                </span>
+              </button>
+            );
+          })}
         </div>
 
         {/* Niche Category Pills */}
@@ -236,6 +277,41 @@ export default function PartnerHub() {
             </div>
           </div>
         )}
+
+        {/* Catchment Header & Regional Bundle Select */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
+          <div style={{ fontSize: '0.84rem', color: 'var(--slate-300)', fontWeight: 600 }}>
+            {filteredCommunities.length} {filteredCommunities.length === 1 ? 'Community' : 'Communities'} in Catchment
+          </div>
+          {filteredCommunities.length > 0 && (
+            <button
+              type="button"
+              onClick={() => {
+                const allIds = filteredCommunities.map(c => c.id);
+                const allSelected = allIds.every(id => selectedClubIds.includes(id));
+                if (allSelected) {
+                  setSelectedClubIds(prev => prev.filter(id => !allIds.includes(id)));
+                } else {
+                  setSelectedClubIds(prev => Array.from(new Set([...prev, ...allIds])));
+                }
+              }}
+              style={{
+                background: 'rgba(245, 158, 11, 0.12)',
+                border: '1px solid rgba(245, 158, 11, 0.35)',
+                borderRadius: '8px',
+                padding: '5px 12px',
+                color: '#fbbf24',
+                fontSize: '0.78rem',
+                fontWeight: 700,
+                cursor: 'pointer'
+              }}
+            >
+              {filteredCommunities.every(c => selectedClubIds.includes(c.id))
+                ? 'Deselect All in Catchment'
+                : '+ Select All ' + filteredCommunities.length + ' for Regional Sponsorship'}
+            </button>
+          )}
+        </div>
 
         {/* Community List */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>

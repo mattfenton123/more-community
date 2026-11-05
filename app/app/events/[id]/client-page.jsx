@@ -21,8 +21,7 @@ import ShareModal from '../../../src/components/ShareModal';
 import EventRecapShareCard from '../../../src/components/EventRecapShareCard';
 
 function EventLocationMap({ location, event }) {
-  const mapRef = useRef(null);
-  const mapInstanceRef = useRef(null);
+  const [mapType, setMapType] = useState('m'); // 'm' = Roadmap, 'k' = Satellite
   const [coords, setCoords] = useState(() => {
     const parsed = parseLocationCoords(location) || (event?.lat && event?.lng ? { lat: Number(event.lat), lng: Number(event.lng) } : null);
     if (parsed) return parsed;
@@ -70,113 +69,100 @@ function EventLocationMap({ location, event }) {
     return () => controller.abort();
   }, [location, event]);
 
-  useEffect(() => {
-    if (!coords || !mapRef.current) return;
-
-    let isMounted = true;
-
-    // Dynamic import of Leaflet (client-side only)
-    import('leaflet').then(L => {
-      import('leaflet/dist/leaflet.css');
-
-      if (!isMounted || !mapRef.current) return;
-
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.remove();
-        mapInstanceRef.current = null;
-      }
-
-      if (mapRef.current._leaflet_id) {
-        delete mapRef.current._leaflet_id;
-      }
-
-      const map = L.map(mapRef.current, {
-        center: [coords.lat, coords.lng],
-        zoom: 15,
-        zoomControl: true,
-        attributionControl: false,
-        dragging: true,
-        scrollWheelZoom: false,
-      });
-
-      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-      }).addTo(map);
-
-      // Custom teal marker
-      const markerIcon = L.divIcon({
-        html: `<div style="
-          width: 38px; height: 38px; border-radius: 50%;
-          background: rgba(20,184,166,0.95);
-          border: 3px solid rgba(255,255,255,0.95);
-          display: flex; align-items: center; justify-content: center;
-          box-shadow: 0 4px 18px rgba(20,184,166,0.6), 0 0 0 8px rgba(20,184,166,0.25);
-          animation: pulseMarker 2s ease-in-out infinite;
-          font-size: 18px;
-        ">📍</div>`,
-        iconSize: [38, 38],
-        iconAnchor: [19, 19],
-        className: '',
-      });
-
-      const cleanName = cleanLocationName(location);
-      const marker = L.marker([coords.lat, coords.lng], { icon: markerIcon }).addTo(map);
-      marker.bindPopup(`<b>${cleanName}</b>${areaInfo ? `<br/><span style="color:#64748b;font-size:12px;">${areaInfo}</span>` : ''}`);
-
-      mapInstanceRef.current = map;
-
-      // Invalidate size to guarantee full tile rendering
-      setTimeout(() => { if (isMounted && map) map.invalidateSize(); }, 120);
-      setTimeout(() => { if (isMounted && map) map.invalidateSize(); }, 350);
-    });
-
-    return () => {
-      isMounted = false;
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.remove();
-        mapInstanceRef.current = null;
-      }
-      if (mapRef.current && mapRef.current._leaflet_id) {
-        delete mapRef.current._leaflet_id;
-      }
-    };
-  }, [coords]);
-
   const cleanName = cleanLocationName(location);
+
+  // Construct Google Maps Search Query
+  const searchQuery = coords
+    ? `${coords.lat},${coords.lng}`
+    : `${cleanName}${areaInfo ? `, ${areaInfo}` : ''}, UK`;
+
+  const googleEmbedUrl = `https://maps.google.com/maps?q=${encodeURIComponent(searchQuery)}&t=${mapType}&z=16&hl=en&output=embed`;
 
   const googleMapsUrl = coords
     ? `https://www.google.com/maps/dir/?api=1&destination=${coords.lat},${coords.lng}`
-    : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(cleanName)}`;
+    : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(cleanName + (areaInfo ? `, ${areaInfo}` : ''))}`;
 
   const appleMapsUrl = coords
     ? `https://maps.apple.com/?daddr=${coords.lat},${coords.lng}`
-    : `https://maps.apple.com/?q=${encodeURIComponent(cleanName)}`;
+    : `https://maps.apple.com/?q=${encodeURIComponent(cleanName + (areaInfo ? `, ${areaInfo}` : ''))}`;
 
   return (
     <div style={{ marginBottom: '32px' }}>
-      <h3 style={{ fontSize: '1.2rem', margin: '0 0 12px 0', color: 'var(--white)', fontFamily: 'var(--font-heading)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <MapPin size={20} color="var(--teal-400)" /> Event Start Location
-      </h3>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
+        <h3 style={{ fontSize: '1.2rem', margin: 0, color: 'var(--white)', fontFamily: 'var(--font-heading)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <MapPin size={20} color="var(--teal-400)" /> Event Start Location
+        </h3>
 
-      {/* Map container */}
+        {/* Google Maps Layer Toggle: Map vs Satellite */}
+        <div style={{ display: 'flex', gap: '4px', background: 'rgba(255,255,255,0.06)', padding: '3px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
+          <button
+            type="button"
+            onClick={() => setMapType('m')}
+            style={{
+              background: mapType === 'm' ? '#2dd4bf' : 'transparent',
+              color: mapType === 'm' ? '#0f172a' : 'var(--slate-300)',
+              border: 'none',
+              borderRadius: '6px',
+              padding: '3px 8px',
+              fontSize: '0.72rem',
+              fontWeight: 700,
+              cursor: 'pointer',
+              transition: 'all 0.15s ease'
+            }}
+          >
+            Google Map
+          </button>
+          <button
+            type="button"
+            onClick={() => setMapType('k')}
+            style={{
+              background: mapType === 'k' ? '#2dd4bf' : 'transparent',
+              color: mapType === 'k' ? '#0f172a' : 'var(--slate-300)',
+              border: 'none',
+              borderRadius: '6px',
+              padding: '3px 8px',
+              fontSize: '0.72rem',
+              fontWeight: 700,
+              cursor: 'pointer',
+              transition: 'all 0.15s ease'
+            }}
+          >
+            Satellite
+          </button>
+        </div>
+      </div>
+
+      {/* Google Maps Embed Container */}
       <div style={{
         borderRadius: '16px', overflow: 'hidden',
         border: '1px solid rgba(255,255,255,0.08)',
         background: 'var(--slate-900)',
         marginBottom: '12px',
         position: 'relative',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.3)'
+        boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+        height: '240px'
       }}>
-        <div ref={mapRef} style={{ width: '100%', height: '220px' }} />
+        <iframe
+          title="Google Map Event Location"
+          width="100%"
+          height="240"
+          style={{ border: 0, width: '100%', height: '240px', display: 'block' }}
+          loading="lazy"
+          allowFullScreen
+          referrerPolicy="no-referrer-when-downgrade"
+          src={googleEmbedUrl}
+        />
         {coords && (
           <div style={{
-            position: 'absolute', bottom: '10px', left: '10px', zIndex: 400,
-            background: 'rgba(15, 23, 42, 0.85)', backdropFilter: 'blur(8px)',
-            padding: '4px 10px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.1)',
-            fontSize: '0.72rem', color: '#2dd4bf', fontFamily: 'monospace'
+            position: 'absolute', bottom: '10px', left: '10px', zIndex: 10,
+            background: 'rgba(15, 23, 42, 0.88)', backdropFilter: 'blur(8px)',
+            padding: '4px 10px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.12)',
+            fontSize: '0.72rem', color: '#2dd4bf', fontFamily: 'monospace',
+            display: 'flex', alignItems: 'center', gap: '6px'
           }}>
-            📍 {coords.lat.toFixed(4)}°, {coords.lng.toFixed(4)}°
+            <span>📍 Google Maps</span>
+            <span style={{ color: 'var(--slate-400)' }}>•</span>
+            <span>{coords.lat.toFixed(4)}°, {coords.lng.toFixed(4)}°</span>
           </div>
         )}
       </div>
@@ -216,7 +202,7 @@ function EventLocationMap({ location, event }) {
               textDecoration: 'none', cursor: 'pointer',
             }}
           >
-            <Navigation size={14} /> Google Maps
+            <Navigation size={14} /> Open in Google Maps
           </a>
           <a
             href={appleMapsUrl}
@@ -236,13 +222,6 @@ function EventLocationMap({ location, event }) {
           </a>
         </div>
       </div>
-
-      <style dangerouslySetInnerHTML={{ __html: `
-        @keyframes pulseMarker {
-          0%, 100% { box-shadow: 0 4px 16px rgba(20,184,166,0.4), 0 0 0 8px rgba(20,184,166,0.1); }
-          50% { box-shadow: 0 4px 20px rgba(20,184,166,0.6), 0 0 0 16px rgba(20,184,166,0.05); }
-        }
-      `}} />
     </div>
   );
 }
@@ -833,18 +812,65 @@ export default function EventClient({ id }) {
             )}
 
             {/* What to Expect / Activity Level */}
-            {event.activityLevel && (
-              <div style={{ background: 'rgba(255,255,255,0.02)', padding: '20px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                <h4 style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--white)', margin: '0 0 12px 0', fontSize: '1.1rem' }}>
-                  <Activity size={18} color="#ec4899" /> What to Expect
-                </h4>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <span style={{ padding: '6px 16px', background: 'rgba(236,72,153,0.1)', color: '#f9a8d4', borderRadius: '99px', fontSize: '0.9rem', fontWeight: 600 }}>
-                    {event.activityLevel}
-                  </span>
+            {(() => {
+              const level = event.activityLevel || 'All Levels';
+              const isPeerSupport = event.title?.toLowerCase().includes('peer') || 
+                                    event.title?.toLowerCase().includes('mankind') || 
+                                    community?.name?.toLowerCase().includes('mankind') ||
+                                    event.title?.toLowerCase().includes('support') ||
+                                    event.title?.toLowerCase().includes('breathe') ||
+                                    event.title?.toLowerCase().includes('talk');
+              
+              const isWalkOrHike = event.title?.toLowerCase().includes('walk') || 
+                                   event.title?.toLowerCase().includes('hike') || 
+                                   community?.category?.toLowerCase().includes('walking');
+
+              let levelDescription = "Welcoming, beginner-friendly, and accessible. No prior experience or special equipment needed - come along and participate at your own pace.";
+              if (isPeerSupport) {
+                levelDescription = "A safe, informal, and relaxed environment. Sit with fellow local men over tea and coffee. There is zero pressure to share or speak - you are very welcome to just listen and take it in.";
+              } else if (isWalkOrHike) {
+                levelDescription = "Gentle, conversational group pace along established paths. Suitable for all fitness levels with regular pauses to chat. Nobody gets left behind.";
+              } else if (level === 'Beginner') {
+                levelDescription = "Gentle introduction with full guidance from the leader. Ideal for first-timers and anyone returning to the activity.";
+              } else if (level === 'Intermediate') {
+                levelDescription = "Moderate pace and active movement. A reasonable baseline fitness or comfort with the activity is recommended.";
+              } else if (level === 'Challenging' || level === 'Advanced') {
+                levelDescription = "Brisk pace or sustained physical activity. Good stamina and appropriate gear recommended.";
+              }
+
+              return (
+                <div style={{ background: 'rgba(255,255,255,0.02)', padding: '22px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
+                    <h4 style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--white)', margin: 0, fontSize: '1.1rem' }}>
+                      <Activity size={18} color="#ec4899" /> What to Expect
+                    </h4>
+                    <span style={{ padding: '4px 12px', background: 'rgba(236,72,153,0.12)', color: '#f9a8d4', borderRadius: '99px', fontSize: '0.8rem', fontWeight: 700, border: '1px solid rgba(236,72,153,0.25)' }}>
+                      {level}
+                    </span>
+                  </div>
+
+                  <p style={{ color: 'var(--slate-200)', fontSize: '0.92rem', lineHeight: 1.55, margin: '0 0 16px 0' }}>
+                    {event.whatToExpect || levelDescription}
+                  </p>
+
+                  {/* Structured Expectation Highlights */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '10px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8rem', color: 'var(--slate-300)' }}>
+                      <CheckCircle2 size={15} color="#2dd4bf" />
+                      <span><strong>Atmosphere:</strong> {isPeerSupport ? 'Confidential & casual' : 'Friendly & social'}</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8rem', color: 'var(--slate-300)' }}>
+                      <CheckCircle2 size={15} color="#2dd4bf" />
+                      <span><strong>Pressure:</strong> Zero pressure • Go at your pace</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8rem', color: 'var(--slate-300)' }}>
+                      <CheckCircle2 size={15} color="#2dd4bf" />
+                      <span><strong>First-Timers:</strong> Very welcome & supported</span>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
           </div>
         </div>
 
