@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Calendar as CalIcon, MapPin, Search, X, CheckCircle2, CreditCard, Check, Ticket, Users, QrCode, Image as ImageIcon, Navigation , Share2} from 'lucide-react';
+import { Calendar as CalIcon, MapPin, Search, X, CheckCircle2, CreditCard, Check, Ticket, Users, QrCode, Image as ImageIcon, Navigation } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { SkeletonList, SkeletonEvent } from '../components/SkeletonCard';
 import { useToast } from '../components/Toast';
@@ -71,7 +71,7 @@ export default function EventsHub() {
     if (!userLocation) return eventList;
     return eventList.filter(e => {
       const community = communities.find(c => c.id === e.communityId);
-      if (!community-.lat || !community-.lng) return true; // Include if no geo data
+      if (!community?.lat || !community?.lng) return true; // Include if no geo data
       return getDistanceMiles(userLocation.lat, userLocation.lng, community.lat, community.lng) <= RADIUS_MILES;
     });
   };
@@ -83,16 +83,16 @@ export default function EventsHub() {
     return eventList.filter(e => {
       const community = communities.find(c => c.id === e.communityId);
       return (
-        e.title-.toLowerCase().includes(q) ||
-        e.location-.toLowerCase().includes(q) ||
-        e.description-.toLowerCase().includes(q) ||
-        community-.name-.toLowerCase().includes(q)
+        e.title?.toLowerCase().includes(q) ||
+        e.location?.toLowerCase().includes(q) ||
+        e.description?.toLowerCase().includes(q) ||
+        community?.name?.toLowerCase().includes(q)
       );
     });
   };
 
   const myRsvpEventIds = Object.keys(eventRsvps).filter(eventId => 
-    eventRsvps[eventId]-.some(r => r.userId === user.id)
+    eventRsvps[eventId]?.some(r => r.userId === user.id)
   );
   const userEvents = sortByDate(filterBySearch(events.filter(e => myRsvpEventIds.includes(e.id) || user.joinedCommunities.includes(e.communityId))));
   const exploreEvents = sortByDate(filterBySearch(filterByDistance(events.filter(e => !user.joinedCommunities.includes(e.communityId)))));
@@ -109,9 +109,9 @@ export default function EventsHub() {
   const getEventPrice = (event) => {
     let price = event.ticketPrice || 0;
     const isMember = user.joinedCommunities.includes(event.communityId);
-    if (!isMember && event.description-.includes('<!--META:')) {
+    if (!isMember && event.description?.includes('<!--META:')) {
       try {
-        const match = event.description.match(/<!--META:(.*-)-->/);
+        const match = event.description.match(/<!--META:(.*?)-->/);
         if (match && match[1]) {
           const meta = JSON.parse(match[1]);
           if (meta.nonMemberPrice) price = meta.nonMemberPrice;
@@ -161,13 +161,13 @@ export default function EventsHub() {
 
   const renderEvent = (event, index) => {
     const community = communities.find(c => c.id === event.communityId);
-    const eventImage = event.image || community-.image;
+    const eventImage = event.image || community?.image;
     const price = getEventPrice(event);
-    const hasRsvp = eventRsvps[event.id]-.some(r => r.userId === user.id);
+    const hasRsvp = eventRsvps[event.id]?.some(r => r.userId === user.id);
     return (
       <div 
         key={event.id} 
-        onClick={() => setSelectedEvent({ ...event, communityName: community-.name })}
+        onClick={() => setSelectedEvent({ ...event, communityName: community?.name })}
         className="interactive-press stagger-item" 
         style={{ cursor: 'pointer', marginBottom: '16px', borderRadius: '16px', overflow: 'hidden', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', transition: 'all 0.2s' }}
         onMouseOver={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'}
@@ -176,8 +176,8 @@ export default function EventsHub() {
         {eventImage && (
           <div style={{ height: '120px', background: `url(${eventImage})`, backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative' }}>
             <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.6))' }}></div>
-            <div style={{ position: 'absolute', top: '10px', right: '10px', fontSize: '0.75rem', fontWeight: 700, color: price > 0 - 'var(--amber-400)' : 'var(--teal-300)', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)', padding: '4px 10px', borderRadius: '99px' }}>
-              {price > 0 - `£${price}` : 'FREE'}
+            <div style={{ position: 'absolute', top: '10px', right: '10px', fontSize: '0.75rem', fontWeight: 700, color: price > 0 ? 'var(--amber-400)' : 'var(--teal-300)', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)', padding: '4px 10px', borderRadius: '99px' }}>
+              {price > 0 ? `£${price}` : 'FREE'}
             </div>
             {hasRsvp && (
               <div style={{ position: 'absolute', top: '10px', left: '10px', fontSize: '0.7rem', fontWeight: 700, color: 'var(--teal-300)', background: 'rgba(20,184,166,0.2)', backdropFilter: 'blur(6px)', padding: '4px 10px', borderRadius: '99px', display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -187,7 +187,7 @@ export default function EventsHub() {
           </div>
         )}
         <div style={{ padding: '16px' }}>
-          <div style={{ fontSize: '0.75rem', color: 'var(--teal-400)', fontWeight: 600, marginBottom: '4px', textTransform: 'uppercase' }}>{community-.name}</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--teal-400)', fontWeight: 600, marginBottom: '4px', textTransform: 'uppercase' }}>{community?.name}</div>
           <h3 style={{ margin: '0 0 8px 0', fontSize: '1.1rem', fontWeight: 700 }}>{event.title}</h3>
           <div style={{ display: 'flex', gap: '16px', fontSize: '0.85rem', color: 'var(--slate-400)' }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><CalIcon size={14} /> {event.date}</span>
@@ -242,8 +242,8 @@ export default function EventsHub() {
         {['My Schedule', 'Recommended', 'Explore'].map(tab => (
           <button key={tab} onClick={() => setActiveTab(tab)} style={{
             background: 'none', border: 'none', padding: '12px 0', fontSize: '0.95rem', cursor: 'pointer', fontWeight: 600,
-            color: activeTab === tab - 'white' : 'var(--slate-500)',
-            borderBottom: activeTab === tab - '2px solid var(--teal-400)' : '2px solid transparent',
+            color: activeTab === tab ? 'white' : 'var(--slate-500)',
+            borderBottom: activeTab === tab ? '2px solid var(--teal-400)' : '2px solid transparent',
             transition: 'all 0.2s'
           }}>
             {tab}
@@ -252,31 +252,31 @@ export default function EventsHub() {
       </div>
 
       <div style={{ padding: '10px 20px' }}>
-        {activeTab === 'My Schedule' - (
+        {activeTab === 'My Schedule' ? (
           <>
             <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)', marginBottom: '12px', fontWeight: 600 }}>UPCOMING • SOONEST FIRST</div>
-            {isLoading - (
+            {isLoading ? (
               <SkeletonList count={3} Component={SkeletonEvent} />
-            ) : userEvents.length > 0 - userEvents.map((e, i) => renderEvent(e, i)) : (
-              <p style={{ color: 'var(--slate-400)' }}>{searchQuery - 'No events match your search.' : 'You have no upcoming events. Join some communities to fill your schedule!'}</p>
+            ) : userEvents.length > 0 ? userEvents.map((e, i) => renderEvent(e, i)) : (
+              <p style={{ color: 'var(--slate-400)' }}>{searchQuery ? 'No events match your search.' : 'You have no upcoming events. Join some communities to fill your schedule!'}</p>
             )}
           </>
-        ) : activeTab === 'Recommended' - (
+        ) : activeTab === 'Recommended' ? (
           <>
             <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)', marginBottom: '12px', fontWeight: 600 }}>MATCHING YOUR INTERESTS • SOONEST FIRST</div>
-            {isLoading - (
+            {isLoading ? (
               <SkeletonList count={3} Component={SkeletonEvent} />
-            ) : recommendedEvents.length > 0 - recommendedEvents.map((e, i) => renderEvent(e, i)) : (
-              <p style={{ color: 'var(--slate-400)' }}>{searchQuery - 'No events match your search.' : 'No recommended events right now based on your interests.'}</p>
+            ) : recommendedEvents.length > 0 ? recommendedEvents.map((e, i) => renderEvent(e, i)) : (
+              <p style={{ color: 'var(--slate-400)' }}>{searchQuery ? 'No events match your search.' : 'No recommended events right now based on your interests.'}</p>
             )}
           </>
         ) : (
           <>
             <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)', marginBottom: '12px', fontWeight: 600 }}>DISCOVER EVENTS NEAR YOU • SOONEST FIRST</div>
-            {isLoading - (
+            {isLoading ? (
               <SkeletonList count={3} Component={SkeletonEvent} />
-            ) : exploreEvents.length > 0 - exploreEvents.map((e, i) => renderEvent(e, i)) : (
-              <p style={{ color: 'var(--slate-400)' }}>{searchQuery - 'No events match your search.' : 'No other public events right now.'}</p>
+            ) : exploreEvents.length > 0 ? exploreEvents.map((e, i) => renderEvent(e, i)) : (
+              <p style={{ color: 'var(--slate-400)' }}>{searchQuery ? 'No events match your search.' : 'No other public events right now.'}</p>
             )}
           </>
         )}
@@ -309,10 +309,10 @@ export default function EventsHub() {
               </button>
             </div>
             
-            <div style={{ flex: 1, overflowY: 'auto', paddingBottom: checkoutState !== 'idle' - '320px' : '0' }}>
+            <div style={{ flex: 1, overflowY: 'auto', paddingBottom: checkoutState !== 'idle' ? '320px' : '0' }}>
               <div style={{ background: 'var(--slate-800)', borderRadius: '16px', padding: '24px', border: '1px solid var(--slate-700)', position: 'relative', overflow: 'hidden' }}>
                 <div style={{ position: 'absolute', top: 0, right: 0, padding: '16px', background: 'rgba(20,184,166,0.1)', borderBottomLeftRadius: '16px', color: 'var(--teal-400)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <Ticket size={18} /> {getEventPrice(selectedEvent) > 0 - `£${getEventPrice(selectedEvent)}` : 'FREE'}
+                  <Ticket size={18} /> {getEventPrice(selectedEvent) > 0 ? `£${getEventPrice(selectedEvent)}` : 'FREE'}
                 </div>
                 
                 <div style={{ fontSize: '0.85rem', color: 'var(--teal-400)', fontWeight: 600, textTransform: 'uppercase', marginBottom: '8px' }}>{selectedEvent.communityName}</div>
@@ -368,7 +368,7 @@ export default function EventsHub() {
                       {(() => {
                         const firstUser = users.find(u => u.id === eventRsvps[selectedEvent.id][0].userId);
                         const count = eventRsvps[selectedEvent.id].length;
-                        return count === 1 - `${firstUser-.name || 'Someone'} is going.` : `${firstUser-.name || 'Someone'} and ${count - 1} others are going.`;
+                        return count === 1 ? `${firstUser?.name || 'Someone'} is going.` : `${firstUser?.name || 'Someone'} and ${count - 1} others are going.`;
                       })()}
                     </div>
                   )}
@@ -397,7 +397,7 @@ export default function EventsHub() {
                         <h4 style={{ margin: '0 0 16px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <ImageIcon size={18} color="var(--teal-400)" /> Memory Drop
                         </h4>
-                        {!hasUploadedMemory - (
+                        {!hasUploadedMemory ? (
                           <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px dashed rgba(255,255,255,0.2)', borderRadius: '12px', padding: '24px', textAlign: 'center' }}>
                             <div style={{ filter: 'blur(8px)', opacity: 0.5, marginBottom: '-60px', display: 'flex', gap: '8px', overflow: 'hidden' }}>
                               <div style={{ width: '100px', height: '100px', background: '#ccc', borderRadius: '8px' }}></div>
@@ -428,9 +428,9 @@ export default function EventsHub() {
 
                   return checkoutState === 'idle' && (
                     <>
-                    {!eventRsvps[selectedEvent.id]-.some(r => r.userId === user.id) - (
-                      <button onClick={() => getEventPrice(selectedEvent) > 0 - setCheckoutState('payment_select') : handleRSVP(false)} className="btn btn-primary interactive-press" style={{ width: '100%', padding: '16px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', borderRadius: '12px', fontSize: '1.05rem', marginBottom: '12px' }}>
-                        {getEventPrice(selectedEvent) > 0 - `Get Tickets — £${getEventPrice(selectedEvent)}` : 'Free RSVP'}
+                    {!eventRsvps[selectedEvent.id]?.some(r => r.userId === user.id) ? (
+                      <button onClick={() => getEventPrice(selectedEvent) > 0 ? setCheckoutState('payment_select') : handleRSVP(false)} className="btn btn-primary interactive-press" style={{ width: '100%', padding: '16px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', borderRadius: '12px', fontSize: '1.05rem', marginBottom: '12px' }}>
+                        {getEventPrice(selectedEvent) > 0 ? `Get Tickets  -  £${getEventPrice(selectedEvent)}` : 'Free RSVP'}
                       </button>
                     ) : (
                       <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
@@ -467,9 +467,9 @@ export default function EventsHub() {
                     {(() => {
                       const isMember = user.joinedCommunities.includes(selectedEvent.communityId);
                       let nonMemberPrice = null;
-                      if (!isMember && selectedEvent.description-.includes('<!--META:')) {
+                      if (!isMember && selectedEvent.description?.includes('<!--META:')) {
                         try {
-                          const match = selectedEvent.description.match(/<!--META:(.*-)-->/);
+                          const match = selectedEvent.description.match(/<!--META:(.*?)-->/);
                           if (match && match[1]) {
                             const meta = JSON.parse(match[1]);
                             if (meta.nonMemberPrice) nonMemberPrice = meta.nonMemberPrice;
@@ -501,7 +501,7 @@ export default function EventsHub() {
                         We're integrating Stripe for safe, seamless payments. In the meantime, please contact the community leader directly to arrange your ticket.
                       </p>
                       <div style={{ fontSize: '0.75rem', color: 'var(--slate-500)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-                        <CreditCard size={14} /> Powered by Stripe — launching soon
+                        <CreditCard size={14} /> Powered by Stripe  -  launching soon
                       </div>
                     </div>
 

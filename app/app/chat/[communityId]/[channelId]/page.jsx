@@ -1,6 +1,6 @@
 "use client";
 import { useState, useRef, useEffect } from 'react';
-import { Send, Menu, MessageCircle, ChevronLeft, Plus, Users, Hash, Image as ImageIcon, X, Smile , Megaphone} from 'lucide-react';
+import { Send, Menu, MessageCircle, ChevronLeft, Plus, Users, Hash, Image as ImageIcon, X, Smile } from 'lucide-react';
 import AppHeader from '../../../../src/components/AppHeader';
 import { useAppContext } from '../../../../src/context/AppContext';
 import { useChat } from '../../../../src/context/ChatContext';
@@ -46,7 +46,7 @@ export default function Chat() {
   const [userSearchTerm, setUserSearchTerm] = useState('');
 
   const activeMessages = (targetUserId && user)
-    - directMessages.filter(m => (m.senderId === user.id && m.receiverId === targetUserId) || (m.senderId === targetUserId && m.receiverId === user.id))
+    ? directMessages.filter(m => (m.senderId === user.id && m.receiverId === targetUserId) || (m.senderId === targetUserId && m.receiverId === user.id))
     : messages.filter(m => m.communityId === communityId && m.channel === channelId);
 
   // Mark as read when entering a chat
@@ -57,12 +57,12 @@ export default function Chat() {
 
   // Auto-scroll
   useEffect(() => {
-    messagesEndRef.current-.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [activeMessages.length]);
 
   // INBOX VIEW (If no params provided)
   if (!communityId && !channelId && !targetUserId) {
-    const myCommunities = communities.filter(c => Boolean(user-.joinedCommunities-.includes(c.id)));
+    const myCommunities = communities.filter(c => Boolean(user?.joinedCommunities?.includes(c.id)));
     
     // Build inbox items from real channels + fallback general
     const communityInboxItems = [];
@@ -85,7 +85,7 @@ export default function Chat() {
     if (directMessages && user) {
       const dmUsers = new Set();
       directMessages.forEach(dm => {
-        const otherUserId = dm.senderId === user.id - dm.receiverId : dm.senderId;
+        const otherUserId = dm.senderId === user.id ? dm.receiverId : dm.senderId;
         dmUsers.add(otherUserId);
       });
       
@@ -99,7 +99,7 @@ export default function Chat() {
       });
     }
 
-    const itemsToRender = activeTab === 'Communities' - communityInboxItems : dmInboxItems;
+    const itemsToRender = activeTab === 'Communities' ? communityInboxItems : dmInboxItems;
 
     const handleCreateChannel = async () => {
       if (!newChannelName.trim()) return;
@@ -119,8 +119,8 @@ export default function Chat() {
             onClick={() => setActiveTab('Communities')}
             style={{ 
               background: 'none', border: 'none', padding: '12px 0', fontSize: '1rem', fontWeight: 600, cursor: 'pointer',
-              color: activeTab === 'Communities' - 'white' : 'var(--slate-500)',
-              borderBottom: activeTab === 'Communities' - '2px solid var(--teal-400)' : '2px solid transparent',
+              color: activeTab === 'Communities' ? 'white' : 'var(--slate-500)',
+              borderBottom: activeTab === 'Communities' ? '2px solid var(--teal-400)' : '2px solid transparent',
               transition: 'all 0.2s'
             }}>
             Communities
@@ -129,8 +129,8 @@ export default function Chat() {
             onClick={() => setActiveTab('Direct Messages')}
             style={{ 
               background: 'none', border: 'none', padding: '12px 0', fontSize: '1rem', fontWeight: 600, cursor: 'pointer',
-              color: activeTab === 'Direct Messages' - 'white' : 'var(--slate-500)',
-              borderBottom: activeTab === 'Direct Messages' - '2px solid var(--teal-400)' : '2px solid transparent',
+              color: activeTab === 'Direct Messages' ? 'white' : 'var(--slate-500)',
+              borderBottom: activeTab === 'Direct Messages' ? '2px solid var(--teal-400)' : '2px solid transparent',
               transition: 'all 0.2s'
             }}>
             Direct Messages
@@ -138,7 +138,7 @@ export default function Chat() {
         </div>
         
         <div style={{ flex: 1, overflowY: 'auto', padding: '10px 0' }}>
-          {isLoading - (
+          {isLoading ? (
             <div style={{ padding: '0 20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
               {[1,2,3,4].map(i => (
                 <div key={i} className="stagger-item" style={{ display: 'flex', gap: '16px', padding: '12px 0' }}>
@@ -151,9 +151,9 @@ export default function Chat() {
                 </div>
               ))}
             </div>
-          ) : itemsToRender.length === 0 - (
+          ) : itemsToRender.length === 0 ? (
             <p style={{ padding: '20px', color: 'var(--slate-400)', textAlign: 'center' }}>
-              {activeTab === 'Communities' - 'You have no active community chats.' : 'You have no direct messages yet.'}
+              {activeTab === 'Communities' ? 'You have no active community chats.' : 'You have no direct messages yet.'}
             </p>
           ) : (
             itemsToRender.map((item, i) => {
@@ -179,11 +179,11 @@ export default function Chat() {
                     </div>
                     <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '4px' }}>
-                        <div style={{ fontWeight: hasUnread - 700 : 600, fontSize: '1rem', color: hasUnread - 'white' : 'var(--slate-200)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.otherUser.name}</div>
-                        <div style={{ fontSize: '0.75rem', color: hasUnread - 'var(--teal-400)' : 'var(--slate-500)', fontWeight: hasUnread - 600 : 400 }}>{latestDm-.timestamp || ''}</div>
+                        <div style={{ fontWeight: hasUnread ? 700 : 600, fontSize: '1rem', color: hasUnread ? 'white' : 'var(--slate-200)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.otherUser.name}</div>
+                        <div style={{ fontSize: '0.75rem', color: hasUnread ? 'var(--teal-400)' : 'var(--slate-500)', fontWeight: hasUnread ? 600 : 400 }}>{latestDm?.timestamp || ''}</div>
                       </div>
-                      <div style={{ fontSize: '0.85rem', color: hasUnread - 'var(--slate-300)' : 'var(--slate-400)', fontWeight: hasUnread - 500 : 400, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {latestDm - (latestDm.image - '📸 Image' : `${latestDm.senderId === user.id - 'You' : item.otherUser.name}: ${latestDm.text}`) : 'No messages yet...'}
+                      <div style={{ fontSize: '0.85rem', color: hasUnread ? 'var(--slate-300)' : 'var(--slate-400)', fontWeight: hasUnread ? 500 : 400, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {latestDm ? (latestDm.image ? '📸 Image' : `${latestDm.senderId === user.id ? 'You' : item.otherUser.name}: ${latestDm.text}`) : 'No messages yet...'}
                       </div>
                     </div>
                   </div>
@@ -207,17 +207,17 @@ export default function Chat() {
                   {hasUnread && <div style={{ position: 'absolute', top: '16px', left: '8px', width: '8px', height: '8px', borderRadius: '50%', background: 'var(--teal-400)' }} />}
                   <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: `url(${item.comm.image || FALLBACK_IMAGES.community})`, backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative' }}>
                     <div style={{ position: 'absolute', bottom: '-4px', right: '-4px', background: 'var(--slate-800)', borderRadius: '50%', padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid var(--slate-950)' }}>
-                      {item.type === 'channel' - <Hash size={12} color="var(--teal-400)" /> : <Users size={12} color="var(--amber-400)" />}
+                      {item.type === 'channel' ? <Hash size={12} color="var(--teal-400)" /> : <Users size={12} color="var(--amber-400)" />}
                     </div>
                   </div>
                   <div style={{ flex: 1, overflow: 'hidden' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '4px' }}>
-                      <div style={{ fontWeight: hasUnread - 700 : 600, fontSize: '1rem', color: hasUnread - 'white' : 'var(--slate-200)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.comm.name}</div>
-                      <div style={{ fontSize: '0.75rem', color: hasUnread - 'var(--teal-400)' : 'var(--slate-500)', fontWeight: hasUnread - 600 : 400 }}>{latestMsg-.timestamp || ''}</div>
+                      <div style={{ fontWeight: hasUnread ? 700 : 600, fontSize: '1rem', color: hasUnread ? 'white' : 'var(--slate-200)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.comm.name}</div>
+                      <div style={{ fontSize: '0.75rem', color: hasUnread ? 'var(--teal-400)' : 'var(--slate-500)', fontWeight: hasUnread ? 600 : 400 }}>{latestMsg?.timestamp || ''}</div>
                     </div>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--teal-400)', fontWeight: 500, marginBottom: '2px' }}>{item.type === 'channel' - '#' : ''}{item.name}</div>
-                    <div style={{ fontSize: '0.85rem', color: hasUnread - 'var(--slate-300)' : 'var(--slate-400)', fontWeight: hasUnread - 500 : 400, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      {latestMsg - (latestMsg.image - '📸 Image' : `${latestMsg.authorId === user.id - 'You' : users.find(u=>u.id===latestMsg.authorId)-.name || 'Someone'}: ${latestMsg.text}`) : 'No messages yet...'}
+                    <div style={{ fontSize: '0.8rem', color: 'var(--teal-400)', fontWeight: 500, marginBottom: '2px' }}>{item.type === 'channel' ? '#' : ''}{item.name}</div>
+                    <div style={{ fontSize: '0.85rem', color: hasUnread ? 'var(--slate-300)' : 'var(--slate-400)', fontWeight: hasUnread ? 500 : 400, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {latestMsg ? (latestMsg.image ? '📸 Image' : `${latestMsg.authorId === user.id ? 'You' : users.find(u=>u.id===latestMsg.authorId)?.name || 'Someone'}: ${latestMsg.text}`) : 'No messages yet...'}
                     </div>
                   </div>
                 </div>
@@ -305,13 +305,13 @@ export default function Chat() {
 
   // ACTIVE CHAT VIEW
   const isDirectMessage = !!targetUserId;
-  const community = isDirectMessage - null : communities.find(c => c.id === communityId);
-  const targetUser = isDirectMessage - users.find(u => u.id === targetUserId) : null;
-  const waConfig = communityId - whatsappSettings[communityId] : null;
+  const community = isDirectMessage ? null : communities.find(c => c.id === communityId);
+  const targetUser = isDirectMessage ? users.find(u => u.id === targetUserId) : null;
+  const waConfig = communityId ? whatsappSettings[communityId] : null;
 
   const currentChannelObj = channels.find(c => c.id === channelId);
-  const isLeader = !isDirectMessage && communityMemberships[communityId]-.find(m => m.userId === user-.id)-.role === 'Leader';
-  const isReadOnly = currentChannelObj-.type === 'announcement' && !isLeader;
+  const isLeader = !isDirectMessage && communityMemberships[communityId]?.find(m => m.userId === user?.id)?.role === 'Leader';
+  const isReadOnly = currentChannelObj?.type === 'announcement' && !isLeader;
   
   const handleSend = async () => {
     if ((!inputText.trim() && imageFiles.length === 0) || isReadOnly) return;
@@ -330,7 +330,7 @@ export default function Chat() {
       }
     }
     
-    const finalImageValue = imageUrls.length > 0 - JSON.stringify(imageUrls) : '';
+    const finalImageValue = imageUrls.length > 0 ? JSON.stringify(imageUrls) : '';
     
     if (isDirectMessage) {
       await sendDirectMessage(targetUserId, inputText, finalImageValue);
@@ -347,17 +347,17 @@ export default function Chat() {
     <div className="view-chat" style={{ height: 'calc(100dvh - 70px)', display: 'flex', flexDirection: 'column', position: 'relative' }}>
       
       <AppHeader 
-        title={isDirectMessage - targetUser-.name : (currentChannelObj-.name || channelId)}
-        subtitle={isDirectMessage - 'Direct Message' : community-.name}
+        title={isDirectMessage ? targetUser?.name : (currentChannelObj?.name || channelId)}
+        subtitle={isDirectMessage ? 'Direct Message' : community?.name}
         showBack={true}
         onBack={() => navigate.push('/chat')}
       />
 
       {/* WhatsApp Banners */}
       {(() => {
-        const waGroupLink = community-.whatsapp_group || waConfig-.groupLink;
-        if (!waGroupLink || waConfig-.businessConnected || isDirectMessage) return null;
-        const normalizedLink = waGroupLink.startsWith('http') - waGroupLink : `https://${waGroupLink}`;
+        const waGroupLink = community?.whatsapp_group || waConfig?.groupLink;
+        if (!waGroupLink || waConfig?.businessConnected || isDirectMessage) return null;
+        const normalizedLink = waGroupLink.startsWith('http') ? waGroupLink : `https://${waGroupLink}`;
         return (
           <div style={{ background: 'rgba(34,197,94,0.1)', borderBottom: '1px solid rgba(34,197,94,0.2)', padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#22c55e', fontSize: '0.85rem', fontWeight: 500 }}>
@@ -369,7 +369,7 @@ export default function Chat() {
           </div>
         );
       })()}
-      {waConfig-.businessConnected && !isDirectMessage && (
+      {waConfig?.businessConnected && !isDirectMessage && (
         <div style={{ background: 'rgba(34,197,94,0.05)', borderBottom: '1px solid rgba(34,197,94,0.1)', padding: '8px 20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
           <MessageCircle size={14} color="#22c55e" />
           <span style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>Messages here are officially synced to members' WhatsApp via the Business API.</span>
@@ -381,10 +381,10 @@ export default function Chat() {
         {/* Chat Feed */}
         <div style={{ flex: 1, padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px', overflowY: 'auto' }}>
           <div style={{ textAlign: 'center', margin: '20px 0', color: 'var(--slate-500)', fontSize: '0.8rem' }}>
-            {isDirectMessage - `This is the start of your direct messages with ${targetUser-.name}.` : `This is the start of the #${channelId} chat for ${community-.name}.`}
+            {isDirectMessage ? `This is the start of your direct messages with ${targetUser?.name}.` : `This is the start of the #${channelId} chat for ${community?.name}.`}
           </div>
 
-          {isLoading - (
+          {isLoading ? (
             <>
               <SkeletonChatBubble align="left" />
               <SkeletonChatBubble align="right" />
@@ -395,12 +395,12 @@ export default function Chat() {
               const currentAuthorId = msg.senderId || msg.authorId; // Handle both schemas
               const authorObj = users.find(u => u.id === currentAuthorId) || { name: 'Unknown', id: currentAuthorId, avatar: 'https://i.pravatar.cc/150' };
               const isMe = currentAuthorId === user.id;
-              const isLeader = !isDirectMessage && communityMemberships[communityId]-.find(m => m.userId === currentAuthorId)-.role === 'Leader';
+              const isLeader = !isDirectMessage && communityMemberships[communityId]?.find(m => m.userId === currentAuthorId)?.role === 'Leader';
               
               const prevMsg = topLevelMessages[index - 1];
               const nextMsg = topLevelMessages[index + 1];
-              const prevAuthorId = prevMsg - (prevMsg.senderId || prevMsg.authorId) : null;
-              const nextAuthorId = nextMsg - (nextMsg.senderId || nextMsg.authorId) : null;
+              const prevAuthorId = prevMsg ? (prevMsg.senderId || prevMsg.authorId) : null;
+              const nextAuthorId = nextMsg ? (nextMsg.senderId || nextMsg.authorId) : null;
               
               const isConsecutive = prevAuthorId === currentAuthorId;
               const isLastConsecutive = nextAuthorId !== currentAuthorId;
@@ -433,27 +433,27 @@ export default function Chat() {
                 <div key={msg.id || index} style={{ display: 'flex', flexDirection: 'column' }}>
                   {showDate && (
                     <div style={{ textAlign: 'center', margin: '24px 0 16px 0', fontSize: '0.75rem', color: 'var(--slate-500)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px' }}>
-                      {msg.createdAt - new Date(msg.createdAt).toLocaleDateString() : 'Today'}
+                      {msg.createdAt ? new Date(msg.createdAt).toLocaleDateString() : 'Today'}
                     </div>
                   )}
-                  <div className="stagger-item" style={{ alignSelf: isMe - 'flex-end' : 'flex-start', maxWidth: '85%', marginTop: isConsecutive - '4px' : '16px' }} onMouseEnter={() => setHoveredMsgId(msg.id)} onMouseLeave={() => setHoveredMsgId(null)}>
+                  <div className="stagger-item" style={{ alignSelf: isMe ? 'flex-end' : 'flex-start', maxWidth: '85%', marginTop: isConsecutive ? '4px' : '16px' }} onMouseEnter={() => setHoveredMsgId(msg.id)} onMouseLeave={() => setHoveredMsgId(null)}>
                     {!isMe && !isConsecutive && (
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px', marginLeft: '4px' }}>
                         <img onClick={() => navigate.push(`/profile/${msg.authorId || msg.senderId}`)} src={authorObj.avatar} alt={authorObj.name} style={{ width: '20px', height: '20px', borderRadius: '50%', objectFit: 'cover', cursor: 'pointer' }} />
-                        <div onClick={() => navigate.push(`/profile/${msg.authorId || msg.senderId}`)} style={{ fontSize: '0.75rem', color: isLeader - 'var(--teal-400)' : 'var(--slate-400)', fontWeight: isLeader - 600 : 400, cursor: 'pointer' }}>
+                        <div onClick={() => navigate.push(`/profile/${msg.authorId || msg.senderId}`)} style={{ fontSize: '0.75rem', color: isLeader ? 'var(--teal-400)' : 'var(--slate-400)', fontWeight: isLeader ? 600 : 400, cursor: 'pointer' }}>
                           {authorObj.name} {isLeader && '👑'}
                         </div>
                       </div>
                     )}
                     <div style={{ 
-                      background: isMe - 'var(--teal-600)' : 'var(--slate-800)', 
-                      border: isMe - 'none' : '1px solid var(--slate-700)', 
+                      background: isMe ? 'var(--teal-600)' : 'var(--slate-800)', 
+                      border: isMe ? 'none' : '1px solid var(--slate-700)', 
                       padding: '12px 16px', 
                       borderRadius: isMe 
-                        - `16px ${isConsecutive - '4px' : '16px'} ${isLastConsecutive - '16px' : '4px'} 16px` 
-                        : `${isConsecutive - '4px' : '16px'} 16px 16px ${isLastConsecutive - '16px' : '4px'}`, 
+                        ? `16px ${isConsecutive ? '4px' : '16px'} ${isLastConsecutive ? '16px' : '4px'} 16px` 
+                        : `${isConsecutive ? '4px' : '16px'} 16px 16px ${isLastConsecutive ? '16px' : '4px'}`, 
                       fontSize: '0.95rem', 
-                      color: isMe - 'white' : 'var(--slate-200)',
+                      color: isMe ? 'white' : 'var(--slate-200)',
                       lineHeight: 1.4,
                       display: 'flex',
                       flexDirection: 'column',
@@ -461,7 +461,7 @@ export default function Chat() {
                       position: 'relative'
                     }}>
                       {hoveredMsgId === msg.id && (
-                        <div style={{ position: 'absolute', top: '-16px', right: isMe - '16px' : (msgImages.length - '-16px' : 'auto'), left: isMe - 'auto' : (msgImages.length - 'auto' : '-16px'), background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '99px', padding: '4px', display: 'flex', gap: '4px', zIndex: 10, boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }}>
+                        <div style={{ position: 'absolute', top: '-16px', right: isMe ? '16px' : (msgImages.length ? '-16px' : 'auto'), left: isMe ? 'auto' : (msgImages.length ? 'auto' : '-16px'), background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '99px', padding: '4px', display: 'flex', gap: '4px', zIndex: 10, boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }}>
                           {['❤️', '👍', '😂', '🔥', '🎉'].map(e => (
                             <button key={e} onClick={() => reactToMessage(msg.id, e, isDirectMessage)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem', padding: '2px 4px', transition: 'transform 0.1s' }} onMouseEnter={ev => ev.currentTarget.style.transform='scale(1.2)'} onMouseLeave={ev => ev.currentTarget.style.transform='scale(1)'}>
                               {e}
@@ -470,19 +470,19 @@ export default function Chat() {
                           <button onClick={() => setActiveThreadId(msg.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center', transition: 'transform 0.1s' }} onMouseEnter={ev => ev.currentTarget.style.transform='scale(1.2)'} onMouseLeave={ev => ev.currentTarget.style.transform='scale(1)'}>
                             <MessageCircle size={14} color="var(--slate-400)" />
                           </button>
-                          <button onClick={() => setReactionMsgId(reactionMsgId === msg.id - null : msg.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center', transition: 'transform 0.1s' }} onMouseEnter={ev => ev.currentTarget.style.transform='scale(1.2)'} onMouseLeave={ev => ev.currentTarget.style.transform='scale(1)'}>
+                          <button onClick={() => setReactionMsgId(reactionMsgId === msg.id ? null : msg.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center', transition: 'transform 0.1s' }} onMouseEnter={ev => ev.currentTarget.style.transform='scale(1.2)'} onMouseLeave={ev => ev.currentTarget.style.transform='scale(1)'}>
                             <Plus size={14} color="var(--slate-400)" />
                           </button>
                         </div>
                       )}
 
                       {msgImages.length > 0 && (
-                        <div style={{ display: 'grid', gridTemplateColumns: msgImages.length > 1 - '1fr 1fr' : '1fr', gap: '4px', borderRadius: '8px', overflow: 'hidden' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: msgImages.length > 1 ? '1fr 1fr' : '1fr', gap: '4px', borderRadius: '8px', overflow: 'hidden' }}>
                           {msgImages.map((img, i) => {
-                            if (img.match(/\.(mp4|mov|webm)(\-.*)-$/i)) {
-                              return <video key={i} src={img} controls style={{ width: '100%', height: msgImages.length > 1 - '120px' : 'auto', maxHeight: '250px', objectFit: 'contain', background: 'black' }} />;
+                            if (img.match(/\.(mp4|mov|webm)(\?.*)?$/i)) {
+                              return <video key={i} src={img} controls style={{ width: '100%', height: msgImages.length > 1 ? '120px' : 'auto', maxHeight: '250px', objectFit: 'contain', background: 'black' }} />;
                             }
-                            return <img key={i} src={img} alt="Attachment" style={{ width: '100%', height: msgImages.length > 1 - '120px' : 'auto', maxHeight: '250px', objectFit: 'cover' }} />;
+                            return <img key={i} src={img} alt="Attachment" style={{ width: '100%', height: msgImages.length > 1 ? '120px' : 'auto', maxHeight: '250px', objectFit: 'cover' }} />;
                           })}
                         </div>
                       )}
@@ -492,7 +492,7 @@ export default function Chat() {
                       {Object.keys(reactionsMap).length > 0 && (
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '4px' }}>
                           {Object.entries(reactionsMap).map(([emoji, usersArr]) => (
-                            <div key={emoji} onClick={() => reactToMessage(msg.id, emoji, isDirectMessage)} style={{ background: usersArr.includes(user.id) - (isMe - 'rgba(255,255,255,0.2)' : 'var(--teal-600)') : 'rgba(255,255,255,0.1)', padding: '2px 6px', borderRadius: '12px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.05)' }}>
+                            <div key={emoji} onClick={() => reactToMessage(msg.id, emoji, isDirectMessage)} style={{ background: usersArr.includes(user.id) ? (isMe ? 'rgba(255,255,255,0.2)' : 'var(--teal-600)') : 'rgba(255,255,255,0.1)', padding: '2px 6px', borderRadius: '12px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.05)' }}>
                               {emoji} <span style={{ opacity: 0.9 }}>{usersArr.length}</span>
                             </div>
                           ))}
@@ -505,16 +505,16 @@ export default function Chat() {
                         if (replyCount === 0) return null;
                         return (
                           <div onClick={() => setActiveThreadId(msg.id)} style={{ marginTop: '4px', fontSize: '0.75rem', color: 'var(--teal-400)', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                            <MessageCircle size={12} /> {replyCount} repl{replyCount === 1 - 'y' : 'ies'}
+                            <MessageCircle size={12} /> {replyCount} repl{replyCount === 1 ? 'y' : 'ies'}
                           </div>
                         );
                       })()}
 
                       <div style={{ fontSize: '0.65rem', alignSelf: 'flex-end', opacity: 0.7, marginTop: '2px' }}>
-                        {msg.createdAt - new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : (msg.timestamp - (String(msg.timestamp).includes('T') - new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : msg.timestamp) : '')}
+                        {msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : (msg.timestamp ? (String(msg.timestamp).includes('T') ? new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : msg.timestamp) : '')}
                       </div>
-                      {waConfig-.businessConnected && !isDirectMessage && isLastConsecutive && (
-                        <div style={{ position: 'absolute', bottom: '-20px', right: isMe - '0' : 'auto', left: isMe - 'auto' : '0', color: 'var(--slate-500)', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.65rem' }}>
+                      {waConfig?.businessConnected && !isDirectMessage && isLastConsecutive && (
+                        <div style={{ position: 'absolute', bottom: '-20px', right: isMe ? '0' : 'auto', left: isMe ? 'auto' : '0', color: 'var(--slate-500)', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.65rem' }}>
                           <MessageCircle size={10} color="#22c55e" /> Synced
                         </div>
                       )}
@@ -528,7 +528,7 @@ export default function Chat() {
         </div>
 
 
-      {!isReadOnly - (
+      {!isReadOnly ? (
         <div style={{ padding: '16px 20px', background: 'var(--slate-900)', borderTop: '1px solid var(--slate-800)', zIndex: 10 }}>
           {imageFiles.length > 0 && (
             <div style={{ display: 'flex', gap: '12px', padding: '8px 12px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', marginBottom: '8px', overflowX: 'auto' }}>
@@ -549,11 +549,11 @@ export default function Chat() {
               const files = Array.from(e.target.files);
               setImageFiles(prev => [...prev, ...files]);
             }} style={{ display: 'none' }} />
-            <button onClick={() => fileInputRef.current-.click()} className="interactive-press" style={{ background: 'none', border: 'none', color: 'var(--slate-400)', padding: '8px', cursor: 'pointer' }}>
+            <button onClick={() => fileInputRef.current?.click()} className="interactive-press" style={{ background: 'none', border: 'none', color: 'var(--slate-400)', padding: '8px', cursor: 'pointer' }}>
               <ImageIcon size={20} />
             </button>
             <div style={{ position: 'relative', flexShrink: 0, display: 'flex' }}>
-              <button onClick={() => setShowEmojiPicker(!showEmojiPicker)} className="interactive-press" style={{ background: 'none', border: 'none', color: showEmojiPicker - 'var(--teal-400)' : 'var(--slate-400)', padding: '8px', cursor: 'pointer', display: 'flex' }}>
+              <button onClick={() => setShowEmojiPicker(!showEmojiPicker)} className="interactive-press" style={{ background: 'none', border: 'none', color: showEmojiPicker ? 'var(--teal-400)' : 'var(--slate-400)', padding: '8px', cursor: 'pointer', display: 'flex' }}>
                 <Smile size={20} />
               </button>
               {showEmojiPicker && (
@@ -567,12 +567,12 @@ export default function Chat() {
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-              placeholder={isDirectMessage - 'Message...' : `Message #${channelId}...`}
+              placeholder={isDirectMessage ? 'Message...' : `Message #${channelId}...`}
               style={{ flex: 1, background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '999px', padding: '12px 20px', color: 'var(--slate-200)', outline: 'none', transition: 'border-color 0.2s' }}
               onFocus={e => e.target.style.borderColor = 'rgba(20,184,166,0.4)'}
               onBlur={e => e.target.style.borderColor = 'var(--slate-700)'}
             />
-            <button disabled={isUploading || (!inputText.trim() && imageFiles.length === 0)} className="btn btn-primary interactive-press" onClick={handleSend} style={{ width: '44px', height: '44px', borderRadius: '50%', padding: 0, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: (isUploading || (!inputText.trim() && imageFiles.length === 0)) - 0.5 : 1 }}>
+            <button disabled={isUploading || (!inputText.trim() && imageFiles.length === 0)} className="btn btn-primary interactive-press" onClick={handleSend} style={{ width: '44px', height: '44px', borderRadius: '50%', padding: 0, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: (isUploading || (!inputText.trim() && imageFiles.length === 0)) ? 0.5 : 1 }}>
               <Send size={18} />
             </button>
           </div>
@@ -605,13 +605,13 @@ export default function Chat() {
                     <div style={{ flex: 1 }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
                         <span style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--white)' }}>{authorObj.name}</span>
-                        <span style={{ fontSize: '0.7rem', color: 'var(--slate-500)' }}>{threadParent.createdAt - new Date(threadParent.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}</span>
+                        <span style={{ fontSize: '0.7rem', color: 'var(--slate-500)' }}>{threadParent.createdAt ? new Date(threadParent.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}</span>
                       </div>
                       <div style={{ fontSize: '0.9rem', marginTop: '6px', color: 'var(--slate-200)', lineHeight: 1.4 }}>{threadParent.text}</div>
                     </div>
                   </div>
                   {/* Replies */}
-                  <div style={{ fontSize: '0.8rem', color: 'var(--slate-500)', fontWeight: 600, marginBottom: '-8px' }}>{threadReplies.length} {threadReplies.length === 1 - 'Reply' : 'Replies'}</div>
+                  <div style={{ fontSize: '0.8rem', color: 'var(--slate-500)', fontWeight: 600, marginBottom: '-8px' }}>{threadReplies.length} {threadReplies.length === 1 ? 'Reply' : 'Replies'}</div>
                   {threadReplies.map(reply => {
                     const repAuth = users.find(u => u.id === (reply.senderId || reply.authorId)) || { name: 'Unknown', avatar: 'https://i.pravatar.cc/150' };
                     return (
@@ -620,7 +620,7 @@ export default function Chat() {
                         <div style={{ flex: 1 }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
                             <span style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--slate-200)' }}>{repAuth.name}</span>
-                            <span style={{ fontSize: '0.65rem', color: 'var(--slate-500)' }}>{reply.createdAt - new Date(reply.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}</span>
+                            <span style={{ fontSize: '0.65rem', color: 'var(--slate-500)' }}>{reply.createdAt ? new Date(reply.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}</span>
                           </div>
                           <div style={{ fontSize: '0.85rem', marginTop: '4px', color: 'var(--slate-300)', lineHeight: 1.4 }}>{reply.text}</div>
                         </div>
@@ -655,7 +655,7 @@ export default function Chat() {
                   else sendMessage(communityId, channelId, threadInputText, '', activeThreadId);
                   setThreadInputText('');
                 }
-              }} className="interactive-press" style={{ background: 'var(--teal-600)', border: 'none', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', cursor: 'pointer', opacity: threadInputText.trim() - 1 : 0.5 }}>
+              }} className="interactive-press" style={{ background: 'var(--teal-600)', border: 'none', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', cursor: 'pointer', opacity: threadInputText.trim() ? 1 : 0.5 }}>
                 <Send size={16} />
               </button>
             </div>

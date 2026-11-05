@@ -116,13 +116,13 @@ export default function CommunityProfile() {
   const [partnerModalTab, setPartnerModalTab] = useState('session');
   const fileInputRef = useRef(null);
   const searchParams = useSearchParams();
-  const autoJoinParam = searchParams-.get('autoJoin');
+  const autoJoinParam = searchParams?.get('autoJoin');
   
-  const communityId = id || (user-.joinedCommunities-.length > 0 - user.joinedCommunities[0] : 'tw-tech-meetup');
+  const communityId = id || (user?.joinedCommunities?.length > 0 ? user.joinedCommunities[0] : 'tw-tech-meetup');
   const community = communities.find(c => c.id === communityId);
 
   useEffect(() => {
-    if (user-.id && !user-.joinedCommunities-.includes(communityId) && autoJoinParam === 'true') {
+    if (user?.id && !user?.joinedCommunities?.includes(communityId) && autoJoinParam === 'true') {
       setShowJoinGuidelinesModal(true);
       toast.info('Almost there!', 'Review the community guidelines to finish joining.');
     }
@@ -133,26 +133,26 @@ export default function CommunityProfile() {
   }
 
   const isMember = Boolean(
-    user-.id && (
-      user-.joinedCommunities-.includes(communityId) ||
+    user?.id && (
+      user?.joinedCommunities?.includes(communityId) ||
       community.leader_id === user.id ||
       community.creator_id === user.id ||
       community.creatorId === user.id ||
-      user.ledCommunities-.includes(communityId) ||
+      user.ledCommunities?.includes(communityId) ||
       (communityMemberships[communityId] || []).some(m => (m.userId === user.id || m.user_id === user.id))
     )
   );
   const isLeader = Boolean(
-    user-.id && (
+    user?.id && (
       (community.leader_id && community.leader_id === user.id) ||
       (community.creator_id && community.creator_id === user.id) ||
       (community.creatorId && community.creatorId === user.id) ||
-      user.ledCommunities-.includes(communityId) ||
+      user.ledCommunities?.includes(communityId) ||
       user.isAdmin ||
       (communityMemberships[communityId] || []).some(m => (m.userId === user.id || m.user_id === user.id) && (m.role === 'co-founder' || m.role === 'Leader' || m.role === 'Co-Leader' || m.role === 'Admin'))
     )
   );
-  const communityEvents = events.filter(e => e.communityId === communityId || e.collabCommunityIds-.includes(communityId));
+  const communityEvents = events.filter(e => e.communityId === communityId || e.collabCommunityIds?.includes(communityId));
   const upcomingEvents = communityEvents
     .filter(e => isEventUpcoming(e) && e.status !== 'cancelled')
     .sort((a, b) => (parseEventDateTime(a.date, a.time) || 0) - (parseEventDateTime(b.date, b.time) || 0));
@@ -171,11 +171,11 @@ export default function CommunityProfile() {
   ];
   const isDemoCommunity = SEED_COMMUNITY_IDS.includes(community.id);
   const galleryType = getGalleryType(community.tags);
-  const dbPhotos = (community.gallery_photos || []).map(p => typeof p === 'string' - { url: p, uploaderId: null } : p);
-  const stockPhotos = isDemoCommunity && dbPhotos.length === 0 - GALLERY_PHOTOS[galleryType].map(url => ({ url, uploaderId: 'stock' })) : [];
-  const galleryPhotos = dbPhotos.length > 0 - dbPhotos : stockPhotos;
+  const dbPhotos = (community.gallery_photos || []).map(p => typeof p === 'string' ? { url: p, uploaderId: null } : p);
+  const stockPhotos = isDemoCommunity && dbPhotos.length === 0 ? GALLERY_PHOTOS[galleryType].map(url => ({ url, uploaderId: 'stock' })) : [];
+  const galleryPhotos = dbPhotos.length > 0 ? dbPhotos : stockPhotos;
   const nextEvent = upcomingEvents[0] || null;
-  const communityFeed = feedPosts-.filter(p => p.communityId === communityId) || [];
+  const communityFeed = feedPosts?.filter(p => p.communityId === communityId) || [];
   
   // Real reviews
   const communityReviews = (reviews || [])
@@ -194,7 +194,7 @@ export default function CommunityProfile() {
   };
 
   const handleCreatePost = async (overrideText = null) => {
-    const textToPost = overrideText !== null - overrideText : newPostText;
+    const textToPost = overrideText !== null ? overrideText : newPostText;
     if (!textToPost.trim() && !newPostImage) return;
     
     let mediaUrl = null;
@@ -223,8 +223,8 @@ export default function CommunityProfile() {
   };
 
   const handleJoinLeave = async () => {
-    if (!user-.id) {
-      navigate.push(`/login-redirect=${encodeURIComponent(`/community/${communityId}-autoJoin=true`)}&mode=signup`);
+    if (!user?.id) {
+      navigate.push(`/login?redirect=${encodeURIComponent(`/community/${communityId}?autoJoin=true`)}&mode=signup`);
       return;
     }
     try {
@@ -241,12 +241,12 @@ export default function CommunityProfile() {
   const confirmJoinWithGuidelines = async () => {
     setIsJoining(true);
     try {
-      if (Number(community.subscription_price || 0) > 0 && user-.id) {
+      if (Number(community.subscription_price || 0) > 0 && user?.id) {
         try {
           let authHeader = {};
           try {
             const { data: { session } } = await supabase.auth.getSession();
-            if (session-.access_token) authHeader = { 'Authorization': `Bearer ${session.access_token}` };
+            if (session?.access_token) authHeader = { 'Authorization': `Bearer ${session.access_token}` };
           } catch (e) {}
 
           const res = await fetch('/api/stripe/checkout', {
@@ -264,11 +264,11 @@ export default function CommunityProfile() {
             })
           });
           const data = await res.json();
-          if (res.ok && data-.url && !data-.simulated) {
+          if (res.ok && data?.url && !data?.simulated) {
             window.location.href = data.url;
             return;
           }
-          toast.error('Membership Checkout Failed', data-.error || 'Unable to start checkout session.');
+          toast.error('Membership Checkout Failed', data?.error || 'Unable to start checkout session.');
           return;
         } catch (stripeErr) {
           console.error('Stripe subscription checkout error:', stripeErr);
@@ -283,7 +283,7 @@ export default function CommunityProfile() {
         confetti({ particleCount: 50, spread: 60, origin: { y: 0.6 } });
       } catch (e) {}
       toast.success('Welcome!', community.whatsapp_group 
-        - `You're in! Tap "Join WhatsApp Group" to chat with members.` 
+        ? `You're in! Tap "Join WhatsApp Group" to chat with members.` 
         : `You're now a member of ${community.name}`);
     } catch (err) {
       toast.error('Could not join', 'Something went wrong. Please try again.');
@@ -309,8 +309,8 @@ export default function CommunityProfile() {
     try {
       toast.info('Uploading photo...', 'Please wait');
       const url = await uploadImage(file);
-      const newPhoto = { url, uploaderId: user-.id };
-      const currentGallery = community-.gallery_photos || [];
+      const newPhoto = { url, uploaderId: user?.id };
+      const currentGallery = community?.gallery_photos || [];
       await updateCommunity(community.id, { gallery_photos: [newPhoto, ...currentGallery] });
       toast.success('Photo added!', 'Your photo is now in the gallery.');
     } catch (err) {
@@ -322,9 +322,9 @@ export default function CommunityProfile() {
 
   const handleDeletePhoto = async (photoIndex, e) => {
     e.stopPropagation();
-    if (!window.confirm("Are you sure you want to delete this photo-")) return;
+    if (!window.confirm("Are you sure you want to delete this photo?")) return;
     try {
-      const currentGallery = community-.gallery_photos || [];
+      const currentGallery = community?.gallery_photos || [];
       const updatedGallery = currentGallery.filter((_, idx) => idx !== photoIndex);
       await updateCommunity(community.id, { gallery_photos: updatedGallery });
       toast.success("Photo deleted");
@@ -337,7 +337,7 @@ export default function CommunityProfile() {
     toast.info('Generating FOMO Reel...', 'Pulling photos & attendees');
     
     // Pick 5 random photos from the gallery
-    const allPhotos = [...(community-.gallery_photos || [])];
+    const allPhotos = [...(community?.gallery_photos || [])];
     const shuffledPhotos = allPhotos.sort(() => 0.5 - Math.random());
     const selectedPhotos = shuffledPhotos.slice(0, 5);
     
@@ -346,10 +346,10 @@ export default function CommunityProfile() {
     const attendeesToTag = rsvps
       .sort(() => 0.5 - Math.random())
       .slice(0, 2)
-      .map(r => users.find(u => u.id === r.userId)-.name-.split(' ')[0] || 'Member')
+      .map(r => users.find(u => u.id === r.userId)?.name?.split(' ')[0] || 'Member')
       .map(name => `@${name}`);
       
-    const tagsStr = attendeesToTag.length > 0 - `Massive thanks to ${attendeesToTag.join(', ')} for bringing the energy to ${event.title}.` : `Massive thanks to everyone who brought the energy to ${event.title}!`;
+    const tagsStr = attendeesToTag.length > 0 ? `Massive thanks to ${attendeesToTag.join(', ')} for bringing the energy to ${event.title}.` : `Massive thanks to everyone who brought the energy to ${event.title}!`;
     const fomoText = `🔥 WHAT A VIBE! 🔥\n\n${tagsStr}\n\nIf you missed it, you missed out! Make sure to RSVP to the next one! 🚀`;
 
     try {
@@ -391,7 +391,7 @@ export default function CommunityProfile() {
         {/* ===== HERO SECTION ===== */}
       <div style={{ 
         minHeight: '400px', 
-        background: community.image - `url(${community.image})` : `linear-gradient(135deg, var(--teal-500), var(--slate-900))`, 
+        background: community.image ? `url(${community.image})` : `linear-gradient(135deg, var(--teal-500), var(--slate-900))`, 
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         position: 'relative',
@@ -429,18 +429,18 @@ export default function CommunityProfile() {
           <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
             <button 
               onClick={async () => {
-                if (!user-.id) {
-                  navigate.push(`/login-redirect=/community/${community.id}`);
+                if (!user?.id) {
+                  navigate.push(`/login?redirect=/community/${community.id}`);
                   return;
                 }
-                if (window.confirm('Are you sure you want to flag this community for review-')) {
+                if (window.confirm('Are you sure you want to flag this community for review?')) {
                   try {
                     const [{ flagCommunityAction }, { supabase }] = await Promise.all([
                       import('../../../src/lib/actions'),
                       import('../../../src/lib/supabaseClient')
                     ]);
                     const { data: sessionData } = await supabase.auth.getSession();
-                    await flagCommunityAction(community.id, 'Flagged by user', sessionData-.session-.access_token);
+                    await flagCommunityAction(community.id, 'Flagged by user', sessionData?.session?.access_token);
                     toast.success('Community Flagged', 'Our moderation team will review this community.');
                   } catch (err) {
                     toast.error('Error', err.message || 'Could not flag community.');
@@ -480,7 +480,7 @@ export default function CommunityProfile() {
                   position: 'relative',
                   zIndex: 100
                 }} 
-                onClick={() => navigate.push(`/dashboard-community=${community.id}`)}
+                onClick={() => navigate.push(`/dashboard?community=${community.id}`)}
                 title="Leader Panel"
                 aria-label="Leader Panel"
               >
@@ -513,7 +513,7 @@ export default function CommunityProfile() {
             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><MapPin size={14} /> {cleanLocationName(community.location_name) || 'Tunbridge Wells'}</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Users size={14} /> {community.members || memberList.length || 1} members</span>
             {community.activity_level && (
-              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Activity size={14} color="var(--teal-400)" /> {community.activity_level === 'Very Active' - 'Very Active (Weekly)' : community.activity_level === 'Active' - 'Active (Fortnightly)' : community.activity_level === 'Casual' - 'Casual (Monthly)' : community.activity_level}</span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Activity size={14} color="var(--teal-400)" /> {community.activity_level === 'Very Active' ? 'Very Active (Weekly)' : community.activity_level === 'Active' ? 'Active (Fortnightly)' : community.activity_level === 'Casual' ? 'Casual (Monthly)' : community.activity_level}</span>
             )}
           </div>
 
@@ -543,11 +543,11 @@ export default function CommunityProfile() {
             const isPaid = subPrice > 0 && !isMember;
             return (
               <>
-                {isMember - (
+                {isMember ? (
                   <div style={{ textAlign: 'center' }}>
                     {community.whatsapp_group && (
                       <a 
-                        href={community.whatsapp_group.startsWith('http') - community.whatsapp_group : `https://${community.whatsapp_group}`}
+                        href={community.whatsapp_group.startsWith('http') ? community.whatsapp_group : `https://${community.whatsapp_group}`}
                         target="_blank" 
                         rel="noopener noreferrer" 
                         className="interactive-press" 
@@ -579,8 +579,8 @@ export default function CommunityProfile() {
                     style={{ position: 'relative', zIndex: 100, width: '100%', padding: '16px', fontSize: '1.05rem', fontWeight: 700, borderRadius: '14px', boxShadow: '0 8px 24px rgba(20,184,166,0.3)', cursor: 'pointer' }}
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleJoinLeave(); }}
                   >
-                    {!user-.id - (isPaid - `Sign In to Join  -  £${subPrice}/month` : 'Sign In to Join (Free)') :
-                     isPaid - `Join  -  £${subPrice}/month` : 'Join this Community  -  it\'s free'}
+                    {!user?.id ? (isPaid ? `Sign In to Join  -  £${subPrice}/month` : 'Sign In to Join (Free)') :
+                     isPaid ? `Join  -  £${subPrice}/month` : 'Join this Community  -  it\'s free'}
                   </button>
                 )}
                 {isPaid && !isMember && (
@@ -603,10 +603,10 @@ export default function CommunityProfile() {
           marginBottom: '20px'
         }}>
           <img 
-            src={leaderUser-.avatar || `https://ui-avatars.com/api/-name=${encodeURIComponent(community.name)}&background=0D8B93&color=fff`} 
+            src={leaderUser?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(community.name)}&background=0D8B93&color=fff`} 
             alt="Organiser" 
             onClick={() => leaderUser && navigate.push(`/profile/${leaderUser.id}`)}
-            style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--teal-500)', cursor: leaderUser - 'pointer' : 'default' }} 
+            style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--teal-500)', cursor: leaderUser ? 'pointer' : 'default' }} 
           />
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: '0.75rem', color: 'var(--teal-400)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -614,10 +614,10 @@ export default function CommunityProfile() {
               <span style={{ background: 'rgba(20,184,166,0.15)', color: '#2dd4bf', padding: '1px 6px', borderRadius: '4px', fontSize: '0.65rem' }}>Leader &amp; Co-Hosts</span>
             </div>
             <div style={{ fontWeight: 700, color: 'var(--white)', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span>{leaderUser-.name || 'Community Team'}</span>
+              <span>{leaderUser?.name || 'Community Team'}</span>
               {isLeader && (
                 <span 
-                  onClick={() => navigate.push(`/dashboard-community=${community.id}&tab=members`)}
+                  onClick={() => navigate.push(`/dashboard?community=${community.id}&tab=members`)}
                   style={{ fontSize: '0.7rem', color: 'var(--teal-400)', cursor: 'pointer', fontWeight: 500, textDecoration: 'underline' }}
                   title="Appoint a Co-Leader to share hosting duties"
                 >
@@ -638,8 +638,8 @@ export default function CommunityProfile() {
           <LeaderSetupChecklist
             community={community}
             events={communityEvents}
-            onOpenEventModal={() => navigate.push(`/dashboard-community=${community.id}&tab=events`)}
-            onOpenSettings={() => navigate.push(`/dashboard-community=${community.id}&tab=settings`)}
+            onOpenEventModal={() => navigate.push(`/dashboard?community=${community.id}&tab=events`)}
+            onOpenSettings={() => navigate.push(`/dashboard?community=${community.id}&tab=settings`)}
           />
         </div>
       )}
@@ -678,18 +678,18 @@ export default function CommunityProfile() {
                 padding: '10px 16px', 
                 borderRadius: '100px', 
                 border: '1px solid',
-                borderColor: activeTab === tab.id - 'rgba(20,184,166,0.3)' : 'rgba(255,255,255,0.06)',
-                background: activeTab === tab.id - 'rgba(20,184,166,0.15)' : 'rgba(255,255,255,0.03)',
-                color: activeTab === tab.id - 'var(--teal-300)' : 'var(--slate-300)',
+                borderColor: activeTab === tab.id ? 'rgba(20,184,166,0.3)' : 'rgba(255,255,255,0.06)',
+                background: activeTab === tab.id ? 'rgba(20,184,166,0.15)' : 'rgba(255,255,255,0.03)',
+                color: activeTab === tab.id ? 'var(--teal-300)' : 'var(--slate-300)',
                 fontWeight: 600, 
                 fontSize: '0.85rem', 
                 cursor: 'pointer', 
                 whiteSpace: 'nowrap',
                 transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-                boxShadow: activeTab === tab.id - '0 4px 12px rgba(20,184,166,0.1)' : 'none'
+                boxShadow: activeTab === tab.id ? '0 4px 12px rgba(20,184,166,0.1)' : 'none'
               }}
             >
-              <tab.Icon size={16} style={{ opacity: activeTab === tab.id - 1 : 0.7 }} />
+              <tab.Icon size={16} style={{ opacity: activeTab === tab.id ? 1 : 0.7 }} />
               {tab.label}
             </button>
           ))}
@@ -702,7 +702,7 @@ export default function CommunityProfile() {
       </div>
 
       {/* ===== HIGHLIGHTS STORY RINGS ===== */}
-      {community-.highlights && community.highlights.length > 0 && (
+      {community?.highlights && community.highlights.length > 0 && (
         <div style={{ padding: '0 20px 24px 20px', display: 'flex', gap: '16px', overflowX: 'auto', scrollSnapType: 'x mandatory' }} className="no-scrollbar">
           {/* Upload Button */}
           {isLeader && (
@@ -741,7 +741,7 @@ export default function CommunityProfile() {
             {(isMember || isLeader) && (
               <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '16px', marginBottom: '16px' }}>
                 <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                  <img src={user-.avatar || 'https://i.pravatar.cc/150'} alt="You" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
+                  <img src={user?.avatar || 'https://i.pravatar.cc/150'} alt="You" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
                   <div style={{ flex: 1 }}>
                     <textarea 
                       placeholder="Share something with the community..." 
@@ -752,7 +752,7 @@ export default function CommunityProfile() {
                     <div style={{ fontSize: '0.7rem', color: 'var(--slate-500)', marginBottom: '12px' }}>Supports **bold**, *italics*, and [links](http...)</div>
                     {newPostImage && (
                       <div style={{ position: 'relative', marginTop: '8px', display: 'inline-block' }}>
-                        {newPostImage.type.startsWith('video/') - (
+                        {newPostImage.type.startsWith('video/') ? (
                           <video src={URL.createObjectURL(newPostImage)} style={{ height: '80px', borderRadius: '8px', objectFit: 'cover' }} />
                         ) : (
                           <img src={URL.createObjectURL(newPostImage)} alt="Preview" style={{ height: '80px', borderRadius: '8px' }} />
@@ -767,7 +767,7 @@ export default function CommunityProfile() {
                           <ImageIcon size={16} /> Add Media
                         </label>
                         <div style={{ position: 'relative', display: 'flex' }}>
-                          <button onClick={() => setShowPostEmojiPicker(!showPostEmojiPicker)} className="interactive-press" style={{ background: 'none', border: 'none', color: showPostEmojiPicker - 'var(--teal-400)' : 'var(--slate-400)', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', cursor: 'pointer' }}>
+                          <button onClick={() => setShowPostEmojiPicker(!showPostEmojiPicker)} className="interactive-press" style={{ background: 'none', border: 'none', color: showPostEmojiPicker ? 'var(--teal-400)' : 'var(--slate-400)', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', cursor: 'pointer' }}>
                             <Smile size={16} /> Emojis
                           </button>
                           {showPostEmojiPicker && (
@@ -778,12 +778,12 @@ export default function CommunityProfile() {
                         </div>
                         {isLeader && (
                           <>
-                            <label style={{ cursor: 'pointer', color: isAnnouncement - 'var(--amber-400)' : 'var(--slate-400)', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', transition: 'color 0.2s' }}>
+                            <label style={{ cursor: 'pointer', color: isAnnouncement ? 'var(--amber-400)' : 'var(--slate-400)', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', transition: 'color 0.2s' }}>
                               <input type="checkbox" checked={isAnnouncement} onChange={e => setIsAnnouncement(e.target.checked)} style={{ display: 'none' }} />
                               <Megaphone size={16} /> Announcement
                             </label>
                             {isAnnouncement && (
-                              <label style={{ cursor: 'pointer', color: isPinned - 'var(--teal-400)' : 'var(--slate-400)', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', transition: 'color 0.2s' }}>
+                              <label style={{ cursor: 'pointer', color: isPinned ? 'var(--teal-400)' : 'var(--slate-400)', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', transition: 'color 0.2s' }}>
                                 <input type="checkbox" checked={isPinned} onChange={e => setIsPinned(e.target.checked)} style={{ display: 'none' }} />
                                 <MapPin size={16} style={{ transform: 'rotate(45deg)' }} /> Pin
                               </label>
@@ -800,15 +800,15 @@ export default function CommunityProfile() {
               </div>
             )}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              {communityFeed.length > 0 - communityFeed.sort((a,b) => {
+              {communityFeed.length > 0 ? communityFeed.sort((a,b) => {
                 if (a.is_pinned && !b.is_pinned) return -1;
                 if (!a.is_pinned && b.is_pinned) return 1;
                 return 0;
               }).map(post => {
                 const author = users.find(u => u.id === post.authorId) || leaderUser;
-                const isCampaign = post.text-.includes('🚀 **CAMPAIGN:**');
-                const isSuggestion = post.text-.includes('💡 **SUGGESTION:**');
-                const isReview = post.text-.startsWith('⭐️⭐️⭐️⭐️⭐️');
+                const isCampaign = post.text?.includes('🚀 **CAMPAIGN:**');
+                const isSuggestion = post.text?.includes('💡 **SUGGESTION:**');
+                const isReview = post.text?.startsWith('⭐️⭐️⭐️⭐️⭐️');
                 
                 let wrapperStyle = { background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', overflow: 'hidden' };
                 if (isCampaign) {
@@ -830,30 +830,30 @@ export default function CommunityProfile() {
                       </div>
                     )}
                     <div style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <img onClick={() => author && navigate.push(`/profile/${author.id}`)} src={author-.avatar || 'https://i.pravatar.cc/40'} alt={author-.name} style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', cursor: author - 'pointer' : 'default' }} />
+                      <img onClick={() => author && navigate.push(`/profile/${author.id}`)} src={author?.avatar || 'https://i.pravatar.cc/40'} alt={author?.name} style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', cursor: author ? 'pointer' : 'default' }} />
                       <div style={{ flex: 1 }}>
-                        <div onClick={() => author && navigate.push(`/profile/${author.id}`)} style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '6px', cursor: author - 'pointer' : 'default' }}>
-                          {author-.name || 'Community Leader'}
-                          {post.text-.includes('💡 **SUGGESTION:**') && (
+                        <div onClick={() => author && navigate.push(`/profile/${author.id}`)} style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '6px', cursor: author ? 'pointer' : 'default' }}>
+                          {author?.name || 'Community Leader'}
+                          {post.text?.includes('💡 **SUGGESTION:**') && (
                             <span style={{ fontSize: '0.65rem', background: 'rgba(234,179,8,0.2)', color: 'var(--yellow-400)', padding: '2px 6px', borderRadius: '6px', fontWeight: 700, textTransform: 'uppercase' }}>Idea</span>
                           )}
-                          {community.leader_id === author-.id && (
+                          {community.leader_id === author?.id && (
                             <span style={{ fontSize: '0.65rem', background: 'var(--teal-500)', color: 'var(--white)', padding: '2px 6px', borderRadius: '6px', fontWeight: 700, textTransform: 'uppercase' }}>Leader</span>
                           )}
                         </div>
                         <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>
                           {(post.createdAt || post.created_at || post.timestamp) && !isNaN(new Date(post.createdAt || post.created_at || post.timestamp).getTime()) 
-                            - new Date(post.createdAt || post.created_at || post.timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+                            ? new Date(post.createdAt || post.created_at || post.timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
                             : 'Recently'}
                         </div>
                       </div>
                       <div style={{ display: 'flex', gap: '8px' }}>
-                        {(isLeader || post.authorId === user-.id) && (
+                        {(isLeader || post.authorId === user?.id) && (
                           <button onClick={() => deleteFeedPost(post.id)} className="interactive-press" style={{ background: 'none', border: 'none', color: 'var(--rose-400)', cursor: 'pointer', padding: '4px' }}>
                             <Trash2 size={16} />
                           </button>
                         )}
-                        {post.authorId !== user-.id && (
+                        {post.authorId !== user?.id && (
                           <button onClick={() => toast.success('Report submitted', 'Thank you for keeping the community safe.')} className="interactive-press" style={{ background: 'none', border: 'none', color: 'var(--slate-400)', cursor: 'pointer', padding: '4px' }}>
                             <Flag size={16} />
                           </button>
@@ -875,7 +875,7 @@ export default function CommunityProfile() {
                         } else if (isSuggestion) {
                           campaignText = post.text.replace('💡 **SUGGESTION:**', '').trim();
                         } else if (isReview) {
-                          campaignText = post.text.split('review: "')[1]-.slice(0, -1) || post.text;
+                          campaignText = post.text.split('review: "')[1]?.slice(0, -1) || post.text;
                         }
                         
                         if (isCampaign && campaignExp) {
@@ -911,7 +911,7 @@ export default function CommunityProfile() {
                                       <Sparkles size={14} /> Goal Reached! Waiting for Leader to schedule.
                                     </div>
                                     {isLeader && (
-                                      <button onClick={() => navigate.push(`/dashboard-community=${communityId}&tab=events`)} className="btn btn-primary interactive-press" style={{ padding: '6px 12px', fontSize: '0.8rem', width: 'fit-content', borderRadius: '8px' }}>
+                                      <button onClick={() => navigate.push(`/dashboard?community=${communityId}&tab=events`)} className="btn btn-primary interactive-press" style={{ padding: '6px 12px', fontSize: '0.8rem', width: 'fit-content', borderRadius: '8px' }}>
                                         Set Date & Schedule
                                       </button>
                                     )}
@@ -974,7 +974,7 @@ export default function CommunityProfile() {
                               <img src={mediaArr[1]} alt="Post media 2" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                               <img src={mediaArr[2]} alt="Post media 3" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                               <img src={mediaArr[3]} alt="Post media 4" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                              {mediaArr[4] - (
+                              {mediaArr[4] ? (
                                 <img src={mediaArr[4]} alt="Post media 5" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                               ) : (
                                 <div style={{ width: '100%', height: '100%', background: 'var(--slate-800)' }}></div>
@@ -991,7 +991,7 @@ export default function CommunityProfile() {
                             </div>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', height: '300px' }}>
                               <img src={mediaArr[1]} alt="Post media 2" style={{ width: '100%', height: '50%', objectFit: 'cover' }} />
-                              {mediaArr[2] - (
+                              {mediaArr[2] ? (
                                 <img src={mediaArr[2]} alt="Post media 3" style={{ width: '100%', height: '50%', objectFit: 'cover' }} />
                               ) : (
                                 <div style={{ width: '100%', height: '50%', background: 'var(--slate-800)' }}></div>
@@ -1003,7 +1003,7 @@ export default function CommunityProfile() {
                       
                       return post.media && !post.media.startsWith('{') && !post.media.startsWith('[') && (
                         <div style={{ width: '100%', background: 'var(--slate-900)' }}>
-                          {post.media.match(/\.(mp4|mov|webm)(\-.*)-$/i) - (
+                          {post.media.match(/\.(mp4|mov|webm)(\?.*)?$/i) ? (
                             <video src={post.media} controls style={{ width: '100%', maxHeight: '400px', objectFit: 'contain' }} />
                           ) : (
                             <img src={post.media} alt="Post media" style={{ width: '100%', maxHeight: '400px', objectFit: 'cover' }} />
@@ -1014,8 +1014,8 @@ export default function CommunityProfile() {
 
                     <div style={{ padding: '12px 16px', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', gap: '16px' }}>
                       {(() => {
-                        const isCampaign = post.text-.includes('🚀 **CAMPAIGN:**');
-                        const isSuggestion = post.text-.includes('💡 **SUGGESTION:**');
+                        const isCampaign = post.text?.includes('🚀 **CAMPAIGN:**');
+                        const isSuggestion = post.text?.includes('💡 **SUGGESTION:**');
                         const isIdea = isCampaign || isSuggestion;
                         
                         if (isIdea) {
@@ -1023,21 +1023,21 @@ export default function CommunityProfile() {
                             <button 
                               onClick={() => likeFeedPost(post.id)}
                               className="interactive-press" 
-                              style={{ background: post.liked - 'rgba(20,184,166,0.15)' : 'rgba(255,255,255,0.05)', padding: '6px 12px', borderRadius: '20px', border: '1px solid', borderColor: post.liked - 'rgba(20,184,166,0.3)' : 'transparent', display: 'flex', alignItems: 'center', gap: '6px', color: post.liked - 'var(--teal-400)' : 'white', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}
+                              style={{ background: post.liked ? 'rgba(20,184,166,0.15)' : 'rgba(255,255,255,0.05)', padding: '6px 12px', borderRadius: '20px', border: '1px solid', borderColor: post.liked ? 'rgba(20,184,166,0.3)' : 'transparent', display: 'flex', alignItems: 'center', gap: '6px', color: post.liked ? 'var(--teal-400)' : 'white', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}
                             >
-                              <Heart size={16} fill={post.liked - 'var(--teal-400)' : 'none'} />
-                              {isCampaign - "I'm Interested" : "Upvote"} ({post.likes || 0})
+                              <Heart size={16} fill={post.liked ? 'var(--teal-400)' : 'none'} />
+                              {isCampaign ? "I'm Interested" : "Upvote"} ({post.likes || 0})
                             </button>
                           );
                         }
                         
                         return (
-                          <button onClick={() => likeFeedPost(post.id)} className="interactive-press" style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '6px', color: post.liked - 'var(--teal-400)' : 'var(--slate-400)', cursor: 'pointer', fontSize: '0.85rem' }}>
-                            <Heart size={16} fill={post.liked - "currentColor" : "none"} /> {post.likes || 0}
+                          <button onClick={() => likeFeedPost(post.id)} className="interactive-press" style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '6px', color: post.liked ? 'var(--teal-400)' : 'var(--slate-400)', cursor: 'pointer', fontSize: '0.85rem' }}>
+                            <Heart size={16} fill={post.liked ? "currentColor" : "none"} /> {post.likes || 0}
                           </button>
                         );
                       })()}
-                      <button onClick={() => setExpandedComments(prev => ({...prev, [post.id]: !prev[post.id]}))} className="interactive-press" style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '6px', color: expandedComments[post.id] - 'var(--teal-400)' : 'var(--slate-400)', cursor: 'pointer', fontSize: '0.85rem' }}>
+                      <button onClick={() => setExpandedComments(prev => ({...prev, [post.id]: !prev[post.id]}))} className="interactive-press" style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '6px', color: expandedComments[post.id] ? 'var(--teal-400)' : 'var(--slate-400)', cursor: 'pointer', fontSize: '0.85rem' }}>
                         <MessageCircle size={16} /> {post.comments || 0}
                       </button>
                     </div>
@@ -1064,21 +1064,21 @@ export default function CommunityProfile() {
                 <Sparkles size={18} color="var(--yellow-400)" /> Drawing Board
               </h3>
               <p style={{ color: 'var(--slate-400)', fontSize: '0.9rem', lineHeight: 1.5, marginBottom: '16px' }}>
-                Got an idea for an event or trip- Post it here! If it gets enough support, the leader can turn it into an official event.
+                Got an idea for an event or trip? Post it here! If it gets enough support, the leader can turn it into an official event.
               </p>
               
               <div style={{ display: 'flex', gap: '12px', marginBottom: '24px' }}>
                 <button 
-                  onClick={() => leaderUser - navigate.push(`/chat/dm/${leaderUser.id}`) : toast.error('No Leader', 'This community does not have a designated leader.')}
+                  onClick={() => leaderUser ? navigate.push(`/chat/dm/${leaderUser.id}`) : toast.error('No Leader', 'This community does not have a designated leader.')}
                   className="btn btn-outline interactive-press" 
-                  style={{ flex: 1, padding: '12px', borderRadius: '12px', display: 'flex', justifyContent: 'center', gap: '8px', fontSize: '0.95rem', borderColor: 'rgba(255,255,255,0.1)', opacity: leaderUser - 1 : 0.5 }}
+                  style={{ flex: 1, padding: '12px', borderRadius: '12px', display: 'flex', justifyContent: 'center', gap: '8px', fontSize: '0.95rem', borderColor: 'rgba(255,255,255,0.1)', opacity: leaderUser ? 1 : 0.5 }}
                 >
                   <MessageCircle size={16} /> Message Leader Privately
                 </button>
               </div>
 
               {/* Suggestion Form */}
-              {isMember - (
+              {isMember ? (
                 <div style={{ marginBottom: '32px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                     <h4 style={{ fontSize: '1rem', color: 'var(--white)', margin: 0 }}>Browse Experiences to Pitch</h4>
@@ -1103,15 +1103,15 @@ export default function CommunityProfile() {
             </div>
 
             <h4 style={{ fontSize: '1rem', color: 'var(--white)', marginBottom: '16px' }}>Active Campaigns & Suggestions</h4>
-            {communityFeed.filter(p => p.text-.includes('💡 **SUGGESTION:**') || p.text-.includes('🚀 **CAMPAIGN:**')).length === 0 - (
+            {communityFeed.filter(p => p.text?.includes('💡 **SUGGESTION:**') || p.text?.includes('🚀 **CAMPAIGN:**')).length === 0 ? (
               <div style={{ padding: '32px', textAlign: 'center', background: 'rgba(255,255,255,0.02)', borderRadius: '16px' }}>
                 <p style={{ color: 'var(--slate-400)' }}>No active campaigns yet. Pitch an experience above!</p>
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                {communityFeed.filter(p => p.text-.includes('💡 **SUGGESTION:**') || p.text-.includes('🚀 **CAMPAIGN:**')).map(post => {
+                {communityFeed.filter(p => p.text?.includes('💡 **SUGGESTION:**') || p.text?.includes('🚀 **CAMPAIGN:**')).map(post => {
                   const author = users.find(u => u.id === post.authorId);
-                  const isCampaign = post.text-.includes('🚀 **CAMPAIGN:**');
+                  const isCampaign = post.text?.includes('🚀 **CAMPAIGN:**');
                   let campaignExp = null;
                   let campaignText = post.text;
                   
@@ -1132,15 +1132,15 @@ export default function CommunityProfile() {
                   return (
                     <div key={post.id} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '16px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-                        <img src={author-.avatar || 'https://i.pravatar.cc/150'} alt="" style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }} />
+                        <img src={author?.avatar || 'https://i.pravatar.cc/150'} alt="" style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }} />
                         <div>
                           <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            {author-.name}
+                            {author?.name}
                             {isCampaign && <span style={{ fontSize: '0.65rem', background: 'var(--teal-500)', color: 'var(--white)', padding: '2px 6px', borderRadius: '6px', fontWeight: 700, textTransform: 'uppercase' }}>Campaign</span>}
                           </div>
                           <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>
                             {(post.timestamp || post.createdAt || post.created_at) && !isNaN(new Date(post.timestamp || post.createdAt || post.created_at).getTime())
-                              - new Date(post.timestamp || post.createdAt || post.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+                              ? new Date(post.timestamp || post.createdAt || post.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
                               : 'Recently'}
                           </div>
                         </div>
@@ -1175,7 +1175,7 @@ export default function CommunityProfile() {
                                   <Sparkles size={14} /> Goal Reached! Waiting for Leader to schedule.
                                 </div>
                                 {isLeader && (
-                                  <button onClick={() => navigate.push(`/dashboard-community=${communityId}&tab=events`)} className="btn btn-primary interactive-press" style={{ padding: '6px 12px', fontSize: '0.8rem', width: 'fit-content', borderRadius: '8px' }}>
+                                  <button onClick={() => navigate.push(`/dashboard?community=${communityId}&tab=events`)} className="btn btn-primary interactive-press" style={{ padding: '6px 12px', fontSize: '0.8rem', width: 'fit-content', borderRadius: '8px' }}>
                                     Set Date & Schedule
                                   </button>
                                 )}
@@ -1185,7 +1185,7 @@ export default function CommunityProfile() {
                         </div>
                       )}
 
-                      {!isCampaign - (
+                      {!isCampaign ? (
                         <div style={{ background: 'var(--slate-900)', borderRadius: '12px', padding: '16px', marginBottom: '16px', border: '1px solid rgba(245,158,11,0.2)', borderLeft: '4px solid var(--amber-500)' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px', color: 'var(--amber-400)', fontWeight: 700, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                             <Lightbulb size={16} /> Community Suggestion
@@ -1207,14 +1207,14 @@ export default function CommunityProfile() {
                             }
                           }}
                           className="interactive-press" 
-                          style={{ background: post.liked - 'rgba(20,184,166,0.15)' : 'rgba(255,255,255,0.05)', padding: '6px 12px', borderRadius: '20px', border: '1px solid', borderColor: post.liked - 'rgba(20,184,166,0.3)' : 'transparent', display: 'flex', alignItems: 'center', gap: '6px', color: post.liked - 'var(--teal-400)' : 'white', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}
+                          style={{ background: post.liked ? 'rgba(20,184,166,0.15)' : 'rgba(255,255,255,0.05)', padding: '6px 12px', borderRadius: '20px', border: '1px solid', borderColor: post.liked ? 'rgba(20,184,166,0.3)' : 'transparent', display: 'flex', alignItems: 'center', gap: '6px', color: post.liked ? 'var(--teal-400)' : 'white', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}
                         >
-                          <Heart size={16} fill={post.liked - 'var(--teal-400)' : 'none'} />
-                          {isCampaign - "I'm Interested" : "Upvote"} ({votes})
+                          <Heart size={16} fill={post.liked ? 'var(--teal-400)' : 'none'} />
+                          {isCampaign ? "I'm Interested" : "Upvote"} ({votes})
                         </button>
-                        <button onClick={() => setExpandedComments(prev => ({...prev, [post.id]: !prev[post.id]}))} className="interactive-press" style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '6px', color: expandedComments[post.id] - 'var(--teal-400)' : 'var(--slate-400)', cursor: 'pointer', fontSize: '0.85rem' }}>
+                        <button onClick={() => setExpandedComments(prev => ({...prev, [post.id]: !prev[post.id]}))} className="interactive-press" style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '6px', color: expandedComments[post.id] ? 'var(--teal-400)' : 'var(--slate-400)', cursor: 'pointer', fontSize: '0.85rem' }}>
                           <MessageCircle size={16} />
-                          {post.comments-.length || 0}
+                          {post.comments?.length || 0}
                         </button>
                       </div>
                       {expandedComments[post.id] && (
@@ -1233,9 +1233,9 @@ export default function CommunityProfile() {
         {/* ===== REVIEWS TAB ===== */}
         {activeTab === 'reviews' && (
           <ReviewsList communityId={communityId} onAddReview={() => {
-            if (!user-.id) {
+            if (!user?.id) {
               toast.info('Please sign in', 'Sign in to leave a review.');
-              navigate.push(`/login-redirect=${encodeURIComponent(window.location.pathname)}`);
+              navigate.push(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
               return;
             }
             if (!isMember) {
@@ -1260,7 +1260,7 @@ export default function CommunityProfile() {
                     <div style={{ color: 'var(--slate-300)', fontSize: '0.85rem' }}>Add a welcome video, update pricing, or change social links.</div>
                   </div>
                 </div>
-                <button onClick={() => navigate.push(`/dashboard-community=${community.id}&tab=settings`)} className="btn btn-primary interactive-press" style={{ padding: '8px 16px', borderRadius: '8px', fontSize: '0.85rem' }}>
+                <button onClick={() => navigate.push(`/dashboard?community=${community.id}&tab=settings`)} className="btn btn-primary interactive-press" style={{ padding: '8px 16px', borderRadius: '8px', fontSize: '0.85rem' }}>
                   Edit Settings
                 </button>
               </div>
@@ -1269,15 +1269,15 @@ export default function CommunityProfile() {
             {/* Organizer Spotlight */}
             <div style={{ marginBottom: '32px', background: 'linear-gradient(135deg, rgba(20,184,166,0.05), rgba(15,23,42,1))', border: '1px solid rgba(20,184,166,0.2)', borderRadius: '16px', padding: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }}>
               <img 
-                src={leaderUser-.avatar || `https://ui-avatars.com/api/-name=${encodeURIComponent(community.name)}&background=0D8B93&color=fff`} 
+                src={leaderUser?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(community.name)}&background=0D8B93&color=fff`} 
                 alt="Organiser" 
                 onClick={() => leaderUser && navigate.push(`/profile/${leaderUser.id}`)}
-                style={{ width: '88px', height: '88px', borderRadius: '50%', objectFit: 'cover', border: '3px solid var(--teal-500)', cursor: leaderUser - 'pointer' : 'default', marginBottom: '16px', boxShadow: '0 4px 12px rgba(20,184,166,0.2)' }} 
+                style={{ width: '88px', height: '88px', borderRadius: '50%', objectFit: 'cover', border: '3px solid var(--teal-500)', cursor: leaderUser ? 'pointer' : 'default', marginBottom: '16px', boxShadow: '0 4px 12px rgba(20,184,166,0.2)' }} 
               />
               <div style={{ fontSize: '0.75rem', color: 'var(--teal-400)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '4px' }}>Community Leader</div>
-              <div style={{ fontWeight: 800, color: 'var(--white)', fontSize: '1.4rem', fontFamily: 'var(--font-heading)', marginBottom: '8px' }}>{leaderUser-.name || 'Community Team'}</div>
+              <div style={{ fontWeight: 800, color: 'var(--white)', fontSize: '1.4rem', fontFamily: 'var(--font-heading)', marginBottom: '8px' }}>{leaderUser?.name || 'Community Team'}</div>
               <p style={{ color: 'var(--slate-300)', fontSize: '0.95rem', marginBottom: '20px', maxWidth: '400px', lineHeight: 1.5 }}>
-                {leaderUser-.bio || `Hey! I'm the organizer for ${community.name}. Feel free to drop me a message if you have any questions before joining!`}
+                {leaderUser?.bio || `Hey! I'm the organizer for ${community.name}. Feel free to drop me a message if you have any questions before joining!`}
               </p>
               <button 
                 onClick={() => leaderUser && navigate.push(`/chat/dm/${leaderUser.id}`)} 
@@ -1289,7 +1289,7 @@ export default function CommunityProfile() {
             </div>
 
             {/* Welcome Video */}
-            {community.welcome_video_url - (
+            {community.welcome_video_url ? (
               <div style={{ marginBottom: '32px', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
                 <iframe 
                   width="100%" 
@@ -1302,8 +1302,8 @@ export default function CommunityProfile() {
                   style={{ display: 'block' }}
                 />
               </div>
-            ) : isLeader - (
-              <div onClick={() => navigate.push(`/dashboard-community=${community.id}&tab=settings`)} className="interactive-press" style={{ marginBottom: '32px', borderRadius: '16px', padding: '24px', textAlign: 'center', border: '1px dashed rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.02)', cursor: 'pointer' }}>
+            ) : isLeader ? (
+              <div onClick={() => navigate.push(`/dashboard?community=${community.id}&tab=settings`)} className="interactive-press" style={{ marginBottom: '32px', borderRadius: '16px', padding: '24px', textAlign: 'center', border: '1px dashed rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.02)', cursor: 'pointer' }}>
                 <Camera size={24} color="var(--slate-400)" style={{ margin: '0 auto 8px' }} />
                 <div style={{ color: 'var(--white)', fontWeight: 600, fontSize: '0.95rem' }}>Add a Welcome Video</div>
                 <div style={{ color: 'var(--slate-400)', fontSize: '0.85rem' }}>Introduce yourself and welcome new members.</div>
@@ -1328,7 +1328,7 @@ export default function CommunityProfile() {
                             <img src={sponsor.logo} alt={sponsor.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                           </div>
                           <div>
-                            <div style={{ fontSize: '0.75rem', color: 'var(--teal-400)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.5px', marginBottom: '2px' }}>{sponsor.tier === 'Headline' - 'Headline Sponsor' : 'Community Supporter'}</div>
+                            <div style={{ fontSize: '0.75rem', color: 'var(--teal-400)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.5px', marginBottom: '2px' }}>{sponsor.tier === 'Headline' ? 'Headline Sponsor' : 'Community Supporter'}</div>
                             <div style={{ fontSize: '1.1rem', color: 'var(--white)', fontWeight: 700 }}>{sponsor.name}</div>
                           </div>
                         </div>
@@ -1353,14 +1353,14 @@ export default function CommunityProfile() {
                 )}
                 {community.activity_level && (
                   <span style={{ padding: '6px 12px', borderRadius: '8px', background: 'rgba(236,72,153,0.1)', color: 'var(--pink-400)', fontSize: '0.8rem', fontWeight: 600 }}>
-                    ⚡ {community.activity_level === 'Very Active' - 'High Energy (Weekly)' : community.activity_level === 'Active' - 'Active (Fortnightly)' : community.activity_level === 'Casual' - 'Casual Pace' : community.activity_level}
+                    ⚡ {community.activity_level === 'Very Active' ? 'High Energy (Weekly)' : community.activity_level === 'Active' ? 'Active (Fortnightly)' : community.activity_level === 'Casual' ? 'Casual Pace' : community.activity_level}
                   </span>
                 )}
-                {community.tags-.map((tag, idx) => {
+                {community.tags?.map((tag, idx) => {
                   if (tag === community.category) return null;
                   return (
                     <span key={idx} style={{ padding: '6px 12px', borderRadius: '8px', background: 'rgba(59,130,246,0.1)', color: 'var(--blue-400)', fontSize: '0.8rem', fontWeight: 600 }}>
-                      {tag.match(/[\p{Emoji}]/u) - tag : `🔥 ${tag}`}
+                      {tag.match(/[\p{Emoji}]/u) ? tag : `🔥 ${tag}`}
                     </span>
                   );
                 })}
@@ -1371,12 +1371,12 @@ export default function CommunityProfile() {
                 lineHeight: 1.8, 
                 color: 'var(--slate-200)', 
                 fontSize: '1rem',
-                maxHeight: showFullDesc - 'none' : '150px',
+                maxHeight: showFullDesc ? 'none' : '150px',
                 overflow: 'hidden',
                 transition: 'max-height 0.3s ease'
               }}>
-                {community.description-.split('\n').map((line, i) => (
-                  <p key={i} style={{ margin: '0 0 12px 0', minHeight: line.trim() === '' - '12px' : 'auto' }}>{line}</p>
+                {community.description?.split('\n').map((line, i) => (
+                  <p key={i} style={{ margin: '0 0 12px 0', minHeight: line.trim() === '' ? '12px' : 'auto' }}>{line}</p>
                 ))}
                 
                 {!showFullDesc && (
@@ -1399,7 +1399,7 @@ export default function CommunityProfile() {
                   display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px'
                 }}
               >
-                {showFullDesc - 'Show Less' : (
+                {showFullDesc ? 'Show Less' : (
                   <>Show <img src="/images/logo.webp" alt="more." style={{ height: '14px', filter: 'brightness(0) invert(1)', opacity: 0.8 }} /></>
                 )}
               </button>
@@ -1416,7 +1416,7 @@ export default function CommunityProfile() {
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', borderRadius: '16px', overflow: 'hidden' }}>
                   {galleryPhotos.slice(0, 3).map((photo, i) => (
-                    <img key={i} src={typeof photo === 'string' - photo : photo.url} alt="Gallery peek" style={{ width: '100%', height: i === 0 - '200px' : '96px', objectFit: 'cover', gridColumn: i === 0 - 'span 3' : 'span 1' }} />
+                    <img key={i} src={typeof photo === 'string' ? photo : photo.url} alt="Gallery peek" style={{ width: '100%', height: i === 0 ? '200px' : '96px', objectFit: 'cover', gridColumn: i === 0 ? 'span 3' : 'span 1' }} />
                   ))}
                 </div>
               </div>
@@ -1436,14 +1436,14 @@ export default function CommunityProfile() {
                   <span style={{ fontSize: '1.2rem', fontWeight: 600 }}>£</span>
                 </div>
                 <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px', letterSpacing: '0.05em' }}>Cost</div>
-                <div style={{ fontSize: '0.9rem', color: 'var(--white)', fontWeight: 500, lineHeight: 1.4 }}>{community.cost || community.metrics-.cost || 'Free to join'}</div>
+                <div style={{ fontSize: '0.9rem', color: 'var(--white)', fontWeight: 500, lineHeight: 1.4 }}>{community.cost || community.metrics?.cost || 'Free to join'}</div>
               </div>
               <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '16px' }}>
                 <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(20,184,166,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px', color: 'var(--teal-400)' }}>
                   <Calendar size={20} />
                 </div>
                 <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px', letterSpacing: '0.05em' }}>How Often</div>
-                <div style={{ fontSize: '0.9rem', color: 'var(--white)', fontWeight: 500, lineHeight: 1.4 }}>{community.activity_level === 'Very Active' - 'Weekly meetups' : community.activity_level === 'Active' - 'Fortnightly' : 'Monthly'}</div>
+                <div style={{ fontSize: '0.9rem', color: 'var(--white)', fontWeight: 500, lineHeight: 1.4 }}>{community.activity_level === 'Very Active' ? 'Weekly meetups' : community.activity_level === 'Active' ? 'Fortnightly' : 'Monthly'}</div>
               </div>
               <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '16px' }}>
                 <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(20,184,166,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px', color: 'var(--teal-400)' }}>
@@ -1464,7 +1464,7 @@ export default function CommunityProfile() {
                   {/* WhatsApp Group */}
                   {community.whatsapp_group && (
                     <a 
-                      href={community.whatsapp_group.startsWith('http') - community.whatsapp_group : `https://${community.whatsapp_group}`} 
+                      href={community.whatsapp_group.startsWith('http') ? community.whatsapp_group : `https://${community.whatsapp_group}`} 
                       target="_blank" 
                       rel="noopener noreferrer" 
                       className="interactive-press" 
@@ -1487,7 +1487,7 @@ export default function CommunityProfile() {
                   {/* Instagram Handle */}
                   {community.instagram_handle && (
                     <a 
-                      href={community.instagram_handle.startsWith('http') - community.instagram_handle : `https://instagram.com/${community.instagram_handle.replace('@', '')}`} 
+                      href={community.instagram_handle.startsWith('http') ? community.instagram_handle : `https://instagram.com/${community.instagram_handle.replace('@', '')}`} 
                       target="_blank" 
                       rel="noopener noreferrer" 
                       className="interactive-press" 
@@ -1498,7 +1498,7 @@ export default function CommunityProfile() {
                       </div>
                       <div style={{ flex: 1 }}>
                         <div style={{ fontWeight: 700, fontSize: '1rem' }}>Instagram</div>
-                        <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)', marginTop: '2px' }}>{community.instagram_handle.startsWith('@') - community.instagram_handle : `@${community.instagram_handle}`}</div>
+                        <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)', marginTop: '2px' }}>{community.instagram_handle.startsWith('@') ? community.instagram_handle : `@${community.instagram_handle}`}</div>
                       </div>
                       <ExternalLink size={18} color="var(--slate-400)" />
                     </a>
@@ -1573,7 +1573,7 @@ export default function CommunityProfile() {
               <div style={{ marginBottom: '32px', padding: '20px', background: 'rgba(20,184,166,0.05)', borderRadius: '16px', border: '1px solid rgba(20,184,166,0.2)' }}>
                 <h3 style={{ fontSize: '1.2rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: '0 0 16px 0' }}>Get in Touch</h3>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                  <img src={leaderUser.avatar || `https://ui-avatars.com/api/-name=${leaderUser.name}&background=0D8B93&color=fff`} alt="" style={{ width: '56px', height: '56px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--slate-800)' }} />
+                  <img src={leaderUser.avatar || `https://ui-avatars.com/api/?name=${leaderUser.name}&background=0D8B93&color=fff`} alt="" style={{ width: '56px', height: '56px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--slate-800)' }} />
                   <div style={{ flex: 1 }}>
                     <div style={{ fontWeight: 700, fontSize: '1.05rem', color: 'var(--white)' }}>{leaderUser.name}</div>
                     <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)' }}>Community Organiser</div>
@@ -1646,10 +1646,10 @@ export default function CommunityProfile() {
                     </span>
                   </div>
                   <div style={{ fontSize: '1rem', fontWeight: 800, color: '#fff', marginBottom: '3px' }}>
-                    Are you a local instructor, coach, or business-
+                    Are you a local instructor, coach, or business?
                   </div>
                   <div style={{ fontSize: '0.82rem', color: 'var(--slate-300)', lineHeight: 1.45 }}>
-                    Host an in-person guest workshop, or sponsor {community-.name} with an exclusive member perk. Leaders review all pitches directly with single-tap privacy.
+                    Host an in-person guest workshop, or sponsor {community?.name} with an exclusive member perk. Leaders review all pitches directly with single-tap privacy.
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
@@ -1707,9 +1707,9 @@ export default function CommunityProfile() {
                 <button 
                   type="button"
                   onClick={() => {
-                    if (!user-.id) {
+                    if (!user?.id) {
                       toast.info('Please sign in', 'Sign in to leave a review.');
-                      navigate.push(`/login-redirect=${encodeURIComponent(window.location.pathname)}`);
+                      navigate.push(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
                       return;
                     }
                     if (!isMember) {
@@ -1726,7 +1726,7 @@ export default function CommunityProfile() {
                 </button>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {topReviews.length > 0 - topReviews.map((review) => {
+                {topReviews.length > 0 ? topReviews.map((review) => {
                   const author = users.find(u => u.id === review.user_id) || { name: 'Community Member', avatar: 'https://i.pravatar.cc/150' };
                   return (
                     <div key={review.id} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px', padding: '16px' }}>
@@ -1736,7 +1736,7 @@ export default function CommunityProfile() {
                           <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.9rem' }}>{author.name}</div>
                           <div style={{ display: 'flex', gap: '2px' }}>
                             {Array.from({ length: 5 }).map((_, i) => (
-                              <Star key={i} size={12} fill={i < review.rating - "var(--amber-400)" : "none"} color={i < review.rating - "var(--amber-400)" : "var(--slate-600)"} />
+                              <Star key={i} size={12} fill={i < review.rating ? "var(--amber-400)" : "none"} color={i < review.rating ? "var(--amber-400)" : "var(--slate-600)"} />
                             ))}
                           </div>
                         </div>
@@ -1778,7 +1778,7 @@ export default function CommunityProfile() {
                 )}
                 {community.website && (
                   <a 
-                    href={community.website.startsWith('http') - community.website : `https://${community.website}`} 
+                    href={community.website.startsWith('http') ? community.website : `https://${community.website}`} 
                     target="_blank" 
                     rel="noopener noreferrer nofollow" 
                     className="btn btn-outline interactive-press" 
@@ -1804,7 +1804,7 @@ export default function CommunityProfile() {
                 }}
               >
                 <span>📋 Community Guidelines</span>
-                {showRules - <ChevronUp size={18} color="var(--slate-400)" /> : <ChevronDown size={18} color="var(--slate-400)" />}
+                {showRules ? <ChevronUp size={18} color="var(--slate-400)" /> : <ChevronDown size={18} color="var(--slate-400)" />}
               </button>
               {showRules && (
                 <div style={{
@@ -1814,10 +1814,10 @@ export default function CommunityProfile() {
                   fontSize: '0.9rem', color: 'var(--slate-300)', lineHeight: 1.6,
                 }}>
                   {/* Display guidelines */}
-                  {!editingGuidelines - (
+                  {!editingGuidelines ? (
                     <>
                       <ol style={{ margin: 0, paddingLeft: '18px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                        {(community.guidelines && community.guidelines.length > 0 - community.guidelines : [
+                        {(community.guidelines && community.guidelines.length > 0 ? community.guidelines : [
                           'Be respectful and inclusive to all members.',
                           'No spam, self-promotion, or irrelevant content.',
                           'Keep conversations positive and constructive.',
@@ -1830,7 +1830,7 @@ export default function CommunityProfile() {
                       {isLeader && (
                         <button
                           onClick={() => {
-                            setGuidelinesDraft(community.guidelines && community.guidelines.length > 0 - [...community.guidelines] : [
+                            setGuidelinesDraft(community.guidelines && community.guidelines.length > 0 ? [...community.guidelines] : [
                               'Be respectful and inclusive to all members.',
                               'No spam, self-promotion, or irrelevant content.',
                               'Keep conversations positive and constructive.',
@@ -1853,7 +1853,7 @@ export default function CommunityProfile() {
                           <span style={{ color: 'var(--slate-500)', fontSize: '0.8rem', minWidth: '20px' }}>{i + 1}.</span>
                           <input
                             value={g}
-                            onChange={e => setGuidelinesDraft(prev => prev.map((item, idx) => idx === i - e.target.value : item))}
+                            onChange={e => setGuidelinesDraft(prev => prev.map((item, idx) => idx === i ? e.target.value : item))}
                             style={{ flex: 1, padding: '8px 12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'var(--white)', fontSize: '0.85rem' }}
                           />
                           <button
@@ -1913,7 +1913,7 @@ export default function CommunityProfile() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                 {isLeader && (
                   <button 
-                    onClick={() => navigate.push(`/dashboard-community=${community.id}&tab=events`)}
+                    onClick={() => navigate.push(`/dashboard?community=${community.id}&tab=events`)}
                     className="btn btn-primary interactive-press"
                     style={{
                       display: 'flex', alignItems: 'center', gap: '6px',
@@ -1938,7 +1938,7 @@ export default function CommunityProfile() {
                 </button>
               </div>
             </div>
-            {upcomingEvents.length > 0 - (
+            {upcomingEvents.length > 0 ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '24px' }}>
                 {upcomingEvents.map(event => {
                   const rsvps = eventRsvps[event.id] || [];
@@ -1969,7 +1969,7 @@ export default function CommunityProfile() {
                             <div style={{ display: 'flex' }}>
                               {rsvps.slice(0, 3).map((r, i) => {
                                 const ru = users.find(u => u.id === r.userId);
-                                return <img key={i} src={ru-.avatar || 'https://i.pravatar.cc/24'} alt="" style={{ width: '22px', height: '22px', borderRadius: '50%', border: '2px solid var(--slate-950)', marginLeft: i > 0 - '-6px' : 0, objectFit: 'cover' }} />;
+                                return <img key={i} src={ru?.avatar || 'https://i.pravatar.cc/24'} alt="" style={{ width: '22px', height: '22px', borderRadius: '50%', border: '2px solid var(--slate-950)', marginLeft: i > 0 ? '-6px' : 0, objectFit: 'cover' }} />;
                               })}
                             </div>
                             {rsvps.length} going
@@ -1992,7 +1992,7 @@ export default function CommunityProfile() {
                 <div style={{ color: 'var(--white)', fontWeight: 600, fontSize: '1rem', marginBottom: '4px' }}>No Upcoming Events</div>
                 <p style={{ color: 'var(--slate-400)', fontSize: '0.85rem', margin: '0 0 16px 0' }}>There are no upcoming meetups currently scheduled for this community.</p>
                 {isLeader && (
-                  <button onClick={() => navigate.push(`/dashboard-community=${community.id}&tab=events`)} className="btn btn-primary interactive-press" style={{ padding: '8px 18px', fontSize: '0.85rem', borderRadius: '10px' }}>
+                  <button onClick={() => navigate.push(`/dashboard?community=${community.id}&tab=events`)} className="btn btn-primary interactive-press" style={{ padding: '8px 18px', fontSize: '0.85rem', borderRadius: '10px' }}>
                     + Schedule an Event
                   </button>
                 )}
@@ -2046,7 +2046,7 @@ export default function CommunityProfile() {
                               <div style={{ display: 'flex' }}>
                                 {rsvps.slice(0, 3).map((r, i) => {
                                   const ru = users.find(u => u.id === r.userId);
-                                  return <img key={i} src={ru-.avatar || 'https://i.pravatar.cc/24'} alt="" style={{ width: '22px', height: '22px', borderRadius: '50%', border: '2px solid var(--slate-950)', marginLeft: i > 0 - '-6px' : 0, objectFit: 'cover' }} />;
+                                  return <img key={i} src={ru?.avatar || 'https://i.pravatar.cc/24'} alt="" style={{ width: '22px', height: '22px', borderRadius: '50%', border: '2px solid var(--slate-950)', marginLeft: i > 0 ? '-6px' : 0, objectFit: 'cover' }} />;
                                 })}
                               </div>
                               {rsvps.length} attended
@@ -2076,12 +2076,12 @@ export default function CommunityProfile() {
             <h3 style={{ fontSize: '1.3rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: '0 0 16px 0' }}>
               Photos & Moments
             </h3>
-            {galleryPhotos.length > 0 - (
+            {galleryPhotos.length > 0 ? (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
                 {galleryPhotos.map((photo, idx) => (
-                  <div key={idx} style={{ borderRadius: '12px', overflow: 'hidden', aspectRatio: idx === 0 - '16/12' : '1/1', gridColumn: idx === 0 - 'span 2' : 'span 1', position: 'relative' }}>
+                  <div key={idx} style={{ borderRadius: '12px', overflow: 'hidden', aspectRatio: idx === 0 ? '16/12' : '1/1', gridColumn: idx === 0 ? 'span 2' : 'span 1', position: 'relative' }}>
                     <img src={photo.url} alt={`Gallery ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    {photo.uploaderId !== 'stock' && (isLeader || photo.uploaderId === user-.id) && (
+                    {photo.uploaderId !== 'stock' && (isLeader || photo.uploaderId === user?.id) && (
                       <button 
                         onClick={(e) => handleDeletePhoto(idx, e)}
                         style={{ position: 'absolute', top: '8px', right: '8px', background: 'rgba(0,0,0,0.6)', border: 'none', borderRadius: '50%', padding: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
@@ -2102,8 +2102,8 @@ export default function CommunityProfile() {
             {isMember && (
               <>
                 <input type="file" ref={fileInputRef} accept="image/*" style={{ display: 'none' }} onChange={handleUploadPhoto} />
-                <button onClick={() => !isUploadingPhoto && fileInputRef.current-.click()} disabled={isUploadingPhoto} className="btn btn-outline interactive-press" style={{ width: '100%', marginTop: '16px', padding: '14px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                  <Camera size={18} /> {isUploadingPhoto - 'Uploading...' : 'Upload a Photo'}
+                <button onClick={() => !isUploadingPhoto && fileInputRef.current?.click()} disabled={isUploadingPhoto} className="btn btn-outline interactive-press" style={{ width: '100%', marginTop: '16px', padding: '14px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                  <Camera size={18} /> {isUploadingPhoto ? 'Uploading...' : 'Upload a Photo'}
                 </button>
               </>
             )}
@@ -2125,7 +2125,7 @@ export default function CommunityProfile() {
             {isLeader && (
               <div style={{ marginBottom: '24px' }}>
                 <h4 style={{ fontSize: '1rem', color: 'var(--slate-300)', marginBottom: '12px' }}>Pending Pitches</h4>
-                {services.filter(s => s.communityId === communityId && s.status === 'pending').length === 0 - (
+                {services.filter(s => s.communityId === communityId && s.status === 'pending').length === 0 ? (
                   <div style={{ padding: '16px', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px dashed rgba(255,255,255,0.1)', color: 'var(--slate-500)', fontSize: '0.85rem' }}>
                     No pending pitches to review.
                   </div>
@@ -2140,7 +2140,7 @@ export default function CommunityProfile() {
                               <div style={{ fontWeight: 700, color: 'var(--white)', fontSize: '1.05rem' }}>{srv.title}</div>
                               <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)', marginBottom: '8px' }}>By {srvUser.name} • {srv.category}</div>
 
-                              {srv.isPremium - (
+                              {srv.isPremium ? (
                                 <div style={{ 
                                   background: 'rgba(245, 158, 11, 0.1)', 
                                   border: '1px solid rgba(245, 158, 11, 0.3)', 
@@ -2183,8 +2183,8 @@ export default function CommunityProfile() {
                             </div>
                           </div>
                           <div style={{ display: 'flex', gap: '8px' }}>
-                            <button onClick={() => updateServiceStatus(srv.id, 'approved')} className="btn interactive-press" style={{ flex: 1, padding: '9px', borderRadius: '10px', background: srv.isPremium - 'linear-gradient(135deg, #10b981 0%, #14b8a6 100%)' : 'var(--teal-500)', color: '#090d16', border: 'none', fontWeight: 700, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px' }}>
-                              <Check size={16} /> {srv.isPremium - 'Accept Sponsor (£12/mo)' : 'Approve Perk'}
+                            <button onClick={() => updateServiceStatus(srv.id, 'approved')} className="btn interactive-press" style={{ flex: 1, padding: '9px', borderRadius: '10px', background: srv.isPremium ? 'linear-gradient(135deg, #10b981 0%, #14b8a6 100%)' : 'var(--teal-500)', color: '#090d16', border: 'none', fontWeight: 700, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px' }}>
+                              <Check size={16} /> {srv.isPremium ? 'Accept Sponsor (£12/mo)' : 'Approve Perk'}
                             </button>
                             <button onClick={() => updateServiceStatus(srv.id, 'rejected')} className="btn interactive-press" style={{ flex: 1, padding: '9px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', color: 'var(--slate-300)', border: '1px solid rgba(255,255,255,0.1)', fontWeight: 600, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px' }}>
                               <X size={16} /> Decline (Quietly)
@@ -2199,20 +2199,20 @@ export default function CommunityProfile() {
             )}
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              {services.filter(s => s.communityId === communityId && s.status === 'approved').length === 0 - (
+              {services.filter(s => s.communityId === communityId && s.status === 'approved').length === 0 ? (
                 <div style={{ padding: '40px 20px', textAlign: 'center', background: 'rgba(255,255,255,0.02)', borderRadius: '16px', border: '1px dashed rgba(255,255,255,0.1)' }}>
                   <div style={{ fontSize: '2rem', marginBottom: '12px' }}>💼</div>
                   <p style={{ color: 'var(--slate-400)', margin: 0 }}>No services listed yet.</p>
                 </div>
               ) : (
                 services.filter(s => s.communityId === communityId && s.status === 'approved')
-                .sort((a, b) => (b.isPremium === a.isPremium - 0 : b.isPremium - 1 : -1))
+                .sort((a, b) => (b.isPremium === a.isPremium ? 0 : b.isPremium ? 1 : -1))
                 .map(srv => {
                   const srvUser = users.find(u => u.id === srv.userId) || { name: 'Member', avatar: 'https://i.pravatar.cc/40' };
                   return (
                     <div key={srv.id} style={{ 
-                      background: srv.isPremium - 'linear-gradient(to bottom right, rgba(234,179,8,0.05), rgba(0,0,0,0))' : 'rgba(255,255,255,0.02)', 
-                      border: `1px solid ${srv.isPremium - 'rgba(234,179,8,0.3)' : 'rgba(255,255,255,0.06)'}`, 
+                      background: srv.isPremium ? 'linear-gradient(to bottom right, rgba(234,179,8,0.05), rgba(0,0,0,0))' : 'rgba(255,255,255,0.02)', 
+                      border: `1px solid ${srv.isPremium ? 'rgba(234,179,8,0.3)' : 'rgba(255,255,255,0.06)'}`, 
                       borderRadius: '16px', 
                       padding: '20px'
                     }}>
@@ -2320,7 +2320,7 @@ export default function CommunityProfile() {
             </p>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', background: 'rgba(255,255,255,0.02)', padding: '14px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.05)' }}>
-              {(community.guidelines && community.guidelines.length > 0 - community.guidelines : [
+              {(community.guidelines && community.guidelines.length > 0 ? community.guidelines : [
                 'Be respectful, inclusive, and kind to all members at all times.',
                 'No unsolicited commercial sales pitches, promotions, or spam.',
                 'Attend events you RSVP to, or cancel at least 24 hours in advance.',
@@ -2370,9 +2370,9 @@ export default function CommunityProfile() {
                 disabled={!guidelinesAgreed || isJoining}
                 onClick={confirmJoinWithGuidelines}
                 className="btn btn-primary interactive-press"
-                style={{ flex: 2, padding: '12px', borderRadius: '12px', fontSize: '0.9rem', fontWeight: 700, opacity: (!guidelinesAgreed || isJoining) - 0.6 : 1, cursor: (!guidelinesAgreed || isJoining) - 'not-allowed' : 'pointer' }}
+                style={{ flex: 2, padding: '12px', borderRadius: '12px', fontSize: '0.9rem', fontWeight: 700, opacity: (!guidelinesAgreed || isJoining) ? 0.6 : 1, cursor: (!guidelinesAgreed || isJoining) ? 'not-allowed' : 'pointer' }}
               >
-                {isJoining - 'Joining...' : 'Agree & Join'}
+                {isJoining ? 'Joining...' : 'Agree & Join'}
               </button>
             </div>
           </div>
@@ -2385,7 +2385,7 @@ export default function CommunityProfile() {
             <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(244,63,94,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px auto' }}>
               <Heart size={32} color="var(--rose-400)" style={{ animation: 'pulse 2s infinite' }} />
             </div>
-            <h3 style={{ margin: '0 0 12px 0', fontSize: '1.4rem', color: 'var(--white)', fontFamily: 'var(--font-heading)' }}>Leaving so soon-</h3>
+            <h3 style={{ margin: '0 0 12px 0', fontSize: '1.4rem', color: 'var(--white)', fontFamily: 'var(--font-heading)' }}>Leaving so soon?</h3>
             <p style={{ margin: '0 0 24px 0', color: 'var(--slate-400)', fontSize: '0.95rem', lineHeight: 1.5 }}>
               By leaving <strong>{community.name}</strong>, you'll miss out on future events, lively discussions, and real-life connections.
             </p>

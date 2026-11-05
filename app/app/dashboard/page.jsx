@@ -1,7 +1,7 @@
 "use client";
 import { supabase } from '../../src/lib/supabaseClient';
 import { useState, useRef, useMemo, useEffect } from 'react';
-import { Users, Calendar, MessageCircle, TrendingUp, Search, Plus, MapPin, Image as ImageIcon, CreditCard, ChevronRight, ChevronLeft, Download, Activity, Globe, Heart, Crown, Info, X, Map, Zap, Mail, Trash2, UserCheck, Ban, ChevronDown, ChevronUp, Settings, Megaphone, QrCode, BarChart3, Ticket, ScanLine, UserPlus, DollarSign, Clock, Edit3, Check, CheckCircle2, Eye, EyeOff, Shield, Star, Sparkles, BookOpen, ListChecks, Bell, Archive , Banknote} from 'lucide-react';
+import { Users, Calendar, MessageCircle, TrendingUp, Search, Plus, MapPin, Image as ImageIcon, CreditCard, ChevronRight, ChevronLeft, Download, Activity, Globe, Heart, Crown, Info, X, Map, Zap, Mail, Trash2, UserCheck, Ban, ChevronDown, ChevronUp, Settings, Megaphone, QrCode, BarChart3, Ticket, ScanLine, UserPlus, DollarSign, Clock, Edit3, Check, CheckCircle2, Eye, EyeOff, Shield, Star, Sparkles, BookOpen, ListChecks, Bell, Archive } from 'lucide-react';
 import AppHeader from '../../src/components/AppHeader';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { isEventUpcoming, isEventPast, parseEventDateTime } from '../../src/lib/calendar';
@@ -32,12 +32,13 @@ import LeaderShieldModal from '../../src/components/LeaderShieldModal';
 import LeaderProposalsInbox from '../../src/components/LeaderProposalsInbox';
 import SpecialistVaultModal from '../../src/components/SpecialistVaultModal';
 import PayoutBankModal from '../../src/components/PayoutBankModal';
+import { Banknote } from 'lucide-react';
 import CouncilImpactMetrics from '../../src/components/CouncilImpactMetrics';
 import { generatePliCertificatePdf, generateRamsPdf } from '../../src/lib/insurance';
 
 // ─── Stat Card Component ──────────────────────────────────
 const StatCard = ({ value, label, color, icon: Icon, accent }) => (
-  <div className="glass-panel stagger-item interactive-hover" style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '4px', ...(accent - { border: `1px solid ${accent}30`, background: `linear-gradient(135deg, ${accent}10 0%, ${accent}02 100%)` } : {}) }}>
+  <div className="glass-panel stagger-item interactive-hover" style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '4px', ...(accent ? { border: `1px solid ${accent}30`, background: `linear-gradient(135deg, ${accent}10 0%, ${accent}02 100%)` } : {}) }}>
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
       <div style={{ fontSize: '1.8rem', fontFamily: 'var(--font-heading)', fontWeight: 700, color: color || 'white' }}>{value}</div>
       {Icon && <Icon size={18} color={color || 'var(--slate-500)'} />}
@@ -70,12 +71,12 @@ function formatDisplayDate(dateStr) {
 
 function daysUntil(dateStr) {
   if (!dateStr) return null;
-  const d = dateStr.includes('-') - new Date(dateStr + 'T00:00:00') : null;
+  const d = dateStr.includes('-') ? new Date(dateStr + 'T00:00:00') : null;
   if (!d || isNaN(d)) return null;
   const now = new Date();
   now.setHours(0, 0, 0, 0);
   const diff = Math.ceil((d - now) / (1000 * 60 * 60 * 24));
-  return diff >= 0 - diff : null;
+  return diff >= 0 ? diff : null;
 }
 
 // ─── Engagement Score (shared with CRM) ─────────────────────────
@@ -106,23 +107,21 @@ export default function LeaderDashboard({ initialCommunityId }) {
     name: '', category: '', description: '', location_name: '', lat: null, lng: null, cost: 'Free', target_audience: '', activity_level: 'Active', tags: [], customTagInput: '', website: '', whatsapp_group: '', instagram_handle: '' 
   });
   const [editTagCategory, setEditTagCategory] = useState('All');
-  const [activeTab, setActiveTab] = useState(searchParams-.get('tab') || 'overview');
+  const [activeTab, setActiveTab] = useState(searchParams?.get('tab') || 'overview');
   const [showShieldModal, setShowShieldModal] = useState(false);
-  const [showPaidAdvisoryModal, setShowPaidAdvisoryModal] = useState(false);
-  const [paidAdvisoryAcknowledged, setPaidAdvisoryAcknowledged] = useState(false);
   const [specialistModalState, setSpecialistModalState] = useState({ isOpen: false, mode: 'inspect', specialist: null });
   const [experiencesSubTab, setExperiencesSubTab] = useState('pitches');
   const [showPayoutBankModal, setShowPayoutBankModal] = useState(false); // 'pitches' | 'trips' | 'council'
   const [activeCommunityId, setActiveCommunityId] = useState(
-    initialCommunityId || searchParams-.get('community') || user-.ledCommunities-.[0] || null
+    initialCommunityId || searchParams?.get('community') || user?.ledCommunities?.[0] || null
   );
   
   useEffect(() => {
-    const tab = searchParams-.get('tab');
+    const tab = searchParams?.get('tab');
     if (tab) setActiveTab(tab);
-    const comm = searchParams-.get('community');
+    const comm = searchParams?.get('community');
     if (comm) setActiveCommunityId(comm);
-    if (searchParams-.get('shield') === 'success') {
+    if (searchParams?.get('shield') === 'success') {
       toast.success('Leader Pro Active! 🛡️', 'Your Venue Compliance RAMS, Attendee Waivers and 2% Reduced Platform Fee are active.');
     }
   }, [searchParams]);
@@ -132,15 +131,15 @@ export default function LeaderDashboard({ initialCommunityId }) {
   }, [initialCommunityId]);
   
   // ─── Derived Data ─────────────────────────────────────────
-  const availableCommunities = user-.isAdmin 
-    - communities 
+  const availableCommunities = user?.isAdmin 
+    ? communities 
     : communities.filter(comm => 
-        (user-.ledCommunities || []).includes(comm.id) ||
-        comm.leader_id === user-.id ||
-        comm.creator_id === user-.id ||
-        comm.creatorId === user-.id ||
+        (user?.ledCommunities || []).includes(comm.id) ||
+        comm.leader_id === user?.id ||
+        comm.creator_id === user?.id ||
+        comm.creatorId === user?.id ||
         comm.id === activeCommunityId ||
-        (communityMemberships[comm.id] || []).some(m => (m.userId === user-.id || m.user_id === user-.id) && (m.role === 'co-founder' || m.role === 'Leader' || m.role === 'Co-Leader' || m.role === 'Admin'))
+        (communityMemberships[comm.id] || []).some(m => (m.userId === user?.id || m.user_id === user?.id) && (m.role === 'co-founder' || m.role === 'Leader' || m.role === 'Co-Leader' || m.role === 'Admin'))
       );
 
   useEffect(() => {
@@ -149,17 +148,17 @@ export default function LeaderDashboard({ initialCommunityId }) {
     }
   }, [availableCommunities, activeCommunityId]);
 
-  const communityIdLed = activeCommunityId || availableCommunities[0]-.id || user-.ledCommunities-.[0] || (user-.isAdmin && communities.length > 0 - communities[0].id : null);
+  const communityIdLed = activeCommunityId || availableCommunities[0]?.id || user?.ledCommunities?.[0] || (user?.isAdmin && communities.length > 0 ? communities[0].id : null);
   const community = communities.find(c => c.id === communityIdLed);
-  const memberList = community - (communityMemberships[community.id] || []) : [];
-  const communityEvents = community - events.filter(e => e.communityId === community.id || e.collabCommunityIds-.includes(community.id)).sort((a, b) => new Date(a.date) - new Date(b.date)) : [];
+  const memberList = community ? (communityMemberships[community.id] || []) : [];
+  const communityEvents = community ? events.filter(e => e.communityId === community.id || e.collabCommunityIds?.includes(community.id)).sort((a, b) => new Date(a.date) - new Date(b.date)) : [];
   const publishedEvents = communityEvents.filter(e => e.status !== 'cancelled');
-  const communityMessages = community - messages.filter(m => m.communityId === community.id) : [];
+  const communityMessages = community ? messages.filter(m => m.communityId === community.id) : [];
 
   const isShieldActive = Boolean(
-    community-.is_insured || 
-    community-.insurance_tier === 'pro' ||
-    (typeof window !== 'undefined' && community-.id && localStorage.getItem(`more_community_insured_${community.id}`) === 'true')
+    community?.is_insured || 
+    community?.insurance_tier === 'pro' ||
+    (typeof window !== 'undefined' && community?.id && localStorage.getItem(`more_community_insured_${community.id}`) === 'true')
   );
 
   const emptyEventForm = { 
@@ -215,7 +214,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
       const sourceCommunity = communities.find(c => c.id === eventToCoHost.communityId);
       const newEvent = {
         title: `Co-Hosted: ${eventToCoHost.title}`,
-        description: (eventToCoHost.description || '') + `\n\n🤝 Co-hosted with ${sourceCommunity-.name || 'our partner community'}.`,
+        description: (eventToCoHost.description || '') + `\n\n🤝 Co-hosted with ${sourceCommunity?.name || 'our partner community'}.`,
         date: eventToCoHost.date,
         time: eventToCoHost.time,
         location: eventToCoHost.location,
@@ -259,28 +258,28 @@ export default function LeaderDashboard({ initialCommunityId }) {
   // ─── Stripe Connect Express State & Handlers ──────────────
   const [stripeConnected, setStripeConnected] = useState(() => {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem(`more_stripe_connected_${community-.id}`) === 'true';
+      return localStorage.getItem(`more_stripe_connected_${community?.id}`) === 'true';
     }
     return false;
   });
   const [isConnectingStripe, setIsConnectingStripe] = useState(false);
 
   useEffect(() => {
-    if (searchParams-.get('stripe_connect') === 'success') {
-      const accId = searchParams.get('account_id') || `acct_express_${community-.id || 'leader'}`;
+    if (searchParams?.get('stripe_connect') === 'success') {
+      const accId = searchParams.get('account_id') || `acct_express_${community?.id || 'leader'}`;
       setStripeConnected(true);
       if (typeof window !== 'undefined') {
         try {
-          localStorage.setItem(`more_stripe_connected_${community-.id}`, 'true');
-          localStorage.setItem(`more_stripe_account_${community-.id}`, accId);
+          localStorage.setItem(`more_stripe_connected_${community?.id}`, 'true');
+          localStorage.setItem(`more_stripe_account_${community?.id}`, accId);
         } catch (e) {}
       }
       toast.success('Stripe Express Connected!', 'Your bank account is linked. 95% of ticket revenue will be paid out automatically.');
     }
-  }, [searchParams, community-.id]);
+  }, [searchParams, community?.id]);
 
   const handleConnectStripe = async (preferStripeExpress = false) => {
-    if (!community-.id) return;
+    if (!community?.id) return;
     if (!preferStripeExpress) {
       setShowPayoutBankModal(true);
       return;
@@ -290,7 +289,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
       let authHeader = {};
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        if (session-.access_token) authHeader = { 'Authorization': `Bearer ${session.access_token}` };
+        if (session?.access_token) authHeader = { 'Authorization': `Bearer ${session.access_token}` };
       } catch (e) {}
 
       const res = await fetch('/api/stripe/connect', {
@@ -301,7 +300,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
         },
         body: JSON.stringify({
           communityId: community.id,
-          returnUrl: `${window.location.origin}/dashboard-tab=monetisation&stripe_connect=success`,
+          returnUrl: `${window.location.origin}/dashboard?tab=monetisation&stripe_connect=success`,
         })
       });
       const data = await res.json();
@@ -326,7 +325,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
   const [selectedPackId, setSelectedPackId] = useState(null);
 
   useEffect(() => {
-    if (community-.id) {
+    if (community?.id) {
       if (Array.isArray(community.guidelines) && community.guidelines.length > 0) {
         setGuidelinesDraft([...community.guidelines]);
       } else {
@@ -339,16 +338,16 @@ export default function LeaderDashboard({ initialCommunityId }) {
         }
       }
     }
-  }, [community-.id, community-.guidelines]);
+  }, [community?.id, community?.guidelines]);
 
   useEffect(() => {
-    if (searchParams-.get('tab') === 'settings' && (searchParams-.get('section') === 'guidelines' || searchParams-.get('action') === 'guidelines')) {
+    if (searchParams?.get('tab') === 'settings' && (searchParams?.get('section') === 'guidelines' || searchParams?.get('action') === 'guidelines')) {
       setIsGuidelinesExpanded(true);
     }
   }, [searchParams]);
 
   const handleSaveGuidelines = async () => {
-    if (!community-.id) return;
+    if (!community?.id) return;
     setIsSavingGuidelines(true);
     const cleaned = guidelinesDraft.map(g => g.trim()).filter(Boolean);
     try {
@@ -449,12 +448,12 @@ export default function LeaderDashboard({ initialCommunityId }) {
       totalRsvps += rsvps.filter(r => r.status === 'going').length;
       totalCheckins += rsvps.filter(r => r.checkedIn).length;
     });
-    const checkinRate = totalRsvps > 0 - Math.round((totalCheckins / totalRsvps) * 100) : 0;
+    const checkinRate = totalRsvps > 0 ? Math.round((totalCheckins / totalRsvps) * 100) : 0;
     
     // Next event countdown
     const upcoming = publishedEvents.filter(e => daysUntil(e.date) !== null);
-    const nextEvent = upcoming.length > 0 - upcoming[0] : null;
-    const daysToNext = nextEvent - daysUntil(nextEvent.date) : null;
+    const nextEvent = upcoming.length > 0 ? upcoming[0] : null;
+    const daysToNext = nextEvent ? daysUntil(nextEvent.date) : null;
     
     return { totalMembers, activeMembers, totalRevenue, monthRevenue, eventsThisMonth, checkinRate, daysToNext, nextEvent };
   }, [community, memberList, communityEvents, publishedEvents, eventRsvps, communityMessages, events]);
@@ -490,20 +489,20 @@ export default function LeaderDashboard({ initialCommunityId }) {
     // Recent messages
     communityMessages.slice(-3).forEach(m => {
       const author = users.find(u => u.id === m.authorId);
-      activities.push({ type: 'message', text: `${author-.name || 'Someone'} sent a message`, icon: MessageCircle, color: '#3b82f6', time: 'Recently' });
+      activities.push({ type: 'message', text: `${author?.name || 'Someone'} sent a message`, icon: MessageCircle, color: '#3b82f6', time: 'Recently' });
     });
     // Recent RSVPs
     communityEvents.slice(0, 2).forEach(event => {
       const rsvps = eventRsvps[event.id] || [];
       rsvps.slice(-2).forEach(r => {
         const rUser = users.find(u => u.id === r.userId);
-        activities.push({ type: 'rsvp', text: `${rUser-.name || 'Someone'} RSVP'd to ${event.title}`, icon: Ticket, color: '#14b8a6', time: 'Recently' });
+        activities.push({ type: 'rsvp', text: `${rUser?.name || 'Someone'} RSVP'd to ${event.title}`, icon: Ticket, color: '#14b8a6', time: 'Recently' });
       });
     });
     // Member joins
     memberList.slice(-2).forEach(m => {
       const mUser = users.find(u => u.id === m.userId);
-      activities.push({ type: 'join', text: `${mUser-.name || 'Someone'} joined the community`, icon: UserPlus, color: '#a78bfa', time: 'Recently' });
+      activities.push({ type: 'join', text: `${mUser?.name || 'Someone'} joined the community`, icon: UserPlus, color: '#a78bfa', time: 'Recently' });
     });
     return activities.slice(0, 5);
   }, [communityMessages, communityEvents, eventRsvps, memberList, users]);
@@ -518,7 +517,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
       try {
         const heic2any = (await import('heic2any')).default;
         const blob = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.85 });
-        const jpegBlob = Array.isArray(blob) - blob[0] : blob;
+        const jpegBlob = Array.isArray(blob) ? blob[0] : blob;
         processedFile = new File([jpegBlob], file.name.replace(/\.[^/.]+$/, "") + ".jpeg", { type: 'image/jpeg' });
       } catch (err) {
         console.warn("HEIC conversion fallback:", err);
@@ -550,8 +549,8 @@ export default function LeaderDashboard({ initialCommunityId }) {
   const handleEditClick = () => {
     if (community) {
       const currentTags = Array.isArray(community.tags) 
-        - [...community.tags] 
-        : (typeof community.tags === 'string' && community.tags - community.tags.split(',').map(t => t.trim()).filter(Boolean) : []);
+        ? [...community.tags] 
+        : (typeof community.tags === 'string' && community.tags ? community.tags.split(',').map(t => t.trim()).filter(Boolean) : []);
 
       setEditForm({ 
         name: community.name || '',
@@ -579,21 +578,21 @@ export default function LeaderDashboard({ initialCommunityId }) {
 
   const toggleEditTag = (tag) => {
     setEditForm(prev => {
-      const currentTags = Array.isArray(prev.tags) - prev.tags : [];
+      const currentTags = Array.isArray(prev.tags) ? prev.tags : [];
       const updated = currentTags.includes(tag)
-        - currentTags.filter(t => t !== tag)
+        ? currentTags.filter(t => t !== tag)
         : [...currentTags, tag];
       return { 
         ...prev, 
         tags: updated,
-        category: prev.category || (updated.length > 0 - updated[0] : '')
+        category: prev.category || (updated.length > 0 ? updated[0] : '')
       };
     });
   };
 
   const removeEditTag = (tag) => {
     setEditForm(prev => {
-      const currentTags = Array.isArray(prev.tags) - prev.tags : [];
+      const currentTags = Array.isArray(prev.tags) ? prev.tags : [];
       return { ...prev, tags: currentTags.filter(t => t !== tag) };
     });
   };
@@ -603,7 +602,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
     const tag = (editForm.customTagInput || '').trim();
     if (!tag) return;
     setEditForm(prev => {
-      const currentTags = Array.isArray(prev.tags) - prev.tags : [];
+      const currentTags = Array.isArray(prev.tags) ? prev.tags : [];
       if (currentTags.includes(tag)) return { ...prev, customTagInput: '' };
       const updated = [...currentTags, tag];
       return { 
@@ -616,13 +615,13 @@ export default function LeaderDashboard({ initialCommunityId }) {
   };
 
   const handleSave = async () => {
-    if (!editForm.name-.trim()) {
+    if (!editForm.name?.trim()) {
       toast.error('Name required', 'Community name cannot be empty');
       return;
     }
 
     setIsUploading(true);
-    let coverUrl = community-.cover_image || community-.image;
+    let coverUrl = community?.cover_image || community?.image;
     if (coverImageFile) {
       try {
         coverUrl = await uploadImage(coverImageFile, 'community_covers');
@@ -642,8 +641,8 @@ export default function LeaderDashboard({ initialCommunityId }) {
     }
 
     const currentTags = Array.isArray(editForm.tags) 
-      - editForm.tags 
-      : (typeof editForm.tags === 'string' - editForm.tags.split(',') : []);
+      ? editForm.tags 
+      : (typeof editForm.tags === 'string' ? editForm.tags.split(',') : []);
     const cleanedTags = currentTags.map(t => t.trim()).filter(Boolean);
 
     let finalLat = editForm.lat || null;
@@ -667,7 +666,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
     // Sanitize and validate website link if provided
     let cleanWebsite = (editForm.website || '').trim();
     if (cleanWebsite) {
-      if (!/^https-:\/\//i.test(cleanWebsite)) {
+      if (!/^https?:\/\//i.test(cleanWebsite)) {
         cleanWebsite = 'https://' + cleanWebsite;
       }
       try {
@@ -737,17 +736,12 @@ export default function LeaderDashboard({ initialCommunityId }) {
     }
   };
 
-  const handleCreateEvent = async (bypassAdvisory = false) => {
+  const handleCreateEvent = async () => {
     const dates = (eventForm.resolvedDates && eventForm.resolvedDates.length > 0)
-      - eventForm.resolvedDates
-      : (eventForm.date - [eventForm.date] : []);
+      ? eventForm.resolvedDates
+      : (eventForm.date ? [eventForm.date] : []);
 
-    if (parseFloat(eventForm.ticketPrice) > 0 && !isShieldActive && !paidAdvisoryAcknowledged && !bypassAdvisory) {
-      setShowPaidAdvisoryModal(true);
-      return;
-    }
-
-    if (!eventForm.title-.trim()) {
+    if (!eventForm.title?.trim()) {
       toast.error('Missing Title', 'Please enter a title for your event.');
       return;
     }
@@ -759,7 +753,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
       toast.error('Missing Time', 'Please set a start time for the event.');
       return;
     }
-    if (!eventForm.location-.trim()) {
+    if (!eventForm.location?.trim()) {
       toast.error('Missing Location', 'Please provide a location or meeting point.');
       return;
     }
@@ -772,7 +766,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
 
     const todayStr = new Date().toISOString().split('T')[0];
     if (dates.length === 1 && dates[0] < todayStr) {
-      const proceed = window.confirm('The date you selected is in the past. This event will be archived immediately under Past Events. Do you wish to publish it anyway-');
+      const proceed = window.confirm('The date you selected is in the past. This event will be archived immediately under Past Events. Do you wish to publish it anyway?');
       if (!proceed) return;
     }
 
@@ -784,14 +778,14 @@ export default function LeaderDashboard({ initialCommunityId }) {
         imageUrl = await uploadImage(imageFile, 'events');
       }
       
-      const finalImage = imageUrl || community-.cover_image || community-.image || null;
+      const finalImage = imageUrl || community?.cover_image || community?.image || null;
 
       if (dates.length === 1) {
         await createEvent(community.id, {
           ...eventForm,
           date: dates[0],
-          maxCapacity: eventForm.maxCapacity - parseInt(eventForm.maxCapacity, 10) : null,
-          ticketPrice: eventForm.ticketPrice - parseFloat(eventForm.ticketPrice) : 0,
+          maxCapacity: eventForm.maxCapacity ? parseInt(eventForm.maxCapacity, 10) : null,
+          ticketPrice: eventForm.ticketPrice ? parseFloat(eventForm.ticketPrice) : 0,
           autoReminders: eventForm.autoReminders,
           autoFeedback: eventForm.autoFeedback,
           image: finalImage
@@ -801,8 +795,8 @@ export default function LeaderDashboard({ initialCommunityId }) {
         const eventsList = dates.map(d => ({
           ...eventForm,
           date: d,
-          maxCapacity: eventForm.maxCapacity - parseInt(eventForm.maxCapacity, 10) : null,
-          ticketPrice: eventForm.ticketPrice - parseFloat(eventForm.ticketPrice) : 0,
+          maxCapacity: eventForm.maxCapacity ? parseInt(eventForm.maxCapacity, 10) : null,
+          ticketPrice: eventForm.ticketPrice ? parseFloat(eventForm.ticketPrice) : 0,
           autoReminders: eventForm.autoReminders,
           autoFeedback: eventForm.autoFeedback,
           image: finalImage
@@ -830,15 +824,15 @@ export default function LeaderDashboard({ initialCommunityId }) {
       title: event.title || '', description: event.description || '',
       date: event.date || '', time: event.time || '',
       location: event.location || '',
-      coords: parsedCoords || (event.lat && event.lng - { lat: event.lat, lng: event.lng } : null),
-      maxCapacity: event.maxCapacity - event.maxCapacity.toString() : '',
-      ticketPrice: event.ticketPrice - event.ticketPrice.toString() : '',
+      coords: parsedCoords || (event.lat && event.lng ? { lat: event.lat, lng: event.lng } : null),
+      maxCapacity: event.maxCapacity ? event.maxCapacity.toString() : '',
+      ticketPrice: event.ticketPrice ? event.ticketPrice.toString() : '',
       allowCash: Boolean(event.allowCash || event.allow_cash),
       collabCommunityIds: event.collabCommunityIds || [],
-      autoReminders: event.autoReminders -- true,
-      autoFeedback: event.autoFeedback -- true,
+      autoReminders: event.autoReminders ?? true,
+      autoFeedback: event.autoFeedback ?? true,
       scheduleMode: 'single',
-      resolvedDates: event.date - [event.date] : [],
+      resolvedDates: event.date ? [event.date] : [],
       recurrenceSummary: 'Single event'
     });
     setImageFile(null);
@@ -862,8 +856,8 @@ export default function LeaderDashboard({ initialCommunityId }) {
     const updates = {
       title: eventForm.title, description: eventForm.description,
       date: eventForm.date, time: eventForm.time, location: eventForm.location,
-      maxCapacity: eventForm.maxCapacity - parseInt(eventForm.maxCapacity, 10) : null,
-      ticketPrice: eventForm.ticketPrice - parseFloat(eventForm.ticketPrice) : 0,
+      maxCapacity: eventForm.maxCapacity ? parseInt(eventForm.maxCapacity, 10) : null,
+      ticketPrice: eventForm.ticketPrice ? parseFloat(eventForm.ticketPrice) : 0,
       allowCash: Boolean(eventForm.allowCash),
       collabCommunityIds: eventForm.collabCommunityIds || [],
       autoReminders: eventForm.autoReminders,
@@ -910,8 +904,8 @@ export default function LeaderDashboard({ initialCommunityId }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           prompt: aiPrompt,
-          communityName: community-.name,
-          communityTags: community-.tags
+          communityName: community?.name,
+          communityTags: community?.tags
         })
       });
       const data = await res.json();
@@ -919,8 +913,8 @@ export default function LeaderDashboard({ initialCommunityId }) {
         setEventForm(prev => ({ ...prev, ...data.event }));
         setAiPrompt('');
         toast.success(
-          data.fallback - 'Event Drafted!' : '✨ AI Generated!',
-          data.fallback - 'Smart template applied  -  review and publish.' : 'Gemini crafted your event  -  review and publish.'
+          data.fallback ? 'Event Drafted!' : '✨ AI Generated!',
+          data.fallback ? 'Smart template applied  -  review and publish.' : 'Gemini crafted your event  -  review and publish.'
         );
       } else {
         toast.error('Generation failed', 'Please try again or fill in manually.');
@@ -938,7 +932,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
     setIsDiscovering(true);
     setDiscoveryResults(null);
     try {
-      const res = await fetch(`/api/experiences/discover-q=${encodeURIComponent(discoverySearchTerm)}&provider=${discoveryProvider}`);
+      const res = await fetch(`/api/experiences/discover?q=${encodeURIComponent(discoverySearchTerm)}&provider=${discoveryProvider}`);
       const result = await res.json();
       
       if (result.status === 'success') {
@@ -959,7 +953,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
       ...exp,
       communityId: community.id,
       leaderMarkup: 15,
-      promotedBy: community-.id,
+      promotedBy: community?.id,
     };
     
     if (!experiences.find(e => e.id === exp.id)) {
@@ -977,7 +971,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
     const rows = memberList.map(m => {
       const u = users.find(usr => usr.id === m.userId);
       const score = getEngagementScore(m, events, eventRsvps, communityMessages, community.id);
-      return [u-.name || 'Unknown', m.role || 'Member', score];
+      return [u?.name || 'Unknown', m.role || 'Member', score];
     });
     const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
@@ -993,7 +987,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
   const handleSaveSubscriptionPrice = () => {
     const price = parseFloat(subscriptionPrice) || 0;
     updateCommunity(community.id, { subscription_price: price });
-    toast.success('Pricing updated!', price > 0 - `Community subscription set to £${price}/month` : 'Community set to free');
+    toast.success('Pricing updated!', price > 0 ? `Community subscription set to £${price}/month` : 'Community set to free');
   };
 
   // ─── Event Wizard Steps ────────────────────────────────────
@@ -1030,11 +1024,11 @@ export default function LeaderDashboard({ initialCommunityId }) {
       {/* Step Indicator */}
       <div style={{ display: 'flex', gap: '4px', marginBottom: '8px' }}>
         {eventSteps.map((s, i) => (
-          <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px', cursor: 'pointer', opacity: i <= eventStep - 1 : 0.4 }} onClick={() => { if (i < eventStep || (i === eventStep + 1 && canAdvanceStep())) setEventStep(i); }}>
-            <div style={{ height: '3px', borderRadius: '99px', background: i <= eventStep - 'var(--teal-500)' : 'rgba(255,255,255,0.08)', transition: 'background 0.3s' }} />
+          <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px', cursor: 'pointer', opacity: i <= eventStep ? 1 : 0.4 }} onClick={() => { if (i < eventStep || (i === eventStep + 1 && canAdvanceStep())) setEventStep(i); }}>
+            <div style={{ height: '3px', borderRadius: '99px', background: i <= eventStep ? 'var(--teal-500)' : 'rgba(255,255,255,0.08)', transition: 'background 0.3s' }} />
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <s.icon size={12} color={i <= eventStep - 'var(--teal-400)' : 'var(--slate-600)'} />
-              <span style={{ fontSize: '0.7rem', fontWeight: 600, color: i <= eventStep - 'var(--teal-300)' : 'var(--slate-600)' }}>{s.label}</span>
+              <s.icon size={12} color={i <= eventStep ? 'var(--teal-400)' : 'var(--slate-600)'} />
+              <span style={{ fontSize: '0.7rem', fontWeight: 600, color: i <= eventStep ? 'var(--teal-300)' : 'var(--slate-600)' }}>{s.label}</span>
             </div>
           </div>
         ))}
@@ -1060,10 +1054,10 @@ export default function LeaderDashboard({ initialCommunityId }) {
               <button 
                 onClick={handleAIGenerateEvent}
                 disabled={isGenerating || !aiPrompt.trim()}
-                style={{ padding: '0 16px', borderRadius: '8px', background: 'rgba(139,92,246,0.2)', border: '1px solid rgba(139,92,246,0.5)', color: '#c4b5fd', fontWeight: 600, cursor: isGenerating - 'wait' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: '90px' }}
+                style={{ padding: '0 16px', borderRadius: '8px', background: 'rgba(139,92,246,0.2)', border: '1px solid rgba(139,92,246,0.5)', color: '#c4b5fd', fontWeight: 600, cursor: isGenerating ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: '90px' }}
                 className="interactive-press"
               >
-                {isGenerating - <div className="spinner" style={{ width: '16px', height: '16px', border: '2px solid rgba(196,181,253,0.3)', borderTopColor: '#c4b5fd', borderRadius: '50%', animation: 'spin 1s linear infinite' }} /> : 'Generate'}
+                {isGenerating ? <div className="spinner" style={{ width: '16px', height: '16px', border: '2px solid rgba(196,181,253,0.3)', borderTopColor: '#c4b5fd', borderRadius: '50%', animation: 'spin 1s linear infinite' }} /> : 'Generate'}
               </button>
             </div>
           </div>
@@ -1139,34 +1133,6 @@ export default function LeaderDashboard({ initialCommunityId }) {
             </div>
           </div>
 
-          {/* Inline Paid Event Legal & Shield Advisory */}
-          {parseFloat(eventForm.ticketPrice) > 0 && !isShieldActive && (
-            <div style={{
-              margin: '-4px 0 16px 0',
-              padding: '12px 14px',
-              borderRadius: '12px',
-              background: 'rgba(56, 189, 248, 0.08)',
-              border: '1px solid rgba(56, 189, 248, 0.25)',
-              display: 'flex',
-              gap: '10px',
-              alignItems: 'flex-start'
-            }}>
-              <Shield size={18} color="#38bdf8" style={{ flexShrink: 0, marginTop: '2px' }} />
-              <div style={{ fontSize: '0.8rem', lineHeight: 1.45, color: 'var(--slate-300)' }}>
-                <div style={{ fontWeight: 700, color: '#38bdf8', marginBottom: '2px' }}>
-                  Organizer Advisory: Duty of Care & Ticket Fees
-                </div>
-                <div>
-                  Under UK law, charging for sessions or leading outdoor activities creates an organizer duty of care. 
-                  <strong style={{ color: '#fff' }}> Leader Pro</strong> includes built-in -5,000,000 Public Liability Insurance (PLI), attendee waivers, 1-click RAMS, and reduces ticket fees from 5% to 2%.
-                </div>
-                <div style={{ marginTop: '4px', fontSize: '0.74rem', color: 'var(--slate-400)' }}>
-                  Already insured or running a low-risk club (like a caf- book club)- You can publish freely on Free tier.
-                </div>
-              </div>
-            </div>
-          )}
-
           {/* Cash on Arrival & Payout Bank Controls */}
           {parseFloat(eventForm.ticketPrice) > 0 && (
             <div style={{ marginBottom: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -1203,25 +1169,25 @@ export default function LeaderDashboard({ initialCommunityId }) {
               <div style={{
                 padding: '14px 16px',
                 borderRadius: '14px',
-                background: stripeConnected - 'rgba(20, 184, 166, 0.08)' : (eventForm.allowCash - 'rgba(245, 158, 11, 0.08)' : 'rgba(239, 68, 68, 0.1)'),
-                border: stripeConnected - '1px solid rgba(45, 212, 191, 0.3)' : (eventForm.allowCash - '1px solid rgba(245, 158, 11, 0.25)' : '1px solid rgba(239, 68, 68, 0.3)'),
+                background: stripeConnected ? 'rgba(20, 184, 166, 0.08)' : (eventForm.allowCash ? 'rgba(245, 158, 11, 0.08)' : 'rgba(239, 68, 68, 0.1)'),
+                border: stripeConnected ? '1px solid rgba(45, 212, 191, 0.3)' : (eventForm.allowCash ? '1px solid rgba(245, 158, 11, 0.25)' : '1px solid rgba(239, 68, 68, 0.3)'),
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '10px'
               }}>
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
-                  <CreditCard size={18} color={stripeConnected - 'var(--teal-400)' : (eventForm.allowCash - '#fbbf24' : '#f87171')} style={{ flexShrink: 0, marginTop: '2px' }} />
+                  <CreditCard size={18} color={stripeConnected ? 'var(--teal-400)' : (eventForm.allowCash ? '#fbbf24' : '#f87171')} style={{ flexShrink: 0, marginTop: '2px' }} />
                   <div>
-                    <div style={{ fontSize: '0.85rem', fontWeight: 700, color: stripeConnected - 'var(--teal-200)' : (eventForm.allowCash - '#fef08a' : '#fca5a5') }}>
+                    <div style={{ fontSize: '0.85rem', fontWeight: 700, color: stripeConnected ? 'var(--teal-200)' : (eventForm.allowCash ? '#fef08a' : '#fca5a5') }}>
                       {stripeConnected 
-                        - '✓ Payout Account Active (Faster Payments)' 
-                        : (eventForm.allowCash - 'Cash on Arrival Enabled' : 'Register a Payout Account to Sell Tickets Online')}
+                        ? '✓ Payout Account Active (Faster Payments)' 
+                        : (eventForm.allowCash ? 'Cash on Arrival Enabled' : 'Register a Payout Account to Sell Tickets Online')}
                     </div>
                     <div style={{ fontSize: '0.78rem', color: 'var(--slate-300)', marginTop: '2px', lineHeight: 1.4 }}>
                       {stripeConnected 
-                        - 'Ticket revenue will automatically transfer directly to your registered UK bank account via Faster Payments.' 
+                        ? 'Ticket revenue will automatically transfer directly to your registered UK bank account via Faster Payments.' 
                         : (eventForm.allowCash 
-                            - 'You can collect cash in person at the meetup. To also accept online card payments, register a payout account.' 
+                            ? 'You can collect cash in person at the meetup. To also accept online card payments, register a payout account.' 
                             : `To charge £${eventForm.ticketPrice} online, register your UK bank account so ticket sales transfer to you directly.`)}
                     </div>
                   </div>
@@ -1257,8 +1223,8 @@ export default function LeaderDashboard({ initialCommunityId }) {
             <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><ImageIcon size={14} color="#f59e0b" /> Cover Image</label>
             <div>
               <input type="file" accept="image/*" ref={fileInputRef} onChange={e => setImageFile(e.target.files[0])} style={{ display: 'none' }} />
-              <button onClick={() => fileInputRef.current-.click()} className="btn btn-outline interactive-press" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '14px', width: '100%', justifyContent: 'center', borderStyle: 'dashed', borderRadius: '12px' }}>
-                <ImageIcon size={18} /> {imageFile - imageFile.name : 'Choose Image (optional)'}
+              <button onClick={() => fileInputRef.current?.click()} className="btn btn-outline interactive-press" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '14px', width: '100%', justifyContent: 'center', borderStyle: 'dashed', borderRadius: '12px' }}>
+                <ImageIcon size={18} /> {imageFile ? imageFile.name : 'Choose Image (optional)'}
               </button>
             </div>
           </div>
@@ -1277,7 +1243,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
 
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
               {communities
-                .filter(c => c.id !== (community-.id || activeCommunityId))
+                .filter(c => c.id !== (community?.id || activeCommunityId))
                 .map(partner => {
                   const isSelected = (eventForm.collabCommunityIds || []).includes(partner.id);
                   return (
@@ -1287,7 +1253,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                       onClick={() => {
                         const current = eventForm.collabCommunityIds || [];
                         const updated = isSelected 
-                          - current.filter(id => id !== partner.id)
+                          ? current.filter(id => id !== partner.id)
                           : [...current, partner.id];
                         setEventForm({ ...eventForm, collabCommunityIds: updated });
                       }}
@@ -1301,13 +1267,13 @@ export default function LeaderDashboard({ initialCommunityId }) {
                         cursor: 'pointer',
                         fontSize: '0.8rem',
                         fontWeight: 600,
-                        background: isSelected - 'rgba(20,184,166,0.18)' : 'rgba(255,255,255,0.03)',
-                        border: isSelected - '1px solid var(--teal-400)' : '1px solid rgba(255,255,255,0.08)',
-                        color: isSelected - 'var(--teal-300)' : 'var(--slate-300)',
+                        background: isSelected ? 'rgba(20,184,166,0.18)' : 'rgba(255,255,255,0.03)',
+                        border: isSelected ? '1px solid var(--teal-400)' : '1px solid rgba(255,255,255,0.08)',
+                        color: isSelected ? 'var(--teal-300)' : 'var(--slate-300)',
                         transition: 'all 0.2s ease'
                       }}
                     >
-                      {partner.image - (
+                      {partner.image ? (
                         <img src={partner.image} alt="" style={{ width: '18px', height: '18px', borderRadius: '50%', objectFit: 'cover' }} />
                       ) : (
                         <div style={{ width: '18px', height: '18px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.65rem' }}>
@@ -1320,9 +1286,9 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   );
                 })}
             </div>
-            {eventForm.collabCommunityIds-.length > 0 && (
+            {eventForm.collabCommunityIds?.length > 0 && (
               <div style={{ fontSize: '0.72rem', color: '#86efac', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <Check size={12} /> {eventForm.collabCommunityIds.length} partner {eventForm.collabCommunityIds.length === 1 - 'community' : 'communities'} selected for cross-promotion
+                <Check size={12} /> {eventForm.collabCommunityIds.length} partner {eventForm.collabCommunityIds.length === 1 ? 'community' : 'communities'} selected for cross-promotion
               </div>
             )}
           </div>
@@ -1339,15 +1305,15 @@ export default function LeaderDashboard({ initialCommunityId }) {
               </div>
               <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
                 <div style={{ width: '44px', height: '48px', background: 'rgba(20,184,166,0.1)', borderRadius: '10px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--white)', lineHeight: 1 }}>{eventForm.date - new Date(eventForm.date + 'T00:00:00').getDate() : ' - '}</div>
-                  <div style={{ fontSize: '0.6rem', color: 'var(--teal-400)', fontWeight: 600, textTransform: 'uppercase' }}>{eventForm.date - new Date(eventForm.date + 'T00:00:00').toLocaleDateString('en-GB', { month: 'short' }) : ''}</div>
+                  <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--white)', lineHeight: 1 }}>{eventForm.date ? new Date(eventForm.date + 'T00:00:00').getDate() : ' - '}</div>
+                  <div style={{ fontSize: '0.6rem', color: 'var(--teal-400)', fontWeight: 600, textTransform: 'uppercase' }}>{eventForm.date ? new Date(eventForm.date + 'T00:00:00').toLocaleDateString('en-GB', { month: 'short' }) : ''}</div>
                 </div>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.95rem', marginBottom: '2px' }}>{eventForm.title}</div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                     {eventForm.time && <span>🕐 {eventForm.time}</span>}
                     {eventForm.location && <span>📍 {cleanLocationName(eventForm.location)}</span>}
-                    {eventForm.ticketPrice && parseFloat(eventForm.ticketPrice) > 0 - <span>💷 £{eventForm.ticketPrice}</span> : <span>🎟️ Free</span>}
+                    {eventForm.ticketPrice && parseFloat(eventForm.ticketPrice) > 0 ? <span>💷 £{eventForm.ticketPrice}</span> : <span>🎟️ Free</span>}
                   </div>
                 </div>
               </div>
@@ -1384,8 +1350,8 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>Auto-message attendees 1 day before</div>
                 </div>
               </div>
-              <div style={{ width: '44px', height: '24px', background: eventForm.autoReminders - 'var(--teal-500)' : 'rgba(255,255,255,0.1)', borderRadius: '12px', position: 'relative', transition: 'all 0.3s' }}>
-                <div style={{ position: 'absolute', width: '20px', height: '20px', background: 'white', borderRadius: '50%', top: '2px', left: eventForm.autoReminders - '22px' : '2px', transition: 'all 0.3s' }} />
+              <div style={{ width: '44px', height: '24px', background: eventForm.autoReminders ? 'var(--teal-500)' : 'rgba(255,255,255,0.1)', borderRadius: '12px', position: 'relative', transition: 'all 0.3s' }}>
+                <div style={{ position: 'absolute', width: '20px', height: '20px', background: 'white', borderRadius: '50%', top: '2px', left: eventForm.autoReminders ? '22px' : '2px', transition: 'all 0.3s' }} />
               </div>
             </div>
 
@@ -1403,14 +1369,14 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>Request a 5-star review 2h after event ends</div>
                 </div>
               </div>
-              <div style={{ width: '44px', height: '24px', background: eventForm.autoFeedback - 'var(--teal-500)' : 'rgba(255,255,255,0.1)', borderRadius: '12px', position: 'relative', transition: 'all 0.3s' }}>
-                <div style={{ position: 'absolute', width: '20px', height: '20px', background: 'white', borderRadius: '50%', top: '2px', left: eventForm.autoFeedback - '22px' : '2px', transition: 'all 0.3s' }} />
+              <div style={{ width: '44px', height: '24px', background: eventForm.autoFeedback ? 'var(--teal-500)' : 'rgba(255,255,255,0.1)', borderRadius: '12px', position: 'relative', transition: 'all 0.3s' }}>
+                <div style={{ position: 'absolute', width: '20px', height: '20px', background: 'white', borderRadius: '50%', top: '2px', left: eventForm.autoFeedback ? '22px' : '2px', transition: 'all 0.3s' }} />
               </div>
             </div>
 
             <div 
               className="interactive-press"
-              onClick={() => setEventForm({...eventForm, requireWaiver: eventForm.requireWaiver === false - true : false})}
+              onClick={() => setEventForm({...eventForm, requireWaiver: eventForm.requireWaiver === false ? true : false})}
               style={{ padding: '16px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -1422,8 +1388,8 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>Require member safety declaration on RSVP</div>
                 </div>
               </div>
-              <div style={{ width: '44px', height: '24px', background: eventForm.requireWaiver !== false - 'var(--teal-500)' : 'rgba(255,255,255,0.1)', borderRadius: '12px', position: 'relative', transition: 'all 0.3s' }}>
-                <div style={{ position: 'absolute', width: '20px', height: '20px', background: 'white', borderRadius: '50%', top: '2px', left: eventForm.requireWaiver !== false - '22px' : '2px', transition: 'all 0.3s' }} />
+              <div style={{ width: '44px', height: '24px', background: eventForm.requireWaiver !== false ? 'var(--teal-500)' : 'rgba(255,255,255,0.1)', borderRadius: '12px', position: 'relative', transition: 'all 0.3s' }}>
+                <div style={{ position: 'absolute', width: '20px', height: '20px', background: 'white', borderRadius: '50%', top: '2px', left: eventForm.requireWaiver !== false ? '22px' : '2px', transition: 'all 0.3s' }} />
               </div>
             </div>
           </div>
@@ -1445,14 +1411,14 @@ export default function LeaderDashboard({ initialCommunityId }) {
         <div className="dashboard-sidebar desktop-only">
           <div className="dashboard-sidebar-header">
             <button 
-              onClick={() => community-.id - router.push(`/community/${community.id}`) : router.back()}
+              onClick={() => community?.id ? router.push(`/community/${community.id}`) : router.back()}
               style={{ background: 'none', border: 'none', color: 'var(--teal-400)', fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', padding: '0 0 12px 0', fontWeight: 600 }}
               className="interactive-press"
             >
               <ChevronLeft size={16} /> Back to Community
             </button>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%' }}>
-              {availableCommunities.length > 1 - (
+              {availableCommunities.length > 1 ? (
                 <select 
                   value={communityIdLed} 
                   onChange={e => setActiveCommunityId(e.target.value)}
@@ -1468,7 +1434,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' }}>
               <span style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>Leader View</span>
-              {user-.isAdmin && (
+              {user?.isAdmin && (
                 <button onClick={() => router.push('/admin')} style={{ background: 'none', border: 'none', color: '#3b82f6', fontSize: '0.75rem', cursor: 'pointer', padding: 0, fontWeight: 600 }}>
                   Admin View →
                 </button>
@@ -1489,7 +1455,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
               <button 
                 key={tab.id} 
                 onClick={() => setActiveTab(tab.id)}
-                className={`dashboard-nav-item ${activeTab === tab.id - 'active' : ''}`}
+                className={`dashboard-nav-item ${activeTab === tab.id ? 'active' : ''}`}
               >
                 <tab.icon size={18} />
                 <span style={{ textTransform: 'capitalize' }}>{tab.label}</span>
@@ -1501,8 +1467,8 @@ export default function LeaderDashboard({ initialCommunityId }) {
 
       {/* Main Content Area */}
       <div className="dashboard-main">
-      {!community - (
-        isLoading - (
+      {!community ? (
+        isLoading ? (
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px 40px', color: 'var(--slate-400)', textAlign: 'center' }}>
             <div className="spinner" style={{ width: '32px', height: '32px', border: '3px solid rgba(20,184,166,0.2)', borderTopColor: 'var(--teal-400)', borderRadius: '50%', animation: 'spin 0.8s linear infinite', marginBottom: '16px' }} />
             <div style={{ fontSize: '0.95rem' }}>Loading Leader Dashboard...</div>
@@ -1523,11 +1489,11 @@ export default function LeaderDashboard({ initialCommunityId }) {
             <AppHeader 
               title="Dashboard" 
               showBack={true} 
-              onBack={() => community-.id - router.push(`/community/${community.id}`) : router.back()} 
+              onBack={() => community?.id ? router.push(`/community/${community.id}`) : router.back()} 
             />
             <div style={{ padding: '0 20px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                {availableCommunities.length > 1 - (
+                {availableCommunities.length > 1 ? (
                   <select 
                     value={communityIdLed} 
                     onChange={e => setActiveCommunityId(e.target.value)}
@@ -1542,7 +1508,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 )}
                 <span>• Leader View</span>
               </div>
-              {user-.isAdmin && (
+              {user?.isAdmin && (
                 <button 
                   onClick={() => router.push('/admin')} 
                   className="btn btn-outline interactive-press"
@@ -1591,16 +1557,16 @@ export default function LeaderDashboard({ initialCommunityId }) {
                       gap: '4px',
                       padding: '8px 4px',
                       borderRadius: '10px',
-                      border: isActive - '1px solid rgba(20,184,166,0.3)' : '1px solid transparent',
-                      background: isActive - 'rgba(20,184,166,0.15)' : 'transparent',
-                      color: isActive - 'var(--teal-300)' : 'var(--slate-400)',
-                      fontWeight: isActive - 700 : 500,
+                      border: isActive ? '1px solid rgba(20,184,166,0.3)' : '1px solid transparent',
+                      background: isActive ? 'rgba(20,184,166,0.15)' : 'transparent',
+                      color: isActive ? 'var(--teal-300)' : 'var(--slate-400)',
+                      fontWeight: isActive ? 700 : 500,
                       fontSize: '0.72rem',
                       cursor: 'pointer',
                       transition: 'all 0.15s ease'
                     }}
                   >
-                    <Icon size={16} color={isActive - 'var(--teal-300)' : 'var(--slate-400)'} />
+                    <Icon size={16} color={isActive ? 'var(--teal-300)' : 'var(--slate-400)'} />
                     <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}>{tab.label}</span>
                   </button>
                 );
@@ -1624,7 +1590,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   border: '1px solid rgba(255,255,255,0.08)',
                   boxShadow: '0 4px 20px rgba(0,0,0,0.3)'
                 }}>
-                  {(community.cover_image || community.image) - (
+                  {(community.cover_image || community.image) ? (
                     <img 
                       src={community.cover_image || community.image} 
                       alt={community.name} 
@@ -1657,7 +1623,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                         style={{ display: 'none' }} 
                       />
                       <button 
-                        onClick={() => bannerFileInputRef.current-.click()}
+                        onClick={() => bannerFileInputRef.current?.click()}
                         disabled={isUploading}
                         className="btn btn-outline interactive-press"
                         style={{ 
@@ -1673,7 +1639,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                           gap: '6px'
                         }}
                       >
-                        <ImageIcon size={14} /> {isUploading - 'Updating...' : 'Update Cover'}
+                        <ImageIcon size={14} /> {isUploading ? 'Updating...' : 'Update Cover'}
                       </button>
                     </div>
                   </div>
@@ -1707,7 +1673,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   );
                   const policyNo = community.insurance_policy_number || `MC-PLI-2026-${community.id.slice(0, 6).toUpperCase()}`;
 
-                  return isShieldActive - (
+                  return isShieldActive ? (
                     <div style={{
                       background: 'linear-gradient(135deg, rgba(20,184,166,0.14), rgba(15,23,42,0.92))',
                       border: '1px solid rgba(20,184,166,0.35)',
@@ -1742,7 +1708,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                         <button onClick={() => setShowShieldModal(true)} className="btn btn-outline interactive-press" style={{ padding: '8px 12px', fontSize: '0.75rem' }}>
                           Manage
                         </button>
-                        <button onClick={() => generatePliCertificatePdf({ community, leaderName: user-.name, policyNumber: policyNo })} className="btn btn-primary interactive-press" style={{ padding: '8px 12px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <button onClick={() => generatePliCertificatePdf({ community, leaderName: user?.name, policyNumber: policyNo })} className="btn btn-primary interactive-press" style={{ padding: '8px 12px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
                           <Download size={13} /> Certificate
                         </button>
                       </div>
@@ -1794,36 +1760,36 @@ export default function LeaderDashboard({ initialCommunityId }) {
               </div>
 
               {/* Stats Grid 2x3  -  clickable for drill-down */}
-              <div style={{ padding: '0 20px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: leaderDrillDown - '0' : '24px' }}>
+              <div style={{ padding: '0 20px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: leaderDrillDown ? '0' : '24px' }}>
                 {[
                   { key: 'members',   value: stats.totalMembers || 0,                                                                    label: 'Total Members',     icon: Users,     color: 'white' },
                   { key: 'active',    value: stats.activeMembers || 0,                                                                   label: 'Active Members',    icon: Activity,  color: '#22c55e', accent: '#22c55e' },
                   { key: 'revenue',   value: `£${stats.totalRevenue || 0}`,                                                          label: 'Total Revenue',     icon: DollarSign,color: '#f59e0b', accent: '#f59e0b' },
                   { key: 'events',    value: stats.eventsThisMonth || 0,                                                                 label: 'Events This Month', icon: Calendar,  color: 'var(--teal-400)' },
                   { key: 'checkin',   value: `${stats.checkinRate || 0}%`,                                                               label: 'Check-in Rate',     icon: ScanLine,  color: '#3b82f6', accent: '#3b82f6' },
-                  { key: 'next',      value: stats.daysToNext !== null - (stats.daysToNext === 0 - 'Today!' : `${stats.daysToNext}d`) : '\u2014', label: 'Next Event', icon: Zap, color: '#a78bfa', accent: '#a78bfa' },
+                  { key: 'next',      value: stats.daysToNext !== null ? (stats.daysToNext === 0 ? 'Today!' : `${stats.daysToNext}d`) : '\u2014', label: 'Next Event', icon: Zap, color: '#a78bfa', accent: '#a78bfa' },
                 ].map(s => (
                   <button
                     key={s.key}
-                    onClick={() => setLeaderDrillDown(leaderDrillDown === s.key - null : s.key)}
+                    onClick={() => setLeaderDrillDown(leaderDrillDown === s.key ? null : s.key)}
                     className="interactive-press"
                     style={{
                       all: 'unset', display: 'block', cursor: 'pointer', borderRadius: '14px',
-                      outline: leaderDrillDown === s.key - `2px solid ${s.accent || s.color || 'white'}` : '2px solid transparent',
+                      outline: leaderDrillDown === s.key ? `2px solid ${s.accent || s.color || 'white'}` : '2px solid transparent',
                       transition: 'outline 0.2s'
                     }}
                   >
                     <div className="glass-panel stagger-item" style={{
                       padding: '16px', borderRadius: '14px',
-                      ...(s.accent - { border: `1px solid ${s.accent}30`, background: `linear-gradient(135deg, ${s.accent}10 0%, ${s.accent}02 100%)` } : {})
+                      ...(s.accent ? { border: `1px solid ${s.accent}30`, background: `linear-gradient(135deg, ${s.accent}10 0%, ${s.accent}02 100%)` } : {})
                     }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
                         <div style={{ fontSize: '1.8rem', fontFamily: 'var(--font-heading)', fontWeight: 700, color: s.color || 'white' }}>{s.value}</div>
                         <s.icon size={18} color={s.color || 'var(--slate-500)'} />
                       </div>
                       <div style={{ fontSize: '0.7rem', color: 'var(--slate-400)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.03em' }}>{s.label}</div>
-                      <div style={{ fontSize: '0.6rem', color: leaderDrillDown === s.key - (s.accent || s.color || 'white') : 'var(--slate-600)', marginTop: '4px', fontWeight: 600 }}>
-                        {leaderDrillDown === s.key - '\u25b2 Hide details' : '\u25bc Tap for details'}
+                      <div style={{ fontSize: '0.6rem', color: leaderDrillDown === s.key ? (s.accent || s.color || 'white') : 'var(--slate-600)', marginTop: '4px', fontWeight: 600 }}>
+                        {leaderDrillDown === s.key ? '\u25b2 Hide details' : '\u25bc Tap for details'}
                       </div>
                     </div>
                   </button>
@@ -1863,7 +1829,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                           <span style={{ flex: 1, fontSize: '0.85rem', color: 'var(--white)' }}>{u.name}</span>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                             <div style={{ width: '40px', height: '4px', background: 'rgba(255,255,255,0.06)', borderRadius: '99px', overflow: 'hidden' }}>
-                              <div style={{ width: `${score}%`, height: '100%', background: score >= 60 - '#22c55e' : score >= 30 - '#f59e0b' : '#6b7280', borderRadius: '99px' }} />
+                              <div style={{ width: `${score}%`, height: '100%', background: score >= 60 ? '#22c55e' : score >= 30 ? '#f59e0b' : '#6b7280', borderRadius: '99px' }} />
                             </div>
                             <span style={{ fontSize: '0.7rem', color: 'var(--slate-400)', minWidth: '32px', textAlign: 'right' }}>{score}%</span>
                           </div>
@@ -1953,14 +1919,14 @@ export default function LeaderDashboard({ initialCommunityId }) {
                           const isPast = new Date(e.date + 'T00:00:00') < now;
                           return (
                             <div key={e.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                              <div style={{ width: '36px', height: '40px', background: isPast - 'rgba(107,114,128,0.15)' : 'rgba(20,184,166,0.12)', borderRadius: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                                <div style={{ fontSize: '1rem', fontWeight: 700, color: isPast - 'var(--slate-400)' : 'var(--teal-300)', lineHeight: 1 }}>{new Date(e.date + 'T00:00:00').getDate()}</div>
+                              <div style={{ width: '36px', height: '40px', background: isPast ? 'rgba(107,114,128,0.15)' : 'rgba(20,184,166,0.12)', borderRadius: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                <div style={{ fontSize: '1rem', fontWeight: 700, color: isPast ? 'var(--slate-400)' : 'var(--teal-300)', lineHeight: 1 }}>{new Date(e.date + 'T00:00:00').getDate()}</div>
                               </div>
                               <div style={{ flex: 1, minWidth: 0 }}>
                                 <div style={{ fontSize: '0.85rem', color: 'var(--white)', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{e.title}</div>
-                                <div style={{ fontSize: '0.7rem', color: 'var(--slate-500)' }}>{r.rsvpCount} going{r.revenue > 0 - ` · £${r.revenue}` : ''}</div>
+                                <div style={{ fontSize: '0.7rem', color: 'var(--slate-500)' }}>{r.rsvpCount} going{r.revenue > 0 ? ` · £${r.revenue}` : ''}</div>
                               </div>
-                              <span style={{ fontSize: '0.65rem', fontWeight: 600, color: isPast - 'var(--slate-500)' : '#22c55e', background: isPast - 'rgba(107,114,128,0.1)' : 'rgba(34,197,94,0.1)', padding: '3px 7px', borderRadius: '6px' }}>{isPast - 'Past' : 'Upcoming'}</span>
+                              <span style={{ fontSize: '0.65rem', fontWeight: 600, color: isPast ? 'var(--slate-500)' : '#22c55e', background: isPast ? 'rgba(107,114,128,0.1)' : 'rgba(34,197,94,0.1)', padding: '3px 7px', borderRadius: '6px' }}>{isPast ? 'Past' : 'Upcoming'}</span>
                             </div>
                           );
                         });
@@ -1992,10 +1958,10 @@ export default function LeaderDashboard({ initialCommunityId }) {
                                 rows.push([
                                   `"${(e.title || '').replace(/"/g, '""')}"`,
                                   `"${e.date || ''}"`,
-                                  `"${(u-.name || 'Member').replace(/"/g, '""')}"`,
-                                  `"${(u-.email || '').replace(/"/g, '""')}"`,
+                                  `"${(u?.name || 'Member').replace(/"/g, '""')}"`,
+                                  `"${(u?.email || '').replace(/"/g, '""')}"`,
                                   `"${r.status || 'going'}"`,
-                                  r.checkedIn || r.status === 'checked_in' - 'Yes' : 'No',
+                                  r.checkedIn || r.status === 'checked_in' ? 'Yes' : 'No',
                                   `"${r.referred_by || r.referredBy || 'Direct'}"`
                                 ]);
                               });
@@ -2004,7 +1970,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                             const encodedUri = encodeURI(csvContent);
                             const link = document.createElement('a');
                             link.setAttribute('href', encodedUri);
-                            link.setAttribute('download', `${community-.name-.toLowerCase().replace(/[^a-z0-9]/g, '_') || 'community'}_attendance_roster.csv`);
+                            link.setAttribute('download', `${community?.name?.toLowerCase().replace(/[^a-z0-9]/g, '_') || 'community'}_attendance_roster.csv`);
                             document.body.appendChild(link);
                             link.click();
                             document.body.removeChild(link);
@@ -2040,8 +2006,8 @@ export default function LeaderDashboard({ initialCommunityId }) {
                         });
                         const uniqueAttendees = Object.keys(attendeeCounts).length;
                         const repeatAttendees = Object.values(attendeeCounts).filter(c => c >= 2).length;
-                        const retentionRate = uniqueAttendees > 0 - Math.round((repeatAttendees / uniqueAttendees) * 100) : 0;
-                        const checkinRate = totalR > 0 - Math.round((totalC / totalR) * 100) : 0;
+                        const retentionRate = uniqueAttendees > 0 ? Math.round((repeatAttendees / uniqueAttendees) * 100) : 0;
+                        const checkinRate = totalR > 0 ? Math.round((totalC / totalR) * 100) : 0;
 
                         return (
                           <>
@@ -2088,17 +2054,17 @@ export default function LeaderDashboard({ initialCommunityId }) {
                         const rsvps = eventRsvps[e.id] || [];
                         const going = rsvps.filter(r => r.status === 'going' || r.status === 'checked_in').length;
                         const checkedIn = rsvps.filter(r => r.checkedIn || r.status === 'checked_in').length;
-                        const pct = going > 0 - Math.round((checkedIn / going) * 100) : 0;
+                        const pct = going > 0 ? Math.round((checkedIn / going) * 100) : 0;
                         return (
                           <div key={e.id} style={{ padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
                               <span style={{ fontSize: '0.85rem', color: 'var(--white)', fontWeight: 600 }}>{e.title}</span>
-                              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: pct >= 75 - '#22c55e' : pct >= 40 - '#f59e0b' : 'var(--slate-400)' }}>
+                              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: pct >= 75 ? '#22c55e' : pct >= 40 ? '#f59e0b' : 'var(--slate-400)' }}>
                                 {checkedIn}/{going} checked in ({pct}%)
                               </span>
                             </div>
                             <div style={{ height: '5px', background: 'rgba(255,255,255,0.06)', borderRadius: '99px', overflow: 'hidden' }}>
-                              <div style={{ width: `${pct}%`, height: '100%', background: pct >= 75 - '#22c55e' : pct >= 40 - '#f59e0b' : '#6b7280', borderRadius: '99px', transition: 'width 0.4s ease' }} />
+                              <div style={{ width: `${pct}%`, height: '100%', background: pct >= 75 ? '#22c55e' : pct >= 40 ? '#f59e0b' : '#6b7280', borderRadius: '99px', transition: 'width 0.4s ease' }} />
                             </div>
                           </div>
                         );
@@ -2118,7 +2084,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                         return (
                           <div key={e.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
                             <div style={{ padding: '4px 10px', background: 'rgba(139,92,246,0.15)', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 700, color: '#a78bfa', whiteSpace: 'nowrap' }}>
-                              {d === 0 - 'Today' : d === 1 - 'Tomorrow' : `${d}d`}
+                              {d === 0 ? 'Today' : d === 1 ? 'Tomorrow' : `${d}d`}
                             </div>
                             <div style={{ flex: 1, minWidth: 0 }}>
                               <div style={{ fontSize: '0.85rem', color: 'var(--white)', fontWeight: 600 }}>{e.title}</div>
@@ -2199,7 +2165,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: '0.65rem', fontWeight: 600, color: 'var(--teal-400)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '2px' }}>
-                        {stats.daysToNext === 0 - '🔴 Happening Today' : stats.daysToNext === 1 - '⏰ Tomorrow' : `Coming up in ${stats.daysToNext} days`}
+                        {stats.daysToNext === 0 ? '🔴 Happening Today' : stats.daysToNext === 1 ? '⏰ Tomorrow' : `Coming up in ${stats.daysToNext} days`}
                       </div>
                       <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '1rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{stats.nextEvent.title}</div>
                       <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', display: 'flex', gap: '8px', marginTop: '2px' }}>
@@ -2276,9 +2242,9 @@ export default function LeaderDashboard({ initialCommunityId }) {
                         toast.success('Link copied!', 'Share it anywhere to grow your community');
                       }}
                       className="interactive-press"
-                      style={{ padding: '10px 16px', background: linkCopied - 'rgba(34,197,94,0.2)' : 'rgba(20,184,166,0.15)', border: `1px solid ${linkCopied - 'rgba(34,197,94,0.4)' : 'rgba(20,184,166,0.3)'}`, borderRadius: '10px', color: linkCopied - '#22c55e' : 'var(--teal-300)', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.2s' }}
+                      style={{ padding: '10px 16px', background: linkCopied ? 'rgba(34,197,94,0.2)' : 'rgba(20,184,166,0.15)', border: `1px solid ${linkCopied ? 'rgba(34,197,94,0.4)' : 'rgba(20,184,166,0.3)'}`, borderRadius: '10px', color: linkCopied ? '#22c55e' : 'var(--teal-300)', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.2s' }}
                     >
-                      {linkCopied - '✓ Copied!' : 'Copy Link'}
+                      {linkCopied ? '✓ Copied!' : 'Copy Link'}
                     </button>
                   </div>
 
@@ -2288,7 +2254,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                       onClick={() => {
                         const url = `https://morecommunity.app/community/${community.id}`;
                         const text = `Join ${community.name} on MoreCommunity! 🌟 ${url}`;
-                        window.open(`https://wa.me/-text=${encodeURIComponent(text)}`, '_blank');
+                        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
                       }}
                       className="interactive-press"
                       style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 14px', background: 'rgba(37,211,102,0.1)', border: '1px solid rgba(37,211,102,0.25)', borderRadius: '12px', color: '#25d366', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}
@@ -2300,7 +2266,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                       onClick={() => {
                         const url = `https://morecommunity.app/community/${community.id}`;
                         const text = `Join ${community.name} on MoreCommunity!`;
-                        window.open(`https://twitter.com/intent/tweet-text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
+                        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
                       }}
                       className="interactive-press"
                       style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 14px', background: 'rgba(29,161,242,0.1)', border: '1px solid rgba(29,161,242,0.25)', borderRadius: '12px', color: '#1da1f2', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}
@@ -2332,7 +2298,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
               <div style={{ padding: '0 20px', marginBottom: '24px' }}>
                 <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--slate-500)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '10px', paddingLeft: '4px' }}>Recent Activity</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  {recentActivity.length > 0 - recentActivity.map((a, i) => (
+                  {recentActivity.length > 0 ? recentActivity.map((a, i) => (
                     <div key={i} className="stagger-item" style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.04)' }}>
                       <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: `${a.color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                         <a.icon size={14} color={a.color} />
@@ -2362,7 +2328,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 </button>
               </div>
 
-              {communityEvents.length === 0 - (
+              {communityEvents.length === 0 ? (
                 <div 
                   onClick={() => openEventWizard()}
                   className="interactive-press"
@@ -2400,9 +2366,9 @@ export default function LeaderDashboard({ initialCommunityId }) {
                               padding: '6px 14px',
                               borderRadius: '20px',
                               border: '1px solid',
-                              borderColor: dashboardEventFilter === tab.id - 'var(--teal-500)' : 'rgba(255,255,255,0.08)',
-                              background: dashboardEventFilter === tab.id - 'rgba(20,184,166,0.15)' : 'rgba(255,255,255,0.02)',
-                              color: dashboardEventFilter === tab.id - 'var(--teal-300)' : 'var(--slate-400)',
+                              borderColor: dashboardEventFilter === tab.id ? 'var(--teal-500)' : 'rgba(255,255,255,0.08)',
+                              background: dashboardEventFilter === tab.id ? 'rgba(20,184,166,0.15)' : 'rgba(255,255,255,0.02)',
+                              color: dashboardEventFilter === tab.id ? 'var(--teal-300)' : 'var(--slate-400)',
                               fontSize: '0.8rem',
                               fontWeight: 600,
                               cursor: 'pointer',
@@ -2432,9 +2398,9 @@ export default function LeaderDashboard({ initialCommunityId }) {
                           <div style={{ padding: '36px 20px', textAlign: 'center', background: 'rgba(255,255,255,0.02)', borderRadius: '16px', border: '1px dashed rgba(255,255,255,0.08)' }}>
                             <p style={{ color: 'var(--slate-400)', margin: 0, fontSize: '0.9rem' }}>
                               {dashboardEventFilter === 'upcoming' 
-                                - 'No upcoming events scheduled. Create one to gather your members!' 
+                                ? 'No upcoming events scheduled. Create one to gather your members!' 
                                 : dashboardEventFilter === 'past'
-                                  - 'No past events archived yet.'
+                                  ? 'No past events archived yet.'
                                   : 'No events found.'}
                             </p>
                           </div>
@@ -2451,24 +2417,24 @@ export default function LeaderDashboard({ initialCommunityId }) {
                         
                         return (
                           <div key={event.id} className="stagger-item" style={{ 
-                            background: isPast - 'rgba(255,255,255,0.015)' : 'rgba(255,255,255,0.02)', 
-                            border: isPast - '1px solid rgba(255,255,255,0.04)' : '1px solid rgba(255,255,255,0.06)', 
+                            background: isPast ? 'rgba(255,255,255,0.015)' : 'rgba(255,255,255,0.02)', 
+                            border: isPast ? '1px solid rgba(255,255,255,0.04)' : '1px solid rgba(255,255,255,0.06)', 
                             borderRadius: '14px', 
                             overflow: 'hidden', 
-                            opacity: isCancelled - 0.5 : isPast - 0.88 : 1 
+                            opacity: isCancelled ? 0.5 : isPast ? 0.88 : 1 
                           }}>
                             <div style={{ display: 'flex', gap: '14px', padding: '14px' }}>
                               {/* Date block */}
-                              <div style={{ width: '48px', height: '54px', background: isPast - 'rgba(51,65,85,0.4)' : 'rgba(20,184,166,0.1)', borderRadius: '10px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                                <div style={{ fontSize: '1.2rem', fontWeight: 700, color: isPast - 'var(--slate-300)' : 'var(--white)', lineHeight: 1 }}>{day}</div>
-                                <div style={{ fontSize: '0.65rem', color: isPast - 'var(--slate-400)' : 'var(--teal-400)', fontWeight: 600, textTransform: 'uppercase' }}>{month}</div>
+                              <div style={{ width: '48px', height: '54px', background: isPast ? 'rgba(51,65,85,0.4)' : 'rgba(20,184,166,0.1)', borderRadius: '10px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                <div style={{ fontSize: '1.2rem', fontWeight: 700, color: isPast ? 'var(--slate-300)' : 'var(--white)', lineHeight: 1 }}>{day}</div>
+                                <div style={{ fontSize: '0.65rem', color: isPast ? 'var(--slate-400)' : 'var(--teal-400)', fontWeight: 600, textTransform: 'uppercase' }}>{month}</div>
                               </div>
                               
                               {/* Info */}
                               <div style={{ flex: 1, minWidth: 0 }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                                  <h4 style={{ margin: 0, flex: 1, fontSize: '0.95rem', fontWeight: 600, color: isPast - 'var(--slate-200)' : 'var(--white)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{event.title}</h4>
-                                  {isPast - (
+                                  <h4 style={{ margin: 0, flex: 1, fontSize: '0.95rem', fontWeight: 600, color: isPast ? 'var(--slate-200)' : 'var(--white)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{event.title}</h4>
+                                  {isPast ? (
                                     <span style={{ fontSize: '0.65rem', background: 'rgba(51,65,85,0.6)', color: 'var(--slate-300)', padding: '2px 8px', borderRadius: '99px', fontWeight: 600, textTransform: 'uppercase' }}>Archived</span>
                                   ) : (
                                     <span className={`status-badge ${event.status || 'published'}`}>{event.status || 'live'}</span>
@@ -2483,8 +2449,8 @@ export default function LeaderDashboard({ initialCommunityId }) {
                                 
                                 {/* Stats row */}
                                 <div style={{ display: 'flex', gap: '12px', fontSize: '0.75rem' }}>
-                                  <span style={{ color: isPast - 'var(--slate-400)' : 'var(--teal-400)', display: 'flex', alignItems: 'center', gap: '3px' }}>
-                                    <UserCheck size={12} /> {ev.rsvpCount}{event.maxCapacity - `/${event.maxCapacity}` : ''} {isPast - 'attended' : 'going'}
+                                  <span style={{ color: isPast ? 'var(--slate-400)' : 'var(--teal-400)', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                                    <UserCheck size={12} /> {ev.rsvpCount}{event.maxCapacity ? `/${event.maxCapacity}` : ''} {isPast ? 'attended' : 'going'}
                                   </span>
                                   {ev.price > 0 && (
                                     <span style={{ color: '#f59e0b', display: 'flex', alignItems: 'center', gap: '3px' }}>
@@ -2501,7 +2467,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                             {/* Action buttons */}
                             {!isCancelled && (
                               <div style={{ display: 'flex', gap: '6px', padding: '0 14px 10px', flexWrap: 'wrap', alignItems: 'center' }}>
-                                {!isPast - (
+                                {!isPast ? (
                                   <>
                                     <button onClick={() => setShowScanner(true)} className="btn btn-outline interactive-press" style={{ padding: '6px 12px', fontSize: '0.75rem', color: 'var(--teal-400)', borderColor: 'rgba(20,184,166,0.3)' }}>
                                       <QrCode size={12} style={{ marginRight: '4px' }} /> Scan
@@ -2510,31 +2476,31 @@ export default function LeaderDashboard({ initialCommunityId }) {
                                       <ImageIcon size={12} style={{ marginRight: '4px' }} /> Flyer
                                     </button>
                                     <button 
-                                      onClick={() => generateRamsPdf({ community, event, leaderName: user-.name, policyNumber: community.insurance_policy_number })} 
+                                      onClick={() => generateRamsPdf({ community, event, leaderName: user?.name, policyNumber: community.insurance_policy_number })} 
                                       className="btn btn-outline interactive-press" 
                                       style={{ padding: '6px 12px', fontSize: '0.75rem', color: '#2dd4bf', borderColor: 'rgba(20,184,166,0.3)' }}
                                       title="Download Venue Risk Assessment & Method Statement (RAMS) PDF"
                                     >
                                       <Shield size={12} style={{ marginRight: '4px' }} /> RAMS
                                     </button>
-                                    <button onClick={() => setExpandedEventId(isExpanded - null : event.id)} className="btn btn-outline interactive-press" style={{ padding: '6px 12px', fontSize: '0.75rem' }}>
-                                      {isExpanded - <ChevronUp size={12} style={{ marginRight: '4px' }} /> : <ChevronDown size={12} style={{ marginRight: '4px' }} />}
-                                      {isExpanded - 'Hide' : 'Attendees'}
+                                    <button onClick={() => setExpandedEventId(isExpanded ? null : event.id)} className="btn btn-outline interactive-press" style={{ padding: '6px 12px', fontSize: '0.75rem' }}>
+                                      {isExpanded ? <ChevronUp size={12} style={{ marginRight: '4px' }} /> : <ChevronDown size={12} style={{ marginRight: '4px' }} />}
+                                      {isExpanded ? 'Hide' : 'Attendees'}
                                     </button>
                                     <button 
                                       onClick={() => handleOpenReminderModal(event)} 
                                       className="btn btn-outline interactive-press" 
                                       style={{ padding: '6px 12px', fontSize: '0.75rem', color: '#38bdf8', borderColor: 'rgba(56,189,248,0.3)' }}
-                                      title={attendees.length === 0 - "No registered attendees yet" : `Broadcast reminder to ${attendees.length} attendee(s)`}
+                                      title={attendees.length === 0 ? "No registered attendees yet" : `Broadcast reminder to ${attendees.length} attendee(s)`}
                                     >
                                       <Bell size={12} style={{ marginRight: '4px' }} /> Remind
                                     </button>
                                     <button onClick={() => handleEditEvent(event)} className="btn btn-outline interactive-press" style={{ padding: '6px 12px', fontSize: '0.75rem' }}>
                                       <Edit3 size={12} style={{ marginRight: '4px' }} /> Edit
                                     </button>
-                                    {cancelConfirmId === event.id - (
+                                    {cancelConfirmId === event.id ? (
                                       <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-                                        <span style={{ fontSize: '0.7rem', color: 'var(--slate-400)' }}>Cancel-</span>
+                                        <span style={{ fontSize: '0.7rem', color: 'var(--slate-400)' }}>Cancel?</span>
                                         <button onClick={() => handleCancelEvent(event.id)} className="btn btn-danger interactive-press" style={{ padding: '4px 10px', fontSize: '0.7rem' }}>Yes</button>
                                         <button onClick={() => setCancelConfirmId(null)} className="btn btn-outline interactive-press" style={{ padding: '4px 10px', fontSize: '0.7rem' }}>No</button>
                                       </div>
@@ -2549,9 +2515,9 @@ export default function LeaderDashboard({ initialCommunityId }) {
                                     <span style={{ fontSize: '0.75rem', color: 'var(--slate-400)', display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '4px 10px', background: 'rgba(255,255,255,0.03)', borderRadius: '6px' }}>
                                       <Archive size={12} /> Event Ended (Archived)
                                     </span>
-                                    <button onClick={() => setExpandedEventId(isExpanded - null : event.id)} className="btn btn-outline interactive-press" style={{ padding: '6px 12px', fontSize: '0.75rem' }}>
-                                      {isExpanded - <ChevronUp size={12} style={{ marginRight: '4px' }} /> : <ChevronDown size={12} style={{ marginRight: '4px' }} />}
-                                      {isExpanded - 'Hide' : `Attendees (${attendees.length})`}
+                                    <button onClick={() => setExpandedEventId(isExpanded ? null : event.id)} className="btn btn-outline interactive-press" style={{ padding: '6px 12px', fontSize: '0.75rem' }}>
+                                      {isExpanded ? <ChevronUp size={12} style={{ marginRight: '4px' }} /> : <ChevronDown size={12} style={{ marginRight: '4px' }} />}
+                                      {isExpanded ? 'Hide' : `Attendees (${attendees.length})`}
                                     </button>
                                     <button onClick={() => setFlyerEvent(event)} className="btn btn-outline interactive-press" style={{ padding: '6px 12px', fontSize: '0.75rem', color: '#a78bfa', borderColor: 'rgba(167,139,250,0.3)' }}>
                                       <ImageIcon size={12} style={{ marginRight: '4px' }} /> Flyer
@@ -2572,8 +2538,8 @@ export default function LeaderDashboard({ initialCommunityId }) {
                                     <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '6px 0' }}>
                                       <img src={attendee.avatar} alt={attendee.name} style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }} />
                                       <span style={{ flex: 1, fontSize: '0.85rem', color: 'var(--white)' }}>{attendee.name}</span>
-                                      <span style={{ fontSize: '0.7rem', padding: '2px 8px', borderRadius: '99px', fontWeight: 600, ...(rsvp.checkedIn - { background: 'rgba(34,197,94,0.15)', color: '#22c55e' } : { background: 'rgba(255,255,255,0.05)', color: 'var(--slate-500)' }) }}>
-                                        {rsvp.checkedIn - '✓ Checked In' : 'Pending'}
+                                      <span style={{ fontSize: '0.7rem', padding: '2px 8px', borderRadius: '99px', fontWeight: 600, ...(rsvp.checkedIn ? { background: 'rgba(34,197,94,0.15)', color: '#22c55e' } : { background: 'rgba(255,255,255,0.05)', color: 'var(--slate-500)' }) }}>
+                                        {rsvp.checkedIn ? '✓ Checked In' : 'Pending'}
                                       </span>
                                     </div>
                                   );
@@ -2608,10 +2574,10 @@ export default function LeaderDashboard({ initialCommunityId }) {
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                {events.filter(e => e.status === 'published' && !user-.ledCommunities-.includes(e.communityId)).map(event => {
+                {events.filter(e => e.status === 'published' && !user?.ledCommunities?.includes(e.communityId)).map(event => {
                   const sourceCommunity = communities.find(c => c.id === event.communityId);
                   const attendeeCount = (eventRsvps[event.id] || []).length;
-                  const priceLabel = (event.ticketPrice || event.ticket_price) > 0 - `£${event.ticketPrice || event.ticket_price}` : 'Free';
+                  const priceLabel = (event.ticketPrice || event.ticket_price) > 0 ? `£${event.ticketPrice || event.ticket_price}` : 'Free';
 
                   return (
                     <div 
@@ -2632,7 +2598,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                           title="Click to view event details"
                           style={{ cursor: 'pointer', flexShrink: 0, position: 'relative' }}
                         >
-                          {event.image - (
+                          {event.image ? (
                             <img 
                               src={event.image} 
                               alt={event.title} 
@@ -2677,9 +2643,9 @@ export default function LeaderDashboard({ initialCommunityId }) {
                               {event.title}
                             </h4>
                             <span style={{
-                              background: (event.ticketPrice || event.ticket_price) > 0 - 'rgba(168, 85, 247, 0.12)' : 'rgba(34, 197, 94, 0.12)',
-                              color: (event.ticketPrice || event.ticket_price) > 0 - '#c084fc' : '#4ade80',
-                              border: `1px solid ${(event.ticketPrice || event.ticket_price) > 0 - 'rgba(168, 85, 247, 0.3)' : 'rgba(34, 197, 94, 0.3)'}`,
+                              background: (event.ticketPrice || event.ticket_price) > 0 ? 'rgba(168, 85, 247, 0.12)' : 'rgba(34, 197, 94, 0.12)',
+                              color: (event.ticketPrice || event.ticket_price) > 0 ? '#c084fc' : '#4ade80',
+                              border: `1px solid ${(event.ticketPrice || event.ticket_price) > 0 ? 'rgba(168, 85, 247, 0.3)' : 'rgba(34, 197, 94, 0.3)'}`,
                               padding: '2px 8px',
                               borderRadius: '99px',
                               fontSize: '0.72rem',
@@ -2692,7 +2658,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
 
                           <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '10px', fontSize: '0.8rem', color: 'var(--slate-400)', marginBottom: '8px' }}>
                             <span style={{ color: 'var(--teal-300)', fontWeight: 500 }}>
-                              {sourceCommunity-.name || 'Partner Community'}
+                              {sourceCommunity?.name || 'Partner Community'}
                             </span>
                             <span>•</span>
                             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -2767,7 +2733,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                     </div>
                   );
                 })}
-                {events.filter(e => e.status === 'published' && !user-.ledCommunities-.includes(e.communityId)).length === 0 && (
+                {events.filter(e => e.status === 'published' && !user?.ledCommunities?.includes(e.communityId)).length === 0 && (
                   <div style={{ padding: '40px', textAlign: 'center', color: 'var(--slate-400)', background: 'rgba(255,255,255,0.02)', borderRadius: '16px' }}>
                     No network events found. Check back later!
                   </div>
@@ -2814,7 +2780,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
               <div style={{ marginBottom: '20px' }}>
                 <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--slate-500)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '10px', paddingLeft: '4px' }}>Revenue by Event</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {publishedEvents.length > 0 - publishedEvents.map(event => {
+                  {publishedEvents.length > 0 ? publishedEvents.map(event => {
                     const ev = getEventRevenue(event);
                     return (
                       <div key={event.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px' }}>
@@ -2823,8 +2789,8 @@ export default function LeaderDashboard({ initialCommunityId }) {
                           <div style={{ fontSize: '0.75rem', color: 'var(--slate-500)' }}>{ev.rsvpCount} tickets × £{ev.price}</div>
                         </div>
                         <div style={{ textAlign: 'right' }}>
-                          <div style={{ fontWeight: 700, color: ev.revenue > 0 - '#f59e0b' : 'var(--slate-500)', fontSize: '1rem' }}>£{ev.revenue}</div>
-                          <div style={{ fontSize: '0.65rem', color: 'var(--slate-500)' }}>{ev.price > 0 - 'Paid' : 'Free'}</div>
+                          <div style={{ fontWeight: 700, color: ev.revenue > 0 ? '#f59e0b' : 'var(--slate-500)', fontSize: '1rem' }}>£{ev.revenue}</div>
+                          <div style={{ fontSize: '0.65rem', color: 'var(--slate-500)' }}>{ev.price > 0 ? 'Paid' : 'Free'}</div>
 
                         </div>
                       </div>
@@ -2854,7 +2820,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                       <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)' }}>Automated UK Faster Payments to your bank</div>
                     </div>
                   </div>
-                  {stripeConnected - (
+                  {stripeConnected ? (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', borderRadius: '99px', background: 'rgba(16,185,129,0.15)', border: '1px solid rgba(16,185,129,0.3)', color: '#34d399', fontSize: '0.8rem', fontWeight: 700 }}>
                       <CheckCircle2 size={14} /> Bank Connected
                     </div>
@@ -2865,7 +2831,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   )}
                 </div>
 
-                {stripeConnected - (
+                {stripeConnected ? (
                   <>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '16px', marginBottom: '20px' }}>
                       <div style={{ background: 'rgba(255,255,255,0.02)', padding: '14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
@@ -2880,8 +2846,8 @@ export default function LeaderDashboard({ initialCommunityId }) {
                       </div>
                       <div style={{ background: 'rgba(255,255,255,0.02)', padding: '14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
                         <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '4px' }}>Platform Split</div>
-                        <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#38bdf8' }}>{isShieldActive - '98% / 2%' : '95% / 5%'}</div>
-                        <div style={{ fontSize: '0.75rem', color: 'var(--slate-500)', marginTop: '2px' }}>{isShieldActive - '2% reduced fee (Pro)' : '5% standard platform fee'}</div>
+                        <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#38bdf8' }}>{isShieldActive ? '98% / 2%' : '95% / 5%'}</div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--slate-500)', marginTop: '2px' }}>{isShieldActive ? '2% reduced fee (Pro)' : '5% standard platform fee'}</div>
                       </div>
                     </div>
 
@@ -2890,12 +2856,12 @@ export default function LeaderDashboard({ initialCommunityId }) {
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--teal-400)' }}></div>
                           <span style={{ fontSize: '0.85rem', color: 'var(--slate-200)', fontWeight: 600 }}>
-                            {community-.payout_bank - `${community.payout_bank.bankName || 'UK Bank'} Linked` : 'Payout Bank Linked'}
+                            {community?.payout_bank ? `${community.payout_bank.bankName || 'UK Bank'} Linked` : 'Payout Bank Linked'}
                           </span>
                         </div>
                         <div style={{ fontSize: '0.78rem', color: 'var(--slate-400)', marginTop: '4px' }}>
-                          {community-.payout_bank 
-                            - `Account: ${community.payout_bank.accountName} • Sort: ${community.payout_bank.sortCodeMasked || '••-••-••'} • Acc: ${community.payout_bank.accountMasked || '••••'}` 
+                          {community?.payout_bank 
+                            ? `Account: ${community.payout_bank.accountName} • Sort: ${community.payout_bank.sortCodeMasked || '••-••-••'} • Acc: ${community.payout_bank.accountMasked || '••••'}` 
                             : 'Payouts route automatically via UK Faster Payments directly to your bank.'}
                         </div>
                       </div>
@@ -2934,11 +2900,11 @@ export default function LeaderDashboard({ initialCommunityId }) {
                         padding: '12px 24px', borderRadius: '12px',
                         display: 'inline-flex', alignItems: 'center', gap: '8px',
                         fontSize: '0.95rem', fontWeight: 700,
-                        cursor: isConnectingStripe - 'not-allowed' : 'pointer'
+                        cursor: isConnectingStripe ? 'not-allowed' : 'pointer'
                       }}
                     >
                       <DollarSign size={18} />
-                      {isConnectingStripe - 'Opening Stripe Express...' : 'Register Payout Account'}
+                      {isConnectingStripe ? 'Opening Stripe Express...' : 'Register Payout Account'}
                     </button>
                   </div>
                 )}
@@ -2966,10 +2932,10 @@ export default function LeaderDashboard({ initialCommunityId }) {
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
                 {experiences.map(exp => {
-                  const isPromoted = exp.promotedBy === community-.id;
+                  const isPromoted = exp.promotedBy === community?.id;
                   const finalPrice = exp.basePrice + Math.round(exp.basePrice * ((exp.leaderMarkup || 0) / 100));
                   return (
-                    <div key={exp.id} style={{ background: 'rgba(255,255,255,0.03)', border: isPromoted - '2px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', overflow: 'hidden' }}>
+                    <div key={exp.id} style={{ background: 'rgba(255,255,255,0.03)', border: isPromoted ? '2px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', overflow: 'hidden' }}>
                       <div style={{ position: 'relative', height: '140px' }}>
                         <img src={exp.image} alt={exp.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         <div style={{ position: 'absolute', top: '10px', right: '10px', background: 'rgba(0,0,0,0.6)', padding: '4px 10px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 600, color: 'var(--white)', backdropFilter: 'blur(4px)' }}>
@@ -2983,15 +2949,15 @@ export default function LeaderDashboard({ initialCommunityId }) {
                           <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={14} /> {exp.duration}</span>
                           <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Star size={14} color="#fbbf24" /> {exp.rating}</span>
                         </div>
-                        {!isPromoted - (
+                        {!isPromoted ? (
                           <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '16px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
                               <span style={{ fontSize: '0.85rem', color: 'var(--slate-300)' }}>Your Markup:</span>
                               <select 
-                                value={exp.leaderMarkup -- 15}
+                                value={exp.leaderMarkup ?? 15}
                                 onChange={(e) => { 
                                   const val = parseInt(e.target.value) || 0;
-                                  setExperiences(prev => prev.map(item => item.id === exp.id - { ...item, leaderMarkup: val } : item));
+                                  setExperiences(prev => prev.map(item => item.id === exp.id ? { ...item, leaderMarkup: val } : item));
                                   toast.success(`Markup set to +${val}%`); 
                                 }}
                                 style={{ background: 'var(--slate-800)', color: 'var(--white)', border: '1px solid var(--slate-700)', padding: '4px 8px', borderRadius: '6px', fontSize: '0.85rem' }}>
@@ -3000,7 +2966,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                             </div>
                             <button 
                               onClick={() => { 
-                                setExperiences(prev => prev.map(item => item.id === exp.id - { ...item, promotedBy: community-.id } : item));
+                                setExperiences(prev => prev.map(item => item.id === exp.id ? { ...item, promotedBy: community?.id } : item));
                                 toast.success(`${exp.title} added!`); 
                               }}
                               className="btn btn-primary" style={{ width: '100%', padding: '10px', fontSize: '0.9rem' }}>Promote to Community</button>
@@ -3013,7 +2979,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                             </div>
                             <button 
                               onClick={() => { 
-                                setExperiences(prev => prev.map(item => item.id === exp.id - { ...item, promotedBy: null } : item));
+                                setExperiences(prev => prev.map(item => item.id === exp.id ? { ...item, promotedBy: null } : item));
                                 toast.info(`${exp.title} removed.`); 
                               }}
                               className="btn btn-outline" style={{ width: '100%', padding: '10px', fontSize: '0.9rem' }}>Remove</button>
@@ -3051,8 +3017,8 @@ export default function LeaderDashboard({ initialCommunityId }) {
                       style={{
                         display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px',
                         borderRadius: '9px', border: 'none', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, transition: 'all 0.2s',
-                        background: peopleSubTab === t.id - 'rgba(20,184,166,0.15)' : 'transparent',
-                        color: peopleSubTab === t.id - 'var(--teal-300)' : 'var(--slate-400)'
+                        background: peopleSubTab === t.id ? 'rgba(20,184,166,0.15)' : 'transparent',
+                        color: peopleSubTab === t.id ? 'var(--teal-300)' : 'var(--slate-400)'
                       }}
                     >
                       <t.icon size={15} /> {t.label}
@@ -3082,16 +3048,16 @@ export default function LeaderDashboard({ initialCommunityId }) {
                           <div style={{ position: 'relative' }}>
                             <img 
                               onClick={() => setSelectedProfileImage({
-                                imageUrl: memberUser.avatar || `https://ui-avatars.com/api/-name=${encodeURIComponent(memberUser.name)}&background=0D8B93&color=fff`,
+                                imageUrl: memberUser.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(memberUser.name)}&background=0D8B93&color=fff`,
                                 name: memberUser.name,
-                                subtitle: `${membership.role || 'Member'} • ${community-.name || ''}`
+                                subtitle: `${membership.role || 'Member'} • ${community?.name || ''}`
                               })} 
                               src={memberUser.avatar} 
                               alt={memberUser.name} 
                               title="Click to view full photo"
                               style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', cursor: 'pointer' }} 
                             />
-                            <div style={{ position: 'absolute', bottom: 0, right: 0, width: '12px', height: '12px', borderRadius: '50%', background: score >= 60 - '#22c55e' : score >= 30 - '#f59e0b' : '#6b7280', border: '2px solid var(--slate-900)' }} />
+                            <div style={{ position: 'absolute', bottom: 0, right: 0, width: '12px', height: '12px', borderRadius: '50%', background: score >= 60 ? '#22c55e' : score >= 30 ? '#f59e0b' : '#6b7280', border: '2px solid var(--slate-900)' }} />
                           </div>
                           <div>
                             <div onClick={() => router.push(`/profile/${memberUser.id}`)} style={{ fontWeight: 600, color: 'var(--white)', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '0.9rem' }}>
@@ -3100,13 +3066,13 @@ export default function LeaderDashboard({ initialCommunityId }) {
                               {membership.role === 'Co-Leader' && <span style={{ fontSize: '0.65rem', background: 'rgba(139,92,246,0.3)', color: '#a78bfa', padding: '2px 6px', borderRadius: '4px' }}>Co-Leader</span>}
                             </div>
                             <div style={{ fontSize: '0.75rem', color: 'var(--slate-500)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                              <span style={{ color: score >= 60 - '#22c55e' : score >= 30 - '#f59e0b' : 'var(--slate-500)', fontWeight: 600 }}>{score}%</span> engagement
+                              <span style={{ color: score >= 60 ? '#22c55e' : score >= 30 ? '#f59e0b' : 'var(--slate-500)', fontWeight: 600 }}>{score}%</span> engagement
                             </div>
                           </div>
                         </div>
                         {membership.role !== 'Leader' && (
                           <div style={{ display: 'flex', gap: '6px' }}>
-                            {membership.role === 'Co-Leader' - (
+                            {membership.role === 'Co-Leader' ? (
                               <button onClick={() => handleDemote(memberUser)} className="btn btn-outline interactive-press" style={{ padding: '5px 10px', fontSize: '0.75rem' }}>Demote</button>
                             ) : (
                               <button onClick={() => handlePromote(memberUser)} className="btn btn-outline interactive-press" style={{ padding: '5px 10px', fontSize: '0.75rem' }}>Promote</button>
@@ -3164,9 +3130,9 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   <div style={{ flex: 1 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                       <span style={{ fontWeight: 500, color: 'var(--white)', fontSize: '0.95rem' }}>Community Guidelines & Norms</span>
-                      {guidelinesDraft.length > 0 - (
+                      {guidelinesDraft.length > 0 ? (
                         <span style={{ fontSize: '0.7rem', padding: '2px 8px', borderRadius: '999px', background: 'rgba(20,184,166,0.2)', color: 'var(--teal-300)', fontWeight: 600 }}>
-                          {guidelinesDraft.length} {guidelinesDraft.length === 1 - 'Rule' : 'Rules'} Active
+                          {guidelinesDraft.length} {guidelinesDraft.length === 1 ? 'Rule' : 'Rules'} Active
                         </span>
                       ) : (
                         <span style={{ fontSize: '0.7rem', padding: '2px 8px', borderRadius: '999px', background: 'rgba(245,158,11,0.2)', color: '#fbbf24', fontWeight: 600 }}>
@@ -3178,7 +3144,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                       Set safety expectations, pet etiquette, and welcoming norms
                     </div>
                   </div>
-                  {isGuidelinesExpanded - <ChevronUp size={18} color="var(--slate-400)" /> : <ChevronDown size={18} color="var(--slate-400)" />}
+                  {isGuidelinesExpanded ? <ChevronUp size={18} color="var(--slate-400)" /> : <ChevronDown size={18} color="var(--slate-400)" />}
                 </button>
 
                 {isGuidelinesExpanded && (
@@ -3194,9 +3160,9 @@ export default function LeaderDashboard({ initialCommunityId }) {
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '8px' }}>
                         {PREMADE_GUIDELINE_PACKS.map(pack => {
                           const isRecommended = (pack.id === 'dogs' && (
-                            (community-.name || '').toLowerCase().includes('dog') || 
-                            (community-.name || '').toLowerCase().includes('golden') ||
-                            (community-.tags || []).some(t => t.toLowerCase().includes('dog') || t.toLowerCase().includes('pet'))
+                            (community?.name || '').toLowerCase().includes('dog') || 
+                            (community?.name || '').toLowerCase().includes('golden') ||
+                            (community?.tags || []).some(t => t.toLowerCase().includes('dog') || t.toLowerCase().includes('pet'))
                           ));
                           const isSelected = selectedPackId === pack.id;
                           return (
@@ -3204,8 +3170,8 @@ export default function LeaderDashboard({ initialCommunityId }) {
                               key={pack.id}
                               style={{
                                 padding: '12px',
-                                background: isSelected - 'rgba(20,184,166,0.12)' : isRecommended - 'rgba(245,158,11,0.08)' : 'rgba(255,255,255,0.02)',
-                                border: isSelected - '1px solid var(--teal-500)' : isRecommended - '1px solid rgba(245,158,11,0.4)' : '1px solid rgba(255,255,255,0.05)',
+                                background: isSelected ? 'rgba(20,184,166,0.12)' : isRecommended ? 'rgba(245,158,11,0.08)' : 'rgba(255,255,255,0.02)',
+                                border: isSelected ? '1px solid var(--teal-500)' : isRecommended ? '1px solid rgba(245,158,11,0.4)' : '1px solid rgba(255,255,255,0.05)',
                                 borderRadius: '10px',
                                 display: 'flex',
                                 flexDirection: 'column',
@@ -3228,15 +3194,15 @@ export default function LeaderDashboard({ initialCommunityId }) {
                                 </div>
                               </div>
                               <div style={{ marginTop: '8px' }}>
-                                {guidelinesDraft.length === 0 - (
+                                {guidelinesDraft.length === 0 ? (
                                   <button
                                     type="button"
                                     onClick={() => handleApplyPresetPack(pack, true)}
                                     className="interactive-press"
                                     style={{
                                       width: '100%', padding: '8px 12px', borderRadius: '8px', border: 'none',
-                                      background: isSelected - 'var(--teal-500)' : 'rgba(20,184,166,0.2)',
-                                      color: isSelected - '#000' : 'var(--teal-300)',
+                                      background: isSelected ? 'var(--teal-500)' : 'rgba(20,184,166,0.2)',
+                                      color: isSelected ? '#000' : 'var(--teal-300)',
                                       fontSize: '0.76rem', fontWeight: 700, cursor: 'pointer',
                                       display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px'
                                     }}
@@ -3263,7 +3229,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                                     <button
                                       type="button"
                                       onClick={() => {
-                                        if (confirm(`Replace your current ${guidelinesDraft.length} rules with the ${pack.rules.length} rules from "${pack.name}"-`)) {
+                                        if (confirm(`Replace your current ${guidelinesDraft.length} rules with the ${pack.rules.length} rules from "${pack.name}"?`)) {
                                           handleApplyPresetPack(pack, true);
                                         }
                                       }}
@@ -3306,17 +3272,17 @@ export default function LeaderDashboard({ initialCommunityId }) {
                               style={{
                                 padding: '5px 10px',
                                 borderRadius: '999px',
-                                border: isAlreadyAdded - '1px solid rgba(255,255,255,0.04)' : '1px solid rgba(20,184,166,0.3)',
-                                background: isAlreadyAdded - 'rgba(255,255,255,0.02)' : 'rgba(20,184,166,0.08)',
-                                color: isAlreadyAdded - 'var(--slate-500)' : 'var(--teal-300)',
+                                border: isAlreadyAdded ? '1px solid rgba(255,255,255,0.04)' : '1px solid rgba(20,184,166,0.3)',
+                                background: isAlreadyAdded ? 'rgba(255,255,255,0.02)' : 'rgba(20,184,166,0.08)',
+                                color: isAlreadyAdded ? 'var(--slate-500)' : 'var(--teal-300)',
                                 fontSize: '0.72rem',
-                                cursor: isAlreadyAdded - 'default' : 'pointer',
+                                cursor: isAlreadyAdded ? 'default' : 'pointer',
                                 display: 'flex',
                                 alignItems: 'center',
                                 gap: '4px'
                               }}
                             >
-                              {isAlreadyAdded - <Check size={12} /> : <Plus size={12} />}
+                              {isAlreadyAdded ? <Check size={12} /> : <Plus size={12} />}
                               <span>{rule}</span>
                             </button>
                           );
@@ -3334,7 +3300,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                           <button
                             type="button"
                             onClick={() => {
-                              if (confirm('Clear all draft guidelines-')) setGuidelinesDraft([]);
+                              if (confirm('Clear all draft guidelines?')) setGuidelinesDraft([]);
                             }}
                             style={{ background: 'none', border: 'none', color: 'var(--rose-400)', fontSize: '0.72rem', cursor: 'pointer', padding: 0 }}
                           >
@@ -3343,7 +3309,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                         )}
                       </div>
 
-                      {guidelinesDraft.length === 0 - (
+                      {guidelinesDraft.length === 0 ? (
                         <div style={{ padding: '20px', borderRadius: '10px', background: 'rgba(255,255,255,0.02)', border: '1px dashed rgba(255,255,255,0.1)', textAlign: 'center', color: 'var(--slate-400)', fontSize: '0.8rem' }}>
                           No guidelines set yet. Choose a starter pack above or type a custom rule below.
                         </div>
@@ -3366,7 +3332,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                                 value={rule}
                                 onChange={e => {
                                   const newVal = e.target.value;
-                                  setGuidelinesDraft(prev => prev.map((r, i) => i === idx - newVal : r));
+                                  setGuidelinesDraft(prev => prev.map((r, i) => i === idx ? newVal : r));
                                 }}
                                 style={{
                                   flex: 1, background: 'transparent', border: 'none',
@@ -3405,10 +3371,10 @@ export default function LeaderDashboard({ initialCommunityId }) {
                         disabled={!newGuidelineInput.trim()}
                         className="interactive-press"
                         style={{
-                          padding: '0 16px', background: newGuidelineInput.trim() - 'rgba(20,184,166,0.2)' : 'rgba(255,255,255,0.05)',
-                          border: newGuidelineInput.trim() - '1px solid rgba(20,184,166,0.4)' : '1px solid rgba(255,255,255,0.08)',
-                          borderRadius: '8px', color: newGuidelineInput.trim() - 'var(--teal-300)' : 'var(--slate-500)',
-                          fontSize: '0.8rem', fontWeight: 700, cursor: newGuidelineInput.trim() - 'pointer' : 'default',
+                          padding: '0 16px', background: newGuidelineInput.trim() ? 'rgba(20,184,166,0.2)' : 'rgba(255,255,255,0.05)',
+                          border: newGuidelineInput.trim() ? '1px solid rgba(20,184,166,0.4)' : '1px solid rgba(255,255,255,0.08)',
+                          borderRadius: '8px', color: newGuidelineInput.trim() ? 'var(--teal-300)' : 'var(--slate-500)',
+                          fontSize: '0.8rem', fontWeight: 700, cursor: newGuidelineInput.trim() ? 'pointer' : 'default',
                           display: 'flex', alignItems: 'center', gap: '4px'
                         }}
                       >
@@ -3431,7 +3397,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                           display: 'flex', alignItems: 'center', gap: '6px'
                         }}
                       >
-                        <Check size={14} /> {isSavingGuidelines - 'Saving...' : 'Save Guidelines'}
+                        <Check size={14} /> {isSavingGuidelines ? 'Saving...' : 'Save Guidelines'}
                       </button>
                     </div>
                   </div>
@@ -3451,7 +3417,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
               <div style={{ padding: '16px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '12px' }}>
                   <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(59,130,246,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3b82f6' }}>
-                    {communityVisibility === 'public' - <Eye size={20} /> : <EyeOff size={20} />}
+                    {communityVisibility === 'public' ? <Eye size={20} /> : <EyeOff size={20} />}
                   </div>
                   <span style={{ fontWeight: 500, color: 'var(--white)' }}>Community Visibility</span>
                 </div>
@@ -3463,8 +3429,8 @@ export default function LeaderDashboard({ initialCommunityId }) {
                       toast.info('Visibility updated', `Community is now ${v}`);
                     }} className="interactive-press" style={{
                       flex: 1, padding: '10px', borderRadius: '8px', border: 'none',
-                      background: communityVisibility === v - 'rgba(20,184,166,0.15)' : 'rgba(255,255,255,0.03)',
-                      color: communityVisibility === v - 'var(--teal-300)' : 'var(--slate-400)',
+                      background: communityVisibility === v ? 'rgba(20,184,166,0.15)' : 'rgba(255,255,255,0.03)',
+                      color: communityVisibility === v ? 'var(--teal-300)' : 'var(--slate-400)',
                       fontSize: '0.75rem', fontWeight: 600, textTransform: 'capitalize', cursor: 'pointer'
                     }}>
                       {v}
@@ -3486,13 +3452,13 @@ export default function LeaderDashboard({ initialCommunityId }) {
                     const newVal = !requireApproval;
                     setRequireApproval(newVal); 
                     updateCommunity(community.id, { require_approval: newVal });
-                    toast.info(newVal - 'Approval required' : 'Auto-approve enabled', newVal - 'You\'ll review join requests' : 'Members join instantly'); 
+                    toast.info(newVal ? 'Approval required' : 'Auto-approve enabled', newVal ? 'You\'ll review join requests' : 'Members join instantly'); 
                   }} style={{
                   width: '44px', height: '24px', borderRadius: '99px', border: 'none',
-                  background: requireApproval - 'var(--teal-500)' : 'rgba(255,255,255,0.1)',
+                  background: requireApproval ? 'var(--teal-500)' : 'rgba(255,255,255,0.1)',
                   position: 'relative', cursor: 'pointer', transition: 'background 0.2s'
                 }}>
-                  <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: 'white', position: 'absolute', top: '2px', left: requireApproval - '22px' : '2px', transition: 'left 0.2s' }}></div>
+                  <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: 'white', position: 'absolute', top: '2px', left: requireApproval ? '22px' : '2px', transition: 'left 0.2s' }}></div>
                 </button>
               </div>
 
@@ -3506,15 +3472,15 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>Allow local guides, instructors & businesses to pitch sessions or member perks</div>
                 </div>
                 <button onClick={() => { 
-                    const newVal = !(community.accepts_pitches -- true);
+                    const newVal = !(community.accepts_pitches ?? true);
                     updateCommunity(community.id, { accepts_pitches: newVal });
-                    toast.info(newVal - 'Collaborations Enabled' : 'Collaborations Disabled', newVal - 'Instructors & sponsors can propose sessions' : 'Incoming pitches hidden from your page'); 
+                    toast.info(newVal ? 'Collaborations Enabled' : 'Collaborations Disabled', newVal ? 'Instructors & sponsors can propose sessions' : 'Incoming pitches hidden from your page'); 
                   }} style={{
                   width: '44px', height: '24px', borderRadius: '99px', border: 'none',
-                  background: (community.accepts_pitches -- true) - 'var(--teal-500)' : 'rgba(255,255,255,0.1)',
+                  background: (community.accepts_pitches ?? true) ? 'var(--teal-500)' : 'rgba(255,255,255,0.1)',
                   position: 'relative', cursor: 'pointer', transition: 'background 0.2s'
                 }}>
-                  <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: 'white', position: 'absolute', top: '2px', left: (community.accepts_pitches -- true) - '22px' : '2px', transition: 'left 0.2s' }}></div>
+                  <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: 'white', position: 'absolute', top: '2px', left: (community.accepts_pitches ?? true) ? '22px' : '2px', transition: 'left 0.2s' }}></div>
                 </button>
               </div>
 
@@ -3558,11 +3524,11 @@ export default function LeaderDashboard({ initialCommunityId }) {
         <div className="modal-overlay" style={{ display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
           <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <h2 style={{ margin: 0, fontSize: '1.2rem', fontFamily: 'var(--font-heading)', color: 'var(--white)' }}>
-              {isEditing - 'Edit Profile' : 
-               modalType === 'event' - (eventForm.resolvedDates && eventForm.resolvedDates.length > 1 - `Create Schedule (${eventForm.resolvedDates.length} Events)` : 'Create Event') : 
-               modalType === 'edit-event' - 'Edit Event' :
-               modalType === 'members' - 'Manage Members' : 
-               modalType === 'whatsapp' - 'WhatsApp Integration' : 'Promote Co-Leader'}
+              {isEditing ? 'Edit Profile' : 
+               modalType === 'event' ? (eventForm.resolvedDates && eventForm.resolvedDates.length > 1 ? `Create Schedule (${eventForm.resolvedDates.length} Events)` : 'Create Event') : 
+               modalType === 'edit-event' ? 'Edit Event' :
+               modalType === 'members' ? 'Manage Members' : 
+               modalType === 'whatsapp' ? 'WhatsApp Integration' : 'Promote Co-Leader'}
             </h2>
             <button onClick={() => { setIsEditing(false); setModalType(null); setEditingEventId(null); setCoLeaderSearch(''); }} className="interactive-press" style={{ background: 'rgba(255,255,255,0.05)', border: 'none', color: 'var(--white)', cursor: 'pointer', width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <X size={18} />
@@ -3609,9 +3575,9 @@ export default function LeaderDashboard({ initialCommunityId }) {
                           padding: '4px 8px',
                           borderRadius: '6px',
                           fontSize: '0.75rem',
-                          background: editForm.category === cat - 'rgba(20,184,166,0.2)' : 'rgba(255,255,255,0.05)',
-                          border: editForm.category === cat - '1px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.1)',
-                          color: editForm.category === cat - 'var(--teal-300)' : 'var(--slate-300)',
+                          background: editForm.category === cat ? 'rgba(20,184,166,0.2)' : 'rgba(255,255,255,0.05)',
+                          border: editForm.category === cat ? '1px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.1)',
+                          color: editForm.category === cat ? 'var(--teal-300)' : 'var(--slate-300)',
                           cursor: 'pointer'
                         }}
                       >
@@ -3623,7 +3589,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
 
                 {/* 3. Cadence */}
                 <div style={{ marginBottom: '16px' }}>
-                  <label style={{ display: 'block', marginBottom: '8px', color: 'var(--slate-300)', fontSize: '0.85rem', fontWeight: 600 }}>How Often- (Cadence)</label>
+                  <label style={{ display: 'block', marginBottom: '8px', color: 'var(--slate-300)', fontSize: '0.85rem', fontWeight: 600 }}>How Often? (Cadence)</label>
                   <select
                     value={editForm.activity_level}
                     onChange={(e) => setEditForm({ ...editForm, activity_level: e.target.value })}
@@ -3642,7 +3608,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   <CommunityRegionPicker
                     locationName={editForm.location_name}
                     setLocationName={(loc) => setEditForm(prev => ({ ...prev, location_name: loc }))}
-                    coords={editForm.lat && editForm.lng - [Number(editForm.lat), Number(editForm.lng)] : null}
+                    coords={editForm.lat && editForm.lng ? [Number(editForm.lat), Number(editForm.lng)] : null}
                     onCoordsChange={(coords) => setEditForm(prev => ({ ...prev, lat: coords[0], lng: coords[1] }))}
                   />
                 </div>
@@ -3650,7 +3616,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 {/* 4. Target Audience & Cost */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                   <div>
-                    <label style={{ display: 'block', marginBottom: '8px', color: 'var(--slate-300)', fontSize: '0.85rem', fontWeight: 600 }}>Who is it for-</label>
+                    <label style={{ display: 'block', marginBottom: '8px', color: 'var(--slate-300)', fontSize: '0.85rem', fontWeight: 600 }}>Who is it for?</label>
                     <input 
                       type="text" 
                       placeholder="e.g. All abilities welcome" 
@@ -3675,7 +3641,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 <div>
                   <label style={{ display: 'block', marginBottom: '8px', color: 'var(--slate-300)', fontSize: '0.9rem', fontWeight: 600 }}>Community Cover Photo</label>
                   <div style={{ position: 'relative', width: '100%', height: '140px', borderRadius: '12px', overflow: 'hidden', background: 'var(--slate-800)', border: '1px dashed var(--slate-700)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '10px' }}>
-                    {coverImagePreview - (
+                    {coverImagePreview ? (
                       <img src={coverImagePreview} alt="Community cover preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     ) : (
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', color: 'var(--slate-400)' }}>
@@ -3693,25 +3659,25 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   />
                   <button 
                     type="button"
-                    onClick={() => coverFileInputRef.current-.click()} 
+                    onClick={() => coverFileInputRef.current?.click()} 
                     className="btn btn-outline interactive-press" 
                     style={{ width: '100%', padding: '10px', borderRadius: '10px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
                   >
-                    <ImageIcon size={16} /> {coverImagePreview - 'Change Cover Photo' : 'Upload Cover Photo'}
+                    <ImageIcon size={16} /> {coverImagePreview ? 'Change Cover Photo' : 'Upload Cover Photo'}
                   </button>
                 </div>
 
                 {/* 6. Description */}
                 <div>
                   <label style={{ display: 'block', marginBottom: '8px', color: 'var(--slate-300)', fontSize: '0.9rem', fontWeight: 600 }}>Description & Story</label>
-                  <textarea value={editForm.description} onChange={(e) => setEditForm({...editForm, description: e.target.value})} placeholder="What is this community about- Who is it for- What can members expect-" style={{ width: '100%', padding: '12px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'var(--white)', minHeight: '120px', fontFamily: 'inherit', resize: 'vertical', lineHeight: 1.5 }} />
+                  <textarea value={editForm.description} onChange={(e) => setEditForm({...editForm, description: e.target.value})} placeholder="What is this community about? Who is it for? What can members expect?" style={{ width: '100%', padding: '12px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'var(--white)', minHeight: '120px', fontFamily: 'inherit', resize: 'vertical', lineHeight: 1.5 }} />
                 </div>
 
                 {/* 7. Tags (Multi-select & Custom) */}
                 <div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                     <label style={{ color: 'var(--slate-300)', fontSize: '0.9rem', fontWeight: 600, margin: 0 }}>
-                      Community Tags ({editForm.tags-.length || 0} selected)
+                      Community Tags ({editForm.tags?.length || 0} selected)
                     </label>
                     <span style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>Add multiple tags</span>
                   </div>
@@ -3743,9 +3709,9 @@ export default function LeaderDashboard({ initialCommunityId }) {
                     <button 
                       type="button"
                       onClick={addCustomEditTag}
-                      disabled={!editForm.customTagInput-.trim()} 
+                      disabled={!editForm.customTagInput?.trim()} 
                       className="btn btn-outline interactive-press" 
-                      style={{ padding: '0 14px', borderRadius: '10px', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '4px', opacity: editForm.customTagInput-.trim() - 1 : 0.4 }}
+                      style={{ padding: '0 14px', borderRadius: '10px', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '4px', opacity: editForm.customTagInput?.trim() ? 1 : 0.4 }}
                     >
                       <Plus size={14} /> Add
                     </button>
@@ -3764,9 +3730,9 @@ export default function LeaderDashboard({ initialCommunityId }) {
                           fontSize: '0.72rem',
                           fontWeight: 600,
                           whiteSpace: 'nowrap',
-                          border: editTagCategory === cat - '1px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.08)',
-                          background: editTagCategory === cat - 'rgba(20,184,166,0.2)' : 'rgba(255,255,255,0.02)',
-                          color: editTagCategory === cat - 'var(--teal-300)' : 'var(--slate-400)',
+                          border: editTagCategory === cat ? '1px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.08)',
+                          background: editTagCategory === cat ? 'rgba(20,184,166,0.2)' : 'rgba(255,255,255,0.02)',
+                          color: editTagCategory === cat ? 'var(--teal-300)' : 'var(--slate-400)',
                           cursor: 'pointer'
                         }}
                       >
@@ -3777,8 +3743,8 @@ export default function LeaderDashboard({ initialCommunityId }) {
 
                   {/* Available Tag Buttons */}
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', maxHeight: '160px', overflowY: 'auto', padding: '4px', background: 'rgba(0,0,0,0.2)', borderRadius: '10px' }}>
-                    {(editTagCategory === 'All' - ALL_COMMUNITY_TAGS : (COMMUNITY_TAG_CATEGORIES[editTagCategory] || ALL_COMMUNITY_TAGS)).map(tag => {
-                      const selected = editForm.tags-.includes(tag);
+                    {(editTagCategory === 'All' ? ALL_COMMUNITY_TAGS : (COMMUNITY_TAG_CATEGORIES[editTagCategory] || ALL_COMMUNITY_TAGS)).map(tag => {
+                      const selected = editForm.tags?.includes(tag);
                       return (
                         <button
                           key={tag}
@@ -3788,10 +3754,10 @@ export default function LeaderDashboard({ initialCommunityId }) {
                             padding: '6px 12px',
                             borderRadius: '999px',
                             fontSize: '0.78rem',
-                            border: selected - '1px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.1)',
-                            background: selected - 'rgba(20,184,166,0.15)' : 'transparent',
-                            color: selected - 'var(--teal-300)' : 'var(--slate-300)',
-                            fontWeight: selected - 600 : 400,
+                            border: selected ? '1px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.1)',
+                            background: selected ? 'rgba(20,184,166,0.15)' : 'transparent',
+                            color: selected ? 'var(--teal-300)' : 'var(--slate-300)',
+                            fontWeight: selected ? 600 : 400,
                             cursor: 'pointer',
                             transition: 'all 0.15s ease'
                           }}
@@ -3840,9 +3806,9 @@ export default function LeaderDashboard({ initialCommunityId }) {
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                           <img 
                             onClick={() => setSelectedProfileImage({
-                              imageUrl: memberUser.avatar || `https://ui-avatars.com/api/-name=${encodeURIComponent(memberUser.name)}&background=0D8B93&color=fff`,
+                              imageUrl: memberUser.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(memberUser.name)}&background=0D8B93&color=fff`,
                               name: memberUser.name,
-                              subtitle: `${membership.role || 'Member'} • ${community-.name || ''}`
+                              subtitle: `${membership.role || 'Member'} • ${community?.name || ''}`
                             })} 
                             src={memberUser.avatar} 
                             alt={memberUser.name} 
@@ -3860,7 +3826,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                         </div>
                         {membership.role !== 'Leader' && (
                           <div style={{ display: 'flex', gap: '8px' }}>
-                            {membership.role === 'Co-Leader' - (
+                            {membership.role === 'Co-Leader' ? (
                               <button onClick={() => handleDemote(memberUser)} className="btn btn-outline interactive-press" style={{ padding: '6px 12px', fontSize: '0.8rem' }}>Demote</button>
                             ) : (
                               <button onClick={() => handlePromote(memberUser)} className="btn btn-outline interactive-press" style={{ padding: '6px 12px', fontSize: '0.8rem' }}>Promote</button>
@@ -3890,7 +3856,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                     .filter(m => m.role !== 'Leader' && m.role !== 'Co-Leader')
                     .filter(m => {
                       const u = users.find(usr => usr.id === m.userId);
-                      return coLeaderSearch - u-.name-.toLowerCase().includes(coLeaderSearch.toLowerCase()) : true;
+                      return coLeaderSearch ? u?.name?.toLowerCase().includes(coLeaderSearch.toLowerCase()) : true;
                     })
                     .map(membership => {
                       const memberUser = users.find(u => u.id === membership.userId);
@@ -3921,8 +3887,8 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 <div style={{ marginBottom: '24px', padding: '16px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
                     <div style={{ fontWeight: 600 }}>Business API Sync (CRM)</div>
-                    <button onClick={() => setWaConfig({...waConfig, businessConnected: !waConfig.businessConnected})} style={{ background: waConfig.businessConnected - 'var(--teal-500)' : 'var(--slate-700)', border: 'none', borderRadius: '16px', width: '40px', height: '24px', position: 'relative', cursor: 'pointer', transition: 'background 0.2s' }}>
-                      <div style={{ position: 'absolute', top: '2px', left: waConfig.businessConnected - '18px' : '2px', width: '20px', height: '20px', background: 'white', borderRadius: '50%', transition: 'left 0.2s' }}></div>
+                    <button onClick={() => setWaConfig({...waConfig, businessConnected: !waConfig.businessConnected})} style={{ background: waConfig.businessConnected ? 'var(--teal-500)' : 'var(--slate-700)', border: 'none', borderRadius: '16px', width: '40px', height: '24px', position: 'relative', cursor: 'pointer', transition: 'background 0.2s' }}>
+                      <div style={{ position: 'absolute', top: '2px', left: waConfig.businessConnected ? '18px' : '2px', width: '20px', height: '20px', background: 'white', borderRadius: '50%', transition: 'left 0.2s' }}></div>
                     </button>
                   </div>
                   <p style={{ fontSize: '0.8rem', color: 'var(--slate-400)', margin: 0 }}>Syncs app chat with members' personal WhatsApp numbers.</p>
@@ -3936,7 +3902,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
           </div>
 
           {/* Modal Sticky Docked Footer */}
-          {(modalType === 'event' || modalType === 'edit-event') - (
+          {(modalType === 'event' || modalType === 'edit-event') ? (
             <div style={{ padding: '16px 20px', borderTop: '1px solid rgba(255,255,255,0.08)', background: '#0f172a', position: 'sticky', bottom: 0, zIndex: 20, paddingBottom: 'max(16px, env(safe-area-inset-bottom, 16px))' }}>
               <div style={{ display: 'flex', gap: '8px', width: '100%' }}>
                 {eventStep > 0 && (
@@ -3944,12 +3910,12 @@ export default function LeaderDashboard({ initialCommunityId }) {
                     ← Back
                   </button>
                 )}
-                {eventStep < 3 - (
+                {eventStep < 3 ? (
                   <button 
                     onClick={() => setEventStep(eventStep + 1)} 
                     disabled={!canAdvanceStep()}
                     className="btn btn-primary interactive-press" 
-                    style={{ padding: '14px', flex: 2, borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', opacity: canAdvanceStep() - 1 : 0.4 }}
+                    style={{ padding: '14px', flex: 2, borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', opacity: canAdvanceStep() ? 1 : 0.4 }}
                   >
                     Next: {eventSteps[eventStep + 1].label} →
                   </button>
@@ -3958,14 +3924,14 @@ export default function LeaderDashboard({ initialCommunityId }) {
                     onClick={() => { if (editingEventId) handleSaveEvent(); else handleCreateEvent(); }}
                     disabled={isUploading || !canAdvanceStep()}
                     className="btn btn-primary interactive-press" 
-                    style={{ padding: '14px', flex: 2, borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', background: 'linear-gradient(135deg, var(--teal-500), #3b82f6)', opacity: isUploading - 0.7 : 1 }}
+                    style={{ padding: '14px', flex: 2, borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', background: 'linear-gradient(135deg, var(--teal-500), #3b82f6)', opacity: isUploading ? 0.7 : 1 }}
                   >
-                    <Check size={18} /> {isUploading - 'Publishing...' : editingEventId - 'Save Changes' : (eventForm.resolvedDates && eventForm.resolvedDates.length > 1 - `Publish ${eventForm.resolvedDates.length} Events` : 'Publish Event')}
+                    <Check size={18} /> {isUploading ? 'Publishing...' : editingEventId ? 'Save Changes' : (eventForm.resolvedDates && eventForm.resolvedDates.length > 1 ? `Publish ${eventForm.resolvedDates.length} Events` : 'Publish Event')}
                   </button>
                 )}
               </div>
             </div>
-          ) : (isEditing || (modalType && modalType !== 'community' && modalType !== 'coleader')) - (
+          ) : (isEditing || (modalType && modalType !== 'community' && modalType !== 'coleader')) ? (
             <div style={{ padding: '16px 20px', borderTop: '1px solid rgba(255,255,255,0.08)', background: '#0f172a', position: 'sticky', bottom: 0, zIndex: 20, paddingBottom: 'max(16px, env(safe-area-inset-bottom, 16px))' }}>
               <button 
                 onClick={() => { 
@@ -3985,9 +3951,9 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 }} 
                 disabled={isUploading}
                 className="btn btn-primary interactive-press" 
-                style={{ display: 'flex', justifyContent: 'center', gap: '8px', width: '100%', padding: '16px', borderRadius: '12px', opacity: isUploading - 0.7 : 1 }}>
+                style={{ display: 'flex', justifyContent: 'center', gap: '8px', width: '100%', padding: '16px', borderRadius: '12px', opacity: isUploading ? 0.7 : 1 }}>
                 <Check size={20} /> 
-                {isUploading - 'Uploading...' : isEditing - 'Save Changes' : modalType === 'whatsapp' - 'Save Settings' : 'Confirm'}
+                {isUploading ? 'Uploading...' : isEditing ? 'Save Changes' : modalType === 'whatsapp' ? 'Save Settings' : 'Confirm'}
               </button>
             </div>
           ) : null}
@@ -4047,7 +4013,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                     padding: '12px 14px',
                     borderRadius: '10px',
                     background: 'var(--slate-900)',
-                    border: deleteConfirmText === community.name - '1px solid #22c55e' : '1px solid rgba(255,255,255,0.15)',
+                    border: deleteConfirmText === community.name ? '1px solid #22c55e' : '1px solid rgba(255,255,255,0.15)',
                     color: 'var(--white)',
                     fontSize: '0.95rem'
                   }}
@@ -4088,12 +4054,12 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   flex: 2,
                   padding: '12px',
                   borderRadius: '10px',
-                  background: (deleteConfirmText === community.name && deleteConfirmChecked) - '#ef4444' : 'rgba(239,68,68,0.2)',
+                  background: (deleteConfirmText === community.name && deleteConfirmChecked) ? '#ef4444' : 'rgba(239,68,68,0.2)',
                   color: 'var(--white)',
                   fontWeight: 700,
                   border: 'none',
-                  cursor: (deleteConfirmText === community.name && deleteConfirmChecked && !isDeletingCommunity) - 'pointer' : 'not-allowed',
-                  opacity: (deleteConfirmText === community.name && deleteConfirmChecked && !isDeletingCommunity) - 1 : 0.45,
+                  cursor: (deleteConfirmText === community.name && deleteConfirmChecked && !isDeletingCommunity) ? 'pointer' : 'not-allowed',
+                  opacity: (deleteConfirmText === community.name && deleteConfirmChecked && !isDeletingCommunity) ? 1 : 0.45,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -4101,7 +4067,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 }}
               >
                 <Trash2 size={16} />
-                {isDeletingCommunity - 'Deleting Community...' : 'Permanently Delete'}
+                {isDeletingCommunity ? 'Deleting Community...' : 'Permanently Delete'}
               </button>
             </div>
 
@@ -4200,9 +4166,9 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 onClick={handleSimulateApiSearch}
                 disabled={isDiscovering || !discoverySearchTerm.trim()}
                 className="btn btn-primary interactive-press" 
-                style={{ padding: '0 24px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '8px', opacity: (isDiscovering || !discoverySearchTerm.trim()) - 0.7 : 1 }}
+                style={{ padding: '0 24px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '8px', opacity: (isDiscovering || !discoverySearchTerm.trim()) ? 0.7 : 1 }}
               >
-                {isDiscovering - <span className="spinner" style={{ width: '16px', height: '16px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: 'white', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></span> : <Search size={16} />}
+                {isDiscovering ? <span className="spinner" style={{ width: '16px', height: '16px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: 'white', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></span> : <Search size={16} />}
                 Search
               </button>
             </div>
@@ -4210,7 +4176,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
             {isDiscovering && (
               <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--slate-400)' }}>
                 <div className="spinner" style={{ width: '32px', height: '32px', border: '3px solid rgba(255,255,255,0.1)', borderTopColor: 'var(--teal-400)', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 16px' }}></div>
-                Querying {discoveryProvider === 'viator' - 'Viator Partner API' : 'Google Places API'}...
+                Querying {discoveryProvider === 'viator' ? 'Viator Partner API' : 'Google Places API'}...
               </div>
             )}
 
@@ -4261,7 +4227,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
         community={community}
         onBankSaved={(bankData) => {
           setStripeConnected(true);
-          if (community-.id) {
+          if (community?.id) {
             updateCommunity(community.id, {
               stripe_account_id: `acct_payout_${Date.now()}`,
               payout_bank: bankData
@@ -4273,121 +4239,13 @@ export default function LeaderDashboard({ initialCommunityId }) {
         }}
       />
 
-      {/* Paid Event Safety & Upgrade Advisory Modal */}
-      {showPaidAdvisoryModal && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0,0,0,0.85)',
-            backdropFilter: 'blur(8px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 99999,
-            padding: '20px'
-          }}
-          onClick={() => setShowPaidAdvisoryModal(false)}
-        >
-          <div
-            onClick={e => e.stopPropagation()}
-            style={{
-              background: '#0f172a',
-              border: '1px solid rgba(56, 189, 248, 0.3)',
-              borderRadius: '20px',
-              maxWidth: '520px',
-              width: '100%',
-              padding: '28px',
-              boxShadow: '0 25px 50px -12px rgba(0,0,0,0.7)',
-              position: 'relative'
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-              <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(56, 189, 248, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Shield size={24} color="#38bdf8" />
-              </div>
-              <div>
-                <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: '#fff' }}>Publishing a Paid Session</h3>
-                <p style={{ margin: '2px 0 0', fontSize: '0.78rem', color: '#94a3b8' }}>Safety & insurance guidance for community leaders</p>
-              </div>
-            </div>
-
-            <div style={{ fontSize: '0.84rem', color: '#cbd5e1', lineHeight: 1.55, marginBottom: '18px' }}>
-              <p style={{ margin: '0 0 10px' }}>
-                Under UK legal principles, charging participants for walks, trips, or activities establishes an organizer service with a legal <strong>Duty of Care</strong>. Disclaimers alone do not protect against personal injury negligence claims.
-              </p>
-              <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '12px 14px', marginBottom: '12px' }}>
-                <strong style={{ color: '#38bdf8', display: 'block', marginBottom: '6px' }}>Leader Pro (-16.50/mo or -165/yr) includes:</strong>
-                <ul style={{ margin: 0, paddingLeft: '18px', display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '0.8rem', color: '#94a3b8' }}>
-                  <li>--- <strong>-5,000,000 Public Liability Insurance</strong> (Full legal liability cover)</li>
-                  <li>-- <strong>1-Click Council & Venue RAMS</strong> risk assessments</li>
-                  <li>-- <strong>Attendee Safety Waivers</strong> signed automatically on RSVP</li>
-                  <li>- <strong>2% Reduced Platform Fee</strong> (Save 60% vs 5% standard)</li>
-                </ul>
-              </div>
-              <p style={{ margin: 0, fontSize: '0.76rem', color: '#94a3b8' }}>
-                <strong>Running a low-risk club</strong> (such as an indoor caf- book club) or <strong>already hold your own group PLI</strong>- Leader Pro is optional! You are free to proceed on the Free tier.
-              </p>
-            </div>
-
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <button
-                type="button"
-                onClick={() => {
-                  setShowPaidAdvisoryModal(false);
-                  setPaidAdvisoryAcknowledged(true);
-                  handleCreateEvent(true);
-                }}
-                style={{
-                  flex: 1,
-                  padding: '12px 14px',
-                  borderRadius: '12px',
-                  background: 'rgba(255,255,255,0.06)',
-                  color: '#e2e8f0',
-                  border: '1px solid rgba(255,255,255,0.12)',
-                  fontSize: '0.84rem',
-                  fontWeight: 600,
-                  cursor: 'pointer'
-                }}
-              >
-                I'm Covered / Proceed on Free
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setShowPaidAdvisoryModal(false);
-                  setShowShieldModal(true);
-                }}
-                style={{
-                  flex: 1,
-                  padding: '12px 14px',
-                  borderRadius: '12px',
-                  background: 'linear-gradient(135deg, #0284c7, #2dd4bf)',
-                  color: '#0f172a',
-                  border: 'none',
-                  fontSize: '0.84rem',
-                  fontWeight: 800,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '6px'
-                }}
-              >
-                <Shield size={16} /> Upgrade to Pro
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       <LeaderShieldModal
         isOpen={showShieldModal}
         onClose={() => setShowShieldModal(false)}
         community={community}
         leaderUser={user}
         onUpgradeSuccess={(updates) => {
-          if (community-.id) {
+          if (community?.id) {
             updateCommunity(community.id, updates);
           }
         }}

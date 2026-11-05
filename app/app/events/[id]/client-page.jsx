@@ -2,7 +2,7 @@
 import { supabase } from '../../../src/lib/supabaseClient';
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ChevronLeft, Share, MapPin, Calendar, Clock, Users, CheckCircle2, Info, List, Activity, Check, Map, Ticket, DollarSign, Copy, ExternalLink, Navigation, Video, AlertTriangle, Image as ImageIcon, ScanLine, Archive, Repeat, MessageCircle, Banknote, CreditCard , Shield} from 'lucide-react';
+import { ChevronLeft, Share, MapPin, Calendar, Clock, Users, CheckCircle2, Info, List, Activity, Check, Map, Ticket, DollarSign, Copy, ExternalLink, Navigation, Video, AlertTriangle, Image as ImageIcon, ScanLine, Archive, Repeat, MessageCircle, Banknote, CreditCard } from 'lucide-react';
 import { useAppContext } from '../../../src/context/AppContext';
 import { useToast } from '../../../src/components/Toast';
 import DigitalTicket from '../../../src/components/DigitalTicket';
@@ -24,28 +24,28 @@ function EventLocationMap({ location, event }) {
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const [coords, setCoords] = useState(() => {
-    const parsed = parseLocationCoords(location) || (event-.lat && event-.lng - { lat: Number(event.lat), lng: Number(event.lng) } : null);
+    const parsed = parseLocationCoords(location) || (event?.lat && event?.lng ? { lat: Number(event.lat), lng: Number(event.lng) } : null);
     if (parsed) return parsed;
-    const known = findKnownLocation(location) || (event-.title - findKnownLocation(event.title) : null);
+    const known = findKnownLocation(location) || (event?.title ? findKnownLocation(event.title) : null);
     if (known) return { lat: known.lat, lng: known.lng };
     return null;
   });
   const [areaInfo, setAreaInfo] = useState(() => {
-    const known = findKnownLocation(location) || (event-.title - findKnownLocation(event.title) : null);
-    return known-.area || '';
+    const known = findKnownLocation(location) || (event?.title ? findKnownLocation(event.title) : null);
+    return known?.area || '';
   });
 
   useEffect(() => {
     if (!location) return;
 
     // Check embedded or known first
-    const parsed = parseLocationCoords(location) || (event-.lat && event-.lng - { lat: Number(event.lat), lng: Number(event.lng) } : null);
+    const parsed = parseLocationCoords(location) || (event?.lat && event?.lng ? { lat: Number(event.lat), lng: Number(event.lng) } : null);
     if (parsed) {
       setCoords(parsed);
       return;
     }
 
-    const known = findKnownLocation(location) || (event-.title - findKnownLocation(event.title) : null);
+    const known = findKnownLocation(location) || (event?.title ? findKnownLocation(event.title) : null);
     if (known) {
       setCoords({ lat: known.lat, lng: known.lng });
       setAreaInfo(known.area || '');
@@ -122,7 +122,7 @@ function EventLocationMap({ location, event }) {
 
       const cleanName = cleanLocationName(location);
       const marker = L.marker([coords.lat, coords.lng], { icon: markerIcon }).addTo(map);
-      marker.bindPopup(`<b>${cleanName}</b>${areaInfo - `<br/><span style="color:#64748b;font-size:12px;">${areaInfo}</span>` : ''}`);
+      marker.bindPopup(`<b>${cleanName}</b>${areaInfo ? `<br/><span style="color:#64748b;font-size:12px;">${areaInfo}</span>` : ''}`);
 
       mapInstanceRef.current = map;
 
@@ -146,12 +146,12 @@ function EventLocationMap({ location, event }) {
   const cleanName = cleanLocationName(location);
 
   const googleMapsUrl = coords
-    - `https://www.google.com/maps/dir/-api=1&destination=${coords.lat},${coords.lng}`
-    : `https://www.google.com/maps/search/-api=1&query=${encodeURIComponent(cleanName)}`;
+    ? `https://www.google.com/maps/dir/?api=1&destination=${coords.lat},${coords.lng}`
+    : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(cleanName)}`;
 
   const appleMapsUrl = coords
-    - `https://maps.apple.com/-daddr=${coords.lat},${coords.lng}`
-    : `https://maps.apple.com/-q=${encodeURIComponent(cleanName)}`;
+    ? `https://maps.apple.com/?daddr=${coords.lat},${coords.lng}`
+    : `https://maps.apple.com/?q=${encodeURIComponent(cleanName)}`;
 
   return (
     <div style={{ marginBottom: '32px' }}>
@@ -262,7 +262,7 @@ export default function EventClient({ id }) {
   const [showRsvpSuccessModal, setShowRsvpSuccessModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
 
-  const isLeader = user-.ledCommunities-.includes(event-.communityId) || user-.isAdmin;
+  const isLeader = user?.ledCommunities?.includes(event?.communityId) || user?.isAdmin;
 
   const handleScan = async (payload) => {
     let scannedUserId = payload;
@@ -274,7 +274,7 @@ export default function EventClient({ id }) {
         await checkInMember(event.id, scannedUserId);
       }
       const member = (users || []).find(u => u.id === scannedUserId);
-      const name = member-.name || 'Member';
+      const name = member?.name || 'Member';
       toast.success('Ticket Verified! ✓', `${name} has been checked in.`);
     } catch(e) {
       toast.error('Scan Failed', 'Could not verify ticket.');
@@ -319,39 +319,39 @@ export default function EventClient({ id }) {
   }, [events, communities, id]);
 
   const partnerCommunities = useMemo(() => {
-    if (!event-.collabCommunityIds || !communities) return [];
+    if (!event?.collabCommunityIds || !communities) return [];
     return communities.filter(c => event.collabCommunityIds.includes(c.id));
   }, [event, communities]);
 
   const seriesEvents = useMemo(() => {
     if (!event || !events) return [];
     return events
-      .filter(e => e.communityId === event.communityId && e.title-.trim().toLowerCase() === event.title-.trim().toLowerCase())
+      .filter(e => e.communityId === event.communityId && e.title?.trim().toLowerCase() === event.title?.trim().toLowerCase())
       .sort((a, b) => new Date(a.date) - new Date(b.date));
   }, [event, events]);
-  const currentSeriesIndex = event - seriesEvents.findIndex(e => e.id === event.id) : -1;
+  const currentSeriesIndex = event ? seriesEvents.findIndex(e => e.id === event.id) : -1;
 
   useEffect(() => {
-    if (searchParams-.get('checkout') === 'success' && event-.id && user-.id) {
+    if (searchParams?.get('checkout') === 'success' && event?.id && user?.id) {
       setShowRsvpSuccessModal(true);
       toast.success('Ticket Confirmed!', 'Your payment was processed and your ticket is saved.');
     }
-  }, [searchParams, event-.id, user-.id]);
+  }, [searchParams, event?.id, user?.id]);
 
   if (!event || !community) {
     return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100dvh', color: 'var(--slate-400)' }}>Loading event...</div>;
   }
 
   const rsvps = eventRsvps[event.id] || [];
-  const myRsvp = rsvps.find(r => r.userId === user-.id);
-  const isGoing = myRsvp-.status === 'going';
-  const isCashAttendee = myRsvp-.ticketType === 'cash_on_arrival';
-  const spotsLeft = event.maxCapacity - Math.max(0, event.maxCapacity - rsvps.filter(r => r.status === 'going').length) : null;
-  const isMember = user-.joinedCommunities-.includes(event.communityId);
+  const myRsvp = rsvps.find(r => r.userId === user?.id);
+  const isGoing = myRsvp?.status === 'going';
+  const isCashAttendee = myRsvp?.ticketType === 'cash_on_arrival';
+  const spotsLeft = event.maxCapacity ? Math.max(0, event.maxCapacity - rsvps.filter(r => r.status === 'going').length) : null;
+  const isMember = user?.joinedCommunities?.includes(event.communityId);
 
   const handleJoinAndRSVP = async () => {
-    if (!user-.id) {
-      router.push(`/login-redirect=/events/${id}`);
+    if (!user?.id) {
+      router.push(`/login?redirect=/events/${id}`);
       return;
     }
     if (!isMember) {
@@ -363,12 +363,12 @@ export default function EventClient({ id }) {
 
   const executeStripeCheckout = async () => {
     setCheckoutState('processing');
-    const referredBy = searchParams-.get('ref') || null;
+    const referredBy = searchParams?.get('ref') || null;
     try {
       let authHeader = {};
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        if (session-.access_token) authHeader = { 'Authorization': `Bearer ${session.access_token}` };
+        if (session?.access_token) authHeader = { 'Authorization': `Bearer ${session.access_token}` };
       } catch (e) {}
 
       const res = await fetch('/api/stripe/checkout', {
@@ -388,11 +388,11 @@ export default function EventClient({ id }) {
         })
       });
       const data = await res.json();
-      if (res.ok && data-.url && !data-.simulated) {
+      if (res.ok && data?.url && !data?.simulated) {
         window.location.href = data.url;
         return;
       }
-      toast.error('Ticket Checkout Failed', data-.error || 'Unable to open checkout session.');
+      toast.error('Ticket Checkout Failed', data?.error || 'Unable to open checkout session.');
     } catch (err) {
       console.error('Stripe checkout error:', err);
       toast.error('Checkout Error', 'Unable to connect to payment server. Please try again.');
@@ -404,7 +404,7 @@ export default function EventClient({ id }) {
   const executeCashRsvp = async () => {
     setCheckoutState('processing');
     try {
-      const referredBy = searchParams-.get('ref') || null;
+      const referredBy = searchParams?.get('ref') || null;
       await rsvpToEvent(event.id, 'going', 'cash_on_arrival', referredBy);
       setShowPaymentChoiceModal(false);
       setShowRsvpSuccessModal(true);
@@ -418,8 +418,8 @@ export default function EventClient({ id }) {
   };
 
   const handleRSVP = async () => {
-    if (!user-.id) {
-      router.push(`/login-redirect=/events/${id}`);
+    if (!user?.id) {
+      router.push(`/login?redirect=/events/${id}`);
       return;
     }
     if (event.ticketPrice > 0 && !isGoing) {
@@ -429,7 +429,7 @@ export default function EventClient({ id }) {
       }
       executeStripeCheckout();
     } else {
-      const newStatus = isGoing - 'not_going' : 'going';
+      const newStatus = isGoing ? 'not_going' : 'going';
       await rsvpToEvent(event.id, newStatus);
       if (newStatus === 'going') {
         setShowRsvpSuccessModal(true);
@@ -446,7 +446,7 @@ export default function EventClient({ id }) {
 
   const copyReferralLink = () => {
     if (!user) {
-      router.push(`/login-redirect=/events/${id}`);
+      router.push(`/login?redirect=/events/${id}`);
       return;
     }
     if (typeof window !== 'undefined') {
@@ -457,14 +457,14 @@ export default function EventClient({ id }) {
   };
 
   const itineraryItems = parseList(event.itinerary);
-  const whatToBringItems = event.whatToBring - event.whatToBring.split(',').map(i => i.trim()).filter(i => i) : [];
+  const whatToBringItems = event.whatToBring ? event.whatToBring.split(',').map(i => i.trim()).filter(i => i) : [];
 
   return (
     <div className="view-events" style={{ paddingBottom: '100px', minHeight: '100dvh', background: 'var(--slate-950)' }}>
       {/* Header / Hero Image */}
       <div style={{ position: 'relative', width: '100%', height: '300px', background: 'var(--slate-900)' }}>
         <img 
-          src={event.image || community-.cover_image || 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b-auto=format&fit=crop&w=1200&q=80'} 
+          src={event.image || community?.cover_image || 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=1200&q=80'} 
           alt={event.title} 
           style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
         />
@@ -490,12 +490,12 @@ export default function EventClient({ id }) {
           )}
           {seriesEvents.length > 1 && (
             <div style={{ background: 'rgba(20,184,166,0.9)', color: 'white', padding: '6px 12px', borderRadius: '99px', fontSize: '0.8rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px', backdropFilter: 'blur(8px)', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}>
-              <Repeat size={13} /> {currentSeriesIndex >= 0 - `SESSION ${currentSeriesIndex + 1} OF ${seriesEvents.length}` : `${seriesEvents.length} SESSIONS`}
+              <Repeat size={13} /> {currentSeriesIndex >= 0 ? `SESSION ${currentSeriesIndex + 1} OF ${seriesEvents.length}` : `${seriesEvents.length} SESSIONS`}
             </div>
           )}
           {isGoing && (
             <div style={{ background: 'var(--teal-500)', color: 'white', padding: '6px 12px', borderRadius: '99px', fontSize: '0.8rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}>
-              <CheckCircle2 size={14} /> {isEventPast(event) - 'YOU ATTENDED' : "YOU'RE GOING"}
+              <CheckCircle2 size={14} /> {isEventPast(event) ? 'YOU ATTENDED' : "YOU'RE GOING"}
             </div>
           )}
         </div>
@@ -504,7 +504,7 @@ export default function EventClient({ id }) {
       {/* Content Body */}
       <div style={{ padding: '24px 20px', maxWidth: '800px', margin: '0 auto' }}>
         
-        <EventRecapShareCard event={event} community={community} attendeeCount={rsvps.filter(r => r.status === 'going').length || event-.attendees || 0} />
+        <EventRecapShareCard event={event} community={community} attendeeCount={rsvps.filter(r => r.status === 'going').length || event?.attendees || 0} />
         {isEventPast(event) && (
           <div style={{ background: 'rgba(148,163,184,0.08)', border: '1px solid rgba(148,163,184,0.2)', borderRadius: '14px', padding: '14px 18px', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
             <Archive size={22} color="var(--slate-400)" style={{ flexShrink: 0 }} />
@@ -517,7 +517,7 @@ export default function EventClient({ id }) {
           </div>
         )}
         
-        {event.profitShareEnabled && event.ticketPrice > 0 && user-.id && (
+        {event.profitShareEnabled && event.ticketPrice > 0 && user?.id && (
           <div style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: '12px', padding: '16px', marginBottom: '24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div>
               <div style={{ color: 'var(--teal-400)', fontWeight: 700, fontSize: '0.9rem', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}><DollarSign size={16}/> Share & Earn</div>
@@ -553,14 +553,14 @@ export default function EventClient({ id }) {
                       className="interactive-press"
                       style={{ cursor: 'pointer', textDecoration: 'underline', color: 'var(--white)' }}
                     >
-                      {pc.name}{idx < partnerCommunities.length - 1 - ', ' : ''}
+                      {pc.name}{idx < partnerCommunities.length - 1 ? ', ' : ''}
                     </span>
                   ))}
                 </div>
               </>
             )}
 
-            {(community-.is_insured || community-.insurance_tier === 'pro') && (
+            {(community?.is_insured || community?.insurance_tier === 'pro') && (
               <>
                 <span style={{ color: 'var(--slate-600)', fontSize: '0.85rem' }}>•</span>
                 <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '3px 10px', background: 'rgba(20,184,166,0.1)', border: '1px solid rgba(20,184,166,0.25)', borderRadius: '99px', fontSize: '0.75rem', color: '#2dd4bf', fontWeight: 600 }}>
@@ -614,20 +614,20 @@ export default function EventClient({ id }) {
                       style={{
                         padding: '8px 12px',
                         borderRadius: '10px',
-                        border: isCurrent - '1px solid var(--teal-400)' : '1px solid rgba(255,255,255,0.08)',
-                        background: isCurrent - 'rgba(20,184,166,0.15)' : 'rgba(255,255,255,0.03)',
-                        color: isCurrent - 'var(--white)' : isPast - 'var(--slate-500)' : 'var(--slate-300)',
-                        cursor: isCurrent - 'default' : 'pointer',
+                        border: isCurrent ? '1px solid var(--teal-400)' : '1px solid rgba(255,255,255,0.08)',
+                        background: isCurrent ? 'rgba(20,184,166,0.15)' : 'rgba(255,255,255,0.03)',
+                        color: isCurrent ? 'var(--white)' : isPast ? 'var(--slate-500)' : 'var(--slate-300)',
+                        cursor: isCurrent ? 'default' : 'pointer',
                         textAlign: 'left',
                         flexShrink: 0,
                         display: 'flex',
                         flexDirection: 'column',
                         gap: '2px',
-                        opacity: isPast && !isCurrent - 0.6 : 1
+                        opacity: isPast && !isCurrent ? 0.6 : 1
                       }}
                     >
-                      <div style={{ fontSize: '0.68rem', fontWeight: 700, color: isCurrent - 'var(--teal-400)' : 'var(--slate-400)' }}>
-                        #{sIdx + 1} {isCurrent - '• CURRENT' : isPast - '• PAST' : ''}
+                      <div style={{ fontSize: '0.68rem', fontWeight: 700, color: isCurrent ? 'var(--teal-400)' : 'var(--slate-400)' }}>
+                        #{sIdx + 1} {isCurrent ? '• CURRENT' : isPast ? '• PAST' : ''}
                       </div>
                       <div style={{ fontSize: '0.8rem', fontWeight: 600 }}>{formatEventDate(se.date)}</div>
                       <div style={{ fontSize: '0.7rem', color: 'var(--slate-400)' }}>{se.time || '10:00'}</div>
@@ -656,14 +656,14 @@ export default function EventClient({ id }) {
               <Video size={20} color="var(--teal-400)" /> Watch
             </h3>
             <div style={{ borderRadius: '16px', overflow: 'hidden', aspectRatio: '16/9', background: 'var(--slate-900)', border: '1px solid rgba(255,255,255,0.06)' }}>
-              {event.videoUrl.includes('youtube') || event.videoUrl.includes('youtu.be') - (
+              {event.videoUrl.includes('youtube') || event.videoUrl.includes('youtu.be') ? (
                 <iframe
-                  src={event.videoUrl.replace('watch-v=', 'embed/').replace('youtu.be/', 'youtube.com/embed/')}
+                  src={event.videoUrl.replace('watch?v=', 'embed/').replace('youtu.be/', 'youtube.com/embed/')}
                   style={{ width: '100%', height: '100%', border: 'none' }}
                   allowFullScreen
                   title="Event video"
                 />
-              ) : event.videoUrl.includes('vimeo') - (
+              ) : event.videoUrl.includes('vimeo') ? (
                 <iframe
                   src={event.videoUrl.replace('vimeo.com/', 'player.vimeo.com/video/')}
                   style={{ width: '100%', height: '100%', border: 'none' }}
@@ -681,7 +681,7 @@ export default function EventClient({ id }) {
         {event.suitableFor && (
           <div style={{ marginBottom: '32px' }}>
             <h3 style={{ fontSize: '1.2rem', margin: '0 0 12px 0', color: 'var(--white)', fontFamily: 'var(--font-heading)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Users size={20} color="var(--teal-400)" /> Who is this for-
+              <Users size={20} color="var(--teal-400)" /> Who is this for?
             </h3>
             <div style={{ background: 'rgba(20,184,166,0.06)', border: '1px solid rgba(20,184,166,0.15)', borderRadius: '14px', padding: '16px' }}>
               <p style={{ color: 'var(--slate-200)', fontSize: '0.95rem', lineHeight: 1.6, margin: 0 }}>{event.suitableFor}</p>
@@ -722,7 +722,7 @@ export default function EventClient({ id }) {
               <div style={{ flex: 1, minWidth: '140px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px', padding: '16px', textAlign: 'center' }}>
                 <div style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--white)' }}>{event.maxCapacity}</div>
                 <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)', marginTop: '4px' }}>Max capacity</div>
-                {spotsLeft !== null && <div style={{ fontSize: '0.85rem', color: spotsLeft < 5 - 'var(--rose-400)' : 'var(--teal-400)', fontWeight: 600, marginTop: '6px' }}>{spotsLeft === 0 - 'Sold out' : `${spotsLeft} spots left`}</div>}
+                {spotsLeft !== null && <div style={{ fontSize: '0.85rem', color: spotsLeft < 5 ? 'var(--rose-400)' : 'var(--teal-400)', fontWeight: 600, marginTop: '6px' }}>{spotsLeft === 0 ? 'Sold out' : `${spotsLeft} spots left`}</div>}
               </div>
             )}
             {event.minCapacity && (
@@ -733,7 +733,7 @@ export default function EventClient({ id }) {
                   const goingCount = rsvps.filter(r => r.status === 'going').length;
                   const needed = event.minCapacity - goingCount;
                   return needed > 0
-                    - <div style={{ fontSize: '0.85rem', color: 'var(--amber-400)', fontWeight: 600, marginTop: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}><AlertTriangle size={14} /> {needed} more needed</div>
+                    ? <div style={{ fontSize: '0.85rem', color: 'var(--amber-400)', fontWeight: 600, marginTop: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}><AlertTriangle size={14} /> {needed} more needed</div>
                     : <div style={{ fontSize: '0.85rem', color: 'var(--teal-400)', fontWeight: 600, marginTop: '6px' }}>✓ Confirmed!</div>;
                 })()}
               </div>
@@ -798,9 +798,9 @@ export default function EventClient({ id }) {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', position: 'relative' }}>
                 <div style={{ position: 'absolute', left: '7px', top: '8px', bottom: '8px', width: '2px', background: 'rgba(255,255,255,0.1)', zIndex: 0 }}></div>
                 {itineraryItems.map((item, idx) => {
-                  const match = item.match(/^(\d{1,2}:\d{2}\s*(-:AM|PM|am|pm)-)\s*[-:]\s*(.*)$/);
-                  const time = match - match[1] : null;
-                  const desc = match - match[2] : item;
+                  const match = item.match(/^(\d{1,2}:\d{2}\s*(?:AM|PM|am|pm)?)\s*[-:]\s*(.*)$/);
+                  const time = match ? match[1] : null;
+                  const desc = match ? match[2] : item;
                   return (
                     <div key={idx} style={{ display: 'flex', gap: '16px', position: 'relative', zIndex: 1 }}>
                       <div style={{ width: '16px', height: '16px', borderRadius: '50%', background: 'var(--slate-950)', border: '2px solid var(--teal-400)', flexShrink: 0, marginTop: '2px' }}></div>
@@ -862,7 +862,7 @@ export default function EventClient({ id }) {
       }}>
         <div style={{ maxWidth: '800px', margin: '0 auto', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
-            {isEventPast(event) - (
+            {isEventPast(event) ? (
               <>
                 <div style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--slate-400)' }}>
                   Event Ended
@@ -874,7 +874,7 @@ export default function EventClient({ id }) {
             ) : (
               <>
                 <div style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--white)' }}>
-                  {event.ticketPrice > 0 - `£${event.ticketPrice.toFixed(2)}` : 'Free'}
+                  {event.ticketPrice > 0 ? `£${event.ticketPrice.toFixed(2)}` : 'Free'}
                 </div>
                 {event.ticketPrice > 0 && (
                   <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', marginTop: '2px' }}>
@@ -882,8 +882,8 @@ export default function EventClient({ id }) {
                   </div>
                 )}
                 {spotsLeft !== null && (
-                  <div style={{ fontSize: '0.8rem', color: spotsLeft < 5 - 'var(--rose-400)' : 'var(--slate-400)', fontWeight: 600 }}>
-                    {spotsLeft === 0 - 'Sold Out' : `${spotsLeft} spots left`}
+                  <div style={{ fontSize: '0.8rem', color: spotsLeft < 5 ? 'var(--rose-400)' : 'var(--slate-400)', fontWeight: 600 }}>
+                    {spotsLeft === 0 ? 'Sold Out' : `${spotsLeft} spots left`}
                   </div>
                 )}
               </>
@@ -906,8 +906,8 @@ export default function EventClient({ id }) {
                 <ScanLine size={18} /> Scan
               </button>
             )}
-            {isEventPast(event) - (
-              isGoing - (
+            {isEventPast(event) ? (
+              isGoing ? (
                 <button
                   onClick={() => setShowTicket(event)}
                   className="interactive-press"
@@ -938,7 +938,7 @@ export default function EventClient({ id }) {
               <>
                 {isGoing && (
                   <button
-                    onClick={() => setShowTicket({ ...event, isCashOnArrival: isCashAttendee, ticketType: isCashAttendee - 'cash_on_arrival' : 'paid' })}
+                    onClick={() => setShowTicket({ ...event, isCashOnArrival: isCashAttendee, ticketType: isCashAttendee ? 'cash_on_arrival' : 'paid' })}
                     className="interactive-press"
                     style={{
                       background: 'rgba(20,184,166,0.18)',
@@ -952,26 +952,26 @@ export default function EventClient({ id }) {
                   </button>
                 )}
                 <button  
-                  onClick={!user-.id - () => router.push(`/login-redirect=/events/${id}`) : (!isMember && !isGoing - handleJoinAndRSVP : handleRSVP)}
-                disabled={checkoutState === 'processing' || (spotsLeft === 0 && !isGoing && Boolean(user-.id))}
+                  onClick={!user?.id ? () => router.push(`/login?redirect=/events/${id}`) : (!isMember && !isGoing ? handleJoinAndRSVP : handleRSVP)}
+                disabled={checkoutState === 'processing' || (spotsLeft === 0 && !isGoing && Boolean(user?.id))}
                 className="interactive-press"
                 style={{ 
-                  background: isGoing - 'rgba(255,255,255,0.1)' : 'var(--teal-500)', 
-                  color: isGoing - 'var(--white)' : '#0f172a', 
-                  border: isGoing - '1px solid rgba(255,255,255,0.2)' : 'none',
+                  background: isGoing ? 'rgba(255,255,255,0.1)' : 'var(--teal-500)', 
+                  color: isGoing ? 'var(--white)' : '#0f172a', 
+                  border: isGoing ? '1px solid rgba(255,255,255,0.2)' : 'none',
                   padding: '12px 32px', borderRadius: '99px', fontSize: '1rem', fontWeight: 700, 
-                  cursor: (checkoutState === 'processing' || (spotsLeft === 0 && !isGoing && Boolean(user-.id))) - 'not-allowed' : 'pointer',
-                  opacity: (checkoutState === 'processing' || (spotsLeft === 0 && !isGoing && Boolean(user-.id))) - 0.7 : 1,
+                  cursor: (checkoutState === 'processing' || (spotsLeft === 0 && !isGoing && Boolean(user?.id))) ? 'not-allowed' : 'pointer',
+                  opacity: (checkoutState === 'processing' || (spotsLeft === 0 && !isGoing && Boolean(user?.id))) ? 0.7 : 1,
                   display: 'flex', alignItems: 'center', gap: '8px',
                   minWidth: '140px', justifyContent: 'center'
                 }}
               >
-                {!user-.id - (event.ticketPrice > 0 - 'Sign In to Buy Ticket' : 'Sign In to RSVP') :
-                 checkoutState === 'processing' - 'Processing...' : 
-                 isGoing - 'Cancel RSVP' : 
-                 spotsLeft === 0 - 'Sold Out' :
-                 !isMember - 'Join Community to ' + (event.ticketPrice > 0 - 'Buy Ticket' : 'RSVP') :
-                 event.ticketPrice > 0 - 'Buy Ticket' : 'RSVP'}
+                {!user?.id ? (event.ticketPrice > 0 ? 'Sign In to Buy Ticket' : 'Sign In to RSVP') :
+                 checkoutState === 'processing' ? 'Processing...' : 
+                 isGoing ? 'Cancel RSVP' : 
+                 spotsLeft === 0 ? 'Sold Out' :
+                 !isMember ? 'Join Community to ' + (event.ticketPrice > 0 ? 'Buy Ticket' : 'RSVP') :
+                 event.ticketPrice > 0 ? 'Buy Ticket' : 'RSVP'}
               </button>
               </>
             )}
@@ -1175,12 +1175,12 @@ export default function EventClient({ id }) {
             {/* Payment Summary Banner */}
             {event.ticketPrice > 0 && (
               <div style={{
-                background: isCashAttendee - 'rgba(245,158,11,0.1)' : 'rgba(20,184,166,0.1)',
-                border: isCashAttendee - '1px solid rgba(245,158,11,0.35)' : '1px solid rgba(20,184,166,0.35)',
+                background: isCashAttendee ? 'rgba(245,158,11,0.1)' : 'rgba(20,184,166,0.1)',
+                border: isCashAttendee ? '1px solid rgba(245,158,11,0.35)' : '1px solid rgba(20,184,166,0.35)',
                 borderRadius: '14px', padding: '12px 14px', marginBottom: '16px',
                 display: 'flex', alignItems: 'center', gap: '10px'
               }}>
-                {isCashAttendee - (
+                {isCashAttendee ? (
                   <>
                     <Banknote size={20} color="#fbbf24" style={{ flexShrink: 0 }} />
                     <div>
@@ -1214,9 +1214,9 @@ export default function EventClient({ id }) {
                 WhatsApp Community Bridge
               </div>
 
-              {community-.whatsapp_group && (
+              {community?.whatsapp_group && (
                 <a
-                  href={community.whatsapp_group.startsWith('http') - community.whatsapp_group : `https://${community.whatsapp_group}`}
+                  href={community.whatsapp_group.startsWith('http') ? community.whatsapp_group : `https://${community.whatsapp_group}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="interactive-press"
@@ -1234,7 +1234,7 @@ export default function EventClient({ id }) {
               )}
 
               <a
-                href={getWhatsAppShareUrl(event, community-.name)}
+                href={getWhatsAppShareUrl(event, community?.name)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="interactive-press"
@@ -1258,7 +1258,7 @@ export default function EventClient({ id }) {
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                 <button
-                  onClick={() => downloadIcs(event, community-.name)}
+                  onClick={() => downloadIcs(event, community?.name)}
                   className="interactive-press"
                   style={{
                     padding: '10px', borderRadius: '12px',
@@ -1270,7 +1270,7 @@ export default function EventClient({ id }) {
                   <Calendar size={15} color="var(--teal-400)" /> Apple / Outlook
                 </button>
                 <a
-                  href={getGoogleCalendarEventUrl(event, community-.name)}
+                  href={getGoogleCalendarEventUrl(event, community?.name)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="interactive-press"
@@ -1292,7 +1292,7 @@ export default function EventClient({ id }) {
               <button
                 onClick={() => {
                   setShowRsvpSuccessModal(false);
-                  setShowTicket({ ...event, isCashOnArrival: isCashAttendee, ticketType: isCashAttendee - 'cash_on_arrival' : 'paid' });
+                  setShowTicket({ ...event, isCashOnArrival: isCashAttendee, ticketType: isCashAttendee ? 'cash_on_arrival' : 'paid' });
                 }}
                 className="interactive-press"
                 style={{
@@ -1327,7 +1327,7 @@ export default function EventClient({ id }) {
           event={showTicket} 
           community={communities.find(c => c.id === showTicket.communityId)}
           user={user}
-          userName={user-.name || 'Community Member'} 
+          userName={user?.name || 'Community Member'} 
           onClose={() => setShowTicket(null)} 
         />
       )}
@@ -1345,9 +1345,9 @@ export default function EventClient({ id }) {
         <ShareModal 
           isOpen={showShareModal} 
           onClose={() => setShowShareModal(false)} 
-          title={event-.title || 'Community Event'} 
-          text={`Join us for ${event-.title || 'this event'} with ${community-.name || 'More Community'}!`} 
-          url={event - getEventUrl(event, { allEvents: events, origin: typeof window !== 'undefined' - window.location.origin : undefined }) : ''} 
+          title={event?.title || 'Community Event'} 
+          text={`Join us for ${event?.title || 'this event'} with ${community?.name || 'More Community'}!`} 
+          url={event ? getEventUrl(event, { allEvents: events, origin: typeof window !== 'undefined' ? window.location.origin : undefined }) : ''} 
         />
       )}
     </div>

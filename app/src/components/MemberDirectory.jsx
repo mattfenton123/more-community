@@ -1,10 +1,11 @@
 "use client";
 import { useState, useMemo } from 'react';
-import { Search, Users, Crown, MessageCircle, ChevronRight, Trophy, Flame , Shield, CheckCircle} from 'lucide-react';
+import { Search, Users, Crown, MessageCircle, ChevronRight, Trophy, Flame } from 'lucide-react';
 import { useRouter as useNavigate } from 'next/navigation';
 import { useAppContext } from '../context/AppContext';
 import { useChat } from '../context/ChatContext';
 import { BadgeRow, useGamification, CommunityLeaderboard } from './Gamification';
+import { Shield, CheckCircle } from 'lucide-react';
 
 function MemberRow({ member, communityId, isCurrentUserLeader, onUpgradeClick }) {
   const navigate = useNavigate();
@@ -22,7 +23,7 @@ function MemberRow({ member, communityId, isCurrentUserLeader, onUpgradeClick })
   return (
     <div onClick={() => navigate.push(`/profile/${member.userId}`)} className="interactive-press"
       style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 12px', background: 'rgba(255,255,255,0.02)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.04)', cursor: 'pointer', marginBottom: '6px' }}>
-      <img src={user.avatar || `https://ui-avatars.com/api/-name=${encodeURIComponent(user.name)}&background=0D8B93&color=fff`} alt="" style={{ width: '38px', height: '38px', borderRadius: '50%', objectFit: 'cover' }} />
+      <img src={user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=0D8B93&color=fff`} alt="" style={{ width: '38px', height: '38px', borderRadius: '50%', objectFit: 'cover' }} />
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
           <span style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.85rem' }}>{user.name}</span>
@@ -63,7 +64,7 @@ export default function MemberDirectory({ communityId, onClose }) {
 
   const community = communities.find(c => c.id === communityId);
   const members = communityMemberships[communityId] || [];
-  const isLeader = community-.leader_id === currentUser-.id || currentUser-.ledCommunities-.includes(communityId);
+  const isLeader = community?.leader_id === currentUser?.id || currentUser?.ledCommunities?.includes(communityId);
 
   const filteredMembers = useMemo(() => {
     let list = members.filter(m => {
@@ -74,11 +75,11 @@ export default function MemberDirectory({ communityId, onClose }) {
     if (search) {
       list = list.filter(m => {
         const u = users.find(u => u.id === m.userId);
-        return u-.name-.toLowerCase().includes(search.toLowerCase()) || u-.email-.toLowerCase().includes(search.toLowerCase());
+        return u?.name?.toLowerCase().includes(search.toLowerCase()) || u?.email?.toLowerCase().includes(search.toLowerCase());
       });
     }
     // Sort leaders first
-    return list.sort((a, b) => (b.role === 'Leader' - 1 : 0) - (a.role === 'Leader' - 1 : 0));
+    return list.sort((a, b) => (b.role === 'Leader' ? 1 : 0) - (a.role === 'Leader' ? 1 : 0));
   }, [members, filter, search, users]);
 
   return (
@@ -86,15 +87,15 @@ export default function MemberDirectory({ communityId, onClose }) {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <Users size={18} color="var(--teal-400)" />
-          <h3 style={{ margin: 0, color: 'var(--white)', fontSize: '1rem', fontFamily: 'var(--font-heading)' }}>{view === 'directory' - `Members (${members.length})` : 'Leaderboard'}</h3>
+          <h3 style={{ margin: 0, color: 'var(--white)', fontSize: '1rem', fontFamily: 'var(--font-heading)' }}>{view === 'directory' ? `Members (${members.length})` : 'Leaderboard'}</h3>
         </div>
-        <button onClick={() => setView(view === 'directory' - 'leaderboard' : 'directory')} className="interactive-press"
-          style={{ background: view === 'leaderboard' - 'rgba(255,255,255,0.1)' : 'rgba(245,158,11,0.1)', border: view === 'leaderboard' - '1px solid rgba(255,255,255,0.2)' : '1px solid rgba(245,158,11,0.2)', borderRadius: '8px', padding: '5px 10px', color: view === 'leaderboard' - 'white' : '#f59e0b', fontSize: '0.7rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
-          {view === 'directory' - <><Trophy size={12} /> Leaderboard</> : <><Users size={12} /> Directory</>}
+        <button onClick={() => setView(view === 'directory' ? 'leaderboard' : 'directory')} className="interactive-press"
+          style={{ background: view === 'leaderboard' ? 'rgba(255,255,255,0.1)' : 'rgba(245,158,11,0.1)', border: view === 'leaderboard' ? '1px solid rgba(255,255,255,0.2)' : '1px solid rgba(245,158,11,0.2)', borderRadius: '8px', padding: '5px 10px', color: view === 'leaderboard' ? 'white' : '#f59e0b', fontSize: '0.7rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
+          {view === 'directory' ? <><Trophy size={12} /> Leaderboard</> : <><Users size={12} /> Directory</>}
         </button>
       </div>
 
-      {view === 'leaderboard' - (
+      {view === 'leaderboard' ? (
         <CommunityLeaderboard communityId={communityId} />
       ) : (
         <>
@@ -111,8 +112,8 @@ export default function MemberDirectory({ communityId, onClose }) {
         {[{ value: 'all', label: 'All' }, { value: 'leaders', label: '👑 Leaders' }].map(f => (
           <button key={f.value} onClick={() => setFilter(f.value)} className="interactive-press"
             style={{ padding: '5px 12px', borderRadius: '99px', border: 'none', fontSize: '0.7rem', fontWeight: 600,
-              background: filter === f.value - 'white' : 'rgba(255,255,255,0.05)',
-              color: filter === f.value - 'black' : 'var(--slate-400)' }}>
+              background: filter === f.value ? 'white' : 'rgba(255,255,255,0.05)',
+              color: filter === f.value ? 'black' : 'var(--slate-400)' }}>
             {f.label}
           </button>
         ))}

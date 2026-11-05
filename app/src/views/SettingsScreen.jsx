@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from 'react';
-import { LogOut, ChevronRight, Download, Smartphone, Bell, BellOff, Info, LifeBuoy, Sun, Moon, Monitor, Eye, Type, Activity , Shield, User} from 'lucide-react';
+import { LogOut, ChevronRight, Download, Smartphone, Bell, BellOff, Info, LifeBuoy, Sun, Moon, Monitor, Eye, Type, Activity } from 'lucide-react';
 import AppHeader from '../components/AppHeader';
 import { useRouter as useNavigate } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
@@ -83,7 +83,7 @@ export default function SettingsScreen() {
   };
 
   const menuItems = [
-    { icon: <User size={20} />, label: 'View Profile', color: '#3b82f6', onClick: () => navigate.push(`/profile/${user-.id || ''}`) },
+    { icon: <User size={20} />, label: 'View Profile', color: '#3b82f6', onClick: () => navigate.push(`/profile/${user?.id || ''}`) },
     { icon: <Shield size={20} />, label: 'Privacy & Security', color: '#a78bfa', onClick: () => toast.info('Coming soon', 'Privacy settings are on the way') },
     { icon: <Info size={20} />, label: 'About more.', color: 'var(--teal-400)', onClick: () => toast.info('more. v1.0.0', 'Built with ❤️ in Tunbridge Wells') },
   ];
@@ -96,13 +96,13 @@ export default function SettingsScreen() {
       <div style={{ padding: '0 20px 24px' }}>
         <div className="glass-panel" style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '20px' }}>
           <img
-            src={user.avatar || `https://i.pravatar.cc/150-u=${user.id}`}
+            src={user.avatar || `https://i.pravatar.cc/150?u=${user.id}`}
             alt={user.name}
             style={{ width: '56px', height: '56px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--slate-700)' }}
           />
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 700, fontSize: '1.1rem', fontFamily: 'var(--font-heading)', marginBottom: '4px' }}>{user.name}</div>
-            <div style={{ color: 'var(--slate-400)', fontSize: '0.8rem' }}>{authUser-.email || user.bio || 'Community member'}</div>
+            <div style={{ color: 'var(--slate-400)', fontSize: '0.8rem' }}>{authUser?.email || user.bio || 'Community member'}</div>
           </div>
         </div>
       </div>
@@ -117,17 +117,17 @@ export default function SettingsScreen() {
             className="interactive-press"
             style={{
               display: 'flex', alignItems: 'center', gap: '16px', padding: '16px',
-              background: isInstalled - 'rgba(20,184,166,0.05)' : 'rgba(255,255,255,0.02)',
-              border: isInstalled - '1px solid rgba(20,184,166,0.15)' : '1px solid rgba(255,255,255,0.05)',
+              background: isInstalled ? 'rgba(20,184,166,0.05)' : 'rgba(255,255,255,0.02)',
+              border: isInstalled ? '1px solid rgba(20,184,166,0.15)' : '1px solid rgba(255,255,255,0.05)',
               borderRadius: '12px', color: 'var(--white)', width: '100%', cursor: 'pointer', textAlign: 'left',
             }}
           >
             <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(20,184,166,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--teal-400)' }}>
-              {isInstalled - <Smartphone size={20} /> : <Download size={20} />}
+              {isInstalled ? <Smartphone size={20} /> : <Download size={20} />}
             </div>
             <div style={{ flex: 1 }}>
-              <span style={{ fontWeight: 500, display: 'block' }}>{isInstalled - 'App Installed' : 'Install App'}</span>
-              <span style={{ fontSize: '0.75rem', color: 'var(--slate-500)' }}>{isInstalled - 'Running as a standalone app' : 'Add more. to your home screen'}</span>
+              <span style={{ fontWeight: 500, display: 'block' }}>{isInstalled ? 'App Installed' : 'Install App'}</span>
+              <span style={{ fontSize: '0.75rem', color: 'var(--slate-500)' }}>{isInstalled ? 'Running as a standalone app' : 'Add more. to your home screen'}</span>
             </div>
             {!isInstalled && <ChevronRight size={18} color="var(--slate-500)" />}
           </button>
@@ -142,22 +142,22 @@ export default function SettingsScreen() {
               borderRadius: '12px', color: 'var(--white)', width: '100%', cursor: 'pointer', textAlign: 'left',
             }}
           >
-            <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: notificationsEnabled - 'rgba(20,184,166,0.1)' : 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: notificationsEnabled - 'var(--teal-400)' : 'var(--slate-500)' }}>
-              {notificationsEnabled - <Bell size={20} /> : <BellOff size={20} />}
+            <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: notificationsEnabled ? 'rgba(20,184,166,0.1)' : 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: notificationsEnabled ? 'var(--teal-400)' : 'var(--slate-500)' }}>
+              {notificationsEnabled ? <Bell size={20} /> : <BellOff size={20} />}
             </div>
             <div style={{ flex: 1 }}>
               <span style={{ fontWeight: 500, display: 'block' }}>Push Notifications</span>
-              <span style={{ fontSize: '0.75rem', color: 'var(--slate-500)' }}>{notificationsEnabled - 'Enabled — you\'ll get alerts' : 'Tap to enable alerts'}</span>
+              <span style={{ fontSize: '0.75rem', color: 'var(--slate-500)' }}>{notificationsEnabled ? 'Enabled  -  you\'ll get alerts' : 'Tap to enable alerts'}</span>
             </div>
             <div style={{
               width: '44px', height: '24px', borderRadius: '99px',
-              background: notificationsEnabled - 'var(--teal-500)' : 'rgba(255,255,255,0.1)',
+              background: notificationsEnabled ? 'var(--teal-500)' : 'rgba(255,255,255,0.1)',
               position: 'relative', transition: 'background 0.2s'
             }}>
               <div style={{
                 width: '20px', height: '20px', borderRadius: '50%', background: 'white',
                 position: 'absolute', top: '2px',
-                left: notificationsEnabled - '22px' : '2px',
+                left: notificationsEnabled ? '22px' : '2px',
                 transition: 'left 0.2s'
               }}></div>
             </div>
@@ -169,13 +169,13 @@ export default function SettingsScreen() {
           }}>
             <span style={{ fontWeight: 500, display: 'block', marginBottom: '12px' }}>Theme</span>
             <div style={{ display: 'flex', gap: '8px' }}>
-              <button onClick={() => setTheme('light')} className="interactive-press" style={{ flex: 1, padding: '10px', borderRadius: '8px', border: theme === 'light' - '1px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.1)', background: theme === 'light' - 'rgba(20,184,166,0.12)' : 'rgba(255,255,255,0.02)', color: theme === 'light' - 'var(--teal-300)' : 'var(--slate-400)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+              <button onClick={() => setTheme('light')} className="interactive-press" style={{ flex: 1, padding: '10px', borderRadius: '8px', border: theme === 'light' ? '1px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.1)', background: theme === 'light' ? 'rgba(20,184,166,0.12)' : 'rgba(255,255,255,0.02)', color: theme === 'light' ? 'var(--teal-300)' : 'var(--slate-400)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
                 <Sun size={16} /> <span style={{ fontSize: '0.8rem' }}>Light</span>
               </button>
-              <button onClick={() => setTheme('dark')} className="interactive-press" style={{ flex: 1, padding: '10px', borderRadius: '8px', border: theme === 'dark' - '1px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.1)', background: theme === 'dark' - 'rgba(20,184,166,0.12)' : 'rgba(255,255,255,0.02)', color: theme === 'dark' - 'var(--teal-300)' : 'var(--slate-400)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+              <button onClick={() => setTheme('dark')} className="interactive-press" style={{ flex: 1, padding: '10px', borderRadius: '8px', border: theme === 'dark' ? '1px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.1)', background: theme === 'dark' ? 'rgba(20,184,166,0.12)' : 'rgba(255,255,255,0.02)', color: theme === 'dark' ? 'var(--teal-300)' : 'var(--slate-400)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
                 <Moon size={16} /> <span style={{ fontSize: '0.8rem' }}>Dark</span>
               </button>
-              <button onClick={() => setTheme('system')} className="interactive-press" style={{ flex: 1, padding: '10px', borderRadius: '8px', border: theme === 'system' - '1px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.1)', background: theme === 'system' - 'rgba(20,184,166,0.12)' : 'rgba(255,255,255,0.02)', color: theme === 'system' - 'var(--teal-300)' : 'var(--slate-400)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+              <button onClick={() => setTheme('system')} className="interactive-press" style={{ flex: 1, padding: '10px', borderRadius: '8px', border: theme === 'system' ? '1px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.1)', background: theme === 'system' ? 'rgba(20,184,166,0.12)' : 'rgba(255,255,255,0.02)', color: theme === 'system' ? 'var(--teal-300)' : 'var(--slate-400)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
                 <Monitor size={16} /> <span style={{ fontSize: '0.8rem' }}>Auto</span>
               </button>
             </div>
@@ -189,31 +189,31 @@ export default function SettingsScreen() {
             
             <div onClick={() => setHighContrast(!highContrast)} className="interactive-press" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', cursor: 'pointer' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <Eye size={18} color={highContrast - 'var(--teal-400)' : 'var(--slate-400)'} />
-                <span style={{ fontSize: '0.9rem', color: highContrast - 'var(--teal-400)' : 'var(--slate-200)' }}>High Contrast</span>
+                <Eye size={18} color={highContrast ? 'var(--teal-400)' : 'var(--slate-400)'} />
+                <span style={{ fontSize: '0.9rem', color: highContrast ? 'var(--teal-400)' : 'var(--slate-200)' }}>High Contrast</span>
               </div>
-              <div style={{ width: '40px', height: '22px', borderRadius: '11px', background: highContrast - 'var(--teal-500)' : 'rgba(255,255,255,0.1)', position: 'relative', transition: '0.2s' }}>
-                <div style={{ position: 'absolute', top: '2px', left: highContrast - '20px' : '2px', width: '18px', height: '18px', borderRadius: '50%', background: 'white', transition: '0.2s' }}></div>
+              <div style={{ width: '40px', height: '22px', borderRadius: '11px', background: highContrast ? 'var(--teal-500)' : 'rgba(255,255,255,0.1)', position: 'relative', transition: '0.2s' }}>
+                <div style={{ position: 'absolute', top: '2px', left: highContrast ? '20px' : '2px', width: '18px', height: '18px', borderRadius: '50%', background: 'white', transition: '0.2s' }}></div>
               </div>
             </div>
 
             <div onClick={() => setLargeText(!largeText)} className="interactive-press" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', cursor: 'pointer' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <Type size={18} color={largeText - 'var(--teal-400)' : 'var(--slate-400)'} />
-                <span style={{ fontSize: '0.9rem', color: largeText - 'var(--teal-400)' : 'var(--slate-200)' }}>Large Text</span>
+                <Type size={18} color={largeText ? 'var(--teal-400)' : 'var(--slate-400)'} />
+                <span style={{ fontSize: '0.9rem', color: largeText ? 'var(--teal-400)' : 'var(--slate-200)' }}>Large Text</span>
               </div>
-              <div style={{ width: '40px', height: '22px', borderRadius: '11px', background: largeText - 'var(--teal-500)' : 'rgba(255,255,255,0.1)', position: 'relative', transition: '0.2s' }}>
-                <div style={{ position: 'absolute', top: '2px', left: largeText - '20px' : '2px', width: '18px', height: '18px', borderRadius: '50%', background: 'white', transition: '0.2s' }}></div>
+              <div style={{ width: '40px', height: '22px', borderRadius: '11px', background: largeText ? 'var(--teal-500)' : 'rgba(255,255,255,0.1)', position: 'relative', transition: '0.2s' }}>
+                <div style={{ position: 'absolute', top: '2px', left: largeText ? '20px' : '2px', width: '18px', height: '18px', borderRadius: '50%', background: 'white', transition: '0.2s' }}></div>
               </div>
             </div>
 
             <div onClick={() => setReduceMotion(!reduceMotion)} className="interactive-press" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0', cursor: 'pointer' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <Activity size={18} color={reduceMotion - 'var(--teal-400)' : 'var(--slate-400)'} />
-                <span style={{ fontSize: '0.9rem', color: reduceMotion - 'var(--teal-400)' : 'var(--slate-200)' }}>Reduce Motion</span>
+                <Activity size={18} color={reduceMotion ? 'var(--teal-400)' : 'var(--slate-400)'} />
+                <span style={{ fontSize: '0.9rem', color: reduceMotion ? 'var(--teal-400)' : 'var(--slate-200)' }}>Reduce Motion</span>
               </div>
-              <div style={{ width: '40px', height: '22px', borderRadius: '11px', background: reduceMotion - 'var(--teal-500)' : 'rgba(255,255,255,0.1)', position: 'relative', transition: '0.2s' }}>
-                <div style={{ position: 'absolute', top: '2px', left: reduceMotion - '20px' : '2px', width: '18px', height: '18px', borderRadius: '50%', background: 'white', transition: '0.2s' }}></div>
+              <div style={{ width: '40px', height: '22px', borderRadius: '11px', background: reduceMotion ? 'var(--teal-500)' : 'rgba(255,255,255,0.1)', position: 'relative', transition: '0.2s' }}>
+                <div style={{ position: 'absolute', top: '2px', left: reduceMotion ? '20px' : '2px', width: '18px', height: '18px', borderRadius: '50%', background: 'white', transition: '0.2s' }}></div>
               </div>
             </div>
           </div>
