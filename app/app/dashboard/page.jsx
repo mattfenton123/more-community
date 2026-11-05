@@ -1,7 +1,7 @@
 "use client";
 import { supabase } from '../../src/lib/supabaseClient';
 import { useState, useRef, useMemo, useEffect } from 'react';
-import { Printer, ExternalLink, HelpCircle, Users, Calendar, MessageCircle, TrendingUp, Search, Plus, MapPin, Image as ImageIcon, CreditCard, ChevronRight, ChevronLeft, Download, Activity, Globe, Heart, Crown, Info, X, Map, Zap, Mail, Trash2, UserCheck, Ban, ChevronDown, ChevronUp, Settings, Megaphone, QrCode, BarChart3, Ticket, ScanLine, UserPlus, DollarSign, Clock, Edit3, Check, CheckCircle2, Eye, EyeOff, Shield, Star, Sparkles, BookOpen, ListChecks, Bell, Archive } from 'lucide-react';
+import { Printer, ExternalLink, HelpCircle, Users, Calendar, MessageCircle, TrendingUp, Search, Plus, MapPin, Image as ImageIcon, CreditCard, ChevronRight, ChevronLeft, Download, Activity, Globe, Heart, Crown, Info, X, Map, Zap, Mail, Trash2, UserCheck, Ban, ChevronDown, ChevronUp, Settings, Megaphone, QrCode, BarChart3, Ticket, ScanLine, UserPlus, DollarSign, Clock, Edit3, Check, CheckCircle2, Eye, EyeOff, Shield, Star, Sparkles, BookOpen, ListChecks, Bell, Archive, Mic, MicOff, Wand2, Lightbulb } from 'lucide-react';
 import AppHeader from '../../src/components/AppHeader';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { isEventUpcoming, isEventPast, parseEventDateTime } from '../../src/lib/calendar';
@@ -262,6 +262,96 @@ export default function LeaderDashboard({ initialCommunityId }) {
   const [discoveryResults, setDiscoveryResults] = useState(null);
   const [aiPrompt, setAiPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedVibes, setGeneratedVibes] = useState([]);
+  const [isListening, setIsListening] = useState(false);
+  const [speechSupported, setSpeechSupported] = useState(false);
+  const recognitionRef = useRef(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)) {
+      setSpeechSupported(true);
+    }
+  }, []);
+
+  const toggleSpeechRecognition = () => {
+    if (typeof window === 'undefined') return;
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      toast.info('Voice Not Supported', 'Voice input is not supported in this browser. Try Chrome or Safari.');
+      return;
+    }
+
+    if (isListening) {
+      if (recognitionRef.current) {
+        try { recognitionRef.current.stop(); } catch (e) {}
+      }
+      setIsListening(false);
+      return;
+    }
+
+    try {
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'en-US';
+      recognition.interimResults = true;
+      recognition.maxAlternatives = 1;
+
+      recognition.onstart = () => {
+        setIsListening(true);
+        toast.info('Listening...', 'Speak your walk or event idea (e.g. "Scenic Saturday morning loop with coffee after").');
+      };
+
+      recognition.onresult = (event) => {
+        let transcript = '';
+        for (let i = 0; i < event.results.length; i++) {
+          transcript += event.results[i][0].transcript;
+        }
+        setAiPrompt(transcript);
+      };
+
+      recognition.onerror = (event) => {
+        console.warn('Speech recognition error:', event.error);
+        setIsListening(false);
+        if (event.error === 'not-allowed') {
+          toast.error('Microphone Denied', 'Please enable microphone access in your browser to speak event ideas.');
+        }
+      };
+
+      recognition.onend = () => {
+        setIsListening(false);
+      };
+
+      recognitionRef.current = recognition;
+      recognition.start();
+    } catch (err) {
+      console.error('Speech recognition start failed:', err);
+      setIsListening(false);
+    }
+  };
+
+  const AI_IDEA_CHIPS = [
+    { emoji: '🌲', label: 'Scenic Trail & Coffee', prompt: 'Scenic nature trail walk followed by coffee at a local cafe' },
+    { emoji: '🐾', label: 'Dog Friendly Social', prompt: 'Dog friendly park walk with open play on the greens' },
+    { emoji: '☕', label: 'Morning Stroll & Chat', prompt: 'Gentle morning stroll and community conversation for all fitness levels' },
+    { emoji: '🌅', label: 'Golden Hour & Pub', prompt: 'Sunset golden hour walk finishing at a local pub garden' },
+    { emoji: '🏃', label: 'Beginners 5km Flat Walk', prompt: 'Beginners flat 5km nature walk, step-free and conversational pace' }
+  ];
+
+  const handleSelectChip = (chipPrompt) => {
+    setAiPrompt(chipPrompt);
+    handleAIGenerateEvent(chipPrompt);
+  };
+
+  const handleAppendToDescription = (textToAppend) => {
+    setEventForm(prev => {
+      const current = prev.description || '';
+      const separator = current.trim() ? '\n\n' : '';
+      return {
+        ...prev,
+        description: current.trim() + separator + textToAppend
+      };
+    });
+    toast.success('Section Added', 'Refinement applied to event description.');
+  };
   const [showWelcomeGuide, setShowWelcomeGuide] = useState(true);
   const [peopleSubTab, setPeopleSubTab] = useState('members');
   const [leaderDrillDown, setLeaderDrillDown] = useState(null); // 'members'|'active'|'revenue'|'events'|'checkin'|'next'
@@ -963,15 +1053,16 @@ export default function LeaderDashboard({ initialCommunityId }) {
 
 
 
-  const handleAIGenerateEvent = async () => {
-    if (!aiPrompt.trim()) return;
+  const handleAIGenerateEvent = async (overridePrompt) => {
+    const promptToUse = (typeof overridePrompt === 'string' ? overridePrompt : aiPrompt) || '';
+    if (!promptToUse.trim()) return;
     setIsGenerating(true);
     try {
       const res = await fetch('/api/ai/generate-event', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          prompt: aiPrompt,
+          prompt: promptToUse,
           communityName: community?.name,
           communityLocation: community?.location_name,
           communityTags: community?.tags
@@ -979,11 +1070,25 @@ export default function LeaderDashboard({ initialCommunityId }) {
       });
       const data = await res.json();
       if (data.event) {
-        setEventForm(prev => ({ ...prev, ...data.event }));
+        setEventForm(prev => ({
+          ...prev,
+          title: data.event.title || prev.title,
+          description: data.event.description || prev.description,
+          date: data.event.date || prev.date,
+          time: data.event.time || prev.time,
+          location: data.event.location || prev.location,
+          maxCapacity: data.event.maxCapacity != null ? String(data.event.maxCapacity) : prev.maxCapacity,
+          ticketPrice: data.event.ticketPrice != null ? String(data.event.ticketPrice) : prev.ticketPrice,
+          autoReminders: data.event.autoReminders ?? prev.autoReminders,
+          autoFeedback: data.event.autoFeedback ?? prev.autoFeedback
+        }));
+        if (Array.isArray(data.event.vibeTags) && data.event.vibeTags.length > 0) {
+          setGeneratedVibes(data.event.vibeTags);
+        }
         setAiPrompt('');
         toast.success(
-          data.fallback ? 'Event Drafted!' : '✨ AI Generated!',
-          data.fallback ? 'Smart template applied  -  review and publish.' : 'Gemini crafted your event  -  review and publish.'
+          data.fallback ? 'Event Drafted!' : '✨ AI Co-Pilot Ready!',
+          data.fallback ? 'Smart template created - review & tweak below.' : 'Gemini crafted your event - review & tweak below.'
         );
       } else {
         toast.error('Generation failed', 'Please try again or fill in manually.');
@@ -1106,34 +1211,163 @@ export default function LeaderDashboard({ initialCommunityId }) {
       {/* Step 0: Details */}
       {eventStep === 0 && (
         <>
-          <div style={{ background: 'linear-gradient(90deg, rgba(139,92,246,0.1), rgba(236,72,153,0.1))', border: '1px solid rgba(139,92,246,0.2)', borderRadius: '12px', padding: '16px', marginBottom: '24px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-              <span style={{ fontSize: '1.2rem' }}>✨</span>
-              <span style={{ fontWeight: 600, color: '#c4b5fd', fontSize: '0.9rem' }}>Auto-Generate with AI</span>
+          <div style={{
+            background: 'linear-gradient(135deg, rgba(99,102,241,0.12), rgba(168,85,247,0.12), rgba(236,72,153,0.08))',
+            border: '1px solid rgba(168,85,247,0.35)',
+            borderRadius: '16px',
+            padding: '16px',
+            marginBottom: '20px',
+            boxShadow: '0 8px 24px -6px rgba(0,0,0,0.3)'
+          }}>
+            {/* Header with Title and Mode pill */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '10px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '1.25rem' }}>✨</span>
+                <div>
+                  <div style={{ fontWeight: 700, color: '#f3e8ff', fontSize: '0.92rem', letterSpacing: '-0.01em', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    AI Event Co-Pilot
+                    <span style={{ fontSize: '0.62rem', padding: '2px 7px', borderRadius: '999px', background: 'rgba(168,85,247,0.25)', color: '#d8b4fe', border: '1px solid rgba(168,85,247,0.4)', textTransform: 'uppercase', fontWeight: 700 }}>
+                      Leader Assistant
+                    </span>
+                  </div>
+                  <div style={{ fontSize: '0.74rem', color: '#c4b5fd' }}>
+                    Type an idea, speak aloud, or tap a starter below to draft in seconds.
+                  </div>
+                </div>
+              </div>
             </div>
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <input 
-                type="text" 
-                placeholder="e.g. Sunset hike this friday followed by drinks" 
-                value={aiPrompt}
-                onChange={(e) => setAiPrompt(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleAIGenerateEvent()}
-                style={{ flex: 1, padding: '10px 14px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.3)', color: 'var(--white)', fontSize: '0.9rem' }}
-              />
+
+            {/* Input row with speech recognition mic button & generate button */}
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '10px' }}>
+              <div style={{ position: 'relative', flex: 1, display: 'flex', alignItems: 'center' }}>
+                <input 
+                  type="text" 
+                  placeholder={isListening ? "Listening... speak your walk or event idea" : "e.g. Dog friendly Saturday morning stroll with coffee after"} 
+                  value={aiPrompt}
+                  onChange={(e) => setAiPrompt(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleAIGenerateEvent()}
+                  style={{
+                    width: '100%',
+                    padding: speechSupported ? '11px 40px 11px 14px' : '11px 14px',
+                    borderRadius: '10px',
+                    border: isListening ? '1px solid #a855f7' : '1px solid rgba(255,255,255,0.14)',
+                    background: isListening ? 'rgba(168,85,247,0.15)' : 'rgba(0,0,0,0.35)',
+                    color: 'var(--white)',
+                    fontSize: '0.9rem',
+                    outline: 'none',
+                    transition: 'all 0.2s'
+                  }}
+                />
+                {speechSupported && (
+                  <button
+                    type="button"
+                    onClick={toggleSpeechRecognition}
+                    title={isListening ? "Stop listening" : "Speak event idea"}
+                    style={{
+                      position: 'absolute',
+                      right: '8px',
+                      background: isListening ? '#ef4444' : 'rgba(255,255,255,0.08)',
+                      border: 'none',
+                      borderRadius: '50%',
+                      width: '26px',
+                      height: '26px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      color: isListening ? '#ffffff' : '#c4b5fd',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    {isListening ? <MicOff size={14} /> : <Mic size={14} />}
+                  </button>
+                )}
+              </div>
               <button 
-                onClick={handleAIGenerateEvent}
+                type="button"
+                onClick={() => handleAIGenerateEvent()}
                 disabled={isGenerating || !aiPrompt.trim()}
-                style={{ padding: '0 16px', borderRadius: '8px', background: 'rgba(139,92,246,0.2)', border: '1px solid rgba(139,92,246,0.5)', color: '#c4b5fd', fontWeight: 600, cursor: isGenerating ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: '90px' }}
+                style={{
+                  padding: '0 16px',
+                  height: '42px',
+                  borderRadius: '10px',
+                  background: 'linear-gradient(135deg, #8b5cf6, #d946ef)',
+                  border: 'none',
+                  color: '#ffffff',
+                  fontWeight: 600,
+                  fontSize: '0.88rem',
+                  cursor: isGenerating ? 'wait' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px',
+                  minWidth: '95px',
+                  opacity: (!aiPrompt.trim() && !isGenerating) ? 0.5 : 1,
+                  boxShadow: '0 4px 12px rgba(139,92,246,0.35)'
+                }}
                 className="interactive-press"
               >
-                {isGenerating ? <div className="spinner" style={{ width: '16px', height: '16px', border: '2px solid rgba(196,181,253,0.3)', borderTopColor: '#c4b5fd', borderRadius: '50%', animation: 'spin 1s linear infinite' }} /> : 'Generate'}
+                {isGenerating ? (
+                  <div className="spinner" style={{ width: '16px', height: '16px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#ffffff', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+                ) : (
+                  <>
+                    <Wand2 size={14} />
+                    <span>Draft</span>
+                  </>
+                )}
               </button>
             </div>
+
+            {/* Quick Idea Starter Chips */}
+            <div>
+              <div style={{ fontSize: '0.72rem', color: '#c4b5fd', fontWeight: 600, marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.04em', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <Lightbulb size={12} color="#fbbf24" /> Instant Idea Starters (1-Tap):
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                {AI_IDEA_CHIPS.map((chip, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => handleSelectChip(chip.prompt)}
+                    disabled={isGenerating}
+                    style={{
+                      background: 'rgba(255,255,255,0.06)',
+                      border: '1px solid rgba(255,255,255,0.12)',
+                      borderRadius: '999px',
+                      padding: '4px 11px',
+                      color: '#e9d5ff',
+                      fontSize: '0.75rem',
+                      fontWeight: 500,
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      transition: 'all 0.15s'
+                    }}
+                  >
+                    <span>{chip.emoji}</span>
+                    <span>{chip.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Generated Vibes & Status feedback banner if draft active */}
+            {generatedVibes && generatedVibes.length > 0 && (
+              <div style={{ marginTop: '10px', paddingTop: '10px', borderTop: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
+                <span style={{ fontSize: '0.72rem', color: '#d8b4fe', fontWeight: 600 }}>Detected Vibes:</span>
+                {generatedVibes.map((v, i) => (
+                  <span key={i} style={{ fontSize: '0.7rem', padding: '2px 8px', borderRadius: '6px', background: 'rgba(45,212,191,0.15)', color: '#5eead4', border: '1px solid rgba(45,212,191,0.3)', fontWeight: 500 }}>
+                    {v}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
 
           <div style={{ background: 'rgba(20,184,166,0.05)', border: '1px solid rgba(20,184,166,0.15)', borderRadius: '12px', padding: '14px', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
             <Info size={16} color="var(--teal-400)" style={{ flexShrink: 0 }} />
-            <span style={{ fontSize: '0.8rem', color: 'var(--teal-300)', lineHeight: 1.4 }}>Or create manually. A clear title and description help members decide whether to attend. Keep it friendly!</span>
+            <span style={{ fontSize: '0.8rem', color: 'var(--teal-300)', lineHeight: 1.4 }}>Or edit manually below. Clear details help members feel comfortable and excited to show up!</span>
           </div>
           <div className="form-group">
             <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Calendar size={14} color="var(--teal-400)" /> Event Title <span style={{ color: 'var(--rose-400)', fontSize: '0.7rem' }}>*</span></label>
@@ -1141,7 +1375,44 @@ export default function LeaderDashboard({ initialCommunityId }) {
           </div>
           <div className="form-group">
             <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><MessageCircle size={14} color="var(--slate-400)" /> Description</label>
-            <textarea className="form-input" placeholder="Tell people what to expect, what to bring, who it's for..." value={eventForm.description} onChange={e => setEventForm({...eventForm, description: e.target.value})} rows={4} style={{ minHeight: '100px', lineHeight: 1.5 }} />
+            <textarea className="form-input" placeholder="Tell people what to expect, what to bring, who it's for..." value={eventForm.description} onChange={e => setEventForm({...eventForm, description: e.target.value})} rows={5} style={{ minHeight: '120px', lineHeight: 1.5 }} />
+
+            {/* Quick Polish Actions */}
+            <div style={{ marginTop: '8px' }}>
+              <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <span>✨ 1-Tap Copy Polish:</span>
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                <button
+                  type="button"
+                  onClick={() => handleAppendToDescription('☕ Post-Walk Coffee:\nWe will wrap up at a local indie cafe for warm drinks, pastries, and relaxed conversations. Everyone is welcome!')}
+                  style={{ fontSize: '0.74rem', padding: '4px 10px', borderRadius: '6px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--slate-300)', cursor: 'pointer' }}
+                >
+                  ☕ Add Coffee Stop
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleAppendToDescription('🐾 Dog Friendly:\nFriendly dogs on leads are very welcome on this route! Please bring waste bags and water for your four-legged companion.')}
+                  style={{ fontSize: '0.74rem', padding: '4px 10px', borderRadius: '6px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--slate-300)', cursor: 'pointer' }}
+                >
+                  🐾 Make Dog Friendly
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleAppendToDescription('🎒 What to Bring:\n• Comfortable walking trainers or boots\n• Reusable water bottle\n• Weather-appropriate layers')}
+                  style={{ fontSize: '0.74rem', padding: '4px 10px', borderRadius: '6px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--slate-300)', cursor: 'pointer' }}
+                >
+                  🎒 Add Kit Checklist
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleAppendToDescription('🥾 Route Accessibility:\nThis is a step-free, mostly flat route on paved park paths, ideal for all paces, strollers, and beginners.')}
+                  style={{ fontSize: '0.74rem', padding: '4px 10px', borderRadius: '6px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--slate-300)', cursor: 'pointer' }}
+                >
+                  🥾 Gentle / Step-Free Note
+                </button>
+              </div>
+            </div>
           </div>
         </>
       )}
