@@ -110,6 +110,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
   const [activeTab, setActiveTab] = useState(searchParams?.get('tab') || 'overview');
   const [networkSearchQuery, setNetworkSearchQuery] = useState('');
   const [markupInfoExp, setMarkupInfoExp] = useState(null);
+  const [showSubscriptionInfo, setShowSubscriptionInfo] = useState(false);
   const [showShieldModal, setShowShieldModal] = useState(false);
   const [specialistModalState, setSpecialistModalState] = useState({ isOpen: false, mode: 'inspect', specialist: null });
   const [experiencesSubTab, setExperiencesSubTab] = useState('pitches');
@@ -168,8 +169,8 @@ export default function LeaderDashboard({ initialCommunityId }) {
     description: '', 
     date: '', 
     time: '', 
-    location: '', 
-    coords: null,
+    location: community?.location_name || '', 
+    coords: (community?.lat != null && community?.lng != null) ? [community.lat, community.lng] : null,
     maxCapacity: '', 
     ticketPrice: '',
     allowCash: false, 
@@ -957,6 +958,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
         body: JSON.stringify({
           prompt: aiPrompt,
           communityName: community?.name,
+          communityLocation: community?.location_name,
           communityTags: community?.tags
         })
       });
@@ -1237,7 +1239,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                     </div>
                     <div style={{ fontSize: '0.78rem', color: 'var(--slate-300)', marginTop: '2px', lineHeight: 1.4 }}>
                       {stripeConnected 
-                        ? 'Ticket revenue will automatically transfer directly to your registered UK bank account via Faster Payments.' 
+                        ? 'Ticket revenue transfers automatically to your registered UK bank account via Faster Payments within 24-48 hours after your event takes place.' 
                         : (eventForm.allowCash 
                             ? 'You can collect cash in person at the meetup. To also accept online card payments, register a payout account.' 
                             : `To charge £${eventForm.ticketPrice} online, register your UK bank account so ticket sales transfer to you directly.`)}
@@ -2865,15 +2867,45 @@ export default function LeaderDashboard({ initialCommunityId }) {
               </div>
 
               {/* Community Subscription Pricing */}
-              <div className="glass-panel" style={{ padding: '20px', marginBottom: '20px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
-                  <Crown size={18} color="#f59e0b" />
-                  <h3 style={{ margin: 0, fontSize: '1rem', fontFamily: 'var(--font-heading)' }}>Community Subscription</h3>
+              <div className="glass-panel" style={{ padding: '24px', marginBottom: '20px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <Crown size={18} color="#f59e0b" />
+                    <h3 style={{ margin: 0, fontSize: '1.05rem', fontFamily: 'var(--font-heading)', color: '#fff' }}>Community Subscription</h3>
+                    <button
+                      type="button"
+                      onClick={() => setShowSubscriptionInfo(true)}
+                      className="interactive-press"
+                      title="How does community subscription work? Click for full financial breakdown"
+                      style={{
+                        background: 'rgba(20, 184, 166, 0.15)',
+                        border: '1px solid rgba(20, 184, 166, 0.35)',
+                        borderRadius: '50%',
+                        width: '18px',
+                        height: '18px',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'var(--teal-400)',
+                        cursor: 'pointer',
+                        padding: 0
+                      }}
+                    >
+                      <Info size={11} />
+                    </button>
+                  </div>
+                  {Number(subscriptionPrice) > 0 && (
+                    <span style={{ fontSize: '0.75rem', padding: '3px 10px', borderRadius: '99px', background: 'rgba(245, 158, 11, 0.15)', color: '#fbbf24', border: '1px solid rgba(245, 158, 11, 0.3)', fontWeight: 700 }}>
+                      Paid Community Active
+                    </span>
+                  )}
                 </div>
+                
                 <p style={{ color: 'var(--slate-400)', fontSize: '0.85rem', marginBottom: '16px', lineHeight: 1.5 }}>
                   Set a monthly price for your community. New members will be asked to pay before joining. Existing members are not affected.
                 </p>
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '12px' }}>
+
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '16px' }}>
                   <span style={{ color: 'var(--slate-300)', fontSize: '1.2rem', fontWeight: 700 }}>£</span>
                   <input 
                     type="number" value={subscriptionPrice} onChange={e => setSubscriptionPrice(e.target.value)}
@@ -2882,10 +2914,208 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   />
                   <span style={{ color: 'var(--slate-400)', fontSize: '0.85rem' }}>/ month</span>
                 </div>
+
+                {/* Live Breakdown Box if Price > 0 */}
+                {Number(subscriptionPrice) > 0 && (
+                  <div style={{ background: 'rgba(15, 23, 42, 0.6)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '16px', marginBottom: '16px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--slate-400)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.04em' }}>
+                        Subscription Revenue Breakdown
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setShowSubscriptionInfo(true)}
+                        style={{ background: 'transparent', border: 'none', color: 'var(--teal-400)', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', padding: 0 }}
+                      >
+                        How it works →
+                      </button>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.85rem' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--slate-300)' }}>
+                        <span>Member Monthly Dues:</span>
+                        <span style={{ fontWeight: 600, color: '#fff' }}>£{Number(subscriptionPrice).toFixed(2)} / mo</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', color: '#34d399' }}>
+                        <span>Your Club Fund (95% standard / 100% Pro):</span>
+                        <span style={{ fontWeight: 700 }}>+£{(Number(subscriptionPrice) * 0.95).toFixed(2)} / member</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--slate-400)', fontSize: '0.8rem' }}>
+                        <span>Platform & Card Processing (5% standard / 0% Pro):</span>
+                        <span>£{(Number(subscriptionPrice) * 0.05).toFixed(2)}</span>
+                      </div>
+                      <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '8px', marginTop: '4px', display: 'flex', justifyContent: 'space-between', color: 'var(--teal-300)', fontSize: '0.8rem' }}>
+                        <span>Estimated Annual (20 active members):</span>
+                        <span style={{ fontWeight: 700 }}>£{(Number(subscriptionPrice) * 0.95 * 20 * 12).toLocaleString()}/year to your fund</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Account Setup Warning or Active Badge */}
+                {Number(subscriptionPrice) > 0 && (
+                  !stripeConnected ? (
+                    <div style={{ 
+                      background: 'rgba(239, 68, 68, 0.08)', 
+                      border: '1px solid rgba(239, 68, 68, 0.25)', 
+                      borderRadius: '12px', 
+                      padding: '14px', 
+                      marginBottom: '16px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '10px'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                        <AlertCircle size={18} color="#f87171" style={{ flexShrink: 0, marginTop: '2px' }} />
+                        <div>
+                          <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#fca5a5' }}>
+                            Payout Account Required
+                          </div>
+                          <div style={{ fontSize: '0.78rem', color: 'var(--slate-300)', marginTop: '2px', lineHeight: 1.4 }}>
+                            To charge £{subscriptionPrice}/month, register your UK bank account so recurring member payments transfer to you automatically.
+                          </div>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setShowPayoutBankModal(true)}
+                        className="btn btn-primary interactive-press"
+                        style={{ padding: '8px 16px', borderRadius: '10px', fontSize: '0.82rem', fontWeight: 700, alignSelf: 'flex-start' }}
+                      >
+                        Register Payout Account
+                      </button>
+                    </div>
+                  ) : (
+                    <div style={{ 
+                      background: 'rgba(20, 184, 166, 0.08)', 
+                      border: '1px solid rgba(20, 184, 166, 0.25)', 
+                      borderRadius: '12px', 
+                      padding: '12px 14px', 
+                      marginBottom: '16px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px'
+                    }}>
+                      <CheckCircle2 size={16} color="var(--teal-400)" style={{ flexShrink: 0 }} />
+                      <div style={{ fontSize: '0.78rem', color: 'var(--teal-200)', lineHeight: 1.4 }}>
+                        <strong>✓ Payout Account Active (Faster Payments):</strong> Monthly subscription revenue transfers automatically to your registered UK bank account on the 1st of each month.
+                      </div>
+                    </div>
+                  )
+                )}
+
                 <button onClick={handleSaveSubscriptionPrice} className="btn btn-primary interactive-press" style={{ width: '100%', padding: '14px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                   <Check size={16} /> Save Pricing
                 </button>
               </div>
+
+              {/* ─── SUBSCRIPTION EXPLANATION MODAL ─── */}
+              {showSubscriptionInfo && (
+                <div 
+                  onClick={() => setShowSubscriptionInfo(false)}
+                  style={{
+                    position: 'fixed',
+                    inset: 0,
+                    zIndex: 99999,
+                    background: 'rgba(2, 6, 23, 0.85)',
+                    backdropFilter: 'blur(8px)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '16px'
+                  }}
+                >
+                  <div 
+                    onClick={e => e.stopPropagation()}
+                    style={{
+                      background: 'var(--slate-900)',
+                      border: '1px solid rgba(255,255,255,0.12)',
+                      borderRadius: '20px',
+                      maxWidth: '520px',
+                      width: '100%',
+                      padding: '24px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '16px',
+                      maxHeight: '90vh',
+                      overflowY: 'auto',
+                      boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7)'
+                    }}
+                  >
+                    {/* Modal Header */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <div>
+                        <h3 style={{ margin: 0, fontSize: '1.15rem', color: '#fff', fontFamily: 'var(--font-heading)' }}>
+                          Community Subscription Breakdown
+                        </h3>
+                        <p style={{ fontSize: '0.82rem', color: 'var(--slate-400)', margin: '4px 0 0' }}>
+                          How member subscription fees and payouts work
+                        </p>
+                      </div>
+                      <button 
+                        onClick={() => setShowSubscriptionInfo(false)}
+                        className="interactive-press"
+                        style={{
+                          width: '32px', height: '32px', borderRadius: '50%',
+                          background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)',
+                          color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        <X size={18} />
+                      </button>
+                    </div>
+
+                    {/* 3-Pillar Breakdown */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      {/* 1. Member Fee */}
+                      <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '12px', padding: '14px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                          <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#fff' }}>1. Member Monthly Dues</div>
+                          <div style={{ fontSize: '1rem', fontWeight: 800, color: '#38bdf8' }}>£{Number(subscriptionPrice || 20).toFixed(2)}/mo</div>
+                        </div>
+                        <p style={{ fontSize: '0.8rem', color: 'var(--slate-300)', margin: 0, lineHeight: 1.45 }}>
+                          Billed securely to members every 30 days via card or direct debit. Existing community members remain unaffected when you update pricing.
+                        </p>
+                      </div>
+
+                      {/* 2. Leader Community Fund */}
+                      <div style={{ background: 'rgba(20, 184, 166, 0.08)', border: '1px solid rgba(20, 184, 166, 0.25)', borderRadius: '12px', padding: '14px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                          <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#2dd4bf' }}>2. Your Community Fund (95% standard / 100% Pro)</div>
+                          <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#34d399' }}>
+                            +£{(Number(subscriptionPrice || 20) * 0.95).toFixed(2)}/mo
+                          </div>
+                        </div>
+                        <p style={{ fontSize: '0.8rem', color: 'var(--slate-300)', margin: 0, lineHeight: 1.45 }}>
+                          Credited directly to your community treasury. Transfers automatically to your UK bank account on the 1st of each month via Faster Payments. Use it to buy group equipment, subsidise member tickets, or cover venue hire.
+                        </p>
+                      </div>
+
+                      {/* 3. More Platform & Card Processing */}
+                      <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '12px', padding: '14px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                          <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#fff' }}>3. More Platform & Payment Processing (5% standard / 0% Pro)</div>
+                          <div style={{ fontSize: '0.95rem', fontWeight: 800, color: '#a78bfa' }}>
+                            £{(Number(subscriptionPrice || 20) * 0.05).toFixed(2)}/mo
+                          </div>
+                        </div>
+                        <p style={{ fontSize: '0.8rem', color: 'var(--slate-300)', margin: 0, lineHeight: 1.45 }}>
+                          Covers UK payment gateway fees (Stripe card/direct debit charges), automated recurring subscription billing, member access controls, and fraud protection. Reduced to 0% for Leader Pro members.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Close Button */}
+                    <button
+                      onClick={() => setShowSubscriptionInfo(false)}
+                      className="btn btn-primary interactive-press"
+                      style={{ width: '100%', padding: '12px', borderRadius: '12px', fontWeight: 700, fontSize: '0.9rem' }}
+                    >
+                      Got it, thanks!
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {/* Revenue Per Event */}
               <div style={{ marginBottom: '20px' }}>
