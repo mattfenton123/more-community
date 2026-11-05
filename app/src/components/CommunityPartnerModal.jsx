@@ -116,7 +116,7 @@ export default function CommunityPartnerModal({
     tagline: 'Proud local partner of ' + (community?.name || 'the community'),
     category: BUSINESS_CATEGORIES[0].id,
     pitch: '',
-    perk: '15% off for all group members on meetup days',
+    perk: '',
     tier: 'directory',
     contactEmail: user?.email || '',
     website: '',
@@ -142,8 +142,8 @@ export default function CommunityPartnerModal({
           return;
         }
       } else {
-        if (!sponsorForm.businessName.trim() || !sponsorForm.perk.trim()) {
-          toast.error('Missing details', 'Please enter your business name and member perk.');
+        if (!sponsorForm.businessName.trim()) {
+          toast.error('Missing details', 'Please enter your business name.');
           return;
         }
       }
@@ -225,8 +225,8 @@ export default function CommunityPartnerModal({
         if (notifyCommunityLeaders) {
           notifyCommunityLeaders(
             commId,
-            'New Sponsor & Perk Offer',
-            sponsorForm.businessName + ' offered: "' + sponsorForm.perk + '" (' + (sponsorForm.tier === 'headline' ? '£49 Headline Sponsor' : '£15 Directory Sponsor') + ')',
+            sponsorForm.perk ? 'New Sponsor & Perk Offer' : 'New Community Sponsor',
+            sponsorForm.businessName + (sponsorForm.perk ? ' offered perk: "' + sponsorForm.perk + '"' : ' joined as a brand supporter') + ' (' + (sponsorForm.tier === 'headline' ? '£49 Headline Sponsor' : '£15 Directory Sponsor') + ')',
             '/community/' + commId
           );
         }
@@ -771,18 +771,21 @@ export default function CommunityPartnerModal({
                         </div>
 
                         <div>
-                          <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--slate-300)', marginBottom: '6px' }}>
-                            Exclusive Member Perk *
-                          </label>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                            <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--slate-300)' }}>
+                              Exclusive Member Perk (Optional)
+                            </label>
+                            <span style={{ fontSize: '0.7rem', color: '#2dd4bf', background: 'rgba(45,212,191,0.1)', padding: '1px 6px', borderRadius: '4px', fontWeight: 600 }}>Optional</span>
+                          </div>
                           <input
                             type="text"
-                            placeholder="e.g. 15% off all hot drinks & brunch on meetup days"
+                            placeholder="e.g. 15% off hot drinks & brunch (or leave blank if supporting without a discount)"
                             value={sponsorForm.perk}
                             onChange={e => setSponsorForm({ ...sponsorForm, perk: e.target.value })}
                             style={{ width: '100%', padding: '12px 14px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: 'var(--white)', fontSize: '0.85rem' }}
                           />
                           <span style={{ fontSize: '0.74rem', color: 'var(--slate-400)', marginTop: '4px', display: 'block' }}>
-                            This perk is displayed as a badge on your ad and inside the community perks directory.
+                            Optional: If offered, this perk is highlighted on your ad badge and inside the member perks directory. Leave blank if sponsoring purely as a local brand supporter.
                           </span>
                         </div>
 
@@ -1047,22 +1050,40 @@ export default function CommunityPartnerModal({
                               <p style={{ fontSize: '0.76rem', color: 'var(--slate-400)', margin: '0 0 10px' }}>
                                 {sponsorForm.tagline}
                               </p>
-                              {/* Member Perk Badge */}
-                              <div style={{
-                                padding: '8px 12px',
-                                borderRadius: '10px',
-                                background: sponsorForm.accentColor + '18',
-                                border: '1px dashed ' + sponsorForm.accentColor,
-                                fontSize: '0.78rem',
-                                color: sponsorForm.accentColor,
-                                fontWeight: 700,
-                                marginBottom: '14px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '6px'
-                              }}>
-                                <Tag size={13} color="#2dd4bf" /> {sponsorForm.perk || '15% off for all members'}
-                              </div>
+                              {/* Member Perk Badge (or Brand Supporter Badge) */}
+                              {sponsorForm.perk ? (
+                                <div style={{
+                                  padding: '8px 12px',
+                                  borderRadius: '10px',
+                                  background: sponsorForm.accentColor + '18',
+                                  border: '1px dashed ' + sponsorForm.accentColor,
+                                  fontSize: '0.78rem',
+                                  color: sponsorForm.accentColor,
+                                  fontWeight: 700,
+                                  marginBottom: '14px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '6px'
+                                }}>
+                                  <Tag size={13} color="#2dd4bf" /> {sponsorForm.perk}
+                                </div>
+                              ) : (
+                                <div style={{
+                                  padding: '8px 12px',
+                                  borderRadius: '10px',
+                                  background: 'rgba(255, 255, 255, 0.03)',
+                                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                                  fontSize: '0.76rem',
+                                  color: 'var(--slate-400)',
+                                  fontWeight: 600,
+                                  marginBottom: '14px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '6px'
+                                }}>
+                                  <Store size={13} color="#2dd4bf" /> Official Community Business Sponsor
+                                </div>
+                              )}
                               <button
                                 type="button"
                                 style={{
@@ -1210,9 +1231,15 @@ export default function CommunityPartnerModal({
                             <div style={{ color: 'var(--slate-300)', marginBottom: '4px' }}>
                               <strong style={{ color: 'var(--white)' }}>Business:</strong> {sponsorForm.businessName} ({sponsorForm.category})
                             </div>
-                            <div style={{ color: '#2dd4bf' }}>
-                              <strong>Member Perk:</strong> {sponsorForm.perk}
-                            </div>
+                            {sponsorForm.perk ? (
+                              <div style={{ color: '#2dd4bf' }}>
+                                <strong>Member Perk:</strong> {sponsorForm.perk}
+                              </div>
+                            ) : (
+                              <div style={{ color: 'var(--slate-400)' }}>
+                                <strong>Sponsorship:</strong> Brand Supporter (No Member Perk)
+                              </div>
+                            )}
                           </div>
                         ) : (
                           <div>
