@@ -353,8 +353,9 @@ export function cleanLocationName(locationStr) {
  * Encodes human name with precise pinpoint coordinates and optional coverage radius.
  */
 export function encodeLocationWithCoords(name, lat, lng, radius = null) {
-  const clean = cleanLocationName(name) || 'Selected Location';
-  let result = clean;
+  const clean = cleanLocationName(name);
+  if (!clean || !clean.trim()) return '';
+  let result = clean.trim();
   if (radius && radius > 0) {
     result += ` [r=${radius}km]`;
   }

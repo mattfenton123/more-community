@@ -62,6 +62,80 @@ function SafeBottomNav() {
   }
 }
 
+function GlobalSimulatorBar() {
+  const { isSimulating, simulatedPersona, impersonatedUserId, users, exitSimulator } = useAppContext();
+  const router = useRouter();
+
+  if (!isSimulating) return null;
+
+  const impersonatedUser = impersonatedUserId ? users?.find(u => u.id === impersonatedUserId) : null;
+  const targetLabel = impersonatedUser 
+    ? `${impersonatedUser.name} (${impersonatedUser.role || 'Member'})`
+    : simulatedPersona === 'leader' ? 'Community Leader'
+    : simulatedPersona === 'member' ? 'Regular Member'
+    : simulatedPersona === 'sponsor' ? 'Local Business Sponsor'
+    : simulatedPersona === 'partner' ? 'Experience Host'
+    : simulatedPersona;
+
+  return (
+    <div style={{
+      position: 'fixed',
+      top: '12px',
+      left: '50%',
+      transform: 'translateX(-50%)',
+      zIndex: 999999,
+      background: 'rgba(15, 23, 42, 0.96)',
+      border: '1.5px solid #f59e0b',
+      boxShadow: '0 10px 30px rgba(0,0,0,0.5), 0 0 15px rgba(245, 158, 11, 0.25)',
+      borderRadius: '999px',
+      padding: '7px 16px',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '12px',
+      backdropFilter: 'blur(16px)',
+      color: '#fff',
+      fontSize: '0.8rem',
+      fontWeight: 600,
+      maxWidth: '92vw'
+    }}>
+      <div style={{
+        width: '9px',
+        height: '9px',
+        borderRadius: '50%',
+        background: '#f59e0b',
+        boxShadow: '0 0 8px #f59e0b',
+        flexShrink: 0
+      }} />
+      <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+        Simulating entire app as: <strong style={{ color: '#fbbf24' }}>{targetLabel}</strong>
+      </span>
+      <button
+        type="button"
+        onClick={() => {
+          exitSimulator();
+          router.push('/admin');
+        }}
+        className="interactive-press"
+        style={{
+          background: '#f59e0b',
+          border: 'none',
+          color: '#090d16',
+          fontWeight: 800,
+          fontSize: '0.74rem',
+          borderRadius: '999px',
+          padding: '4px 12px',
+          cursor: 'pointer',
+          whiteSpace: 'nowrap',
+          flexShrink: 0
+        }}
+      >
+        Exit Simulator
+      </button>
+    </div>
+  );
+}
+
+
 function MainLayout({ children }) {
   const currentPath = usePathname();
   const router = useRouter();
@@ -122,6 +196,7 @@ function MainLayout({ children }) {
       <FeedProvider user={user}>
 
       <div className="app-content" style={hideTabBar ? { paddingBottom: 0 } : {}}>
+        <GlobalSimulatorBar />
         {children}
       </div>
       {!hideTabBar && <SafeBottomNav />}

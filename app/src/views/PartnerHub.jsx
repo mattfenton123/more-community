@@ -208,6 +208,9 @@ export default function PartnerHub() {
               <div style={{ fontSize: '0.78rem', color: 'var(--slate-300)', marginTop: '2px' }}>
                 Total Audience: <strong>{combinedAudience} active members</strong> • Bundle: £{selectedClubIds.length * 15}/mo (£{selectedClubIds.length * 12}/mo directly to leaders)
               </div>
+              <div style={{ fontSize: '0.72rem', color: 'var(--teal-300)', marginTop: '4px' }}>
+                💡 Multi-club bundles apply to Monthly Sponsorship. Guest workshops & sessions are pitched 1-on-1 to keep leader inboxes spam-free.
+              </div>
             </div>
             <div style={{ display: 'flex', gap: '8px' }}>
               <button

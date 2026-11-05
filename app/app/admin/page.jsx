@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useMemo } from 'react';
 import { 
-  Shield, Activity, Users, Map, CheckCircle, XCircle, Search, BadgeCheck, Check, X,
+  ChevronLeft, Shield, Activity, Users, Map, CheckCircle, XCircle, Search, BadgeCheck, Check, X,
   TrendingUp, DollarSign, Calendar, Eye, Ban, Crown, ChevronDown, ChevronUp, 
   MessageCircle, Bell, Download, Settings, Database, Megaphone, Flag,
   BarChart3, UserCheck, Zap, Star, Globe, Lock, Mail, Clock, AlertTriangle,
@@ -115,6 +115,13 @@ export default function AdminDashboard() {
   const navigate = useNavigate();
   const { 
     user, 
+    realUser,
+    simulatedPersona,
+    setSimulatedPersona,
+    impersonatedUserId,
+    setImpersonatedUserId,
+    exitSimulator,
+    isSimulating,
     communities, 
     users, 
     events, 
@@ -150,14 +157,14 @@ export default function AdminDashboard() {
   const [isSending, setIsSending] = useState(false);
   const [verifyingCommunityId, setVerifyingCommunityId] = useState(null);
   const [updatingEventId, setUpdatingEventId] = useState(null);
-  const [simulatedPersona, setSimulatedPersona] = useState('admin');
   const [simulatedCommunityId, setSimulatedCommunityId] = useState(null);
 
   React.useEffect(() => {
-    if (!isLoading && (!user || !user.isAdmin)) {
+    const hasAdminAccess = realUser?.isAdmin || user?.isAdmin;
+    if (!isLoading && !hasAdminAccess) {
       navigate.push('/app');
     }
-  }, [user, isLoading, navigate]);
+  }, [user, realUser, isLoading, navigate]);
 
   const ADMIN_EMAILS = [
     'msf199@hotmail.com',
@@ -387,7 +394,115 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div style={{ paddingBottom: '80px', minHeight: '100dvh', background: 'var(--slate-950)' }}>
+    <div className="view-admin dashboard-layout" style={{ position: 'relative', minHeight: '100dvh', display: 'flex' }}>
+      {/* Desktop Sidebar (PC Only) */}
+      <div className="dashboard-sidebar desktop-only">
+        <div className="dashboard-sidebar-header">
+          <button 
+            onClick={() => navigate.push('/app')}
+            style={{ background: 'none', border: 'none', color: 'var(--teal-400)', fontSize: '0.82rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', padding: '0 0 14px 0', fontWeight: 600 }}
+            className="interactive-press"
+          >
+            <ChevronLeft size={16} /> Back to App
+          </button>
+          
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+            <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(59,130,246,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3b82f6', border: '1px solid rgba(59,130,246,0.3)', flexShrink: 0 }}>
+              <Shield size={22} />
+            </div>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ fontWeight: 800, color: 'var(--white)', fontSize: '1.1rem', fontFamily: 'var(--font-heading)' }}>Platform Admin</span>
+              </div>
+              <span style={{ fontSize: '0.62rem', fontWeight: 800, padding: '1px 6px', borderRadius: '99px', background: 'rgba(34,197,94,0.15)', color: '#22c55e', border: '1px solid rgba(34,197,94,0.25)', letterSpacing: '0.04em' }}>
+                LIVE OPS
+              </span>
+            </div>
+          </div>
+          
+          <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+            <button 
+              onClick={() => navigate.push('/dashboard')}
+              className="interactive-press"
+              style={{ 
+                flex: 1, padding: '7px 10px', borderRadius: '8px', fontSize: '0.74rem', 
+                background: 'rgba(20,184,166,0.12)', border: '1px solid rgba(20,184,166,0.3)', 
+                color: 'var(--teal-300)', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', cursor: 'pointer' 
+              }}
+            >
+              <Crown size={12} color="var(--teal-400)" /> Leader View ?
+            </button>
+            <button 
+              onClick={() => handleExportCSV('revenue')}
+              className="interactive-press"
+              style={{ 
+                padding: '7px 10px', borderRadius: '8px', fontSize: '0.74rem', 
+                background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', 
+                color: 'var(--white)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' 
+              }}
+              title="Export CSV"
+            >
+              <Download size={13} color="var(--teal-400)" />
+            </button>
+          </div>
+        </div>
+
+        {/* Navigation Links */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '2px', overflowY: 'auto' }}>
+          <div style={{ fontSize: '0.68rem', color: 'var(--slate-500)', textTransform: 'uppercase', fontWeight: 700, padding: '0 8px 6px', letterSpacing: '0.05em' }}>
+            Operations Console
+          </div>
+          {tabs.map(tab => {
+            const isActive = activeTab === tab.key;
+            return (
+              <button 
+                key={tab.key}
+                onClick={() => { setActiveTab(tab.key); setSearchTerm(''); }}
+                className={`dashboard-nav-item ${isActive ? 'active' : ''}`}
+                style={{ padding: '10px 12px', fontSize: '0.85rem' }}
+              >
+                <tab.icon size={16} />
+                <span>{tab.label}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Quick Perspective Switcher in Sidebar Footer */}
+        <div style={{ paddingTop: '14px', marginTop: '14px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+          <div style={{ fontSize: '0.68rem', color: 'var(--slate-500)', textTransform: 'uppercase', fontWeight: 700, padding: '0 8px 6px', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <Eye size={11} color="var(--teal-400)" /> Perspective Simulator
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
+            {[
+              { key: 'admin', label: 'Admin', icon: Shield, color: '#3b82f6' },
+              { key: 'leader', label: 'Leader', icon: Crown, color: '#f59e0b' },
+              { key: 'member', label: 'Member', icon: Users, color: '#10b981' },
+              { key: 'sponsor', label: 'Sponsor', icon: Store, color: '#fbbf24' }
+            ].map(p => (
+              <button
+                key={p.key}
+                onClick={() => setSimulatedPersona(p.key)}
+                className="interactive-press"
+                style={{
+                  padding: '6px 8px', borderRadius: '8px',
+                  border: simulatedPersona === p.key ? `1px solid ${p.color}` : '1px solid rgba(255,255,255,0.06)',
+                  background: simulatedPersona === p.key ? `${p.color}22` : 'rgba(255,255,255,0.02)',
+                  color: simulatedPersona === p.key ? '#fff' : 'var(--slate-400)',
+                  fontSize: '0.7rem', fontWeight: simulatedPersona === p.key ? 700 : 500,
+                  cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px'
+                }}
+              >
+                <p.icon size={11} color={p.color} />
+                <span>{p.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Main Dashboard Content */}
+      <div className="dashboard-main" style={{ flex: 1, minWidth: 0, paddingBottom: '110px' }}>
       {/* ═══ HEADER ═══ */}
       <div style={{ padding: '24px 24px 18px', background: 'linear-gradient(180deg, rgba(59,130,246,0.12) 0%, transparent 100%)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '14px' }}>
@@ -477,28 +592,52 @@ export default function AdminDashboard() {
         </div>
 
         {simulatedPersona !== 'admin' && (
-          <button
-            onClick={() => setSimulatedPersona('admin')}
-            className="interactive-press"
-            style={{
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(255,255,255,0.1)',
-              borderRadius: '8px',
-              padding: '5px 10px',
-              color: 'var(--slate-300)',
-              fontSize: '0.72rem',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px'
-            }}
-          >
-            <X size={12} /> Back to Admin Console
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <button
+              onClick={() => {
+                if (simulatedPersona === 'leader') navigate.push('/dashboard');
+                else if (simulatedPersona === 'member') navigate.push('/discover');
+                else if (simulatedPersona === 'sponsor' || simulatedPersona === 'partner') navigate.push('/partner');
+              }}
+              className="btn btn-primary interactive-press"
+              style={{
+                borderRadius: '8px',
+                padding: '6px 14px',
+                fontSize: '0.74rem',
+                fontWeight: 700,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '5px'
+              }}
+            >
+              <Eye size={13} /> Launch Whole App as {simulatedPersona === 'leader' ? 'Leader' : simulatedPersona === 'member' ? 'Member' : simulatedPersona === 'sponsor' ? 'Sponsor' : 'Host'} →
+            </button>
+            <button
+              onClick={() => {
+                exitSimulator();
+                setSimulatedPersona('admin');
+              }}
+              className="interactive-press"
+              style={{
+                background: 'rgba(255,255,255,0.06)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: '8px',
+                padding: '6px 10px',
+                color: 'var(--slate-300)',
+                fontSize: '0.72rem',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}
+            >
+              <X size={12} /> Reset to Admin
+            </button>
+          </div>
         )}
       </div>
 
-      <div style={{ display: 'flex', gap: '6px', padding: '14px 24px', overflowX: 'auto', borderBottom: '1px solid rgba(255,255,255,0.05)', WebkitOverflowScrolling: 'touch' }}>
+      <div className="mobile-only" style={{ display: 'flex', gap: '6px', padding: '14px 24px', overflowX: 'auto', borderBottom: '1px solid rgba(255,255,255,0.05)', WebkitOverflowScrolling: 'touch' }}>
         {tabs.map(tab => (
           <button 
             key={tab.key} 
@@ -542,11 +681,14 @@ export default function AdminDashboard() {
                   </p>
                 </div>
                 <button
-                  onClick={() => navigate.push('/dashboard')}
+                  onClick={() => {
+                    setSimulatedPersona('leader');
+                    navigate.push('/dashboard');
+                  }}
                   className="btn btn-primary interactive-press"
                   style={{ padding: '10px 18px', borderRadius: '12px', fontSize: '0.88rem', fontWeight: 700 }}
                 >
-                  Open Live Leader Dashboard →
+                  Simulate Whole App as Leader →
                 </button>
               </div>
 
@@ -598,11 +740,14 @@ export default function AdminDashboard() {
                   </p>
                 </div>
                 <button
-                  onClick={() => navigate.push('/discover')}
+                  onClick={() => {
+                    setSimulatedPersona('member');
+                    navigate.push('/discover');
+                  }}
                   className="btn btn-primary interactive-press"
                   style={{ padding: '10px 18px', borderRadius: '12px', fontSize: '0.88rem', fontWeight: 700 }}
                 >
-                  Open Live Discover Page →
+                  Simulate Whole App as Member →
                 </button>
               </div>
 
@@ -652,11 +797,14 @@ export default function AdminDashboard() {
                   </p>
                 </div>
                 <button
-                  onClick={() => navigate.push('/partner')}
+                  onClick={() => {
+                    setSimulatedPersona('sponsor');
+                    navigate.push('/partner');
+                  }}
                   className="btn btn-primary interactive-press"
                   style={{ padding: '10px 18px', borderRadius: '12px', fontSize: '0.88rem', fontWeight: 700 }}
                 >
-                  Explore Town Partner Hub →
+                  Simulate Whole App as Sponsor →
                 </button>
               </div>
 
@@ -708,11 +856,14 @@ export default function AdminDashboard() {
                   </p>
                 </div>
                 <button
-                  onClick={() => navigate.push('/partner')}
+                  onClick={() => {
+                    setSimulatedPersona('partner');
+                    navigate.push('/partner');
+                  }}
                   className="btn btn-primary interactive-press"
                   style={{ padding: '10px 18px', borderRadius: '12px', fontSize: '0.88rem', fontWeight: 700 }}
                 >
-                  Explore Town Collaborations →
+                  Simulate Whole App as Host →
                 </button>
               </div>
 
@@ -1316,6 +1467,24 @@ export default function AdminDashboard() {
                           {/* Actions Bar */}
                           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                             <button 
+                              type="button"
+                              onClick={(e) => { 
+                                e.stopPropagation(); 
+                                setImpersonatedUserId(u.id);
+                                navigate.push('/discover'); 
+                              }} 
+                              className="interactive-press" 
+                              style={{ 
+                                padding: '8px 12px', borderRadius: '8px', fontSize: '0.78rem', 
+                                background: 'rgba(245, 158, 11, 0.15)', border: '1px solid rgba(245, 158, 11, 0.35)', 
+                                color: '#fbbf24', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', fontWeight: 600 
+                              }}
+                              title={`View the entire app as ${u.name}`}
+                            >
+                              <Eye size={13} /> View App as {u.name ? u.name.split(' ')[0] : 'User'}
+                            </button>
+
+                            <button 
                               onClick={(e) => { e.stopPropagation(); navigate.push(`/profile/${u.id}`); }} 
                               className="btn btn-outline interactive-press" 
                               style={{ flex: 1, minWidth: '120px', padding: '8px', borderRadius: '8px', fontSize: '0.78rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', cursor: 'pointer', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--white)' }}
@@ -1757,6 +1926,7 @@ export default function AdminDashboard() {
           </div>
         )}
 
+      </div>
       </div>
     </div>
   );

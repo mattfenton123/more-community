@@ -18,6 +18,42 @@ export function AppProvider({ children }) {
   const [largeText, setLargeText] = useState(false);
   const [reduceMotion, setReduceMotion] = useState(false);
 
+  // Perspective Simulator & Impersonation State
+  const [simulatedPersona, setSimulatedPersonaState] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return sessionStorage.getItem('mc_simulated_persona') || 'real';
+    }
+    return 'real';
+  });
+
+  const [impersonatedUserId, setImpersonatedUserIdState] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return sessionStorage.getItem('mc_impersonated_user_id') || null;
+    }
+    return null;
+  });
+
+  const setSimulatedPersona = (persona) => {
+    setSimulatedPersonaState(persona);
+    if (typeof window !== 'undefined') {
+      if (persona === 'real' || persona === 'admin') sessionStorage.removeItem('mc_simulated_persona');
+      else sessionStorage.setItem('mc_simulated_persona', persona);
+    }
+  };
+
+  const setImpersonatedUserId = (id) => {
+    setImpersonatedUserIdState(id);
+    if (typeof window !== 'undefined') {
+      if (!id) sessionStorage.removeItem('mc_impersonated_user_id');
+      else sessionStorage.setItem('mc_impersonated_user_id', id);
+    }
+  };
+
+  const exitSimulator = () => {
+    setSimulatedPersona('real');
+    setImpersonatedUserId(null);
+  };
+
   const [communities, setCommunities] = useState([]);
   const [events, setEvents] = useState([]);
   const [channels, setChannels] = useState([]);
@@ -129,6 +165,78 @@ export function AppProvider({ children }) {
     });
 
     user.leaderOf = user.ledCommunities[0] || null;
+  }
+
+  // Calculate Effective User for Global Simulator
+  const realUser = { ...user };
+  let effectiveUser = { ...user };
+
+  if (realUser.isAdmin) {
+    if (impersonatedUserId) {
+      const impUser = users.find(u => u.id === impersonatedUserId);
+      if (impUser) {
+        effectiveUser = {
+          ...impUser,
+          isAdmin: false,
+          joinedCommunities: [],
+          ledCommunities: [],
+          isSimulated: true,
+          realAdminEmail: authUser?.email
+        };
+        Object.keys(communityMemberships).forEach(communityId => {
+          const mems = communityMemberships[communityId] || [];
+          const myMem = mems.find(m => m.userId === impUser.id || m.user_id === impUser.id);
+          if (myMem) {
+            effectiveUser.joinedCommunities.push(communityId);
+            if (myMem.role === 'Leader' || myMem.role === 'Co-Leader') {
+              effectiveUser.ledCommunities.push(communityId);
+            }
+          }
+        });
+        communities.forEach(c => {
+          if (c.leader_id === impUser.id || c.creator_id === impUser.id) {
+            if (!effectiveUser.ledCommunities.includes(c.id)) effectiveUser.ledCommunities.push(c.id);
+            if (!effectiveUser.joinedCommunities.includes(c.id)) effectiveUser.joinedCommunities.push(c.id);
+          }
+        });
+        effectiveUser.leaderOf = effectiveUser.ledCommunities[0] || null;
+      }
+    } else if (simulatedPersona === 'member') {
+      effectiveUser = {
+        ...user,
+        isAdmin: false,
+        ledCommunities: [],
+        leaderOf: null,
+        isSimulated: true
+      };
+    } else if (simulatedPersona === 'leader') {
+      const targetCommId = user.ledCommunities?.[0] || communities[0]?.id || 'mankind-heathfield-ymow0';
+      effectiveUser = {
+        ...user,
+        isAdmin: false,
+        ledCommunities: user.ledCommunities?.length > 0 ? user.ledCommunities : [targetCommId],
+        leaderOf: targetCommId,
+        isSimulated: true
+      };
+    } else if (simulatedPersona === 'sponsor') {
+      effectiveUser = {
+        ...user,
+        isAdmin: false,
+        ledCommunities: [],
+        leaderOf: null,
+        isSimulated: true,
+        isSponsor: true
+      };
+    } else if (simulatedPersona === 'partner') {
+      effectiveUser = {
+        ...user,
+        isAdmin: false,
+        ledCommunities: [],
+        leaderOf: null,
+        isSimulated: true,
+        isPartner: true
+      };
+    }
   }
 
   // Track daily user login / active session for investor analytics
@@ -1678,7 +1786,14 @@ export function AppProvider({ children }) {
 
   return (
     <AppContext.Provider value={{
-      user,
+      user: effectiveUser,
+      realUser,
+      simulatedPersona,
+      setSimulatedPersona,
+      impersonatedUserId,
+      setImpersonatedUserId,
+      exitSimulator,
+      isSimulating: (simulatedPersona !== 'real' && simulatedPersona !== 'admin') || Boolean(impersonatedUserId),
       communities: communities.filter(c => !c.is_banned),
       allCommunities: communities,
       events,

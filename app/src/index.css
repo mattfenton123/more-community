@@ -1584,3 +1584,142 @@ button:disabled, [role="button"][aria-disabled="true"] {
   color: #38bdf8 !important;
 }
 
+
+[data-theme="light"] .dashboard-sidebar {
+  background: #ffffff !important;
+  border-right: 1px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.02) !important;
+}
+
+[data-theme="light"] .dashboard-sidebar-header {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+
+[data-theme="light"] .dashboard-nav-item {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .dashboard-nav-item:hover {
+  background: rgba(0, 0, 0, 0.04) !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .dashboard-nav-item.active {
+  background: rgba(13, 148, 136, 0.1) !important;
+  color: #0f766e !important;
+  border: 1px solid rgba(13, 148, 136, 0.25) !important;
+}
+
+
+/* ============================================================
+   EXPERIENCES MARKETPLACE BANNER
+   ============================================================ */
+.marketplace-banner {
+  background: linear-gradient(135deg, rgba(13, 148, 136, 0.2), rgba(245, 158, 11, 0.15));
+  border: 1px solid rgba(45, 212, 191, 0.3);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.marketplace-banner .marketplace-chevron-wrap {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="light"] .marketplace-banner {
+  background: linear-gradient(135deg, rgba(20, 184, 166, 0.14), rgba(245, 158, 11, 0.12)) !important;
+  border: 1px solid rgba(13, 148, 136, 0.28) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05) !important;
+}
+
+[data-theme="light"] .marketplace-banner .marketplace-title {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .marketplace-banner .marketplace-subtitle {
+  color: #334155 !important;
+  font-weight: 500 !important;
+}
+
+[data-theme="light"] .marketplace-banner .marketplace-chevron-wrap {
+  background: rgba(15, 23, 42, 0.08) !important;
+}
+
+[data-theme="light"] .marketplace-banner .marketplace-chevron-wrap svg {
+  color: #0f172a !important;
+}
+
+
+/* ============================================================
+   DAYTIME / LIGHT MODE COMPREHENSIVE FIX FOR ONBOARDING WIZARD
+   ============================================================ */
+[data-theme="light"] .onboarding-overlay {
+  background: #f8fafc !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .onboarding-overlay .step-title,
+[data-theme="light"] .onboarding-overlay h1,
+[data-theme="light"] .onboarding-overlay h2,
+[data-theme="light"] .onboarding-overlay h3,
+[data-theme="light"] .onboarding-container .step-title,
+[data-theme="light"] .onboarding-container h1,
+[data-theme="light"] .onboarding-container h2,
+[data-theme="light"] .onboarding-container h3 {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .onboarding-overlay .step-subtitle,
+[data-theme="light"] .onboarding-overlay p,
+[data-theme="light"] .onboarding-container .step-subtitle,
+[data-theme="light"] .onboarding-container p {
+  color: #475569 !important;
+}
+
+[data-theme="light"] .onboarding-overlay label,
+[data-theme="light"] .onboarding-overlay .input-label,
+[data-theme="light"] .onboarding-container label,
+[data-theme="light"] .onboarding-container .input-label {
+  color: #1e293b !important;
+}
+
+[data-theme="light"] .onboarding-overlay .helper-text:not(.error),
+[data-theme="light"] .onboarding-container .helper-text:not(.error) {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .onboarding-overlay input.text-input,
+[data-theme="light"] .onboarding-overlay textarea.textarea-input,
+[data-theme="light"] .onboarding-overlay input.form-input,
+[data-theme="light"] .onboarding-container input.text-input,
+[data-theme="light"] .onboarding-container textarea.textarea-input,
+[data-theme="light"] .onboarding-container input.form-input {
+  background: #ffffff !important;
+  border: 1.5px solid #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .onboarding-overlay input::placeholder,
+[data-theme="light"] .onboarding-overlay textarea::placeholder,
+[data-theme="light"] .onboarding-container input::placeholder,
+[data-theme="light"] .onboarding-container textarea::placeholder {
+  color: #94a3b8 !important;
+}
+
+[data-theme="light"] .onboarding-overlay .footer-actions,
+[data-theme="light"] .onboarding-container .footer-actions {
+  background: #f8fafc !important;
+  border-top: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+
+[data-theme="light"] .onboarding-overlay .btn-cancel,
+[data-theme="light"] .onboarding-overlay .btn-back,
+[data-theme="light"] .onboarding-container .btn-cancel,
+[data-theme="light"] .onboarding-container .btn-back {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .onboarding-overlay .btn-cancel:hover,
+[data-theme="light"] .onboarding-overlay .btn-back:hover,
+[data-theme="light"] .onboarding-container .btn-cancel:hover,
+[data-theme="light"] .onboarding-container .btn-back:hover {
+  color: #0f172a !important;
+}

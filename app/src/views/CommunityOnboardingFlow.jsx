@@ -222,13 +222,13 @@ function StepTags({ tags, toggleTag, addCustomTag, removeTag }) {
                   key={cat}
                   type="button"
                   onClick={() => setActiveSegment(cat)}
-                  className="interactive-press"
+                  className={`interactive-press segment-pill-btn ${isActive ? 'active' : ''}`}
                   style={{
                     padding: '10px 12px',
                     borderRadius: '12px',
-                    border: isActive ? '1px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.08)',
-                    background: isActive ? 'rgba(20,184,166,0.15)' : 'rgba(255,255,255,0.03)',
-                    color: isActive ? 'var(--teal-200)' : 'var(--slate-300)',
+                    border: isActive ? '1px solid var(--teal-500)' : undefined,
+                    background: isActive ? 'rgba(20,184,166,0.15)' : undefined,
+                    color: isActive ? 'var(--teal-200)' : undefined,
                     fontSize: '0.82rem',
                     fontWeight: isActive ? 700 : 500,
                     display: 'flex',
@@ -374,7 +374,7 @@ function StepCoverPhoto({ coverImagePreview, handleImageSelect, fileInputRef }) 
         <Camera size={16} /> {coverImagePreview ? 'Change Photo' : 'Select Photo'}
       </button>
 
-      <div style={{ marginTop: '20px', padding: '14px', borderRadius: '12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+      <div className="onboarding-tip-box" style={{ marginTop: '20px', padding: '14px', borderRadius: '12px', display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
         <span style={{ fontSize: '1.1rem' }}>💡</span>
         <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)', lineHeight: 1.5 }}>
           <strong style={{ color: 'var(--slate-200)', display: 'block', marginBottom: '2px' }}>Pro Tip:</strong>
@@ -416,7 +416,6 @@ function StepEvent({ eventTitle, setEventTitle, eventDate, setEventDate, eventTi
               value={eventDate}
               onChange={e => setEventDate(e.target.value)}
               className="text-input"
-              style={{ colorScheme: 'dark' }}
             />
           </div>
           <div className="event-time-col">
@@ -426,7 +425,6 @@ function StepEvent({ eventTitle, setEventTitle, eventDate, setEventDate, eventTi
               value={eventTime}
               onChange={e => setEventTime(e.target.value)}
               className="text-input"
-              style={{ colorScheme: 'dark' }}
             />
           </div>
         </div>
@@ -510,12 +508,10 @@ function StepPlan({ selectedTier, setSelectedTier, billingInterval, setBillingIn
         {/* Free Plan */}
         <div 
           onClick={() => setSelectedTier('free')}
-          className="interactive-press"
+          className={`interactive-press ${selectedTier === 'free' ? 'plan-card-selected' : 'plan-card-unselected'}`}
           style={{
             padding: '20px',
             borderRadius: '16px',
-            background: selectedTier === 'free' ? 'rgba(20, 184, 166, 0.1)' : 'rgba(255, 255, 255, 0.03)',
-            border: selectedTier === 'free' ? '2px solid var(--teal-400)' : '1px solid rgba(255, 255, 255, 0.08)',
             cursor: 'pointer',
             position: 'relative'
           }}
@@ -539,12 +535,10 @@ function StepPlan({ selectedTier, setSelectedTier, billingInterval, setBillingIn
         {/* Pro Plan */}
         <div 
           onClick={() => setSelectedTier('pro')}
-          className="interactive-press"
+          className={`interactive-press ${selectedTier === 'pro' ? 'plan-card-selected' : 'plan-card-unselected'}`}
           style={{
             padding: '20px',
             borderRadius: '16px',
-            background: selectedTier === 'pro' ? 'linear-gradient(135deg, rgba(20, 184, 166, 0.15) 0%, rgba(59, 130, 246, 0.1) 100%)' : 'rgba(255, 255, 255, 0.03)',
-            border: selectedTier === 'pro' ? '2px solid #2dd4bf' : '1px solid rgba(255, 255, 255, 0.08)',
             cursor: 'pointer',
             position: 'relative'
           }}
@@ -603,8 +597,8 @@ function StepPlan({ selectedTier, setSelectedTier, billingInterval, setBillingIn
         </div>
       </div>
 
-      <div style={{ padding: '14px 16px', background: 'rgba(255,255,255,0.02)', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.08)', marginBottom: '14px' }}>
-        <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#fff', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+      <div className="tier-guidance-card" style={{ padding: '14px 16px', borderRadius: '14px', marginBottom: '14px' }}>
+        <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--white)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
           <span>💡 Which tier does your activity need?</span>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '0.75rem', lineHeight: 1.45 }}>
@@ -619,7 +613,7 @@ function StepPlan({ selectedTier, setSelectedTier, billingInterval, setBillingIn
         </div>
       </div>
 
-      <div style={{ padding: '12px 16px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)', fontSize: '0.78rem', color: 'var(--slate-400)', lineHeight: 1.5 }}>
+      <div className="tier-guidance-card" style={{ padding: '12px 16px', borderRadius: '12px', fontSize: '0.78rem', color: 'var(--slate-400)', lineHeight: 1.5 }}>
         <strong style={{ color: 'var(--slate-200)' }}>Fee Transparency:</strong> MORE Community charges 5% on ticket sales for Free Leaders, or just 2% for Leader Pro. Standard Stripe card processing (~1.5% + 20p UK) is deducted directly by Stripe from payouts. Attendees pay zero extra booking fees.
       </div>
     </div>

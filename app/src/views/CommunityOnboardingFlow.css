@@ -134,7 +134,7 @@
   font-family: var(--font-heading);
   font-size: 2rem;
   margin: 0 0 8px 0;
-  color: white;
+  color: var(--white);
 }
 
 .step-subtitle {
@@ -167,7 +167,7 @@
   background: var(--slate-800);
   border: 1px solid var(--slate-700);
   border-radius: 12px;
-  color: white;
+  color: var(--white);
   font-size: 1.05rem;
   transition: border-color 0.2s;
 }
@@ -305,4 +305,129 @@
 @keyframes fadeSlideIn {
   from { opacity: 0; transform: translateY(10px) scale(0.98); }
   to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+
+/* ============================================================
+   DAYTIME / LIGHT MODE COMPREHENSIVE OVERRIDES FOR ONBOARDING
+   ============================================================ */
+
+[data-theme="light"] .onboarding-overlay {
+  background: #f8fafc !important;
+}
+
+[data-theme="light"] .footer-actions {
+  background: #f8fafc !important;
+  border-top: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+
+[data-theme="light"] .step-title {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .step-subtitle {
+  color: #475569 !important;
+}
+
+[data-theme="light"] .input-label {
+  color: #1e293b !important;
+  font-weight: 600 !important;
+}
+
+[data-theme="light"] .helper-text:not(.error) {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .progress-bar-segment.inactive {
+  background: rgba(0, 0, 0, 0.08) !important;
+}
+
+[data-theme="light"] .step-indicator {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .btn-cancel,
+[data-theme="light"] .btn-back {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .btn-cancel:hover,
+[data-theme="light"] .btn-back:hover {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .text-input,
+[data-theme="light"] .textarea-input {
+  background: #ffffff !important;
+  border: 1.5px solid #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .text-input:focus,
+[data-theme="light"] .textarea-input:focus {
+  border-color: #0d9488 !important;
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15) !important;
+}
+
+[data-theme="light"] .text-input::placeholder,
+[data-theme="light"] .textarea-input::placeholder {
+  color: #94a3b8 !important;
+}
+
+[data-theme="light"] .tag-btn.unselected {
+  border: 1px solid #cbd5e1 !important;
+  background: #ffffff !important;
+  color: #334155 !important;
+}
+
+[data-theme="light"] .tag-btn.unselected:hover {
+  background: #f1f5f9 !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .image-upload-empty {
+  background: #ffffff !important;
+  border: 2px dashed #cbd5e1 !important;
+  color: #64748b !important;
+}
+
+[data-theme="light"] .info-box {
+  background: rgba(20, 184, 166, 0.08) !important;
+  border: 1px solid rgba(13, 148, 136, 0.25) !important;
+}
+
+[data-theme="light"] .info-box-text {
+  color: #1e293b !important;
+}
+
+[data-theme="light"] .plan-card-unselected {
+  background: #ffffff !important;
+  border: 1.5px solid #cbd5e1 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+}
+
+[data-theme="light"] .plan-card-selected {
+  background: rgba(20, 184, 166, 0.08) !important;
+  border: 2px solid #0d9488 !important;
+}
+
+[data-theme="light"] .plan-card-desc,
+[data-theme="light"] .plan-card-features {
+  color: #334155 !important;
+}
+
+[data-theme="light"] .tier-guidance-card {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+[data-theme="light"] .segment-pill-btn:not(.active) {
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #334155 !important;
+}
+
+[data-theme="light"] .onboarding-tip-box {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
 }

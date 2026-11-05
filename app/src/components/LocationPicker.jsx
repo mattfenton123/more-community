@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { MapPin, Search, Navigation, Check, Loader2, Sparkles, Crosshair } from 'lucide-react';
+import { MapPin, X, Search, Navigation, Check, Loader2, Sparkles, Crosshair } from 'lucide-react';
 import {
   REGIONAL_KNOWN_LOCATIONS,
   DEFAULT_TW_CENTER,
@@ -127,6 +127,11 @@ export default function LocationPicker({ locationName, setLocationName, coords: 
 
       setSearchQuery(clean);
       setPinAddress(clean);
+    } else {
+      setSearchQuery('');
+      setPinAddress('');
+      setIsManualPin(false);
+      isManualPinRef.current = false;
     }
   }, [locationName]);
 
@@ -296,24 +301,60 @@ export default function LocationPicker({ locationName, setLocationName, coords: 
     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
       {/* Search Input Bar */}
       <div style={{ display: 'flex', gap: '8px', position: 'relative' }}>
-        <input 
-          className="form-input" 
-          placeholder="Search start location (e.g. Bewl Water Car Park, The Pantiles)..." 
-          value={searchQuery}
-          onChange={(e) => {
-            const val = e.target.value;
-            setSearchQuery(val);
-            setPinAddress(val);
-            // If coordinates were already chosen/pinned, keep them locked while updating the human name
-            if (coords && coords[0] != null && coords[1] != null) {
-              setLocationName(encodeLocationWithCoords(val, coords[0], coords[1]));
-            } else {
-              setLocationName(val);
-            }
-          }}
-          onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(e); }}
-          style={{ padding: '13px 16px', flex: 1, borderRadius: '12px', fontSize: '0.92rem' }} 
-        />
+        <div style={{ position: 'relative', flex: 1, display: 'flex', alignItems: 'center' }}>
+          <input 
+            className="form-input" 
+            placeholder="Search venue, pub, hotel or car park (e.g. Hotel Du Vin, The Pantiles)..." 
+            value={searchQuery}
+            onChange={(e) => {
+              const val = e.target.value;
+              setSearchQuery(val);
+              setPinAddress(val);
+              if (!val.trim()) {
+                setLocationName('');
+                setIsManualPin(false);
+                isManualPinRef.current = false;
+                setSearchResults([]);
+                return;
+              }
+              if (coords && coords[0] != null && coords[1] != null) {
+                setLocationName(encodeLocationWithCoords(val, coords[0], coords[1]));
+              } else {
+                setLocationName(val);
+              }
+            }}
+            onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(e); }}
+            style={{ padding: '13px 40px 13px 16px', width: '100%', borderRadius: '12px', fontSize: '0.92rem' }} 
+          />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => {
+                setSearchQuery('');
+                setPinAddress('');
+                setLocationName('');
+                setIsManualPin(false);
+                isManualPinRef.current = false;
+                setSearchResults([]);
+              }}
+              title="Clear location"
+              style={{
+                position: 'absolute',
+                right: '12px',
+                background: 'none',
+                border: 'none',
+                color: 'var(--slate-400)',
+                cursor: 'pointer',
+                padding: '4px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
+              <X size={15} />
+            </button>
+          )}
+        </div>
         
         {/* Geolocation Button */}
         <button 

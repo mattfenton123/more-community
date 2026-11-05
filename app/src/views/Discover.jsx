@@ -411,11 +411,10 @@ export default function Discover() {
               {activePill === 'All' && (
                 <div
                   onClick={() => navigate.push('/experiences')}
-                  className="interactive-press"
+                  className="marketplace-banner interactive-press"
                   style={{
                     margin: '0 20px 16px', padding: '1.1rem 1.25rem',
-                    background: 'linear-gradient(135deg, rgba(45,212,191,0.1), rgba(251,191,36,0.08))',
-                    border: '1px solid rgba(45,212,191,0.15)', borderRadius: '14px',
+                    borderRadius: '14px',
                     cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '1rem',
                     transition: 'all 0.3s',
                     position: 'relative',
@@ -424,11 +423,11 @@ export default function Discover() {
                 >
                   <div style={{ fontSize: '1.6rem' }}>🎯</div>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontFamily: "'Syne', sans-serif", fontSize: '0.82rem', fontWeight: 700, color: 'var(--white)', marginBottom: '3px' }}>
+                    <div className="marketplace-title" style={{ fontFamily: "var(--font-heading)", fontSize: '0.82rem', fontWeight: 700, color: 'var(--white)', marginBottom: '3px' }}>
                       Experiences Marketplace
                     </div>
-                    <div style={{ fontSize: '0.7rem', color: 'var(--slate-400)', lineHeight: 1.4 }}>
-                      Skydiving, retreats, theatre & more  -  curated by your community leaders
+                    <div className="marketplace-subtitle" style={{ fontSize: '0.7rem', color: 'var(--slate-400)', lineHeight: 1.4 }}>
+                      Skydiving, retreats, theatre & more : curated by your community leaders
                     </div>
                   </div>
                   <ChevronRight size={16} style={{ color: 'var(--teal-400)', flexShrink: 0 }} />
