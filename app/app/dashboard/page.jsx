@@ -289,25 +289,27 @@ export default function LeaderDashboard({ initialCommunityId }) {
     try {
       const recognition = new SpeechRecognition();
       recognition.lang = 'en-US';
+      recognition.continuous = true;
       recognition.interimResults = true;
       recognition.maxAlternatives = 1;
 
+      const baseText = (eventForm.description || '').trim();
+
       recognition.onstart = () => {
         setIsDictatingDescription(true);
-        toast.info('Dictating Description...', 'Speak your walk notes or bullet points aloud.');
+        toast.info('Listening...', 'Speak your walk notes. Pauses are safe - tap "Done" when finished.');
       };
 
       recognition.onresult = (event) => {
-        let transcript = '';
+        let spoken = '';
         for (let i = 0; i < event.results.length; i++) {
-          transcript += event.results[i][0].transcript;
+          spoken += event.results[i][0].transcript;
         }
         setEventForm(prev => {
-          const current = (prev.description || '').trim();
-          const separator = current && !current.endsWith('\n') ? '\n' : '';
+          const separator = baseText && !baseText.endsWith('\n') ? '\n' : '';
           return {
             ...prev,
-            description: current ? `${current}${separator}• ${transcript}` : `• ${transcript}`
+            description: baseText ? `${baseText}${separator}• ${spoken.trim()}` : `• ${spoken.trim()}`
           };
         });
       };
@@ -396,12 +398,13 @@ export default function LeaderDashboard({ initialCommunityId }) {
     try {
       const recognition = new SpeechRecognition();
       recognition.lang = 'en-US';
+      recognition.continuous = true;
       recognition.interimResults = true;
       recognition.maxAlternatives = 1;
 
       recognition.onstart = () => {
         setIsListening(true);
-        toast.info('Listening...', 'Speak your walk or event idea (e.g. "Scenic Saturday morning loop with coffee after").');
+        toast.info('Listening...', 'Speak your walk idea. Take your time, pauses will not submit.');
       };
 
       recognition.onresult = (event) => {
@@ -409,7 +412,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
         for (let i = 0; i < event.results.length; i++) {
           transcript += event.results[i][0].transcript;
         }
-        setAiPrompt(transcript);
+        setAiPrompt(transcript.trim());
       };
 
       recognition.onerror = (event) => {
@@ -1346,10 +1349,15 @@ export default function LeaderDashboard({ initialCommunityId }) {
               <div style={{ position: 'relative', flex: 1, display: 'flex', alignItems: 'center' }}>
                 <input 
                   type="text" 
-                  placeholder={isListening ? "Listening... speak your walk or event idea" : "e.g. Dog friendly Saturday morning stroll with coffee after"} 
+                  placeholder={isListening ? "Listening... (pauses are safe, speak freely)" : "e.g. Dog friendly Saturday morning stroll with coffee after"} 
                   value={aiPrompt}
                   onChange={(e) => setAiPrompt(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleAIGenerateEvent()}
+                  onKeyDown={(e) => {
+                    // Only submit on Ctrl+Enter or Cmd+Enter on desktop to prevent mobile voice dictation from auto-submitting on pause
+                    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                      handleAIGenerateEvent();
+                    }
+                  }}
                   style={{
                     width: '100%',
                     padding: speechSupported ? '11px 40px 11px 14px' : '11px 14px',
