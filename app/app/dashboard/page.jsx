@@ -1,7 +1,7 @@
 "use client";
 import { supabase } from '../../src/lib/supabaseClient';
 import { useState, useRef, useMemo, useEffect } from 'react';
-import { Users, Calendar, MessageCircle, TrendingUp, Search, Plus, MapPin, Image as ImageIcon, CreditCard, ChevronRight, ChevronLeft, Download, Activity, Globe, Heart, Crown, Info, X, Map, Zap, Mail, Trash2, UserCheck, Ban, ChevronDown, ChevronUp, Settings, Megaphone, QrCode, BarChart3, Ticket, ScanLine, UserPlus, DollarSign, Clock, Edit3, Check, CheckCircle2, Eye, EyeOff, Shield, Star, Sparkles, BookOpen, ListChecks, Bell, Archive } from 'lucide-react';
+import { ExternalLink, HelpCircle, Users, Calendar, MessageCircle, TrendingUp, Search, Plus, MapPin, Image as ImageIcon, CreditCard, ChevronRight, ChevronLeft, Download, Activity, Globe, Heart, Crown, Info, X, Map, Zap, Mail, Trash2, UserCheck, Ban, ChevronDown, ChevronUp, Settings, Megaphone, QrCode, BarChart3, Ticket, ScanLine, UserPlus, DollarSign, Clock, Edit3, Check, CheckCircle2, Eye, EyeOff, Shield, Star, Sparkles, BookOpen, ListChecks, Bell, Archive } from 'lucide-react';
 import AppHeader from '../../src/components/AppHeader';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { isEventUpcoming, isEventPast, parseEventDateTime } from '../../src/lib/calendar';
@@ -108,6 +108,8 @@ export default function LeaderDashboard({ initialCommunityId }) {
   });
   const [editTagCategory, setEditTagCategory] = useState('All');
   const [activeTab, setActiveTab] = useState(searchParams?.get('tab') || 'overview');
+  const [networkSearchQuery, setNetworkSearchQuery] = useState('');
+  const [markupInfoExp, setMarkupInfoExp] = useState(null);
   const [showShieldModal, setShowShieldModal] = useState(false);
   const [specialistModalState, setSpecialistModalState] = useState({ isOpen: false, mode: 'inspect', specialist: null });
   const [experiencesSubTab, setExperiencesSubTab] = useState('pitches');
@@ -483,27 +485,68 @@ export default function LeaderDashboard({ initialCommunityId }) {
     return { weeks, max };
   }, [memberList]);
 
-  // ─── Recent Activity ──────────────────────────────────────
+  // ─── Recent Activity with Date & Time ──────────────────────
+  const formatActivityTime = (rawDate) => {
+    if (!rawDate) return 'Recently';
+    const d = new Date(rawDate);
+    if (isNaN(d.getTime())) return 'Recently';
+    const now = new Date();
+    const isToday = d.toDateString() === now.toDateString();
+    const timeStr = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    if (isToday) return `Today at ${timeStr}`;
+    const yesterday = new Date(now);
+    yesterday.setDate(yesterday.getDate() - 1);
+    if (d.toDateString() === yesterday.toDateString()) return `Yesterday at ${timeStr}`;
+    const dateStr = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+    const yearStr = d.getFullYear() !== now.getFullYear() ? ` ${d.getFullYear()}` : '';
+    return `${dateStr}${yearStr} at ${timeStr}`;
+  };
+
   const recentActivity = useMemo(() => {
     const activities = [];
     // Recent messages
-    communityMessages.slice(-3).forEach(m => {
+    communityMessages.forEach(m => {
       const author = users.find(u => u.id === m.authorId);
-      activities.push({ type: 'message', text: `${author?.name || 'Someone'} sent a message`, icon: MessageCircle, color: '#3b82f6', time: 'Recently' });
+      const rawDate = m.timestamp || m.created_at;
+      activities.push({
+        type: 'message',
+        text: `${author?.name || 'Someone'} sent a message`,
+        icon: MessageCircle,
+        color: '#3b82f6',
+        time: formatActivityTime(rawDate),
+        rawTime: rawDate ? new Date(rawDate).getTime() : 0
+      });
     });
     // Recent RSVPs
-    communityEvents.slice(0, 2).forEach(event => {
+    communityEvents.forEach(event => {
       const rsvps = eventRsvps[event.id] || [];
-      rsvps.slice(-2).forEach(r => {
+      rsvps.forEach(r => {
         const rUser = users.find(u => u.id === r.userId);
-        activities.push({ type: 'rsvp', text: `${rUser?.name || 'Someone'} RSVP'd to ${event.title}`, icon: Ticket, color: '#14b8a6', time: 'Recently' });
+        const rawDate = r.createdAt || r.created_at;
+        activities.push({
+          type: 'rsvp',
+          text: `${rUser?.name || 'Someone'} RSVP'd to ${event.title}`,
+          icon: Ticket,
+          color: '#14b8a6',
+          time: formatActivityTime(rawDate),
+          rawTime: rawDate ? new Date(rawDate).getTime() : 0
+        });
       });
     });
     // Member joins
-    memberList.slice(-2).forEach(m => {
+    memberList.forEach(m => {
       const mUser = users.find(u => u.id === m.userId);
-      activities.push({ type: 'join', text: `${mUser?.name || 'Someone'} joined the community`, icon: UserPlus, color: '#a78bfa', time: 'Recently' });
+      const rawDate = m.joinedAt || m.createdAt || m.created_at || mUser?.created_at || mUser?.joinedDate;
+      activities.push({
+        type: 'join',
+        text: `${mUser?.name || 'Someone'} joined the community`,
+        icon: UserPlus,
+        color: '#a78bfa',
+        time: formatActivityTime(rawDate),
+        rawTime: rawDate ? new Date(rawDate).getTime() : 0
+      });
     });
+    activities.sort((a, b) => b.rawTime - a.rawTime);
     return activities.slice(0, 5);
   }, [communityMessages, communityEvents, eventRsvps, memberList, users]);
 
@@ -2573,7 +2616,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
           {/* ══════════════════════════════════════════════════════ */}
           {activeTab === 'network' && (
             <div style={{ padding: '0 20px', marginBottom: '24px' }}>
-              <div style={{ marginBottom: '24px' }}>
+              <div style={{ marginBottom: '20px' }}>
                 <h2 style={{ margin: '0 0 8px 0', fontFamily: 'var(--font-heading)', fontSize: '1.2rem', color: 'var(--white)', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <Map size={20} color="var(--teal-400)" /> Network Events
                 </h2>
@@ -2582,8 +2625,57 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 </p>
               </div>
 
+              {/* Network Events Search Bar */}
+              <div style={{ position: 'relative', marginBottom: '18px' }}>
+                <Search size={16} color="var(--slate-400)" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)' }} />
+                <input
+                  type="text"
+                  placeholder="Search network events by title, community, location, or description..."
+                  value={networkSearchQuery}
+                  onChange={(e) => setNetworkSearchQuery(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '12px 14px 12px 42px',
+                    borderRadius: '12px',
+                    background: 'rgba(255, 255, 255, 0.04)',
+                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                    color: 'var(--white)',
+                    fontSize: '0.9rem'
+                  }}
+                />
+                {networkSearchQuery && (
+                  <button
+                    onClick={() => setNetworkSearchQuery('')}
+                    style={{
+                      position: 'absolute',
+                      right: '12px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      background: 'none',
+                      border: 'none',
+                      color: 'var(--slate-400)',
+                      cursor: 'pointer',
+                      fontSize: '1rem',
+                      padding: '4px'
+                    }}
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+
               <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                {events.filter(e => e.status === 'published' && !user?.ledCommunities?.includes(e.communityId)).map(event => {
+                {events.filter(e => e.status === 'published' && !user?.ledCommunities?.includes(e.communityId)).filter(event => {
+                  if (!networkSearchQuery.trim()) return true;
+                  const q = networkSearchQuery.toLowerCase();
+                  const sourceComm = communities.find(c => c.id === event.communityId);
+                  return (
+                    (event.title && event.title.toLowerCase().includes(q)) ||
+                    (event.description && event.description.toLowerCase().includes(q)) ||
+                    (event.location && event.location.toLowerCase().includes(q)) ||
+                    (sourceComm && sourceComm.name && sourceComm.name.toLowerCase().includes(q))
+                  );
+                }).map(event => {
                   const sourceCommunity = communities.find(c => c.id === event.communityId);
                   const attendeeCount = (eventRsvps[event.id] || []).length;
                   const priceLabel = (event.ticketPrice || event.ticket_price) > 0 ? `£${event.ticketPrice || event.ticket_price}` : 'Free';
@@ -2742,9 +2834,19 @@ export default function LeaderDashboard({ initialCommunityId }) {
                     </div>
                   );
                 })}
-                {events.filter(e => e.status === 'published' && !user?.ledCommunities?.includes(e.communityId)).length === 0 && (
+                {events.filter(e => e.status === 'published' && !user?.ledCommunities?.includes(e.communityId)).filter(event => {
+                  if (!networkSearchQuery.trim()) return true;
+                  const q = networkSearchQuery.toLowerCase();
+                  const sourceComm = communities.find(c => c.id === event.communityId);
+                  return (
+                    (event.title && event.title.toLowerCase().includes(q)) ||
+                    (event.description && event.description.toLowerCase().includes(q)) ||
+                    (event.location && event.location.toLowerCase().includes(q)) ||
+                    (sourceComm && sourceComm.name && sourceComm.name.toLowerCase().includes(q))
+                  );
+                }).length === 0 && (
                   <div style={{ padding: '40px', textAlign: 'center', color: 'var(--slate-400)', background: 'rgba(255,255,255,0.02)', borderRadius: '16px' }}>
-                    No network events found. Check back later!
+                    {networkSearchQuery ? `No network events matching "${networkSearchQuery}".` : 'No network events found. Check back later!'}
                   </div>
                 )}
               </div>
@@ -2945,7 +3047,11 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   const finalPrice = exp.basePrice + Math.round(exp.basePrice * ((exp.leaderMarkup || 0) / 100));
                   return (
                     <div key={exp.id} style={{ background: 'rgba(255,255,255,0.03)', border: isPromoted ? '2px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', overflow: 'hidden' }}>
-                      <div style={{ position: 'relative', height: '140px' }}>
+                      <div 
+                        onClick={() => window.open(`/experiences/${exp.id || exp.productCode}`, '_blank')}
+                        style={{ position: 'relative', height: '140px', cursor: 'pointer' }}
+                        title="Click to view full experience page"
+                      >
                         <img src={exp.image} alt={exp.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         <div style={{ position: 'absolute', top: '10px', right: '10px', background: 'rgba(0,0,0,0.6)', padding: '4px 10px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 600, color: 'var(--white)', backdropFilter: 'blur(4px)' }}>
                           £{exp.basePrice} base
@@ -2953,15 +3059,65 @@ export default function LeaderDashboard({ initialCommunityId }) {
                       </div>
                       <div style={{ padding: '16px' }}>
                         <div style={{ fontSize: '0.75rem', color: 'var(--teal-400)', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px' }}>{exp.category}</div>
-                        <h4 style={{ color: 'var(--white)', margin: '0 0 8px 0', fontSize: '1.05rem', lineHeight: 1.3 }}>{exp.title}</h4>
-                        <div style={{ display: 'flex', gap: '12px', fontSize: '0.8rem', color: 'var(--slate-400)', marginBottom: '16px' }}>
+                        <h4 
+                          onClick={() => window.open(`/experiences/${exp.id || exp.productCode}`, '_blank')}
+                          style={{ color: 'var(--white)', margin: '0 0 8px 0', fontSize: '1.05rem', lineHeight: 1.3, cursor: 'pointer' }}
+                          className="interactive-hover"
+                          title="Click to view full experience page"
+                        >
+                          {exp.title}
+                        </h4>
+                        <div style={{ display: 'flex', gap: '12px', fontSize: '0.8rem', color: 'var(--slate-400)', marginBottom: '8px' }}>
                           <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={14} /> {exp.duration}</span>
                           <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Star size={14} color="#fbbf24" /> {exp.rating}</span>
+                        </div>
+                        <div style={{ marginBottom: '14px' }}>
+                          <a 
+                            href={`/experiences/${exp.id || exp.productCode}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ 
+                              display: 'inline-flex', 
+                              alignItems: 'center', 
+                              gap: '4px', 
+                              fontSize: '0.78rem', 
+                              color: 'var(--teal-400)', 
+                              textDecoration: 'none',
+                              fontWeight: 600 
+                            }}
+                            className="interactive-hover"
+                          >
+                            <span>Read more about this experience</span>
+                            <ExternalLink size={12} />
+                          </a>
                         </div>
                         {!isPromoted ? (
                           <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '16px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                              <span style={{ fontSize: '0.85rem', color: 'var(--slate-300)' }}>Your Markup:</span>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <span style={{ fontSize: '0.85rem', color: 'var(--slate-300)' }}>Your Markup:</span>
+                                <button
+                                  type="button"
+                                  onClick={() => setMarkupInfoExp(exp)}
+                                  className="interactive-press"
+                                  title="How does markup work? Click for full financial breakdown"
+                                  style={{
+                                    background: 'rgba(20, 184, 166, 0.15)',
+                                    border: '1px solid rgba(20, 184, 166, 0.35)',
+                                    borderRadius: '50%',
+                                    width: '18px',
+                                    height: '18px',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    color: 'var(--teal-400)',
+                                    cursor: 'pointer',
+                                    padding: 0
+                                  }}
+                                >
+                                  <Info size={11} />
+                                </button>
+                              </div>
                               <select 
                                 value={exp.leaderMarkup ?? 15}
                                 onChange={(e) => { 
@@ -2999,6 +3155,138 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   );
                 })}
               </div>
+
+              {/* ═══ MARKUP EXPLANATION MODAL ═══ */}
+              {markupInfoExp && (
+                <div 
+                  onClick={() => setMarkupInfoExp(null)}
+                  style={{
+                    position: 'fixed',
+                    inset: 0,
+                    zIndex: 99999,
+                    background: 'rgba(2, 6, 23, 0.85)',
+                    backdropFilter: 'blur(8px)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '16px'
+                  }}
+                >
+                  <div 
+                    onClick={e => e.stopPropagation()}
+                    style={{
+                      background: '#0f172a',
+                      border: '1px solid rgba(255,255,255,0.14)',
+                      borderRadius: '20px',
+                      maxWidth: '560px',
+                      width: '100%',
+                      maxHeight: '90vh',
+                      overflowY: 'auto',
+                      boxShadow: '0 25px 50px -12px rgba(0,0,0,0.7)',
+                      padding: '24px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '20px',
+                      position: 'relative'
+                    }}
+                  >
+                    {/* Header */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <div>
+                        <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--teal-400)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                          Transparent Financial Breakdown
+                        </span>
+                        <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#fff', margin: '4px 0 0', fontFamily: 'var(--font-heading)' }}>
+                          How Your Markup Works
+                        </h3>
+                        <p style={{ fontSize: '0.82rem', color: 'var(--slate-400)', margin: '4px 0 0' }}>
+                          {markupInfoExp.title}
+                        </p>
+                      </div>
+                      <button 
+                        onClick={() => setMarkupInfoExp(null)}
+                        className="interactive-press"
+                        style={{
+                          width: '32px', height: '32px', borderRadius: '50%',
+                          background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)',
+                          color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        <X size={18} />
+                      </button>
+                    </div>
+
+                    {/* 3-Pillar Breakdown */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      {/* 1. Supplier */}
+                      <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '12px', padding: '14px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                          <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#fff' }}>1. Experience Supplier (Base Price)</div>
+                          <div style={{ fontSize: '1rem', fontWeight: 800, color: '#38bdf8' }}>£{markupInfoExp.basePrice}.00</div>
+                        </div>
+                        <p style={{ fontSize: '0.8rem', color: 'var(--slate-300)', margin: 0, lineHeight: 1.45 }}>
+                          Goes 100% directly to the licensed experience operator (e.g. UK Axe Throwing Centre / Viator partner). Covers certified venue lanes, expert instructors, equipment, and on-site insurance.
+                        </p>
+                      </div>
+
+                      {/* 2. Leader Markup */}
+                      <div style={{ background: 'rgba(20, 184, 166, 0.08)', border: '1px solid rgba(20, 184, 166, 0.25)', borderRadius: '12px', padding: '14px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                          <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#2dd4bf' }}>2. Your Community Leader Cut (+{markupInfoExp.leaderMarkup ?? 15}%)</div>
+                          <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#34d399' }}>
+                            +£{((markupInfoExp.basePrice * (markupInfoExp.leaderMarkup ?? 15)) / 100).toFixed(2)}
+                          </div>
+                        </div>
+                        <p style={{ fontSize: '0.8rem', color: 'var(--slate-300)', margin: 0, lineHeight: 1.45 }}>
+                          100% of your markup is paid straight to your Community Club Fund. Zero deductions taken by More from your leader earnings. You can cash out to your bank account via Stripe anytime, or use it to subsidise member passes, buy community kit, and host free social sessions.
+                        </p>
+                      </div>
+
+                      {/* 3. More Platform */}
+                      <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '12px', padding: '14px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                          <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#fff' }}>3. More Platform Fee</div>
+                          <div style={{ fontSize: '0.95rem', fontWeight: 800, color: '#a78bfa' }}>£0.00 from your markup</div>
+                        </div>
+                        <p style={{ fontSize: '0.8rem', color: 'var(--slate-300)', margin: 0, lineHeight: 1.45 }}>
+                          More never takes a percentage of your leader markup. Standard ticket payment checkout processing covers merchant and insurance fees, ensuring community creation and hosting stays 100% free for leaders.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Live Example Calculation */}
+                    <div style={{ background: 'rgba(15, 23, 42, 0.6)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '14px' }}>
+                      <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.04em', marginBottom: '8px' }}>
+                        Live Ticket Summary at +{markupInfoExp.leaderMarkup ?? 15}% Markup
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '0.85rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--slate-300)' }}>
+                          <span>Supplier Base Rate:</span>
+                          <span>£{markupInfoExp.basePrice}.00</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', color: '#34d399' }}>
+                          <span>Your Community Club Earnings:</span>
+                          <span>+£{((markupInfoExp.basePrice * (markupInfoExp.leaderMarkup ?? 15)) / 100).toFixed(2)}</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '6px', fontWeight: 800, color: '#fff', fontSize: '0.95rem' }}>
+                          <span>Member Ticket Price:</span>
+                          <span>£{(markupInfoExp.basePrice + Math.round(markupInfoExp.basePrice * ((markupInfoExp.leaderMarkup ?? 15) / 100))).toFixed(2)}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Close Button */}
+                    <button
+                      onClick={() => setMarkupInfoExp(null)}
+                      className="btn btn-primary interactive-press"
+                      style={{ width: '100%', padding: '12px', borderRadius: '12px', fontWeight: 700, fontSize: '0.9rem' }}
+                    >
+                      Got it, thanks!
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

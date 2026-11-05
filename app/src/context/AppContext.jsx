@@ -514,7 +514,7 @@ export function AppProvider({ children }) {
         const rsvpMap = {};
         rsvpRes.data.forEach(r => {
           if (!rsvpMap[r.event_id]) rsvpMap[r.event_id] = [];
-          rsvpMap[r.event_id].push({ userId: r.user_id, status: r.status, referredBy: r.referred_by });
+          rsvpMap[r.event_id].push({ userId: r.user_id, status: r.status, referredBy: r.referred_by, createdAt: r.created_at || null });
         });
         setEventRsvps(rsvpMap);
       }
@@ -523,7 +523,7 @@ export function AppProvider({ children }) {
         const memMap = {};
         memRes.data.forEach(m => {
           if (!memMap[m.community_id]) memMap[m.community_id] = [];
-          memMap[m.community_id].push({ userId: m.user_id, role: m.role });
+          memMap[m.community_id].push({ userId: m.user_id, role: m.role, joinedAt: m.created_at || m.joined_at || null, createdAt: m.created_at || null });
         });
 
         // Ensure Alex is always registered as Leader in more-leaders-network
@@ -1187,14 +1187,20 @@ export function AppProvider({ children }) {
     }
   };
 
-  const broadcastNotification = async (communityId, title, message) => {
-    const members = communityMemberships[communityId] || [];
-    const notifications = members.map(m => ({
-      user_id: m.userId,
+  const broadcastNotification = async (communityId, title, message, targetUserIds = null, customLink = null) => {
+    let recipientIds = [];
+    if (Array.isArray(targetUserIds) && targetUserIds.length > 0) {
+      recipientIds = targetUserIds;
+    } else {
+      const members = communityMemberships[communityId] || [];
+      recipientIds = members.map(m => m.userId || m.user_id).filter(Boolean);
+    }
+    const notifications = recipientIds.map(uid => ({
+      user_id: uid,
       type: 'broadcast',
       title: title,
       message: message,
-      link: `/community/${communityId}`,
+      link: customLink || `/community/${communityId}`,
       is_read: false
     }));
     
@@ -1440,7 +1446,7 @@ export function AppProvider({ children }) {
     }
   };
 
-  const createPost = async (communityId, text, media = null, destinations = { app: true }) => {
+  const createPost = async (communityId, text, media = null, destinations = { app: true }, audience = null) => {
     const { data: { session: curSession } } = await supabase.auth.getSession();
     const token = curSession?.access_token;
     
@@ -1479,7 +1485,8 @@ export function AppProvider({ children }) {
       // Also broadcast an in-app notification to all community members
       try {
         const preview = text.length > 100 ? text.slice(0, 97) + '...' : text;
-        await broadcastNotification(communityId, '📢 Community Announcement', preview);
+        const notifTitle = audience?.title || '📢 Community Announcement';
+        await broadcastNotification(communityId, notifTitle, preview, audience?.targetUserIds, audience?.link);
       } catch (notifErr) {
         console.warn('Could not broadcast notification to community members:', notifErr);
       }

@@ -70,7 +70,7 @@ function getEngagementScore(member, events, eventRsvps, messages, communityId) {
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
-  const { user, allCommunities: communities, users, events, communityMemberships, eventRsvps, adminVerifyCommunity, updateUser, notifications, broadcastNotification, platformBroadcast, toggleUserRole, updateCommunity } = useAppContext();
+  const { user, realUser, allCommunities: communities, users, events, communityMemberships, eventRsvps, adminVerifyCommunity, updateUser, notifications, broadcastNotification, platformBroadcast, toggleUserRole, updateCommunity } = useAppContext();
     const { feedPosts } = useFeed();
     const { messages } = useChat();
   const { toast } = useToast();
@@ -86,7 +86,9 @@ export default function AdminDashboard() {
   const [verifyingCommunityId, setVerifyingCommunityId] = useState(null);
   const [drillDownStat, setDrillDownStat] = useState(null); // 'users'|'communities'|'verified'|'events'|'revenue'|'attendance'
 
-  if (!user || !user.isAdmin) {
+  const hasAdminAccess = Boolean(realUser?.isAdmin || user?.isAdmin);
+
+  if (!hasAdminAccess) {
     if (typeof window !== 'undefined') navigate.push('/app');
     return null;
   }

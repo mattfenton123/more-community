@@ -389,7 +389,9 @@ export default function AdminDashboard() {
     { key: 'config', label: 'Config', icon: Settings },
   ];
 
-  if (!user || !user.isAdmin) {
+  const hasAdminAccess = Boolean(realUser?.isAdmin || user?.isAdmin);
+
+  if (!hasAdminAccess) {
     return null;
   }
 
