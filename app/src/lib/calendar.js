@@ -117,6 +117,29 @@ export function isEventPast(eventOrDate, optionalTime) {
   return !isEventUpcoming(eventOrDate, optionalTime);
 }
 
+export function isEventToday(eventOrDate, optionalTime) {
+  const dateStr = typeof eventOrDate === 'string' ? eventOrDate : eventOrDate?.date;
+  if (!dateStr) return false;
+  try {
+    const today = new Date();
+    const todayY = today.getFullYear();
+    const todayM = today.getMonth();
+    const todayD = today.getDate();
+    const todayIso = `${todayY}-${String(todayM + 1).padStart(2, '0')}-${String(todayD).padStart(2, '0')}`;
+
+    if (typeof dateStr === 'string' && dateStr.startsWith(todayIso)) {
+      return true;
+    }
+
+    const dt = parseEventDateTime(dateStr, optionalTime || (typeof eventOrDate === 'object' ? eventOrDate?.time : null));
+    if (!dt) return false;
+
+    return dt.getFullYear() === todayY && dt.getMonth() === todayM && dt.getDate() === todayD;
+  } catch (e) {
+    return false;
+  }
+}
+
 function parseDateTime(dateStr, timeStr) {
   return parseEventDateTime(dateStr, timeStr) || new Date();
 }

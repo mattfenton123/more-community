@@ -1282,7 +1282,71 @@ textarea.form-input {
   }
 }
 
+
+/* Live Meetup Day Radar Beacon */
+@keyframes radarBeaconPulse {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.75);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 16px rgba(34, 197, 94, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+  }
+}
+
+.live-radar-dot {
+  width: 12px;
+  height: 12px;
+  background-color: #22c55e;
+  border-radius: 50%;
+  animation: radarBeaconPulse 2s infinite;
+  display: inline-block;
+}
+
+.desktop-event-sidebar {
+  display: none;
+}
+
+.event-mobile-rsvp-footer {
+  display: flex;
+}
+
 @media (min-width: 1024px) {
+
+  /* Desktop Event 2-Column Layout */
+  .desktop-event-layout {
+    display: flex !important;
+    gap: 32px !important;
+    align-items: flex-start !important;
+    max-width: 1200px !important;
+    margin: 0 auto !important;
+    padding: 24px 20px 80px !important;
+  }
+
+  .desktop-event-main {
+    flex: 1 !important;
+    min-width: 0 !important;
+  }
+
+  .desktop-event-sidebar {
+    width: 380px !important;
+    flex-shrink: 0 !important;
+    position: sticky !important;
+    top: 24px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 20px !important;
+  }
+
+  .event-mobile-rsvp-footer {
+    display: none !important;
+  }
+
   .mobile-only {
     display: none !important;
   }

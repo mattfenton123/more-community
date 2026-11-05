@@ -26,6 +26,7 @@ const EmojiPicker = dynamic(() => import('emoji-picker-react'), { ssr: false });
 import confetti from 'canvas-confetti';
 import LeaderSetupChecklist from '../../../src/components/LeaderSetupChecklist';
 import TownCrossPollination from '../../../src/components/TownCrossPollination';
+import TownChaptersBlueprint from '../../../src/components/TownChaptersBlueprint';
 import SpecialistVaultModal from '../../../src/components/SpecialistVaultModal';
 import CommunityPartnerModal from '../../../src/components/CommunityPartnerModal';
 
@@ -1789,6 +1790,9 @@ export default function CommunityProfile() {
                 </div>
               </div>
             )}
+
+            {/* Multi-Chapter Franchise Network */}
+            <TownChaptersBlueprint community={community} />
 
             {/* Town Cross-Pollination (Local Sister Groups) */}
             <div style={{ marginBottom: '32px' }}>

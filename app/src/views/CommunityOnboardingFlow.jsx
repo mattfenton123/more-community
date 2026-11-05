@@ -1,6 +1,7 @@
 "use client";
 import { supabase } from '../lib/supabaseClient';
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { ArrowRight, Camera, Check, Link as LinkIcon, Calendar, Image as ImageIcon, MessageCircle, ChevronLeft, Plus, X, Search } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { useToast } from '../components/Toast';
@@ -21,7 +22,7 @@ const SEGMENT_ICONS = {
   'Tech, Games & Learning': '💻'
 };
 
-function StepBasics({ name, setName, description, setDescription }) {
+function StepBasics({ name, setName, description, setDescription, parentCommunity }) {
   const nameError = name.length > 0 && name.trim().length < 3;
   const descError = description.length > 0 && description.trim().length < 10;
 
@@ -654,9 +655,41 @@ export default function CommunityOnboardingFlow({ onComplete }) {
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const { createCommunity, createEvent, uploadImage } = useAppContext();
+  const { createCommunity, createEvent, uploadImage, communities } = useAppContext();
+  const searchParams = useSearchParams();
+  const chapterOf = searchParams?.get('chapterOf');
+  const parentCommunity = chapterOf ? (communities || []).find(c => c.id === chapterOf) : null;
   const { toast } = useToast();
   const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    if (parentCommunity) {
+      if (!name) {
+        const words = parentCommunity.name.split(' ');
+        const brandName = words.slice(0, 2).join(' ');
+        setName(`${brandName} `);
+      }
+      if (!description && parentCommunity.description) {
+        setDescription(parentCommunity.description);
+      }
+      if (parentCommunity.tags && (!tags || tags.length === 0)) {
+        setTags(parentCommunity.tags);
+      }
+      if (parentCommunity.target_audience && !targetAudience) {
+        setTargetAudience(parentCommunity.target_audience);
+      }
+      if (parentCommunity.cost && cost === 'Free') {
+        setCost(parentCommunity.cost);
+      }
+      if (parentCommunity.activity_level) {
+        setActivityLevel(parentCommunity.activity_level);
+      }
+      if (parentCommunity.image && !coverImagePreview) {
+        setCoverImagePreview(parentCommunity.image);
+      }
+    }
+  }, [parentCommunity]);
+
 
   const toggleTag = (tag) => {
     setTags(prev => 
@@ -852,7 +885,7 @@ export default function CommunityOnboardingFlow({ onComplete }) {
   };
 
   const steps = [
-    <StepBasics key="basics" name={name} setName={setName} description={description} setDescription={setDescription} />,
+    <StepBasics key="basics" name={name} setName={setName} description={description} setDescription={setDescription} parentCommunity={parentCommunity} />,
     <StepDetails 
       key="details" 
       targetAudience={targetAudience} 

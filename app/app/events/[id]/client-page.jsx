@@ -7,7 +7,7 @@ import { useAppContext } from '../../../src/context/AppContext';
 import { useToast } from '../../../src/components/Toast';
 import DigitalTicket from '../../../src/components/DigitalTicket';
 import QRScanner from '../../../src/components/QRScanner';
-import { isEventPast, isEventUpcoming, downloadIcs, getGoogleCalendarEventUrl, getWhatsAppShareUrl } from '../../../src/lib/calendar';
+import { isEventPast, isEventUpcoming, isEventToday, downloadIcs, getGoogleCalendarEventUrl, getWhatsAppShareUrl } from '../../../src/lib/calendar';
 import { formatEventDate } from '../../../src/lib/recurrence';
 import {
   findKnownLocation,
@@ -240,6 +240,7 @@ export default function EventClient({ id }) {
   const [showPaymentChoiceModal, setShowPaymentChoiceModal] = useState(false);
   const [showRsvpSuccessModal, setShowRsvpSuccessModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [hasCheckedInLocally, setHasCheckedInLocally] = useState(false);
 
   const isLeader = user?.ledCommunities?.includes(event?.communityId) || user?.isAdmin;
 
@@ -435,6 +436,28 @@ export default function EventClient({ id }) {
     }
   };
 
+
+  const isLive = Boolean(event && (isEventToday(event) || searchParams?.get('live') === 'true'));
+  const isUserCheckedIn = Boolean(
+    hasCheckedInLocally || 
+    (event && user?.id && (rsvps || []).some(r => r.userId === user.id && (r.checkedIn || r.checked_in)))
+  );
+
+  const handleLiveCheckIn = async () => {
+    if (!user?.id) {
+      router.push(`/login?redirect=/events/${id}`);
+      return;
+    }
+    try {
+      setHasCheckedInLocally(true);
+      await checkInMember(event.id, user.id);
+      toast.success("You're Checked In!", "Welcome! Look out for the leader and fellow members.");
+    } catch (err) {
+      console.error('Check-in error:', err);
+      toast.error('Check-in Failed', 'Could not record your arrival. Please try again.');
+    }
+  };
+
   const handleBack = () => {
     if (typeof window !== 'undefined') {
       const hasHistory = window.history.length > 1;
@@ -498,7 +521,99 @@ export default function EventClient({ id }) {
       </div>
 
       {/* Content Body */}
-      <div style={{ padding: '24px 20px', maxWidth: '800px', margin: '0 auto' }}>
+      <div className="desktop-event-layout">
+        <div className="desktop-event-main">
+          {/* Live Meetup Day Radar */}
+          {isLive && !isEventPast(event) && (
+            <div style={{
+              background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.12) 0%, rgba(15, 23, 42, 0.95) 100%)',
+              border: '1.5px solid rgba(34, 197, 94, 0.4)',
+              borderRadius: '20px',
+              padding: '20px 22px',
+              marginBottom: '28px',
+              boxShadow: '0 10px 30px rgba(34, 197, 94, 0.12)'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px', marginBottom: '14px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span className="live-radar-dot" />
+                  <span style={{ fontSize: '0.82rem', fontWeight: 800, color: '#4ade80', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                    Live Meetup Radar • Happening Today
+                  </span>
+                  {searchParams?.get('live') === 'true' && (
+                    <span style={{ fontSize: '0.68rem', background: 'rgba(255,255,255,0.1)', color: 'var(--slate-300)', padding: '2px 8px', borderRadius: '4px', fontWeight: 600 }}>
+                      Preview Mode
+                    </span>
+                  )}
+                </div>
+                <div style={{ fontSize: '0.82rem', color: '#86efac', fontWeight: 700 }}>
+                  ⏰ Gathering at {event.time || '10:00 AM'}
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '18px' }}>
+                <div style={{ color: 'var(--white)', fontWeight: 700, fontSize: '1.05rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span>📍</span>
+                  <span>{event.meetingPoint ? `Meeting Point: ${event.meetingPoint}` : `Gathering Point: ${cleanLocationName(event.location)}`}</span>
+                </div>
+                {event.instructions && (
+                  <div style={{ color: 'var(--slate-200)', fontSize: '0.88rem', lineHeight: 1.5, background: 'rgba(0,0,0,0.25)', padding: '10px 14px', borderRadius: '10px' }}>
+                    {event.instructions}
+                  </div>
+                )}
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: '8px',
+                  background: 'rgba(34, 197, 94, 0.08)', border: '1px solid rgba(34, 197, 94, 0.2)',
+                  borderRadius: '10px', padding: '10px 14px', color: '#bbf7d0', fontSize: '0.84rem'
+                }}>
+                  <span>🤝</span>
+                  <span><strong>First-timer friendly:</strong> Warmly greeted upon arrival by the leader. Zero pressure, participate at your own pace!</span>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                {isUserCheckedIn ? (
+                  <div style={{
+                    display: 'inline-flex', alignItems: 'center', gap: '8px',
+                    background: 'rgba(34, 197, 94, 0.2)', border: '1px solid #22c55e',
+                    color: '#86efac', fontWeight: 700, fontSize: '0.9rem',
+                    padding: '11px 20px', borderRadius: '12px'
+                  }}>
+                    <CheckCircle2 size={18} color="#22c55e" /> You are Checked In! Welcome to the meetup.
+                  </div>
+                ) : (
+                  <button
+                    onClick={handleLiveCheckIn}
+                    className="interactive-press"
+                    style={{
+                      display: 'inline-flex', alignItems: 'center', gap: '8px',
+                      background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+                      border: 'none', color: '#052e16', fontWeight: 800, fontSize: '0.92rem',
+                      padding: '11px 22px', borderRadius: '12px', cursor: 'pointer',
+                      boxShadow: '0 4px 16px rgba(34, 197, 94, 0.3)'
+                    }}
+                  >
+                    <span>👋</span> I am Here! (Check In)
+                  </button>
+                )}
+
+                <a
+                  href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(cleanLocationName(event.location) + ', UK')}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="interactive-press"
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: '8px',
+                    background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.18)',
+                    color: 'var(--white)', fontWeight: 600, fontSize: '0.88rem',
+                    padding: '11px 18px', borderRadius: '12px', textDecoration: 'none',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <Navigation size={16} color="var(--teal-400)" /> 1-Tap Google Directions
+                </a>
+              </div>
+            </div>
+          )}
         
         <EventRecapShareCard event={event} community={community} attendeeCount={rsvps.filter(r => r.status === 'going').length || event?.attendees || 0} />
         {isEventPast(event) && (
@@ -890,10 +1005,181 @@ export default function EventClient({ id }) {
             })()}
           </div>
         </div>
-
       </div>
 
-      {/* Sticky RSVP Footer */}
+      {/* Desktop Sticky Booking & Calendar Sidebar */}
+      <aside className="desktop-event-sidebar">
+        <div style={{
+          background: 'linear-gradient(180deg, rgba(15, 23, 42, 0.95) 0%, rgba(10, 15, 29, 0.98) 100%)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          borderRadius: '24px',
+          padding: '24px',
+          boxShadow: '0 12px 40px rgba(0, 0, 0, 0.5)'
+        }}>
+          {/* Price Header */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+            <div>
+              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--slate-400)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                Ticket Price
+              </div>
+              <div style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--white)', fontFamily: 'var(--font-heading)' }}>
+                {event.ticketPrice > 0 ? `£${event.ticketPrice.toFixed(2)}` : 'Free'}
+              </div>
+            </div>
+            {spotsLeft !== null && (
+              <div style={{
+                padding: '6px 12px', borderRadius: '99px',
+                background: spotsLeft === 0 ? 'rgba(239, 68, 68, 0.15)' : spotsLeft < 5 ? 'rgba(244, 63, 94, 0.15)' : 'rgba(20, 184, 166, 0.15)',
+                border: spotsLeft === 0 ? '1px solid rgba(239, 68, 68, 0.3)' : spotsLeft < 5 ? '1px solid rgba(244, 63, 94, 0.3)' : '1px solid rgba(20, 184, 166, 0.3)',
+                color: spotsLeft === 0 ? '#f87171' : spotsLeft < 5 ? '#fb7185' : 'var(--teal-300)',
+                fontSize: '0.8rem', fontWeight: 700
+              }}>
+                {spotsLeft === 0 ? 'Sold Out' : `${spotsLeft} spots remaining`}
+              </div>
+            )}
+          </div>
+
+          {/* Booking Action */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
+            {isEventPast(event) ? (
+              <div style={{
+                background: 'rgba(255, 255, 255, 0.05)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                padding: '14px', borderRadius: '14px', textAlign: 'center',
+                color: 'var(--slate-400)', fontWeight: 600, fontSize: '0.9rem'
+              }}>
+                <Archive size={16} style={{ display: 'inline', marginRight: '6px' }} /> This event has ended
+              </div>
+            ) : (
+              <>
+                <button
+                  onClick={!user?.id ? () => router.push(`/login?redirect=/events/${id}`) : (!isMember && !isGoing ? handleJoinAndRSVP : handleRSVP)}
+                  disabled={checkoutState === 'processing' || (spotsLeft === 0 && !isGoing && Boolean(user?.id))}
+                  className="interactive-press"
+                  style={{
+                    width: '100%',
+                    background: isGoing ? 'rgba(255,255,255,0.1)' : 'var(--teal-500)',
+                    color: isGoing ? 'var(--white)' : '#0f172a',
+                    border: isGoing ? '1px solid rgba(255,255,255,0.2)' : 'none',
+                    padding: '14px 20px', borderRadius: '14px', fontSize: '1rem', fontWeight: 800,
+                    cursor: (checkoutState === 'processing' || (spotsLeft === 0 && !isGoing && Boolean(user?.id))) ? 'not-allowed' : 'pointer',
+                    opacity: (checkoutState === 'processing' || (spotsLeft === 0 && !isGoing && Boolean(user?.id))) ? 0.7 : 1,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                    boxShadow: isGoing ? 'none' : '0 4px 20px rgba(20, 184, 166, 0.35)'
+                  }}
+                >
+                  {!user?.id ? (event.ticketPrice > 0 ? 'Sign In to Buy Ticket' : 'Sign In to RSVP') :
+                   checkoutState === 'processing' ? 'Processing...' :
+                   isGoing ? 'Cancel RSVP' :
+                   spotsLeft === 0 ? 'Sold Out' :
+                   !isMember ? 'Join Community & ' + (event.ticketPrice > 0 ? 'Buy Ticket' : 'RSVP') :
+                   event.ticketPrice > 0 ? 'Buy Ticket' : 'RSVP Spot'}
+                </button>
+
+                {isGoing && (
+                  <button
+                    onClick={() => setShowTicket({ ...event, isCashOnArrival: isCashAttendee, ticketType: isCashAttendee ? 'cash_on_arrival' : 'paid' })}
+                    className="interactive-press"
+                    style={{
+                      width: '100%',
+                      background: 'rgba(20,184,166,0.15)',
+                      color: 'var(--teal-300)',
+                      border: '1px solid rgba(20,184,166,0.35)',
+                      padding: '12px 16px', borderRadius: '14px', fontSize: '0.92rem', fontWeight: 700,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', cursor: 'pointer'
+                    }}
+                  >
+                    <Ticket size={16} /> View Digital Pass & QR
+                  </button>
+                )}
+              </>
+            )}
+          </div>
+
+          <hr style={{ border: 'none', borderTop: '1px solid rgba(255, 255, 255, 0.08)', margin: '16px 0' }} />
+
+          {/* Calendar Sync Actions */}
+          <div style={{ marginBottom: '18px' }}>
+            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--slate-400)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' }}>
+              Add to Calendar
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+              <button
+                onClick={() => downloadIcs(event, community?.name)}
+                className="interactive-press"
+                style={{
+                  padding: '10px 12px', borderRadius: '10px',
+                  background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
+                  color: 'var(--white)', fontSize: '0.82rem', fontWeight: 600,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', cursor: 'pointer'
+                }}
+              >
+                <Calendar size={14} color="var(--teal-400)" /> Apple / Outlook
+              </button>
+              <a
+                href={getGoogleCalendarEventUrl(event, community?.name)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="interactive-press"
+                style={{
+                  padding: '10px 12px', borderRadius: '10px',
+                  background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
+                  color: 'var(--white)', fontSize: '0.82rem', fontWeight: 600,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                  textDecoration: 'none'
+                }}
+              >
+                <ExternalLink size={14} color="#3b82f6" /> Google Cal
+              </a>
+            </div>
+          </div>
+
+          {/* WhatsApp Share */}
+          <div style={{ marginBottom: '18px' }}>
+            <a
+              href={getWhatsAppShareUrl(event, community?.name)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="interactive-press"
+              style={{
+                width: '100%', padding: '11px 16px', borderRadius: '12px',
+                background: 'rgba(37, 211, 102, 0.12)', border: '1px solid rgba(37, 211, 102, 0.3)',
+                color: '#4ade80', fontWeight: 700, fontSize: '0.88rem',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                textDecoration: 'none'
+              }}
+            >
+              <MessageCircle size={16} /> Share via WhatsApp
+            </a>
+          </div>
+
+          {/* Host Info */}
+          {community && (
+            <div style={{
+              background: 'rgba(255, 255, 255, 0.03)',
+              border: '1px solid rgba(255, 255, 255, 0.06)',
+              borderRadius: '14px', padding: '14px',
+              display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer'
+            }} onClick={() => router.push(`/community/${community.id}`)}>
+              <img
+                src={community.image || community.cover_image || 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=400&q=80'}
+                alt={community.name}
+                style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }}
+              />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', textTransform: 'uppercase', fontWeight: 700 }}>Host Community</div>
+                <div style={{ fontSize: '0.92rem', fontWeight: 700, color: 'var(--white)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {community.name}
+                </div>
+              </div>
+              <ChevronLeft size={16} style={{ transform: 'rotate(180deg)', color: 'var(--slate-400)' }} />
+            </div>
+          )}
+        </div>
+      </aside>
+    </div>
+
+      {/* Sticky RSVP Footer (Mobile only, hidden on desktop >= 1024px) */}
       <div style={{ 
         position: 'fixed', bottom: 0, left: 0, right: 0, 
         padding: '16px 20px', background: 'rgba(2, 6, 23, 0.65)', 

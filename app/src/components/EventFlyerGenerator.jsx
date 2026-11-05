@@ -1,7 +1,9 @@
 "use client";
+import QRCode from 'qrcode';
+import { getEventUrl } from '../lib/eventLinks';
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { jsPDF } from 'jspdf';
-import { X, Download, Printer, Copy, Check, Image as ImageIcon, Type, Palette, Layout, ChevronDown, MapPin, Clock, Calendar } from 'lucide-react';
+import { X, Download, Printer, Copy, Check, Image as ImageIcon, Type, Palette, Layout, ChevronDown, MapPin, Clock, Calendar, QrCode } from 'lucide-react';
 
 // ─── 20 Curated Google Fonts ────────────────────────────────────
 const FONT_OPTIONS = [
@@ -108,6 +110,21 @@ export default function EventFlyerGenerator({ event, community, onClose, uploadI
   const [overlayOpacity, setOverlayOpacity] = useState(0.85);
   const [activePanel, setActivePanel] = useState('template');
   const [showFontDropdown, setShowFontDropdown] = useState(false);
+  const [formatMode, setFormatMode] = useState('social'); // 'social' (4:5) | 'noticeboard' (A4)
+  const [qrCodeDataUrl, setQrCodeDataUrl] = useState('');
+
+  // Generate QR Code data URL
+  useEffect(() => {
+    if (typeof window === 'undefined' || !event) return;
+    const url = getEventUrl(event, { origin: window.location.origin });
+    QRCode.toDataURL(url, {
+      width: 320,
+      margin: 1,
+      color: { dark: '#0f172a', light: '#ffffff' }
+    })
+      .then(res => setQrCodeDataUrl(res))
+      .catch(err => console.error('QR code generation failed:', err));
+  }, [event]);
 
   // Load selected font
   useEffect(() => { loadFont(font); }, [font]);

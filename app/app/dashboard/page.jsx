@@ -1,7 +1,7 @@
 "use client";
 import { supabase } from '../../src/lib/supabaseClient';
 import { useState, useRef, useMemo, useEffect } from 'react';
-import { ExternalLink, HelpCircle, Users, Calendar, MessageCircle, TrendingUp, Search, Plus, MapPin, Image as ImageIcon, CreditCard, ChevronRight, ChevronLeft, Download, Activity, Globe, Heart, Crown, Info, X, Map, Zap, Mail, Trash2, UserCheck, Ban, ChevronDown, ChevronUp, Settings, Megaphone, QrCode, BarChart3, Ticket, ScanLine, UserPlus, DollarSign, Clock, Edit3, Check, CheckCircle2, Eye, EyeOff, Shield, Star, Sparkles, BookOpen, ListChecks, Bell, Archive } from 'lucide-react';
+import { Printer, ExternalLink, HelpCircle, Users, Calendar, MessageCircle, TrendingUp, Search, Plus, MapPin, Image as ImageIcon, CreditCard, ChevronRight, ChevronLeft, Download, Activity, Globe, Heart, Crown, Info, X, Map, Zap, Mail, Trash2, UserCheck, Ban, ChevronDown, ChevronUp, Settings, Megaphone, QrCode, BarChart3, Ticket, ScanLine, UserPlus, DollarSign, Clock, Edit3, Check, CheckCircle2, Eye, EyeOff, Shield, Star, Sparkles, BookOpen, ListChecks, Bell, Archive } from 'lucide-react';
 import AppHeader from '../../src/components/AppHeader';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { isEventUpcoming, isEventPast, parseEventDateTime } from '../../src/lib/calendar';
@@ -2574,7 +2574,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                                       <QrCode size={12} style={{ marginRight: '4px' }} /> Scan
                                     </button>
                                     <button onClick={() => setFlyerEvent(event)} className="btn btn-outline interactive-press" style={{ padding: '6px 12px', fontSize: '0.75rem', color: '#a78bfa', borderColor: 'rgba(167,139,250,0.3)' }}>
-                                      <ImageIcon size={12} style={{ marginRight: '4px' }} /> Flyer
+                                      <Printer size={12} style={{ marginRight: '4px' }} /> Flyer & Poster
                                     </button>
                                     <button 
                                       onClick={() => generateRamsPdf({ community, event, leaderName: user?.name, policyNumber: community.insurance_policy_number })} 
@@ -2621,7 +2621,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                                       {isExpanded ? 'Hide' : `Attendees (${attendees.length})`}
                                     </button>
                                     <button onClick={() => setFlyerEvent(event)} className="btn btn-outline interactive-press" style={{ padding: '6px 12px', fontSize: '0.75rem', color: '#a78bfa', borderColor: 'rgba(167,139,250,0.3)' }}>
-                                      <ImageIcon size={12} style={{ marginRight: '4px' }} /> Flyer
+                                      <Printer size={12} style={{ marginRight: '4px' }} /> Flyer & Poster
                                     </button>
                                   </>
                                 )}

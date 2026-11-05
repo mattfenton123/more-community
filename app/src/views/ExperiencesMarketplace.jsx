@@ -9,7 +9,7 @@ export default function ExperiencesMarketplace() {
   const [activePill, setActivePill] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchingViator, setIsSearchingViator] = useState(false);
-  const pills = ['All', '⛰️ Adventure', '🧘 Wellness', '🎭 Culture', '🍷 Food & Drink', '🎨 Creative'];
+  const pills = ['All', '🏡 Retreats & Stays', '🏛️ Venues & Halls', '⛰️ Adventure', '🧘 Wellness', '🎭 Culture', '🍷 Food & Drink', '🎨 Creative'];
   const { experiences, setExperiences, communities, user } = useAppContext();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -319,7 +319,7 @@ export default function ExperiencesMarketplace() {
             ✦ Multi-Day Packages Coming Soon
           </div>
           <p style={{ fontSize: '0.72rem', color: 'var(--slate-500)', lineHeight: 1.55 }}>
-            Weekend retreats, adventure trips and group getaways — launching 2027.
+            Weekend retreats, adventure trips and group getaways  -  launching 2027.
           </p>
         </div>
       </div>

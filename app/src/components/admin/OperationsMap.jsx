@@ -105,7 +105,7 @@ function MapFlyController({ target, zoom }) {
 }
 
 export default function OperationsMap({ platformStats }) {
-  const [mapLayer, setMapLayer] = useState('street'); // 'street' | 'satellite'
+  const [mapLayer, setMapLayer] = useState('roadmap'); // 'roadmap' | 'satellite' | 'terrain'
   const [activeCluster, setActiveCluster] = useState('all');
   const [selectedCommunityId, setSelectedCommunityId] = useState(null);
   const markerRefs = useRef({});
@@ -210,24 +210,24 @@ export default function OperationsMap({ platformStats }) {
           </p>
         </div>
 
-        {/* Map Layer Toggle: Street vs Satellite */}
+        {/* Map Layer Toggle: Google Roadmap vs Google Satellite vs Google Terrain */}
         <div style={{ display: 'flex', gap: '4px', background: 'rgba(255,255,255,0.06)', padding: '3px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)' }}>
           <button
             type="button"
-            onClick={() => setMapLayer('street')}
+            onClick={() => setMapLayer('roadmap')}
             style={{
-              background: mapLayer === 'street' ? '#2dd4bf' : 'transparent',
-              color: mapLayer === 'street' ? '#0f172a' : 'var(--slate-300)',
+              background: mapLayer === 'roadmap' ? '#2dd4bf' : 'transparent',
+              color: mapLayer === 'roadmap' ? '#0f172a' : 'var(--slate-300)',
               border: 'none',
               borderRadius: '8px',
-              padding: '6px 14px',
+              padding: '6px 12px',
               fontSize: '0.78rem',
               fontWeight: 700,
               cursor: 'pointer',
               transition: 'all 0.15s ease'
             }}
           >
-            Clear Street
+            Google Roadmap
           </button>
           <button
             type="button"
@@ -237,14 +237,31 @@ export default function OperationsMap({ platformStats }) {
               color: mapLayer === 'satellite' ? '#0f172a' : 'var(--slate-300)',
               border: 'none',
               borderRadius: '8px',
-              padding: '6px 14px',
+              padding: '6px 12px',
               fontSize: '0.78rem',
               fontWeight: 700,
               cursor: 'pointer',
               transition: 'all 0.15s ease'
             }}
           >
-            Satellite View
+            Google Satellite
+          </button>
+          <button
+            type="button"
+            onClick={() => setMapLayer('terrain')}
+            style={{
+              background: mapLayer === 'terrain' ? '#2dd4bf' : 'transparent',
+              color: mapLayer === 'terrain' ? '#0f172a' : 'var(--slate-300)',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '6px 12px',
+              fontSize: '0.78rem',
+              fontWeight: 700,
+              cursor: 'pointer',
+              transition: 'all 0.15s ease'
+            }}
+          >
+            Google Terrain
           </button>
         </div>
       </div>
@@ -296,18 +313,41 @@ export default function OperationsMap({ platformStats }) {
         >
           {mapLayer === 'satellite' ? (
             <TileLayer
-              url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-              maxZoom={19}
+              url="https://{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}"
+              subdomains={['mt0', 'mt1', 'mt2', 'mt3']}
+              maxZoom={20}
+            />
+          ) : mapLayer === 'terrain' ? (
+            <TileLayer
+              url="https://{s}.google.com/vt/lyrs=p&x={x}&y={y}&z={z}"
+              subdomains={['mt0', 'mt1', 'mt2', 'mt3']}
+              maxZoom={20}
             />
           ) : (
             <TileLayer
-              url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-              maxZoom={19}
+              url="https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
+              subdomains={['mt0', 'mt1', 'mt2', 'mt3']}
+              maxZoom={20}
             />
           )}
 
           <MapInvalidator />
           <MapFlyController target={currentFocus} zoom={currentFocus.zoom} />
+
+          {/* Google Maps Attribution Badge */}
+          <div style={{
+            position: 'absolute', bottom: '12px', left: '12px', zIndex: 1000,
+            background: 'rgba(255, 255, 255, 0.95)', backdropFilter: 'blur(8px)',
+            padding: '4px 10px', borderRadius: '6px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+            display: 'flex', alignItems: 'center', gap: '6px',
+            fontSize: '0.72rem', fontWeight: 800, color: '#3c4043',
+            border: '1px solid rgba(0,0,0,0.1)',
+            pointerEvents: 'none'
+          }}>
+            <span style={{ fontSize: '0.85rem' }}>📍</span>
+            <span>Google Maps</span>
+          </div>
 
           {communities.map(c => {
             let icon = moderateIcon;
