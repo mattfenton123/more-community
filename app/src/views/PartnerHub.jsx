@@ -112,15 +112,15 @@ export default function PartnerHub() {
             gap: '12px',
             marginTop: '20px'
           }}>
-            <div style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '14px', padding: '12px 14px' }}>
+            <div className="glass-panel" style={{ padding: "12px 14px" }}>
               <div style={{ fontSize: '0.74rem', color: 'var(--slate-400)', textTransform: 'uppercase', fontWeight: 600 }}>Active Welcoming Groups</div>
               <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--teal-300)', marginTop: '2px' }}>{availableCommunities.length}</div>
             </div>
-            <div style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '14px', padding: '12px 14px' }}>
+            <div className="glass-panel" style={{ padding: "12px 14px" }}>
               <div style={{ fontSize: '0.74rem', color: 'var(--slate-400)', textTransform: 'uppercase', fontWeight: 600 }}>Club Fundraising Split</div>
               <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#34d399', marginTop: '2px' }}>80% to Leaders</div>
             </div>
-            <div style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '14px', padding: '12px 14px' }}>
+            <div className="glass-panel" style={{ padding: "12px 14px" }}>
               <div style={{ fontSize: '0.74rem', color: 'var(--slate-400)', textTransform: 'uppercase', fontWeight: 600 }}>Leader Anti-Spam</div>
               <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#fbbf24', marginTop: '2px' }}>Single-Tap Review</div>
             </div>
@@ -142,9 +142,7 @@ export default function PartnerHub() {
                 width: '100%',
                 padding: '11px 12px 11px 36px',
                 borderRadius: '12px',
-                background: 'rgba(255, 255, 255, 0.04)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                color: '#fff',
+                background: "var(--slate-900)", border: "1px solid var(--slate-800)", color: "var(--white)",
                 fontSize: '0.88rem'
               }}
             />

@@ -569,8 +569,8 @@ export default function AdminDashboard() {
                 </div>
                 <div style={{ background: 'rgba(255,255,255,0.04)', padding: '14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
                   <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', textTransform: 'uppercase' }}>Leader Shield Pro</div>
-                  <div style={{ fontSize: '1rem', fontWeight: 800, color: '#38bdf8', marginTop: '4px' }}>PLI Insured</div>
-                  <div style={{ fontSize: '0.7rem', color: '#38bdf8', marginTop: '4px' }}>Council RAMS + 2% fees</div>
+                  <div style={{ fontSize: '1rem', fontWeight: 800, color: '#38bdf8', marginTop: '4px' }}>?5M Organiser Insured</div>
+                  <div style={{ fontSize: '0.7rem', color: '#38bdf8', marginTop: '4px' }}>Council Safety Packs + 2% fees</div>
                 </div>
               </div>
             </div>

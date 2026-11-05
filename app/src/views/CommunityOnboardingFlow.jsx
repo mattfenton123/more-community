@@ -563,11 +563,11 @@ function StepPlan({ selectedTier, setSelectedTier, billingInterval, setBillingIn
             </span>
           </div>
           <p style={{ fontSize: '0.8rem', color: 'var(--slate-400)', marginBottom: '14px', lineHeight: 1.4 }}>
-            Zero ticket fees, instant council/venue RAMS & verified trust shield.
+            Zero ticket fees, instant council & venue safety packs & verified organiser trust shield.
           </p>
           <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 14px 0', fontSize: '0.8rem', color: 'var(--slate-300)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <li style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>✨ <strong>2% Reduced ticket fees</strong> (Save 60% vs 5% standard)</li>
-            <li style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>📄 <strong>1-Click Venue RAMS</strong> (Council-ready PDF)</li>
+            <li style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>📄 <strong>Council & Venue Safety Packs</strong> (Council-ready PDF)</li>
             <li style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>🛡️ <strong>Attendee Safety Waivers</strong> on RSVP</li>
             <li style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>⭐ <strong>Verified Leader Trust Shield</strong></li>
           </ul>
@@ -614,7 +614,7 @@ function StepPlan({ selectedTier, setSelectedTier, billingInterval, setBillingIn
           </div>
           <div style={{ background: 'rgba(20,184,166,0.05)', padding: '10px 12px', borderRadius: '10px', border: '1px solid rgba(45,212,191,0.2)' }}>
             <strong style={{ color: '#fbbf24', display: 'block', marginBottom: '3px' }}>⭐ Upgrade to Pro when you:</strong>
-            <span style={{ color: 'var(--slate-300)' }}>Hire council community halls or schools (needs RAMS/waivers), run paid coaching/fitness, have a local sponsor, or sell £550+/mo in tickets (saves cash at 2% fees).</span>
+            <span style={{ color: 'var(--slate-300)' }}>Hire council community halls or schools (includes safety documents & member check-ins), run paid coaching/fitness, have a local sponsor, or sell £550+/mo in tickets (saves cash at 2% fees).</span>
           </div>
         </div>
       </div>

@@ -40,7 +40,7 @@ import { generatePliCertificatePdf, generateRamsPdf } from '../../src/lib/insura
 const StatCard = ({ value, label, color, icon: Icon, accent }) => (
   <div className="glass-panel stagger-item interactive-hover" style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '4px', ...(accent ? { border: `1px solid ${accent}30`, background: `linear-gradient(135deg, ${accent}10 0%, ${accent}02 100%)` } : {}) }}>
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-      <div style={{ fontSize: '1.8rem', fontFamily: 'var(--font-heading)', fontWeight: 700, color: color || 'white' }}>{value}</div>
+      <div style={{ fontSize: '1.8rem', fontFamily: 'var(--font-heading)', fontWeight: 700, color: color || 'var(--white)' }}>{value}</div>
       {Icon && <Icon size={18} color={color || 'var(--slate-500)'} />}
     </div>
     <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.02em' }}>{label}</div>
@@ -1671,7 +1671,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                     community.insurance_tier === 'pro' ||
                     (typeof window !== 'undefined' && localStorage.getItem(`more_community_insured_${community.id}`) === 'true')
                   );
-                  const policyNo = community.insurance_policy_number || `MC-PLI-2026-${community.id.slice(0, 6).toUpperCase()}`;
+                  const policyNo = community.insurance_policy_number || `MC-PRO-2026-${community.id.slice(0, 6).toUpperCase()}`;
 
                   return isShieldActive ? (
                     <div style={{
@@ -1740,9 +1740,9 @@ export default function LeaderDashboard({ initialCommunityId }) {
                             <span style={{ fontSize: '0.68rem', background: '#f59e0b', color: '#000', padding: '2px 7px', borderRadius: '5px', fontWeight: 800, letterSpacing: '0.04em' }}>PRO</span>
                           </div>
                           <div style={{ fontSize: '0.76rem', color: 'var(--slate-300)', marginTop: '3px', display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', lineHeight: 1.3 }}>
-                            <span style={{ color: '#38bdf8' }}><strong>✓ Built-in Public Liability Insurance (PLI)</strong> included</span>
+                            <span style={{ color: '#38bdf8' }}><strong>✓ £5M Organiser Legal Protection</strong> included</span>
                             <span><strong>✓ 2% ticket fee</strong> (save 60%)</span>
-                            <span><strong>✓ Council venue RAMS</strong></span>
+                            <span><strong>✓ Council & Venue Safety Packs</strong></span>
                             <span><strong>✓ Digital attendee waivers</strong></span>
                           </div>
                         </div>
@@ -1803,7 +1803,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   {/* Members */}
                   {leaderDrillDown === 'members' && (
                     <>
-                      <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--white)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <Users size={14} /> Member Breakdown
                       </div>
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginBottom: '16px' }}>
@@ -1842,7 +1842,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   {/* Active Members */}
                   {leaderDrillDown === 'active' && (
                     <>
-                      <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--white)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <Activity size={14} /> Active Member Insights
                       </div>
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '16px' }}>
@@ -1865,7 +1865,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   {/* Revenue */}
                   {leaderDrillDown === 'revenue' && (
                     <>
-                      <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--white)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <DollarSign size={14} /> Revenue Breakdown
                       </div>
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '16px' }}>
@@ -1901,7 +1901,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   {/* Events This Month */}
                   {leaderDrillDown === 'events' && (
                     <>
-                      <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--white)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <Calendar size={14} /> Events This Month
                       </div>
                       {(() => {
@@ -1939,7 +1939,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   {leaderDrillDown === 'checkin' && (
                     <>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
-                        <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--white)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <ScanLine size={15} color="var(--teal-400)" /> Attendance & Member Retention Analytics
                         </div>
                         <button
@@ -2075,7 +2075,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   {/* Next Event */}
                   {leaderDrillDown === 'next' && (
                     <>
-                      <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--white)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <Zap size={14} /> Upcoming Events
                       </div>
                       {publishedEvents.filter(e => daysUntil(e.date) !== null).slice(0, 5).map(e => {
@@ -2479,9 +2479,9 @@ export default function LeaderDashboard({ initialCommunityId }) {
                                       onClick={() => generateRamsPdf({ community, event, leaderName: user?.name, policyNumber: community.insurance_policy_number })} 
                                       className="btn btn-outline interactive-press" 
                                       style={{ padding: '6px 12px', fontSize: '0.75rem', color: '#2dd4bf', borderColor: 'rgba(20,184,166,0.3)' }}
-                                      title="Download Venue Risk Assessment & Method Statement (RAMS) PDF"
+                                      title="Download Council & Venue Safety Assessment (Risk Document PDF)"
                                     >
-                                      <Shield size={12} style={{ marginRight: '4px' }} /> RAMS
+                                      <Shield size={12} style={{ marginRight: '4px' }} /> Safety Pack
                                     </button>
                                     <button onClick={() => setExpandedEventId(isExpanded ? null : event.id)} className="btn btn-outline interactive-press" style={{ padding: '6px 12px', fontSize: '0.75rem' }}>
                                       {isExpanded ? <ChevronUp size={12} style={{ marginRight: '4px' }} /> : <ChevronDown size={12} style={{ marginRight: '4px' }} />}

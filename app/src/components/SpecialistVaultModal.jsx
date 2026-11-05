@@ -101,7 +101,7 @@ export default function SpecialistVaultModal({ isOpen, onClose, specialist, mode
             </div>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#fff', fontFamily: 'var(--font-heading)' }}>
+                <h3 style={{ margin: 0, fontSize: '1.2rem', color: 'var(--white)', fontFamily: 'var(--font-heading)' }}>
                   {mode === 'inspect' ? 'Verified Specialist Credential Vault' : 'Specialist & Guide Partner Portal'}
                 </h3>
                 <span style={{
@@ -119,7 +119,7 @@ export default function SpecialistVaultModal({ isOpen, onClose, specialist, mode
               </div>
               <p style={{ margin: '3px 0 0 0', fontSize: '0.82rem', color: 'var(--slate-400)' }}>
                 {mode === 'inspect' 
-                  ? 'Official NGB qualifications, £5M PLI insurance, and First Aid registry' 
+                  ? 'Official coaching qualifications, £5M instructor insurance, and emergency First Aid registry' 
                   : 'Pitch accredited workshops & retreats to 500+ local clubs across the UK'}
               </p>
             </div>
@@ -164,7 +164,7 @@ export default function SpecialistVaultModal({ isOpen, onClose, specialist, mode
                 />
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <h4 style={{ margin: 0, fontSize: '1.1rem', color: '#fff', fontWeight: 700 }}>{specialist.name}</h4>
+                    <h4 style={{ margin: 0, fontSize: '1.1rem', color: 'var(--white)', fontWeight: 700 }}>{specialist.name}</h4>
                     <span style={{ fontSize: '0.85rem', color: '#fbbf24', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 600 }}>
                       ★ {specialist.rating} ({specialist.reviewsCount} reviews)
                     </span>
@@ -197,7 +197,7 @@ export default function SpecialistVaultModal({ isOpen, onClose, specialist, mode
                     <Award size={18} color="var(--teal-400)" style={{ marginTop: '2px', flexShrink: 0 }} />
                     <div style={{ flex: 1 }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#fff' }}>National Governing Body (NGB) Accreditation</span>
+                        <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--white)' }}>National Governing Body (NGB) Accreditation</span>
                         <span style={{ fontSize: '0.72rem', background: 'rgba(20, 184, 166, 0.2)', color: 'var(--teal-300)', padding: '2px 8px', borderRadius: '10px', fontWeight: 600 }}>
                           Checked Active
                         </span>
@@ -221,7 +221,7 @@ export default function SpecialistVaultModal({ isOpen, onClose, specialist, mode
                     <Shield size={18} color="var(--teal-400)" style={{ marginTop: '2px', flexShrink: 0 }} />
                     <div style={{ flex: 1 }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#fff' }}>Commercial Public Liability & Professional Indemnity</span>
+                        <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--white)' }}>Commercial Instructor Liability & Legal Cover</span>
                         <span style={{ fontSize: '0.72rem', background: 'rgba(20, 184, 166, 0.2)', color: 'var(--teal-300)', padding: '2px 8px', borderRadius: '10px', fontWeight: 600 }}>
                           {specialist.credentials?.insuranceCover?.split(' ')[0] || '£5M'} Cover
                         </span>
@@ -248,7 +248,7 @@ export default function SpecialistVaultModal({ isOpen, onClose, specialist, mode
                     <CheckCircle2 size={18} color="var(--teal-400)" style={{ marginTop: '2px', flexShrink: 0 }} />
                     <div style={{ flex: 1 }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#fff' }}>Emergency & Wilderness First Aid</span>
+                        <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--white)' }}>Emergency & Wilderness First Aid</span>
                         <span style={{ fontSize: '0.72rem', color: 'var(--slate-400)' }}>Certified</span>
                       </div>
                       <div style={{ fontSize: '0.8rem', color: 'var(--slate-300)', marginTop: '2px' }}>
@@ -270,7 +270,7 @@ export default function SpecialistVaultModal({ isOpen, onClose, specialist, mode
                     <FileText size={18} color="var(--teal-400)" style={{ marginTop: '2px', flexShrink: 0 }} />
                     <div style={{ flex: 1 }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#fff' }}>DBS Clearance & Activity RAMS</span>
+                        <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--white)' }}>Background Check & Activity Safety Protocol</span>
                         <span style={{ fontSize: '0.72rem', color: 'var(--slate-400)' }}>Archived</span>
                       </div>
                       <div style={{ fontSize: '0.8rem', color: 'var(--slate-300)', marginTop: '2px' }}>
@@ -325,7 +325,7 @@ export default function SpecialistVaultModal({ isOpen, onClose, specialist, mode
                   }}>
                     <Check size={32} />
                   </div>
-                  <h3 style={{ fontSize: '1.4rem', color: '#fff', fontFamily: 'var(--font-heading)', margin: '0 0 8px 0' }}>
+                  <h3 style={{ fontSize: '1.4rem', color: 'var(--white)', fontFamily: 'var(--font-heading)', margin: '0 0 8px 0' }}>
                     Application &amp; Pitch Received!
                   </h3>
                   <p style={{ color: 'var(--slate-300)', fontSize: '0.9rem', maxWidth: '480px', margin: '0 auto 24px auto', lineHeight: 1.5 }}>
@@ -333,7 +333,7 @@ export default function SpecialistVaultModal({ isOpen, onClose, specialist, mode
                   </p>
                   <div style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '14px', padding: '16px', maxWidth: '440px', margin: '0 auto 24px auto', textAlign: 'left' }}>
                     <div style={{ fontSize: '0.8rem', color: 'var(--teal-400)', fontWeight: 600, textTransform: 'uppercase' }}>Queued Pitch</div>
-                    <div style={{ fontSize: '1rem', color: '#fff', fontWeight: 700, margin: '4px 0' }}>{formData.pitchTitle || 'Workshop Session'}</div>
+                    <div style={{ fontSize: '1rem', color: 'var(--white)', fontWeight: 700, margin: '4px 0' }}>{formData.pitchTitle || 'Workshop Session'}</div>
                     <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)' }}>
                       Club Price: £{formData.communityPrice} (Public RRP £{formData.standardRrp}) · £{formData.communityCut} club fundraising cut
                     </div>
@@ -403,7 +403,7 @@ export default function SpecialistVaultModal({ isOpen, onClose, specialist, mode
                             placeholder="e.g. David MacLeod"
                             value={formData.fullName}
                             onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                            style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.1)', color: '#fff', fontSize: '0.9rem' }}
+                            style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.1)', color: 'var(--white)', fontSize: '0.9rem' }}
                           />
                         </div>
                         <div>
@@ -413,7 +413,7 @@ export default function SpecialistVaultModal({ isOpen, onClose, specialist, mode
                             placeholder="e.g. Peak Navigation Guides"
                             value={formData.tradingName}
                             onChange={(e) => setFormData({ ...formData, tradingName: e.target.value })}
-                            style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.1)', color: '#fff', fontSize: '0.9rem' }}
+                            style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.1)', color: 'var(--white)', fontSize: '0.9rem' }}
                           />
                         </div>
                       </div>
@@ -427,7 +427,7 @@ export default function SpecialistVaultModal({ isOpen, onClose, specialist, mode
                             placeholder="dave@peaknavigation.co.uk"
                             value={formData.email}
                             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                            style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.1)', color: '#fff', fontSize: '0.9rem' }}
+                            style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.1)', color: 'var(--white)', fontSize: '0.9rem' }}
                           />
                         </div>
                         <div>
@@ -438,7 +438,7 @@ export default function SpecialistVaultModal({ isOpen, onClose, specialist, mode
                             placeholder="e.g. Tunbridge Wells / Kent / Peak District"
                             value={formData.region}
                             onChange={(e) => setFormData({ ...formData, region: e.target.value })}
-                            style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.1)', color: '#fff', fontSize: '0.9rem' }}
+                            style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.1)', color: 'var(--white)', fontSize: '0.9rem' }}
                           />
                         </div>
                       </div>
@@ -450,7 +450,7 @@ export default function SpecialistVaultModal({ isOpen, onClose, specialist, mode
                           placeholder="Tell local leaders about your qualifications and style of sessions..."
                           value={formData.bio}
                           onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-                          style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.1)', color: '#fff', fontSize: '0.9rem' }}
+                          style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.1)', color: 'var(--white)', fontSize: '0.9rem' }}
                         />
                       </div>
 
@@ -479,7 +479,7 @@ export default function SpecialistVaultModal({ isOpen, onClose, specialist, mode
                         <select
                           value={formData.category}
                           onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                          style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', background: 'var(--slate-800)', border: '1px solid rgba(255, 255, 255, 0.1)', color: '#fff', fontSize: '0.9rem' }}
+                          style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', background: 'var(--slate-800)', border: '1px solid rgba(255, 255, 255, 0.1)', color: 'var(--white)', fontSize: '0.9rem' }}
                         >
                           <option value="Outdoor &amp; Adventure">Outdoor, Hiking &amp; Navigation</option>
                           <option value="Fitness &amp; Movement">Fitness, Running &amp; Movement</option>
@@ -501,7 +501,7 @@ export default function SpecialistVaultModal({ isOpen, onClose, specialist, mode
                           placeholder="e.g. Mountain Leader (Summer ML), British Athletics Coach, Yoga Alliance 200hr, or 8 years self-taught foraging experience..."
                           value={formData.qualifications}
                           onChange={(e) => setFormData({ ...formData, qualifications: e.target.value })}
-                          style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.1)', color: '#fff', fontSize: '0.9rem' }}
+                          style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.1)', color: 'var(--white)', fontSize: '0.9rem' }}
                         />
                       </div>
 
@@ -514,7 +514,7 @@ export default function SpecialistVaultModal({ isOpen, onClose, specialist, mode
                             onChange={(e) => setFormData({ ...formData, hasInsurance: e.target.checked })}
                             style={{ width: '18px', height: '18px', accentColor: 'var(--teal-500)' }}
                           />
-                          <span style={{ fontSize: '0.85rem', color: '#fff', fontWeight: 600 }}>
+                          <span style={{ fontSize: '0.85rem', color: 'var(--white)', fontWeight: 600 }}>
                             I hold active Public Liability Insurance or professional cover
                           </span>
                         </label>
@@ -526,14 +526,14 @@ export default function SpecialistVaultModal({ isOpen, onClose, specialist, mode
                               placeholder="Insurer name (e.g. Hiscox, Balens)"
                               value={formData.insurer}
                               onChange={(e) => setFormData({ ...formData, insurer: e.target.value })}
-                              style={{ padding: '8px 12px', borderRadius: '8px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '0.82rem' }}
+                              style={{ padding: '8px 12px', borderRadius: '8px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--white)', fontSize: '0.82rem' }}
                             />
                             <input 
                               type="text"
                               placeholder="Policy number / ref (optional)"
                               value={formData.policyNumber}
                               onChange={(e) => setFormData({ ...formData, policyNumber: e.target.value })}
-                              style={{ padding: '8px 12px', borderRadius: '8px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '0.82rem' }}
+                              style={{ padding: '8px 12px', borderRadius: '8px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--white)', fontSize: '0.82rem' }}
                             />
                           </div>
                         )}
@@ -571,7 +571,7 @@ export default function SpecialistVaultModal({ isOpen, onClose, specialist, mode
                           placeholder="e.g. Twilight Navigation & Hill Safety Masterclass"
                           value={formData.pitchTitle}
                           onChange={(e) => setFormData({ ...formData, pitchTitle: e.target.value })}
-                          style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.1)', color: '#fff', fontSize: '0.9rem' }}
+                          style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.1)', color: 'var(--white)', fontSize: '0.9rem' }}
                         />
                       </div>
 
@@ -582,7 +582,7 @@ export default function SpecialistVaultModal({ isOpen, onClose, specialist, mode
                           placeholder="What will members learn or experience? Keep it engaging and welcoming..."
                           value={formData.pitchSummary}
                           onChange={(e) => setFormData({ ...formData, pitchSummary: e.target.value })}
-                          style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.1)', color: '#fff', fontSize: '0.9rem' }}
+                          style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.1)', color: 'var(--white)', fontSize: '0.9rem' }}
                         />
                       </div>
 
@@ -593,7 +593,7 @@ export default function SpecialistVaultModal({ isOpen, onClose, specialist, mode
                             type="number"
                             value={formData.standardRrp}
                             onChange={(e) => setFormData({ ...formData, standardRrp: e.target.value })}
-                            style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.1)', color: '#fff', fontSize: '0.9rem' }}
+                            style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.1)', color: 'var(--white)', fontSize: '0.9rem' }}
                           />
                         </div>
                         <div>
@@ -603,7 +603,7 @@ export default function SpecialistVaultModal({ isOpen, onClose, specialist, mode
                             type="number"
                             value={formData.communityPrice}
                             onChange={(e) => setFormData({ ...formData, communityPrice: e.target.value })}
-                            style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', background: 'rgba(20, 184, 166, 0.1)', border: '1px solid var(--teal-500)', color: '#fff', fontSize: '0.9rem', fontWeight: 700 }}
+                            style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', background: 'rgba(20, 184, 166, 0.1)', border: '1px solid var(--teal-500)', color: 'var(--white)', fontSize: '0.9rem', fontWeight: 700 }}
                           />
                         </div>
                         <div>

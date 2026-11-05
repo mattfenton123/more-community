@@ -109,7 +109,7 @@ export default function LeaderShieldModal({ isOpen, onClose, community, leaderUs
   if (!isOpen || !community) return null;
 
   const isInsured = community.is_insured || community.has_active_shield;
-  const policyNumber = community.insurance_policy_number || `MC-PLI-2026-${community.id.slice(0, 6).toUpperCase()}`;
+  const policyNumber = community.insurance_policy_number || `MC-PRO-2026-${community.id.slice(0, 6).toUpperCase()}`;
   const price = billingInterval === 'annual' ? LEADER_PRO_CONFIG.annualPrice : LEADER_PRO_CONFIG.monthlyPrice;
 
   const handleUpgrade = async () => {
@@ -159,7 +159,7 @@ export default function LeaderShieldModal({ isOpen, onClose, community, leaderUs
         leaderName: leaderUser?.name || 'Community Leader',
         policyNumber
       });
-      toast.success('Certificate Downloaded', 'Official PLI Certificate PDF saved.');
+      toast.success('Certificate Downloaded', 'Official Organiser Legal Cover Certificate saved.');
     } catch (err) {
       console.error('Cert download error:', err);
       toast.error('Download Failed', 'Could not generate certificate.');
@@ -179,10 +179,10 @@ export default function LeaderShieldModal({ isOpen, onClose, community, leaderUs
         leaderName: leaderUser?.name || 'Community Leader',
         policyNumber
       });
-      toast.success('RAMS Document Downloaded', 'Official Risk Assessment PDF saved.');
+      toast.success('Safety Pack Downloaded', 'Official Council Safety Assessment PDF saved.');
     } catch (err) {
       console.error('RAMS download error:', err);
-      toast.error('Download Failed', 'Could not generate RAMS.');
+      toast.error('Download Failed', 'Could not generate Council Safety Pack.');
     }
   };
 
@@ -261,8 +261,8 @@ export default function LeaderShieldModal({ isOpen, onClose, community, leaderUs
             </div>
             <p style={{ margin: '3px 0 0 0', fontSize: '0.84rem', color: 'var(--slate-300)', lineHeight: 1.4 }}>
               {isInsured 
-                ? 'Public Liability Insurance, Council RAMS Packs & 2% Ticket Fees' 
-                : 'Built-in ?5M Public Liability Insurance, Council Venue RAMS, Attendee Waivers & 2% Ticket Fees.'}
+                ? '?5M Organiser Legal Protection, Council Safety Packs & 2% Ticket Fees' 
+                : 'Built-in ?5,000,000 Organiser Legal Protection, Council & Venue Safety Packs, Digital Attendee Waivers & 2% Ticket Fees.'}
             </p>
           </div>
         </div>
@@ -287,7 +287,7 @@ export default function LeaderShieldModal({ isOpen, onClose, community, leaderUs
                   <span style={{ fontSize: '0.68rem', color: 'var(--teal-300)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                     UK Statutory Group Protection
                   </span>
-                  <div style={{ fontSize: '1.15rem', fontWeight: 800, color: '#fff', marginTop: '2px' }}>
+                  <div style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--white)', marginTop: '2px' }}>
                     {community.name}
                   </div>
                   <div style={{ fontSize: '0.78rem', color: 'var(--slate-400)' }}>
@@ -320,7 +320,7 @@ export default function LeaderShieldModal({ isOpen, onClose, community, leaderUs
                 </div>
                 <div>
                   <span style={{ color: 'var(--slate-400)', fontSize: '0.7rem', display: 'block' }}>Indemnity Limit</span>
-                  <strong style={{ color: '#2dd4bf' }}>?5,000,000 PLI Cover</strong>
+                  <strong style={{ color: '#2dd4bf' }}>?5,000,000 Organiser Liability Protection</strong>
                 </div>
                 <div>
                   <span style={{ color: 'var(--slate-400)', fontSize: '0.7rem', display: 'block' }}>Territory</span>
@@ -369,7 +369,7 @@ export default function LeaderShieldModal({ isOpen, onClose, community, leaderUs
                   color: 'var(--white)'
                 }}
               >
-                <FileText size={16} color="var(--teal-400)" /> Generate Council Venue RAMS Document (PDF)
+                <FileText size={16} color="var(--teal-400)" /> Generate Council & Venue Safety Pack (PDF)
               </button>
             </div>
 
@@ -435,7 +435,7 @@ export default function LeaderShieldModal({ isOpen, onClose, community, leaderUs
                 }}
               >
                 <span>Annual (?165 / yr)</span>
-                <span style={{ fontSize: '0.65rem', background: 'rgba(0,0,0,0.25)', color: '#fff', padding: '2px 6px', borderRadius: '4px', fontWeight: 800 }}>SAVE ?33</span>
+                <span style={{ fontSize: '0.65rem', background: 'rgba(0,0,0,0.25)', color: 'var(--white)', padding: '2px 6px', borderRadius: '4px', fontWeight: 800 }}>SAVE ?33</span>
               </button>
               <button
                 onClick={() => setBillingInterval('monthly')}

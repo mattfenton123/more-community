@@ -533,7 +533,7 @@ export default function CommunityProfile() {
               marginBottom: '16px',
               width: 'fit-content'
             }}>
-              <Shield size={14} color="#2dd4bf" /> Verified Leader • Safety & RAMS Compliant
+              <Shield size={14} color="#2dd4bf" /> Verified Leader • Council Safety & Organiser Insured
             </div>
           )}
 

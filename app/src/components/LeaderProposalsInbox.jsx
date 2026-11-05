@@ -113,7 +113,7 @@ export default function LeaderProposalsInbox({
               </span>
               <span style={{ fontSize: '0.8rem', color: 'var(--slate-400)' }}>Zero Cold DMs to Organizers</span>
             </div>
-            <h3 style={{ margin: 0, fontSize: '1.4rem', color: '#fff', fontFamily: 'var(--font-heading)' }}>
+            <h3 style={{ margin: 0, fontSize: '1.4rem', color: 'var(--white)', fontFamily: 'var(--font-heading)' }}>
               Verified Specialist &amp; Activity Pitch Inbox
             </h3>
             <p style={{ margin: '8px 0 0 0', fontSize: '0.9rem', color: 'var(--slate-300)', lineHeight: 1.5 }}>
@@ -151,7 +151,7 @@ export default function LeaderProposalsInbox({
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <Shield size={18} color="var(--teal-400)" />
             <div style={{ fontSize: '0.8rem', color: 'var(--slate-300)' }}>
-              <strong>£5M+ PLI Liability Shield:</strong> Lead instructor assumes primary duty of care
+              <strong>£5M Instructor Legal Shield:</strong> Lead instructor assumes primary duty of care
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -255,7 +255,7 @@ export default function LeaderProposalsInbox({
           color: 'var(--slate-400)'
         }}>
           <CheckCircle2 size={36} color="var(--teal-400)" style={{ margin: '0 auto 12px auto' }} />
-          <h4 style={{ color: '#fff', margin: '0 0 6px 0', fontSize: '1.1rem' }}>No {activeTab} proposals</h4>
+          <h4 style={{ color: 'var(--white)', margin: '0 0 6px 0', fontSize: '1.1rem' }}>No {activeTab} proposals</h4>
           <p style={{ margin: 0, fontSize: '0.85rem' }}>
             {activeTab === 'pending' ? 'You are all caught up! New proposals from accredited guides will appear here.' : 'No items in this category.'}
           </p>
@@ -296,7 +296,7 @@ export default function LeaderProposalsInbox({
                     />
                     <div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{ fontWeight: 700, color: '#fff', fontSize: '0.95rem' }}>{spec.name}</span>
+                        <span style={{ fontWeight: 700, color: 'var(--white)', fontSize: '0.95rem' }}>{spec.name}</span>
                         <span style={{
                           background: 'rgba(20, 184, 166, 0.2)',
                           color: 'var(--teal-300)',
@@ -348,7 +348,7 @@ export default function LeaderProposalsInbox({
                     <div style={{ fontSize: '0.72rem', color: 'var(--teal-400)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>
                       {proposal.category}
                     </div>
-                    <h4 style={{ margin: '0 0 10px 0', fontSize: '1.25rem', color: '#fff', fontFamily: 'var(--font-heading)', lineHeight: 1.3 }}>
+                    <h4 style={{ margin: '0 0 10px 0', fontSize: '1.25rem', color: 'var(--white)', fontFamily: 'var(--font-heading)', lineHeight: 1.3 }}>
                       {proposal.title}
                     </h4>
                     <p style={{ margin: '0 0 16px 0', fontSize: '0.88rem', color: 'var(--slate-300)', lineHeight: 1.5 }}>
@@ -504,7 +504,7 @@ export default function LeaderProposalsInbox({
             padding: '24px',
             boxShadow: '0 25px 50px rgba(0,0,0,0.5)'
           }}>
-            <h4 style={{ margin: '0 0 6px 0', fontSize: '1.2rem', color: '#fff', fontFamily: 'var(--font-heading)' }}>
+            <h4 style={{ margin: '0 0 6px 0', fontSize: '1.2rem', color: 'var(--white)', fontFamily: 'var(--font-heading)' }}>
               Schedule into Your Calendar
             </h4>
             <p style={{ margin: '0 0 20px 0', fontSize: '0.85rem', color: 'var(--slate-400)' }}>
@@ -518,7 +518,7 @@ export default function LeaderProposalsInbox({
                   type="date" 
                   value={selectedDate}
                   onChange={(e) => setSelectedDate(e.target.value)}
-                  style={{ width: '100%', padding: '10px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff' }}
+                  style={{ width: '100%', padding: '10px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--white)' }}
                 />
               </div>
 
@@ -528,7 +528,7 @@ export default function LeaderProposalsInbox({
                   type="time" 
                   value={selectedTime}
                   onChange={(e) => setSelectedTime(e.target.value)}
-                  style={{ width: '100%', padding: '10px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff' }}
+                  style={{ width: '100%', padding: '10px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--white)' }}
                 />
               </div>
 

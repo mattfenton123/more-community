@@ -4,27 +4,27 @@ import { cleanLocationName } from './location';
 export const LEADER_PRO_CONFIG = {
   monthlyPrice: 16.50,
   annualPrice: 165.00,
-  coverAmount: 'Built-in Public Liability Insurance (PLI)',
-  underwriter: 'MORE Community Safety & Insurance Standards',
-  schemeName: 'Community Leader Insurance & Compliance Pack',
+  coverAmount: '?5M Organiser Legal Protection',
+  underwriter: 'MORE Community Safety & Legal Protection Standards',
+  schemeName: 'Community Organiser Legal Cover & Safety Pack',
   perks: [
     {
       id: 'pli',
-      title: 'Built-in Public Liability Insurance (PLI)',
+      title: '£5M Organiser Legal Protection',
       badge: 'Launch Feature',
       desc: 'Protects you from personal liability if an accident, injury, or property damage occurs on your walks or meetups. Eliminates £100s/yr in standalone broker costs.'
     },
     {
       id: 'rams',
-      title: '1-Click Venue RAMS Generator',
-      badge: 'Instant PDF',
-      desc: 'Auto-generate tailored Risk Assessment & Method Statement documents with hazard controls required by council parks, church halls, and venues.'
+      title: 'Council & Venue Safety Packs',
+      badge: '1-Click PDF',
+      desc: 'Instant, official safety documents and risk assessments required by local councils, church halls, schools, and parks before hiring facilities.'
     },
     {
       id: 'waivers',
-      title: 'Automated Attendee Health & Safety Waivers',
+      title: 'Digital Member Safety Check-In',
       badge: 'Audit Trail',
-      desc: 'Digital liability waivers and fitness-to-participate disclaimers captured automatically on RSVP with timestamped audit logs.'
+      desc: 'Automated health and safety confirmations captured whenever members RSVP, keeping emergency contacts accessible on your phone.'
     },
     {
       id: 'fees',
@@ -34,9 +34,9 @@ export const LEADER_PRO_CONFIG = {
     },
     {
       id: 'badge',
-      title: 'Verified Leader & Safety Badge',
+      title: 'Verified Organiser Trust Shield',
       badge: 'Higher Trust',
-      desc: 'Display the verified trust shield on your community microsite and event listings, reassuring new members and venues.'
+      desc: 'Display the verified trust shield on your community page and event listings, reassuring members, venues, and parents.'
     },
     {
       id: 'boost',
@@ -46,9 +46,9 @@ export const LEADER_PRO_CONFIG = {
     },
     {
       id: 'guidance',
-      title: 'Venue Compliance & Insurance Guidance',
-      badge: 'Venue Ready',
-      desc: 'Guidance and document checklist for council and venue permits, with direct access to recommended community group PLI brokers if required.'
+      title: 'Council & Venue Hire Support',
+      badge: 'Hassle-Free',
+      desc: 'Guidance and document checklist for council and venue permits, ensuring smooth approvals for halls, pitches, and parks.'
     }
   ]
 };
@@ -115,7 +115,7 @@ export function generateSafetyDeclarationPdf({ community, leaderName, policyNumb
     ['Compliance Reference:', policyNo],
     ['Operating Framework:', 'MORE Leader Pro Safety & Venue Compliance Pack'],
     ['Attendee Safety Protocol:', 'Digital liability waiver & emergency contact required on RSVP'],
-    ['Risk Assessment (RAMS):', 'Full 5-step hazard identification & control measures filed'],
+    ['Risk Assessment & Safety:', 'Full 5-step hazard identification & venue safety measures filed'],
     ['First Aid & Escalation:', 'Designated first aid protocol & 999 emergency procedure'],
     ['Sanctioned Activities:', 'Community social gatherings, guided walks, amateur fitness, creative workshops, networking & venue hire'],
     ['Territorial Limits:', 'Great Britain, Northern Ireland, the Channel Islands and Isle of Man'],
@@ -157,7 +157,7 @@ export function generateSafetyDeclarationPdf({ community, leaderName, policyNumb
   pdf.setFontSize(8);
   pdf.setTextColor(51, 65, 85);
   const notes = [
-    '• Risk Management: Organizers maintain documented event risk assessments (RAMS) and participant briefing procedures for all scheduled events.',
+    '• Risk Management: Organizers maintain documented event safety assessments and participant briefing procedures for all scheduled events.',
     '• Attendee Waivers: All participants acknowledge health, safety, and personal responsibility disclaimers prior to admission.',
     '• Independent Insurance Notice: Where a venue requires commercial Public Liability Insurance, organizers attach their independent insurance certificate to this compliance pack. Contact compliance@morecommunity.app for verification.'
   ];
@@ -220,7 +220,7 @@ export function generateRamsPdf({ community, event, leaderName, policyNumber }) 
   pdf.setFont('helvetica', 'bold');
   pdf.setFontSize(14);
   pdf.setTextColor(255, 255, 255);
-  pdf.text('EVENT RISK ASSESSMENT & METHOD STATEMENT (RAMS)', 105, 20, { align: 'center' });
+  pdf.text('EVENT SAFETY RISK ASSESSMENT & VENUE PACK', 105, 20, { align: 'center' });
 
   pdf.setFontSize(8.5);
   pdf.setTextColor(45, 212, 191);
@@ -243,7 +243,7 @@ export function generateRamsPdf({ community, event, leaderName, policyNumber }) 
     ['Venue / Start Point:', evLoc],
     ['Lead Organizer:', lead],
     ['Expected Attendees:', `Approx. ${capacity} participants`],
-    ['Safety Compliance:', `Venue RAMS & Waivers (Ref: ${policyNo})`],
+    ['Safety Compliance:', `Venue Safety Pack & Waivers (Ref: ${policyNo})`],
     ['First Aider on Site:', `${lead} (First Aid Kit Carried)`]
   ];
 
@@ -401,6 +401,6 @@ export function generateRamsPdf({ community, event, leaderName, policyNumber }) 
   pdf.text(lead, 16, 264);
   pdf.text(new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }), 116, 264);
 
-  const cleanEvName = `MORE-RAMS-${evTitle.replace(/[^a-zA-Z0-9]/g, '-')}.pdf`;
+  const cleanEvName = `MORE-Safety-Pack-${evTitle.replace(/[^a-zA-Z0-9]/g, '-')}.pdf`;
   pdf.save(cleanEvName);
 }

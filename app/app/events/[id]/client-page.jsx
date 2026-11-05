@@ -564,7 +564,7 @@ export default function EventClient({ id }) {
               <>
                 <span style={{ color: 'var(--slate-600)', fontSize: '0.85rem' }}>•</span>
                 <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '3px 10px', background: 'rgba(20,184,166,0.1)', border: '1px solid rgba(20,184,166,0.25)', borderRadius: '99px', fontSize: '0.75rem', color: '#2dd4bf', fontWeight: 600 }}>
-                  <Shield size={12} color="#2dd4bf" /> Verified Leader • Safety & RAMS Compliant
+                  <Shield size={12} color="#2dd4bf" /> Verified Leader • Council Safety & Organiser Insured
                 </div>
               </>
             )}

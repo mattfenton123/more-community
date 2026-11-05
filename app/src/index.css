@@ -52,13 +52,213 @@
   --slate-800: #e2e8f0;
   --slate-700: #cbd5e1;
   --slate-600: #94a3b8;
-  --slate-500: #8899aa;
-  --slate-400: #6b7f94;
-  --slate-300: #506070;
+  --slate-500: #64748b;
+  --slate-400: #475569;
+  --slate-300: #334155;
   --slate-200: #1e293b;
   --slate-100: #0f172a;
   --slate-50: #020617;
-  --white: #020617; /* white text becomes dark text */
+  --white: #0f172a; /* white text becomes dark slate text */
+  --teal-700: #0f766e;
+  --teal-600: #0d9488;
+  --teal-500: #0d9488;
+  --teal-400: #0f766e;
+  --teal-300: #115e59;
+}
+
+/* ============================================================
+   DAY / LIGHT MODE COMPREHENSIVE OVERRIDES
+   ============================================================ */
+
+/* 1. App Header in Day Mode */
+[data-theme="light"] .app-header {
+  background: rgba(255, 255, 255, 0.94) !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+}
+
+[data-theme="light"] .app-header h1 {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .app-header button:not(.btn-primary) {
+  background: rgba(0, 0, 0, 0.04) !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .app-header .interactive-press {
+  color: #334155 !important;
+}
+
+/* 2. Floating Bottom Navigation */
+[data-theme="light"] .bottom-nav {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08) !important;
+}
+
+[data-theme="light"] .bottom-nav-item {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .bottom-nav-item.active {
+  color: #0d9488 !important;
+  text-shadow: none !important;
+}
+
+/* 3. Glass Panels & Cards */
+[data-theme="light"] .glass-panel,
+[data-theme="light"] .card,
+[data-theme="light"] [class*="glass-panel"] {
+  background: #ffffff !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03), 0 4px 12px rgba(0, 0, 0, 0.02) !important;
+  color: #0f172a;
+}
+
+[data-theme="light"] .glass-panel:hover {
+  background: #ffffff !important;
+  border-color: rgba(0, 0, 0, 0.14) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06) !important;
+}
+
+[data-theme="light"] .community-card {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
+}
+
+[data-theme="light"] .community-card:hover {
+  background: rgba(0, 0, 0, 0.02) !important;
+}
+
+[data-theme="light"] .event-manage-card {
+  background: #ffffff !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03) !important;
+}
+
+[data-theme="light"] .event-manage-card:hover {
+  background: #fafafa !important;
+  border-color: rgba(0, 0, 0, 0.12) !important;
+}
+
+[data-theme="light"] .event-manage-date .day {
+  color: #0f172a !important;
+}
+
+/* 4. Modals & Dialogs */
+[data-theme="light"] .modal-overlay {
+  background: rgba(15, 23, 42, 0.55) !important;
+  backdrop-filter: blur(12px) !important;
+}
+
+[data-theme="light"] .modal-content {
+  background: #ffffff !important;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.14) !important;
+  color: #0f172a !important;
+}
+
+/* 5. Inputs, Textareas, Selects */
+[data-theme="light"] input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="submit"]):not([type="button"]),
+[data-theme="light"] textarea,
+[data-theme="light"] select,
+[data-theme="light"] .form-input,
+[data-theme="light"] .text-input {
+  background: #ffffff !important;
+  border: 1px solid rgba(0, 0, 0, 0.15) !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] input::placeholder,
+[data-theme="light"] textarea::placeholder,
+[data-theme="light"] .form-input::placeholder {
+  color: #94a3b8 !important;
+}
+
+[data-theme="light"] select option {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] select optgroup {
+  background-color: #f1f5f9 !important;
+  color: #64748b !important;
+}
+
+[data-theme="light"] .segmented-control {
+  background: #e2e8f0 !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+
+[data-theme="light"] .segmented-control button {
+  color: #475569 !important;
+}
+
+[data-theme="light"] .segmented-control button.active {
+  background: #0d9488 !important;
+  color: #ffffff !important;
+}
+
+/* 6. Section Titles */
+[data-theme="light"] .section-title {
+  color: #0f172a !important;
+}
+
+/* 7. Leaflet Maps in Day Mode */
+[data-theme="light"] .leaflet-container {
+  background: #f8fafc !important;
+}
+
+[data-theme="light"] .leaflet-tile-pane {
+  filter: none !important;
+}
+
+[data-theme="light"] .leaflet-bar a {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+}
+
+[data-theme="light"] .leaflet-control-attribution {
+  background: rgba(255, 255, 255, 0.85) !important;
+  color: #64748b !important;
+}
+
+/* 8. Prevention of White-on-White Text & Broken Transparent Cards */
+[data-theme="light"] [style*="background: rgba(255, 255, 255, 0.0"],
+[data-theme="light"] [style*="background:rgba(255, 255, 255, 0.0"],
+[data-theme="light"] [style*="background: rgba(255,255,255,0.0"],
+[data-theme="light"] [style*="background:rgba(255,255,255,0.0"] {
+  background: #ffffff !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03) !important;
+}
+
+[data-theme="light"] h1[style*="color: white"],
+[data-theme="light"] h2[style*="color: white"],
+[data-theme="light"] h3[style*="color: white"],
+[data-theme="light"] h4[style*="color: white"],
+[data-theme="light"] h1[style*="color: #fff"],
+[data-theme="light"] h2[style*="color: #fff"],
+[data-theme="light"] h3[style*="color: #fff"],
+[data-theme="light"] h4[style*="color: #fff"],
+[data-theme="light"] span[style*="color: white"]:not([class*="badge"]):not([class*="tag"]):not([style*="background"]),
+[data-theme="light"] span[style*="color: #fff"]:not([class*="badge"]):not([class*="tag"]):not([style*="background"]),
+[data-theme="light"] p[style*="color: white"],
+[data-theme="light"] p[style*="color: #fff"] {
+  color: #0f172a !important;
+}
+
+/* 9. Hero Banners in Light Mode */
+[data-theme="light"] [style*="linear-gradient(180deg, rgba(20, 184, 166, 0.12) 0%, rgba(15, 23, 42, 0) 100%)"] {
+  background: linear-gradient(180deg, rgba(20, 184, 166, 0.16) 0%, rgba(248, 250, 252, 0) 100%) !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
+}
+
+[data-theme="light"] [style*="linear-gradient(135deg, rgba(20, 184, 166, 0.12) 0%, rgba(245, 158, 11, 0.08) 100%)"] {
+  background: linear-gradient(135deg, rgba(20, 184, 166, 0.16) 0%, rgba(245, 158, 11, 0.1) 100%) !important;
+  border: 1px solid rgba(13, 148, 136, 0.25) !important;
 }
 
 /* High Contrast Mode */

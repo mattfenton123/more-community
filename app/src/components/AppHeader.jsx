@@ -57,7 +57,7 @@ export default function AppHeader({ title, subtitle, rightElement, showBack = fa
         {unreadCount > 0 && (
           <div style={{
             position: 'absolute', top: '1px', right: '1px',
-            background: 'var(--rose-500)', color: 'var(--white)',
+            background: 'var(--rose-500)', color: '#ffffff',
             fontSize: '0.55rem', fontWeight: 700,
             width: '15px', height: '15px', borderRadius: '50%',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -83,9 +83,7 @@ export default function AppHeader({ title, subtitle, rightElement, showBack = fa
           style={{
             padding: '5px 10px',
             borderRadius: '999px',
-            background: 'rgba(255, 255, 255, 0.06)',
-            border: '1px solid rgba(255, 255, 255, 0.12)',
-            color: 'var(--slate-200)',
+            background: 'var(--slate-800)', border: '1px solid var(--slate-700)', color: 'var(--white)',
             fontSize: '0.75rem',
             fontWeight: 600,
             cursor: 'pointer',
@@ -108,7 +106,7 @@ export default function AppHeader({ title, subtitle, rightElement, showBack = fa
             className="interactive-press"
             style={{ 
               width: '30px', height: '30px', borderRadius: '50%', flexShrink: 0,
-              background: 'rgba(255,255,255,0.05)', border: 'none', color: 'var(--white)', 
+              background: 'var(--slate-800)', border: '1px solid var(--slate-700)', color: 'var(--white)', 
               display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' 
             }}
             title="Go Back"
