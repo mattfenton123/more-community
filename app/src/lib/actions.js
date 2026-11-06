@@ -443,7 +443,7 @@ export async function flagCommunityAction(communityId, reason, token) {
   return true;
 }
 
-export async function rsvpToEventAction(userId, eventId, status, ticketType, referredBy, token) {
+export async function rsvpToEventAction(userId, eventId, status, ticketType, referredBy, token, metadata = {}) {
   if (!userId || !eventId) throw new Error("Missing data");
   await verifyUser(token, userId);
 
@@ -458,12 +458,59 @@ export async function rsvpToEventAction(userId, eventId, status, ticketType, ref
       event_id: eventId,
       status: status
     };
+    if (ticketType) rsvpData.ticket_type = ticketType;
     if (referredBy) rsvpData.referred_by = referredBy;
+    if (metadata.guestName) rsvpData.guest_name = metadata.guestName;
+    if (metadata.answer) rsvpData.answer = metadata.answer;
     
-    const { error } = await supabaseAdmin.from('event_rsvps').upsert([rsvpData], { onConflict: 'event_id,user_id' });
-    if (error) throw new Error(error.message);
+    let { error } = await supabaseAdmin.from('event_rsvps').upsert([rsvpData], { onConflict: 'event_id,user_id' });
+    
+    // Fallback if Postgres schema doesn't have custom columns yet: pack into referred_by safely
+    if (error && (error.message?.includes('guest_name') || error.message?.includes('answer'))) {
+      const fallbackRsvp = {
+        user_id: userId,
+        event_id: eventId,
+        status: status
+      };
+      if (ticketType) fallbackRsvp.ticket_type = ticketType;
+      const metaParts = [];
+      if (referredBy && !referredBy.startsWith('meta:')) metaParts.push(`ref:${referredBy}`);
+      if (metadata.guestName) metaParts.push(`guest:${metadata.guestName}`);
+      if (metadata.answer) metaParts.push(`ans:${metadata.answer}`);
+      
+      fallbackRsvp.referred_by = metaParts.length > 0 ? `meta:${metaParts.join(';;')}` : (referredBy || null);
+      
+      const retry = await supabaseAdmin.from('event_rsvps').upsert([fallbackRsvp], { onConflict: 'event_id,user_id' });
+      if (retry.error) throw new Error(retry.error.message);
+    } else if (error) {
+      throw new Error(error.message);
+    }
   }
   return true;
+}
+
+export async function addEventPhotoAction(eventId, photoUrl, token) {
+  if (!eventId || !photoUrl) throw new Error("Missing parameters");
+  await verifyUser(token);
+
+  const { data: event, error: fetchErr } = await supabaseAdmin
+    .from('events')
+    .select('gallery_images')
+    .eq('id', eventId)
+    .single();
+
+  if (fetchErr || !event) throw new Error("Event not found");
+
+  const currentGallery = Array.isArray(event.gallery_images) ? event.gallery_images : [];
+  const updatedGallery = [...currentGallery, photoUrl];
+
+  const { error } = await supabaseAdmin
+    .from('events')
+    .update({ gallery_images: updatedGallery })
+    .eq('id', eventId);
+
+  if (error) throw new Error(error.message);
+  return updatedGallery;
 }
 
 export async function updateAttendeeStatusAction(eventId, attendeeUserId, newStatus, token) {

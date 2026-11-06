@@ -2,7 +2,7 @@
 import { supabase } from '../../../src/lib/supabaseClient';
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ChevronLeft, Share, MapPin, Calendar, Clock, Users, CheckCircle2, Info, List, Activity, Check, Map, Ticket, DollarSign, Copy, ExternalLink, Navigation, Video, AlertTriangle, Image as ImageIcon, ScanLine, Archive, Repeat, MessageCircle, Banknote, CreditCard, Lock, ChevronRight, X, UserCheck, Shield, ChevronDown } from 'lucide-react';
+import { ChevronLeft, Share, MapPin, Calendar, Clock, Users, CheckCircle2, Info, List, Activity, Check, Map, Ticket, DollarSign, Copy, ExternalLink, Navigation, Video, AlertTriangle, Image as ImageIcon, ScanLine, Archive, Repeat, MessageCircle, Banknote, CreditCard, Lock, ChevronRight, X, UserCheck, Shield, ChevronDown, Camera, HelpCircle, MessageSquare } from 'lucide-react';
 import { useAppContext } from '../../../src/context/AppContext';
 import { useToast } from '../../../src/components/Toast';
 import DigitalTicket from '../../../src/components/DigitalTicket';
@@ -264,7 +264,7 @@ function EventLocationMap({ location, event, isLocationShielded = false }) {
 
 export default function EventClient({ id }) {
   const router = useRouter();
-  const { events, communities, user, users, eventRsvps, rsvpToEvent, updateAttendeeStatus, joinCommunity, checkInMember } = useAppContext();
+  const { events, communities, user, users, eventRsvps, rsvpToEvent, updateAttendeeStatus, addEventPhoto, joinCommunity, checkInMember } = useAppContext();
   const { toast } = useToast();
   const [event, setEvent] = useState(null);
   const [community, setCommunity] = useState(null);
@@ -279,6 +279,13 @@ export default function EventClient({ id }) {
   const [hasCheckedInLocally, setHasCheckedInLocally] = useState(false);
   const [showAttendeesModal, setShowAttendeesModal] = useState(false);
   const [approvingUserId, setApprovingUserId] = useState(null);
+  const [showRsvpPromptModal, setShowRsvpPromptModal] = useState(false);
+  const [rsvpGuestName, setRsvpGuestName] = useState('');
+  const [rsvpHasGuest, setRsvpHasGuest] = useState(false);
+  const [rsvpAnswer, setRsvpAnswer] = useState('');
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const [activePhotoModal, setActivePhotoModal] = useState(null);
+  const photoInputRef = useRef(null);
 
   const isLeader = user?.ledCommunities?.includes(event?.communityId) || user?.isAdmin;
 
@@ -382,6 +389,23 @@ export default function EventClient({ id }) {
   const confirmedAttendees = (rsvps || []).filter(r => r.status === 'going');
   const pendingAttendees = (rsvps || []).filter(r => r.status === 'pending_approval');
 
+
+  const handlePhotoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploadingPhoto(true);
+    try {
+      await addEventPhoto(event.id, file);
+      toast.success('Photo Shared! 📸', 'Added to communal event memories.');
+    } catch (err) {
+      console.error(err);
+      toast.error('Upload Failed', 'Could not upload photo. Please try again.');
+    } finally {
+      setIsUploadingPhoto(false);
+      if (photoInputRef.current) photoInputRef.current.value = '';
+    }
+  };
+
   const handleJoinAndRSVP = async () => {
     if (!user?.id) {
       router.push(`/login?redirect=/events/${id}`);
@@ -450,10 +474,13 @@ export default function EventClient({ id }) {
     }
   };
 
-  const handleRSVP = async () => {
+  const handleRSVP = async (rsvpOptions = {}) => {
     if (!user?.id) {
       router.push(`/login?redirect=/events/${id}`);
       return;
+    }
+    if (!isMember && !isGoing && !isPendingApproval) {
+      await joinCommunity(event.communityId);
     }
     if (isWaitlisted) {
       await rsvpToEvent(event.id, 'not_going');
@@ -466,7 +493,7 @@ export default function EventClient({ id }) {
       return;
     }
     if (isSoldOut && !isGoing) {
-      await rsvpToEvent(event.id, 'waitlist');
+      await rsvpToEvent(event.id, 'waitlist', 'free', null, rsvpOptions);
       toast.success('Joined Waitlist!', `You are #${waitlist.length + 1} in line. If a spot opens up, we will notify you.`);
       return;
     }
@@ -478,11 +505,13 @@ export default function EventClient({ id }) {
       executeStripeCheckout();
     } else {
       if (requiresHostApproval && !isGoing) {
-        await rsvpToEvent(event.id, 'pending_approval');
+        await rsvpToEvent(event.id, 'pending_approval', 'free', null, rsvpOptions);
+        setShowRsvpPromptModal(false);
         toast.success('Request Sent! ⏳', 'The host will review your request. Exact meeting location will be revealed once approved.');
       } else {
         const newStatus = isGoing ? 'not_going' : 'going';
-        await rsvpToEvent(event.id, newStatus);
+        await rsvpToEvent(event.id, newStatus, 'free', null, rsvpOptions);
+        setShowRsvpPromptModal(false);
         if (newStatus === 'going') {
           setShowRsvpSuccessModal(true);
         } else {
@@ -1012,6 +1041,90 @@ export default function EventClient({ id }) {
           </div>
         )}
 
+        {/* Communal Photo Dump & Memories (Lu.ma style) */}
+        <div style={{ marginBottom: '32px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
+            <div>
+              <h3 style={{ fontSize: '1.2rem', margin: 0, color: 'var(--white)', fontFamily: 'var(--font-heading)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Camera size={20} color="var(--teal-400)" /> Event Memories & Photos
+              </h3>
+              <div style={{ fontSize: '0.78rem', color: 'var(--slate-400)', marginTop: '2px' }}>
+                Shared communal camera roll for attendees and leaders
+              </div>
+            </div>
+            
+            <div>
+              <input
+                type="file"
+                accept="image/*"
+                ref={photoInputRef}
+                onChange={handlePhotoUpload}
+                style={{ display: 'none' }}
+              />
+              <button
+                onClick={() => {
+                  if (!user?.id) router.push(`/login?redirect=/events/${id}`);
+                  else photoInputRef.current?.click();
+                }}
+                disabled={isUploadingPhoto}
+                className="interactive-press"
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '6px',
+                  padding: '8px 16px', borderRadius: '99px',
+                  background: 'rgba(20,184,166,0.15)', border: '1px solid rgba(20,184,166,0.3)',
+                  color: 'var(--teal-300)', fontSize: '0.82rem', fontWeight: 600,
+                  cursor: isUploadingPhoto ? 'wait' : 'pointer'
+                }}
+              >
+                <Camera size={14} /> {isUploadingPhoto ? 'Uploading...' : '+ Add Photo'}
+              </button>
+            </div>
+          </div>
+
+          {(event.galleryImages && event.galleryImages.length > 0) ? (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '10px' }}>
+              {event.galleryImages.map((imgUrl, pIdx) => (
+                <div
+                  key={pIdx}
+                  onClick={() => setActivePhotoModal(imgUrl)}
+                  className="interactive-press"
+                  style={{
+                    position: 'relative', borderRadius: '12px', overflow: 'hidden', aspectRatio: '1/1',
+                    border: '1px solid rgba(255,255,255,0.08)', cursor: 'pointer', background: '#0f172a'
+                  }}
+                >
+                  <img src={imgUrl} alt={`Event photo ${pIdx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div style={{
+              background: 'rgba(255,255,255,0.02)', border: '1px dashed rgba(255,255,255,0.08)',
+              borderRadius: '16px', padding: '24px', textAlign: 'center'
+            }}>
+              <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)', marginBottom: '10px' }}>
+                No photos shared yet. Snap moments during the walk and drop them here for the group!
+              </div>
+              <button
+                onClick={() => {
+                  if (!user?.id) router.push(`/login?redirect=/events/${id}`);
+                  else photoInputRef.current?.click();
+                }}
+                className="interactive-press"
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: '6px',
+                  padding: '8px 16px', borderRadius: '99px',
+                  background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)',
+                  color: 'var(--slate-200)', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer'
+                }}
+              >
+                <Camera size={14} /> Upload First Photo
+              </button>
+            </div>
+          )}
+        </div>
+
+
         {/* Gallery Images */}
         {event.galleryImages && event.galleryImages.length > 0 && (
           <div style={{ marginBottom: '32px' }}>
@@ -1253,7 +1366,7 @@ export default function EventClient({ id }) {
             ) : (
               <>
                 <button
-                  onClick={!user?.id ? () => router.push(`/login?redirect=/events/${id}`) : (!isMember && !isGoing && !isPendingApproval ? handleJoinAndRSVP : handleRSVP)}
+                  onClick={!user?.id ? () => router.push(`/login?redirect=/events/${id}`) : (isGoing || isPendingApproval ? handleRSVP : () => setShowRsvpPromptModal(true))}
                   disabled={checkoutState === 'processing'}
                   className="interactive-press"
                   style={{
@@ -1484,7 +1597,7 @@ export default function EventClient({ id }) {
                   </button>
                 )}
                 <button  
-                  onClick={!user?.id ? () => router.push(`/login?redirect=/events/${id}`) : (!isMember && !isGoing && !isPendingApproval ? handleJoinAndRSVP : handleRSVP)}
+                  onClick={!user?.id ? () => router.push(`/login?redirect=/events/${id}`) : (isGoing || isPendingApproval ? handleRSVP : () => setShowRsvpPromptModal(true))}
                   disabled={checkoutState === 'processing'}
                   className="interactive-press"
                   style={{ 
@@ -1926,13 +2039,169 @@ export default function EventClient({ id }) {
                         <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.92rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
                           {u?.name || 'Community Member'}
                           {isHost && <span style={{ fontSize: '0.65rem', padding: '2px 6px', borderRadius: '6px', background: 'rgba(20,184,166,0.2)', color: 'var(--teal-300)', fontWeight: 700 }}>HOST</span>}
+                          {att.guestName && (
+                            <span style={{ fontSize: '0.7rem', padding: '2px 6px', borderRadius: '6px', background: 'rgba(56,189,248,0.2)', color: '#7dd3fc', fontWeight: 600 }}>
+                              +1 {att.guestName}
+                            </span>
+                          )}
                         </div>
-                        {u?.bio && <div style={{ fontSize: '0.78rem', color: 'var(--slate-400)', maxWidth: '240px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{u.bio}</div>}
+                        {att.answer && (
+                          <div style={{ fontSize: '0.76rem', color: '#fbbf24', marginTop: '2px' }}>
+                            &ldquo;{att.answer}&rdquo;
+                          </div>
+                        )}
+                        {u?.bio && !att.answer && <div style={{ fontSize: '0.78rem', color: 'var(--slate-400)', maxWidth: '240px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{u.bio}</div>}
                       </div>
                     </div>
                   </div>
                 );
               })}
+            </div>
+          </div>
+        </div>
+      )}
+
+
+      {/* RSVP Options Modal (Guest Pass + Micro-Question) */}
+      {showRsvpPromptModal && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 100000,
+          background: 'rgba(2, 6, 23, 0.85)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px'
+        }}>
+          <div style={{
+            width: '100%', maxWidth: '440px',
+            background: 'linear-gradient(180deg, #0f172a 0%, #090d16 100%)',
+            border: '1px solid rgba(45, 212, 191, 0.35)',
+            borderRadius: '24px', padding: '24px',
+            boxShadow: '0 20px 50px rgba(0,0,0,0.7)',
+            position: 'relative'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+              <div>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--white)', margin: 0 }}>
+                  {requiresHostApproval ? 'Request to Join' : 'Confirm Your Spot'}
+                </h3>
+                <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)', marginTop: '2px' }}>
+                  {event.title}
+                </div>
+              </div>
+              <button
+                onClick={() => setShowRsvpPromptModal(false)}
+                className="interactive-press"
+                style={{ background: 'rgba(255,255,255,0.06)', border: 'none', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--slate-400)', cursor: 'pointer' }}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Host Micro-Question */}
+            {event.rsvpQuestion && (
+              <div style={{ marginBottom: '18px', background: 'rgba(20,184,166,0.08)', border: '1px solid rgba(20,184,166,0.25)', borderRadius: '14px', padding: '14px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.78rem', fontWeight: 700, color: 'var(--teal-300)', textTransform: 'uppercase', marginBottom: '6px' }}>
+                  <HelpCircle size={14} /> Host Question
+                </div>
+                <div style={{ fontSize: '0.9rem', color: 'var(--white)', fontWeight: 600, marginBottom: '8px' }}>
+                  {event.rsvpQuestion}
+                </div>
+                <input
+                  type="text"
+                  placeholder="Your answer (e.g. Vegetarian, bringing puppy, beginner)..."
+                  value={rsvpAnswer}
+                  onChange={e => setRsvpAnswer(e.target.value)}
+                  style={{
+                    width: '100%', padding: '10px 14px', borderRadius: '10px',
+                    background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)',
+                    color: 'var(--white)', fontSize: '0.88rem', outline: 'none'
+                  }}
+                />
+              </div>
+            )}
+
+            {/* +1 Guest Pass (Lu.ma viral loop) */}
+            <div style={{ marginBottom: '20px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '14px' }}>
+              <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}>
+                <div>
+                  <div style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--white)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Users size={16} color="var(--teal-400)" /> Bring a +1 / Guest Pass
+                  </div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', marginTop: '2px' }}>
+                    Reserve a spot for a friend without requiring them to sign up
+                  </div>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={rsvpHasGuest}
+                  onChange={e => setRsvpHasGuest(e.target.checked)}
+                  style={{ width: '18px', height: '18px', accentColor: 'var(--teal-500)', cursor: 'pointer' }}
+                />
+              </label>
+
+              {rsvpHasGuest && (
+                <div style={{ marginTop: '12px' }}>
+                  <input
+                    type="text"
+                    placeholder="Friend's first name (e.g. Sarah)..."
+                    value={rsvpGuestName}
+                    onChange={e => setRsvpGuestName(e.target.value)}
+                    style={{
+                      width: '100%', padding: '10px 14px', borderRadius: '10px',
+                      background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(45,212,191,0.3)',
+                      color: 'var(--white)', fontSize: '0.88rem', outline: 'none'
+                    }}
+                  />
+                </div>
+              )}
+            </div>
+
+            <button
+              onClick={() => handleRSVP({
+                guestName: rsvpHasGuest ? rsvpGuestName.trim() : null,
+                answer: rsvpAnswer.trim()
+              })}
+              className="interactive-press"
+              style={{
+                width: '100%', padding: '14px', borderRadius: '12px',
+                background: 'linear-gradient(135deg, var(--teal-500), #3b82f6)',
+                color: '#0f172a', fontWeight: 700, fontSize: '0.98rem', border: 'none',
+                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
+              }}
+            >
+              <CheckCircle2 size={18} /> {requiresHostApproval ? 'Send Join Request ⏳' : 'Confirm RSVP ✓'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Lightbox Photo Modal */}
+      {activePhotoModal && (
+        <div
+          onClick={() => setActivePhotoModal(null)}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 100001,
+            background: 'rgba(0,0,0,0.95)', backdropFilter: 'blur(20px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px'
+          }}
+        >
+          <div onClick={e => e.stopPropagation()} style={{ maxWidth: '90vw', maxHeight: '90vh', position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <img src={activePhotoModal} alt="Event memory" style={{ maxWidth: '100%', maxHeight: '80vh', objectFit: 'contain', borderRadius: '16px' }} />
+            <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
+              <a
+                href={activePhotoModal}
+                download="event-memory.jpg"
+                target="_blank"
+                rel="noreferrer"
+                className="interactive-press"
+                style={{ padding: '8px 16px', borderRadius: '99px', background: 'var(--teal-500)', color: '#0f172a', fontWeight: 700, fontSize: '0.85rem', textDecoration: 'none' }}
+              >
+                Download Photo
+              </a>
+              <button
+                onClick={() => setActivePhotoModal(null)}
+                style={{ padding: '8px 16px', borderRadius: '99px', background: 'rgba(255,255,255,0.1)', color: '#fff', border: 'none', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer' }}
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>

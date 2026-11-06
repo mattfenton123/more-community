@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Calendar as CalIcon, MapPin, Search, X, CheckCircle2, CreditCard, Check, Ticket, Users, QrCode, Share, Sparkles, Navigation, ChevronRight, ChevronsRight, Archive, Filter, Sun, Moon, Sunrise, RotateCcw, Tag } from 'lucide-react';
+import { Calendar as CalIcon, Mic, MapPin, Search, X, CheckCircle2, CreditCard, Check, Ticket, Users, QrCode, Share, Sparkles, Navigation, ChevronRight, ChevronsRight, Archive, Filter, Sun, Moon, Sunrise, RotateCcw, Tag } from 'lucide-react';
 import { useAppContext } from '../../src/context/AppContext';
 import { SkeletonList, SkeletonEvent } from '../../src/components/SkeletonCard';
 import { useToast } from '../../src/components/Toast';
@@ -30,6 +30,79 @@ export default function EventsHub() {
   const [timeOfDayFilter, setTimeOfDayFilter] = useState('all'); // 'all' | 'morning' | 'afternoon' | 'evening'
   const [categoryFilter, setCategoryFilter] = useState('all'); // 'all' | category tag
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [aiPrompt, setAiPrompt] = useState('');
+  const [isSearchingAi, setIsSearchingAi] = useState(false);
+  const [isListeningAi, setIsListeningAi] = useState(false);
+  const [aiMatches, setAiMatches] = useState(null);
+
+
+  // ─── AI Event Matchmaker ──────────────────────────────────────────
+  const handleAiSearch = async (overridePrompt) => {
+    const queryToUse = (typeof overridePrompt === 'string' ? overridePrompt : aiPrompt).trim();
+    if (!queryToUse) return;
+
+    setIsSearchingAi(true);
+    try {
+      const upcoming = events.filter(e => isEventUpcoming(e) && e.status !== 'cancelled');
+      const res = await fetch('/api/ai/generate-event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mode: 'match-events',
+          prompt: queryToUse,
+          events: upcoming
+        })
+      });
+      const data = await res.json();
+      if (res.ok && data?.recommendations) {
+        setAiMatches(data);
+        toast.success('AI Matches Ready! ✨', `Found ${data.recommendations.length} events tailored to your vibe.`);
+      } else {
+        toast.info('No Matches Found', data?.reason || 'Try searching with different terms.');
+      }
+    } catch (err) {
+      console.error('AI match error:', err);
+      toast.error('Search Failed', 'Could not run AI concierge match.');
+    } finally {
+      setIsSearchingAi(false);
+    }
+  };
+
+  const toggleAiSpeech = () => {
+    if (typeof window === 'undefined') return;
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      toast.info('Voice Not Supported', 'Your browser does not support Web Speech.');
+      return;
+    }
+
+    if (isListeningAi) {
+      setIsListeningAi(false);
+      return;
+    }
+
+    try {
+      const recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = 'en-GB';
+
+      recognition.onstart = () => setIsListeningAi(true);
+      recognition.onresult = (event) => {
+        const transcript = event.results?.[0]?.[0]?.transcript;
+        if (transcript) {
+          setAiPrompt(transcript);
+          handleAiSearch(transcript);
+        }
+      };
+      recognition.onerror = () => setIsListeningAi(false);
+      recognition.onend = () => setIsListeningAi(false);
+
+      recognition.start();
+    } catch (e) {
+      setIsListeningAi(false);
+    }
+  };
 
   // Sort events chronologically (soonest first)
   const sortByDate = (list) => {
@@ -388,6 +461,100 @@ export default function EventsHub() {
           >
             <ChevronsRight size={16} strokeWidth={3} color="#0f172a" />
           </button>
+        </div>
+      </div>
+
+      {/* AI Concierge Matchmaker Bar */}
+      <div style={{ padding: '8px 20px 0' }}>
+        <div style={{
+          background: 'linear-gradient(135deg, rgba(20, 184, 166, 0.12) 0%, rgba(59, 130, 246, 0.08) 100%)',
+          border: '1px solid rgba(45, 212, 191, 0.25)',
+          borderRadius: '16px',
+          padding: '12px 14px'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', fontWeight: 700, color: 'var(--teal-300)' }}>
+              <Sparkles size={14} color="var(--teal-400)" />
+              <span>Ask More AI: Match Your Vibe</span>
+            </div>
+            {aiMatches && (
+              <button
+                onClick={() => { setAiMatches(null); setAiPrompt(''); }}
+                style={{ background: 'none', border: 'none', color: 'var(--slate-400)', fontSize: '0.72rem', cursor: 'pointer', padding: 0 }}
+              >
+                Clear AI Picks ×
+              </button>
+            )}
+          </div>
+
+          <div style={{ position: 'relative', display: 'flex', gap: '8px' }}>
+            <input
+              type="text"
+              placeholder="e.g. 'Saturday morning walk with dogs', 'Quiet evening walk'..."
+              value={aiPrompt}
+              onChange={e => setAiPrompt(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') handleAiSearch(); }}
+              style={{
+                flex: 1, padding: '10px 40px 10px 12px', borderRadius: '12px',
+                background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)',
+                color: 'var(--white)', fontSize: '0.85rem', outline: 'none'
+              }}
+            />
+            <button
+              type="button"
+              onClick={toggleAiSpeech}
+              title={isListeningAi ? 'Stop listening' : 'Speak your search'}
+              style={{
+                position: 'absolute', right: '62px', top: '50%', transform: 'translateY(-50%)',
+                background: isListeningAi ? 'rgba(239, 68, 68, 0.3)' : 'none',
+                border: 'none', borderRadius: '50%', width: '28px', height: '28px',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: isListeningAi ? '#f87171' : 'var(--slate-400)', cursor: 'pointer'
+              }}
+            >
+              <Mic size={15} />
+            </button>
+
+            <button
+              onClick={() => handleAiSearch()}
+              disabled={isSearchingAi || !aiPrompt.trim()}
+              className="interactive-press"
+              style={{
+                padding: '8px 16px', borderRadius: '12px',
+                background: 'linear-gradient(135deg, var(--teal-500), #3b82f6)',
+                border: 'none', color: '#0f172a', fontWeight: 700, fontSize: '0.82rem',
+                cursor: isSearchingAi ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', gap: '4px'
+              }}
+            >
+              {isSearchingAi ? <Sparkles size={14} /> : 'Find'}
+            </button>
+          </div>
+
+          {/* Quick prompt suggestions */}
+          <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', marginTop: '8px', paddingBottom: '2px', scrollbarWidth: 'none' }}>
+            {[
+              '🐕 Dog-friendly walks',
+              '☕ Coffee & stroll',
+              '🌅 Saturday morning',
+              '🌿 Gentle & beginner'
+            ].map(chip => (
+              <button
+                key={chip}
+                onClick={() => {
+                  const cleaned = chip.replace(/^[^\s]+\s*/, '');
+                  setAiPrompt(cleaned);
+                  handleAiSearch(cleaned);
+                }}
+                style={{
+                  padding: '3px 8px', borderRadius: '99px',
+                  background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)',
+                  color: 'var(--slate-300)', fontSize: '0.72rem', whiteSpace: 'nowrap', cursor: 'pointer'
+                }}
+              >
+                {chip}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 

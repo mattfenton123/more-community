@@ -180,6 +180,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
     autoReminders: true, 
     autoFeedback: true,
     requireApproval: false,
+    rsvpQuestion: '',
     scheduleMode: 'single',
     resolvedDates: [],
     recurrenceSummary: 'Single event'
@@ -1053,6 +1054,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
           autoReminders: eventForm.autoReminders,
           autoFeedback: eventForm.autoFeedback,
           requireApproval: Boolean(eventForm.requireApproval),
+          rsvpQuestion: eventForm.rsvpQuestion?.trim() || '',
           image: finalImage
         });
         toast.success('Event created!', `${eventForm.title} has been published`);
@@ -1065,6 +1067,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
           autoReminders: eventForm.autoReminders,
           autoFeedback: eventForm.autoFeedback,
           requireApproval: Boolean(eventForm.requireApproval),
+          rsvpQuestion: eventForm.rsvpQuestion?.trim() || '',
           image: finalImage
         }));
         await createEventsBatch(community.id, eventsList);
@@ -1098,6 +1101,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
       autoReminders: event.autoReminders ?? true,
       autoFeedback: event.autoFeedback ?? true,
       requireApproval: Boolean(event.requireApproval || event.require_approval || (event.description && event.description.includes('[Host Approval Required]'))),
+      rsvpQuestion: event.rsvpQuestion || (event.description?.match(/\[RSVP Question: ([^\]]+)\]/)?.[1] || ''),
       scheduleMode: 'single',
       resolvedDates: event.date ? [event.date] : [],
       recurrenceSummary: 'Single event'
@@ -1127,6 +1131,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
       ticketPrice: eventForm.ticketPrice ? parseFloat(eventForm.ticketPrice) : 0,
       allowCash: Boolean(eventForm.allowCash),
       requireApproval: Boolean(eventForm.requireApproval),
+      rsvpQuestion: eventForm.rsvpQuestion?.trim() || '',
       collabCommunityIds: eventForm.collabCommunityIds || [],
       autoReminders: eventForm.autoReminders,
       autoFeedback: eventForm.autoFeedback
@@ -2032,6 +2037,51 @@ export default function LeaderDashboard({ initialCommunityId }) {
               </div>
               <div style={{ width: '44px', height: '24px', background: eventForm.requireApproval ? 'var(--teal-500)' : 'rgba(255,255,255,0.1)', borderRadius: '12px', position: 'relative', transition: 'all 0.3s' }}>
                 <div style={{ position: 'absolute', width: '20px', height: '20px', background: 'white', borderRadius: '50%', top: '2px', left: eventForm.requireApproval ? '22px' : '2px', transition: 'all 0.3s' }} />
+              </div>
+            </div>
+
+            {/* Lu.ma RSVP Micro-Question */}
+            <div style={{ padding: '16px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '14px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <HelpCircle size={16} color="var(--teal-400)" /> Custom RSVP Question
+                  <span style={{ fontSize: '0.68rem', padding: '1px 6px', borderRadius: '4px', background: 'rgba(255,255,255,0.06)', color: 'var(--slate-400)' }}>OPTIONAL</span>
+                </div>
+              </div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', marginBottom: '10px' }}>
+                Ask attendees 1 question before they RSVP (answers appear on your door list)
+              </div>
+              <input
+                type="text"
+                placeholder="e.g. Any injuries or dietary needs? Bringing a dog?..."
+                value={eventForm.rsvpQuestion || ''}
+                onChange={e => setEventForm({ ...eventForm, rsvpQuestion: e.target.value })}
+                style={{
+                  width: '100%', padding: '10px 14px', borderRadius: '10px',
+                  background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)',
+                  color: 'var(--white)', fontSize: '0.88rem', outline: 'none'
+                }}
+              />
+              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '8px' }}>
+                {[
+                  'Any dietary requirements?',
+                  'Are you bringing a dog?',
+                  'First time joining a walk?',
+                  'Pacing / distance preference?'
+                ].map(q => (
+                  <button
+                    key={q}
+                    type="button"
+                    onClick={() => setEventForm({ ...eventForm, rsvpQuestion: q })}
+                    style={{
+                      padding: '3px 8px', borderRadius: '99px',
+                      background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)',
+                      color: 'var(--slate-300)', fontSize: '0.7rem', cursor: 'pointer'
+                    }}
+                  >
+                    + {q}
+                  </button>
+                ))}
               </div>
             </div>
 
@@ -3295,7 +3345,21 @@ export default function LeaderDashboard({ initialCommunityId }) {
                                   return (
                                     <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '6px 0' }}>
                                       <img src={attendee.avatar} alt={attendee.name} style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }} />
-                                      <span style={{ flex: 1, fontSize: '0.85rem', color: 'var(--white)' }}>{attendee.name}</span>
+                                      <div style={{ flex: 1, minWidth: 0 }}>
+                                        <div style={{ fontSize: '0.85rem', color: 'var(--white)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                          <span>{attendee.name}</span>
+                                          {rsvp.guestName && (
+                                            <span style={{ fontSize: '0.68rem', padding: '1px 6px', borderRadius: '4px', background: 'rgba(56,189,248,0.2)', color: '#7dd3fc', fontWeight: 600 }}>
+                                              +1 {rsvp.guestName}
+                                            </span>
+                                          )}
+                                        </div>
+                                        {rsvp.answer && (
+                                          <div style={{ fontSize: '0.72rem', color: '#fbbf24', marginTop: '1px' }}>
+                                            &ldquo;{rsvp.answer}&rdquo;
+                                          </div>
+                                        )}
+                                      </div>
                                       <span style={{ fontSize: '0.7rem', padding: '2px 8px', borderRadius: '99px', fontWeight: 600, ...(rsvp.checkedIn ? { background: 'rgba(34,197,94,0.15)', color: '#22c55e' } : { background: 'rgba(255,255,255,0.05)', color: 'var(--slate-500)' }) }}>
                                         {rsvp.checkedIn ? '✓ Checked In' : 'Pending'}
                                       </span>

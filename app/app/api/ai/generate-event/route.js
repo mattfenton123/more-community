@@ -100,6 +100,108 @@ export async function POST(request) {
     // ==============================================================
     // Specialized Mode: Expand rough bullet points into an enticing description
     // ==============================================================
+    // ==============================================================
+    // Specialized Mode: Member AI Event Matchmaker & Discovery
+    // ==============================================================
+    if (mode === 'match-events') {
+      const candidateEvents = Array.isArray(body.events) ? body.events : [];
+      if (!apiKey || candidateEvents.length === 0) {
+        const fallback = localSemanticMatch(prompt, candidateEvents);
+        return NextResponse.json({
+          success: true,
+          fallback: true,
+          mode: 'smart-template',
+          ...fallback
+        });
+      }
+
+      const eventSummaries = candidateEvents.slice(0, 15).map(e => ({
+        id: e.id,
+        title: e.title,
+        date: e.date,
+        time: e.time,
+        location: e.location,
+        price: e.ticketPrice || 0,
+        description: (e.description || '').slice(0, 180)
+      }));
+
+      const systemDirective = `You are the AI Concierge for More Community in Tunbridge Wells, Kent.
+Your role is to help local residents find the exact physical walks, meetups, and social gatherings that fit their schedule, energy, and mood.
+Be warm, enthusiastic, and authentic. 
+
+User query: "${prompt.trim()}"
+
+Available Events:
+${JSON.stringify(eventSummaries, null, 2)}
+
+TASK:
+1. Select the 1 to 3 events that BEST match what the user is asking for.
+2. For each recommended event, write a warm, personalized 1-2 sentence match explanation explaining WHY it fits them (e.g. mention day/time, dog-friendly vibe, pace, or coffee stop).
+3. Provide a friendly overall concierge summary.
+
+RETURN FORMAT:
+Return ONLY a valid JSON object with:
+- "summary": (string) 1-2 warm sentences introducing your picks.
+- "recommendations": [
+    {
+      "eventId": (string matching the event id),
+      "matchReason": (string 1-2 personalized sentences),
+      "highlightTag": (short tag like "🐕 Dog Friendly", "☕ Cafe Finish", "🌅 Saturday Morning", "🌿 Nature Trail")
+    }
+  ]`;
+
+      for (const model of models) {
+        try {
+          const response = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                systemInstruction: { parts: [{ text: systemDirective }] },
+                contents: [
+                  { role: 'user', parts: [{ text: `Find the best events for: "${prompt}"` }] }
+                ],
+                generationConfig: {
+                  temperature: 0.4,
+                  maxOutputTokens: 800,
+                  responseMimeType: 'application/json'
+                }
+              })
+            }
+          );
+
+          if (response.ok) {
+            const geminiData = await response.json();
+            const text = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (text) {
+              const cleaned = text.replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim();
+              const parsed = JSON.parse(cleaned);
+              return NextResponse.json({
+                success: true,
+                fallback: false,
+                mode: 'gemini',
+                modelUsed: model,
+                summary: parsed.summary || "Here are the top matches for you:",
+                recommendations: parsed.recommendations || []
+              });
+            }
+          }
+        } catch (err) {
+          lastApiError = err.message;
+        }
+      }
+
+      const fallback = localSemanticMatch(prompt, candidateEvents);
+      return NextResponse.json({
+        success: true,
+        fallback: true,
+        mode: 'smart-template',
+        reason: lastApiError,
+        ...fallback
+      });
+    }
+
     if (mode === 'expand-description') {
       if (!apiKey) {
         return NextResponse.json({

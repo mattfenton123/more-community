@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabaseClient';
 import { useAuth } from './AuthContext';
 import { initialExperiences } from '../lib/constants';
 import imageCompression from 'browser-image-compression';
-import { createEventAction, createEventsBatchAction, joinCommunityAction, leaveCommunityAction, rsvpToEventAction, updateAttendeeStatusAction, createCommunityAction, uploadImageAction, updateEventAction, updateCommunityAction, deleteCommunityAction, createChannelAction, markNotificationReadAction, updateUserAction, adminVerifyCommunityAction, broadcastNotificationAction, promoteMemberAction, removeMemberAction, subscribeToPushNotificationsAction, ensureLeadersNetworkAction, sendEventReminderAction, createSelfNotificationAction } from '../lib/actions';
+import { createEventAction, createEventsBatchAction, joinCommunityAction, leaveCommunityAction, rsvpToEventAction, updateAttendeeStatusAction, addEventPhotoAction, createCommunityAction, uploadImageAction, updateEventAction, updateCommunityAction, deleteCommunityAction, createChannelAction, markNotificationReadAction, updateUserAction, adminVerifyCommunityAction, broadcastNotificationAction, promoteMemberAction, removeMemberAction, subscribeToPushNotificationsAction, ensureLeadersNetworkAction, sendEventReminderAction, createSelfNotificationAction } from '../lib/actions';
 import { Capacitor } from '@capacitor/core';
 
 const AppContext = createContext();
@@ -507,6 +507,8 @@ export function AppProvider({ children }) {
           profitShareEnabled: e.profit_share_enabled || false,
           profitShareAmount: e.profit_share_amount || 0,
           requireApproval: Boolean(e.require_approval || (e.description && e.description.includes('[Host Approval Required]'))),
+          rsvpQuestion: e.rsvp_question || (e.description?.match(/\[RSVP Question: ([^\]]+)\]/)?.[1] || ''),
+          galleryImages: Array.isArray(e.gallery_images) ? e.gallery_images : (Array.isArray(e.galleryImages) ? e.galleryImages : []),
           createdAt: e.created_at
         })));
       }
@@ -515,7 +517,27 @@ export function AppProvider({ children }) {
         const rsvpMap = {};
         rsvpRes.data.forEach(r => {
           if (!rsvpMap[r.event_id]) rsvpMap[r.event_id] = [];
-          rsvpMap[r.event_id].push({ userId: r.user_id, status: r.status, referredBy: r.referred_by, createdAt: r.created_at || null });
+          let guestName = r.guest_name || null;
+          let answer = r.answer || null;
+          let refBy = r.referred_by || null;
+          if (r.referred_by?.startsWith('meta:')) {
+            const parts = r.referred_by.replace('meta:', '').split(';;');
+            for (const p of parts) {
+              if (p.startsWith('guest:')) guestName = p.replace('guest:', '');
+              if (p.startsWith('ans:')) answer = p.replace('ans:', '');
+              if (p.startsWith('ref:')) refBy = p.replace('ref:', '');
+            }
+          }
+          rsvpMap[r.event_id].push({
+            userId: r.user_id,
+            status: r.status,
+            referredBy: refBy,
+            guestName: guestName,
+            answer: answer,
+            ticketType: r.ticket_type || 'free',
+            checkedIn: Boolean(r.checked_in || r.checkedIn),
+            createdAt: r.created_at || null
+          });
         });
         setEventRsvps(rsvpMap);
       }
@@ -1176,21 +1198,56 @@ export function AppProvider({ children }) {
     }
   };
 
-  const rsvpToEvent = async (eventId, status, ticketType = 'free', referredBy = null) => {
+  const rsvpToEvent = async (eventId, status, ticketType = 'free', referredBy = null, metadata = {}) => {
     // Optimistic update
     setEventRsvps(prev => {
       const eventRsvpsList = prev[eventId] || [];
       const updatedList = eventRsvpsList.filter(r => r.userId !== user.id);
       if (status !== 'not_going') {
-        updatedList.push({ userId: user.id, status, ticketType, referredBy });
+        updatedList.push({
+          userId: user.id,
+          status,
+          ticketType,
+          referredBy,
+          guestName: metadata.guestName || null,
+          answer: metadata.answer || null
+        });
       }
       return { ...prev, [eventId]: updatedList };
     });
 
     try {
-      await rsvpToEventAction(user.id, eventId, status, ticketType, referredBy, session?.access_token);
+      let token = session?.access_token;
+      if (!token) {
+        const { data: sessionData } = await supabase.auth.getSession();
+        token = sessionData?.session?.access_token;
+      }
+      await rsvpToEventAction(user.id, eventId, status, ticketType, referredBy, token, metadata);
     } catch (err) {
       console.error('RSVP error:', err);
+    }
+  };
+
+  const addEventPhoto = async (eventId, photoFile) => {
+    try {
+      const photoUrl = await uploadImage(photoFile, 'events');
+      let token = session?.access_token;
+      if (!token) {
+        const { data: sessionData } = await supabase.auth.getSession();
+        token = sessionData?.session?.access_token;
+      }
+      await addEventPhotoAction(eventId, photoUrl, token);
+      setEvents(prev => prev.map(e => {
+        if (e.id === eventId) {
+          const gallery = Array.isArray(e.galleryImages) ? e.galleryImages : [];
+          return { ...e, galleryImages: [...gallery, photoUrl] };
+        }
+        return e;
+      }));
+      return photoUrl;
+    } catch (err) {
+      console.error('addEventPhoto error:', err);
+      throw err;
     }
   };
 
@@ -1325,6 +1382,9 @@ export function AppProvider({ children }) {
       if (eventData.requireApproval && !desc.includes('[Host Approval Required]')) {
         desc = (desc ? desc + '\n\n' : '') + '[Host Approval Required]';
       }
+      if (eventData.rsvpQuestion?.trim() && !desc.includes('[RSVP Question:')) {
+        desc = (desc ? desc + '\n\n' : '') + `[RSVP Question: ${eventData.rsvpQuestion.trim()}]`;
+      }
       const newEvent = {
         communityId: communityId,
         collabCommunityIds: eventData.collabCommunityIds || [],
@@ -1361,6 +1421,8 @@ export function AppProvider({ children }) {
           maxCapacity: e.max_capacity || null,
           ticketPrice: e.ticket_price || 0,
           requireApproval: Boolean(e.require_approval || (e.description && e.description.includes('[Host Approval Required]')) || newEvent.requireApproval),
+          rsvpQuestion: eventData.rsvpQuestion?.trim() || '',
+          galleryImages: [],
           createdAt: e.created_at
         }]);
       }
@@ -1413,6 +1475,8 @@ export function AppProvider({ children }) {
           maxCapacity: e.max_capacity || null,
           ticketPrice: e.ticket_price || 0,
           requireApproval: Boolean(e.require_approval || (e.description && e.description.includes('[Host Approval Required]')) || newEvent.requireApproval),
+          rsvpQuestion: eventData.rsvpQuestion?.trim() || '',
+          galleryImages: [],
           createdAt: e.created_at
         }));
         setEvents(prev => [...prev, ...mapped]);
@@ -1882,6 +1946,7 @@ export function AppProvider({ children }) {
       cancelEvent,
       rsvpToEvent,
       updateAttendeeStatus,
+      addEventPhoto,
       createCommunity,
       createChannel,
       uploadImage,
