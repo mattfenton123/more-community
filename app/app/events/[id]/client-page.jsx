@@ -410,11 +410,45 @@ export default function EventClient({ id }) {
     }
   }, [searchParams, event?.id, user?.id]);
 
+  // ALL HOOKS MUST RUN UNCONDITIONALLY AT THE TOP LEVEL BEFORE ANY EARLY RETURNS
+  const rsvps = event?.id ? (eventRsvps[event.id] || []) : [];
+  const confirmedAttendees = useMemo(() => (rsvps || []).filter(r => r.status === 'going'), [rsvps]);
+
+  // Familiar Faces Social Proof (people user has walked with on past events)
+  const myPastAttendedEventIds = useMemo(() => {
+    if (!user?.id) return new Set();
+    const ids = new Set();
+    Object.entries(eventRsvps || {}).forEach(([evId, rList]) => {
+      if (rList?.some(r => r.userId === user.id && r.status === 'going')) {
+        const ev = (events || []).find(e => e.id === evId);
+        if (ev && isEventPast(ev)) ids.add(evId);
+      }
+    });
+    return ids;
+  }, [user?.id, eventRsvps, events]);
+
+  const familiarCohorts = useMemo(() => {
+    const cohorts = new Set();
+    myPastAttendedEventIds.forEach(evId => {
+      const rList = (eventRsvps || {})[evId] || [];
+      rList.forEach(r => {
+        if (r.userId !== user?.id && r.status === 'going') {
+          cohorts.add(r.userId);
+        }
+      });
+    });
+    return cohorts;
+  }, [myPastAttendedEventIds, eventRsvps, user?.id]);
+
+  const familiarFaces = useMemo(() => {
+    if (!familiarCohorts.size) return [];
+    return confirmedAttendees.filter(att => familiarCohorts.has(att.userId));
+  }, [confirmedAttendees, familiarCohorts]);
+
   if (!event || !community) {
     return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100dvh', color: 'var(--slate-400)' }}>Loading event...</div>;
   }
 
-  const rsvps = eventRsvps[event.id] || [];
   const myRsvp = rsvps.find(r => r.userId === user?.id);
   const isGoing = myRsvp?.status === 'going';
   const isPendingApproval = myRsvp?.status === 'pending_approval';
@@ -433,38 +467,6 @@ export default function EventClient({ id }) {
   );
   const cleanDescription = (event?.description || '').replace(/\[Host Approval Required\]/g, '').trim();
   const canSeeSecretLocation = !requiresHostApproval || isGoing || isLeader;
-  const confirmedAttendees = (rsvps || []).filter(r => r.status === 'going');
-
-  // Familiar Faces Social Proof (people user has walked with on past events)
-  const myPastAttendedEventIds = useMemo(() => {
-    if (!user?.id) return new Set();
-    const ids = new Set();
-    Object.entries(eventRsvps).forEach(([evId, rList]) => {
-      if (rList?.some(r => r.userId === user.id && r.status === 'going')) {
-        const ev = events.find(e => e.id === evId);
-        if (ev && isEventPast(ev)) ids.add(evId);
-      }
-    });
-    return ids;
-  }, [user?.id, eventRsvps, events]);
-
-  const familiarCohorts = useMemo(() => {
-    const cohorts = new Set();
-    myPastAttendedEventIds.forEach(evId => {
-      const rList = eventRsvps[evId] || [];
-      rList.forEach(r => {
-        if (r.userId !== user?.id && r.status === 'going') {
-          cohorts.add(r.userId);
-        }
-      });
-    });
-    return cohorts;
-  }, [myPastAttendedEventIds, eventRsvps, user?.id]);
-
-  const familiarFaces = useMemo(() => {
-    if (!familiarCohorts.size) return [];
-    return confirmedAttendees.filter(att => familiarCohorts.has(att.userId));
-  }, [confirmedAttendees, familiarCohorts]);
   const pendingAttendees = (rsvps || []).filter(r => r.status === 'pending_approval');
 
 
