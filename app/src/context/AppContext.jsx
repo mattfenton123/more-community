@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabaseClient';
 import { useAuth } from './AuthContext';
 import { initialExperiences } from '../lib/constants';
 import imageCompression from 'browser-image-compression';
-import { createEventAction, createEventsBatchAction, joinCommunityAction, leaveCommunityAction, rsvpToEventAction, createCommunityAction, uploadImageAction, updateEventAction, updateCommunityAction, deleteCommunityAction, createChannelAction, markNotificationReadAction, updateUserAction, adminVerifyCommunityAction, broadcastNotificationAction, promoteMemberAction, removeMemberAction, subscribeToPushNotificationsAction, ensureLeadersNetworkAction, sendEventReminderAction, createSelfNotificationAction } from '../lib/actions';
+import { createEventAction, createEventsBatchAction, joinCommunityAction, leaveCommunityAction, rsvpToEventAction, updateAttendeeStatusAction, createCommunityAction, uploadImageAction, updateEventAction, updateCommunityAction, deleteCommunityAction, createChannelAction, markNotificationReadAction, updateUserAction, adminVerifyCommunityAction, broadcastNotificationAction, promoteMemberAction, removeMemberAction, subscribeToPushNotificationsAction, ensureLeadersNetworkAction, sendEventReminderAction, createSelfNotificationAction } from '../lib/actions';
 import { Capacitor } from '@capacitor/core';
 
 const AppContext = createContext();
@@ -506,6 +506,7 @@ export function AppProvider({ children }) {
           activityLevel: e.activity_level || 'All Levels',
           profitShareEnabled: e.profit_share_enabled || false,
           profitShareAmount: e.profit_share_amount || 0,
+          requireApproval: Boolean(e.require_approval || (e.description && e.description.includes('[Host Approval Required]'))),
           createdAt: e.created_at
         })));
       }
@@ -1144,6 +1145,37 @@ export function AppProvider({ children }) {
     }
   };
 
+
+  const updateAttendeeStatus = async (eventId, attendeeUserId, newStatus) => {
+    setEventRsvps(prev => {
+      const currentList = prev[eventId] || [];
+      let updatedList;
+      if (newStatus === 'declined' || newStatus === 'not_going') {
+        updatedList = currentList.filter(r => r.userId !== attendeeUserId);
+      } else {
+        const exists = currentList.some(r => r.userId === attendeeUserId);
+        if (exists) {
+          updatedList = currentList.map(r => r.userId === attendeeUserId ? { ...r, status: newStatus } : r);
+        } else {
+          updatedList = [...currentList, { userId: attendeeUserId, status: newStatus }];
+        }
+      }
+      return { ...prev, [eventId]: updatedList };
+    });
+
+    try {
+      let token = session?.access_token;
+      if (!token) {
+        const { data: sessionData } = await supabase.auth.getSession();
+        token = sessionData?.session?.access_token;
+      }
+      await updateAttendeeStatusAction(eventId, attendeeUserId, newStatus, token);
+    } catch (err) {
+      console.error('updateAttendeeStatus error:', err);
+      throw err;
+    }
+  };
+
   const rsvpToEvent = async (eventId, status, ticketType = 'free', referredBy = null) => {
     // Optimistic update
     setEventRsvps(prev => {
@@ -1289,11 +1321,16 @@ export function AppProvider({ children }) {
         token = sessionData?.session?.access_token;
       }
 
+      let desc = eventData.description || '';
+      if (eventData.requireApproval && !desc.includes('[Host Approval Required]')) {
+        desc = (desc ? desc + '\n\n' : '') + '[Host Approval Required]';
+      }
       const newEvent = {
         communityId: communityId,
         collabCommunityIds: eventData.collabCommunityIds || [],
         title: eventData.title,
-        description: eventData.description || '',
+        description: desc,
+        requireApproval: Boolean(eventData.requireApproval),
         date: eventData.date,
         time: eventData.time,
         ticketPrice: eventData.ticketPrice || eventData.ticket_price || 0,
@@ -1323,6 +1360,7 @@ export function AppProvider({ children }) {
           status: e.status || 'published',
           maxCapacity: e.max_capacity || null,
           ticketPrice: e.ticket_price || 0,
+          requireApproval: Boolean(e.require_approval || (e.description && e.description.includes('[Host Approval Required]')) || newEvent.requireApproval),
           createdAt: e.created_at
         }]);
       }
@@ -1374,6 +1412,7 @@ export function AppProvider({ children }) {
           status: e.status || 'published',
           maxCapacity: e.max_capacity || null,
           ticketPrice: e.ticket_price || 0,
+          requireApproval: Boolean(e.require_approval || (e.description && e.description.includes('[Host Approval Required]')) || newEvent.requireApproval),
           createdAt: e.created_at
         }));
         setEvents(prev => [...prev, ...mapped]);
@@ -1393,8 +1432,20 @@ export function AppProvider({ children }) {
   };
 
   const updateEvent = async (eventId, updates) => {
+    let finalUpdates = { ...updates };
+    if (updates.requireApproval !== undefined) {
+      const existing = events.find(e => e.id === eventId);
+      let desc = updates.description !== undefined ? updates.description : (existing?.description || '');
+      if (updates.requireApproval && !desc.includes('[Host Approval Required]')) {
+        desc = (desc ? desc + '\n\n' : '') + '[Host Approval Required]';
+      } else if (!updates.requireApproval && desc.includes('[Host Approval Required]')) {
+        desc = desc.replace(/\[Host Approval Required\]/g, '').trim();
+      }
+      finalUpdates.description = desc;
+      finalUpdates.requireApproval = updates.requireApproval;
+    }
     const prevEvents = events;
-    setEvents(prev => prev.map(e => e.id === eventId ? { ...e, ...updates } : e));
+    setEvents(prev => prev.map(e => e.id === eventId ? { ...e, ...finalUpdates } : e));
     
     try {
       await updateEventAction(eventId, updates, session?.access_token);
@@ -1830,6 +1881,7 @@ export function AppProvider({ children }) {
       updateEvent,
       cancelEvent,
       rsvpToEvent,
+      updateAttendeeStatus,
       createCommunity,
       createChannel,
       uploadImage,

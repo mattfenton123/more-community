@@ -466,6 +466,29 @@ export async function rsvpToEventAction(userId, eventId, status, ticketType, ref
   return true;
 }
 
+export async function updateAttendeeStatusAction(eventId, attendeeUserId, newStatus, token) {
+  if (!eventId || !attendeeUserId || !newStatus) throw new Error("Missing parameters");
+  const hostUser = await verifyUser(token);
+
+  const { data: event } = await supabaseAdmin.from('events').select('community_id, host_id').eq('id', eventId).maybeSingle();
+  if (event) {
+    const role = await getCommunityRole(hostUser.id, event.community_id, supabaseAdmin);
+    const isAllowed = role === 'Leader' || role === 'Co-Leader' || event.host_id === hostUser.id || isAdminUser(hostUser);
+    if (!isAllowed) throw new Error("Unauthorized: Only hosts can manage attendee approvals");
+  }
+
+  const { error } = await supabaseAdmin
+    .from('event_rsvps')
+    .upsert([{
+      user_id: attendeeUserId,
+      event_id: eventId,
+      status: newStatus
+    }], { onConflict: 'event_id,user_id' });
+
+  if (error) throw new Error(error.message);
+  return true;
+}
+
 export async function uploadImageAction(formData, token) {
   await verifyUser(token);
   

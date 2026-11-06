@@ -2,7 +2,7 @@
 import { supabase } from '../../../src/lib/supabaseClient';
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ChevronLeft, Share, MapPin, Calendar, Clock, Users, CheckCircle2, Info, List, Activity, Check, Map, Ticket, DollarSign, Copy, ExternalLink, Navigation, Video, AlertTriangle, Image as ImageIcon, ScanLine, Archive, Repeat, MessageCircle, Banknote, CreditCard } from 'lucide-react';
+import { ChevronLeft, Share, MapPin, Calendar, Clock, Users, CheckCircle2, Info, List, Activity, Check, Map, Ticket, DollarSign, Copy, ExternalLink, Navigation, Video, AlertTriangle, Image as ImageIcon, ScanLine, Archive, Repeat, MessageCircle, Banknote, CreditCard, Lock, ChevronRight, X, UserCheck, Shield, ChevronDown } from 'lucide-react';
 import { useAppContext } from '../../../src/context/AppContext';
 import { useToast } from '../../../src/components/Toast';
 import DigitalTicket from '../../../src/components/DigitalTicket';
@@ -20,7 +20,7 @@ import { findEventByParam, getEventPath, getEventUrl } from '../../../src/lib/ev
 import ShareModal from '../../../src/components/ShareModal';
 import EventRecapShareCard from '../../../src/components/EventRecapShareCard';
 
-function EventLocationMap({ location, event }) {
+function EventLocationMap({ location, event, isLocationShielded = false }) {
   const [mapType, setMapType] = useState('m'); // 'm' = Roadmap, 'k' = Satellite
   const [coords, setCoords] = useState(() => {
     const parsed = parseLocationCoords(location) || (event?.lat && event?.lng ? { lat: Number(event.lat), lng: Number(event.lng) } : null);
@@ -68,6 +68,42 @@ function EventLocationMap({ location, event }) {
 
     return () => controller.abort();
   }, [location, event]);
+
+  if (isLocationShielded) {
+    return (
+      <div style={{ marginBottom: '32px' }}>
+        <h3 style={{ fontSize: '1.2rem', margin: '0 0 12px 0', color: 'var(--white)', fontFamily: 'var(--font-heading)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <MapPin size={20} color="#fbbf24" /> Event Start Location
+        </h3>
+        <div style={{
+          background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.95) 100%)',
+          border: '1px dashed rgba(245, 158, 11, 0.4)',
+          borderRadius: '20px',
+          padding: '32px 24px',
+          textAlign: 'center',
+          position: 'relative'
+        }}>
+          <div style={{
+            width: '56px', height: '56px', borderRadius: '18px',
+            background: 'rgba(245, 158, 11, 0.15)', border: '1px solid rgba(245, 158, 11, 0.3)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px auto',
+            color: '#fbbf24'
+          }}>
+            <Lock size={26} />
+          </div>
+          <div style={{ fontSize: '1.15rem', fontWeight: 700, color: 'var(--white)', marginBottom: '8px' }}>
+            🔒 Secret Meeting Point & Route Pin
+          </div>
+          <p style={{ color: 'var(--slate-300)', fontSize: '0.9rem', maxWidth: '440px', margin: '0 auto 16px auto', lineHeight: 1.5 }}>
+            This event requires host approval. The exact meeting point, live GPS pin, and route directions are kept private to protect the group and will be revealed immediately upon host approval.
+          </p>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '8px 16px', borderRadius: '99px', background: 'rgba(255,255,255,0.05)', fontSize: '0.82rem', color: 'var(--slate-300)', border: '1px solid rgba(255,255,255,0.08)' }}>
+            <MapPin size={14} color="#ec4899" /> General Area: <strong>{areaInfo || 'Tunbridge Wells, Kent'}</strong>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const cleanName = cleanLocationName(location);
 
@@ -228,7 +264,7 @@ function EventLocationMap({ location, event }) {
 
 export default function EventClient({ id }) {
   const router = useRouter();
-  const { events, communities, user, users, eventRsvps, rsvpToEvent, joinCommunity, checkInMember } = useAppContext();
+  const { events, communities, user, users, eventRsvps, rsvpToEvent, updateAttendeeStatus, joinCommunity, checkInMember } = useAppContext();
   const { toast } = useToast();
   const [event, setEvent] = useState(null);
   const [community, setCommunity] = useState(null);
@@ -241,6 +277,8 @@ export default function EventClient({ id }) {
   const [showRsvpSuccessModal, setShowRsvpSuccessModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [hasCheckedInLocally, setHasCheckedInLocally] = useState(false);
+  const [showAttendeesModal, setShowAttendeesModal] = useState(false);
+  const [approvingUserId, setApprovingUserId] = useState(null);
 
   const isLeader = user?.ledCommunities?.includes(event?.communityId) || user?.isAdmin;
 
@@ -325,6 +363,7 @@ export default function EventClient({ id }) {
   const rsvps = eventRsvps[event.id] || [];
   const myRsvp = rsvps.find(r => r.userId === user?.id);
   const isGoing = myRsvp?.status === 'going';
+  const isPendingApproval = myRsvp?.status === 'pending_approval';
   const isWaitlisted = myRsvp?.status === 'waitlist';
   const waitlist = rsvps.filter(r => r.status === 'waitlist');
   const myWaitlistPos = isWaitlisted ? waitlist.findIndex(r => r.userId === user?.id) + 1 : 0;
@@ -332,6 +371,16 @@ export default function EventClient({ id }) {
   const spotsLeft = event.maxCapacity ? Math.max(0, event.maxCapacity - rsvps.filter(r => r.status === 'going').length) : null;
   const isSoldOut = spotsLeft !== null && spotsLeft <= 0;
   const isMember = user?.joinedCommunities?.includes(event.communityId);
+
+  const requiresHostApproval = Boolean(
+    event?.requireApproval || 
+    event?.require_approval || 
+    (event?.description && event?.description.includes('[Host Approval Required]'))
+  );
+  const cleanDescription = (event?.description || '').replace(/\[Host Approval Required\]/g, '').trim();
+  const canSeeSecretLocation = !requiresHostApproval || isGoing || isLeader;
+  const confirmedAttendees = (rsvps || []).filter(r => r.status === 'going');
+  const pendingAttendees = (rsvps || []).filter(r => r.status === 'pending_approval');
 
   const handleJoinAndRSVP = async () => {
     if (!user?.id) {
@@ -411,6 +460,11 @@ export default function EventClient({ id }) {
       toast.info('Left Waitlist', 'You have been removed from the waitlist.');
       return;
     }
+    if (isPendingApproval) {
+      await rsvpToEvent(event.id, 'not_going');
+      toast.info('Request Withdrawn', 'Your request to join has been cancelled.');
+      return;
+    }
     if (isSoldOut && !isGoing) {
       await rsvpToEvent(event.id, 'waitlist');
       toast.success('Joined Waitlist!', `You are #${waitlist.length + 1} in line. If a spot opens up, we will notify you.`);
@@ -423,12 +477,17 @@ export default function EventClient({ id }) {
       }
       executeStripeCheckout();
     } else {
-      const newStatus = isGoing ? 'not_going' : 'going';
-      await rsvpToEvent(event.id, newStatus);
-      if (newStatus === 'going') {
-        setShowRsvpSuccessModal(true);
+      if (requiresHostApproval && !isGoing) {
+        await rsvpToEvent(event.id, 'pending_approval');
+        toast.success('Request Sent! ⏳', 'The host will review your request. Exact meeting location will be revealed once approved.');
       } else {
-        toast.success('RSVP Cancelled', 'Removed from your schedule');
+        const newStatus = isGoing ? 'not_going' : 'going';
+        await rsvpToEvent(event.id, newStatus);
+        if (newStatus === 'going') {
+          setShowRsvpSuccessModal(true);
+        } else {
+          toast.success('RSVP Cancelled', 'Removed from your schedule');
+        }
       }
     }
   };
@@ -714,8 +773,14 @@ export default function EventClient({ id }) {
                 <MapPin size={20} />
               </div>
               <div>
-                <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '1rem' }}>{cleanLocationName(event.location)}</div>
-                {event.meetingPoint && <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)' }}>Meet: {event.meetingPoint}</div>}
+                <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '1rem' }}>{canSeeSecretLocation ? cleanLocationName(event.location) : 'Tunbridge Wells, Kent (Exact pin secret)'}</div>
+                {canSeeSecretLocation ? (
+                  event.meetingPoint ? <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)' }}>Meet: {event.meetingPoint}</div> : null
+                ) : (
+                  <div style={{ fontSize: '0.82rem', color: '#fbbf24', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
+                    <Lock size={12} /> Exact meeting pin revealed upon host approval
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -764,13 +829,134 @@ export default function EventClient({ id }) {
           )}
         </div>
 
+        {/* Lu.ma Style: Who's Going Attendee Facepile */}
+        {confirmedAttendees.length > 0 && (
+          <div 
+            onClick={() => setShowAttendeesModal(true)}
+            className="interactive-press"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '12px',
+              background: 'rgba(255,255,255,0.03)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              padding: '8px 16px',
+              borderRadius: '99px',
+              cursor: 'pointer',
+              marginTop: '16px',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              {confirmedAttendees.slice(0, 5).map((att, idx) => {
+                const u = users.find(x => x.id === att.userId);
+                const avatar = u?.avatar || u?.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(u?.name || 'Member')}`;
+                return (
+                  <img
+                    key={att.userId || idx}
+                    src={avatar}
+                    alt={u?.name || 'Attendee'}
+                    style={{
+                      width: '30px',
+                      height: '30px',
+                      borderRadius: '50%',
+                      border: '2px solid #0f172a',
+                      marginLeft: idx === 0 ? 0 : '-10px',
+                      objectFit: 'cover',
+                      background: '#1e293b'
+                    }}
+                  />
+                );
+              })}
+            </div>
+            <div style={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--slate-200)' }}>
+              <span style={{ color: 'var(--teal-400)', fontWeight: 700 }}>{confirmedAttendees.length}</span> going
+              {confirmedAttendees.length > 5 && <span style={{ color: 'var(--slate-400)', fontWeight: 400, marginLeft: '4px' }}>+{confirmedAttendees.length - 5} more</span>}
+            </div>
+            <ChevronRight size={16} color="var(--slate-400)" />
+          </div>
+        )}
+
+        {/* Host Approval Queue (Only visible to Leaders/Hosts) */}
+        {isLeader && pendingAttendees.length > 0 && (
+          <div style={{
+            marginTop: '20px',
+            background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(217, 119, 6, 0.08) 100%)',
+            border: '1px solid rgba(245, 158, 11, 0.35)',
+            borderRadius: '16px',
+            padding: '16px 20px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#fbbf24', fontWeight: 700, fontSize: '0.95rem' }}>
+                <Clock size={18} />
+                <span>Host Approval Queue ({pendingAttendees.length})</span>
+              </div>
+              <span style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>Location shielded until approved</span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {pendingAttendees.map(att => {
+                const u = users.find(x => x.id === att.userId);
+                const avatar = u?.avatar || u?.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(u?.name || 'Member')}`;
+                const isProcessing = approvingUserId === att.userId;
+                return (
+                  <div key={att.userId} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', background: 'rgba(0,0,0,0.25)', padding: '10px 14px', borderRadius: '12px', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <img src={avatar} alt={u?.name} style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover' }} />
+                      <div>
+                        <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.9rem' }}>{u?.name || 'Community Member'}</div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>Requested to join</div>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button
+                        disabled={isProcessing}
+                        onClick={async () => {
+                          setApprovingUserId(att.userId);
+                          try {
+                            await updateAttendeeStatus(event.id, att.userId, 'going');
+                            toast.success('Approved!', `${u?.name || 'Member'} is now approved.`);
+                          } catch (err) {
+                            toast.error('Error', 'Could not approve request.');
+                          } finally {
+                            setApprovingUserId(null);
+                          }
+                        }}
+                        style={{ padding: '6px 14px', borderRadius: '99px', background: '#10b981', color: '#fff', border: 'none', fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer', opacity: isProcessing ? 0.6 : 1 }}
+                      >
+                        Approve
+                      </button>
+                      <button
+                        disabled={isProcessing}
+                        onClick={async () => {
+                          setApprovingUserId(att.userId);
+                          try {
+                            await updateAttendeeStatus(event.id, att.userId, 'declined');
+                            toast.info('Declined', 'Request declined.');
+                          } catch (err) {
+                            toast.error('Error', 'Could not decline request.');
+                          } finally {
+                            setApprovingUserId(null);
+                          }
+                        }}
+                        style={{ padding: '6px 12px', borderRadius: '99px', background: 'rgba(239, 68, 68, 0.15)', color: '#f87171', border: '1px solid rgba(239,68,68,0.3)', fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer', opacity: isProcessing ? 0.6 : 1 }}
+                      >
+                        Decline
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         <hr style={{ border: 'none', borderTop: '1px solid rgba(255,255,255,0.05)', margin: '24px 0' }} />
 
         {/* Description */}
         <div style={{ marginBottom: '32px' }}>
           <h3 style={{ fontSize: '1.2rem', margin: '0 0 12px 0', color: 'var(--white)', fontFamily: 'var(--font-heading)' }}>About this event</h3>
           <p style={{ color: 'var(--slate-300)', lineHeight: 1.6, fontSize: '0.95rem', margin: 0, whiteSpace: 'pre-wrap' }}>
-            {event.description}
+            {cleanDescription}
           </p>
         </div>
 
@@ -868,7 +1054,7 @@ export default function EventClient({ id }) {
 
         {/* Location Map */}
         {event.location && (
-          <EventLocationMap location={event.location} event={event} />
+          <EventLocationMap location={event.location} event={event} isLocationShielded={!canSeeSecretLocation} />
         )}
 
         {/* Joint Co-Hosting & Partner Community Discovery */}
@@ -1067,27 +1253,29 @@ export default function EventClient({ id }) {
             ) : (
               <>
                 <button
-                  onClick={!user?.id ? () => router.push(`/login?redirect=/events/${id}`) : (!isMember && !isGoing ? handleJoinAndRSVP : handleRSVP)}
+                  onClick={!user?.id ? () => router.push(`/login?redirect=/events/${id}`) : (!isMember && !isGoing && !isPendingApproval ? handleJoinAndRSVP : handleRSVP)}
                   disabled={checkoutState === 'processing'}
                   className="interactive-press"
                   style={{
                     width: '100%',
-                    background: isGoing ? 'rgba(255,255,255,0.1)' : 'var(--teal-500)',
-                    color: isGoing ? 'var(--white)' : '#0f172a',
-                    border: isGoing ? '1px solid rgba(255,255,255,0.2)' : 'none',
+                    background: isGoing ? 'rgba(255,255,255,0.1)' : isPendingApproval ? 'rgba(245,158,11,0.18)' : 'var(--teal-500)',
+                    color: isGoing ? 'var(--white)' : isPendingApproval ? '#fbbf24' : '#0f172a',
+                    border: isGoing ? '1px solid rgba(255,255,255,0.2)' : isPendingApproval ? '1px solid rgba(245,158,11,0.35)' : 'none',
                     padding: '14px 20px', borderRadius: '14px', fontSize: '1rem', fontWeight: 800,
-                    cursor: (checkoutState === 'processing' || (spotsLeft === 0 && !isGoing && Boolean(user?.id))) ? 'not-allowed' : 'pointer',
-                    opacity: (checkoutState === 'processing' || (spotsLeft === 0 && !isGoing && Boolean(user?.id))) ? 0.7 : 1,
+                    cursor: (checkoutState === 'processing' || (spotsLeft === 0 && !isGoing && !isPendingApproval && Boolean(user?.id))) ? 'not-allowed' : 'pointer',
+                    opacity: (checkoutState === 'processing' || (spotsLeft === 0 && !isGoing && !isPendingApproval && Boolean(user?.id))) ? 0.7 : 1,
                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                    boxShadow: isGoing ? 'none' : '0 4px 20px rgba(20, 184, 166, 0.35)'
+                    boxShadow: isGoing ? 'none' : isPendingApproval ? 'none' : '0 4px 20px rgba(20, 184, 166, 0.35)'
                   }}
                 >
-                  {!user?.id ? (event.ticketPrice > 0 ? 'Sign In to Buy Ticket' : 'Sign In to RSVP') :
+                  {!user?.id ? (event.ticketPrice > 0 ? 'Sign In to Buy Ticket' : requiresHostApproval ? 'Sign In to Request to Join' : 'Sign In to RSVP') :
                    checkoutState === 'processing' ? 'Processing...' :
                    isGoing ? 'Cancel RSVP' :
+                   isPendingApproval ? '⏳ Request Pending (Cancel)' :
                    isWaitlisted ? `On Waitlist #${myWaitlistPos} (Leave)` :
                    isSoldOut ? (waitlist.length > 0 ? `Join Waitlist (${waitlist.length} in line)` : 'Join Waitlist (Full)') :
-                   !isMember ? 'Join Community & ' + (event.ticketPrice > 0 ? 'Buy Ticket' : 'RSVP') :
+                   !isMember ? (requiresHostApproval ? 'Join Community & Request' : 'Join Community & ' + (event.ticketPrice > 0 ? 'Buy Ticket' : 'RSVP')) :
+                   requiresHostApproval ? 'Request to Join (Host Approval)' :
                    event.ticketPrice > 0 ? 'Buy Ticket' : 'RSVP Spot'}
                 </button>
 
@@ -1296,27 +1484,29 @@ export default function EventClient({ id }) {
                   </button>
                 )}
                 <button  
-                  onClick={!user?.id ? () => router.push(`/login?redirect=/events/${id}`) : (!isMember && !isGoing ? handleJoinAndRSVP : handleRSVP)}
-                disabled={checkoutState === 'processing'}
-                className="interactive-press"
-                style={{ 
-                  background: isGoing ? 'rgba(255,255,255,0.1)' : 'var(--teal-500)', 
-                  color: isGoing ? 'var(--white)' : '#0f172a', 
-                  border: isGoing ? '1px solid rgba(255,255,255,0.2)' : 'none',
-                  padding: '12px 32px', borderRadius: '99px', fontSize: '1rem', fontWeight: 700, 
-                  cursor: (checkoutState === 'processing' || (spotsLeft === 0 && !isGoing && Boolean(user?.id))) ? 'not-allowed' : 'pointer',
-                  opacity: (checkoutState === 'processing' || (spotsLeft === 0 && !isGoing && Boolean(user?.id))) ? 0.7 : 1,
-                  display: 'flex', alignItems: 'center', gap: '8px',
-                  minWidth: '140px', justifyContent: 'center'
-                }}
-              >
-                {!user?.id ? (event.ticketPrice > 0 ? 'Sign In to Buy Ticket' : 'Sign In to RSVP') :
-                 checkoutState === 'processing' ? 'Processing...' : 
-                 isGoing ? 'Cancel RSVP' : 
-                 spotsLeft === 0 ? 'Sold Out' :
-                 !isMember ? 'Join Community to ' + (event.ticketPrice > 0 ? 'Buy Ticket' : 'RSVP') :
-                 event.ticketPrice > 0 ? 'Buy Ticket' : 'RSVP'}
-              </button>
+                  onClick={!user?.id ? () => router.push(`/login?redirect=/events/${id}`) : (!isMember && !isGoing && !isPendingApproval ? handleJoinAndRSVP : handleRSVP)}
+                  disabled={checkoutState === 'processing'}
+                  className="interactive-press"
+                  style={{ 
+                    background: isGoing ? 'rgba(255,255,255,0.1)' : isPendingApproval ? 'rgba(245,158,11,0.18)' : 'var(--teal-500)', 
+                    color: isGoing ? 'var(--white)' : isPendingApproval ? '#fbbf24' : '#0f172a', 
+                    border: isGoing ? '1px solid rgba(255,255,255,0.2)' : isPendingApproval ? '1px solid rgba(245,158,11,0.35)' : 'none',
+                    padding: '12px 32px', borderRadius: '99px', fontSize: '1rem', fontWeight: 700, 
+                    cursor: (checkoutState === 'processing' || (spotsLeft === 0 && !isGoing && !isPendingApproval && Boolean(user?.id))) ? 'not-allowed' : 'pointer',
+                    opacity: (checkoutState === 'processing' || (spotsLeft === 0 && !isGoing && !isPendingApproval && Boolean(user?.id))) ? 0.7 : 1,
+                    display: 'flex', alignItems: 'center', gap: '8px',
+                    minWidth: '140px', justifyContent: 'center'
+                  }}
+                >
+                  {!user?.id ? (event.ticketPrice > 0 ? 'Sign In to Buy Ticket' : requiresHostApproval ? 'Sign In to Request to Join' : 'Sign In to RSVP') :
+                   checkoutState === 'processing' ? 'Processing...' : 
+                   isGoing ? 'Cancel RSVP' : 
+                   isPendingApproval ? '⏳ Request Pending (Cancel)' :
+                   spotsLeft === 0 ? 'Sold Out' :
+                   !isMember ? (requiresHostApproval ? 'Join & Request' : 'Join Community to ' + (event.ticketPrice > 0 ? 'Buy Ticket' : 'RSVP')) :
+                   requiresHostApproval ? 'Request to Join' :
+                   event.ticketPrice > 0 ? 'Buy Ticket' : 'RSVP'}
+                </button>
               </>
             )}
           </div>
@@ -1507,11 +1697,17 @@ export default function EventClient({ id }) {
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--slate-200)', fontSize: '0.88rem' }}>
                 <MapPin size={16} color="#ec4899" style={{ flexShrink: 0 }} />
-                <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{cleanLocationName(event.location)}</span>
+                <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{canSeeSecretLocation ? cleanLocationName(event.location) : 'Tunbridge Wells (Exact pin secret)'}</span>
               </div>
-              {event.meetingPoint && (
-                <div style={{ fontSize: '0.78rem', color: 'var(--slate-400)', paddingLeft: '26px' }}>
-                  Meeting point: {event.meetingPoint}
+              {canSeeSecretLocation ? (
+                event.meetingPoint && (
+                  <div style={{ fontSize: '0.78rem', color: 'var(--slate-400)', paddingLeft: '26px' }}>
+                    Meeting point: {event.meetingPoint}
+                  </div>
+                )
+              ) : (
+                <div style={{ fontSize: '0.75rem', color: '#fbbf24', paddingLeft: '26px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <Lock size={11} /> Secret meeting point revealed upon approval
                 </div>
               )}
             </div>
@@ -1682,6 +1878,64 @@ export default function EventClient({ id }) {
           onScan={handleScan}
           onClose={() => setShowScanner(false)}
         />
+      )}
+
+      {/* Who's Going Attendee Modal (Lu.ma style) */}
+      {showAttendeesModal && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 100000,
+          background: 'rgba(2, 6, 23, 0.85)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px'
+        }}>
+          <div style={{
+            width: '100%', maxWidth: '440px', maxHeight: '80vh',
+            background: 'linear-gradient(180deg, #0f172a 0%, #090d16 100%)',
+            border: '1px solid rgba(255,255,255,0.12)',
+            borderRadius: '24px', padding: '24px',
+            boxShadow: '0 20px 50px rgba(0,0,0,0.7)',
+            display: 'flex', flexDirection: 'column'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+              <div>
+                <h3 style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--white)', margin: 0 }}>
+                  Who&apos;s Going
+                </h3>
+                <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)', marginTop: '2px' }}>
+                  {confirmedAttendees.length} {confirmedAttendees.length === 1 ? 'attendee' : 'attendees'} confirmed
+                </div>
+              </div>
+              <button
+                onClick={() => setShowAttendeesModal(false)}
+                className="interactive-press"
+                style={{ background: 'rgba(255,255,255,0.06)', border: 'none', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--slate-400)', cursor: 'pointer' }}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div style={{ overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '8px', paddingRight: '4px' }}>
+              {confirmedAttendees.map(att => {
+                const u = users.find(x => x.id === att.userId);
+                const isHost = u?.id === event.host_id || u?.id === event.hostId;
+                const avatar = u?.avatar || u?.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(u?.name || 'Member')}`;
+                return (
+                  <div key={att.userId} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '14px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <img src={avatar} alt={u?.name || 'Member'} style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', background: '#1e293b' }} />
+                      <div>
+                        <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.92rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          {u?.name || 'Community Member'}
+                          {isHost && <span style={{ fontSize: '0.65rem', padding: '2px 6px', borderRadius: '6px', background: 'rgba(20,184,166,0.2)', color: 'var(--teal-300)', fontWeight: 700 }}>HOST</span>}
+                        </div>
+                        {u?.bio && <div style={{ fontSize: '0.78rem', color: 'var(--slate-400)', maxWidth: '240px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{u.bio}</div>}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Share Modal */}

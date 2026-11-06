@@ -95,7 +95,7 @@ function getEngagementScore(member, events, eventRsvps, messages, communityId) {
 
 // ─── Component ──────────────────────────────────────────────────
 export default function LeaderDashboard({ initialCommunityId }) {
-  const { user, communities, events, updateCommunity, deleteCommunity, users, communityMemberships, createEvent, createEventsBatch, updateEvent, cancelEvent, uploadImage, eventRsvps, whatsappSettings, setWhatsappSettings, promoteMember, removeMember, checkInMember, broadcastNotification, sendEventReminder, experiences, setExperiences, isLoading, services = [], updateServiceStatus } = useAppContext();
+  const { user, communities, events, updateCommunity, deleteCommunity, users, communityMemberships, createEvent, createEventsBatch, updateEvent, cancelEvent, uploadImage, eventRsvps, updateAttendeeStatus, whatsappSettings, setWhatsappSettings, promoteMember, removeMember, checkInMember, broadcastNotification, sendEventReminder, experiences, setExperiences, isLoading, services = [], updateServiceStatus } = useAppContext();
     const { messages } = useChat();
   const { toast } = useToast();
   const router = useRouter();
@@ -179,6 +179,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
     collabCommunityIds: [],
     autoReminders: true, 
     autoFeedback: true,
+    requireApproval: false,
     scheduleMode: 'single',
     resolvedDates: [],
     recurrenceSummary: 'Single event'
@@ -1051,6 +1052,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
           ticketPrice: eventForm.ticketPrice ? parseFloat(eventForm.ticketPrice) : 0,
           autoReminders: eventForm.autoReminders,
           autoFeedback: eventForm.autoFeedback,
+          requireApproval: Boolean(eventForm.requireApproval),
           image: finalImage
         });
         toast.success('Event created!', `${eventForm.title} has been published`);
@@ -1062,6 +1064,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
           ticketPrice: eventForm.ticketPrice ? parseFloat(eventForm.ticketPrice) : 0,
           autoReminders: eventForm.autoReminders,
           autoFeedback: eventForm.autoFeedback,
+          requireApproval: Boolean(eventForm.requireApproval),
           image: finalImage
         }));
         await createEventsBatch(community.id, eventsList);
@@ -1094,6 +1097,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
       collabCommunityIds: event.collabCommunityIds || [],
       autoReminders: event.autoReminders ?? true,
       autoFeedback: event.autoFeedback ?? true,
+      requireApproval: Boolean(event.requireApproval || event.require_approval || (event.description && event.description.includes('[Host Approval Required]'))),
       scheduleMode: 'single',
       resolvedDates: event.date ? [event.date] : [],
       recurrenceSummary: 'Single event'
@@ -1122,6 +1126,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
       maxCapacity: eventForm.maxCapacity ? parseInt(eventForm.maxCapacity, 10) : null,
       ticketPrice: eventForm.ticketPrice ? parseFloat(eventForm.ticketPrice) : 0,
       allowCash: Boolean(eventForm.allowCash),
+      requireApproval: Boolean(eventForm.requireApproval),
       collabCommunityIds: eventForm.collabCommunityIds || [],
       autoReminders: eventForm.autoReminders,
       autoFeedback: eventForm.autoFeedback
@@ -2004,6 +2009,29 @@ export default function LeaderDashboard({ initialCommunityId }) {
               </div>
               <div style={{ width: '44px', height: '24px', background: eventForm.autoFeedback ? 'var(--teal-500)' : 'rgba(255,255,255,0.1)', borderRadius: '12px', position: 'relative', transition: 'all 0.3s' }}>
                 <div style={{ position: 'absolute', width: '20px', height: '20px', background: 'white', borderRadius: '50%', top: '2px', left: eventForm.autoFeedback ? '22px' : '2px', transition: 'all 0.3s' }} />
+              </div>
+            </div>
+
+            {/* Lu.ma Host Approval Mode */}
+            <div 
+              className="interactive-press"
+              onClick={() => setEventForm({...eventForm, requireApproval: !eventForm.requireApproval})}
+              style={{ padding: '16px', background: eventForm.requireApproval ? 'rgba(20,184,166,0.06)' : 'rgba(255,255,255,0.02)', border: eventForm.requireApproval ? '1px solid rgba(20,184,166,0.3)' : '1px solid rgba(255,255,255,0.05)', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ width: '40px', height: '40px', background: 'rgba(20,184,166,0.1)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Shield size={18} color="var(--teal-400)" />
+                </div>
+                <div>
+                  <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    Require Host Approval
+                    <span style={{ fontSize: '0.68rem', padding: '1px 6px', borderRadius: '4px', background: 'rgba(20,184,166,0.2)', color: 'var(--teal-300)', fontWeight: 700 }}>LU.MA STYLE</span>
+                  </div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>Shield exact meeting pin & coordinates until you approve each request</div>
+                </div>
+              </div>
+              <div style={{ width: '44px', height: '24px', background: eventForm.requireApproval ? 'var(--teal-500)' : 'rgba(255,255,255,0.1)', borderRadius: '12px', position: 'relative', transition: 'all 0.3s' }}>
+                <div style={{ position: 'absolute', width: '20px', height: '20px', background: 'white', borderRadius: '50%', top: '2px', left: eventForm.requireApproval ? '22px' : '2px', transition: 'all 0.3s' }} />
               </div>
             </div>
 
@@ -3085,6 +3113,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                         const isPast = isEventPast(event);
                         const isExpanded = expandedEventId === event.id;
                         const attendees = (eventRsvps[event.id] || []).filter(r => r.status === 'going');
+                        const pendingRequests = (eventRsvps[event.id] || []).filter(r => r.status === 'pending_approval');
                         
                         return (
                           <div key={event.id} className="stagger-item" style={{ 
@@ -3110,6 +3139,11 @@ export default function LeaderDashboard({ initialCommunityId }) {
                                   ) : (
                                     <span className={`status-badge ${event.status || 'published'}`}>{event.status || 'live'}</span>
                                   )}
+                                  {pendingRequests.length > 0 && (
+                                    <span style={{ fontSize: '0.68rem', background: 'rgba(245, 158, 11, 0.2)', color: '#fbbf24', border: '1px solid rgba(245, 158, 11, 0.4)', padding: '2px 8px', borderRadius: '99px', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                      <Clock size={10} /> {pendingRequests.length} Pending Approval
+                                    </span>
+                                  )}
                                 </div>
                                 
                                 {/* Meta row */}
@@ -3117,6 +3151,59 @@ export default function LeaderDashboard({ initialCommunityId }) {
                                   <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}><Clock size={11} /> {event.time}</span>
                                   <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}><MapPin size={11} /> {cleanLocationName(event.location)}</span>
                                 </div>
+
+                                {/* Pending Join Requests (Lu.ma Host Approval) */}
+                                {pendingRequests.length > 0 && (
+                                  <div style={{ marginTop: '8px', marginBottom: '8px', background: 'rgba(245, 158, 11, 0.08)', border: '1px solid rgba(245, 158, 11, 0.25)', borderRadius: '10px', padding: '10px 12px' }}>
+                                    <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                      <span>⏳ Pending Join Requests ({pendingRequests.length})</span>
+                                      <span style={{ fontSize: '0.68rem', color: 'var(--slate-400)', textTransform: 'none' }}>Location hidden until approved</span>
+                                    </div>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                      {pendingRequests.map(att => {
+                                        const u = users.find(x => x.id === att.userId);
+                                        return (
+                                          <div key={att.userId} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', background: 'rgba(0,0,0,0.25)', padding: '6px 10px', borderRadius: '8px' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
+                                              <img src={u?.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(u?.name || 'Member')}`} alt={u?.name} style={{ width: '24px', height: '24px', borderRadius: '50%', objectFit: 'cover' }} />
+                                              <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--white)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{u?.name || 'Community Member'}</span>
+                                            </div>
+                                            <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
+                                              <button
+                                                type="button"
+                                                onClick={async () => {
+                                                  try {
+                                                    await updateAttendeeStatus(event.id, att.userId, 'going');
+                                                    toast.success('Approved!', `${u?.name || 'Member'} approved.`);
+                                                  } catch (e) {
+                                                    toast.error('Error', 'Could not approve.');
+                                                  }
+                                                }}
+                                                style={{ padding: '3px 10px', borderRadius: '99px', background: '#10b981', color: '#fff', border: 'none', fontWeight: 600, fontSize: '0.72rem', cursor: 'pointer' }}
+                                              >
+                                                Approve
+                                              </button>
+                                              <button
+                                                type="button"
+                                                onClick={async () => {
+                                                  try {
+                                                    await updateAttendeeStatus(event.id, att.userId, 'declined');
+                                                    toast.info('Declined', 'Request declined.');
+                                                  } catch (e) {
+                                                    toast.error('Error', 'Could not decline.');
+                                                  }
+                                                }}
+                                                style={{ padding: '3px 8px', borderRadius: '99px', background: 'rgba(239, 68, 68, 0.15)', color: '#f87171', border: '1px solid rgba(239,68,68,0.3)', fontWeight: 600, fontSize: '0.72rem', cursor: 'pointer' }}
+                                              >
+                                                Decline
+                                              </button>
+                                            </div>
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+                                  </div>
+                                )}
                                 
                                 {/* Stats row */}
                                 <div style={{ display: 'flex', gap: '12px', fontSize: '0.75rem' }}>
