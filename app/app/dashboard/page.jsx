@@ -358,10 +358,17 @@ export default function LeaderDashboard({ initialCommunityId }) {
           ...prev,
           description: data.description
         }));
-        toast.success(
-          data.fallback ? 'Description Expanded!' : '✨ Polished by Gemini!',
-          data.fallback ? 'Your bullet points have been structured into a full event.' : 'Your notes have been expanded into a warm, engaging description.'
-        );
+        if (data.fallback) {
+          toast.info(
+            'Notes Structured',
+            data.reason ? `AI notice: ${data.reason}` : 'Your bullet points have been structured into a full event.'
+          );
+        } else {
+          toast.success(
+            '✨ Polished by Gemini 2.0 Flash!',
+            'Your notes have been expanded into an engaging community description.'
+          );
+        }
       } else {
         toast.error('Could not expand notes', 'Please try again or edit manually.');
       }
@@ -1193,10 +1200,17 @@ export default function LeaderDashboard({ initialCommunityId }) {
           setGeneratedVibes(data.event.vibeTags);
         }
         setAiPrompt('');
-        toast.success(
-          data.fallback ? 'Event Drafted!' : '✨ AI Co-Pilot Ready!',
-          data.fallback ? 'Smart template created - review & tweak below.' : 'Gemini crafted your event - review & tweak below.'
-        );
+        if (data.fallback) {
+          toast.info(
+            'Smart Template Applied',
+            data.reason ? `AI notice: ${data.reason}` : 'Smart template created - review & tweak below.'
+          );
+        } else {
+          toast.success(
+            '✨ Gemini 2.0 Flash!',
+            'Gemini crafted your custom event with rich local details.'
+          );
+        }
       } else {
         toast.error('Generation failed', 'Please try again or fill in manually.');
       }
@@ -1382,90 +1396,107 @@ export default function LeaderDashboard({ initialCommunityId }) {
               </div>
             )}
 
-            {/* Input row with speech recognition mic button & generate button */}
-            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '10px' }}>
-              <div style={{ position: 'relative', flex: 1, display: 'flex', alignItems: 'center' }}>
-                <input 
-                  type="text" 
-                  placeholder={isListening ? "Listening... (pauses are safe, speak freely)" : "e.g. Dog friendly Saturday morning stroll with coffee after"} 
-                  value={aiPrompt}
-                  onChange={(e) => setAiPrompt(e.target.value)}
-                  onKeyDown={(e) => {
-                    // Only submit on Ctrl+Enter or Cmd+Enter on desktop to prevent mobile voice dictation from auto-submitting on pause
-                    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
-                      handleAIGenerateEvent();
-                    }
-                  }}
-                  style={{
-                    width: '100%',
-                    padding: speechSupported ? '11px 40px 11px 14px' : '11px 14px',
-                    borderRadius: '10px',
-                    border: isListening ? '1px solid #a855f7' : '1px solid rgba(255,255,255,0.14)',
-                    background: isListening ? 'rgba(168,85,247,0.15)' : 'rgba(0,0,0,0.35)',
-                    color: 'var(--white)',
-                    fontSize: '0.9rem',
-                    outline: 'none',
-                    transition: 'all 0.2s'
-                  }}
-                />
-                {speechSupported && (
-                  <button
-                    type="button"
-                    onClick={toggleSpeechRecognition}
-                    title={isListening ? "Stop listening" : "Speak event idea"}
-                    style={{
-                      position: 'absolute',
-                      right: '8px',
-                      background: isListening ? '#ef4444' : 'rgba(255,255,255,0.08)',
-                      border: 'none',
-                      borderRadius: '50%',
-                      width: '26px',
-                      height: '26px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      cursor: 'pointer',
-                      color: isListening ? '#ffffff' : '#c4b5fd',
-                      transition: 'all 0.2s'
-                    }}
-                  >
-                    {isListening ? <MicOff size={14} /> : <Mic size={14} />}
-                  </button>
-                )}
-              </div>
-              <button 
-                type="button"
-                onClick={() => handleAIGenerateEvent()}
-                disabled={isGenerating || !aiPrompt.trim()}
+            {/* Multi-paragraph prompt box (spacious on mobile & desktop) */}
+            <div style={{ marginBottom: '14px' }}>
+              <textarea 
+                placeholder={isListening ? "Listening... Speak your walk or event idea freely. Take your time, pauses will not submit." : "Type or speak your event thoughts here (several paragraphs or bullet points welcome!)...\n\ne.g. A Saturday morning walk around the heath starting at 10am. Friendly dogs on leads welcome. We will take a relaxed 5km route through the woods with nice views, and finish up at the cafe for warm drinks and chats."} 
+                value={aiPrompt}
+                onChange={(e) => setAiPrompt(e.target.value)}
+                rows={4}
                 style={{
-                  padding: '0 16px',
-                  height: '42px',
-                  borderRadius: '10px',
-                  background: 'linear-gradient(135deg, #8b5cf6, #d946ef)',
-                  border: 'none',
-                  color: '#ffffff',
-                  fontWeight: 600,
-                  fontSize: '0.88rem',
-                  cursor: isGenerating ? 'wait' : 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '6px',
-                  minWidth: '95px',
-                  opacity: (!aiPrompt.trim() && !isGenerating) ? 0.5 : 1,
-                  boxShadow: '0 4px 12px rgba(139,92,246,0.35)'
+                  width: '100%',
+                  padding: '14px 16px',
+                  borderRadius: '12px',
+                  border: isListening ? '1px solid #ef4444' : '1px solid rgba(255,255,255,0.18)',
+                  background: isListening ? 'rgba(239,68,68,0.08)' : 'rgba(0,0,0,0.45)',
+                  color: 'var(--white)',
+                  fontSize: '0.94rem',
+                  lineHeight: 1.55,
+                  minHeight: '115px',
+                  resize: 'vertical',
+                  outline: 'none',
+                  transition: 'all 0.2s',
+                  boxSizing: 'border-box'
                 }}
-                className="interactive-press"
-              >
-                {isGenerating ? (
-                  <div className="spinner" style={{ width: '16px', height: '16px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#ffffff', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-                ) : (
-                  <>
-                    <Wand2 size={14} />
-                    <span>Draft All</span>
-                  </>
-                )}
-              </button>
+              />
+
+              {/* Action buttons row directly under the box */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginTop: '8px', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  {speechSupported && (
+                    <button
+                      type="button"
+                      onClick={toggleSpeechRecognition}
+                      style={{
+                        background: isListening ? '#ef4444' : 'rgba(255,255,255,0.08)',
+                        border: '1px solid ' + (isListening ? '#ef4444' : 'rgba(255,255,255,0.18)'),
+                        borderRadius: '8px',
+                        padding: '8px 14px',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        cursor: 'pointer',
+                        color: isListening ? '#ffffff' : '#c4b5fd',
+                        fontSize: '0.8rem',
+                        fontWeight: 600,
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      {isListening ? <MicOff size={15} /> : <Mic size={15} />}
+                      <span>{isListening ? 'Done Speaking ✓' : '🎙️ Speak Idea'}</span>
+                    </button>
+                  )}
+                  {aiPrompt.trim() && (
+                    <button
+                      type="button"
+                      onClick={() => setAiPrompt('')}
+                      style={{
+                        background: 'transparent',
+                        border: 'none',
+                        color: 'var(--slate-400)',
+                        fontSize: '0.75rem',
+                        cursor: 'pointer',
+                        textDecoration: 'underline'
+                      }}
+                    >
+                      Clear text
+                    </button>
+                  )}
+                </div>
+
+                <button 
+                  type="button"
+                  onClick={() => handleAIGenerateEvent()}
+                  disabled={isGenerating || !aiPrompt.trim()}
+                  title="Generate all event details from these notes"
+                  style={{
+                    padding: '10px 22px',
+                    borderRadius: '10px',
+                    background: 'linear-gradient(135deg, #8b5cf6, #d946ef)',
+                    border: 'none',
+                    color: '#ffffff',
+                    fontWeight: 600,
+                    fontSize: '0.9rem',
+                    cursor: isGenerating ? 'wait' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px',
+                    opacity: (!aiPrompt.trim() && !isGenerating) ? 0.45 : 1,
+                    boxShadow: '0 4px 14px rgba(139,92,246,0.35)'
+                  }}
+                  className="interactive-press"
+                >
+                  {isGenerating ? (
+                    <div className="spinner" style={{ width: '16px', height: '16px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#ffffff', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+                  ) : (
+                    <>
+                      <Wand2 size={15} />
+                      <span>✨ Draft Full Event</span>
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
 
             {/* Quick Idea Starter Chips */}

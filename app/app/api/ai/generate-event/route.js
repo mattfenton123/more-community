@@ -29,14 +29,13 @@ function resolveEventDate(prompt) {
   for (const [dayName, targetDay] of Object.entries(dayMap)) {
     if (lower.includes(dayName)) {
       let daysAhead = (targetDay - currentDay + 7) % 7;
-      if (daysAhead === 0) daysAhead = 7; // if today is Saturday and they said Saturday, schedule for next Saturday
+      if (daysAhead === 0) daysAhead = 7; // schedule for upcoming instance
       const d = new Date(now.getTime() + daysAhead * 86400000);
       return d.toISOString().split('T')[0];
     }
   }
 
   if (lower.includes('weekend')) {
-    // Default weekend to upcoming Saturday
     let daysAhead = (6 - currentDay + 7) % 7;
     if (daysAhead === 0) daysAhead = 7;
     const d = new Date(now.getTime() + daysAhead * 86400000);
@@ -55,7 +54,6 @@ function resolveEventDate(prompt) {
 function resolveEventTime(prompt) {
   const lower = (prompt || '').toLowerCase();
 
-  // Explicit time matches (e.g. 10am, 9:30am, 7pm, 18:00)
   const timeRegex = /\b(\d{1,2})(?::(\d{2}))?\s*(am|pm)?\b/i;
   const match = lower.match(timeRegex);
   if (match) {
@@ -94,34 +92,38 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Prompt or notes are required' }, { status: 400 });
     }
 
-    const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_AI_API_KEY;
-    const models = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
+    const apiKey = (process.env.GEMINI_API_KEY || process.env.GOOGLE_AI_API_KEY || '').trim();
+    // Use proven, universally supported Gemini models on Google AI Studio
+    const models = ['gemini-2.0-flash', 'gemini-1.5-flash'];
+    let lastApiError = null;
 
+    // ==============================================================
     // Specialized Mode: Expand rough bullet points into an enticing description
+    // ==============================================================
     if (mode === 'expand-description') {
       if (!apiKey) {
         return NextResponse.json({
           success: true,
           fallback: true,
           mode: 'smart-template',
+          reason: 'No GEMINI_API_KEY detected in server environment.',
           description: expandLocalBullets(prompt, communityName, communityLocation)
         });
       }
 
-      const expandPrompt = `You are an expert community walk director and copywriter for "${communityName}"${communityLocation ? ` based in ${communityLocation}` : ''}.
-The host provided these rough notes/bullet points:
-"""
-${prompt}
-"""
+      const systemDirective = `You are an expert community walk director and storyteller for "${communityName}"${communityLocation ? ` in ${communityLocation}` : ''}.
+Your job is to transform raw host notes or rough bullet points into an enticing, warm, beautifully written community walk description.
 
-Expand and polish these rough notes into a warm, inviting community walk description.
-Preserve all factual points (times, meetup landmarks, pace, dogs, coffee, gear, rules).
-Format with clean markdown:
-- An enthusiastic, welcoming opening hook encouraging regulars and newcomers.
-- "**The Route & Vibe:**" (pace, distance, terrain, accessibility)
-- "**Meeting Point:**" (exact landmark and gathering details)
-- "**What to Bring:**" (bullet points of gear, water, footwear)
-- "**Post-Walk Social:**" (cafe, pub, or casual chats)
+GUIDELINES:
+- Avoid generic corporate clichés ("Whether you are a newcomer or regular...").
+- Keep ALL specific facts provided by the host (times, meeting spots, dogs, coffee, terrain, rules).
+- Write in a welcoming, enthusiastic, local voice.
+- Format cleanly in markdown:
+  1. A lively opening paragraph describing the spirit and scenery of the meetup.
+  2. "**The Route & Vibe:**" (pace, distance, path terrain, accessibility).
+  3. "**Meeting Point:**" (exact landmark and how to spot the group).
+  4. "**What to Bring:**" (bullet points of footwear, layers, water).
+  5. "**Post-Walk Social:**" (cafe, pub, or casual conversation).
 
 Return ONLY a valid JSON object with the single key "description" containing the markdown string.`;
 
@@ -133,10 +135,17 @@ Return ONLY a valid JSON object with the single key "description" containing the
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
-                contents: [{ role: 'user', parts: [{ text: expandPrompt }] }],
+                systemInstruction: {
+                  parts: [{ text: systemDirective }]
+                },
+                contents: [
+                  { role: 'user', parts: [{ text: `Here are the host notes to expand and polish:
+
+${prompt}` }] }
+                ],
                 generationConfig: {
-                  temperature: 0.7,
-                  maxOutputTokens: 1024,
+                  temperature: 0.75,
+                  maxOutputTokens: 1200,
                   responseMimeType: 'application/json'
                 }
               })
@@ -154,13 +163,19 @@ Return ONLY a valid JSON object with the single key "description" containing the
                   success: true,
                   fallback: false,
                   mode: 'gemini',
+                  modelUsed: model,
                   description: parsed.description
                 });
               }
             }
+          } else {
+            const errBody = await response.text();
+            console.error(`Gemini expand description [${model}] status ${response.status}:`, errBody);
+            lastApiError = `${model} returned HTTP ${response.status}`;
           }
         } catch (err) {
           console.warn(`Gemini expand description with ${model} failed:`, err.message);
+          lastApiError = err.message;
         }
       }
 
@@ -168,46 +183,50 @@ Return ONLY a valid JSON object with the single key "description" containing the
         success: true,
         fallback: true,
         mode: 'smart-template',
+        reason: lastApiError || 'Gemini API call failed',
         description: expandLocalBullets(prompt, communityName, communityLocation)
       });
     }
 
+    // ==============================================================
+    // Mode: Full Event Generation
+    // ==============================================================
     if (!apiKey) {
       return NextResponse.json({
         success: true,
         fallback: true,
         mode: 'smart-template',
+        reason: 'No GEMINI_API_KEY detected in server environment.',
         event: generateRichLocalEvent(prompt, communityName, communityLocation, communityTags)
       });
     }
 
     const today = new Date().toISOString().split('T')[0];
-    const systemPrompt = `You are an expert community event director and copywriter for "${communityName}"${communityLocation ? ` based in ${communityLocation}` : ''}.
+    const systemDirective = `You are a visionary community director and event creator for "${communityName}"${communityLocation ? ` based in ${communityLocation}` : ''}.
 Today's date is ${today}.
-Create an enticing, welcoming, and complete real-world community walk or meetup based on this idea: "${prompt}".
+Your task is to take a brief event idea or voice dictation and craft a complete, highly-engaging real-world community walk or meetup.
 
-The physical community and real human connection is the core. Focus on friendly pacing, clear meeting directions, and social comfort.
+THE PHILOSOPHY:
+In an era of endless screens, real-world physical presence and walking side-by-side is the ultimate experience. 
+Write with warmth, local flavor, and character. Avoid robotic, boilerplate corporate text.
 
-Return ONLY a valid JSON object with the following fields:
-- "title": (string) A warm, catchy, high-converting event title (under 55 chars).
-- "description": (string) A beautifully formatted markdown description including:
-  1. An inviting opening hook.
-  2. "**The Route & Vibe:**" (pace, estimated distance, terrain, accessibility).
-  3. "**Meeting Point:**" (clear instructions on how to find the group).
-  4. "**What to Bring:**" (bullet points: comfortable footwear, water, layers, etc.).
-  5. "**Post-Walk Social:**" (e.g. cafe, pub, or casual chats).
-- "date": (string YYYY-MM-DD) Calculated intelligently relative to today (${today}) based on the prompt.
-- "time": (string HH:MM 24h)
-- "location": (string) Specific recognizable meeting spot or landmark near ${communityLocation || communityName}.
-- "maxCapacity": (string number) Sensible attendee cap (e.g. "25" for social walks, "18" for intimate groups).
-- "ticketPrice": (string number) "0" for free community walks, or small reasonable amount if paid.
-- "vibeTags": (array of strings, e.g. ["Walk", "Dog Friendly", "Coffee Stop", "Scenic"]).
+RETURN SPECIFICATIONS:
+Return ONLY a valid JSON object with these exact keys:
+- "title": (string) A catchy, memorable, human title under 50 characters (e.g. "Sunset Heath Stroll & Pub Finish", "Four-Legged Friends Park Loop", "Sunrise Woodland Walk & Flat Whites").
+- "description": (string) Markdown description with:
+  1. An inviting opening hook capturing the vibe and feeling of the walk.
+  2. "**The Route & Vibe:**" (pace, distance e.g. 4-5 km, terrain, accessibility).
+  3. "**Meeting Point:**" (unmistakable landmark near ${communityLocation || communityName}).
+  4. "**What to Bring:**" (bullet points: comfortable trainers/boots, water, layers).
+  5. "**Post-Walk Social:**" (cafe, pub, or casual chats).
+- "date": (string YYYY-MM-DD) Calculated intelligently relative to today (${today}). If they say "this saturday" or "sunday", calculate the exact next matching date!
+- "time": (string HH:MM 24h format, e.g. "10:00", "09:30", "18:30").
+- "location": (string) A recognizable, specific meeting landmark (e.g. "North Gate Clocktower, Richmond Park").
+- "maxCapacity": (string number) Recommended attendee limit (e.g. "25" for social walks, "16" for intimate groups).
+- "ticketPrice": (string number) "0" for community walks, or reasonable ticket price if specialized.
+- "vibeTags": (array of 3-4 strings, e.g. ["Walk", "Dog Friendly", "Coffee Stop", "Scenic Nature"]).
 - "autoReminders": true,
-- "autoFeedback": true
-`;
-
-    // Attempt Gemini call with fallback models
-    let geminiData = null;
+- "autoFeedback": true`;
 
     for (const model of models) {
       try {
@@ -217,10 +236,16 @@ Return ONLY a valid JSON object with the following fields:
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              contents: [{ role: 'user', parts: [{ text: systemPrompt }] }],
+              systemInstruction: {
+                parts: [{ text: systemDirective }]
+              },
+              contents: [
+                { role: 'user', parts: [{ text: `Create an event from this idea:
+"${prompt}"` }] }
+              ],
               generationConfig: {
-                temperature: 0.7,
-                maxOutputTokens: 1024,
+                temperature: 0.8,
+                maxOutputTokens: 1400,
                 responseMimeType: 'application/json'
               }
             })
@@ -228,42 +253,36 @@ Return ONLY a valid JSON object with the following fields:
         );
 
         if (response.ok) {
-          geminiData = await response.json();
-          break;
+          const geminiData = await response.json();
+          const text = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (text) {
+            const cleaned = text.replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim();
+            const event = JSON.parse(cleaned);
+            return NextResponse.json({
+              success: true,
+              fallback: false,
+              mode: 'gemini',
+              modelUsed: model,
+              event
+            });
+          }
+        } else {
+          const errBody = await response.text();
+          console.error(`Gemini generate-event [${model}] status ${response.status}:`, errBody);
+          lastApiError = `${model} returned HTTP ${response.status}`;
         }
       } catch (err) {
         console.warn(`Gemini model ${model} fetch failed:`, err.message);
+        lastApiError = err.message;
       }
     }
 
-    if (!geminiData) {
-      return NextResponse.json({
-        success: true,
-        fallback: true,
-        mode: 'smart-template',
-        event: generateRichLocalEvent(prompt, communityName, communityLocation, communityTags)
-      });
-    }
-
-    const text = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!text) {
-      return NextResponse.json({
-        success: true,
-        fallback: true,
-        mode: 'smart-template',
-        event: generateRichLocalEvent(prompt, communityName, communityLocation, communityTags)
-      });
-    }
-
-    // Parse returned JSON safely
-    const cleanedText = text.replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim();
-    const event = JSON.parse(cleanedText);
-
     return NextResponse.json({
       success: true,
-      fallback: false,
-      mode: 'gemini',
-      event
+      fallback: true,
+      mode: 'smart-template',
+      reason: lastApiError || 'Gemini API call failed',
+      event: generateRichLocalEvent(prompt, communityName, communityLocation, communityTags)
     });
   } catch (err) {
     console.error('AI generate-event error:', err);
@@ -271,9 +290,69 @@ Return ONLY a valid JSON object with the following fields:
       success: true,
       fallback: true,
       mode: 'smart-template',
+      reason: err.message,
       event: generateRichLocalEvent('', 'More Community', '', [])
     });
   }
+}
+
+/**
+ * Local deterministic bullet points expander.
+ * Takes user notes and formats them into an attractive community walk description.
+ */
+function expandLocalBullets(bullets, communityName, communityLocation = '') {
+  const locBase = communityLocation || (communityName ? communityName : 'Local Area');
+  const lines = (bullets || '')
+    .split('\n')
+    .map(l => l.replace(/^[•\-\*\d\.]+\s*/, '').trim())
+    .filter(Boolean);
+
+  const lower = (bullets || '').toLowerCase();
+  const hasDogs = lower.includes('dog') || lower.includes('pup');
+  const hasCoffee = lower.includes('coffee') || lower.includes('cafe');
+  const hasPub = lower.includes('pub') || lower.includes('drink');
+
+  let meetingPoint = `Main Entrance Gates, ${locBase}`;
+  let routeNotes = 'A gentle, conversational route suitable for all paces.';
+  let kitNotes = ['Comfortable walking shoes', 'Water bottle', 'Weather-appropriate layers'];
+  let socialNotes = hasCoffee 
+    ? 'Grabbing warm drinks and pastries at a local cafe afterwards.'
+    : hasPub 
+      ? 'Wrapping up at a nearby pub garden for relaxed conversation.'
+      : 'Casual post-walk chat with fellow members.';
+
+  lines.forEach(line => {
+    const l = line.toLowerCase();
+    if (l.includes('meet') || l.includes('start') || l.includes('location') || l.includes('gate') || l.includes('car park') || l.includes('station')) {
+      meetingPoint = line;
+    } else if (l.includes('bring') || l.includes('wear') || l.includes('shoes') || l.includes('water') || l.includes('rain') || l.includes('jacket')) {
+      kitNotes.push(line);
+    } else if (l.includes('cafe') || l.includes('coffee') || l.includes('pub') || l.includes('social') || l.includes('drink')) {
+      socialNotes = line;
+    } else {
+      routeNotes += ` ${line}.`;
+    }
+  });
+
+  if (hasDogs) {
+    kitNotes.push('Dog lead & waste bags');
+  }
+
+  const uniqueKit = Array.from(new Set(kitNotes));
+
+  return `Join us for a friendly, welcoming community walk in ${locBase}! Whether you are a regular or joining for the very first time, this is a relaxed space to disconnect from screens, get some fresh air, and meet great people from your local area.
+
+**The Route & Vibe:**
+${routeNotes.trim()} All fitness levels and newcomers are warmly welcomed!
+
+**Meeting Point:**
+📍 ${meetingPoint}. Look out for the group - we usually gather 5-10 minutes before start time.
+
+**What to Bring:**
+${uniqueKit.map(k => `• ${k}`).join('\n')}
+
+**Post-Walk Social:**
+${socialNotes} Everyone is invited to stay on!`;
 }
 
 /**
@@ -286,7 +365,6 @@ function generateRichLocalEvent(prompt, communityName, communityLocation = '', c
   const targetTime = resolveEventTime(prompt);
   const locBase = communityLocation || (communityName ? communityName : 'Local Area');
 
-  // Detect specific themes
   const isDogFriendly = lower.includes('dog') || lower.includes('pup') || lower.includes('hound');
   const isCoffee = lower.includes('coffee') || lower.includes('cafe') || lower.includes('brunch') || lower.includes('roastery');
   const isPub = lower.includes('pub') || lower.includes('drink') || lower.includes('pint') || lower.includes('beer') || lower.includes('wine');
@@ -370,63 +448,4 @@ ${social} Everyone is invited to stay on!`;
     autoReminders: true,
     autoFeedback: true
   };
-}
-
-/**
- * Local deterministic bullet points expander.
- * Takes user notes and formats them into an attractive community walk description.
- */
-function expandLocalBullets(bullets, communityName, communityLocation = '') {
-  const locBase = communityLocation || (communityName ? communityName : 'Local Area');
-  const lines = (bullets || '')
-    .split('\n')
-    .map(l => l.replace(/^[•\-\*\d\.]+\s*/, '').trim())
-    .filter(Boolean);
-
-  const lower = (bullets || '').toLowerCase();
-  const hasDogs = lower.includes('dog') || lower.includes('pup');
-  const hasCoffee = lower.includes('coffee') || lower.includes('cafe');
-  const hasPub = lower.includes('pub') || lower.includes('drink');
-
-  let meetingPoint = `Main Entrance Gates, ${locBase}`;
-  let routeNotes = 'A gentle, conversational route suitable for all paces.';
-  let kitNotes = ['Comfortable walking shoes', 'Water bottle', 'Weather-appropriate layers'];
-  let socialNotes = hasCoffee 
-    ? 'Grabbing warm drinks and pastries at a local cafe afterwards.'
-    : hasPub 
-      ? 'Wrapping up at a nearby pub garden for relaxed conversation.'
-      : 'Casual post-walk chat with fellow members.';
-
-  lines.forEach(line => {
-    const l = line.toLowerCase();
-    if (l.includes('meet') || l.includes('start') || l.includes('location') || l.includes('gate') || l.includes('car park') || l.includes('station')) {
-      meetingPoint = line;
-    } else if (l.includes('bring') || l.includes('wear') || l.includes('shoes') || l.includes('water') || l.includes('rain') || l.includes('jacket')) {
-      kitNotes.push(line);
-    } else if (l.includes('cafe') || l.includes('coffee') || l.includes('pub') || l.includes('social') || l.includes('drink')) {
-      socialNotes = line;
-    } else {
-      routeNotes += ` ${line}.`;
-    }
-  });
-
-  if (hasDogs) {
-    kitNotes.push('Dog lead & waste bags');
-  }
-
-  const uniqueKit = Array.from(new Set(kitNotes));
-
-  return `Join us for a friendly, welcoming community walk in ${locBase}! Whether you are a regular or joining for the very first time, this is a relaxed space to disconnect from screens, get some fresh air, and meet great people from your local area.
-
-**The Route & Vibe:**
-${routeNotes.trim()} All fitness levels and newcomers are warmly welcomed!
-
-**Meeting Point:**
-📍 ${meetingPoint}. Look out for the group - we usually gather 5-10 minutes before start time.
-
-**What to Bring:**
-${uniqueKit.map(k => `• ${k}`).join('\n')}
-
-**Post-Walk Social:**
-${socialNotes} Everyone is invited to stay on!`;
 }
