@@ -1327,22 +1327,60 @@ export default function LeaderDashboard({ initialCommunityId }) {
             boxShadow: '0 8px 24px -6px rgba(0,0,0,0.3)'
           }}>
             {/* Header with Title and Mode pill */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '10px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '8px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '1.25rem' }}>✨</span>
+                <span style={{ fontSize: '1.3rem' }}>⚡</span>
                 <div>
-                  <div style={{ fontWeight: 700, color: '#f3e8ff', fontSize: '0.92rem', letterSpacing: '-0.01em', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    AI Event Co-Pilot
-                    <span style={{ fontSize: '0.62rem', padding: '2px 7px', borderRadius: '999px', background: 'rgba(168,85,247,0.25)', color: '#d8b4fe', border: '1px solid rgba(168,85,247,0.4)', textTransform: 'uppercase', fontWeight: 700 }}>
-                      Leader Assistant
+                  <div style={{ fontWeight: 700, color: '#f3e8ff', fontSize: '0.98rem', letterSpacing: '-0.01em', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    Way 1: Draft Full Event with AI
+                    <span style={{ fontSize: '0.62rem', padding: '2px 8px', borderRadius: '999px', background: 'rgba(168,85,247,0.3)', color: '#e9d5ff', border: '1px solid rgba(168,85,247,0.5)', textTransform: 'uppercase', fontWeight: 700 }}>
+                      Fastest
                     </span>
                   </div>
-                  <div style={{ fontSize: '0.74rem', color: '#c4b5fd' }}>
-                    Type an idea, speak aloud, or tap a starter below to draft in seconds.
+                  <div style={{ fontSize: '0.76rem', color: '#c4b5fd', marginTop: '2px' }}>
+                    Speak or type a rough idea. AI sets up the Title, Date, Time, Location, and Description.
                   </div>
                 </div>
               </div>
             </div>
+
+            {/* Active Voice Listening Banner */}
+            {isListening && (
+              <div style={{
+                background: 'rgba(239,68,68,0.18)',
+                border: '1px solid rgba(239,68,68,0.45)',
+                borderRadius: '10px',
+                padding: '9px 12px',
+                marginBottom: '10px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '8px'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#ef4444', display: 'inline-block', boxShadow: '0 0 8px #ef4444' }} />
+                  <span style={{ fontSize: '0.82rem', color: '#fecaca', fontWeight: 600 }}>
+                    Listening... Speak naturally. Pauses are safe!
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={toggleSpeechRecognition}
+                  style={{
+                    background: '#ef4444',
+                    color: '#ffffff',
+                    border: 'none',
+                    borderRadius: '6px',
+                    padding: '4px 12px',
+                    fontSize: '0.78rem',
+                    fontWeight: 700,
+                    cursor: 'pointer'
+                  }}
+                >
+                  Done Speaking ✓
+                </button>
+              </div>
+            )}
 
             {/* Input row with speech recognition mic button & generate button */}
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '10px' }}>
@@ -1424,7 +1462,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 ) : (
                   <>
                     <Wand2 size={14} />
-                    <span>Draft</span>
+                    <span>Draft All</span>
                   </>
                 )}
               </button>
@@ -1477,9 +1515,12 @@ export default function LeaderDashboard({ initialCommunityId }) {
             )}
           </div>
 
-          <div style={{ background: 'rgba(20,184,166,0.05)', border: '1px solid rgba(20,184,166,0.15)', borderRadius: '12px', padding: '14px', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <Info size={16} color="var(--teal-400)" style={{ flexShrink: 0 }} />
-            <span style={{ fontSize: '0.8rem', color: 'var(--teal-300)', lineHeight: 1.4 }}>Or edit manually below. Clear details help members feel comfortable and excited to show up!</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: '22px 0 16px 0' }}>
+            <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.1)' }} />
+            <span style={{ fontSize: '0.76rem', color: 'var(--slate-400)', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600 }}>
+              Way 2: Fill In Manually (or with bullet points)
+            </span>
+            <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.1)' }} />
           </div>
           <div className="form-group">
             <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Calendar size={14} color="var(--teal-400)" /> Event Title <span style={{ color: 'var(--rose-400)', fontSize: '0.7rem' }}>*</span></label>
@@ -1487,9 +1528,14 @@ export default function LeaderDashboard({ initialCommunityId }) {
           </div>
           <div className="form-group">
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
-              <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
-                <MessageCircle size={14} color="var(--slate-400)" /> Description & Notes
-              </label>
+              <div>
+                <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
+                  <MessageCircle size={14} color="var(--slate-400)" /> Description & Meeting Details
+                </label>
+                <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', marginTop: '2px' }}>
+                  Drop rough notes or speak aloud, then tap <strong>Expand Bullets with AI</strong>.
+                </div>
+              </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 {speechSupported && (
                   <button
@@ -1546,13 +1592,51 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 </button>
               </div>
             </div>
+            {/* Active Description Dictating Banner if listening */}
+            {isDictatingDescription && (
+              <div style={{
+                background: 'rgba(239,68,68,0.18)',
+                border: '1px solid rgba(239,68,68,0.45)',
+                borderRadius: '8px',
+                padding: '8px 12px',
+                marginBottom: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '8px'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ef4444', display: 'inline-block', boxShadow: '0 0 6px #ef4444' }} />
+                  <span style={{ fontSize: '0.78rem', color: '#fecaca', fontWeight: 600 }}>
+                    Recording notes... Each phrase becomes a bullet point. Pauses are safe!
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleToggleDictateDescription}
+                  style={{
+                    background: '#ef4444',
+                    color: '#ffffff',
+                    border: 'none',
+                    borderRadius: '5px',
+                    padding: '3px 10px',
+                    fontSize: '0.72rem',
+                    fontWeight: 700,
+                    cursor: 'pointer'
+                  }}
+                >
+                  Done ✓
+                </button>
+              </div>
+            )}
+
             <textarea 
               className="form-input" 
-              placeholder="Drop rough notes or speak aloud (e.g. • 10am at south gate • 5k flat loop • dogs welcome • cafe after) - then tap 'Expand Bullets with AI' to polish!" 
+              placeholder="Type rough bullets or speak aloud:&#10;• 10am meet at North Gate&#10;• 5k flat park loop, gentle pace&#10;• Dogs welcome on leads&#10;• Coffee after at the boathouse cafe&#10;&#10;Then tap '✨ Expand Bullets with AI' above to polish!" 
               value={eventForm.description} 
               onChange={e => setEventForm({...eventForm, description: e.target.value})} 
-              rows={6} 
-              style={{ minHeight: '130px', lineHeight: 1.5 }} 
+              rows={7} 
+              style={{ minHeight: '140px', lineHeight: 1.55 }} 
             />
 
             {/* Quick Polish Actions */}
