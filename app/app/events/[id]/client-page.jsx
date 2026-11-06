@@ -6,6 +6,7 @@ import { ChevronLeft, Share, MapPin, Calendar, Clock, Users, CheckCircle2, Info,
 import { useAppContext } from '../../../src/context/AppContext';
 import { useToast } from '../../../src/components/Toast';
 import DigitalTicket from '../../../src/components/DigitalTicket';
+import CarpoolHub from '../../../src/components/CarpoolHub';
 import QRScanner from '../../../src/components/QRScanner';
 import { isEventPast, isEventUpcoming, isEventToday, downloadIcs, getGoogleCalendarEventUrl, getWhatsAppShareUrl } from '../../../src/lib/calendar';
 import { formatEventDate } from '../../../src/lib/recurrence';
@@ -1314,6 +1315,9 @@ export default function EventClient({ id }) {
           <EventLocationMap location={event.location} event={event} isLocationShielded={!canSeeSecretLocation} />
         )}
 
+        {/* Trail Carpool Hub (Flexible & Privacy-Safe Rides) */}
+        <CarpoolHub event={event} user={user} isAttendee={isGoing} community={community} />
+
         {/* Joint Co-Hosting & Partner Community Discovery */}
         {partnerCommunities.length > 0 && (
           <div style={{
@@ -2005,48 +2009,82 @@ export default function EventClient({ id }) {
               </div>
             )}
 
-            {/* WhatsApp Community Bridge */}
-            <div style={{ marginBottom: '16px' }}>
-              <div style={{ fontSize: '0.76rem', fontWeight: 700, color: 'var(--teal-300)', textTransform: 'uppercase', letterSpacing: '0.6px', marginBottom: '8px' }}>
-                WhatsApp Community Bridge
-              </div>
+            {/* Auto-Invite WhatsApp Carpool & Trail Coordination */}
+            {(() => {
+              const resolvedWa = event?.whatsappGroup || (event?.description?.match(/\[WhatsApp: ([^\]]+)\]/)?.[1] || '') || community?.whatsapp_group || null;
+              const waUrl = resolvedWa ? (resolvedWa.startsWith('http') ? resolvedWa : `https://${resolvedWa}`) : null;
+              const carpoolOfferMsg = `🚗 Carpool Offer for ${event.title}!\n\nHey everyone, I just booked my ticket for ${event.title} (${event.date} at ${event.time}).\n\nI am driving and have spare seats in my car. If anyone needs a ride, let me know!`;
+              const carpoolReqMsg = `🙋 Need a Lift for ${event.title}?\n\nHey everyone, I just got my ticket for ${event.title} (${event.date} at ${event.time}).\n\nIs anyone driving with a spare seat? Happy to chip in for fuel!`;
 
-              {community?.whatsapp_group && (
-                <a
-                  href={community.whatsapp_group.startsWith('http') ? community.whatsapp_group : `https://${community.whatsapp_group}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="interactive-press"
-                  style={{
-                    width: '100%', padding: '12px 16px', borderRadius: '14px',
-                    background: 'linear-gradient(135deg, #25D366 0%, #128C7E 100%)',
-                    color: '#ffffff', fontWeight: 700, fontSize: '0.92rem',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                    textDecoration: 'none', marginBottom: '8px',
-                    boxShadow: '0 4px 16px rgba(37, 211, 102, 0.25)'
-                  }}
-                >
-                  <MessageCircle size={18} /> Join WhatsApp Group & Say Hi
-                </a>
-              )}
+              return (
+                <div style={{ marginBottom: '18px', background: 'rgba(37, 211, 102, 0.06)', border: '1px solid rgba(37, 211, 102, 0.25)', borderRadius: '16px', padding: '14px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                    <div style={{ fontSize: '0.76rem', fontWeight: 700, color: '#4ade80', textTransform: 'uppercase', letterSpacing: '0.6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <MessageCircle size={14} /> Private WhatsApp & Carpool
+                    </div>
+                    <span style={{ fontSize: '0.68rem', padding: '2px 6px', borderRadius: '4px', background: 'rgba(37, 211, 102, 0.2)', color: '#86efac', fontWeight: 700 }}>
+                      UNLOCKED
+                    </span>
+                  </div>
 
-              <a
-                href={getWhatsAppShareUrl(event, community?.name)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="interactive-press"
-                style={{
-                  width: '100%', padding: '11px 16px', borderRadius: '14px',
-                  background: 'rgba(37, 211, 102, 0.12)',
-                  border: '1px solid rgba(37, 211, 102, 0.3)',
-                  color: '#4ade80', fontWeight: 600, fontSize: '0.88rem',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                  textDecoration: 'none'
-                }}
-              >
-                <Share size={16} /> Share RSVP / Intro to WhatsApp
-              </a>
-            </div>
+                  <p style={{ margin: '0 0 12px 0', fontSize: '0.82rem', color: 'var(--slate-300)', lineHeight: 1.4 }}>
+                    Coordinate lifts, meet walking buddies, and get live trail updates before setting off.
+                  </p>
+
+                  {waUrl && (
+                    <a
+                      href={waUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="interactive-press"
+                      style={{
+                        width: '100%', padding: '12px 16px', borderRadius: '12px',
+                        background: 'linear-gradient(135deg, #25D366 0%, #128C7E 100%)',
+                        color: '#ffffff', fontWeight: 700, fontSize: '0.92rem',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                        textDecoration: 'none', marginBottom: '10px',
+                        boxShadow: '0 4px 16px rgba(37, 211, 102, 0.25)'
+                      }}
+                    >
+                      <MessageCircle size={18} /> Join WhatsApp Carpool & Chat
+                    </a>
+                  )}
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                    <a
+                      href={`https://api.whatsapp.com/send?text=${encodeURIComponent(carpoolOfferMsg)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="interactive-press"
+                      style={{
+                        padding: '9px 10px', borderRadius: '10px',
+                        background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+                        color: 'var(--slate-200)', fontSize: '0.78rem', fontWeight: 600,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px',
+                        textDecoration: 'none'
+                      }}
+                    >
+                      🚗 Offer a Ride
+                    </a>
+                    <a
+                      href={`https://api.whatsapp.com/send?text=${encodeURIComponent(carpoolReqMsg)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="interactive-press"
+                      style={{
+                        padding: '9px 10px', borderRadius: '10px',
+                        background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+                        color: 'var(--slate-200)', fontSize: '0.78rem', fontWeight: 600,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px',
+                        textDecoration: 'none'
+                      }}
+                    >
+                      🙋 Need a Ride
+                    </a>
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* Calendar Sync Options */}
             <div style={{ marginBottom: '20px' }}>

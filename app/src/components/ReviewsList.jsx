@@ -37,7 +37,7 @@ export default function ReviewsList({ communityId, onAddReview }) {
 
       {/* Stats Breakdown */}
       {totalReviews > 0 ? (
-        <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '20px', marginBottom: '24px', display: 'flex', gap: '24px', alignItems: 'center' }}>
+        <div className="review-stats-card" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '20px', marginBottom: '24px', display: 'flex', gap: '24px', alignItems: 'center' }}>
           <div style={{ textAlign: 'center', minWidth: '100px' }}>
             <div style={{ fontSize: '3rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', lineHeight: 1 }}>{averageRating}</div>
             <div style={{ display: 'flex', justifyContent: 'center', gap: '2px', color: 'var(--teal-400)', margin: '8px 0' }}>
@@ -76,7 +76,7 @@ export default function ReviewsList({ communityId, onAddReview }) {
         {communityReviews.map(review => {
           const author = users.find(u => u.id === review.user_id) || { name: 'Community Member', avatar: 'https://i.pravatar.cc/150' };
           return (
-            <div key={review.id} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '16px' }}>
+            <div key={review.id} className="review-card" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '16px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
                 <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                   <img src={author.avatar} alt={author.name} style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />

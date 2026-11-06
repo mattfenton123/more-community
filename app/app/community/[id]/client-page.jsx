@@ -504,7 +504,7 @@ export default function CommunityProfile() {
         {/* Nav */}
         <div style={{ position: 'relative', padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', zIndex: 100 }}>
           <button 
-            className="interactive-press" 
+            className="interactive-press community-nav-btn" 
             style={{ 
               width: '42px', height: '42px', borderRadius: '50%', 
               background: 'rgba(15, 23, 42, 0.85)', 
@@ -596,20 +596,20 @@ export default function CommunityProfile() {
           {community.tags && community.tags.length > 0 && (
             <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '12px' }}>
               {community.tags.map(tag => (
-                <span key={tag} style={{ fontSize: '0.7rem', background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(4px)', color: 'var(--white)', padding: '4px 10px', borderRadius: '99px', fontWeight: 500 }}>{tag}</span>
+                <span key={tag} className="community-hero-tag" style={{ fontSize: '0.7rem', background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(6px)', border: '1px solid rgba(255,255,255,0.2)', color: '#ffffff', padding: '4px 10px', borderRadius: '99px', fontWeight: 600 }}>{tag}</span>
               ))}
             </div>
           )}
           
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: '0 0 12px 0' }}>
-            <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2.4rem', color: 'var(--white)', margin: 0, lineHeight: 1.1 }}>
+            <h1 className="community-hero-title" style={{ fontFamily: 'var(--font-heading)', fontSize: '2.4rem', color: '#ffffff', margin: 0, lineHeight: 1.1 }}>
               {community.name}
             </h1>
             {community.verified && <BadgeCheck size={28} color="#3b82f6" style={{ flexShrink: 0 }} />}
           </div>
           
           {/* Meta strip */}
-          <div style={{ display: 'flex', gap: '16px', fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)', marginBottom: '12px', flexWrap: 'wrap' }}>
+          <div className="community-hero-meta" style={{ display: 'flex', gap: '16px', fontSize: '0.85rem', color: 'rgba(255,255,255,0.92)', marginBottom: '12px', flexWrap: 'wrap' }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><MapPin size={14} /> {cleanLocationName(community.location_name) || 'Tunbridge Wells'}</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Users size={14} /> {community.members || memberList.length || 1} members</span>
             {community.activity_level && (
@@ -662,7 +662,7 @@ export default function CommunityProfile() {
                         <MessageCircle size={20} /> Join WhatsApp Group
                       </a>
                     )}
-                    <div style={{ width: '100%', padding: '14px', fontSize: '1rem', fontWeight: 600, borderRadius: '14px', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--slate-300)', background: 'rgba(255,255,255,0.05)', marginBottom: '8px' }}>
+                    <div className="community-member-status-badge" style={{ width: '100%', padding: '14px', fontSize: '1rem', fontWeight: 600, borderRadius: '14px', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--slate-300)', background: 'rgba(255,255,255,0.05)', marginBottom: '8px' }}>
                       ✓ You're a Member
                     </div>
                     <button 
@@ -696,7 +696,7 @@ export default function CommunityProfile() {
 
       {/* ===== ORGANISER CARD (always visible) ===== */}
       <div style={{ padding: '0 20px', marginTop: '-1px' }}>
-        <div style={{ 
+        <div className="community-organiser-card" style={{ 
           display: 'flex', alignItems: 'center', gap: '14px', 
           padding: '16px 20px', background: 'rgba(255,255,255,0.03)', 
           borderRadius: '16px', border: '1px solid rgba(255,255,255,0.06)',
@@ -709,9 +709,9 @@ export default function CommunityProfile() {
             style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--teal-500)', cursor: leaderUser ? 'pointer' : 'default' }} 
           />
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: '0.75rem', color: 'var(--teal-400)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <div className="organiser-label" style={{ fontSize: '0.75rem', color: 'var(--teal-400)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '6px' }}>
               Organised by
-              <span style={{ background: 'rgba(20,184,166,0.15)', color: '#2dd4bf', padding: '1px 6px', borderRadius: '4px', fontSize: '0.65rem' }}>Leader &amp; Co-Hosts</span>
+              <span className="leader-pill" style={{ background: 'rgba(20,184,166,0.15)', color: '#2dd4bf', padding: '1px 6px', borderRadius: '4px', fontSize: '0.65rem' }}>Leader &amp; Co-Hosts</span>
             </div>
             <div style={{ fontWeight: 700, color: 'var(--white)', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <span>{leaderUser?.name || 'Community Team'}</span>
@@ -798,7 +798,7 @@ export default function CommunityProfile() {
             <button 
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className="interactive-press"
+              className={`interactive-press community-tab-pill ${activeTab === tab.id ? 'active' : ''}`}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -1395,15 +1395,15 @@ export default function CommunityProfile() {
             )}
 
             {/* Organizer Spotlight */}
-            <div style={{ marginBottom: '32px', background: 'linear-gradient(135deg, rgba(20,184,166,0.05), rgba(15,23,42,1))', border: '1px solid rgba(20,184,166,0.2)', borderRadius: '16px', padding: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }}>
+            <div className="community-spotlight-card" style={{ marginBottom: '32px', background: 'linear-gradient(135deg, rgba(20,184,166,0.05), rgba(15,23,42,1))', border: '1px solid rgba(20,184,166,0.2)', borderRadius: '16px', padding: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }}>
               <img 
                 src={leaderUser?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(community.name)}&background=0D8B93&color=fff`} 
                 alt="Organiser" 
                 onClick={() => leaderUser && navigate.push(`/profile/${leaderUser.id}`)}
                 style={{ width: '88px', height: '88px', borderRadius: '50%', objectFit: 'cover', border: '3px solid var(--teal-500)', cursor: leaderUser ? 'pointer' : 'default', marginBottom: '16px', boxShadow: '0 4px 12px rgba(20,184,166,0.2)' }} 
               />
-              <div style={{ fontSize: '0.75rem', color: 'var(--teal-400)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '4px' }}>Community Leader</div>
-              <div style={{ fontWeight: 800, color: 'var(--white)', fontSize: '1.4rem', fontFamily: 'var(--font-heading)', marginBottom: '8px' }}>{leaderUser?.name || 'Community Team'}</div>
+              <div className="spotlight-role" style={{ fontSize: '0.75rem', color: 'var(--teal-400)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '4px' }}>Community Leader</div>
+              <div className="spotlight-leader-name" style={{ fontWeight: 800, color: 'var(--white)', fontSize: '1.4rem', fontFamily: 'var(--font-heading)', marginBottom: '8px' }}>{leaderUser?.name || 'Community Team'}</div>
               <p style={{ color: 'var(--slate-300)', fontSize: '0.95rem', marginBottom: '20px', maxWidth: '400px', lineHeight: 1.5 }}>
                 {leaderUser?.bio || `Hey! I'm the organizer for ${community.name}. Feel free to drop me a message if you have any questions before joining!`}
               </p>
@@ -1563,7 +1563,7 @@ export default function CommunityProfile() {
               
               <button 
                 onClick={() => setShowFullDesc(!showFullDesc)}
-                className="interactive-press"
+                className="interactive-press community-show-more-btn"
                 style={{ 
                   marginTop: '8px', width: '100%', padding: '12px', borderRadius: '12px', 
                   background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)',
@@ -1572,7 +1572,7 @@ export default function CommunityProfile() {
                 }}
               >
                 {showFullDesc ? 'Show Less' : (
-                  <>Show <img src="/images/logo.webp" alt="more." style={{ height: '14px', filter: 'brightness(0) invert(1)', opacity: 0.8 }} /></>
+                  <>Show <img className="community-show-more-logo" src="/images/logo.webp" alt="more." style={{ height: '14px', filter: 'brightness(0) invert(1)', opacity: 0.8 }} /></>
                 )}
               </button>
             </div>
@@ -1596,33 +1596,33 @@ export default function CommunityProfile() {
 
             {/* Key Info Cards */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '32px' }}>
-              <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '16px' }}>
-                <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(20,184,166,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px', color: 'var(--teal-400)' }}>
+              <div className="community-key-info-card" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '16px' }}>
+                <div className="info-icon-box" style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(20,184,166,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px', color: 'var(--teal-400)' }}>
                   <Users size={20} />
                 </div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px', letterSpacing: '0.05em' }}>Who It's For</div>
-                <div style={{ fontSize: '0.9rem', color: 'var(--white)', fontWeight: 500, lineHeight: 1.4 }}>All ages & abilities welcome. No experience needed.</div>
+                <div className="info-title" style={{ fontSize: '0.75rem', color: 'var(--slate-400)', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px', letterSpacing: '0.05em' }}>Who It's For</div>
+                <div className="info-value" style={{ fontSize: '0.9rem', color: 'var(--white)', fontWeight: 500, lineHeight: 1.4 }}>All ages & abilities welcome. No experience needed.</div>
               </div>
-              <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '16px' }}>
-                <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(20,184,166,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px', color: 'var(--teal-400)' }}>
+              <div className="community-key-info-card" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '16px' }}>
+                <div className="info-icon-box" style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(20,184,166,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px', color: 'var(--teal-400)' }}>
                   <span style={{ fontSize: '1.2rem', fontWeight: 600 }}>£</span>
                 </div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px', letterSpacing: '0.05em' }}>Cost</div>
-                <div style={{ fontSize: '0.9rem', color: 'var(--white)', fontWeight: 500, lineHeight: 1.4 }}>{community.cost || community.metrics?.cost || 'Free to join'}</div>
+                <div className="info-title" style={{ fontSize: '0.75rem', color: 'var(--slate-400)', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px', letterSpacing: '0.05em' }}>Cost</div>
+                <div className="info-value" style={{ fontSize: '0.9rem', color: 'var(--white)', fontWeight: 500, lineHeight: 1.4 }}>{community.cost || community.metrics?.cost || 'Free to join'}</div>
               </div>
-              <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '16px' }}>
-                <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(20,184,166,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px', color: 'var(--teal-400)' }}>
+              <div className="community-key-info-card" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '16px' }}>
+                <div className="info-icon-box" style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(20,184,166,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px', color: 'var(--teal-400)' }}>
                   <Calendar size={20} />
                 </div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px', letterSpacing: '0.05em' }}>How Often</div>
-                <div style={{ fontSize: '0.9rem', color: 'var(--white)', fontWeight: 500, lineHeight: 1.4 }}>{community.activity_level === 'Very Active' ? 'Weekly meetups' : community.activity_level === 'Active' ? 'Fortnightly' : 'Monthly'}</div>
+                <div className="info-title" style={{ fontSize: '0.75rem', color: 'var(--slate-400)', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px', letterSpacing: '0.05em' }}>How Often</div>
+                <div className="info-value" style={{ fontSize: '0.9rem', color: 'var(--white)', fontWeight: 500, lineHeight: 1.4 }}>{community.activity_level === 'Very Active' ? 'Weekly meetups' : community.activity_level === 'Active' ? 'Fortnightly' : 'Monthly'}</div>
               </div>
-              <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '16px' }}>
-                <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(20,184,166,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px', color: 'var(--teal-400)' }}>
+              <div className="community-key-info-card" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '16px' }}>
+                <div className="info-icon-box" style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(20,184,166,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px', color: 'var(--teal-400)' }}>
                   <MapPin size={20} />
                 </div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px', letterSpacing: '0.05em' }}>Location</div>
-                <div style={{ fontSize: '0.9rem', color: 'var(--white)', fontWeight: 500, lineHeight: 1.4 }}>{cleanLocationName(community.location_name) || 'Tunbridge Wells, Kent'}</div>
+                <div className="info-title" style={{ fontSize: '0.75rem', color: 'var(--slate-400)', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px', letterSpacing: '0.05em' }}>Location</div>
+                <div className="info-value" style={{ fontSize: '0.9rem', color: 'var(--white)', fontWeight: 500, lineHeight: 1.4 }}>{cleanLocationName(community.location_name) || 'Tunbridge Wells, Kent'}</div>
               </div>
             </div>
 
@@ -1639,7 +1639,7 @@ export default function CommunityProfile() {
                       href={community.whatsapp_group.startsWith('http') ? community.whatsapp_group : `https://${community.whatsapp_group}`} 
                       target="_blank" 
                       rel="noopener noreferrer" 
-                      className="interactive-press" 
+                      className="interactive-press community-social-whatsapp" 
                       style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', background: 'rgba(37,211,102,0.06)', border: '1px solid rgba(37,211,102,0.25)', borderRadius: '16px', textDecoration: 'none', color: 'var(--white)' }}
                     >
                       <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: '#25D366', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff', flexShrink: 0 }}>
@@ -1662,7 +1662,7 @@ export default function CommunityProfile() {
                       href={community.instagram_handle.startsWith('http') ? community.instagram_handle : `https://instagram.com/${community.instagram_handle.replace('@', '')}`} 
                       target="_blank" 
                       rel="noopener noreferrer" 
-                      className="interactive-press" 
+                      className="interactive-press community-social-instagram" 
                       style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', background: 'rgba(236,72,153,0.06)', border: '1px solid rgba(236,72,153,0.25)', borderRadius: '16px', textDecoration: 'none', color: 'var(--white)' }}
                     >
                       <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: 'linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff', flexShrink: 0 }}>
@@ -2118,7 +2118,7 @@ export default function CommunityProfile() {
                 {upcomingEvents.map(event => {
                   const rsvps = eventRsvps[event.id] || [];
                   return (
-                    <div key={event.id} onClick={() => navigate.push(getEventPath(event, events))} className="interactive-press" style={{ borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)', cursor: 'pointer' }}>
+                    <div key={event.id} onClick={() => navigate.push(getEventPath(event, events))} className="interactive-press community-event-card" style={{ borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)', cursor: 'pointer' }}>
                       {event.image && (
                         <div style={{ height: '140px', background: `url(${event.image})`, backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative' }}>
                           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.6))' }}></div>
@@ -2187,7 +2187,7 @@ export default function CommunityProfile() {
                   {pastEvents.map(event => {
                     const rsvps = eventRsvps[event.id] || [];
                     return (
-                      <div key={event.id} onClick={() => navigate.push(getEventPath(event, events))} className="interactive-press" style={{ borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)', background: 'rgba(255,255,255,0.015)', opacity: 0.85, cursor: 'pointer' }}>
+                      <div key={event.id} onClick={() => navigate.push(getEventPath(event, events))} className="interactive-press community-event-card" style={{ borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)', background: 'rgba(255,255,255,0.015)', opacity: 0.85, cursor: 'pointer' }}>
                         {event.image && (
                           <div style={{ height: '120px', background: `url(${event.image})`, backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative', filter: 'saturate(0.8)' }}>
                             <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 40%, rgba(15,23,42,0.8))' }}></div>

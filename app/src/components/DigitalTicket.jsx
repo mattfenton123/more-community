@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { X, Calendar, MapPin, Clock, Ticket, WifiOff, CheckCircle2, Navigation, Download, Copy, Share2, Sparkles, Users, Banknote, Compass, ShieldCheck, QrCode } from 'lucide-react';
+import { X, Calendar, MapPin, Clock, Ticket, WifiOff, CheckCircle2, Navigation, Download, Copy, Share2, Sparkles, Users, Banknote, Compass, ShieldCheck, QrCode, MessageCircle } from 'lucide-react';
 import QRCode from 'qrcode';
 
 export default function DigitalTicket({ event, community, user, onClose }) {
@@ -127,6 +127,8 @@ export default function DigitalTicket({ event, community, user, onClose }) {
       setTimeout(() => setCopiedCoords(false), 2500);
     }
   };
+
+  const resolvedWhatsApp = event?.whatsappGroup || (event?.description?.match(/\[WhatsApp: ([^\]]+)\]/)?.[1] || '') || community?.whatsapp_group || null;
 
   const handleCopyDirections = () => {
     const textToCopy = `${event.title}\n📍 Meeting Point: ${event.meetingPoint || event.location}\n📅 ${event.date} at ${event.time}`;
@@ -342,6 +344,27 @@ export default function DigitalTicket({ event, community, user, onClose }) {
               <Download size={14} /> Save Pass to Wallet (Offline Ready)
             </button>
           </div>
+
+          {/* Unlocked WhatsApp Carpool & Chat for Ticket Holders */}
+          {resolvedWhatsApp && (
+            <div style={{ width: '100%', marginBottom: '8px' }}>
+              <a
+                href={resolvedWhatsApp.startsWith('http') ? resolvedWhatsApp : `https://${resolvedWhatsApp}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="interactive-press"
+                style={{
+                  width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                  padding: '10px 14px', borderRadius: '12px',
+                  background: 'linear-gradient(135deg, rgba(37,211,102,0.18) 0%, rgba(18,140,126,0.18) 100%)',
+                  border: '1px solid rgba(37,211,102,0.35)',
+                  color: '#4ade80', textDecoration: 'none', fontSize: '0.82rem', fontWeight: 700
+                }}
+              >
+                <MessageCircle size={14} /> Join WhatsApp Carpool & Group Chat
+              </a>
+            </div>
+          )}
 
           {/* Quick Actions for Outdoor Trails */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', width: '100%' }}>

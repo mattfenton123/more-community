@@ -87,7 +87,7 @@ export default function LeaderSetupChecklist({ community, events = [], onOpenEve
   };
 
   return (
-    <div style={{
+    <div className="leader-setup-checklist-card" style={{
       background: 'linear-gradient(135deg, rgba(20,184,166,0.12) 0%, rgba(30,41,59,0.7) 100%)',
       borderRadius: '20px',
       border: '1px solid rgba(20,184,166,0.3)',

@@ -181,6 +181,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
     autoFeedback: true,
     requireApproval: false,
     rsvpQuestion: '',
+    whatsappGroup: '',
     scheduleMode: 'single',
     resolvedDates: [],
     recurrenceSummary: 'Single event'
@@ -1055,6 +1056,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
           autoFeedback: eventForm.autoFeedback,
           requireApproval: Boolean(eventForm.requireApproval),
           rsvpQuestion: eventForm.rsvpQuestion?.trim() || '',
+            whatsappGroup: eventForm.whatsappGroup?.trim() || '',
           image: finalImage
         });
         toast.success('Event created!', `${eventForm.title} has been published`);
@@ -1068,6 +1070,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
           autoFeedback: eventForm.autoFeedback,
           requireApproval: Boolean(eventForm.requireApproval),
           rsvpQuestion: eventForm.rsvpQuestion?.trim() || '',
+            whatsappGroup: eventForm.whatsappGroup?.trim() || '',
           image: finalImage
         }));
         await createEventsBatch(community.id, eventsList);
@@ -1102,6 +1105,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
       autoFeedback: event.autoFeedback ?? true,
       requireApproval: Boolean(event.requireApproval || event.require_approval || (event.description && event.description.includes('[Host Approval Required]'))),
       rsvpQuestion: event.rsvpQuestion || (event.description?.match(/\[RSVP Question: ([^\]]+)\]/)?.[1] || ''),
+        whatsappGroup: event.whatsappGroup || (event.description?.match(/\[WhatsApp: ([^\]]+)\]/)?.[1] || '') || '',
       scheduleMode: 'single',
       resolvedDates: event.date ? [event.date] : [],
       recurrenceSummary: 'Single event'
@@ -1132,7 +1136,9 @@ export default function LeaderDashboard({ initialCommunityId }) {
       allowCash: Boolean(eventForm.allowCash),
       requireApproval: Boolean(eventForm.requireApproval),
       rsvpQuestion: eventForm.rsvpQuestion?.trim() || '',
+            whatsappGroup: eventForm.whatsappGroup?.trim() || '',
       collabCommunityIds: eventForm.collabCommunityIds || [],
+        whatsappGroup: eventForm.whatsappGroup?.trim() || '',
       autoReminders: eventForm.autoReminders,
       autoFeedback: eventForm.autoFeedback
     };
@@ -2083,6 +2089,35 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   </button>
                 ))}
               </div>
+            </div>
+
+            {/* Private WhatsApp Carpool & Group Link */}
+            <div style={{ padding: '16px', background: 'rgba(37,211,102,0.04)', border: '1px solid rgba(37,211,102,0.2)', borderRadius: '14px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <MessageCircle size={16} color="#25D366" /> Private WhatsApp Carpool & Walk Chat
+                  <span style={{ fontSize: '0.68rem', padding: '1px 6px', borderRadius: '4px', background: 'rgba(37,211,102,0.15)', color: '#4ade80', fontWeight: 700 }}>AUTO-INVITE</span>
+                </div>
+              </div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', marginBottom: '10px' }}>
+                Paste a WhatsApp invite link (e.g. chat.whatsapp.com/...). Auto-revealed on RSVP confirmation for carpools & trail coordination.
+              </div>
+              <input
+                type="text"
+                placeholder="https://chat.whatsapp.com/..."
+                value={eventForm.whatsappGroup || ''}
+                onChange={e => setEventForm({ ...eventForm, whatsappGroup: e.target.value })}
+                style={{
+                  width: '100%', padding: '10px 14px', borderRadius: '10px',
+                  background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(37,211,102,0.25)',
+                  color: 'var(--white)', fontSize: '0.88rem', outline: 'none'
+                }}
+              />
+              {community?.whatsapp_group && !eventForm.whatsappGroup && (
+                <div style={{ marginTop: '8px', fontSize: '0.74rem', color: '#94a3b8' }}>
+                  Default: Will use community WhatsApp group <span style={{ color: '#4ade80', fontWeight: 600 }}>({community.whatsapp_group})</span>
+                </div>
+              )}
             </div>
 
             <div 

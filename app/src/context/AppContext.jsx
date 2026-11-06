@@ -529,6 +529,7 @@ export function AppProvider({ children }) {
           profitShareAmount: e.profit_share_amount || 0,
           requireApproval: Boolean(e.require_approval || (e.description && e.description.includes('[Host Approval Required]'))),
           rsvpQuestion: e.rsvp_question || (e.description?.match(/\[RSVP Question: ([^\]]+)\]/)?.[1] || ''),
+            whatsappGroup: e.whatsapp_group || (e.description?.match(/\[WhatsApp: ([^\]]+)\]/)?.[1] || ''),
           galleryImages: Array.isArray(e.gallery_images) ? e.gallery_images : (Array.isArray(e.galleryImages) ? e.galleryImages : []),
           createdAt: e.created_at
         })));
@@ -1451,6 +1452,128 @@ export function AppProvider({ children }) {
     }
   };
 
+
+  // ─── Carpool Hub State & Actions ─────────────────────────
+  const [carpools, setCarpools] = useState({});
+
+  const offerCarpool = async (eventId, offerData) => {
+    const newOffer = {
+      id: `cp_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      eventId,
+      driverId: user?.id,
+      driverName: user?.name || 'Community Member',
+      driverAvatar: user?.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user?.name || 'Driver')}`,
+      origin: offerData.origin,
+      time: offerData.time,
+      seatsTotal: Number(offerData.seatsTotal) || 3,
+      seatsAvailable: Number(offerData.seatsTotal) || 3,
+      passengers: [],
+      flexibleOnRoute: Boolean(offerData.flexibleOnRoute),
+      notes: offerData.notes || '',
+      chipIn: offerData.chipIn || 'Free',
+      createdAt: new Date().toISOString()
+    };
+
+    setCarpools(prev => {
+      const list = [newOffer, ...(prev[eventId] || [])];
+      if (typeof window !== 'undefined') {
+        try { localStorage.setItem(`more_event_carpools_${eventId}`, JSON.stringify(list)); } catch (e) {}
+      }
+      return { ...prev, [eventId]: list };
+    });
+    return newOffer;
+  };
+
+  const reserveCarpoolSeat = async (eventId, carpoolId) => {
+    if (!user?.id) throw new Error("Must be signed in to reserve a seat");
+    setCarpools(prev => {
+      let currentList = prev[eventId];
+      if (!currentList && typeof window !== 'undefined') {
+        try {
+          const raw = localStorage.getItem(`more_event_carpools_${eventId}`);
+          if (raw) currentList = JSON.parse(raw);
+        } catch (e) {}
+      }
+      currentList = currentList || [];
+
+      const updated = currentList.map(c => {
+        if (c.id === carpoolId) {
+          const isAlreadyPassenger = (c.passengers || []).some(p => p.userId === user.id);
+          if (isAlreadyPassenger) return c;
+          if (c.seatsAvailable <= 0) return c;
+
+          const newPassengers = [...(c.passengers || []), {
+            userId: user.id,
+            name: user.name || 'Community Member',
+            avatar: user.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.name || 'Rider')}`,
+            reservedAt: new Date().toISOString()
+          }];
+          return {
+            ...c,
+            passengers: newPassengers,
+            seatsAvailable: Math.max(0, c.seatsTotal - newPassengers.length)
+          };
+        }
+        return c;
+      });
+
+      if (typeof window !== 'undefined') {
+        try { localStorage.setItem(`more_event_carpools_${eventId}`, JSON.stringify(updated)); } catch (e) {}
+      }
+      return { ...prev, [eventId]: updated };
+    });
+  };
+
+  const cancelCarpoolSeat = async (eventId, carpoolId) => {
+    if (!user?.id) return;
+    setCarpools(prev => {
+      let currentList = prev[eventId];
+      if (!currentList && typeof window !== 'undefined') {
+        try {
+          const raw = localStorage.getItem(`more_event_carpools_${eventId}`);
+          if (raw) currentList = JSON.parse(raw);
+        } catch (e) {}
+      }
+      currentList = currentList || [];
+
+      const updated = currentList.map(c => {
+        if (c.id === carpoolId) {
+          const newPassengers = (c.passengers || []).filter(p => p.userId !== user.id);
+          return {
+            ...c,
+            passengers: newPassengers,
+            seatsAvailable: Math.max(0, c.seatsTotal - newPassengers.length)
+          };
+        }
+        return c;
+      });
+
+      if (typeof window !== 'undefined') {
+        try { localStorage.setItem(`more_event_carpools_${eventId}`, JSON.stringify(updated)); } catch (e) {}
+      }
+      return { ...prev, [eventId]: updated };
+    });
+  };
+
+  const deleteCarpoolOffer = async (eventId, carpoolId) => {
+    setCarpools(prev => {
+      let currentList = prev[eventId];
+      if (!currentList && typeof window !== 'undefined') {
+        try {
+          const raw = localStorage.getItem(`more_event_carpools_${eventId}`);
+          if (raw) currentList = JSON.parse(raw);
+        } catch (e) {}
+      }
+      currentList = currentList || [];
+
+      const updated = currentList.filter(c => c.id !== carpoolId);
+      if (typeof window !== 'undefined') {
+        try { localStorage.setItem(`more_event_carpools_${eventId}`, JSON.stringify(updated)); } catch (e) {}
+      }
+      return { ...prev, [eventId]: updated };
+    });
+  };
+
   const createEvent = async (communityId, eventData) => {
     try {
       let token = session?.access_token;
@@ -1465,6 +1588,9 @@ export function AppProvider({ children }) {
       }
       if (eventData.rsvpQuestion?.trim() && !desc.includes('[RSVP Question:')) {
         desc = (desc ? desc + '\n\n' : '') + `[RSVP Question: ${eventData.rsvpQuestion.trim()}]`;
+      }
+      if (eventData.whatsappGroup?.trim() && !desc.includes('[WhatsApp:')) {
+        desc = (desc ? desc + '\n\n' : '') + `[WhatsApp: ${eventData.whatsappGroup.trim()}]`;
       }
       const newEvent = {
         communityId: communityId,
@@ -1503,6 +1629,7 @@ export function AppProvider({ children }) {
           ticketPrice: e.ticket_price || 0,
           requireApproval: Boolean(e.require_approval || (e.description && e.description.includes('[Host Approval Required]')) || newEvent.requireApproval),
           rsvpQuestion: eventData.rsvpQuestion?.trim() || '',
+          whatsappGroup: eventData.whatsappGroup?.trim() || '',
           galleryImages: [],
           createdAt: e.created_at
         }]);
@@ -1557,6 +1684,7 @@ export function AppProvider({ children }) {
           ticketPrice: e.ticket_price || 0,
           requireApproval: Boolean(e.require_approval || (e.description && e.description.includes('[Host Approval Required]')) || newEvent.requireApproval),
           rsvpQuestion: eventData.rsvpQuestion?.trim() || '',
+          whatsappGroup: eventData.whatsappGroup?.trim() || '',
           galleryImages: [],
           createdAt: e.created_at
         }));
@@ -1588,6 +1716,16 @@ export function AppProvider({ children }) {
       }
       finalUpdates.description = desc;
       finalUpdates.requireApproval = updates.requireApproval;
+    }
+    if (updates.whatsappGroup !== undefined) {
+      const existing = events.find(e => e.id === eventId);
+      let desc = updates.description !== undefined ? updates.description : (existing?.description || '');
+      desc = desc.replace(/\[WhatsApp: [^\]]+\]/g, '').trim();
+      if (updates.whatsappGroup?.trim()) {
+        desc = (desc ? desc + '\n\n' : '') + `[WhatsApp: ${updates.whatsappGroup.trim()}]`;
+      }
+      finalUpdates.description = desc;
+      finalUpdates.whatsappGroup = updates.whatsappGroup.trim();
     }
     const prevEvents = events;
     setEvents(prev => prev.map(e => e.id === eventId ? { ...e, ...finalUpdates } : e));
@@ -2063,6 +2201,11 @@ export function AppProvider({ children }) {
       platformBroadcast,
       checkInMember,
       flushOfflineCheckinQueue,
+      carpools,
+      offerCarpool,
+      reserveCarpoolSeat,
+      cancelCarpoolSeat,
+      deleteCarpoolOffer,
       chatReadReceipts,
       markChatRead,
       sponsors,

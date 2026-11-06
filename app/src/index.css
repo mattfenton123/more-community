@@ -968,6 +968,20 @@ html, body {
   background: var(--teal-700);
 }
 
+
+[data-theme="light"] .btn-outline {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border: 1px solid #cbd5e1 !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+}
+
+[data-theme="light"] .btn-outline:hover {
+  background: #f1f5f9 !important;
+  border-color: #94a3b8 !important;
+  color: #0f172a !important;
+}
+
 .btn-outline {
   background: transparent;
   color: var(--white);
@@ -1870,4 +1884,272 @@ button:disabled, [role="button"][aria-disabled="true"] {
 
 [data-theme="light"] .places-dropdown > div:hover {
   background: #f8fafc !important;
+}
+
+
+/* ============================================================
+   COMMUNITY MICROSITE DAYTIME / LIGHT MODE COMPREHENSIVE FIX
+   ============================================================ */
+
+/* 1. Page Background & Desktop Wrappers */
+[data-theme="light"] .view-profile {
+  background: #f8fafc !important;
+}
+
+@media (min-width: 1024px) {
+  [data-theme="light"] .view-profile {
+    background: #f1f5f9 !important;
+  }
+
+  [data-theme="light"] .view-profile::before {
+    background: rgba(241, 245, 249, 0.92) !important;
+    backdrop-filter: blur(20px) !important;
+  }
+
+  [data-theme="light"] .microsite-container {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 12px 40px rgba(15, 23, 42, 0.08) !important;
+  }
+}
+
+/* 2. Hero Section in Daytime Mode */
+.community-hero-title {
+  color: #ffffff !important;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.65) !important;
+}
+
+.community-hero-tag {
+  color: #ffffff !important;
+}
+
+.community-hero-meta {
+  color: rgba(255, 255, 255, 0.92) !important;
+}
+
+[data-theme="light"] .community-nav-btn {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+  color: #0f172a !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12) !important;
+}
+
+[data-theme="light"] .community-nav-btn svg {
+  color: #0f172a !important;
+}
+
+/* 3. Organiser Card (Under Hero) */
+[data-theme="light"] .community-organiser-card {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 14px rgba(0, 0, 0, 0.02) !important;
+}
+
+[data-theme="light"] .community-organiser-card .organiser-label {
+  color: #0f766e !important;
+}
+
+[data-theme="light"] .community-organiser-card .leader-pill {
+  background: rgba(13, 148, 136, 0.12) !important;
+  color: #0f766e !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="light"] .community-organiser-card .cohost-pill {
+  background: #f1f5f9 !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+/* 4. Tab Navigation Pills */
+[data-theme="light"] .community-tab-pill {
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #475569 !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+}
+
+[data-theme="light"] .community-tab-pill:hover {
+  background: #f8fafc !important;
+  color: #0f172a !important;
+  border-color: #94a3b8 !important;
+}
+
+[data-theme="light"] .community-tab-pill.active {
+  background: rgba(13, 148, 136, 0.12) !important;
+  border: 1.5px solid rgba(13, 148, 136, 0.45) !important;
+  color: #0f766e !important;
+  box-shadow: 0 2px 8px rgba(13, 148, 136, 0.14) !important;
+}
+
+/* 5. Organiser Spotlight Card (About Tab) */
+[data-theme="light"] .community-spotlight-card {
+  background: linear-gradient(135deg, rgba(20, 184, 166, 0.08) 0%, #ffffff 100%) !important;
+  border: 1.5px solid rgba(13, 148, 136, 0.25) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05) !important;
+}
+
+[data-theme="light"] .community-spotlight-card .spotlight-leader-name {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .community-spotlight-card p {
+  color: #334155 !important;
+}
+
+[data-theme="light"] .community-spotlight-card .spotlight-role {
+  color: #0f766e !important;
+}
+
+/* 6. Key Info Cards (Who It's For, Cost, How Often, Location) */
+[data-theme="light"] .community-key-info-card {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+}
+
+[data-theme="light"] .community-key-info-card .info-icon-box {
+  background: rgba(13, 148, 136, 0.1) !important;
+  color: #0f766e !important;
+}
+
+[data-theme="light"] .community-key-info-card .info-title {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .community-key-info-card .info-value {
+  color: #0f172a !important;
+}
+
+/* 7. Event Cards (Upcoming & Past) */
+[data-theme="light"] .community-event-card {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 12px rgba(0, 0, 0, 0.02) !important;
+}
+
+[data-theme="light"] .community-event-card:hover {
+  background: #fafafa !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06) !important;
+}
+
+[data-theme="light"] .community-event-card .event-title {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .community-event-card .event-meta,
+[data-theme="light"] .community-event-card .event-desc {
+  color: #475569 !important;
+}
+
+/* 8. Show More Description Button */
+[data-theme="light"] .community-show-more-btn {
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #0f766e !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+}
+
+[data-theme="light"] .community-show-more-btn:hover {
+  background: #f8fafc !important;
+  border-color: #94a3b8 !important;
+}
+
+[data-theme="light"] .community-show-more-logo {
+  filter: none !important;
+  opacity: 1 !important;
+}
+
+/* 9. Social Links (WhatsApp & Instagram) */
+[data-theme="light"] .community-social-whatsapp {
+  background: rgba(37, 211, 102, 0.08) !important;
+  border: 1px solid rgba(37, 211, 102, 0.35) !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .community-social-whatsapp:hover {
+  background: rgba(37, 211, 102, 0.14) !important;
+}
+
+[data-theme="light"] .community-social-whatsapp .social-subtext {
+  color: #475569 !important;
+}
+
+[data-theme="light"] .community-social-instagram {
+  background: rgba(236, 72, 153, 0.06) !important;
+  border: 1px solid rgba(236, 72, 153, 0.25) !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .community-social-instagram:hover {
+  background: rgba(236, 72, 153, 0.12) !important;
+}
+
+[data-theme="light"] .community-social-instagram .social-subtext {
+  color: #475569 !important;
+}
+
+/* 10. Community Supporters Card */
+[data-theme="light"] .community-supporter-card {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+}
+
+[data-theme="light"] .community-supporter-card .supporter-name {
+  color: #0f172a !important;
+}
+
+/* 11. Member Status Badge */
+[data-theme="light"] .community-member-status-badge {
+  background: #f1f5f9 !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #0f766e !important;
+}
+
+/* 12. Leader Setup Checklist in Day Mode */
+[data-theme="light"] .leader-setup-checklist-card {
+  background: linear-gradient(135deg, rgba(20, 184, 166, 0.08) 0%, #ffffff 100%) !important;
+  border: 1.5px solid rgba(13, 148, 136, 0.25) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05) !important;
+}
+
+[data-theme="light"] .leader-setup-checklist-card h3 {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .leader-setup-checklist-card p {
+  color: #475569 !important;
+}
+
+[data-theme="light"] .leader-setup-checklist-card .checklist-step-item {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+/* 13. Reviews List in Day Mode */
+[data-theme="light"] .review-card,
+[data-theme="light"] .review-stats-card {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+}
+
+[data-theme="light"] .review-card .review-author-name {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .review-card p {
+  color: #334155 !important;
+}
+
+/* 14. Universal Fallback for any frosted glass card inside .view-profile in daytime mode */
+[data-theme="light"] .view-profile div[style*="rgba(255, 255, 255, 0.02)"],
+[data-theme="light"] .view-profile div[style*="rgba(255, 255, 255, 0.03)"],
+[data-theme="light"] .view-profile div[style*="rgba(255,255,255,0.02)"],
+[data-theme="light"] .view-profile div[style*="rgba(255,255,255,0.03)"] {
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03), 0 4px 12px rgba(0, 0, 0, 0.02) !important;
 }
