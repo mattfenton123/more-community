@@ -12,6 +12,27 @@ const AppContext = createContext();
 export function AppProvider({ children }) {
   const { authUser, session } = useAuth();
   
+
+  // Auto-sync offline trail check-ins whenever mobile signal returns
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const handleSignalRestored = async () => {
+      const synced = await flushOfflineCheckinQueue();
+      if (synced > 0) {
+        toast?.success?.('Signal Restored! 📶', `Synced ${synced} offline trail check-in${synced === 1 ? '' : 's'} to server.`);
+      }
+    };
+
+    window.addEventListener('online', handleSignalRestored);
+    // Also run an initial flush on mount if online
+    if (navigator.onLine) {
+      flushOfflineCheckinQueue();
+    }
+
+    return () => window.removeEventListener('online', handleSignalRestored);
+  }, []);
+
   // Accessibility & Theme State
   const [theme, setTheme] = useState('dark'); // 'light', 'dark', 'system'
   const [highContrast, setHighContrast] = useState(false);
@@ -1353,20 +1374,80 @@ export function AppProvider({ children }) {
     return await sendEventReminderAction(eventId, customMessage, token);
   };
 
+  // ─── Offline Trail Mode Check-in & Queue ─────────────────────────
+  const flushOfflineCheckinQueue = async () => {
+    if (typeof window === 'undefined') return 0;
+    try {
+      const raw = localStorage.getItem('more_offline_checkin_queue');
+      const queue = raw ? JSON.parse(raw) : [];
+      if (!Array.isArray(queue) || queue.length === 0) return 0;
+
+      let syncedCount = 0;
+      const remaining = [];
+
+      for (const item of queue) {
+        try {
+          const { error } = await supabase.from('event_rsvps')
+            .update({ checked_in: true })
+            .match({ event_id: item.eventId, user_id: item.userId });
+          if (!error) {
+            syncedCount++;
+          } else {
+            remaining.push(item);
+          }
+        } catch (e) {
+          remaining.push(item);
+        }
+      }
+
+      localStorage.setItem('more_offline_checkin_queue', JSON.stringify(remaining));
+      return syncedCount;
+    } catch (err) {
+      console.warn('Could not flush offline checkin queue:', err);
+      return 0;
+    }
+  };
+
   const checkInMember = async (eventId, userId) => {
+    // 1. Instant optimistic in-memory check-in
     setEventRsvps(prev => ({
       ...prev,
       [eventId]: (prev[eventId] || []).map(r => 
         r.userId === userId ? { ...r, checkedIn: true } : r
       )
     }));
-    try {
-      const { error } = await supabase.from('event_rsvps')
-        .update({ checked_in: true })
-        .match({ event_id: eventId, user_id: userId });
-      if (error) console.warn('Check-in update failed:', error);
-    } catch (err) {
-      console.error(err);
+
+    // 2. Queue locally for zero-signal trail reliability
+    if (typeof window !== 'undefined') {
+      try {
+        const raw = localStorage.getItem('more_offline_checkin_queue');
+        const queue = raw ? JSON.parse(raw) : [];
+        const exists = queue.some(q => q.eventId === eventId && q.userId === userId);
+        if (!exists) {
+          queue.push({ eventId, userId, scannedAt: Date.now() });
+          localStorage.setItem('more_offline_checkin_queue', JSON.stringify(queue));
+        }
+      } catch (e) {}
+    }
+
+    // 3. Attempt direct network sync if online
+    if (typeof navigator !== 'undefined' && navigator.onLine) {
+      try {
+        const { error } = await supabase.from('event_rsvps')
+          .update({ checked_in: true })
+          .match({ event_id: eventId, user_id: userId });
+        if (!error && typeof window !== 'undefined') {
+          // Remove synced item from offline queue
+          try {
+            const raw = localStorage.getItem('more_offline_checkin_queue');
+            const queue = raw ? JSON.parse(raw) : [];
+            const filtered = queue.filter(q => !(q.eventId === eventId && q.userId === userId));
+            localStorage.setItem('more_offline_checkin_queue', JSON.stringify(filtered));
+          } catch (e) {}
+        }
+      } catch (err) {
+        console.warn('Network sync failed; item safely retained in offline trail queue:', err);
+      }
     }
   };
 
@@ -1981,6 +2062,7 @@ export function AppProvider({ children }) {
       broadcastNotification,
       platformBroadcast,
       checkInMember,
+      flushOfflineCheckinQueue,
       chatReadReceipts,
       markChatRead,
       sponsors,

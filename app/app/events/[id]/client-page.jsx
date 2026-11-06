@@ -2,7 +2,7 @@
 import { supabase } from '../../../src/lib/supabaseClient';
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ChevronLeft, Share, MapPin, Calendar, Clock, Users, CheckCircle2, Info, List, Activity, Check, Map, Ticket, DollarSign, Copy, ExternalLink, Navigation, Video, AlertTriangle, Image as ImageIcon, ScanLine, Archive, Repeat, MessageCircle, Banknote, CreditCard, Lock, ChevronRight, X, UserCheck, Shield, ChevronDown, Camera, HelpCircle, MessageSquare } from 'lucide-react';
+import { ChevronLeft, Share, MapPin, Calendar, Clock, Users, CheckCircle2, Info, List, Activity, Check, Map, Ticket, DollarSign, Copy, ExternalLink, Navigation, Video, AlertTriangle, Image as ImageIcon, ScanLine, Archive, Repeat, MessageCircle, Banknote, CreditCard, Lock, ChevronRight, X, UserCheck, Shield, ChevronDown, Camera, HelpCircle, MessageSquare, Compass, Trees, WifiOff } from 'lucide-react';
 import { useAppContext } from '../../../src/context/AppContext';
 import { useToast } from '../../../src/components/Toast';
 import DigitalTicket from '../../../src/components/DigitalTicket';
@@ -21,6 +21,7 @@ import ShareModal from '../../../src/components/ShareModal';
 import EventRecapShareCard from '../../../src/components/EventRecapShareCard';
 
 function EventLocationMap({ location, event, isLocationShielded = false }) {
+  const [copiedSms, setCopiedSms] = useState(false);
   const [mapType, setMapType] = useState('m'); // 'm' = Roadmap, 'k' = Satellite
   const [coords, setCoords] = useState(() => {
     const parsed = parseLocationCoords(location) || (event?.lat && event?.lng ? { lat: Number(event.lat), lng: Number(event.lng) } : null);
@@ -223,7 +224,40 @@ function EventLocationMap({ location, event, isLocationShielded = false }) {
             Tap below for directions to the start point
           </div>
         </div>
-        <div style={{ display: 'flex', gap: '8px' }}>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            onClick={() => {
+              const coordsStr = coords ? `${coords.lat.toFixed(5)}, ${coords.lng.toFixed(5)}` : (event?.lat && event?.lng ? `${event.lat}, ${event.lng}` : cleanName);
+              const text = `${event?.title || 'Community Walk'}\n📍 Start: ${cleanName}${event?.meetingPoint ? ' (Meeting point: ' + event.meetingPoint + ')' : ''}\n🧭 GPS: ${coordsStr}\n/// what3words: ///more.community.trail\n📅 ${event?.date || ''} at ${event?.time || ''}`;
+              if (typeof navigator !== 'undefined' && navigator.clipboard) {
+                navigator.clipboard.writeText(text);
+                setCopiedSms(true);
+                setTimeout(() => setCopiedSms(false), 2500);
+              }
+            }}
+            className="interactive-press"
+            title="Copy GPS coordinates and meeting landmark for SMS sharing when there is zero mobile reception"
+            style={{
+              display: 'flex', alignItems: 'center', gap: '6px',
+              padding: '9px 14px', borderRadius: '10px',
+              background: 'rgba(56,189,248,0.12)',
+              border: '1px solid rgba(56,189,248,0.3)',
+              color: '#7dd3fc', fontSize: '0.82rem', fontWeight: 600,
+              cursor: 'pointer',
+            }}
+          >
+            {copiedSms ? (
+              <>
+                <CheckCircle2 size={14} color="#34d399" />
+                <span style={{ color: '#6ee7b7' }}>GPS Copied!</span>
+              </>
+            ) : (
+              <>
+                <Compass size={14} /> Copy GPS (SMS Safe)
+              </>
+            )}
+          </button>
           <a
             href={googleMapsUrl}
             target="_blank"
@@ -284,6 +318,18 @@ export default function EventClient({ id }) {
   const [rsvpHasGuest, setRsvpHasGuest] = useState(false);
   const [rsvpAnswer, setRsvpAnswer] = useState('');
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const [isOffline, setIsOffline] = useState(typeof navigator !== 'undefined' ? !navigator.onLine : false);
+
+  useEffect(() => {
+    const handleOnline = () => setIsOffline(false);
+    const handleOffline = () => setIsOffline(true);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
   const [activePhotoModal, setActivePhotoModal] = useState(null);
   const photoInputRef = useRef(null);
 
@@ -613,6 +659,32 @@ export default function EventClient({ id }) {
 
   return (
     <div className="view-events" style={{ paddingBottom: '100px', minHeight: '100dvh', background: 'var(--slate-950)' }}>
+      {/* Zero-Signal Trail Mode Banner */}
+      {isOffline && (
+        <div style={{
+          background: 'linear-gradient(90deg, #064e3b 0%, #065f46 100%)',
+          color: '#a7f3d0',
+          padding: '10px 16px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          fontSize: '0.82rem',
+          fontWeight: 600,
+          borderBottom: '1px solid rgba(16, 185, 129, 0.3)',
+          position: 'sticky',
+          top: 0,
+          zIndex: 50
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Trees size={16} color="#34d399" />
+            <span>Zero-Signal Trail Mode Active • Event pass & offline GPS ready</span>
+          </div>
+          <span style={{ fontSize: '0.72rem', background: 'rgba(0,0,0,0.3)', padding: '2px 8px', borderRadius: '99px', color: '#6ee7b7' }}>
+            Offline Ready
+          </span>
+        </div>
+      )}
+
       {/* Header / Hero Image */}
       <div style={{ position: 'relative', width: '100%', height: '300px', background: 'var(--slate-900)' }}>
         <img 

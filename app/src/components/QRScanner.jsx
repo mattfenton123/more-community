@@ -1,12 +1,37 @@
 import React, { useEffect, useRef, useState } from 'react';
 import jsQR from 'jsqr';
-import { Camera, X, AlertTriangle } from 'lucide-react';
+import { Camera, X, AlertTriangle, WifiOff, Trees, RefreshCw, CheckCircle2 } from 'lucide-react';
 
 export default function QRScanner({ onScan, onClose }) {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const [error, setError] = useState(null);
   const [scanning, setScanning] = useState(true);
+  const [isOffline, setIsOffline] = useState(typeof navigator !== 'undefined' ? !navigator.onLine : false);
+  const [queuedCount, setQueuedCount] = useState(0);
+
+  const updateQueueCount = () => {
+    if (typeof window === 'undefined') return;
+    try {
+      const raw = localStorage.getItem('more_offline_checkin_queue');
+      const queue = raw ? JSON.parse(raw) : [];
+      setQueuedCount(Array.isArray(queue) ? queue.length : 0);
+    } catch (e) {
+      setQueuedCount(0);
+    }
+  };
+
+  useEffect(() => {
+    updateQueueCount();
+    const handleOnline = () => { setIsOffline(false); updateQueueCount(); };
+    const handleOffline = () => setIsOffline(true);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   useEffect(() => {
     let stream = null;
@@ -59,6 +84,7 @@ export default function QRScanner({ onScan, onClose }) {
           } catch(e) {}
           
           onScan(payload);
+          setTimeout(updateQueueCount, 300);
           
           // Resume scanning after 2 seconds
           setTimeout(() => setScanning(true), 2000);
@@ -91,6 +117,39 @@ export default function QRScanner({ onScan, onClose }) {
         <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', cursor: 'pointer' }}>
           <X size={24} />
         </button>
+      </div>
+
+      {/* Offline Trail Mode Status Bar */}
+      <div style={{
+        marginTop: '70px',
+        padding: '8px 16px',
+        background: isOffline ? 'rgba(239, 68, 68, 0.25)' : 'rgba(13, 148, 136, 0.25)',
+        borderBottom: '1px solid rgba(255,255,255,0.1)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        fontSize: '0.78rem',
+        fontWeight: 600,
+        color: isOffline ? '#fca5a5' : '#5eead4',
+        zIndex: 10
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {isOffline ? <WifiOff size={15} /> : <Trees size={15} />}
+          <span>{isOffline ? '🌲 Zero-Signal Trail Mode: Check-ins Queued Locally' : '📶 Leader Live Scanner'}</span>
+        </div>
+        {queuedCount > 0 && (
+          <span style={{
+            background: 'rgba(245, 158, 11, 0.25)',
+            border: '1px solid rgba(245, 158, 11, 0.4)',
+            color: '#fbbf24',
+            padding: '2px 8px',
+            borderRadius: '99px',
+            fontSize: '0.72rem',
+            fontWeight: 700
+          }}>
+            {queuedCount} queued to sync
+          </span>
+        )}
       </div>
 
       {/* Camera Viewport */}

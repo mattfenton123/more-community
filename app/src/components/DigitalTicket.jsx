@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { X, Calendar, MapPin, Clock, Ticket, WifiOff, CheckCircle2, Navigation, Download, Copy, Share2, Sparkles, Users, Banknote } from 'lucide-react';
+import { X, Calendar, MapPin, Clock, Ticket, WifiOff, CheckCircle2, Navigation, Download, Copy, Share2, Sparkles, Users, Banknote, Compass, ShieldCheck, QrCode } from 'lucide-react';
 import QRCode from 'qrcode';
 
 export default function DigitalTicket({ event, community, user, onClose }) {
@@ -100,6 +100,33 @@ export default function DigitalTicket({ event, community, user, onClose }) {
   }, [event, user, community]);
 
   if (!event || !user) return null;
+
+  const handleSaveToWallet = () => {
+    if (!cachedQrUrl) return;
+    try {
+      const link = document.createElement('a');
+      link.download = `more-pass-${event.title.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase()}.png`;
+      link.href = cachedQrUrl;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+        new Notification('Pass Saved!', { body: `${event.title} digital pass saved for offline trails.` });
+      }
+    } catch (e) {
+      console.warn('Wallet save:', e);
+    }
+  };
+
+  const emergencyCoordsText = `${event.title}\n📍 Location: ${event.meetingPoint ? event.meetingPoint + ' (' + event.location + ')' : event.location}\n🧭 GPS: ${event.lat && event.lng ? event.lat + ', ' + event.lng : 'Tunbridge Wells'}\n/// what3words: ///more.community.trail\n👤 Attendee: ${user.name || 'Member'}${event.guestName ? ' (+1 ' + event.guestName + ')' : ''}`;
+
+  const handleCopyEmergencyInfo = () => {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(emergencyCoordsText);
+      setCopiedCoords(true);
+      setTimeout(() => setCopiedCoords(false), 2500);
+    }
+  };
 
   const handleCopyDirections = () => {
     const textToCopy = `${event.title}\n📍 Meeting Point: ${event.meetingPoint || event.location}\n📅 ${event.date} at ${event.time}`;
@@ -212,6 +239,20 @@ export default function DigitalTicket({ event, community, user, onClose }) {
           <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.35rem', color: 'var(--white)', margin: '0 0 14px 0', lineHeight: 1.25 }}>
             {event.title}
           </h2>
+
+          {/* Guest Pass indicator */}
+          {(event.guestName || user?.guestName) && (
+            <div style={{ marginBottom: '10px' }}>
+              <span style={{
+                display: 'inline-flex', alignItems: 'center', gap: '5px',
+                padding: '3px 10px', borderRadius: '99px',
+                background: 'rgba(56,189,248,0.15)', border: '1px solid rgba(56,189,248,0.3)',
+                color: '#7dd3fc', fontSize: '0.75rem', fontWeight: 700
+              }}>
+                <Users size={12} /> Includes +1 Guest: {event.guestName || user?.guestName}
+              </span>
+            </div>
+          )}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--slate-300)', fontSize: '0.88rem' }}>
               <Calendar size={15} color="var(--teal-400)" />
@@ -285,6 +326,23 @@ export default function DigitalTicket({ event, community, user, onClose }) {
             </div>
           </div>
 
+          {/* Wallet Pass Download Button */}
+          <div style={{ width: '100%', marginBottom: '8px' }}>
+            <button
+              onClick={handleSaveToWallet}
+              className="interactive-press"
+              style={{
+                width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                padding: '10px 14px', borderRadius: '12px',
+                background: 'linear-gradient(135deg, rgba(20,184,166,0.2) 0%, rgba(56,189,248,0.15) 100%)',
+                border: '1px solid rgba(45,212,191,0.35)',
+                color: '#2dd4bf', cursor: 'pointer', fontSize: '0.82rem', fontWeight: 700
+              }}
+            >
+              <Download size={14} /> Save Pass to Wallet (Offline Ready)
+            </button>
+          </div>
+
           {/* Quick Actions for Outdoor Trails */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', width: '100%' }}>
             <a 
@@ -303,8 +361,9 @@ export default function DigitalTicket({ event, community, user, onClose }) {
             </a>
 
             <button
-              onClick={handleCopyDirections}
+              onClick={handleCopyEmergencyInfo}
               className="interactive-press"
+              title="Copy GPS coordinates and meeting landmark for SMS sharing when there is zero mobile data"
               style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
                 padding: '9px 12px', borderRadius: '12px',
@@ -315,12 +374,12 @@ export default function DigitalTicket({ event, community, user, onClose }) {
               {copiedCoords ? (
                 <>
                   <CheckCircle2 size={13} color="#22c55e" />
-                  <span style={{ color: '#86efac' }}>Copied!</span>
+                  <span style={{ color: '#86efac' }}>Copied SMS!</span>
                 </>
               ) : (
                 <>
-                  <Copy size={13} color="var(--teal-400)" />
-                  <span>Copy Info</span>
+                  <Compass size={13} color="var(--teal-400)" />
+                  <span>Copy GPS (SMS)</span>
                 </>
               )}
             </button>
