@@ -387,6 +387,37 @@ export default function EventClient({ id }) {
   const cleanDescription = (event?.description || '').replace(/\[Host Approval Required\]/g, '').trim();
   const canSeeSecretLocation = !requiresHostApproval || isGoing || isLeader;
   const confirmedAttendees = (rsvps || []).filter(r => r.status === 'going');
+
+  // Familiar Faces Social Proof (people user has walked with on past events)
+  const myPastAttendedEventIds = useMemo(() => {
+    if (!user?.id) return new Set();
+    const ids = new Set();
+    Object.entries(eventRsvps).forEach(([evId, rList]) => {
+      if (rList?.some(r => r.userId === user.id && r.status === 'going')) {
+        const ev = events.find(e => e.id === evId);
+        if (ev && isEventPast(ev)) ids.add(evId);
+      }
+    });
+    return ids;
+  }, [user?.id, eventRsvps, events]);
+
+  const familiarCohorts = useMemo(() => {
+    const cohorts = new Set();
+    myPastAttendedEventIds.forEach(evId => {
+      const rList = eventRsvps[evId] || [];
+      rList.forEach(r => {
+        if (r.userId !== user?.id && r.status === 'going') {
+          cohorts.add(r.userId);
+        }
+      });
+    });
+    return cohorts;
+  }, [myPastAttendedEventIds, eventRsvps, user?.id]);
+
+  const familiarFaces = useMemo(() => {
+    if (!familiarCohorts.size) return [];
+    return confirmedAttendees.filter(att => familiarCohorts.has(att.userId));
+  }, [confirmedAttendees, familiarCohorts]);
   const pendingAttendees = (rsvps || []).filter(r => r.status === 'pending_approval');
 
 
@@ -903,6 +934,47 @@ export default function EventClient({ id }) {
               {confirmedAttendees.length > 5 && <span style={{ color: 'var(--slate-400)', fontWeight: 400, marginLeft: '4px' }}>+{confirmedAttendees.length - 5} more</span>}
             </div>
             <ChevronRight size={16} color="var(--slate-400)" />
+          </div>
+        )}
+
+        {/* Familiar Faces Social Proof Nudge */}
+        {familiarFaces.length > 0 && !isGoing && (
+          <div style={{
+            background: 'linear-gradient(135deg, rgba(20, 184, 166, 0.12) 0%, rgba(56, 189, 248, 0.08) 100%)',
+            border: '1px solid rgba(45, 212, 191, 0.3)',
+            borderRadius: '14px',
+            padding: '10px 14px',
+            marginTop: '12px',
+            marginBottom: '16px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              {familiarFaces.slice(0, 3).map((f, i) => {
+                const u = users.find(x => x.id === f.userId);
+                const av = u?.avatar || u?.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(u?.name || 'Member')}`;
+                return (
+                  <img
+                    key={f.userId}
+                    src={av}
+                    alt={u?.name}
+                    style={{
+                      width: '28px', height: '28px', borderRadius: '50%',
+                      border: '2px solid #0f172a', marginLeft: i === 0 ? 0 : '-8px',
+                      objectFit: 'cover'
+                    }}
+                  />
+                );
+              })}
+            </div>
+            <div style={{ fontSize: '0.84rem', color: 'var(--slate-200)', lineHeight: 1.3 }}>
+              <strong style={{ color: 'var(--teal-300)' }}>
+                {familiarFaces.length === 1
+                  ? `${users.find(x => x.id === familiarFaces[0].userId)?.name || 'Someone'} you walked with before is going!`
+                  : `${familiarFaces.length} people you've walked with before are going!`}
+              </strong>
+            </div>
           </div>
         )}
 

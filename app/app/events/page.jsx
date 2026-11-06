@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Calendar as CalIcon, Mic, MapPin, Search, X, CheckCircle2, CreditCard, Check, Ticket, Users, QrCode, Share, Sparkles, Navigation, ChevronRight, ChevronsRight, Archive, Filter, Sun, Moon, Sunrise, RotateCcw, Tag } from 'lucide-react';
+import { Calendar as CalIcon, Mic, Lightbulb, MapPin, Search, X, CheckCircle2, CreditCard, Check, Ticket, Users, QrCode, Share, Sparkles, Navigation, ChevronRight, ChevronsRight, Archive, Filter, Sun, Moon, Sunrise, RotateCcw, Tag } from 'lucide-react';
 import { useAppContext } from '../../src/context/AppContext';
 import { SkeletonList, SkeletonEvent } from '../../src/components/SkeletonCard';
 import { useToast } from '../../src/components/Toast';
@@ -15,7 +15,7 @@ import { getEventPath } from '../../src/lib/eventLinks';
 export default function EventsHub() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('My Schedule');
-  const { events, communities, user, users, eventRsvps, rsvpToEvent, isLoading, saveItem, getAffinityScore, sponsors, sponsorshipAssignments } = useAppContext();
+  const { events, communities, user, users, eventRsvps, rsvpToEvent, createEvent, isLoading, saveItem, getAffinityScore, sponsors, sponsorshipAssignments } = useAppContext();
   const { toast } = useToast();
   
   const [checkoutState, setCheckoutState] = useState('idle');
@@ -34,7 +34,56 @@ export default function EventsHub() {
   const [isSearchingAi, setIsSearchingAi] = useState(false);
   const [isListeningAi, setIsListeningAi] = useState(false);
   const [aiMatches, setAiMatches] = useState(null);
+  const [showProposeModal, setShowProposeModal] = useState(false);
+  const [proposeTitle, setProposeTitle] = useState('');
+  const [proposeDate, setProposeDate] = useState('');
+  const [proposeTime, setProposeTime] = useState('10:00');
+  const [proposeLocation, setProposeLocation] = useState('');
+  const [proposeNotes, setProposeNotes] = useState('');
+  const [isSubmittingProposal, setIsSubmittingProposal] = useState(false);
 
+
+
+  const handleProposeWalk = async (e) => {
+    e?.preventDefault();
+    if (!user?.id) {
+      router.push('/login?redirect=/events');
+      return;
+    }
+    if (!proposeTitle.trim() || !proposeDate) {
+      toast.error('Missing Details', 'Please provide a walk title and preferred date.');
+      return;
+    }
+
+    const targetCommunityId = user.joinedCommunities?.[0] || communities[0]?.id;
+    if (!targetCommunityId) {
+      toast.error('No Community', 'Please join a community first before proposing a walk.');
+      return;
+    }
+
+    setIsSubmittingProposal(true);
+    try {
+      const desc = `${proposeNotes.trim() ? proposeNotes.trim() + '\n\n' : ''}💡 Proposed by community member ${user.name || 'Member'}`;
+      await createEvent(targetCommunityId, {
+        title: `[Proposal] ${proposeTitle.trim()}`,
+        description: desc,
+        date: proposeDate,
+        time: proposeTime || '10:00',
+        location: proposeLocation.trim() || 'Tunbridge Wells',
+        status: 'proposed'
+      });
+      toast.success('Walk Idea Proposed! 🎉', 'Your community leader has received your idea and can publish it with 1 click.');
+      setShowProposeModal(false);
+      setProposeTitle('');
+      setProposeNotes('');
+      setProposeLocation('');
+    } catch (err) {
+      console.error(err);
+      toast.error('Could not submit', 'Please try again later.');
+    } finally {
+      setIsSubmittingProposal(false);
+    }
+  };
 
   // ─── AI Event Matchmaker ──────────────────────────────────────────
   const handleAiSearch = async (overridePrompt) => {
@@ -477,14 +526,30 @@ export default function EventsHub() {
               <Sparkles size={14} color="var(--teal-400)" />
               <span>Ask More AI: Match Your Vibe</span>
             </div>
-            {aiMatches && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <button
-                onClick={() => { setAiMatches(null); setAiPrompt(''); }}
-                style={{ background: 'none', border: 'none', color: 'var(--slate-400)', fontSize: '0.72rem', cursor: 'pointer', padding: 0 }}
+                onClick={() => {
+                  if (!user?.id) router.push('/login?redirect=/events');
+                  else setShowProposeModal(true);
+                }}
+                className="interactive-press"
+                style={{
+                  background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)',
+                  borderRadius: '99px', padding: '2px 8px', fontSize: '0.7rem', color: '#fef08a',
+                  display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', fontWeight: 600
+                }}
               >
-                Clear AI Picks ×
+                <Lightbulb size={11} /> Propose a Walk
               </button>
-            )}
+              {aiMatches && (
+                <button
+                  onClick={() => { setAiMatches(null); setAiPrompt(''); }}
+                  style={{ background: 'none', border: 'none', color: 'var(--slate-400)', fontSize: '0.72rem', cursor: 'pointer', padding: 0 }}
+                >
+                  Clear ×
+                </button>
+              )}
+            </div>
           </div>
 
           <div style={{ position: 'relative', display: 'flex', gap: '8px' }}>
@@ -881,6 +946,144 @@ export default function EventsHub() {
           </>
         )}
       </div>
+
+      {/* Member-Led Propose a Walk Modal */}
+      {showProposeModal && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 100000,
+          background: 'rgba(2, 6, 23, 0.85)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px'
+        }}>
+          <div style={{
+            width: '100%', maxWidth: '440px',
+            background: 'linear-gradient(180deg, #0f172a 0%, #090d16 100%)',
+            border: '1px solid rgba(245, 158, 11, 0.35)',
+            borderRadius: '24px', padding: '24px',
+            boxShadow: '0 20px 50px rgba(0,0,0,0.7)',
+            position: 'relative'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+              <div>
+                <h3 style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--white)', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Lightbulb size={18} color="#fbbf24" /> Propose a Community Walk
+                </h3>
+                <div style={{ fontSize: '0.78rem', color: 'var(--slate-400)', marginTop: '2px' }}>
+                  Have an idea for a route? Community leaders can approve it with 1 click.
+                </div>
+              </div>
+              <button
+                onClick={() => setShowProposeModal(false)}
+                className="interactive-press"
+                style={{ background: 'rgba(255,255,255,0.06)', border: 'none', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--slate-400)', cursor: 'pointer' }}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleProposeWalk} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: 'var(--slate-300)', marginBottom: '4px' }}>
+                  Walk Title *
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Sunday Morning Dunorlan Lake Loop"
+                  value={proposeTitle}
+                  onChange={e => setProposeTitle(e.target.value)}
+                  required
+                  style={{
+                    width: '100%', padding: '10px 14px', borderRadius: '10px',
+                    background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)',
+                    color: 'var(--white)', fontSize: '0.88rem', outline: 'none'
+                  }}
+                />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: 'var(--slate-300)', marginBottom: '4px' }}>
+                    Preferred Date *
+                  </label>
+                  <input
+                    type="date"
+                    value={proposeDate}
+                    onChange={e => setProposeDate(e.target.value)}
+                    required
+                    style={{
+                      width: '100%', padding: '10px 12px', borderRadius: '10px',
+                      background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)',
+                      color: 'var(--white)', fontSize: '0.82rem', outline: 'none'
+                    }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: 'var(--slate-300)', marginBottom: '4px' }}>
+                    Time
+                  </label>
+                  <input
+                    type="time"
+                    value={proposeTime}
+                    onChange={e => setProposeTime(e.target.value)}
+                    style={{
+                      width: '100%', padding: '10px 12px', borderRadius: '10px',
+                      background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)',
+                      color: 'var(--white)', fontSize: '0.82rem', outline: 'none'
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: 'var(--slate-300)', marginBottom: '4px' }}>
+                  Meeting Landmark / Area
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Dunorlan Park Cafe, Pembury Rd"
+                  value={proposeLocation}
+                  onChange={e => setProposeLocation(e.target.value)}
+                  style={{
+                    width: '100%', padding: '10px 14px', borderRadius: '10px',
+                    background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)',
+                    color: 'var(--white)', fontSize: '0.88rem', outline: 'none'
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: 'var(--slate-300)', marginBottom: '4px' }}>
+                  Vibe & Notes (Distance, Dogs, Pace)
+                </label>
+                <textarea
+                  rows={3}
+                  placeholder="e.g. Casual 4km loop around the lake, dogs very welcome, coffee at the cafe after!"
+                  value={proposeNotes}
+                  onChange={e => setProposeNotes(e.target.value)}
+                  style={{
+                    width: '100%', padding: '10px 14px', borderRadius: '10px',
+                    background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)',
+                    color: 'var(--white)', fontSize: '0.88rem', outline: 'none', resize: 'none'
+                  }}
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={isSubmittingProposal}
+                className="interactive-press"
+                style={{
+                  width: '100%', padding: '14px', borderRadius: '12px', marginTop: '6px',
+                  background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                  color: '#0f172a', fontWeight: 700, fontSize: '0.95rem', border: 'none',
+                  cursor: isSubmittingProposal ? 'wait' : 'pointer'
+                }}
+              >
+                {isSubmittingProposal ? 'Submitting Idea...' : 'Submit Walk Idea 💡'}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Digital Ticket Modal */}
       {showTicket && (

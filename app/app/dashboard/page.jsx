@@ -3096,6 +3096,93 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 </div>
               ) : (
                 <>
+                  {/* Member Walk Proposals (1-Click Approve & Publish) */}
+                  {(() => {
+                    const proposedEvents = communityEvents.filter(e => e.status === 'proposed');
+                    if (proposedEvents.length === 0) return null;
+                    return (
+                      <div style={{
+                        background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(217, 119, 6, 0.08) 100%)',
+                        border: '1px solid rgba(245, 158, 11, 0.35)',
+                        borderRadius: '16px',
+                        padding: '16px 18px',
+                        marginBottom: '16px'
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#fbbf24', fontWeight: 700, fontSize: '0.95rem' }}>
+                            <Lightbulb size={18} />
+                            <span>Member Walk Proposals ({proposedEvents.length})</span>
+                          </div>
+                          <span style={{ fontSize: '0.72rem', color: 'var(--slate-400)' }}>1-click to approve & add to schedule</span>
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                          {proposedEvents.map(prop => {
+                            const cleanTitle = prop.title.replace(/^\[Proposal\]\s*/i, '');
+                            return (
+                              <div key={prop.id} style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '12px 14px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', marginBottom: '6px', flexWrap: 'wrap' }}>
+                                  <span style={{ fontWeight: 700, color: 'var(--white)', fontSize: '0.95rem' }}>{cleanTitle}</span>
+                                  <span style={{ fontSize: '0.72rem', color: '#fbbf24', background: 'rgba(245,158,11,0.2)', padding: '2px 8px', borderRadius: '99px', fontWeight: 600 }}>
+                                    Member Idea
+                                  </span>
+                                </div>
+                                <div style={{ fontSize: '0.8rem', color: 'var(--slate-300)', marginBottom: '6px' }}>
+                                  📅 {prop.date} at {prop.time || '10:00'} • 📍 {cleanLocationName(prop.location)}
+                                </div>
+                                {prop.description && (
+                                  <p style={{ fontSize: '0.78rem', color: 'var(--slate-400)', margin: '0 0 10px 0', lineHeight: 1.4, whiteSpace: 'pre-wrap' }}>
+                                    {prop.description}
+                                  </p>
+                                )}
+                                <div style={{ display: 'flex', gap: '8px' }}>
+                                  <button
+                                    onClick={async () => {
+                                      try {
+                                        await updateEvent(prop.id, { status: 'published', title: cleanTitle });
+                                        toast.success('Walk Approved! 🎉', `"${cleanTitle}" is now live on the calendar.`);
+                                      } catch (e) {
+                                        toast.error('Error', 'Could not approve proposal.');
+                                      }
+                                    }}
+                                    className="interactive-press"
+                                    style={{
+                                      padding: '6px 14px', borderRadius: '99px',
+                                      background: '#10b981', color: '#fff', border: 'none',
+                                      fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer',
+                                      display: 'flex', alignItems: 'center', gap: '4px'
+                                    }}
+                                  >
+                                    <Check size={14} /> Approve & Publish
+                                  </button>
+                                  <button
+                                    onClick={async () => {
+                                      try {
+                                        await cancelEvent(prop.id);
+                                        toast.info('Proposal Declined', 'Removed from proposal queue.');
+                                      } catch (e) {
+                                        toast.error('Error', 'Could not decline proposal.');
+                                      }
+                                    }}
+                                    className="interactive-press"
+                                    style={{
+                                      padding: '6px 12px', borderRadius: '99px',
+                                      background: 'rgba(239, 68, 68, 0.15)', color: '#f87171',
+                                      border: '1px solid rgba(239,68,68,0.3)', fontWeight: 600,
+                                      fontSize: '0.8rem', cursor: 'pointer'
+                                    }}
+                                  >
+                                    Decline
+                                  </button>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })()}
+
                   {/* Event Filter Tabs */}
                   {(() => {
                     const upcomingCount = publishedEvents.filter(e => isEventUpcoming(e)).length;

@@ -103,6 +103,99 @@ export async function POST(request) {
     // ==============================================================
     // Specialized Mode: Member AI Event Matchmaker & Discovery
     // ==============================================================
+    // ==============================================================
+    // Specialized Mode: 1-Tap AI Event Recap (WhatsApp & Instagram)
+    // ==============================================================
+    if (mode === 'event-recap') {
+      const eventTitle = body.eventTitle || 'Community Meetup';
+      const community = body.communityName || 'More Community';
+      const loc = body.location || 'Tunbridge Wells';
+      const count = body.attendeeCount || 12;
+      const eventDate = body.date || 'today';
+
+      const fallbackWhatsapp = `*What a fantastic meetup!* 🥾✨\n\nHuge thank you to all *${count} legends* who joined us for *${eventTitle}* at ${loc}!\n\nFresh air, great conversations, and wonderful local connections. Community photos have been added to the event gallery 📸\n\nNext session is being scheduled now. Check upcoming dates and RSVP here:\nhttps://morecommunity.co.uk`;
+
+      const fallbackInstagram = `Sunday mornings done right 🥾☕\n\nOver ${count} of us gathered for ${eventTitle} around ${loc}. Real conversations, no screens, pure community.\n\nTag someone who needs a weekend walk in their life! 👇\n\n#TunbridgeWells #KentWalks #CommunityMatters #MoreCommunity #WalkingClub #OutdoorLife`;
+
+      const fallbackStory = `${count} walkers, great chats & scenic paths in ${loc} ✨`;
+
+      if (!apiKey) {
+        return NextResponse.json({
+          success: true,
+          fallback: true,
+          mode: 'smart-template',
+          whatsapp: fallbackWhatsapp,
+          instagram: fallbackInstagram,
+          storyQuote: fallbackStory
+        });
+      }
+
+      const systemDirective = `You are a social media director and community storyteller for "${community}" in ${loc}.
+A physical meetup titled "${eventTitle}" took place on ${eventDate} with ${count} attendees.
+
+TASK:
+Craft 3 distinct recap formats to share the success and celebrate the members:
+1. "whatsapp": An enthusiastic, friendly WhatsApp broadcast post with good emojis, thanking the ${count} attendees, celebrating the community spirit, and inviting them to the next session.
+2. "instagram": An engaging Instagram feed caption with natural line breaks, an opening hook, community vibe, call to action, and 5-7 local hashtags for ${loc} and Kent walking.
+3. "storyQuote": A short, punchy 1-line phrase (under 12 words) perfect for an Instagram Story sticker or photo overlay.
+
+RETURN FORMAT:
+Return ONLY a valid JSON object with keys: "whatsapp", "instagram", "storyQuote".`;
+
+      for (const model of models) {
+        try {
+          const response = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                systemInstruction: { parts: [{ text: systemDirective }] },
+                contents: [
+                  { role: 'user', parts: [{ text: `Generate recaps for ${eventTitle} with ${count} attendees.` }] }
+                ],
+                generationConfig: {
+                  temperature: 0.7,
+                  maxOutputTokens: 800,
+                  responseMimeType: 'application/json'
+                }
+              })
+            }
+          );
+
+          if (response.ok) {
+            const geminiData = await response.json();
+            const text = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (text) {
+              const cleaned = text.replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim();
+              const parsed = JSON.parse(cleaned);
+              return NextResponse.json({
+                success: true,
+                fallback: false,
+                mode: 'gemini',
+                modelUsed: model,
+                whatsapp: parsed.whatsapp || fallbackWhatsapp,
+                instagram: parsed.instagram || fallbackInstagram,
+                storyQuote: parsed.storyQuote || fallbackStory
+              });
+            }
+          }
+        } catch (err) {
+          lastApiError = err.message;
+        }
+      }
+
+      return NextResponse.json({
+        success: true,
+        fallback: true,
+        mode: 'smart-template',
+        reason: lastApiError,
+        whatsapp: fallbackWhatsapp,
+        instagram: fallbackInstagram,
+        storyQuote: fallbackStory
+      });
+    }
+
     if (mode === 'match-events') {
       const candidateEvents = Array.isArray(body.events) ? body.events : [];
       if (!apiKey || candidateEvents.length === 0) {
