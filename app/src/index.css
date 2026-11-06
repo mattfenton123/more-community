@@ -1512,7 +1512,7 @@ textarea.form-input {
   }
   
   .microsite-container {
-    max-width: 540px !important;
+    max-width: 1140px !important;
     width: 100%;
     margin: 40px auto;
     background: var(--slate-950);
@@ -2152,4 +2152,136 @@ button:disabled, [role="button"][aria-disabled="true"] {
   background: #ffffff !important;
   border-color: #e2e8f0 !important;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03), 0 4px 12px rgba(0, 0, 0, 0.02) !important;
+}
+
+
+/* =========================================================
+   CINEMATIC MORE. BRANDING & COMMUNITY MICROSITE REDESIGN
+   ========================================================= */
+
+/* 1. Framed Cinematic Cover Card */
+.community-cover-card {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  max-height: 380px;
+  min-height: 240px;
+  border-radius: 20px;
+  overflow: hidden;
+  background-size: cover;
+  background-position: center;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="light"] .community-cover-card {
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08) !important;
+}
+
+/* 2. Responsive 2-Column Grid */
+.community-layout-grid {
+  display: block;
+  padding: 0 20px;
+}
+
+@media (min-width: 960px) {
+  .community-layout-grid {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) 340px !important;
+    gap: 32px !important;
+    padding: 0 28px !important;
+    align-items: start !important;
+  }
+}
+
+/* 3. Sticky Desktop Action Sidebar */
+.community-sticky-sidebar {
+  display: none;
+}
+
+@media (min-width: 960px) {
+  .community-sticky-sidebar {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+    position: sticky !important;
+    top: 24px !important;
+    z-index: 50 !important;
+  }
+}
+
+.community-pass-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 22px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+}
+
+[data-theme="light"] .community-pass-card {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 8px 30px rgba(15, 23, 42, 0.06) !important;
+}
+
+/* 4. Featured Next Upcoming Walk / Meetup Card */
+.community-featured-event-card {
+  background: linear-gradient(135deg, rgba(20, 184, 166, 0.12) 0%, rgba(15, 23, 42, 0.85) 100%);
+  border: 1.5px solid rgba(45, 212, 191, 0.35);
+  border-radius: 18px;
+  padding: 20px;
+  margin-bottom: 24px;
+  box-shadow: 0 8px 24px rgba(20, 184, 166, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.community-featured-event-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(20, 184, 166, 0.14);
+}
+
+[data-theme="light"] .community-featured-event-card {
+  background: linear-gradient(135deg, #f0fdfa 0%, #ffffff 100%) !important;
+  border: 1.5px solid rgba(13, 148, 136, 0.3) !important;
+  box-shadow: 0 4px 20px rgba(13, 148, 136, 0.08) !important;
+}
+
+[data-theme="light"] .community-featured-event-card .featured-event-title {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .community-featured-event-card .featured-event-meta {
+  color: #334155 !important;
+}
+
+/* 5. Mobile Floating Bottom Action Dock */
+.community-mobile-dock {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 999;
+  padding: 12px 20px calc(12px + env(safe-area-inset-bottom, 0px));
+  background: rgba(15, 23, 42, 0.94);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="light"] .community-mobile-dock {
+  background: rgba(255, 255, 255, 0.96) !important;
+  border-top: 1px solid #e2e8f0 !important;
+  box-shadow: 0 -4px 20px rgba(15, 23, 42, 0.08) !important;
+}
+
+@media (min-width: 960px) {
+  .community-mobile-dock {
+    display: none !important;
+  }
 }

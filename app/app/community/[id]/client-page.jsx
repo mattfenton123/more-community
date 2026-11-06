@@ -1,6 +1,6 @@
 "use client";
 import { useState, useRef, useEffect } from 'react';
-import { LayoutDashboard, Edit3, ChevronLeft, ChevronRight, Share2, Users, Calendar, Settings, ChevronDown, ChevronUp, Image as ImageIcon, ExternalLink, Camera, Mail, Activity, Sparkles, MapPin, Clock, Star, MessageCircle, Heart, BadgeCheck, Globe, Trash2, Flag, Search, Briefcase, Check, X, MessageSquare, Lightbulb, Info, Megaphone, Video, Plus, Shield, Play, Smile, Archive, Store } from 'lucide-react';
+import { LayoutDashboard, Edit3, Compass, ChevronLeft, ChevronRight, Share2, Users, Calendar, Settings, ChevronDown, ChevronUp, Image as ImageIcon, ExternalLink, Camera, Mail, Activity, Sparkles, MapPin, Clock, Star, MessageCircle, Heart, BadgeCheck, Globe, Trash2, Flag, Search, Briefcase, Check, X, MessageSquare, Lightbulb, Info, Megaphone, Video, Plus, Shield, Play, Smile, Archive, Store } from 'lucide-react';
 import { useRouter as useNavigate, useParams, useSearchParams } from 'next/navigation';
 import { useAppContext } from '../../../src/context/AppContext';
 import { useFeed } from '../../../src/context/FeedContext';
@@ -93,7 +93,7 @@ export default function CommunityProfile() {
   const [editingGuidelines, setEditingGuidelines] = useState(false);
   const [guidelinesDraft, setGuidelinesDraft] = useState([]);
   const [newGuideline, setNewGuideline] = useState('');
-  const [activeTab, setActiveTab] = useState('about');
+  const [activeTab, setActiveTab] = useState('overview');
   const [expandedComments, setExpandedComments] = useState({});
   const [newPostText, setNewPostText] = useState('');
   const [newPostImage, setNewPostImage] = useState(null);
@@ -486,34 +486,28 @@ export default function CommunityProfile() {
           </div>
         </div>
       )}
-      <div className="microsite-container">
+            <div className="microsite-container">
         
-        {/* ===== HERO SECTION ===== */}
-      <div style={{ 
-        minHeight: '400px', 
-        background: community.image ? `url(${community.image})` : `linear-gradient(135deg, var(--teal-500), var(--slate-900))`, 
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        position: 'relative',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'space-between'
-      }}>
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, rgba(15,23,42,0.4) 40%, rgba(15,23,42,0.98) 100%)', zIndex: 0 }}></div>
-        
-        {/* Nav */}
-        <div style={{ position: 'relative', padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', zIndex: 100 }}>
+        {/* Navigation Bar */}
+        <div className="community-nav-bar" style={{
+          position: 'relative',
+          padding: '16px 20px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          zIndex: 100
+        }}>
           <button 
             className="interactive-press community-nav-btn" 
             style={{ 
               width: '42px', height: '42px', borderRadius: '50%', 
               background: 'rgba(15, 23, 42, 0.85)', 
               backdropFilter: 'blur(12px)', 
-              border: '1px solid rgba(255,255,255,0.25)', 
+              border: '1px solid rgba(255,255,255,0.2)', 
               color: '#ffffff', 
               display: 'flex', alignItems: 'center', justifyContent: 'center', 
               cursor: 'pointer',
-              boxShadow: '0 4px 14px rgba(0,0,0,0.5)',
+              boxShadow: '0 4px 14px rgba(0,0,0,0.3)',
               position: 'relative',
               zIndex: 100
             }} 
@@ -523,10 +517,34 @@ export default function CommunityProfile() {
           >
             <ChevronLeft size={22} />
           </button>
-          <div style={{ display: 'flex', alignItems: 'center' }}>
+          
+          {/* Centered more. Logo */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <img src="/logo.png" alt="more." style={{ height: '22px' }} />
           </div>
-          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+
+          {/* Action buttons (Share, Flag, Leader Panel) */}
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <button
+              onClick={handleShare}
+              className="interactive-press"
+              style={{
+                width: '42px', height: '42px', borderRadius: '50%',
+                background: 'rgba(15, 23, 42, 0.85)',
+                border: '1px solid rgba(255,255,255,0.2)',
+                backdropFilter: 'blur(12px)',
+                color: '#ffffff',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer',
+                boxShadow: '0 4px 14px rgba(0,0,0,0.3)',
+                position: 'relative',
+                zIndex: 100
+              }}
+              title="Share Community"
+              aria-label="Share Community"
+            >
+              <Share2 size={18} />
+            </button>
             <button 
               onClick={async () => {
                 if (!user?.id) {
@@ -556,7 +574,7 @@ export default function CommunityProfile() {
                 color: 'var(--rose-400)', 
                 display: 'flex', alignItems: 'center', justifyContent: 'center', 
                 cursor: 'pointer',
-                boxShadow: '0 4px 14px rgba(0,0,0,0.5)',
+                boxShadow: '0 4px 14px rgba(0,0,0,0.3)',
                 position: 'relative',
                 zIndex: 100
               }} 
@@ -576,7 +594,7 @@ export default function CommunityProfile() {
                   color: 'var(--teal-300)', 
                   display: 'flex', alignItems: 'center', justifyContent: 'center', 
                   cursor: 'pointer',
-                  boxShadow: '0 4px 14px rgba(0,0,0,0.5)',
+                  boxShadow: '0 4px 14px rgba(0,0,0,0.3)',
                   position: 'relative',
                   zIndex: 100
                 }} 
@@ -590,189 +608,214 @@ export default function CommunityProfile() {
           </div>
         </div>
 
-        {/* Hero Content */}
-        <div style={{ position: 'relative', padding: '24px 20px 20px', zIndex: 10 }}>
-          {/* Tags */}
-          {community.tags && community.tags.length > 0 && (
-            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '12px' }}>
-              {community.tags.map(tag => (
-                <span key={tag} className="community-hero-tag" style={{ fontSize: '0.7rem', background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(6px)', border: '1px solid rgba(255,255,255,0.2)', color: '#ffffff', padding: '4px 10px', borderRadius: '99px', fontWeight: 600 }}>{tag}</span>
-              ))}
+        {/* Cinematic Framed Cover Card */}
+        <div style={{ padding: '0 20px', marginBottom: '20px' }}>
+          <div 
+            className="community-cover-card"
+            style={{
+              backgroundImage: community.image ? `url(${community.image})` : `linear-gradient(135deg, #0d9488 0%, #0f172a 100%)`,
+            }}
+          >
+            {/* Subtle atmospheric vignette */}
+            <div style={{
+              position: 'absolute', inset: 0,
+              background: 'linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(15,23,42,0.15) 50%, rgba(15,23,42,0.7) 100%)'
+            }} />
+
+            {/* Overlaid Top Badges */}
+            <div style={{ position: 'absolute', top: '16px', left: '16px', right: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', zIndex: 2 }}>
+              {/* Category / Primary Tag */}
+              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                <span style={{
+                  fontSize: '0.74rem',
+                  fontWeight: 700,
+                  background: 'rgba(15, 23, 42, 0.8)',
+                  backdropFilter: 'blur(8px)',
+                  color: '#ffffff',
+                  padding: '5px 12px',
+                  borderRadius: '99px',
+                  border: '1px solid rgba(255,255,255,0.25)',
+                  letterSpacing: '0.02em'
+                }}>
+                  {community.category || (community.tags && community.tags[0]) || 'Community'}
+                </span>
+                {community.tags && community.tags.slice(1, 3).map(tag => (
+                  <span key={tag} style={{
+                    fontSize: '0.74rem',
+                    fontWeight: 600,
+                    background: 'rgba(15, 23, 42, 0.65)',
+                    backdropFilter: 'blur(8px)',
+                    color: '#e2e8f0',
+                    padding: '5px 10px',
+                    borderRadius: '99px',
+                    border: '1px solid rgba(255,255,255,0.15)'
+                  }}>
+                    {tag}
+                  </span>
+                ))}
+              </div>
+
+              {/* Verified Leader & Insured Pill */}
+              {Boolean(community.is_insured || community.insurance_tier === 'pro') && (
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  background: 'rgba(13, 148, 136, 0.9)',
+                  backdropFilter: 'blur(8px)',
+                  color: '#ffffff',
+                  padding: '5px 11px',
+                  borderRadius: '99px',
+                  fontSize: '0.74rem',
+                  fontWeight: 700,
+                  border: '1px solid rgba(45,212,191,0.5)',
+                  boxShadow: '0 2px 8px rgba(13,148,136,0.3)'
+                }}>
+                  <Shield size={12} color="#ffffff" /> Insured &amp; Verified
+                </div>
+              )}
             </div>
-          )}
-          
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: '0 0 12px 0' }}>
-            <h1 className="community-hero-title" style={{ fontFamily: 'var(--font-heading)', fontSize: '2.4rem', color: '#ffffff', margin: 0, lineHeight: 1.1 }}>
+
+            {/* Bottom Inset Chips */}
+            <div style={{ position: 'absolute', bottom: '16px', left: '16px', right: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', zIndex: 2 }}>
+              <span style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '5px',
+                fontSize: '0.78rem',
+                fontWeight: 600,
+                color: '#ffffff',
+                background: 'rgba(15, 23, 42, 0.75)',
+                backdropFilter: 'blur(8px)',
+                padding: '5px 12px',
+                borderRadius: '99px',
+                border: '1px solid rgba(255,255,255,0.2)'
+              }}>
+                <MapPin size={13} color="var(--teal-400)" /> {cleanLocationName(community.location_name) || 'Tunbridge Wells'}
+              </span>
+
+              <span style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '5px',
+                fontSize: '0.78rem',
+                fontWeight: 600,
+                color: '#ffffff',
+                background: 'rgba(15, 23, 42, 0.75)',
+                backdropFilter: 'blur(8px)',
+                padding: '5px 12px',
+                borderRadius: '99px',
+                border: '1px solid rgba(255,255,255,0.2)'
+              }}>
+                <Users size={13} color="var(--teal-400)" /> {community.members || memberList.length || 1} members
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Community Identity & Title */}
+        <div style={{ padding: '0 20px', marginBottom: '16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: '0 0 8px 0' }}>
+            <h1 className="community-hero-title" style={{ fontFamily: 'var(--font-heading)', fontSize: '2.1rem', color: 'var(--white)', margin: 0, lineHeight: 1.15, fontWeight: 800 }}>
               {community.name}
             </h1>
             {community.verified && <BadgeCheck size={28} color="#3b82f6" style={{ flexShrink: 0 }} />}
           </div>
           
-          {/* Meta strip */}
-          <div className="community-hero-meta" style={{ display: 'flex', gap: '16px', fontSize: '0.85rem', color: 'rgba(255,255,255,0.92)', marginBottom: '12px', flexWrap: 'wrap' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><MapPin size={14} /> {cleanLocationName(community.location_name) || 'Tunbridge Wells'}</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Users size={14} /> {community.members || memberList.length || 1} members</span>
+          {/* Subtitle meta strip */}
+          <div className="community-hero-meta" style={{ display: 'flex', gap: '14px', fontSize: '0.86rem', color: 'var(--slate-300)', marginBottom: '16px', flexWrap: 'wrap', alignItems: 'center' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <MapPin size={14} color="var(--teal-400)" /> {cleanLocationName(community.location_name) || 'Tunbridge Wells'}
+            </span>
+            <span>•</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <Users size={14} color="var(--teal-400)" /> {community.members || memberList.length || 1} members
+            </span>
             {community.activity_level && (
-              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Activity size={14} color="var(--teal-400)" /> {community.activity_level === 'Very Active' ? 'Very Active (Weekly)' : community.activity_level === 'Active' ? 'Active (Fortnightly)' : community.activity_level === 'Casual' ? 'Casual (Monthly)' : community.activity_level}</span>
+              <>
+                <span>•</span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <Activity size={14} color="var(--teal-400)" /> {community.activity_level === 'Very Active' ? 'Weekly' : community.activity_level === 'Active' ? 'Fortnightly' : 'Casual'}
+                </span>
+              </>
             )}
+            <span>•</span>
+            <span style={{ fontWeight: 600, color: 'var(--teal-300)' }}>
+              {Number(community.subscription_price || 0) > 0 ? `£${community.subscription_price}/month` : 'Free to Join'}
+            </span>
           </div>
 
-          {/* InsurTech Shield Badge */}
-          {Boolean(community.is_insured || community.insurance_tier === 'pro') && (
-            <div style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '6px 14px',
-              background: 'rgba(20,184,166,0.1)',
-              border: '1px solid rgba(20,184,166,0.25)',
-              borderRadius: '99px',
-              fontSize: '0.82rem',
-              color: '#2dd4bf',
-              fontWeight: 600,
-              marginBottom: '16px',
-              width: 'fit-content'
-            }}>
-              <Shield size={14} color="#2dd4bf" /> Verified Leader • Council Safety & Organiser Insured
+          {/* Organiser Card */}
+          <div className="community-organiser-card" style={{ 
+            display: 'flex', alignItems: 'center', gap: '14px', 
+            padding: '14px 18px', background: 'rgba(255,255,255,0.03)', 
+            borderRadius: '16px', border: '1px solid rgba(255,255,255,0.06)',
+            marginBottom: '8px'
+          }}>
+            <img 
+              src={leaderUser?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(community.name)}&background=0D8B93&color=fff`} 
+              alt="Organiser" 
+              onClick={() => leaderUser && navigate.push(`/profile/${leaderUser.id}`)}
+              style={{ width: '46px', height: '46px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--teal-500)', cursor: leaderUser ? 'pointer' : 'default' }} 
+            />
+            <div style={{ flex: 1 }}>
+              <div className="organiser-label" style={{ fontSize: '0.74rem', color: 'var(--teal-400)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                Organised by
+                <span className="leader-pill" style={{ background: 'rgba(20,184,166,0.15)', color: '#2dd4bf', padding: '1px 6px', borderRadius: '4px', fontSize: '0.65rem' }}>Leader &amp; Co-Hosts</span>
+              </div>
+              <div style={{ fontWeight: 700, color: 'var(--white)', fontSize: '0.98rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span>{leaderUser?.name || 'Community Team'}</span>
+                {isLeader && (
+                  <span 
+                    onClick={() => navigate.push(`/dashboard?community=${community.id}&tab=members`)}
+                    style={{ fontSize: '0.7rem', color: 'var(--teal-400)', cursor: 'pointer', fontWeight: 500, textDecoration: 'underline' }}
+                    title="Appoint a Co-Leader to share hosting duties"
+                  >
+                    + Add Co-Host
+                  </span>
+                )}
+              </div>
+            </div>
+            <button onClick={() => leaderUser && navigate.push(`/chat/dm/${leaderUser.id}`)} className="btn btn-outline interactive-press" style={{ padding: '8px 14px', borderRadius: '10px', fontSize: '0.8rem', display: 'flex', gap: '4px', alignItems: 'center', flexShrink: 0 }}>
+              <MessageCircle size={14} /> Message
+            </button>
+          </div>
+
+          {coHostUsers.length > 0 && (
+            <div style={{ marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+              <span style={{ fontSize: '0.72rem', color: 'var(--slate-400)', fontWeight: 600 }}>Co-Hosts:</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                {coHostUsers.map(coHost => (
+                  <div 
+                    key={coHost.id} 
+                    onClick={() => navigate.push(`/profile/${coHost.id}`)}
+                    className="interactive-press"
+                    style={{ 
+                      display: 'inline-flex', alignItems: 'center', gap: '6px', 
+                      padding: '3px 9px', borderRadius: '99px', 
+                      background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
+                      cursor: 'pointer', fontSize: '0.76rem', color: 'var(--white)'
+                    }}
+                    title={`View ${coHost.name}'s profile`}
+                  >
+                    <img 
+                      src={coHost.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(coHost.name || 'Co-Host')}&background=0D8B93&color=fff`} 
+                      alt={coHost.name} 
+                      style={{ width: '18px', height: '18px', borderRadius: '50%', objectFit: 'cover' }} 
+                    />
+                    <span style={{ fontWeight: 600 }}>{coHost.name}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
-
-          {/* CTA */}
-          {(() => {
-            const subPrice = community.subscription_price || community.subscriptionPrice || 0;
-            const isPaid = subPrice > 0 && !isMember;
-            return (
-              <>
-                {isMember ? (
-                  <div style={{ textAlign: 'center' }}>
-                    {community.whatsapp_group && (
-                      <a 
-                        href={community.whatsapp_group.startsWith('http') ? community.whatsapp_group : `https://${community.whatsapp_group}`}
-                        target="_blank" 
-                        rel="noopener noreferrer" 
-                        className="interactive-press" 
-                        style={{ 
-                          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', 
-                          width: '100%', padding: '14px', borderRadius: '14px', 
-                          background: '#25D366', color: '#ffffff', fontWeight: 700, fontSize: '1rem', 
-                          textDecoration: 'none', marginBottom: '10px', boxShadow: '0 4px 16px rgba(37,211,102,0.35)',
-                          cursor: 'pointer'
-                        }}
-                      >
-                        <MessageCircle size={20} /> Join WhatsApp Group
-                      </a>
-                    )}
-                    <div className="community-member-status-badge" style={{ width: '100%', padding: '14px', fontSize: '1rem', fontWeight: 600, borderRadius: '14px', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--slate-300)', background: 'rgba(255,255,255,0.05)', marginBottom: '8px' }}>
-                      ✓ You're a Member
-                    </div>
-                    <button 
-                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleJoinLeave(); }} 
-                      className="interactive-press" 
-                      style={{ position: 'relative', zIndex: 100, background: 'none', border: 'none', color: 'var(--slate-400)', fontSize: '0.85rem', cursor: 'pointer', textDecoration: 'underline' }}
-                    >
-                      Leave Community
-                    </button>
-                  </div>
-                ) : (
-                  <button 
-                    className="btn btn-primary interactive-press" 
-                    style={{ position: 'relative', zIndex: 100, width: '100%', padding: '16px', fontSize: '1.05rem', fontWeight: 700, borderRadius: '14px', boxShadow: '0 8px 24px rgba(20,184,166,0.3)', cursor: 'pointer' }}
-                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleJoinLeave(); }}
-                  >
-                    {!user?.id ? (isPaid ? `Sign In to Join  -  £${subPrice}/month` : 'Sign In to Join (Free)') :
-                     isPaid ? `Join  -  £${subPrice}/month` : 'Join this Community  -  it\'s free'}
-                  </button>
-                )}
-                {isPaid && !isMember && (
-                  <div style={{ textAlign: 'center', fontSize: '0.75rem', color: 'var(--slate-500)', marginTop: '8px' }}>
-                    Cancel anytime. You won't be charged during the trial period.
-                  </div>
-                )}
-              </>
-            );
-          })()}
         </div>
-      </div>
 
-      {/* ===== ORGANISER CARD (always visible) ===== */}
-      <div style={{ padding: '0 20px', marginTop: '-1px' }}>
-        <div className="community-organiser-card" style={{ 
-          display: 'flex', alignItems: 'center', gap: '14px', 
-          padding: '16px 20px', background: 'rgba(255,255,255,0.03)', 
-          borderRadius: '16px', border: '1px solid rgba(255,255,255,0.06)',
-          marginBottom: '20px'
-        }}>
-          <img 
-            src={leaderUser?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(community.name)}&background=0D8B93&color=fff`} 
-            alt="Organiser" 
-            onClick={() => leaderUser && navigate.push(`/profile/${leaderUser.id}`)}
-            style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--teal-500)', cursor: leaderUser ? 'pointer' : 'default' }} 
-          />
-          <div style={{ flex: 1 }}>
-            <div className="organiser-label" style={{ fontSize: '0.75rem', color: 'var(--teal-400)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              Organised by
-              <span className="leader-pill" style={{ background: 'rgba(20,184,166,0.15)', color: '#2dd4bf', padding: '1px 6px', borderRadius: '4px', fontSize: '0.65rem' }}>Leader &amp; Co-Hosts</span>
-            </div>
-            <div style={{ fontWeight: 700, color: 'var(--white)', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span>{leaderUser?.name || 'Community Team'}</span>
-              {isLeader && (
-                <span 
-                  onClick={() => navigate.push(`/dashboard?community=${community.id}&tab=members`)}
-                  style={{ fontSize: '0.7rem', color: 'var(--teal-400)', cursor: 'pointer', fontWeight: 500, textDecoration: 'underline' }}
-                  title="Appoint a Co-Leader to share hosting duties"
-                >
-                  + Add Co-Host
-                </span>
-              )}
-            </div>
-          </div>
-          <button onClick={() => leaderUser && navigate.push(`/chat/dm/${leaderUser.id}`)} className="btn btn-outline interactive-press" style={{ padding: '8px 14px', borderRadius: '10px', fontSize: '0.8rem', display: 'flex', gap: '4px', alignItems: 'center', flexShrink: 0 }}>
-            <MessageCircle size={14} /> Message
-          </button>
-        </div>
-        {coHostUsers.length > 0 && (
-          <div style={{ marginTop: '10px', paddingTop: '10px', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-            <span style={{ fontSize: '0.72rem', color: 'var(--slate-400)', fontWeight: 600 }}>Co-Hosts:</span>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-              {coHostUsers.map(coHost => (
-                <div 
-                  key={coHost.id} 
-                  onClick={() => navigate.push(`/profile/${coHost.id}`)}
-                  className="interactive-press"
-                  style={{ 
-                    display: 'inline-flex', alignItems: 'center', gap: '6px', 
-                    padding: '3px 9px', borderRadius: '99px', 
-                    background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
-                    cursor: 'pointer', fontSize: '0.76rem', color: 'var(--white)'
-                  }}
-                  title={`View ${coHost.name}'s profile`}
-                >
-                  <img 
-                    src={coHost.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(coHost.name || 'Co-Host')}&background=0D8B93&color=fff`} 
-                    alt={coHost.name} 
-                    style={{ width: '18px', height: '18px', borderRadius: '50%', objectFit: 'cover' }} 
-                  />
-                  <span style={{ fontWeight: 600 }}>{coHost.name}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* ===== LEADER SETUP CHECKLIST (Visible to Community Leaders) ===== */}
-      {isLeader && (
-        <div style={{ padding: '0 20px', marginBottom: '10px' }}>
-          <LeaderSetupChecklist
-            community={community}
-            events={communityEvents}
-            onOpenEventModal={() => navigate.push(`/dashboard?community=${community.id}&tab=events`)}
-            onOpenSettings={() => navigate.push(`/dashboard?community=${community.id}&tab=settings`)}
-          />
-        </div>
-      )}
-
-      {/* ===== TAB NAVIGATION ===== */}
+        {/* Responsive Layout Grid (2 Columns on Desktop) */}
+        <div className="community-layout-grid">
+          {/* Main Left Content Column */}
+          <div className="community-main-column">
+{/* ===== TAB NAVIGATION ===== */}
       <div style={{ padding: '0 20px', marginBottom: '24px', overflow: 'hidden', maxWidth: '100%' }}>
         <div style={{ 
           display: 'flex', 
@@ -786,14 +829,10 @@ export default function CommunityProfile() {
           padding: '4px 20px 8px 20px', // restore padding including edges
         }} className="no-scrollbar">
           {[
-            { id: 'about', label: 'About', Icon: Info },
-            { id: 'events', label: 'Events', Icon: Calendar },
-            { id: 'reviews', label: 'Reviews', Icon: Star },
-            { id: 'photos', label: 'Gallery', Icon: ImageIcon },
-            { id: 'feed', label: 'Feed', Icon: MessageSquare },
-            { id: 'services', label: 'Services', Icon: Briefcase },
-            { id: 'suggestions', label: 'Ideas', Icon: Lightbulb },
-            { id: 'members', label: 'Members', Icon: Users }
+            { id: 'overview', label: 'Overview', Icon: Compass },
+            { id: 'events', label: `Events & Walks (${upcomingEvents.length})`, Icon: Calendar },
+            { id: 'feed', label: 'Feed & Photos', Icon: MessageSquare },
+            { id: 'members', label: `People & Hub (${memberList.length || 1})`, Icon: Users }
           ].map(tab => (
             <button 
               key={tab.id}
@@ -864,7 +903,7 @@ export default function CommunityProfile() {
       <div style={{ padding: '0 20px' }}>
 
         {/* ===== FEED TAB ===== */}
-        {activeTab === 'feed' && (
+        {(activeTab === 'feed' || activeTab === 'photos') && (
           <>
             {(isMember || isLeader) && (
               <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '16px', marginBottom: '16px' }}>
@@ -1376,8 +1415,66 @@ export default function CommunityProfile() {
         )}
 
         {/* ===== ABOUT TAB ===== */}
-        {activeTab === 'about' && (
+        {(activeTab === 'overview' || activeTab === 'about') && (
           <>
+            {/* Featured Next Upcoming Walk / Meetup Card */}
+            {nextEvent && (
+              <div className="community-featured-event-card">
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                  <span style={{ fontSize: '0.72rem', fontWeight: 800, color: 'var(--teal-400)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Calendar size={13} /> Next Upcoming Walk / Meetup
+                  </span>
+                  <span style={{ fontSize: '0.72rem', fontWeight: 700, padding: '3px 8px', borderRadius: '6px', background: 'rgba(20,184,166,0.15)', color: '#2dd4bf', border: '1px solid rgba(45,212,191,0.3)' }}>
+                    {nextEvent.price && Number(nextEvent.price) > 0 ? `£${nextEvent.price}` : 'Free RSVP'}
+                  </span>
+                </div>
+
+                <h3 className="featured-event-title" style={{ margin: '0 0 10px 0', fontSize: '1.35rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', fontWeight: 800, lineHeight: 1.2 }}>
+                  {nextEvent.title}
+                </h3>
+
+                <div className="featured-event-meta" style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '0.86rem', color: 'var(--slate-300)', marginBottom: '16px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Clock size={15} color="var(--teal-400)" />
+                    <span><strong>{nextEvent.date}</strong> at {nextEvent.time}</span>
+                  </div>
+                  {nextEvent.location && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <MapPin size={15} color="var(--teal-400)" />
+                      <span>{nextEvent.location}</span>
+                    </div>
+                  )}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Users size={15} color="var(--teal-400)" />
+                    <span>{eventRsvps[nextEvent.id]?.length || 0} attending</span>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+                  <button
+                    onClick={() => navigate.push(`/events/${nextEvent.id}`)}
+                    className="btn btn-primary interactive-press"
+                    style={{
+                      flex: 1, minWidth: '160px', padding: '12px 18px', borderRadius: '12px',
+                      fontWeight: 700, fontSize: '0.9rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                      boxShadow: '0 4px 14px rgba(20,184,166,0.3)'
+                    }}
+                  >
+                    RSVP &amp; View Walk Details <ChevronRight size={16} />
+                  </button>
+                  <button
+                    onClick={() => navigate.push(`/events/${nextEvent.id}#carpool`)}
+                    className="btn btn-outline interactive-press"
+                    style={{
+                      padding: '12px 16px', borderRadius: '12px', fontSize: '0.86rem', fontWeight: 600,
+                      display: 'flex', alignItems: 'center', gap: '6px'
+                    }}
+                  >
+                    🚗 Carpool
+                  </button>
+                </div>
+              </div>
+            )}
             {/* Leader Editing Prompt */}
             {isLeader && (
               <div style={{ marginBottom: '24px', padding: '16px', background: 'rgba(20,184,166,0.1)', border: '1px dashed var(--teal-500)', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -2286,7 +2383,7 @@ export default function CommunityProfile() {
         )}
 
         {/* ===== MEMBERS TAB ===== */}
-        {activeTab === 'members' && (
+        {(activeTab === 'members' || activeTab === 'services' || activeTab === 'suggestions') && (
           <MemberDirectory communityId={communityId} />
         )}
 
@@ -2440,6 +2537,114 @@ export default function CommunityProfile() {
         )}
 
       </div>
+          </div>
+
+          {/* Right Sticky Sidebar (Desktop only) */}
+          <div className="community-sticky-sidebar">
+            {/* more. Community Pass Card */}
+            <div className="community-pass-card">
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <img src="/logo.png" alt="more." style={{ height: '18px' }} />
+                  <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--teal-400)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                    Community Pass
+                  </span>
+                </div>
+                <span style={{ fontSize: '0.75rem', fontWeight: 700, padding: '2px 8px', borderRadius: '99px', background: 'rgba(20,184,166,0.15)', color: '#2dd4bf' }}>
+                  {Number(community.subscription_price || 0) > 0 ? `£${community.subscription_price}/mo` : 'Free to Join'}
+                </span>
+              </div>
+
+              <h3 style={{ margin: '0 0 6px 0', fontSize: '1.25rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', fontWeight: 800 }}>
+                {community.name}
+              </h3>
+              <p style={{ margin: '0 0 16px 0', fontSize: '0.84rem', color: 'var(--slate-400)', lineHeight: 1.4 }}>
+                Join {community.members || memberList.length || 1} local members for walks, meetups, and group chats.
+              </p>
+
+              {/* Main Action Button */}
+              {isMember ? (
+                <div style={{ marginBottom: '12px' }}>
+                  <div className="community-member-status-badge" style={{ width: '100%', padding: '12px', fontSize: '0.92rem', fontWeight: 700, borderRadius: '12px', border: '1px solid rgba(45,212,191,0.3)', color: '#2dd4bf', background: 'rgba(20,184,166,0.1)', textAlign: 'center', marginBottom: '8px' }}>
+                    ✓ You're a Member
+                  </div>
+                  {community.whatsapp_group && (
+                    <a
+                      href={community.whatsapp_group.startsWith('http') ? community.whatsapp_group : `https://${community.whatsapp_group}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="interactive-press"
+                      style={{
+                        width: '100%', padding: '12px', borderRadius: '12px',
+                        background: '#25D366', color: '#ffffff', fontWeight: 700, fontSize: '0.92rem',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                        textDecoration: 'none', marginBottom: '8px', boxShadow: '0 4px 14px rgba(37,211,102,0.3)'
+                      }}
+                    >
+                      <MessageCircle size={18} /> Open WhatsApp Chat
+                    </a>
+                  )}
+                  <button
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleJoinLeave(); }}
+                    style={{ background: 'none', border: 'none', color: 'var(--slate-500)', fontSize: '0.78rem', cursor: 'pointer', textDecoration: 'underline', width: '100%', textAlign: 'center' }}
+                  >
+                    Leave Community
+                  </button>
+                </div>
+              ) : (
+                <div style={{ marginBottom: '12px' }}>
+                  <button
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleJoinLeave(); }}
+                    className="btn btn-primary interactive-press"
+                    style={{ width: '100%', padding: '14px', borderRadius: '12px', fontSize: '1rem', fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 6px 20px rgba(20,184,166,0.3)' }}
+                  >
+                    {!user?.id ? 'Sign In to Join (Free)' : 'Join Community  -  it\'s free'}
+                  </button>
+                </div>
+              )}
+
+              {/* Quick Next Walk Widget */}
+              {nextEvent && (
+                <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+                  <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--teal-400)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '6px' }}>
+                    Next Walk
+                  </div>
+                  <div style={{ fontWeight: 700, fontSize: '0.92rem', color: 'var(--white)', marginBottom: '4px' }}>
+                    {nextEvent.title}
+                  </div>
+                  <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)', marginBottom: '10px' }}>
+                    {nextEvent.date} at {nextEvent.time}
+                  </div>
+                  <button
+                    onClick={() => navigate.push(`/events/${nextEvent.id}`)}
+                    className="interactive-press"
+                    style={{
+                      width: '100%', padding: '9px 12px', borderRadius: '10px',
+                      background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)',
+                      color: 'var(--slate-200)', fontSize: '0.82rem', fontWeight: 600,
+                      cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px'
+                    }}
+                  >
+                    <Calendar size={14} /> RSVP &amp; Carpool
+                  </button>
+                </div>
+              )}
+
+              {/* Safety Guarantee */}
+              <div style={{ marginTop: '16px', paddingTop: '14px', borderTop: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                <Shield size={18} color="var(--teal-400)" style={{ flexShrink: 0, marginTop: '2px' }} />
+                <div>
+                  <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--white)' }}>
+                    Verified &amp; Insured Community
+                  </div>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', lineHeight: 1.3, marginTop: '2px' }}>
+                    Vetted organiser, council-safe guidelines, and public liability protection.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
       
       {isServiceModalOpen && (
@@ -2702,6 +2907,53 @@ export default function CommunityProfile() {
         </div>
       )}
       
+      {/* Mobile Floating Bottom Action Dock */}
+      <div className="community-mobile-dock">
+        <div>
+          <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--teal-400)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+            {Number(community.subscription_price || 0) > 0 ? `£${community.subscription_price}/mo` : 'Free to Join'}
+          </div>
+          <div style={{ fontSize: '0.86rem', fontWeight: 800, color: 'var(--white)', maxWidth: '170px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {nextEvent ? `Next: ${nextEvent.date}` : community.name}
+          </div>
+        </div>
+
+        <div>
+          {isMember ? (
+            community.whatsapp_group ? (
+              <a
+                href={community.whatsapp_group.startsWith('http') ? community.whatsapp_group : `https://${community.whatsapp_group}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="interactive-press"
+                style={{
+                  padding: '10px 18px', borderRadius: '12px',
+                  background: '#25D366', color: '#ffffff', fontWeight: 700, fontSize: '0.88rem',
+                  display: 'inline-flex', alignItems: 'center', gap: '6px', textDecoration: 'none',
+                  boxShadow: '0 4px 14px rgba(37,211,102,0.3)'
+                }}
+              >
+                <MessageCircle size={16} /> WhatsApp Chat
+              </a>
+            ) : (
+              <span className="community-member-status-badge" style={{ padding: '8px 14px', borderRadius: '10px', fontSize: '0.82rem', fontWeight: 700, background: 'rgba(20,184,166,0.15)', color: '#2dd4bf', border: '1px solid rgba(45,212,191,0.3)' }}>
+                ✓ Joined
+              </span>
+            )
+          ) : (
+            <button
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleJoinLeave(); }}
+              className="btn btn-primary interactive-press"
+              style={{
+                padding: '11px 20px', borderRadius: '12px', fontSize: '0.92rem', fontWeight: 800,
+                boxShadow: '0 4px 16px rgba(20,184,166,0.3)'
+              }}
+            >
+              Join Community
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
