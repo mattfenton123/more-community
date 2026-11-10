@@ -1,18 +1,35 @@
 "use client";
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Car, MapPin, Clock, Users, Shield, Plus, CheckCircle2, MessageCircle, X, ChevronRight, AlertCircle, Sparkles, Navigation, Fuel, Trash2 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { useToast } from './Toast';
 
 export default function CarpoolHub({ event, user, isAttendee = false, community }) {
   const { toast } = useToast();
+  const router = useRouter();
   const { 
     carpools, 
+    setCarpools,
     offerCarpool, 
     reserveCarpoolSeat, 
     cancelCarpoolSeat, 
-    deleteCarpoolOffer 
+    deleteCarpoolOffer,
+    rsvpToEvent
   } = useAppContext();
+
+  // Local state initialized synchronously from localStorage for instant display
+  const [localCarpools, setLocalCarpools] = useState(() => {
+    if (typeof window === 'undefined' || !event?.id) return [];
+    try {
+      const raw = localStorage.getItem(`more_event_carpools_${event.id}`);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {}
+    return [];
+  });
 
   const [showOfferModal, setShowOfferModal] = useState(false);
   const [origin, setOrigin] = useState('');
@@ -23,15 +40,21 @@ export default function CarpoolHub({ event, user, isAttendee = false, community 
   const [chipIn, setChipIn] = useState('Free');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Load carpools for this event
-  const eventCarpools = (carpools && carpools[event?.id]) || [];
+  // Merge context state and local fallback
+  const eventCarpools = (carpools && carpools[event?.id] && carpools[event?.id].length > 0)
+    ? carpools[event?.id]
+    : localCarpools;
 
-  // Seed default demonstration carpool if none exists yet for a richer first-run feel
+  // Hydrate or seed carpools on mount
   useEffect(() => {
     if (typeof window === 'undefined' || !event?.id) return;
     try {
-      const stored = localStorage.getItem(`more_event_carpools_${event.id}`);
-      if (!stored && eventCarpools.length === 0) {
+      const raw = localStorage.getItem(`more_event_carpools_${event.id}`);
+      let pools = [];
+      if (raw) {
+        pools = JSON.parse(raw);
+      }
+      if (!Array.isArray(pools) || pools.length === 0) {
         const defaultPools = [
           {
             id: `sample_carpool_${event.id}_1`,
@@ -47,15 +70,20 @@ export default function CarpoolHub({ event, user, isAttendee = false, community 
               { userId: 'sample_rider_1', name: 'Dave B.', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=Dave' }
             ],
             flexibleOnRoute: true,
-            notes: 'Boot space for muddy boots & medium dog friendly 🐕',
+            notes: 'Muddy boots welcome in the boot, medium dog friendly 🐕',
             chipIn: 'Free',
             createdAt: new Date().toISOString()
           }
         ];
+        pools = defaultPools;
         localStorage.setItem(`more_event_carpools_${event.id}`, JSON.stringify(defaultPools));
       }
+      setLocalCarpools(pools);
+      if (typeof setCarpools === 'function') {
+        setCarpools(prev => ({ ...prev, [event.id]: pools }));
+      }
     } catch (e) {}
-  }, [event?.id, community]);
+  }, [event?.id, community?.leader_name]);
 
   // Derived state
   const myCarpoolOffer = eventCarpools.find(c => c.driverId === user?.id);
@@ -74,8 +102,9 @@ export default function CarpoolHub({ event, user, isAttendee = false, community 
 
     setIsSubmitting(true);
     try {
+      let createdOffer = null;
       if (typeof offerCarpool === 'function') {
-        await offerCarpool(event.id, {
+        createdOffer = await offerCarpool(event.id, {
           origin: origin.trim(),
           time: departureTime,
           seatsTotal,
@@ -84,6 +113,16 @@ export default function CarpoolHub({ event, user, isAttendee = false, community 
           chipIn
         });
       }
+      
+      // Update local state immediately
+      if (createdOffer) {
+        setLocalCarpools(prev => {
+          const list = [createdOffer, ...prev.filter(c => c.driverId !== user.id)];
+          try { localStorage.setItem(`more_event_carpools_${event.id}`, JSON.stringify(list)); } catch (e) {}
+          return list;
+        });
+      }
+
       toast.success('Ride Offered! 🚗', 'Your carpool is live for confirmed walk attendees.');
       setShowOfferModal(false);
       setOrigin('');
@@ -98,17 +137,46 @@ export default function CarpoolHub({ event, user, isAttendee = false, community 
   const handleReserve = async (carpool) => {
     if (!user?.id) {
       toast.info('Sign in required', 'Please sign in to reserve a carpool seat.');
+      router.push(`/login?redirect=/events/${event?.id}#carpool`);
       return;
     }
-    if (!isAttendee) {
-      toast.info('RSVP required', 'Please RSVP to this event first before reserving a seat.');
-      return;
-    }
+    
     try {
+      // If user has not RSVP'd yet, automatically confirm RSVP
+      if (!isAttendee && typeof rsvpToEvent === 'function') {
+        await rsvpToEvent(event.id, 'going');
+        toast.success('RSVP Confirmed! ✓', 'You are attending this walk.');
+      }
+
       if (typeof reserveCarpoolSeat === 'function') {
         await reserveCarpoolSeat(event.id, carpool.id);
       }
-      toast.success('Seat Reserved! 🎉', `You are riding with ${carpool.driverName}. Coordinate pickup below.`);
+
+      // Update local state immediately
+      setLocalCarpools(prev => {
+        const updated = prev.map(c => {
+          if (c.id === carpool.id) {
+            const hasUser = (c.passengers || []).some(p => p.userId === user.id);
+            if (hasUser) return c;
+            const newPassengers = [...(c.passengers || []), {
+              userId: user.id,
+              name: user.name || 'Member',
+              avatar: user.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.name || 'Rider')}`,
+              reservedAt: new Date().toISOString()
+            }];
+            return {
+              ...c,
+              passengers: newPassengers,
+              seatsAvailable: Math.max(0, c.seatsTotal - newPassengers.length)
+            };
+          }
+          return c;
+        });
+        try { localStorage.setItem(`more_event_carpools_${event.id}`, JSON.stringify(updated)); } catch (e) {}
+        return updated;
+      });
+
+      toast.success('Seat Reserved! 🎉', `You are riding with ${carpool.driverName}. Tap "Coordinate Pickup" to connect.`);
     } catch (err) {
       toast.error('Could not reserve seat', err.message);
     }
@@ -120,6 +188,21 @@ export default function CarpoolHub({ event, user, isAttendee = false, community 
       if (typeof cancelCarpoolSeat === 'function') {
         await cancelCarpoolSeat(event.id, carpool.id);
       }
+      setLocalCarpools(prev => {
+        const updated = prev.map(c => {
+          if (c.id === carpool.id) {
+            const newPassengers = (c.passengers || []).filter(p => p.userId !== user?.id);
+            return {
+              ...c,
+              passengers: newPassengers,
+              seatsAvailable: Math.max(0, c.seatsTotal - newPassengers.length)
+            };
+          }
+          return c;
+        });
+        try { localStorage.setItem(`more_event_carpools_${event.id}`, JSON.stringify(updated)); } catch (e) {}
+        return updated;
+      });
       toast.info('Seat Released', 'Your carpool reservation has been removed.');
     } catch (err) {
       toast.error('Error', err.message);
@@ -132,6 +215,11 @@ export default function CarpoolHub({ event, user, isAttendee = false, community 
       if (typeof deleteCarpoolOffer === 'function') {
         await deleteCarpoolOffer(event.id, carpoolId);
       }
+      setLocalCarpools(prev => {
+        const updated = prev.filter(c => c.id !== carpoolId);
+        try { localStorage.setItem(`more_event_carpools_${event.id}`, JSON.stringify(updated)); } catch (e) {}
+        return updated;
+      });
       toast.info('Carpool Cancelled', 'Your ride offer was removed.');
     } catch (err) {
       toast.error('Error', err.message);

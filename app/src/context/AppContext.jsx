@@ -1456,6 +1456,24 @@ export function AppProvider({ children }) {
   // ─── Carpool Hub State & Actions ─────────────────────────
   const [carpools, setCarpools] = useState({});
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const loaded = {};
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('more_event_carpools_')) {
+          const eventId = key.replace('more_event_carpools_', '');
+          const raw = localStorage.getItem(key);
+          if (raw) loaded[eventId] = JSON.parse(raw);
+        }
+      }
+      if (Object.keys(loaded).length > 0) {
+        setCarpools(loaded);
+      }
+    } catch (e) {}
+  }, []);
+
   const offerCarpool = async (eventId, offerData) => {
     const newOffer = {
       id: `cp_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
@@ -2202,6 +2220,7 @@ export function AppProvider({ children }) {
       checkInMember,
       flushOfflineCheckinQueue,
       carpools,
+      setCarpools,
       offerCarpool,
       reserveCarpoolSeat,
       cancelCarpoolSeat,
