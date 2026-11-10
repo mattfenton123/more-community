@@ -9,6 +9,7 @@ export default function TownChaptersBlueprint({ community }) {
   const { communities = [] } = useAppContext();
 
   if (!community) return null;
+  if (community.allow_chapters === false || community.allowChapters === false) return null;
 
   // Extract base franchise prefix
   const commName = community.name || '';
@@ -37,7 +38,7 @@ export default function TownChaptersBlueprint({ community }) {
   });
 
   return (
-    <div style={{
+    <div className="town-chapters-blueprint-card" style={{
       background: 'linear-gradient(135deg, rgba(20, 184, 166, 0.08) 0%, rgba(15, 23, 42, 0.7) 100%)',
       border: '1px solid rgba(45, 212, 191, 0.25)',
       borderRadius: '20px',
@@ -64,7 +65,7 @@ export default function TownChaptersBlueprint({ community }) {
               {sisterChapters.length + 1} Chapters Active
             </span>
           </div>
-          <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#fff', marginTop: '4px' }}>
+          <div className="card-heading" style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--white)', marginTop: '4px' }}>
             Town Chapters of {community.name}
           </div>
         </div>
@@ -92,7 +93,7 @@ export default function TownChaptersBlueprint({ community }) {
         </button>
       </div>
 
-      <div style={{ fontSize: '0.84rem', color: 'var(--slate-300)', lineHeight: 1.5, marginBottom: '16px' }}>
+      <div className="card-description" style={{ fontSize: '0.84rem', color: 'var(--slate-300)', lineHeight: 1.5, marginBottom: '16px' }}>
         Want to bring {community.name} to your local village or town? Start an official chapter with verified safety packs, shared branding, and leader onboarding guidance.
       </div>
 
@@ -112,7 +113,7 @@ export default function TownChaptersBlueprint({ community }) {
           fontWeight: 700
         }}>
           <CheckCircle2 size={16} color="var(--teal-400)" />
-          <span>{community.location_name || 'Tunbridge Wells'} (Current Chapter)</span>
+          <span className="current-chapter-text">{community.location_name || community.location || 'Tunbridge Wells'} (Current Chapter)</span>
         </div>
 
         {/* Sister Chapters */}

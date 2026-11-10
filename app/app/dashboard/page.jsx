@@ -4875,6 +4875,54 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 </button>
               </div>
 
+              {/* Multi-Town Chapter Network Toggle */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px 18px', background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px' }}>
+                <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(56, 189, 248, 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#38bdf8', flexShrink: 0 }}>
+                  <Globe size={20} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div style={{ fontFamily: 'var(--font-heading)', fontSize: '0.98rem', fontWeight: 600, color: 'var(--white)' }}>
+                      Multi-Town Chapter Network
+                    </div>
+                    <button 
+                      type="button"
+                      onClick={() => setModalType('chapter-info')}
+                      title="Learn what is shown, where it appears, and how expansion works"
+                      className="interactive-press"
+                      style={{
+                        background: 'none', border: 'none', padding: '2px',
+                        color: 'var(--teal-400)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center'
+                      }}
+                    >
+                      <Info size={16} />
+                    </button>
+                  </div>
+                  <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.82rem', color: 'var(--slate-400)', marginTop: '2px' }}>
+                    Allow leaders in other villages or towns to launch official chapters of your community
+                  </div>
+                </div>
+                <button 
+                  type="button"
+                  onClick={() => { 
+                    const currentVal = community.allow_chapters ?? community.allowChapters ?? true;
+                    const newVal = !currentVal;
+                    updateCommunity(community.id, { allow_chapters: newVal, allowChapters: newVal });
+                    toast.info(newVal ? 'Chapters Enabled' : 'Chapters Disabled', newVal ? 'Chapter expansion banner is now visible on your page' : 'Chapter expansion banner hidden from your page'); 
+                  }} 
+                  style={{
+                    width: '46px', height: '26px', borderRadius: '99px', border: 'none',
+                    background: (community.allow_chapters ?? community.allowChapters ?? true) ? 'var(--teal-500)' : 'rgba(255,255,255,0.1)',
+                    position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0
+                  }}
+                >
+                  <div style={{
+                    width: '22px', height: '22px', borderRadius: '50%', background: 'white', position: 'absolute', top: '2px',
+                    left: (community.allow_chapters ?? community.allowChapters ?? true) ? '22px' : '2px', transition: 'left 0.2s'
+                  }}></div>
+                </button>
+              </div>
+
               {/* ─── GROUP 4: DATA & ADVANCED ─── */}
               <div style={{ fontFamily: 'var(--font-heading)', fontSize: '0.78rem', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--teal-300)', marginTop: '8px' }}>
                 Data & Advanced
@@ -4953,6 +5001,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
             <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h2 style={{ margin: 0, fontSize: '1.2rem', fontFamily: 'var(--font-heading)', color: 'var(--white)' }}>
                 {isEditing ? 'Edit Profile' : 
+                 modalType === 'chapter-info' ? 'Multi-Town Chapter Network' :
                  modalType === 'event' ? (eventForm.resolvedDates && eventForm.resolvedDates.length > 1 ? `Create Schedule (${eventForm.resolvedDates.length} Events)` : 'Create Event') : 
                  modalType === 'edit-event' ? 'Edit Event' :
                  modalType === 'members' ? 'Manage Members' : 
@@ -5309,6 +5358,60 @@ export default function LeaderDashboard({ initialCommunityId }) {
             )}
 
             {/* WhatsApp Settings */}
+            {modalType === 'chapter-info' && (
+              <div style={{ color: 'var(--white)', display: 'flex', flexDirection: 'column', gap: '16px', padding: '16px 20px', maxHeight: '70vh', overflowY: 'auto' }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', padding: '14px 16px', background: 'rgba(56, 189, 248, 0.08)', border: '1px solid rgba(56, 189, 248, 0.25)', borderRadius: '14px' }}>
+                  <Globe size={22} color="#38bdf8" style={{ flexShrink: 0, marginTop: '2px' }} />
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--white)', marginBottom: '4px' }}>
+                      What is shown on your public page?
+                    </div>
+                    <div style={{ fontSize: '0.82rem', color: 'var(--slate-300)', lineHeight: 1.5 }}>
+                      When enabled, a <strong>&quot;Multi-Town Chapter Network&quot;</strong> section appears under the About tab of your community page ({community?.name}). It displays your active sister chapters and includes a <em>&quot;Launch a Chapter in Your Town&quot;</em> button.
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: '0.92rem', color: 'var(--white)', marginBottom: '8px' }}>
+                    🏛️ Is this like a franchise? How founding leaders benefit:
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <div style={{ padding: '10px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px' }}>
+                      <div style={{ fontWeight: 600, fontSize: '0.84rem', color: 'var(--teal-300)', marginBottom: '2px' }}>
+                        1. Scale your brand & mission without extra legwork
+                      </div>
+                      <div style={{ fontSize: '0.78rem', color: 'var(--slate-300)', lineHeight: 1.45 }}>
+                        Passionate leaders in nearby towns (e.g. Sevenoaks, Tonbridge, Maidstone) can launch a chapter of your community using your proven walk format, branding, and guidance.
+                      </div>
+                    </div>
+
+                    <div style={{ padding: '10px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px' }}>
+                      <div style={{ fontWeight: 600, fontSize: '0.84rem', color: 'var(--teal-300)', marginBottom: '2px' }}>
+                        2. Higher sponsorship & commercial clout
+                      </div>
+                      <div style={{ fontSize: '0.78rem', color: 'var(--slate-300)', lineHeight: 1.45 }}>
+                        Regional outdoor brands, councils, and local businesses pay significantly more to sponsor a 5 to 10 chapter network than a single isolated local group.
+                      </div>
+                    </div>
+
+                    <div style={{ padding: '10px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px' }}>
+                      <div style={{ fontWeight: 600, fontSize: '0.84rem', color: 'var(--teal-300)', marginBottom: '2px' }}>
+                        3. Standardized safety & quality control
+                      </div>
+                      <div style={{ fontSize: '0.78rem', color: 'var(--slate-300)', lineHeight: 1.45 }}>
+                        New chapters follow your verified route templates, risk assessments, and co-leader wellbeing ratios, protecting your group reputation.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ padding: '12px 14px', background: 'rgba(245, 158, 11, 0.08)', border: '1px solid rgba(245, 158, 11, 0.25)', borderRadius: '12px', fontSize: '0.8rem', color: '#fef08a', lineHeight: 1.45 }}>
+                  💡 <strong>Want to keep it purely local?</strong> Turn the toggle off anytime. The chapter network banner and application button will disappear immediately from your public community page.
+                </div>
+              </div>
+            )}
+
             {modalType === 'whatsapp' && (
               <div style={{ color: 'var(--white)', display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '16px', background: 'rgba(37,211,102,0.08)', border: '1px solid rgba(37,211,102,0.25)', borderRadius: '14px' }}>
@@ -5432,7 +5535,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 className="btn btn-primary interactive-press" 
                 style={{ display: 'flex', justifyContent: 'center', gap: '8px', width: '100%', padding: '16px', borderRadius: '12px', opacity: isUploading ? 0.7 : 1 }}>
                 <Check size={20} /> 
-                {isUploading ? 'Uploading...' : isEditing ? 'Save Changes' : modalType === 'whatsapp' ? 'Save Settings' : 'Confirm'}
+                {isUploading ? 'Uploading...' : isEditing ? 'Save Changes' : modalType === 'whatsapp' ? 'Save Settings' : modalType === 'chapter-info' ? 'Close Window' : 'Confirm'}
               </button>
             </div>
           ) : null}

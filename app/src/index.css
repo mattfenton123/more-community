@@ -2410,3 +2410,23 @@ button:disabled, [role="button"][aria-disabled="true"] {
   border-color: rgba(0, 0, 0, 0.15) !important;
   color: #0f172a !important;
 }
+
+
+/* Town Chapters Blueprint in Light / Day Mode */
+[data-theme="light"] .town-chapters-blueprint-card {
+  background: #ffffff !important;
+  border: 1px solid rgba(20, 184, 166, 0.25) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05) !important;
+}
+
+[data-theme="light"] .town-chapters-blueprint-card .card-heading {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .town-chapters-blueprint-card .card-description {
+  color: #475569 !important;
+}
+
+[data-theme="light"] .town-chapters-blueprint-card .current-chapter-text {
+  color: #0f172a !important;
+}

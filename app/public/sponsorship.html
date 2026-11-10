@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>More Community — Local Sponsorship</title>
+<title>More Community - Local Sponsorship</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Syne:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -158,6 +158,13 @@ p { margin-bottom: 20px; font-size: 0.95rem; }
 </head>
 <body>
 <div class="page">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.08);">
+    <a href="index.html" style="color: var(--teal-400); text-decoration: none; font-size: 0.88rem; font-weight: 600; display: flex; align-items: center; gap: 6px;">&larr; Back to Home</a>
+    <div style="display: flex; gap: 16px;">
+      <a href="/discover" style="color: var(--slate-300); text-decoration: none; font-size: 0.85rem;">Browse Communities</a>
+      <a href="leaders.html" style="color: var(--slate-300); text-decoration: none; font-size: 0.85rem;">For Leaders</a>
+    </div>
+  </div>
   <div class="header">
     <img src="images/logo.png" alt="More Community" class="header-logo">
     <h1>Champion real-life <span class="grad">connection.</span></h1>
@@ -171,28 +178,43 @@ p { margin-bottom: 20px; font-size: 0.95rem; }
     <p style="margin: 0; font-size: 0.9rem;">Modern local advertising is broken. SMEs pour thousands into digital ads that get scrolled past. By sponsoring the More Community network, you embed your brand directly into the spaces where locals are actively gathering, exercising, and connecting. It is highly targeted, deeply trusted, and actively funds the community leaders making it happen.</p>
   </div>
 
-  <div class="grid-2">
-    <div class="tier-card headline">
-      <div class="tier-title">Headline Sponsor</div>
-      <div class="tier-price">£5,000 / year</div>
-      <p style="font-size: 0.85rem; color: var(--slate-400); min-height: 60px;">The premier partnership package. Exclusive category representation across the entire town network.</p>
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; margin-bottom: 40px;">
+    <!-- Tier 1: Local Club Partner -->
+    <div class="tier-card" style="border-top: 4px solid var(--teal-400);">
+      <div class="tier-title">Local Club Partner</div>
+      <div class="tier-price" style="color: var(--teal-300); font-size: 1.8rem;">£15 <span style="font-size: 1rem; font-style: normal; color: var(--slate-400);">/ month</span></div>
+      <p style="font-size: 0.85rem; color: var(--slate-400); min-height: 50px;">Designed for independent cafes, sports shops, physios, dog groomers & local studios.</p>
       <ul class="tier-list">
-        <li><strong>Category Exclusivity:</strong> Only one sponsor per industry (e.g. one estate agent, one legal firm).</li>
-        <li><strong>Persistent Branding:</strong> Prominent logo placement on the town's main discovery portal.</li>
-        <li><strong>Event Integration:</strong> "Brought to you by" branding on flagship local events and community walks.</li>
-        <li><strong>In-App Visibility:</strong> Featured placement in the mobile app and weekly newsletters to all local members.</li>
+        <li><strong>80% Goes to Club Fund:</strong> Directly funds local walk leaders, gear & room hire.</li>
+        <li><strong>Member Perk Listing:</strong> Exclusive discount or perk featured on club profile.</li>
+        <li><strong>Welcome Pack Feature:</strong> Recommended to all new members joining the group.</li>
+        <li><strong>Zero Waste Ad Spend:</strong> Reaches 100% local residents in your exact postcode.</li>
       </ul>
     </div>
-    
-    <div class="tier-card support">
-      <div class="tier-title">Community Supporter</div>
-      <div class="tier-price">£2,500 / year</div>
-      <p style="font-size: 0.85rem; color: var(--slate-400); min-height: 60px;">A high-visibility package designed for local businesses wanting to show their ongoing commitment to community health.</p>
+
+    <!-- Tier 2: Club Headline Partner -->
+    <div class="tier-card headline" style="background: rgba(245, 158, 11, 0.04); border-color: rgba(245, 158, 11, 0.25);">
+      <div class="tier-title">Club Headline Sponsor</div>
+      <div class="tier-price" style="font-size: 1.8rem;">£49 <span style="font-size: 1rem; font-style: normal; color: var(--slate-400);">/ month</span></div>
+      <p style="font-size: 0.85rem; color: var(--slate-400); min-height: 50px;">Premier dedicated partner for established local businesses, estate agents, solicitors & gyms.</p>
       <ul class="tier-list">
-        <li><strong>Category Limit:</strong> Maximum of two sponsors per industry category.</li>
-        <li><strong>Digital Presence:</strong> Supporter logo placement on the town's discovery portal.</li>
-        <li><strong>Event Support:</strong> Brand acknowledgement at major community-led events.</li>
-        <li><strong>Newsletter Mentions:</strong> Monthly brand inclusion in the local community round-up email.</li>
+        <li><strong>Top-of-Page Banner:</strong> Headline logo badge atop the club profile page.</li>
+        <li><strong>Ticket Confirmation Callout:</strong> Included on every attendee ticket & reminder.</li>
+        <li><strong>Quarterly Spotlight:</strong> Dedicated featured post to the community network.</li>
+        <li><strong>75% to Leader Fund:</strong> Subsidises member experiences and co-leader training.</li>
+      </ul>
+    </div>
+
+    <!-- Tier 3: Town Network Partner -->
+    <div class="tier-card" style="border-top: 4px solid #38bdf8;">
+      <div class="tier-title">Town Network Partner</div>
+      <div class="tier-price" style="color: #7dd3fc; font-size: 1.8rem;">£2,500 <span style="font-size: 1rem; font-style: normal; color: var(--slate-400);">/ year</span></div>
+      <p style="font-size: 0.85rem; color: var(--slate-400); min-height: 50px;">Town-wide category exclusivity across the entire More Community directory & flagship events.</p>
+      <ul class="tier-list">
+        <li><strong>Category Exclusivity:</strong> Only one sponsor per industry across town.</li>
+        <li><strong>Persistent Web & App Branding:</strong> Logo on town discovery portal & mobile app.</li>
+        <li><strong>Flagship Walk Integration:</strong> Official supporter of community walking festivals.</li>
+        <li><strong>Monthly Newsletter:</strong> Brand inclusion sent to all registered town members.</li>
       </ul>
     </div>
   </div>

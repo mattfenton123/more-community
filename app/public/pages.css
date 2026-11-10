@@ -1,5 +1,5 @@
 /* =========================================
-   MORE. COMMUNITY — SHARED PAGE STYLES
+   MORE. COMMUNITY - SHARED PAGE STYLES
    ========================================= */
 
 /* --- Page Hero --- */
@@ -824,7 +824,7 @@
     position: relative;
 }
 .dash-chart-placeholder::before {
-    content: 'Member Growth — Last 12 Weeks';
+    content: 'Member Growth - Last 12 Weeks';
     position: absolute;
     top: 12px;
     left: 16px;
@@ -1130,4 +1130,22 @@
     .comparison-table { font-size: 0.75rem; }
     .comparison-table th, .comparison-table td { padding: 0.5rem; }
     .app-phone-frame { width: 320px; height: 693px; border-radius: 38px; }
+}
+
+
+/* 4 Problem Cards in One Row on Desktop */
+.leaders-problem-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.25rem;
+}
+@media (max-width: 992px) {
+    .leaders-problem-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+@media (max-width: 600px) {
+    .leaders-problem-grid {
+        grid-template-columns: 1fr;
+    }
 }

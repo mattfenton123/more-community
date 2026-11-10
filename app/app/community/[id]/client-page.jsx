@@ -1888,8 +1888,10 @@ export default function CommunityProfile() {
               </div>
             )}
 
-            {/* Multi-Chapter Franchise Network */}
-            <TownChaptersBlueprint community={community} />
+            {/* Multi-Chapter Franchise Network (Respects leader setting) */}
+            {(community.allow_chapters !== false && community.allowChapters !== false) && (
+              <TownChaptersBlueprint community={community} />
+            )}
 
             {/* Town Cross-Pollination (Local Sister Groups) */}
             <div style={{ marginBottom: '32px' }}>
