@@ -8,8 +8,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400..800&family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=86">
-    <link rel="stylesheet" href="pages.css?v=3">
+    <link rel="stylesheet" href="style.css?v=87">
+    <link rel="stylesheet" href="pages.css?v=4">
 </head>
 <body>
 
@@ -46,35 +46,202 @@
         </div>
     </nav>
 
-    <!-- ====== HERO ====== -->
-    <header class="page-hero-immersive" id="home" style="background-image: url('images/hero.png');">
-        <div class="container" style="padding-bottom: 2rem;">
-            <h1 class="microsite-title reveal-text" style="font-size: clamp(3rem, 6vw, 5.5rem); line-height: 1.4; padding-bottom: 0.5em; overflow: visible;">
-                Find your people.<br>
-                <em>Experience more</em> <span style="color: var(--teal-400); font-family: var(--font-heading); font-weight: 700;">Together.</span>
-            </h1>
-            <p class="microsite-desc reveal-text delay-1">
-                The free platform connecting people to real-life communities in their town. Find your people, join local groups, and experience more - together.
-            </p>
-            <div style="display: flex; gap: 1rem; flex-wrap: wrap;" class="reveal-text delay-2">
-                <a href="/events" class="btn" style="background: var(--teal-500); color: white; border: none; box-shadow: 0 0 20px rgba(20,184,166,0.3);">Find Upcoming Walks &amp; Events →</a>
-                <a href="/discover" class="btn btn-outline" style="border-color: var(--teal-400); color: var(--teal-300);">Browse Communities</a>
-                <a href="/create-community" class="btn btn-outline">+ Start a Community</a>
+    <!-- ====== MODERN HERO ====== -->
+    <header class="hero-modern-section" id="home">
+        <div class="container">
+            <div class="hero-modern-grid">
+                <!-- Left Column: Value Prop & Actions -->
+                <div class="hero-modern-left">
+                    <div class="live-pulse-badge reveal-text">
+                        <span class="pulse-dot"></span>
+                        <span>20+ Communities Active in Tunbridge Wells - Free for Members</span>
+                    </div>
+                    <h1 class="modern-hero-headline reveal-text">
+                        Find your people.<br>
+                        <em>Experience more</em> <span class="hero-brand-accent">together.</span>
+                    </h1>
+                    <p class="modern-hero-subtitle reveal-text delay-1">
+                        The free platform connecting you to local walks, run clubs, wellness circles, and independent communities in your town. Real life happens offline.
+                    </p>
+                    
+                    <div class="hero-cta-group reveal-text delay-2">
+                        <a href="/events" class="btn btn-primary" style="padding: 1rem 2.2rem; font-size: 1.05rem;">Find Walks &amp; Events →</a>
+                        <a href="/discover" class="btn btn-outline" style="padding: 1rem 2rem; font-size: 1.05rem;">Explore Communities</a>
+                        <a href="/create-community" class="btn btn-outline" style="border-color: rgba(20,184,166,0.35); color: var(--teal-300); padding: 1rem 1.75rem; font-size: 1.05rem;">+ Start a Community</a>
+                    </div>
+
+                    <div class="hero-category-chips reveal-text delay-2">
+                        <span class="hero-chips-label">Popular:</span>
+                        <a href="/discover" class="hero-chip">🥾 Walks &amp; Hiking</a>
+                        <a href="/discover" class="hero-chip">🏃 Run Clubs</a>
+                        <a href="/discover" class="hero-chip">🧠 Breathwork &amp; Mind</a>
+                        <a href="yentw.html" class="hero-chip">☕ Founders &amp; YENTW</a>
+                        <a href="/discover" class="hero-chip">🐕 Dog Friendly</a>
+                    </div>
+
+                    <div class="hero-social-proof reveal-text delay-3">
+                        <div class="hero-avatar-stack">
+                            <div class="avatar-initial" style="background: linear-gradient(135deg, #14b8a6, #0284c7);">S</div>
+                            <div class="avatar-initial" style="background: linear-gradient(135deg, #f59e0b, #ef4444);">J</div>
+                            <div class="avatar-initial" style="background: linear-gradient(135deg, #8b5cf6, #ec4899);">A</div>
+                            <div class="avatar-initial" style="background: linear-gradient(135deg, #10b981, #059669);">M</div>
+                        </div>
+                        <p class="hero-social-text"><strong>340+ locals</strong> connecting in Tunbridge Wells this month</p>
+                    </div>
+                </div>
+
+                <!-- Right Column: Interactive Next Gathering Showcase -->
+                <div class="hero-modern-right reveal-text delay-1">
+                    <div class="hero-event-showcase">
+                        <div class="hero-event-glow"></div>
+                        <div class="hero-event-card">
+                            <div class="hero-card-top">
+                                <span class="hero-card-badge">🔥 Next Gathering - Saturday 10:00 AM</span>
+                                <span class="hero-card-town">Dunorlan Park</span>
+                            </div>
+                            <h3 class="hero-card-title">Breathe into Christmas &amp; Winter Circular</h3>
+                            <div class="hero-card-host">
+                                <span>By More Performance Breathing</span>
+                                <span class="verified-icon">✓</span>
+                            </div>
+                            <div class="hero-card-details">
+                                <div class="hero-detail-row">
+                                    <span class="hero-detail-icon">📍</span>
+                                    <span>Dunorlan Park Cafe Entrance, Tunbridge Wells</span>
+                                </div>
+                                <div class="hero-detail-row">
+                                    <span class="hero-detail-icon">⏱️</span>
+                                    <span>75 mins circular • Easy pace • All welcome</span>
+                                </div>
+                                <div class="hero-detail-row">
+                                    <span class="hero-detail-icon">☕</span>
+                                    <span>Post-walk coffee and conversation</span>
+                                </div>
+                            </div>
+                            <div class="hero-carpool-pill">
+                                <span>🚗</span>
+                                <span><strong>3 Carpools Active</strong> from High Brooms, Southborough, and Pantiles</span>
+                            </div>
+                            <div class="hero-card-footer">
+                                <div class="hero-card-attendees">
+                                    <div class="hero-avatar-stack">
+                                        <div class="avatar-initial" style="background: #0284c7; width: 28px; height: 28px; font-size: 0.7rem;">E</div>
+                                        <div class="avatar-initial" style="background: #10b981; width: 28px; height: 28px; font-size: 0.7rem;">D</div>
+                                        <div class="avatar-initial" style="background: #f59e0b; width: 28px; height: 28px; font-size: 0.7rem;">R</div>
+                                    </div>
+                                    <span class="hero-attendees-text"><strong>12 going</strong><br><small style="color: var(--teal-300);">Free RSVP</small></span>
+                                </div>
+                                <a href="/events" class="hero-card-action">RSVP Free →</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
-        <div class="hero-scroll-hint" style="z-index: 10;">
-            <span>Scroll</span>
-            <div class="scroll-line"></div>
         </div>
     </header>
 
-    <!-- ====== MANIFESTO STRIP ====== -->
-    <section class="manifesto">
-        <div class="manifesto-track">
-            <span>do more >> experience more >> achieve more >> connect more >> give more >> be more >></span>
-            <span>do more >> experience more >> achieve more >> connect more >> give more >> be more >></span>
-            <span>do more >> experience more >> achieve more >> connect more >> give more >> be more >></span>
-            <span>do more >> experience more >> achieve more >> connect more >> give more >> be more >></span>
+    <!-- ====== LIVE HAPPENING THIS WEEK ====== -->
+    <section class="live-events-section" id="events">
+        <div class="container">
+            <div class="section-header-modern scroll-reveal">
+                <div>
+                    <p class="eyebrow">Live Gatherings</p>
+                    <h2 class="editorial-title" style="margin-bottom: 0.5rem;">Happening this week in<br><em>Tunbridge Wells</em></h2>
+                    <p style="color: var(--slate-400); font-size: 1.05rem;">Join a walk, trail run, or morning meetup. All gatherings are free and beginner friendly.</p>
+                </div>
+                <div>
+                    <a href="/events" class="text-link" style="font-size: 1rem;">View all 15+ upcoming walks &amp; events →</a>
+                </div>
+            </div>
+            
+            <div class="live-events-grid scroll-reveal">
+                <!-- Card 1 -->
+                <a href="/events" class="live-event-card">
+                    <div class="live-card-media">
+                        <img src="images/wellness.png" alt="Breathe into Christmas">
+                        <div class="live-card-date-badge">
+                            <span class="date-badge-day">SAT</span>
+                            <span class="date-badge-time">10:00 AM</span>
+                        </div>
+                        <span class="live-card-tag">Breathwork &amp; Walk</span>
+                    </div>
+                    <div class="live-card-body">
+                        <h3 class="live-card-title">Breathe into Christmas &amp; Winter Circular</h3>
+                        <p class="live-card-community">More Performance Breathing</p>
+                        <div class="live-card-meta">
+                            <div class="live-meta-item"><span>📍</span> Dunorlan Park, Tunbridge Wells</div>
+                            <div class="live-meta-item"><span>⏱️</span> 75 mins • Gentle pace</div>
+                        </div>
+                        <div class="live-card-badges">
+                            <span class="event-micro-badge badge-free">Free to Join</span>
+                            <span class="event-micro-badge badge-carpool">🚗 Carpool Active</span>
+                            <span class="event-micro-badge badge-social">☕ Coffee After</span>
+                        </div>
+                        <div class="live-card-footer">
+                            <span class="live-spots"><strong>12 attending</strong> • 3 spots open</span>
+                            <span class="live-rsvp-link">RSVP →</span>
+                        </div>
+                    </div>
+                </a>
+                
+                <!-- Card 2 -->
+                <a href="/events" class="live-event-card">
+                    <div class="live-card-media">
+                        <img src="images/walking.png" alt="Tunbridge Wells Circular Ridge Walk">
+                        <div class="live-card-date-badge">
+                            <span class="date-badge-day">SUN</span>
+                            <span class="date-badge-time">09:30 AM</span>
+                        </div>
+                        <span class="live-card-tag">Country Hike</span>
+                    </div>
+                    <div class="live-card-body">
+                        <h3 class="live-card-title">Tunbridge Wells Circular Ridge &amp; Rocks Hike</h3>
+                        <p class="live-card-community">TW Weekend Walkers</p>
+                        <div class="live-card-meta">
+                            <div class="live-meta-item"><span>📍</span> The Pantiles to High Rocks</div>
+                            <div class="live-meta-item"><span>⏱️</span> 6.5 km • Moderate loop</div>
+                        </div>
+                        <div class="live-card-badges">
+                            <span class="event-micro-badge badge-free">Free to Join</span>
+                            <span class="event-micro-badge badge-carpool">🚗 Carpool Active</span>
+                            <span class="event-micro-badge badge-social">🐕 Dog Friendly</span>
+                        </div>
+                        <div class="live-card-footer">
+                            <span class="live-spots"><strong>16 attending</strong> • 4 spots open</span>
+                            <span class="live-rsvp-link">RSVP →</span>
+                        </div>
+                    </div>
+                </a>
+                
+                <!-- Card 3 -->
+                <a href="yentw.html" class="live-event-card">
+                    <div class="live-card-media">
+                        <img src="images/entrepreneurs.png" alt="Founders &amp; Creators Morning Coffee">
+                        <div class="live-card-date-badge">
+                            <span class="date-badge-day">THU</span>
+                            <span class="date-badge-time">08:30 AM</span>
+                        </div>
+                        <span class="live-card-tag">Founders &amp; YENTW</span>
+                    </div>
+                    <div class="live-card-body">
+                        <h3 class="live-card-title">Founders &amp; Creators Morning Coffee</h3>
+                        <p class="live-card-community">Young Entrepreneurs TW (YENTW)</p>
+                        <div class="live-card-meta">
+                            <div class="live-meta-item"><span>📍</span> The Pantiles, Tunbridge Wells</div>
+                            <div class="live-meta-item"><span>⏱️</span> 60 mins • Casual peer talk</div>
+                        </div>
+                        <div class="live-card-badges">
+                            <span class="event-micro-badge badge-free">Free to Join</span>
+                            <span class="event-micro-badge badge-social">💡 Peer Support</span>
+                            <span class="event-micro-badge badge-social">☕ Informal</span>
+                        </div>
+                        <div class="live-card-footer">
+                            <span class="live-spots"><strong>9 attending</strong> • Open RSVP</span>
+                            <span class="live-rsvp-link">RSVP →</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
         </div>
     </section>
 
@@ -103,148 +270,159 @@
                 <div class="stat-card">
                     <span class="stat-number stat-number-text">TW</span>
                     <span class="stat-suffix">first</span>
-                    <p class="stat-label">Launching in<br>Tunbridge Wells</p>
+                    <p class="stat-label">20+ local communities<br>in Tunbridge Wells</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- ====== DISCOVER / PHOTO MOSAIC ====== -->
-    <section id="discover" class="section discover-section">
+    <!-- ====== DISCOVER CATEGORIES SHOWCASE ====== -->
+    <section id="discover" class="section" style="background: var(--slate-900); border-bottom: 1px solid rgba(255,255,255,0.05);">
         <div class="container">
             <div class="discover-header scroll-reveal">
-                <p class="eyebrow">The Discovery Directory</p>
-                <h2 class="editorial-title">Whatever you're into,<br><em>find it here.</em></h2>
+                <p class="eyebrow">Explore Your Town</p>
+                <h2 class="editorial-title">Whatever you're into,<br><em>find your crew.</em></h2>
+                <p style="color: var(--slate-400); font-size: 1.05rem; margin-top: -0.5rem;">Explore independent communities running across Tunbridge Wells.</p>
             </div>
-        </div>
-        <div class="mosaic scroll-reveal">
-            <a href="/discover" class="mosaic-item mosaic-tall">
-                <img src="images/walking.png" alt="Community walks in the English countryside">
-                <div class="mosaic-label">
-                    <span class="mosaic-tag"><img src="images/logo.png" alt="more" class="mosaic-logo"> <span class="mosaic-tag-word tag-walks">walks.</span></span>
-                    <span class="mosaic-desc">Walk, talk, breathe.</span>
-                </div>
-            </a>
-            <a href="/discover" class="mosaic-item">
-                <img src="images/running.png" alt="Community running challenges">
-                <div class="mosaic-label">
-                    <span class="mosaic-tag"><img src="images/logo.png" alt="more" class="mosaic-logo"> <span class="mosaic-tag-word tag-challenges">challenges.</span></span>
-                    <span class="mosaic-desc">Push your limits together.</span>
-                </div>
-            </a>
-            <a href="/discover" class="mosaic-item">
-                <img src="images/wellness.png" alt="Mental wellness and meditation">
-                <div class="mosaic-label">
-                    <span class="mosaic-tag"><img src="images/logo.png" alt="more" class="mosaic-logo"> <span class="mosaic-tag-word tag-clarity">clarity.</span></span>
-                    <span class="mosaic-desc">Mind, body, purpose.</span>
-                </div>
-            </a>
-            <a href="/discover" class="mosaic-item mosaic-tall">
-                <img src="images/entrepreneurs.png" alt="Young entrepreneurs collaborating">
-                <div class="mosaic-label">
-                    <span class="mosaic-tag"><img src="images/logo.png" alt="more" class="mosaic-logo"> <span class="mosaic-tag-word tag-ambition">ambition.</span></span>
-                    <span class="mosaic-desc">Build something that matters.</span>
-                </div>
-            </a>
-            <a href="/discover" class="mosaic-item">
-                <img src="images/adventure.png" alt="Adventure and kayaking together">
-                <div class="mosaic-label">
-                    <span class="mosaic-tag"><img src="images/logo.png" alt="more" class="mosaic-logo"> <span class="mosaic-tag-word tag-adventure">adventure.</span></span>
-                    <span class="mosaic-desc">Explore the unknown.</span>
-                </div>
-            </a>
-            <a href="/discover" class="mosaic-item">
-                <img src="images/charity.png" alt="Community volunteering">
-                <div class="mosaic-label">
-                    <span class="mosaic-tag"><img src="images/logo.png" alt="more" class="mosaic-logo"> <span class="mosaic-tag-word tag-impact">impact.</span></span>
-                    <span class="mosaic-desc">Give back, grow forward.</span>
-                </div>
-            </a>
-            <a href="/discover" class="mosaic-item">
-                <img src="images/faith.png" alt="Faith and community gathering">
-                <div class="mosaic-label">
-                    <span class="mosaic-tag"><img src="images/logo.png" alt="more" class="mosaic-logo"> <span class="mosaic-tag-word tag-togetherness">togetherness.</span></span>
-                    <span class="mosaic-desc">Break bread, build bonds.</span>
-                </div>
-            </a>
-            <a href="/discover" class="mosaic-item">
-                <img src="images/arts.png" alt="Arts and creative community">
-                <div class="mosaic-label">
-                    <span class="mosaic-tag"><img src="images/logo.png" alt="more" class="mosaic-logo"> <span class="mosaic-tag-word tag-creativity">creativity.</span></span>
-                    <span class="mosaic-desc">Create, express, connect.</span>
-                </div>
-            </a>
-        </div>
-        <div class="container" style="text-align:center; margin-top: 2.5rem;">
-            <a href="/discover" class="btn btn-outline">Explore All Communities →</a>
-        </div>
-    </section>
-
-    <!-- ====== VISION ====== -->
-    <section class="section vision-section">
-        <div class="container">
-            <div class="vision-layout scroll-reveal">
-                <div class="vision-left">
-                    <p class="eyebrow">Our Mission</p>
-                    <h2 class="editorial-title">Life is better when<br>we <em>share it.</em></h2>
-                </div>
-                <div class="vision-right">
-                    <p>Every town in the UK is full of incredible people, vibrant energy, and shared passions. From early-morning run clubs to weekend arts collectives, the magic happens when we step away from our screens and come together in person.</p>
-                    <p>We are a movement dedicated to celebrating and amplifying these real-life connections. We empower local leaders by removing all barriers to organizing, making their groups findable, welcoming, and thriving. <strong>Free for community champions. Always.</strong></p>
-                    <blockquote class="pull-quote">
-                        "We aren't building a platform. We're championing the joy of gathering together."
-                    </blockquote>
-                    <p>We provide the foundation for discovery, gatherings, and shared purpose-proving that real-life, face-to-face connection makes us happier, healthier, and more inspired.</p>
-                </div>
+            
+            <div class="categories-modern-grid scroll-reveal">
+                <a href="/discover" class="category-modern-card">
+                    <img src="images/walking.png" alt="Walking Groups">
+                    <div class="category-card-overlay">
+                        <span class="category-pill-top">🥾 8 Groups Active</span>
+                        <h3 class="category-card-title">Walking &amp; Hiking</h3>
+                        <p class="category-card-desc">Weekend countryside loops, midweek morning strolls, and scenic trail hikes.</p>
+                        <span class="category-card-action">Browse walks →</span>
+                    </div>
+                </a>
+                <a href="/discover" class="category-modern-card">
+                    <img src="images/running.png" alt="Run Clubs">
+                    <div class="category-card-overlay">
+                        <span class="category-pill-top">🏃 5 Running Crews</span>
+                        <h3 class="category-card-title">Running &amp; Challenges</h3>
+                        <p class="category-card-desc">Social 5Ks, trail loops, and weekend challenge tracking. All paces welcomed.</p>
+                        <span class="category-card-action">See run clubs →</span>
+                    </div>
+                </a>
+                <a href="/discover" class="category-modern-card">
+                    <img src="images/wellness.png" alt="Wellness and Breathwork">
+                    <div class="category-card-overlay">
+                        <span class="category-pill-top">🧠 Mind &amp; Body</span>
+                        <h3 class="category-card-title">Wellness &amp; Breathwork</h3>
+                        <p class="category-card-desc">Cold water dipping, outdoor breathwork, and men's mental health circles.</p>
+                        <span class="category-card-action">Find wellness groups →</span>
+                    </div>
+                </a>
+                <a href="yentw.html" class="category-modern-card">
+                    <img src="images/entrepreneurs.png" alt="Young Entrepreneurs Network">
+                    <div class="category-card-overlay">
+                        <span class="category-pill-top">💡 Founders &amp; Builders</span>
+                        <h3 class="category-card-title">YENTW &amp; Business</h3>
+                        <p class="category-card-desc">Young Entrepreneurs Network Tunbridge Wells, founder coffee, and hackathons.</p>
+                        <span class="category-card-action">Explore YENTW →</span>
+                    </div>
+                </a>
+                <a href="/discover" class="category-modern-card">
+                    <img src="images/adventure.png" alt="Outdoors &amp; Adventure">
+                    <div class="category-card-overlay">
+                        <span class="category-pill-top">🌲 Adventure</span>
+                        <h3 class="category-card-title">Adventure &amp; Outdoors</h3>
+                        <p class="category-card-desc">Kayaking, mountain biking, woodland survival, and weekend expeditions.</p>
+                        <span class="category-card-action">See adventures →</span>
+                    </div>
+                </a>
+                <a href="/discover" class="category-modern-card">
+                    <img src="images/charity.png" alt="Volunteering &amp; Community">
+                    <div class="category-card-overlay">
+                        <span class="category-pill-top">🤝 Giving Back</span>
+                        <h3 class="category-card-title">Charity &amp; Impact</h3>
+                        <p class="category-card-desc">Community gardening, park cleanups, and Good Neighbours support networks.</p>
+                        <span class="category-card-action">Find impact projects →</span>
+                    </div>
+                </a>
+            </div>
+            
+            <div style="text-align: center; margin-top: 3rem;">
+                <a href="/discover" class="btn btn-outline" style="padding: 1rem 2.5rem;">Explore All Communities in Directory →</a>
             </div>
         </div>
     </section>
 
-    <!-- ====== FOR LEADERS TEASER ====== -->
-    <section class="section leaders-teaser-section">
+    <!-- ====== FOR LEADERS BENTO GRID ====== -->
+    <section class="section" style="background: var(--slate-950); border-bottom: 1px solid rgba(255,255,255,0.05);">
         <div class="container">
-            <div class="leaders-teaser scroll-reveal">
-                <div class="leaders-teaser-content">
-                    <p class="eyebrow">For Community Leaders</p>
-                    <h2 class="editorial-title">Run a community?<br><em>We built this for you.</em></h2>
-                    <p class="leaders-desc">Running a community shouldn't mean juggling WhatsApp, Facebook Groups, Google Forms, and spreadsheets. <strong>10 tools, zero integration, one exhausted founder.</strong> more gives you everything you need to run your group - all in one place, completely free.</p>
-                    <div class="leaders-features">
-                        <div class="leader-feature">
-                            <span class="leader-feature-icon">📍</span>
-                            <div>
-                                <strong>Get Discovered</strong>
-                                <span>Listed in the community directory. Searchable by interest, location, and activity.</span>
-                            </div>
-                        </div>
-                        <div class="leader-feature">
-                            <span class="leader-feature-icon">📅</span>
-                            <div>
-                                <strong>Manage Events</strong>
-                                <span>Create recurring events. Track RSVPs. Send automatic reminders.</span>
-                            </div>
-                        </div>
-                        <div class="leader-feature">
-                            <span class="leader-feature-icon">💬</span>
-                            <div>
-                                <strong>Chat & Connect</strong>
-                                <span>Built-in group chat. No more juggling WhatsApp groups and Facebook messages.</span>
-                            </div>
-                        </div>
-                        <div class="leader-feature">
-                            <span class="leader-feature-icon">📊</span>
-                            <div>
-                                <strong>Track Your Impact</strong>
-                                <span>See attendance trends, member growth, and engagement - all in one dashboard.</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="leaders-ctas">
-                        <a href="/create-community" class="btn btn-primary" style="padding: 1.25rem 2.5rem; font-size: 1.125rem;">Start Your Community Free →</a>
-                        <a href="leaders.html" class="text-link">See leader tools & features →</a>
-                    </div>
+            <div class="scroll-reveal" style="text-align: center; max-width: 700px; margin: 0 auto 3.5rem;">
+                <p class="eyebrow" style="justify-content: center;">Built for Community Leaders</p>
+                <h2 class="editorial-title">Running a group?<br><em>We eliminated the friction.</em></h2>
+                <p style="color: var(--slate-400); font-size: 1.05rem;">Everything you need to grow and coordinate your gatherings, completely free of the platform taxes that drain grassroots communities.</p>
+            </div>
+            
+            <div class="bento-grid scroll-reveal">
+                <div class="bento-card bento-card-wide">
+                    <span class="bento-icon">💸</span>
+                    <h3 class="bento-title">Zero Platform Tax (£0 vs £33/mo on Meetup)</h3>
+                    <p class="bento-text">Commercial platforms charge organizers £17 to £33 every month just for the privilege of listing an event. more gives you a free core tier to start. When local businesses sponsor your community, 80% goes straight into your club fund.</p>
                 </div>
-                <div class="leaders-teaser-image">
-                    <img src="images/leaders.png" alt="Community leader speaking to a group">
+                
+                <div class="bento-card">
+                    <span class="bento-icon">🚗</span>
+                    <h3 class="bento-title">Integrated Carpool Hub</h3>
+                    <p class="bento-text">Transport is the number one barrier for countryside walks. Members offer and reserve spare seats in 1 tap directly inside the event RSVP.</p>
+                </div>
+                
+                <div class="bento-card">
+                    <span class="bento-icon">⚡</span>
+                    <h3 class="bento-title">1-Tap RSVPs &amp; Safety Packs</h3>
+                    <p class="bento-text">Automated attendee rosters, emergency contact storage, and verified safety blueprints for physical community gatherings.</p>
+                </div>
+                
+                <div class="bento-card bento-card-wide">
+                    <span class="bento-icon">📍</span>
+                    <h3 class="bento-title">Town Directory Discovery</h3>
+                    <p class="bento-text">Stop fighting social media algorithms. Your community is featured in the central Tunbridge Wells town directory where locals actively search by interest and location.</p>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                <a href="/create-community" class="btn btn-primary" style="padding: 1.1rem 2.4rem;">Start Your Community Free →</a>
+                <a href="leaders.html" class="btn btn-outline" style="padding: 1.1rem 2.2rem;">Compare Leader Tools &amp; Pro →</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ====== APP TEASER & REALISTIC MOCKUP ====== -->
+    <section id="app" class="section app-teaser-section">
+        <div class="container">
+            <div class="app-teaser-layout scroll-reveal">
+                <div class="app-teaser-content">
+                    <p class="eyebrow">The Digital Home</p>
+                    <h2 class="editorial-title">Your community.<br><em>In your pocket.</em></h2>
+                    <p>A fast, lightweight web app built for real-life gatherings. Find local groups, book walks with one tap, coordinate lifts, and chat with members.</p>
+                    
+                    <ul class="app-feature-highlights">
+                        <li><strong>1-Tap RSVPs:</strong> Instant registration with automated calendar invites and reminder notifications.</li>
+                        <li><strong>Built-in Carpools:</strong> Connect drivers and riders to make countryside trails accessible to everyone.</li>
+                        <li><strong>Leader Dashboard:</strong> Track attendance, manage waitlists, and communicate with members in one place.</li>
+                        <li><strong>Zero Download Friction:</strong> Works instantly on iOS, Android, and web. No app store download required.</li>
+                    </ul>
+                    
+                    <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 2.25rem;">
+                        <a href="/events" class="btn btn-primary" style="padding: 1rem 2.2rem;">Browse Live Walks →</a>
+                        <a href="/discover" class="btn btn-outline" style="padding: 1rem 2rem;">Explore Directory</a>
+                    </div>
+                    <p style="color: var(--slate-500); font-size: 0.85rem; margin-top: 1rem;">100% free for members. Works seamlessly in any mobile browser.</p>
+                </div>
+                
+                <div class="app-teaser-visual">
+                    <a href="/events" style="text-decoration: none;">
+                        <div class="phone-mockup-modern">
+                            <div class="phone-dynamic-island"></div>
+                            <div class="phone-inner-screen">
+                                <img src="images/screenshots/platform-events-mobile.png" alt="more community app interface">
+                            </div>
+                        </div>
+                        <p style="text-align: center; color: var(--teal-400); font-size: 0.85rem; font-weight: 600; margin-top: 1rem;">Live web app: Click to explore →</p>
+                    </a>
                 </div>
             </div>
         </div>
@@ -275,74 +453,7 @@
         </div>
     </section>
 
-    <!-- ====== THE MORE PILLARS ====== -->
-    <section id="community" class="section pillars-section">
-        <div class="container">
-            <div class="pillars-header scroll-reveal">
-                <p class="eyebrow">Discover Your Scene</p>
-                <h2 class="editorial-title">Independent communities<br><em>hosted on more</em></h2>
-                <p class="pillars-intro">From run clubs to arts collectives, explore hundreds of groups running on our platform.</p>
-            </div>
-            <div class="pillars-editorial">
-                <div class="pillar-row scroll-reveal">
-                    <div class="pillar-image"><img src="images/walking.png" alt="Community Walks"></div>
-                    <div class="pillar-text">
-                        <span class="pillar-number">01</span>
-                        <h3>Walking Groups</h3>
-                        <p>Find local walk and talk sessions near you. Safe spaces to connect, share experiences, and enjoy the outdoors with people who understand. No pace, no pressure - just presence.</p>
-                        <a href="/discover" class="text-link">Join a walk →</a>
-                    </div>
-                </div>
-                <div class="pillar-row pillar-row-reverse scroll-reveal">
-                    <div class="pillar-image"><img src="images/running.png" alt="Challenges"></div>
-                    <div class="pillar-text">
-                        <span class="pillar-number">02</span>
-                        <h3>Run Clubs & Challenges</h3>
-                        <p>Discover independent run clubs and community challenges to push your limits. From beginner-friendly jogs to ambitious tracker challenges - inspired by the Parkrun spirit.</p>
-                        <a href="/discover" class="text-link">See challenges →</a>
-                    </div>
-                </div>
-                <div class="pillar-row scroll-reveal">
-                    <div class="pillar-image"><img src="images/wellness.png" alt="Mental Fitness"></div>
-                    <div class="pillar-text">
-                        <span class="pillar-number">03</span>
-                        <h3>Wellness & Mental Fitness</h3>
-                        <p>Find meditation groups, men's circles, and wellness collectives focusing on mental resilience and emotional wellbeing. Because the strongest community starts with a strong mind.</p>
-                        <a href="/discover" class="text-link">Learn more →</a>
-                    </div>
-                </div>
-                <div class="pillar-row pillar-row-reverse scroll-reveal">
-                    <div class="pillar-image"><img src="images/entrepreneurs.png" alt="Entrepreneurship"></div>
-                    <div class="pillar-text">
-                        <span class="pillar-number">04</span>
-                        <h3>Professional Networks & YENTW</h3>
-                        <p>Connect with local builders, founders, and creatives. Home to the Young Entrepreneurs Network Tunbridge Wells (YENTW), offering mentorship, hackathons, and accelerator programmes.</p>
-                        <a href="yentw.html" class="text-link">Explore YENTW →</a>
-                    </div>
-                </div>
-                <div class="pillar-row scroll-reveal">
-                    <div class="pillar-image"><img src="images/adventure.png" alt="Events & Meetups"></div>
-                    <div class="pillar-text">
-                        <span class="pillar-number">05</span>
-                        <h3>Local Events & Meetups</h3>
-                        <p>Search a centralized calendar of real-world events designed to bring people together. No more scrolling through Facebook-find what's happening this weekend in your town.</p>
-                        <a href="/discover" class="text-link">Upcoming events →</a>
-                    </div>
-                </div>
-                <div class="pillar-row pillar-row-reverse scroll-reveal">
-                    <div class="pillar-image"><img src="images/charity.png" alt="Community Projects"></div>
-                    <div class="pillar-text">
-                        <span class="pillar-number">06</span>
-                        <h3>Charity & Community Projects</h3>
-                        <p>Discover volunteering opportunities, local charity initiatives, and purpose-driven projects. Give back to your town and connect with people who want to make a real difference.</p>
-                        <a href="/discover" class="text-link">See projects →</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- ====== LAUNCHING IN TW ====== -->
+    <!-- ====== LAUNCHING IN TUNBRIDGE WELLS ====== -->
     <section class="section tw-section">
         <div class="tw-bg-wrap">
             <img src="images/tunbridge-wells.png" alt="The Pantiles, Tunbridge Wells" class="tw-bg-img">
@@ -352,7 +463,7 @@
             <div class="tw-content scroll-reveal">
                 <p class="eyebrow">Launching First</p>
                 <h2 class="editorial-title">Starting where<br><em>it matters.</em></h2>
-                <p class="tw-desc">Tunbridge Wells is home to over 20 active community groups - walking clubs, running crews, entrepreneur networks, faith groups, volunteer teams, and more We're starting here because community starts local.</p>
+                <p class="tw-desc">Tunbridge Wells is home to over 20 active community groups - walking clubs, running crews, entrepreneur networks, faith groups, volunteer teams, and more. We are starting here because community starts local.</p>
                 <div class="tw-highlights">
                     <div class="tw-highlight-item">
                         <span class="tw-number">20+</span>
@@ -360,53 +471,14 @@
                     </div>
                     <div class="tw-highlight-item">
                         <span class="tw-number">1st</span>
-                        <span class="tw-hl-label">Launch event at<br>The Pantiles</span>
+                        <span class="tw-hl-label">Launch hub at<br>The Pantiles</span>
                     </div>
                     <div class="tw-highlight-item">
                         <span class="tw-number">Free</span>
-                        <span class="tw-hl-label">For every community<br>leader. Always.</span>
+                        <span class="tw-hl-label">For every community<br>member to join</span>
                     </div>
                 </div>
                 <a href="tunbridge-wells.html" class="btn btn-white">Explore Tunbridge Wells →</a>
-            </div>
-        </div>
-    </section>
-
-    <!-- ====== APP TEASER ====== -->
-    <section id="app" class="section app-teaser-section">
-        <div class="container">
-            <div class="app-teaser-layout scroll-reveal">
-                <div class="app-teaser-content">
-                    <p class="eyebrow">The App</p>
-                    <h2 class="editorial-title">Your community.<br><em>In your pocket.</em></h2>
-                    <p>One place to find local groups, chat with members, RSVP to events, and connect with the right people - completely free for everyone.</p>
-                    <ul class="app-feature-highlights">
-                        <li><strong>Discover</strong> communities by interest, location, or passion</li>
-                        <li><strong>Connect</strong> in real-time chat with your people</li>
-                        <li><strong>RSVP</strong> to events and get automatic reminders</li>
-                        <li><strong>Lead</strong> your own community and grow your network</li>
-                        <li><strong>Match</strong> with people for initiatives and projects</li>
-                    </ul>
-                    <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 2rem;">
-                        <a href="/events" class="btn btn-primary" style="padding: 1.1rem 2.2rem; font-size: 1rem;">Browse Walks &amp; Events →</a>
-                        <a href="/discover" class="btn btn-outline" style="padding: 1.1rem 2.2rem; font-size: 1rem;">Explore Communities</a>
-                        <a href="leaders.html" class="btn btn-outline" style="padding: 1.1rem 2.2rem; font-size: 1rem;">For Leaders</a>
-                    </div>
-                    <p style="color: var(--slate-500); font-size: 0.85rem; margin-top: 1rem;">Free to join. No app store required. Works on any device.</p>
-                </div>
-                <div class="app-teaser-visual">
-                    <a href="/app" class="phone-mockup-link" style="text-decoration: none;">
-                        <div class="phone-mockup" style="cursor: pointer;">
-                            <div class="phone-notch"></div>
-                            <div class="phone-screen">
-                                <img src="images/logo.png" alt="more" class="phone-brand-logo">
-                                <span class="phone-tagline-text">community hub</span>
-                                <span class="phone-coming-soon" style="background: rgba(20,184,166,0.15); color: var(--teal-300); padding: 6px 16px; border-radius: 99px; font-size: 0.8rem; font-weight: 600;">Open App →</span>
-                            </div>
-                        </div>
-                        <p class="phone-cta-label">Explore live on the web →</p>
-                    </a>
-                </div>
             </div>
         </div>
     </section>
@@ -415,24 +487,24 @@
     <section class="section" style="background: var(--slate-900); border-top: 1px solid rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.05);">
         <div class="container">
             <div class="scroll-reveal" style="text-align: center; margin-bottom: 3rem;">
-                <p class="eyebrow">What people are saying</p>
+                <p class="eyebrow" style="justify-content: center;">What people are saying</p>
                 <h2 class="editorial-title">Real people.<br><em>Real connections.</em></h2>
             </div>
             <div class="leaders-value-grid scroll-reveal" style="grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));">
                 <div class="leaders-value-card" style="border-color: rgba(20,184,166,0.2);">
                     <div style="font-size: 1.5rem; margin-bottom: 1rem;">⭐⭐⭐⭐⭐</div>
-                    <p style="font-style: italic; color: var(--slate-300); line-height: 1.7; margin-bottom: 1.25rem;">&ldquo;Found my running group through more and it completely changed my weekends. I now know half my street!&rdquo;</p>
+                    <p style="font-style: italic; color: var(--slate-300); line-height: 1.7; margin-bottom: 1.25rem;">&ldquo;Found my walking and breathing group through more and it completely changed my weekends. I now know people right on my street!&rdquo;</p>
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <div style="width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #14b8a6, #3b82f6); display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 0.9rem;">S</div>
                         <div>
                             <div style="font-weight: 600; color: white; font-size: 0.9rem;">Sarah M.</div>
-                            <div style="font-size: 0.75rem; color: var(--slate-500);">TW Parkrun member</div>
+                            <div style="font-size: 0.75rem; color: var(--slate-500);">TW Parkrun &amp; Walking Member</div>
                         </div>
                     </div>
                 </div>
                 <div class="leaders-value-card" style="border-color: rgba(20,184,166,0.2);">
                     <div style="font-size: 1.5rem; margin-bottom: 1rem;">⭐⭐⭐⭐⭐</div>
-                    <p style="font-style: italic; color: var(--slate-300); line-height: 1.7; margin-bottom: 1.25rem;">&ldquo;As a community leader I used to drown in admin. more gives me everything in one place - events, chat, member lists. Game-changer.&rdquo;</p>
+                    <p style="font-style: italic; color: var(--slate-300); line-height: 1.7; margin-bottom: 1.25rem;">&ldquo;As a community leader I used to drown in admin and WhatsApp threads. more gives me everything in one place - events, carpools, RSVPs. Total game-changer.&rdquo;</p>
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <div style="width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #a855f7, #ec4899); display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 0.9rem;">J</div>
                         <div>
@@ -443,12 +515,12 @@
                 </div>
                 <div class="leaders-value-card" style="border-color: rgba(20,184,166,0.2);">
                     <div style="font-size: 1.5rem; margin-bottom: 1rem;">⭐⭐⭐⭐⭐</div>
-                    <p style="font-style: italic; color: var(--slate-300); line-height: 1.7; margin-bottom: 1.25rem;">&ldquo;I moved to TW six months ago knowing nobody. more helped me find my tribe within a week. I can't imagine not having it.&rdquo;</p>
+                    <p style="font-style: italic; color: var(--slate-300); line-height: 1.7; margin-bottom: 1.25rem;">&ldquo;I moved to Tunbridge Wells six months ago knowing nobody. more helped me find my tribe within a week. The carpool feature is brilliant for rural walks.&rdquo;</p>
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <div style="width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #f59e0b, #ef4444); display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 0.9rem;">A</div>
                         <div>
                             <div style="font-weight: 600; color: white; font-size: 0.9rem;">Amara O.</div>
-                            <div style="font-size: 0.75rem; color: var(--slate-500);">Good Neighbours member</div>
+                            <div style="font-size: 0.75rem; color: var(--slate-500);">Good Neighbours Volunteer</div>
                         </div>
                     </div>
                 </div>
@@ -465,9 +537,9 @@
         <div class="cta-final-content scroll-reveal">
             <img src="images/logo.png" alt="more" class="cta-logo">
             <h2>Ready for<br><em>more</em>?</h2>
-            <p>Whether you want to join a walk, tackle a challenge, build a business, or simply connect with people who get it - there is more waiting for you.</p>
+            <p>Whether you want to join a walk, tackle a challenge, build a business, or simply connect with people who get it - there is more waiting for you in Tunbridge Wells.</p>
             <div class="cta-final-actions">
-                <a href="/app" class="btn btn-white">Join / Explore Communities →</a>
+                <a href="/events" class="btn btn-white">Find Upcoming Walks &amp; Events →</a>
                 <a href="/create-community" class="btn btn-ghost" style="border-color: white; color: white;">+ Start a Community</a>
                 <a href="leaders.html" class="btn btn-ghost">For Leaders</a>
             </div>
@@ -514,11 +586,11 @@
             </div>
             <div class="footer-bottom-bar">
                 <p>&copy; 2026 more community</p>
-                <p class="footer-motto">do more >> experience more >> achieve more >></p>
+                <p class="footer-motto">do more • experience more • achieve more</p>
             </div>
         </div>
     </footer>
 
-    <script src="script.js?v=22"></script>
+    <script src="script.js?v=23"></script>
 </body>
 </html>
