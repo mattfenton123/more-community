@@ -368,9 +368,20 @@
 /* --- Values Grid --- */
 .values-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 1.5rem;
     margin-top: 2rem;
+}
+@media (max-width: 992px) {
+    .values-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.25rem;
+    }
+}
+@media (max-width: 600px) {
+    .values-grid {
+        grid-template-columns: 1fr;
+    }
 }
 .value-card {
     padding: 1.5rem;
@@ -1146,6 +1157,24 @@
 }
 @media (max-width: 600px) {
     .leaders-problem-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* 6 Solution Cards in Two Lines (3x2) on Desktop */
+.leaders-solution-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+}
+@media (max-width: 992px) {
+    .leaders-solution-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.25rem;
+    }
+}
+@media (max-width: 600px) {
+    .leaders-solution-grid {
         grid-template-columns: 1fr;
     }
 }
