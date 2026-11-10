@@ -209,7 +209,7 @@ export default function CarpoolHub({ event, user, isAttendee = false, community 
       </div>
 
       {/* Privacy & Safety Note */}
-      <div style={{
+      <div className="carpool-privacy-note" style={{
         padding: '10px 14px', borderRadius: '12px',
         background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.07)',
         display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '18px',
@@ -224,7 +224,7 @@ export default function CarpoolHub({ event, user, isAttendee = false, community 
       {/* Carpools List */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
         {eventCarpools.length === 0 ? (
-          <div style={{
+          <div className="carpool-empty-state" style={{
             padding: '28px 20px', textAlign: 'center',
             background: 'rgba(255, 255, 255, 0.02)', borderRadius: '16px',
             border: '1px dashed rgba(255, 255, 255, 0.1)'
@@ -257,7 +257,7 @@ export default function CarpoolHub({ event, user, isAttendee = false, community 
             return (
               <div
                 key={carpool.id}
-                className="carpool-card-item"
+                className={`carpool-card-item ${hasReserved ? "reserved" : ""}`}
                 style={{
                   background: hasReserved 
                     ? 'linear-gradient(135deg, rgba(37, 211, 102, 0.12) 0%, rgba(15, 23, 42, 0.8) 100%)'
@@ -279,7 +279,7 @@ export default function CarpoolHub({ event, user, isAttendee = false, community 
                       style={{ width: '42px', height: '42px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--teal-500)' }}
                     />
                     <div>
-                      <div style={{ fontWeight: 700, color: 'var(--white)', fontSize: '0.98rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <div className="driver-name" style={{ fontWeight: 700, color: 'var(--white)', fontSize: '0.98rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
                         {carpool.driverName}
                         {isMyOffer && (
                           <span style={{ fontSize: '0.65rem', padding: '1px 6px', borderRadius: '4px', background: 'rgba(20, 184, 166, 0.25)', color: '#2dd4bf', fontWeight: 700 }}>
@@ -314,7 +314,7 @@ export default function CarpoolHub({ event, user, isAttendee = false, community 
 
                 {/* Middle: Departure Area & Route Tag */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '0.88rem', color: 'var(--slate-200)' }}>
+                  <div className="origin-text" style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '0.88rem', color: 'var(--slate-200)' }}>
                     <MapPin size={15} color="#38bdf8" style={{ flexShrink: 0, marginTop: '2px' }} />
                     <div>
                       <strong style={{ color: 'var(--white)' }}>Leaving from:</strong> {carpool.origin}

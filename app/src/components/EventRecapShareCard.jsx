@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Share2, Camera, Check, Copy, MessageCircle, Sparkles, Users, Calendar, Instagram } from 'lucide-react';
 import { useToast } from './Toast';
+import { isEventPast } from '../lib/calendar';
 
 export default function EventRecapShareCard({ event, community, attendeeCount = 0 }) {
   const toast = useToast();
@@ -13,13 +14,19 @@ export default function EventRecapShareCard({ event, community, attendeeCount = 
   const eventTitle = event?.title || 'Community Meetup';
   const communityName = community?.name || event?.communityName || 'Local Community';
   const location = event?.location || 'Tunbridge Wells';
-  const count = attendeeCount || event?.attendees?.length || event?.attendeeCount || 12;
+  const isPast = isEventPast(event);
+  const rawCount = typeof attendeeCount === 'number'
+    ? attendeeCount
+    : (Array.isArray(event?.attendees) ? event.attendees.length : (typeof event?.attendeeCount === 'number' ? event.attendeeCount : 0));
+  const count = Math.max(0, rawCount);
 
   const shareUrl = typeof window !== 'undefined' 
     ? `${window.location.origin}/events/${event?.id}`
     : `https://morecommunity.co.uk/events/${event?.id}`;
 
-  const defaultShareText = `Great meetup at ${eventTitle} with ${communityName} in ${location}! Check out what's on and join future events here: ${shareUrl}`;
+  const defaultShareText = isPast
+    ? `Great meetup at ${eventTitle} with ${communityName} in ${location}! Check out photos and join future events here: ${shareUrl}`
+    : `Join us for ${eventTitle} with ${communityName} in ${location}! RSVP and see details here: ${shareUrl}`;
 
   const generateAiRecap = async () => {
     setIsGeneratingAi(true);
@@ -69,7 +76,7 @@ export default function EventRecapShareCard({ event, community, attendeeCount = 
   };
 
   return (
-    <div style={{
+    <div className="event-recap-share-card" style={{
       background: 'linear-gradient(135deg, rgba(20,184,166,0.12) 0%, rgba(15,23,42,0.7) 100%)',
       border: '1px solid rgba(45,212,191,0.3)',
       borderRadius: '18px',
@@ -97,8 +104,8 @@ export default function EventRecapShareCard({ event, community, attendeeCount = 
           }}>
             <Sparkles size={16} />
           </div>
-          <span style={{ fontSize: '0.88rem', fontWeight: 700, color: '#fff', letterSpacing: '0.02em' }}>
-            Event Memories &amp; Social Recap
+          <span className="card-title" style={{ fontSize: '0.88rem', fontWeight: 700, color: 'var(--white)', letterSpacing: '0.02em' }}>
+            {isPast ? 'Event Memories & Social Recap' : 'Invite & Share with Friends'}
           </span>
         </div>
         <button
@@ -114,12 +121,14 @@ export default function EventRecapShareCard({ event, community, attendeeCount = 
             display: 'flex', alignItems: 'center', gap: '4px'
           }}
         >
-          <Sparkles size={12} /> {isGeneratingAi ? 'Drafting with AI...' : aiRecap ? 'Regenerate AI' : '✨ AI Recap'}
+          <Sparkles size={12} /> {isGeneratingAi ? 'Drafting with AI...' : aiRecap ? 'Regenerate AI' : (isPast ? '✨ AI Recap' : '✨ AI Invite')}
         </button>
       </div>
 
       <p style={{ fontSize: '0.82rem', color: 'var(--slate-300)', margin: '0 0 14px 0', lineHeight: 1.4 }}>
-        Celebrate today&apos;s physical community gathering. Share photos and recap copy directly to WhatsApp groups and social channels.
+        {isPast
+          ? 'Celebrate this community gathering. Share photos and recap copy directly to WhatsApp groups and social channels.'
+          : 'Spread the word for this upcoming walk! Share the invite directly to WhatsApp groups and local friends.'}
       </p>
 
       {/* AI Generated Post Tabs & Preview */}
@@ -200,7 +209,7 @@ export default function EventRecapShareCard({ event, community, attendeeCount = 
 
       {/* Mini Event Summary Card */}
       {!aiRecap && (
-        <div style={{
+        <div className="event-recap-mini-card" style={{
           background: 'rgba(2,6,23,0.7)',
           border: '1px solid rgba(255,255,255,0.08)',
           borderRadius: '12px',
@@ -212,14 +221,14 @@ export default function EventRecapShareCard({ event, community, attendeeCount = 
           gap: '12px'
         }}>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            <div className="event-title" style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--white)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {eventTitle}
             </div>
-            <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', marginTop: '2px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div className="event-meta" style={{ fontSize: '0.72rem', color: 'var(--slate-400)', marginTop: '2px', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <span>{communityName}</span>
               <span>•</span>
               <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-                <Users size={12} color="#2dd4bf" /> {count} attended
+                <Users size={12} color="#2dd4bf" /> {isPast ? (count > 0 ? `${count} attended` : 'Completed walk') : (count > 0 ? `${count} going` : 'Be the first to RSVP')}
               </span>
             </div>
           </div>

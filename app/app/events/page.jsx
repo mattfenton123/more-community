@@ -14,8 +14,14 @@ import { getEventPath } from '../../src/lib/eventLinks';
 
 export default function EventsHub() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState('My Schedule');
-  const { events, communities, user, users, eventRsvps, rsvpToEvent, createEvent, isLoading, saveItem, getAffinityScore, sponsors, sponsorshipAssignments } = useAppContext();
+const { events, communities, user, users, eventRsvps, rsvpToEvent, createEvent, isLoading, saveItem, getAffinityScore, sponsors, sponsorshipAssignments } = useAppContext();
+  const [activeTab, setActiveTab] = useState(() => (user?.id ? 'My Schedule' : 'Explore'));
+
+  useEffect(() => {
+    if (!user?.id && activeTab === 'My Schedule') {
+      setActiveTab('Explore');
+    }
+  }, [user?.id]);
   const { toast } = useToast();
   
   const [checkoutState, setCheckoutState] = useState('idle');
@@ -35,12 +41,46 @@ export default function EventsHub() {
   const [isListeningAi, setIsListeningAi] = useState(false);
   const [aiMatches, setAiMatches] = useState(null);
   const [showProposeModal, setShowProposeModal] = useState(false);
+  const [proposeCommunityId, setProposeCommunityId] = useState('');
   const [proposeTitle, setProposeTitle] = useState('');
   const [proposeDate, setProposeDate] = useState('');
   const [proposeTime, setProposeTime] = useState('10:00');
   const [proposeLocation, setProposeLocation] = useState('');
   const [proposeNotes, setProposeNotes] = useState('');
   const [isSubmittingProposal, setIsSubmittingProposal] = useState(false);
+
+  const getUpcomingDayDate = (targetDay) => {
+    const now = new Date();
+    const current = now.getDay();
+    let diff = (targetDay - current + 7) % 7;
+    if (diff === 0) diff = 7;
+    const d = new Date(now.getTime() + diff * 86400000);
+    return d.toISOString().split('T')[0];
+  };
+
+  const quickSatDate = getUpcomingDayDate(6);
+  const quickSunDate = getUpcomingDayDate(0);
+  const nextSatDate = (() => {
+    const d = new Date(quickSatDate);
+    d.setDate(d.getDate() + 7);
+    return d.toISOString().split('T')[0];
+  })();
+  const nextSunDate = (() => {
+    const d = new Date(quickSunDate);
+    d.setDate(d.getDate() + 7);
+    return d.toISOString().split('T')[0];
+  })();
+
+  const openProposeModal = () => {
+    if (!user?.id) {
+      router.push('/login?redirect=/events');
+      return;
+    }
+    if (!proposeCommunityId) {
+      setProposeCommunityId(user.joinedCommunities?.[0] || communities[0]?.id || '');
+    }
+    setShowProposeModal(true);
+  };
 
 
 
@@ -55,9 +95,9 @@ export default function EventsHub() {
       return;
     }
 
-    const targetCommunityId = user.joinedCommunities?.[0] || communities[0]?.id;
+    const targetCommunityId = proposeCommunityId || user.joinedCommunities?.[0] || communities[0]?.id;
     if (!targetCommunityId) {
-      toast.error('No Community', 'Please join a community first before proposing a walk.');
+      toast.error('Community Required', 'Please select which community this walk is for.');
       return;
     }
 
@@ -426,7 +466,7 @@ export default function EventsHub() {
                 {event.date ? (isNaN(new Date(event.date)) ? event.date.substring(0,3) : new Date(event.date).toLocaleDateString('en-GB', { month: 'short' })) : 'TBA'}
               </div>
               <div style={{ padding: '4px 8px', color: 'white', fontSize: '1.1rem', fontWeight: 800 }}>
-                {event.date ? (isNaN(new Date(event.date)) ? (event.date.match(/\d+/) ? event.date.match(/\d+/)[0] : '—') : new Date(event.date).getDate()) : '—'}
+                {event.date ? (isNaN(new Date(event.date)) ? (event.date.match(/\d+/) ? event.date.match(/\d+/)[0] : '-') : new Date(event.date).getDate()) : '-'}
               </div>
             </div>
 
@@ -528,10 +568,7 @@ export default function EventsHub() {
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <button
-                onClick={() => {
-                  if (!user?.id) router.push('/login?redirect=/events');
-                  else setShowProposeModal(true);
-                }}
+                onClick={openProposeModal}
                 className="interactive-press"
                 style={{
                   background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)',
@@ -620,6 +657,77 @@ export default function EventsHub() {
               </button>
             ))}
           </div>
+
+          {/* AI Concierge Results Display */}
+          {aiMatches && (
+            <div style={{
+              marginTop: '12px',
+              padding: '12px 14px',
+              borderRadius: '14px',
+              background: 'rgba(20, 184, 166, 0.08)',
+              border: '1px solid rgba(20, 184, 166, 0.25)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '8px'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ fontSize: '0.82rem', fontWeight: 600, color: '#5eead4', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Sparkles size={14} /> {aiMatches.summary || 'Top matches for you:'}
+                </div>
+                <button
+                  onClick={() => { setAiMatches(null); setAiPrompt(''); }}
+                  style={{ background: 'none', border: 'none', color: 'var(--slate-400)', fontSize: '0.75rem', cursor: 'pointer' }}
+                >
+                  Dismiss ×
+                </button>
+              </div>
+              {Array.isArray(aiMatches.recommendations) && aiMatches.recommendations.length > 0 && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  {aiMatches.recommendations.map(rec => {
+                    const matchedEvt = events.find(e => e.id === rec.eventId);
+                    if (!matchedEvt) return null;
+                    return (
+                      <div
+                        key={rec.eventId}
+                        onClick={() => setSelectedEvent(matchedEvt)}
+                        className="interactive-press"
+                        style={{
+                          padding: '8px 12px',
+                          borderRadius: '10px',
+                          background: 'rgba(255, 255, 255, 0.04)',
+                          border: '1px solid rgba(255, 255, 255, 0.08)',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center'
+                        }}
+                      >
+                        <div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                            <span style={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--white)' }}>
+                              {matchedEvt.title}
+                            </span>
+                            {rec.highlightTag && (
+                              <span style={{ fontSize: '0.68rem', padding: '1px 6px', borderRadius: '6px', background: 'rgba(45, 212, 191, 0.15)', color: '#2dd4bf', fontWeight: 600 }}>
+                                {rec.highlightTag}
+                              </span>
+                            )}
+                          </div>
+                          <div style={{ fontSize: '0.75rem', color: 'var(--slate-300)', marginTop: '2px' }}>
+                            {rec.matchReason}
+                          </div>
+                          <div style={{ fontSize: '0.7rem', color: 'var(--slate-400)', marginTop: '2px' }}>
+                            📅 {formatEventDate(matchedEvt.date)} at {matchedEvt.time} • 📍 {matchedEvt.location}
+                          </div>
+                        </div>
+                        <ChevronRight size={16} color="var(--slate-400)" />
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -832,9 +940,42 @@ export default function EventsHub() {
         )}
       </div>
 
+            {/* Guest Welcome & Exploration Banner */}
+      {!user?.id && (
+        <div style={{
+          margin: '0 20px 12px',
+          padding: '14px 18px',
+          background: 'linear-gradient(135deg, rgba(20,184,166,0.14) 0%, rgba(15,23,42,0.6) 100%)',
+          border: '1px solid rgba(45,212,191,0.3)',
+          borderRadius: '16px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '12px',
+          boxShadow: '0 4px 16px rgba(0,0,0,0.2)'
+        }}>
+          <div>
+            <div style={{ fontWeight: 800, fontSize: '0.94rem', color: '#ffffff', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span>🌿</span> Upcoming Walks &amp; Community Meetups
+            </div>
+            <div style={{ fontSize: '0.8rem', color: 'var(--slate-300)', marginTop: '2px' }}>
+              Free to browse on the web. Select any walk to view meeting spots, itineraries, and carpool offers.
+            </div>
+          </div>
+          <button
+            onClick={() => router.push('/login?redirect=/events')}
+            className="btn btn-outline interactive-press"
+            style={{ padding: '6px 14px', borderRadius: '10px', fontSize: '0.8rem', fontWeight: 700 }}
+          >
+            Sign In / Join
+          </button>
+        </div>
+      )}
+
       <div style={{ padding: '12px 20px 8px' }}>
         <div style={{ display: 'flex', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', padding: '4px', gap: '4px' }}>
-          {['My Schedule', 'Recommended', 'Explore'].map(tab => (
+          {(user?.id ? ['Explore', 'My Schedule', 'Recommended'] : ['Explore', 'My Schedule']).map(tab => (
             <button key={tab} onClick={() => setActiveTab(tab)} className="interactive-press" style={{
               flex: 1, background: activeTab === tab ? 'rgba(255,255,255,0.1)' : 'transparent', 
               border: '1px solid ' + (activeTab === tab ? 'rgba(255,255,255,0.1)' : 'transparent'),
@@ -980,7 +1121,36 @@ export default function EventsHub() {
               </button>
             </div>
 
-            <form onSubmit={handleProposeWalk} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <form onSubmit={handleProposeWalk} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: 'var(--slate-300)', marginBottom: '4px' }}>
+                  Community *
+                </label>
+                <select
+                  value={proposeCommunityId}
+                  onChange={e => setProposeCommunityId(e.target.value)}
+                  required
+                  style={{
+                    width: '100%', minHeight: '44px', padding: '10px 12px', borderRadius: '10px',
+                    background: '#1e293b', border: '1px solid rgba(255,255,255,0.15)',
+                    color: 'var(--white)', fontSize: '16px', outline: 'none',
+                    colorScheme: 'dark'
+                  }}
+                >
+                  {communities.map(c => {
+                    const isMember = user?.joinedCommunities?.includes(c.id);
+                    return (
+                      <option key={c.id} value={c.id} style={{ background: '#0f172a', color: '#fff' }}>
+                        {c.name} {isMember ? '(Your Community)' : ''}
+                      </option>
+                    );
+                  })}
+                </select>
+                <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', marginTop: '3px' }}>
+                  Your proposal will be sent directly to this community leader.
+                </div>
+              </div>
+
               <div>
                 <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: 'var(--slate-300)', marginBottom: '4px' }}>
                   Walk Title *
@@ -992,45 +1162,107 @@ export default function EventsHub() {
                   onChange={e => setProposeTitle(e.target.value)}
                   required
                   style={{
-                    width: '100%', padding: '10px 14px', borderRadius: '10px',
-                    background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)',
-                    color: 'var(--white)', fontSize: '0.88rem', outline: 'none'
+                    width: '100%', minHeight: '44px', padding: '10px 14px', borderRadius: '10px',
+                    background: '#1e293b', border: '1px solid rgba(255,255,255,0.15)',
+                    color: 'var(--white)', fontSize: '16px', outline: 'none'
                   }}
                 />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: 'var(--slate-300)', marginBottom: '4px' }}>
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                  <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--slate-300)' }}>
                     Preferred Date *
                   </label>
-                  <input
-                    type="date"
-                    value={proposeDate}
-                    onChange={e => setProposeDate(e.target.value)}
-                    required
-                    style={{
-                      width: '100%', padding: '10px 12px', borderRadius: '10px',
-                      background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)',
-                      color: 'var(--white)', fontSize: '0.82rem', outline: 'none'
-                    }}
-                  />
+                  <span style={{ fontSize: '0.7rem', color: '#fbbf24' }}>Tap a quick day:</span>
                 </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: 'var(--slate-300)', marginBottom: '4px' }}>
-                    Time
+                
+                {/* Quick Date Chips for Fast Mobile Tap */}
+                <div style={{ display: 'flex', gap: '6px', marginBottom: '8px', flexWrap: 'wrap' }}>
+                  {[
+                    { label: 'This Sat', date: quickSatDate },
+                    { label: 'This Sun', date: quickSunDate },
+                    { label: 'Next Sat', date: nextSatDate },
+                    { label: 'Next Sun', date: nextSunDate }
+                  ].map(item => (
+                    <button
+                      key={item.label}
+                      type="button"
+                      onClick={() => setProposeDate(item.date)}
+                      style={{
+                        padding: '4px 10px', borderRadius: '8px', fontSize: '0.75rem',
+                        background: proposeDate === item.date ? 'rgba(245, 158, 11, 0.25)' : 'rgba(255,255,255,0.06)',
+                        border: proposeDate === item.date ? '1px solid #f59e0b' : '1px solid rgba(255,255,255,0.12)',
+                        color: proposeDate === item.date ? '#fbbf24' : 'var(--slate-300)',
+                        cursor: 'pointer', fontWeight: proposeDate === item.date ? 600 : 400
+                      }}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+
+                <input
+                  type="date"
+                  value={proposeDate}
+                  onChange={e => setProposeDate(e.target.value)}
+                  onClick={e => { try { if (e.target.showPicker) e.target.showPicker(); } catch (_) {} }}
+                  required
+                  style={{
+                    width: '100%', minHeight: '44px', padding: '10px 12px', borderRadius: '10px',
+                    background: '#1e293b', border: '1px solid rgba(255,255,255,0.15)',
+                    color: 'var(--white)', fontSize: '16px', outline: 'none',
+                    colorScheme: 'dark'
+                  }}
+                />
+              </div>
+
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                  <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--slate-300)' }}>
+                    Preferred Time
                   </label>
-                  <input
-                    type="time"
-                    value={proposeTime}
-                    onChange={e => setProposeTime(e.target.value)}
-                    style={{
-                      width: '100%', padding: '10px 12px', borderRadius: '10px',
-                      background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)',
-                      color: 'var(--white)', fontSize: '0.82rem', outline: 'none'
-                    }}
-                  />
+                  <span style={{ fontSize: '0.7rem', color: '#fbbf24' }}>Quick pick:</span>
                 </div>
+
+                {/* Quick Time Chips for Fast Mobile Tap */}
+                <div style={{ display: 'flex', gap: '6px', marginBottom: '8px', flexWrap: 'wrap' }}>
+                  {[
+                    { label: '9:30 AM', time: '09:30' },
+                    { label: '10:00 AM', time: '10:00' },
+                    { label: '11:00 AM', time: '11:00' },
+                    { label: '2:00 PM', time: '14:00' },
+                    { label: '6:00 PM', time: '18:00' }
+                  ].map(item => (
+                    <button
+                      key={item.label}
+                      type="button"
+                      onClick={() => setProposeTime(item.time)}
+                      style={{
+                        padding: '4px 8px', borderRadius: '8px', fontSize: '0.75rem',
+                        background: proposeTime === item.time ? 'rgba(245, 158, 11, 0.25)' : 'rgba(255,255,255,0.06)',
+                        border: proposeTime === item.time ? '1px solid #f59e0b' : '1px solid rgba(255,255,255,0.12)',
+                        color: proposeTime === item.time ? '#fbbf24' : 'var(--slate-300)',
+                        cursor: 'pointer', fontWeight: proposeTime === item.time ? 600 : 400
+                      }}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+
+                <input
+                  type="time"
+                  value={proposeTime}
+                  onChange={e => setProposeTime(e.target.value)}
+                  onClick={e => { try { if (e.target.showPicker) e.target.showPicker(); } catch (_) {} }}
+                  style={{
+                    width: '100%', minHeight: '44px', padding: '10px 12px', borderRadius: '10px',
+                    background: '#1e293b', border: '1px solid rgba(255,255,255,0.15)',
+                    color: 'var(--white)', fontSize: '16px', outline: 'none',
+                    colorScheme: 'dark'
+                  }}
+                />
               </div>
 
               <div>

@@ -492,6 +492,154 @@ Return ONLY a valid JSON object with these exact keys:
 }
 
 /**
+ * Local semantic match fallback when AI keys are unavailable.
+ * Matches user intent against candidate events and returns warm recommendations.
+ */
+function localSemanticMatch(prompt, candidateEvents = []) {
+  if (!Array.isArray(candidateEvents) || candidateEvents.length === 0) {
+    return {
+      summary: 'No upcoming walks match this exact search right now. Check out all upcoming walks or propose a new one!',
+      recommendations: []
+    };
+  }
+
+  const query = (prompt || '').trim().toLowerCase();
+  const queryTokens = query.split(/\s+/).filter(t => t.length > 2);
+
+  const isDog = /dog|pup|hound|canine|four-legged/.test(query);
+  const isCoffee = /coffee|cafe|tea|brew|roastery|latte/.test(query);
+  const isPub = /pub|pint|beer|drink|social|bar/.test(query);
+  const isSunset = /sunset|evening|dusk|night|golden hour/.test(query);
+  const isMorning = /morning|early|sunrise|breakfast|am/.test(query);
+  const isWeekend = /weekend|saturday|sunday|sat|sun/.test(query);
+  const isSaturday = /saturday|sat\b/.test(query);
+  const isSunday = /sunday|sun\b/.test(query);
+  const isGentle = /gentle|easy|stroll|slow|beginner|flat|accessible/.test(query);
+  const isHike = /hike|trail|ramble|trek|fast|hills|nature/.test(query);
+
+  const scored = candidateEvents.map(event => {
+    let score = 0;
+    const reasons = [];
+    const tags = [];
+
+    const title = (event.title || '').toLowerCase();
+    const desc = (event.description || '').toLowerCase();
+    const loc = (event.location || '').toLowerCase();
+    const vibeTags = Array.isArray(event.vibeTags) ? event.vibeTags.map(v => String(v).toLowerCase()) : [];
+    const fullText = [title, desc, loc, vibeTags.join(' ')].join(' ');
+
+    queryTokens.forEach(token => {
+      if (title.includes(token)) score += 5;
+      if (loc.includes(token)) score += 4;
+      if (vibeTags.some(t => t.includes(token))) score += 4;
+      if (desc.includes(token)) score += 2;
+    });
+
+    if (event.date) {
+      const d = new Date(event.date + 'T12:00:00');
+      const day = d.getDay();
+      if (isSaturday && day === 6) {
+        score += 6;
+        reasons.push('takes place this Saturday');
+        tags.push('🌅 Saturday Walk');
+      } else if (isSunday && day === 0) {
+        score += 6;
+        reasons.push('takes place this Sunday');
+        tags.push('🌿 Sunday Walk');
+      } else if (isWeekend && (day === 0 || day === 6)) {
+        score += 4;
+        reasons.push('fits a weekend schedule');
+        tags.push('🗓️ Weekend');
+      }
+    }
+
+    if (event.time) {
+      const timeLower = event.time.toLowerCase();
+      const isEventMorning = timeLower.includes('am') || (/^\d{1,2}:/.test(timeLower) && parseInt(timeLower, 10) < 12);
+      const isEventEvening = timeLower.includes('pm') && (/^[5-9]:/.test(timeLower) || /^(1[7-9]|2[0-3]):/.test(timeLower));
+
+      if (isMorning && isEventMorning) {
+        score += 4;
+        reasons.push('morning start');
+        tags.push('☕ Morning');
+      }
+      if (isSunset && isEventEvening) {
+        score += 4;
+        reasons.push('evening timing');
+        tags.push('🌅 Golden Hour');
+      }
+    }
+
+    if (isDog && (fullText.includes('dog') || fullText.includes('pup'))) {
+      score += 7;
+      reasons.push('dog friendly');
+      tags.push('🐕 Dog Friendly');
+    }
+    if (isCoffee && (fullText.includes('coffee') || fullText.includes('cafe'))) {
+      score += 6;
+      reasons.push('stops for coffee afterwards');
+      tags.push('☕ Cafe Finish');
+    }
+    if (isPub && (fullText.includes('pub') || fullText.includes('drink') || fullText.includes('pint'))) {
+      score += 6;
+      reasons.push('pub social finish');
+      tags.push('🍻 Pub Stop');
+    }
+    if (isGentle && (fullText.includes('gentle') || fullText.includes('easy') || fullText.includes('stroll') || fullText.includes('flat'))) {
+      score += 5;
+      reasons.push('relaxed beginner-friendly pace');
+      tags.push('👟 Gentle Pace');
+    }
+    if (isHike && (fullText.includes('trail') || fullText.includes('hike') || fullText.includes('nature') || fullText.includes('woods'))) {
+      score += 5;
+      reasons.push('scenic nature trail');
+      tags.push('🌲 Nature Trail');
+    }
+
+    if (event.date) {
+      const eventTime = new Date(event.date).getTime();
+      const now = Date.now();
+      if (eventTime >= now) {
+        const daysAway = (eventTime - now) / (1000 * 60 * 60 * 24);
+        if (daysAway <= 14) score += Math.max(1, 3 - Math.floor(daysAway / 4));
+      }
+    }
+
+    const defaultReason = reasons.length > 0
+      ? ('Great match: ' + reasons.join(', ') + '.')
+      : ('Upcoming community walk in ' + (event.location || 'Tunbridge Wells') + ' with a friendly local group.');
+
+    const highlightTag = tags[0] || (event.location ? ('📍 ' + event.location.split(',')[0].trim()) : '✨ Community Pick');
+
+    return {
+      event,
+      score,
+      matchReason: defaultReason,
+      highlightTag
+    };
+  });
+
+  scored.sort((a, b) => b.score - a.score);
+
+  const top = scored.slice(0, 3);
+  const recommendations = top.map(item => ({
+    eventId: item.event.id,
+    eventTitle: item.event.title,
+    matchReason: item.matchReason,
+    highlightTag: item.highlightTag
+  }));
+
+  const summary = top.length > 0
+    ? ('Found ' + top.length + ' ' + (top.length === 1 ? 'walk' : 'walks') + ' matching your search in Tunbridge Wells:')
+    : 'Here are the top upcoming walks across the community:';
+
+  return {
+    summary,
+    recommendations
+  };
+}
+
+/**
  * Local deterministic bullet points expander.
  * Takes user notes and formats them into an attractive community walk description.
  */

@@ -221,6 +221,39 @@ export default function Discover() {
         }
       />
       
+      {/* Guest Welcome & Exploration Banner */}
+      {!user?.id && (
+        <div style={{
+          margin: '12px 20px 4px',
+          padding: '14px 18px',
+          background: 'linear-gradient(135deg, rgba(20,184,166,0.14) 0%, rgba(15,23,42,0.6) 100%)',
+          border: '1px solid rgba(45,212,191,0.3)',
+          borderRadius: '16px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '12px',
+          boxShadow: '0 4px 16px rgba(0,0,0,0.2)'
+        }}>
+          <div>
+            <div style={{ fontWeight: 800, fontSize: '0.94rem', color: '#ffffff', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span>📍</span> Real-Life Local Communities
+            </div>
+            <div style={{ fontSize: '0.8rem', color: 'var(--slate-300)', marginTop: '2px' }}>
+              Free to browse on the web. Select any group to see upcoming walks, member reviews, and host bios.
+            </div>
+          </div>
+          <button
+            onClick={() => navigate.push('/login?redirect=/discover')}
+            className="btn btn-outline interactive-press"
+            style={{ padding: '6px 14px', borderRadius: '10px', fontSize: '0.8rem', fontWeight: 700 }}
+          >
+            Sign In / Join
+          </button>
+        </div>
+      )}
+
       <div style={{ padding: '20px 20px 10px' }}>
         <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--slate-400)' }}>Local communities in</p>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '4px 0 16px 0', gap: '8px' }}>
