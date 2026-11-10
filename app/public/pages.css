@@ -1917,3 +1917,222 @@
         width: 100%;
     }
 }
+
+
+/* In-Phone Screen Mockup UI */
+.phone-inner-screen {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    padding-top: 36px;
+    background: #060b16;
+}
+
+.phone-status-bar {
+    position: absolute;
+    top: 6px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 22px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--white);
+    z-index: 15;
+}
+
+.phone-app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 14px 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.phone-location-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--white);
+    background: rgba(255, 255, 255, 0.08);
+    padding: 3px 8px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.phone-header-icons {
+    display: flex;
+    gap: 10px;
+    color: var(--slate-400);
+    font-size: 0.85rem;
+}
+
+.phone-category-tabs {
+    display: flex;
+    gap: 6px;
+    padding: 8px 14px;
+    overflow-x: hidden;
+}
+
+.phone-tab {
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--slate-400);
+    white-space: nowrap;
+}
+
+.phone-tab.active {
+    background: var(--teal-500);
+    color: #020617;
+    font-weight: 700;
+}
+
+.phone-content-stream {
+    padding: 0 12px 60px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow-y: hidden;
+}
+
+.phone-event-item {
+    background: rgba(15, 23, 42, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+}
+
+.phone-event-hero {
+    height: 82px;
+    position: relative;
+}
+
+.phone-event-hero img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.phone-event-hero-badge {
+    position: absolute;
+    top: 6px;
+    left: 8px;
+    background: rgba(2, 6, 23, 0.9);
+    backdrop-filter: blur(4px);
+    padding: 2px 7px;
+    border-radius: 6px;
+    font-size: 0.58rem;
+    font-weight: 700;
+    color: var(--teal-300);
+}
+
+.phone-event-details {
+    padding: 8px 10px;
+}
+
+.phone-event-title {
+    font-family: var(--font-heading);
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--white);
+    margin-bottom: 2px;
+    line-height: 1.2;
+}
+
+.phone-event-host {
+    font-size: 0.66rem;
+    color: var(--teal-400);
+    margin-bottom: 6px;
+}
+
+.phone-event-meta {
+    font-size: 0.65rem;
+    color: var(--slate-400);
+    margin-bottom: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.phone-carpool-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.62rem;
+    color: var(--teal-300);
+    background: rgba(20, 184, 166, 0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-bottom: 6px;
+}
+
+.phone-event-action-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    padding-top: 6px;
+}
+
+.phone-attendee-count {
+    font-size: 0.65rem;
+    color: var(--slate-400);
+}
+
+.phone-attendee-count strong {
+    color: var(--white);
+}
+
+.phone-event-btn {
+    background: var(--teal-500);
+    color: #020617;
+    font-weight: 700;
+    font-size: 0.64rem;
+    padding: 3px 8px;
+    border-radius: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.phone-bottom-nav {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 48px;
+    background: rgba(2, 6, 23, 0.96);
+    backdrop-filter: blur(12px);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 0 8px 4px;
+    z-index: 10;
+}
+
+.phone-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    color: var(--slate-500);
+    font-size: 0.55rem;
+    font-weight: 600;
+}
+
+.phone-nav-item.active {
+    color: var(--teal-400);
+}
+
+.phone-nav-icon {
+    font-size: 0.8rem;
+}
