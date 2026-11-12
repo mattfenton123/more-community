@@ -44,13 +44,16 @@ export default function CreateIdeaModal({ isOpen, onClose, communityId: initialC
         location: location.trim()
       };
       
-      await createFeedPost(targetCommunityId, description.trim(), JSON.stringify(ideaData));
+      const formattedText = `💡 **SUGGESTION: ${title.trim()}**\n\n${description.trim()}`;
+      await createFeedPost(targetCommunityId, formattedText, JSON.stringify(ideaData));
       
       if (broadcastNotification) {
         broadcastNotification(
           targetCommunityId, 
           `💡 New Idea: ${title.trim()}`, 
-          `${user?.name || 'A member'} suggested a new idea! Check it out and vote.`
+          `${user?.name || 'A member'} suggested "${title.trim()}". Check it out and vote!`,
+          null,
+          `/app`
         );
       }
       

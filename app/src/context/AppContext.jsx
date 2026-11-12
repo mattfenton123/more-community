@@ -997,17 +997,22 @@ export function AppProvider({ children }) {
       if (result && result.error) throw new Error(result.error);
       
       // Notify community leaders
-      const leaders = (communityMemberships[communityId] || []).filter(m => m.role === 'Leader');
       const targetComm = communities.find(c => c.id === communityId);
-      if (leaders.length > 0 && targetComm) {
-        const notifs = leaders.map(l => ({
-          user_id: l.userId,
-          title: 'New Member',
-          message: `${user.name} has joined ${targetComm.name}!`,
-          type: 'alert',
+      const leaderIds = (communityMemberships[communityId] || [])
+        .filter(m => m.role === 'Leader' || m.role === 'Co-Leader')
+        .map(m => m.userId || m.user_id)
+        .concat(targetComm?.leader_id, targetComm?.creator_id)
+        .filter(Boolean);
+      const uniqueLeaderIds = [...new Set(leaderIds)].filter(id => id !== user.id);
+      if (uniqueLeaderIds.length > 0 && targetComm) {
+        const notifs = uniqueLeaderIds.map(lid => ({
+          user_id: lid,
+          title: `👋 New Member in ${targetComm.name}`,
+          message: `${user.name || 'A new member'} has joined ${targetComm.name}!`,
+          type: 'member',
           link: `/community/${communityId}`
         }));
-        await broadcastNotificationAction(notifs, session?.access_token).catch(e => console.error("Failed to notify leader", e));
+        await broadcastNotificationAction(notifs, token).catch(e => console.error("Failed to notify leader", e));
       }
     } catch (err) {
       console.error(err);
@@ -1306,6 +1311,29 @@ export function AppProvider({ children }) {
         token = sessionData?.session?.access_token;
       }
       await rsvpToEventAction(user.id, eventId, status, ticketType, referredBy, token, metadata);
+      
+      // Notify community leaders on positive RSVP
+      if (status !== 'not_going') {
+        const ev = events.find(e => e.id === eventId);
+        const comm = communities.find(c => c.id === ev?.communityId);
+        const leaderIds = (communityMemberships[comm?.id] || [])
+          .filter(m => m.role === 'Leader' || m.role === 'Co-Leader')
+          .map(m => m.userId || m.user_id)
+          .concat(comm?.leader_id, comm?.creator_id)
+          .filter(Boolean);
+        const uniqueLeaderIds = [...new Set(leaderIds)].filter(id => id !== user.id);
+        if (uniqueLeaderIds.length > 0 && ev) {
+          const guestNote = metadata.guestName ? ` (with guest ${metadata.guestName})` : '';
+          const notifs = uniqueLeaderIds.map(lid => ({
+            user_id: lid,
+            type: 'rsvp',
+            title: `🎫 New RSVP for ${ev.title}`,
+            message: `${user.name || 'A member'} booked a spot for "${ev.title}"${guestNote}!`,
+            link: `/events/${eventId}`
+          }));
+          broadcastNotificationAction(notifs, token).catch(e => console.warn('Leader RSVP notif failed', e));
+        }
+      }
     } catch (err) {
       console.error('RSVP error:', err);
     }
@@ -2427,6 +2455,18 @@ export function AppProvider({ children }) {
       },
       declineChapter: async (chapterId) => {
         await updateCommunity(chapterId, { chapter_status: 'declined' });
+        const targetComm = communities.find(c => c.id === chapterId);
+        if (targetComm?.leader_id) {
+          try {
+            await broadcastNotificationAction([{
+              user_id: targetComm.leader_id,
+              title: 'Chapter Application Update',
+              message: `Your chapter application for "${targetComm.name}" was not approved at this time.`,
+              type: 'alert',
+              link: `/community/${chapterId}`
+            }], session?.access_token).catch(() => {});
+          } catch (e) {}
+        }
       },
       toggleUserRole,
       promoteMember,

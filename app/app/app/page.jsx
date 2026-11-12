@@ -617,6 +617,53 @@ export default function HomeFeed() {
         </div>
       </div>
 
+      {/* Ideas Pitch & Suggestion Banner */}
+      {activeFeedTab === 'Ideas' && (
+        <div style={{ padding: '0 20px', marginTop: '16px' }}>
+          <div style={{
+            background: 'linear-gradient(135deg, rgba(251,191,36,0.1) 0%, rgba(20,184,166,0.08) 100%)',
+            border: '1px solid rgba(251,191,36,0.25)',
+            borderRadius: '16px',
+            padding: '16px 18px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '12px'
+          }}>
+            <div style={{ minWidth: '220px', flex: 1 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                <Lightbulb size={18} color="#fbbf24" />
+                <span style={{ fontWeight: 700, color: 'var(--white)', fontSize: '0.98rem' }}>Member Ideas & Proposals</span>
+              </div>
+              <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--slate-300)', lineHeight: 1.4 }}>
+                Suggest a hike, workshop, or project. Members upvote favorites, and leaders turn popular ideas into official events.
+              </p>
+            </div>
+            <button
+              onClick={() => setShowIdeaModal(true)}
+              className="btn btn-primary interactive-press"
+              style={{
+                background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                border: 'none',
+                color: '#fff',
+                padding: '10px 18px',
+                borderRadius: '12px',
+                fontWeight: 700,
+                fontSize: '0.85rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                cursor: 'pointer',
+                boxShadow: '0 4px 14px rgba(245,158,11,0.3)'
+              }}
+            >
+              <Plus size={16} /> Pitch an Idea
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Feed */}
       <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
         {isLoading ? (
@@ -776,10 +823,43 @@ export default function HomeFeed() {
                     <div style={{ color: 'var(--slate-300)', fontSize: '0.95rem', lineHeight: 1.5, marginBottom: '16px' }}>{idea.text}</div>
                   )}
                   
-                  <div style={{ display: 'flex', gap: '12px', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '16px' }}>
-                    <button onClick={() => setExpandedComments(prev => ({...prev, [idea.id]: !prev[idea.id]}))} className="btn btn-outline interactive-press" style={{ padding: '8px 16px', borderRadius: '12px', fontSize: '0.85rem', display: 'flex', gap: '6px', alignItems: 'center' }}>
-                      <MessageCircle size={16} /> Discuss ({idea.comments || 0})
+                  <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '16px' }}>
+                    <button onClick={() => setExpandedComments(prev => ({...prev, [idea.id]: !prev[idea.id]}))} className="btn btn-outline interactive-press" style={{ padding: '8px 14px', borderRadius: '12px', fontSize: '0.82rem', display: 'flex', gap: '6px', alignItems: 'center' }}>
+                      <MessageCircle size={15} /> Discuss ({idea.comments || 0})
                     </button>
+                    
+                    {/* Leader Quick-Convert Idea to Official Event */}
+                    {((user?.ledCommunities || []).includes(idea.communityId) || user?.isAdmin || (communityMemberships[idea.communityId] || []).some(m => (m.userId === user?.id || m.user_id === user?.id) && (m.role === 'Leader' || m.role === 'Co-Leader'))) && (
+                      <button
+                        onClick={() => {
+                          const q = new URLSearchParams({
+                            tab: 'events',
+                            create_event: 'true',
+                            community: idea.communityId || '',
+                            title: ideaData.title || idea.text,
+                            desc: idea.text,
+                            location: ideaData.location || ''
+                          });
+                          router.push(`/dashboard?${q.toString()}`);
+                        }}
+                        className="btn btn-primary interactive-press"
+                        style={{
+                          padding: '8px 14px',
+                          borderRadius: '12px',
+                          fontSize: '0.82rem',
+                          fontWeight: 700,
+                          background: 'linear-gradient(135deg, var(--teal-500) 0%, var(--teal-600) 100%)',
+                          color: '#fff',
+                          border: 'none',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px'
+                        }}
+                      >
+                        <Calendar size={14} /> Turn into Event →
+                      </button>
+                    )}
+
                     <button 
                       onClick={() => handleShare({
                         title: ideaData.title || idea.text,
@@ -788,9 +868,9 @@ export default function HomeFeed() {
                       })}
                       className="interactive-press" 
                       title="Share suggestion"
-                      style={{ background: 'rgba(255,255,255,0.05)', width: '38px', height: '38px', borderRadius: '50%', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--white)', cursor: 'pointer', marginLeft: 'auto' }}
+                      style={{ background: 'rgba(255,255,255,0.05)', width: '36px', height: '36px', borderRadius: '50%', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--white)', cursor: 'pointer', marginLeft: 'auto' }}
                     >
-                      <Share2 size={18} />
+                      <Share2 size={16} />
                     </button>
                   </div>
                   {expandedComments[idea.id] && (
@@ -901,13 +981,17 @@ export default function HomeFeed() {
                 ? "Your feed is empty. Join some communities to see their updates and events here."
                 : activeFeedTab === 'Events' 
                   ? "There are no upcoming events in your communities right now."
-                  : "No recent discussions. Be the first to post something!"}
+                  : "No suggestions pitched yet. Have an idea for a meetup or walk? Pitch it to your community!"}
             </p>
-            {activeFeedTab === 'Feed' && (
+            {activeFeedTab === 'Ideas' ? (
+              <button onClick={() => setShowIdeaModal(true)} className="btn btn-primary interactive-press" style={{ padding: '14px 24px', borderRadius: '12px', fontSize: '1rem', background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', border: 'none', color: '#fff', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                <Lightbulb size={18} /> Pitch the First Idea
+              </button>
+            ) : activeFeedTab === 'Feed' ? (
               <button onClick={() => router.push('/discover')} className="btn btn-primary interactive-press" style={{ padding: '14px 24px', borderRadius: '12px', fontSize: '1rem' }}>
                 Discover Communities
               </button>
-            )}
+            ) : null}
           </div>
         )}
       </div>
@@ -1025,6 +1109,11 @@ export default function HomeFeed() {
       </div>
     </div>
   </div>
+
+      <CreateIdeaModal 
+        isOpen={showIdeaModal} 
+        onClose={() => setShowIdeaModal(false)} 
+      />
     </div>
   );
 }

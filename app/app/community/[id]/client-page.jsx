@@ -1296,13 +1296,31 @@ export default function CommunityProfile() {
             </div>
 
             <h4 style={{ fontSize: '1rem', color: 'var(--white)', marginBottom: '16px' }}>Active Campaigns & Suggestions</h4>
-            {communityFeed.filter(p => p.text?.includes('💡 **SUGGESTION:**') || p.text?.includes('🚀 **CAMPAIGN:**')).length === 0 ? (
+            {communityFeed.filter(p => {
+              if (p.text?.includes('💡 **SUGGESTION:**') || p.text?.includes('🚀 **CAMPAIGN:**') || p.type === 'idea') return true;
+              if (p.media) {
+                try {
+                  const parsed = JSON.parse(p.media);
+                  if (parsed.type === 'idea') return true;
+                } catch (e) {}
+              }
+              return false;
+            }).length === 0 ? (
               <div style={{ padding: '32px', textAlign: 'center', background: 'rgba(255,255,255,0.02)', borderRadius: '16px' }}>
-                <p style={{ color: 'var(--slate-400)' }}>No active campaigns yet. Pitch an experience above!</p>
+                <p style={{ color: 'var(--slate-400)' }}>No active campaigns yet. Pitch an experience or custom idea above!</p>
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                {communityFeed.filter(p => p.text?.includes('💡 **SUGGESTION:**') || p.text?.includes('🚀 **CAMPAIGN:**')).map(post => {
+                {communityFeed.filter(p => {
+                  if (p.text?.includes('💡 **SUGGESTION:**') || p.text?.includes('🚀 **CAMPAIGN:**') || p.type === 'idea') return true;
+                  if (p.media) {
+                    try {
+                      const parsed = JSON.parse(p.media);
+                      if (parsed.type === 'idea') return true;
+                    } catch (e) {}
+                  }
+                  return false;
+                }).map(post => {
                   const author = users.find(u => u.id === post.authorId);
                   const isCampaign = post.text?.includes('🚀 **CAMPAIGN:**');
                   let campaignExp = null;

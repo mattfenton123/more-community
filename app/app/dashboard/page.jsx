@@ -366,6 +366,19 @@ export default function LeaderDashboard({ initialCommunityId }) {
     if (searchParams?.get('shield') === 'success') {
       toast.success('Leader Pro Active! 🛡️', 'Your Venue Compliance RAMS, Attendee Waivers and 2% Reduced Platform Fee are active.');
     }
+    if (searchParams?.get('create_event') === 'true') {
+      const preTitle = searchParams.get('title') || '';
+      const preDesc = searchParams.get('desc') || '';
+      const preLoc = searchParams.get('location') || '';
+      setEventForm(prev => ({
+        ...prev,
+        title: preTitle || prev.title,
+        description: preDesc || prev.description,
+        location: preLoc || prev.location
+      }));
+      setModalType('event');
+      setEventStep(0);
+    }
   }, [searchParams]);
 
   useEffect(() => {
