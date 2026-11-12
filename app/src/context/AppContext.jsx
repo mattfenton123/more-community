@@ -501,6 +501,7 @@ export function AppProvider({ children }) {
               if (k === 'chapters') tagSettingsObj.allow_chapters = v === '1' || v === 'true';
               if (k === 'pitches') tagSettingsObj.accepts_pitches = v === '1' || v === 'true';
               if (k === 'carpool') tagSettingsObj.allow_carpool = v === '1' || v === 'true';
+              if (k === 'guests') tagSettingsObj.allow_guests = v === '1' || v === 'true';
               if (k === 'parent') tagSettingsObj.parent_community_id = v;
               if (k === 'status') tagSettingsObj.chapter_status = v;
               if (k === 'royalty') tagSettingsObj.chapter_royalty = Number(v);
@@ -531,6 +532,9 @@ export function AppProvider({ children }) {
           const allowCarpoolVal = mergedSettings.allow_carpool !== undefined
             ? Boolean(mergedSettings.allow_carpool)
             : (c.allow_carpool !== undefined ? Boolean(c.allow_carpool) : true);
+          const allowGuestsVal = mergedSettings.allow_guests !== undefined
+            ? Boolean(mergedSettings.allow_guests)
+            : (c.allow_guests !== undefined ? Boolean(c.allow_guests) : true);
 
           return {
             ...c, // pass through ALL columns from Supabase
@@ -540,6 +544,8 @@ export function AppProvider({ children }) {
             accepts_pitches: acceptsPitchesVal,
             allow_carpool: allowCarpoolVal,
             allowCarpool: allowCarpoolVal,
+            allow_guests: allowGuestsVal,
+            allowGuests: allowGuestsVal,
             parent_community_id: mergedSettings.parent_community_id || c.parent_community_id || null,
             chapter_status: mergedSettings.chapter_status || (mergedSettings.parent_community_id || c.parent_community_id ? 'pending_approval' : 'approved'),
             chapter_royalty: mergedSettings.chapter_royalty !== undefined ? mergedSettings.chapter_royalty : 5,
@@ -1837,6 +1843,7 @@ export function AppProvider({ children }) {
       allow_chapters: communityData.allow_chapters !== undefined ? Boolean(communityData.allow_chapters) : false,
       accepts_pitches: communityData.accepts_pitches !== undefined ? Boolean(communityData.accepts_pitches) : true,
       allow_carpool: communityData.allow_carpool !== undefined ? Boolean(communityData.allow_carpool) : true,
+      allow_guests: communityData.allow_guests !== undefined ? Boolean(communityData.allow_guests) : true,
       parent_community_id: parentId,
       chapter_status: chapterStatus,
       chapter_royalty: royaltyPercent
@@ -1855,6 +1862,8 @@ export function AppProvider({ children }) {
       acceptsPitches: initialSettings.accepts_pitches,
       allow_carpool: initialSettings.allow_carpool,
       allowCarpool: initialSettings.allow_carpool,
+      allow_guests: initialSettings.allow_guests,
+      allowGuests: initialSettings.allow_guests,
       leader_id: user.id
     };
     
@@ -1873,7 +1882,7 @@ export function AppProvider({ children }) {
         description: communityData.description,
         tags: [
           ...(Array.isArray(communityData.tags) ? communityData.tags.filter(t => !(typeof t === 'string' && t.startsWith('__cfg:'))) : []),
-          `__cfg:chapters=${initialSettings.allow_chapters ? 1 : 0},pitches=${initialSettings.accepts_pitches ? 1 : 0},carpool=${initialSettings.allow_carpool ? 1 : 0}${parentId ? `,parent=${parentId},status=${chapterStatus},royalty=${royaltyPercent}` : ''}`
+          `__cfg:chapters=${initialSettings.allow_chapters ? 1 : 0},pitches=${initialSettings.accepts_pitches ? 1 : 0},carpool=${initialSettings.allow_carpool ? 1 : 0},guests=${initialSettings.allow_guests ? 1 : 0}${parentId ? `,parent=${parentId},status=${chapterStatus},royalty=${royaltyPercent}` : ''}`
         ],
         cover_image: communityData.image || communityData.cover_image || null,
         creatorId: user.id,
@@ -2124,7 +2133,9 @@ export function AppProvider({ children }) {
         updates.allowChapters !== undefined ||
         updates.accepts_pitches !== undefined ||
         updates.allow_carpool !== undefined ||
-        updates.allowCarpool !== undefined;
+        updates.allowCarpool !== undefined ||
+        updates.allow_guests !== undefined ||
+        updates.allowGuests !== undefined;
 
       const parentId = updates.parent_community_id !== undefined ? updates.parent_community_id : (targetComm.parent_community_id || null);
       const chapterStatus = updates.chapter_status !== undefined ? updates.chapter_status : (targetComm.chapter_status || (parentId ? 'pending_approval' : 'approved'));
@@ -2135,6 +2146,7 @@ export function AppProvider({ children }) {
         allow_chapters: Boolean(updates.allow_chapters ?? updates.allowChapters ?? targetComm.allow_chapters ?? true),
         accepts_pitches: Boolean(updates.accepts_pitches ?? targetComm.accepts_pitches ?? true),
         allow_carpool: Boolean(updates.allow_carpool ?? updates.allowCarpool ?? targetComm.allow_carpool ?? true),
+        allow_guests: Boolean(updates.allow_guests ?? updates.allowGuests ?? targetComm.allow_guests ?? true),
         parent_community_id: parentId,
         chapter_status: chapterStatus,
         chapter_royalty: chapterRoyalty
@@ -2150,7 +2162,7 @@ export function AppProvider({ children }) {
         const baseTags = Array.isArray(updates.tags !== undefined ? updates.tags : targetComm.tags)
           ? (updates.tags !== undefined ? updates.tags : targetComm.tags).filter(t => !(typeof t === 'string' && t.startsWith('__cfg:')))
           : [];
-        const cfgStr = `__cfg:chapters=${nextSettings.allow_chapters ? 1 : 0},pitches=${nextSettings.accepts_pitches ? 1 : 0},carpool=${nextSettings.allow_carpool ? 1 : 0}${parentId ? `,parent=${parentId},status=${chapterStatus},royalty=${chapterRoyalty}` : ''}`;
+        const cfgStr = `__cfg:chapters=${nextSettings.allow_chapters ? 1 : 0},pitches=${nextSettings.accepts_pitches ? 1 : 0},carpool=${nextSettings.allow_carpool ? 1 : 0},guests=${nextSettings.allow_guests ? 1 : 0}${parentId ? `,parent=${parentId},status=${chapterStatus},royalty=${chapterRoyalty}` : ''}`;
         dbUpdates.tags = [...baseTags, cfgStr];
       }
 
@@ -2168,6 +2180,8 @@ export function AppProvider({ children }) {
       delete dbUpdates.accepts_pitches;
       delete dbUpdates.allow_carpool;
       delete dbUpdates.allowCarpool;
+      delete dbUpdates.allow_guests;
+      delete dbUpdates.allowGuests;
       delete dbUpdates.parent_community_id;
       delete dbUpdates.chapter_status;
       delete dbUpdates.chapter_royalty;

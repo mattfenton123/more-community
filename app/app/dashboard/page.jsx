@@ -189,6 +189,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
     maxCapacity: '', 
     ticketPrice: '',
     allowCash: false, 
+    allowGuests: true,
     collabCommunityIds: [],
     autoReminders: true, 
     autoFeedback: true,
@@ -245,6 +246,12 @@ export default function LeaderDashboard({ initialCommunityId }) {
   const pendingPitchesCount = useMemo(() => {
     return communityPitches.filter(s => s.status === 'pending').length;
   }, [communityPitches]);
+
+  const pendingProposedEvents = useMemo(() => {
+    return (events || []).filter(e => e.communityId === community?.id && e.status === 'proposed');
+  }, [events, community]);
+
+  const pendingCollaborationsCount = pendingPitchesCount + pendingProposedEvents.length;
   const [isCoHostingNetworkEvent, setIsCoHostingNetworkEvent] = useState(false);
   const [selectedProfileImage, setSelectedProfileImage] = useState(null);
 
@@ -1085,6 +1092,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
           ticketPrice: eventForm.ticketPrice ? parseFloat(eventForm.ticketPrice) : 0,
           autoReminders: eventForm.autoReminders,
           autoFeedback: eventForm.autoFeedback,
+          allowGuests: eventForm.allowGuests !== false,
           requireApproval: Boolean(eventForm.requireApproval),
           rsvpQuestion: eventForm.rsvpQuestion?.trim() || '',
             whatsappGroup: eventForm.whatsappGroup?.trim() || '',
@@ -1131,6 +1139,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
       maxCapacity: event.maxCapacity ? event.maxCapacity.toString() : '',
       ticketPrice: event.ticketPrice ? event.ticketPrice.toString() : '',
       allowCash: Boolean(event.allowCash || event.allow_cash),
+      allowGuests: event.allowGuests !== false && event.allow_guests !== false,
       collabCommunityIds: event.collabCommunityIds || [],
       autoReminders: event.autoReminders ?? true,
       autoFeedback: event.autoFeedback ?? true,
@@ -1165,6 +1174,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
       maxCapacity: eventForm.maxCapacity ? parseInt(eventForm.maxCapacity, 10) : null,
       ticketPrice: eventForm.ticketPrice ? parseFloat(eventForm.ticketPrice) : 0,
       allowCash: Boolean(eventForm.allowCash),
+      allowGuests: eventForm.allowGuests !== false,
       requireApproval: Boolean(eventForm.requireApproval),
       rsvpQuestion: eventForm.rsvpQuestion?.trim() || '',
             whatsappGroup: eventForm.whatsappGroup?.trim() || '',
@@ -1841,6 +1851,35 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   </div>
                   <div style={{ fontSize: '0.78rem', color: 'var(--slate-400)', marginTop: '2px' }}>
                     Members can reserve a spot and hand you cash directly on arrival.
+                  </div>
+                </div>
+              </label>
+
+              {/* Allow +1 Guest Pass Checkbox */}
+              <label 
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  padding: '12px 14px',
+                  borderRadius: '12px',
+                  background: 'rgba(255, 255, 255, 0.03)',
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  cursor: 'pointer'
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={eventForm.allowGuests ?? true}
+                  onChange={e => setEventForm({ ...eventForm, allowGuests: e.target.checked })}
+                  style={{ width: '18px', height: '18px', accentColor: 'var(--teal-500)', cursor: 'pointer' }}
+                />
+                <div>
+                  <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Users size={16} color="var(--teal-400)" /> Allow Attendees to Bring a +1 / Named Guest
+                  </div>
+                  <div style={{ fontSize: '0.78rem', color: 'var(--slate-400)', marginTop: '2px' }}>
+                    Members can reserve an extra spot for a friend without requiring them to sign up.
                   </div>
                 </div>
               </label>
@@ -4882,10 +4921,36 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   <Sparkles size={20} />
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontFamily: 'var(--font-heading)', fontSize: '0.98rem', fontWeight: 600, color: 'var(--white)', marginBottom: '2px' }}>
-                    Accept Guest Sessions & Sponsor Pitches
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div style={{ fontFamily: 'var(--font-heading)', fontSize: '0.98rem', fontWeight: 600, color: 'var(--white)' }}>
+                      Accept Guest Sessions & Sponsor Pitches
+                    </div>
+                    {pendingCollaborationsCount > 0 && (
+                      <span style={{
+                        background: '#ef4444',
+                        color: 'white',
+                        fontSize: '0.68rem',
+                        fontWeight: 800,
+                        padding: '2px 7px',
+                        borderRadius: '99px'
+                      }}>
+                        {pendingCollaborationsCount} Pending
+                      </span>
+                    )}
+                    <button 
+                      type="button"
+                      onClick={() => setModalType('pitches-review')}
+                      title="Review guest session pitches and sponsor perks"
+                      className="interactive-press"
+                      style={{
+                        background: 'none', border: 'none', padding: '2px',
+                        color: 'var(--teal-400)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center'
+                      }}
+                    >
+                      <Info size={16} />
+                    </button>
                   </div>
-                  <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.82rem', color: 'var(--slate-400)' }}>
+                  <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.82rem', color: 'var(--slate-400)', marginTop: '2px' }}>
                     Allow local guides, instructors & businesses to pitch sessions or member perks
                   </div>
                 </div>
@@ -4905,6 +4970,46 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   <div style={{ width: '22px', height: '22px', borderRadius: '50%', background: 'white', position: 'absolute', top: '2px', left: (community.accepts_pitches ?? true) ? '22px' : '2px', transition: 'left 0.2s' }}></div>
                 </button>
               </div>
+
+              {/* Pitches & Collaborations Action Callout */}
+              {(community.accepts_pitches ?? true) && (
+                <div style={{
+                  marginTop: '-4px',
+                  marginBottom: '6px',
+                  padding: '12px 16px',
+                  borderRadius: '12px',
+                  background: pendingCollaborationsCount > 0 ? 'rgba(239, 68, 68, 0.08)' : 'rgba(20, 184, 166, 0.05)',
+                  border: pendingCollaborationsCount > 0 ? '1px solid rgba(239, 68, 68, 0.3)' : '1px solid rgba(20, 184, 166, 0.15)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  flexWrap: 'wrap',
+                  gap: '10px'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '1.05rem' }}>🤝</span>
+                    <div>
+                      <div style={{ fontSize: '0.86rem', fontWeight: 700, color: 'var(--white)' }}>
+                        {pendingCollaborationsCount > 0 
+                          ? `${pendingCollaborationsCount} Pitch${pendingCollaborationsCount > 1 ? 'es' : ''} & Session Proposal${pendingCollaborationsCount > 1 ? 's' : ''} Awaiting Review` 
+                          : 'Guest Sessions & Sponsor Partnerships Active'}
+                      </div>
+                      <div style={{ fontSize: '0.76rem', color: 'var(--slate-400)' }}>
+                        Review guest workshop pitches, sponsor perks, and member proposals
+                      </div>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setModalType('pitches-review')}
+                    className="btn btn-outline interactive-press"
+                    style={{ padding: '6px 12px', fontSize: '0.78rem', borderRadius: '8px', color: 'var(--teal-300)', borderColor: 'rgba(20, 184, 166, 0.4)' }}
+                  >
+                    Review Pitches & Partnerships →
+                  </button>
+                </div>
+              )}
 
               {/* Multi-Town Chapter Network Toggle */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px 18px', background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px' }}>
@@ -5040,6 +5145,40 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 </button>
               </div>
 
+              {/* +1 Named Guest Passes Toggle */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px 18px', background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px' }}>
+                <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(245, 158, 11, 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#f59e0b', flexShrink: 0 }}>
+                  <Users size={20} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontFamily: 'var(--font-heading)', fontSize: '0.98rem', fontWeight: 600, color: 'var(--white)', marginBottom: '2px' }}>
+                    +1 Named Guest Passes (Bring a Friend)
+                  </div>
+                  <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.82rem', color: 'var(--slate-400)' }}>
+                    Allow members to reserve an extra spot for a friend (+1) on your event pages
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const currentVal = community.allow_guests ?? community.allowGuests ?? true;
+                    const newVal = !currentVal;
+                    updateCommunity(community.id, { allow_guests: newVal, allowGuests: newVal });
+                    toast.info(newVal ? 'Guest Passes Enabled' : 'Guest Passes Disabled', newVal ? 'Members can bring a +1 to your events' : 'Guest pass option hidden from event RSVPs');
+                  }}
+                  style={{
+                    width: '46px', height: '26px', borderRadius: '99px', border: 'none',
+                    background: (community.allow_guests ?? community.allowGuests ?? true) ? 'var(--teal-500)' : 'rgba(255,255,255,0.1)',
+                    position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0
+                  }}
+                >
+                  <div style={{
+                    width: '22px', height: '22px', borderRadius: '50%', background: 'white', position: 'absolute', top: '2px',
+                    left: (community.allow_guests ?? community.allowGuests ?? true) ? '22px' : '2px', transition: 'left 0.2s'
+                  }}></div>
+                </button>
+              </div>
+
               {/* ─── GROUP 4: DATA & ADVANCED ─── */}
               <div style={{ fontFamily: 'var(--font-heading)', fontSize: '0.78rem', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--teal-300)', marginTop: '8px' }}>
                 Data & Advanced
@@ -5118,6 +5257,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
             <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h2 style={{ margin: 0, fontSize: '1.2rem', fontFamily: 'var(--font-heading)', color: 'var(--white)' }}>
                 {isEditing ? 'Edit Profile' : 
+                 modalType === 'pitches-review' ? 'Guest Sessions & Sponsor Partnerships' :
                  modalType === 'chapter-info' ? 'Multi-Town Chapter Network' :
                  modalType === 'event' ? (eventForm.resolvedDates && eventForm.resolvedDates.length > 1 ? `Create Schedule (${eventForm.resolvedDates.length} Events)` : 'Create Event') : 
                  modalType === 'edit-event' ? 'Edit Event' :
@@ -5476,6 +5616,139 @@ export default function LeaderDashboard({ initialCommunityId }) {
             )}
 
             {/* WhatsApp Settings */}
+            {modalType === 'pitches-review' && (
+              <div style={{ color: 'var(--white)', display: 'flex', flexDirection: 'column', gap: '16px', padding: '16px 20px', maxHeight: '75vh', overflowY: 'auto' }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', padding: '14px 16px', background: 'rgba(20, 184, 166, 0.08)', border: '1px solid rgba(20, 184, 166, 0.25)', borderRadius: '14px' }}>
+                  <Sparkles size={22} color="var(--teal-400)" style={{ flexShrink: 0, marginTop: '2px' }} />
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--white)', marginBottom: '4px' }}>
+                      Collaborations & Guest Sessions Hub
+                    </div>
+                    <div style={{ fontSize: '0.82rem', color: 'var(--slate-300)', lineHeight: 1.5 }}>
+                      Review incoming pitches from verified instructors, local guides, community members, and sponsoring businesses. You have full veto control: only approved sessions or perks are published to your group.
+                    </div>
+                  </div>
+                </div>
+
+                {/* Member Proposed Walks */}
+                {pendingProposedEvents.length > 0 && (
+                  <div style={{ padding: '16px', borderRadius: '14px', background: 'rgba(56, 189, 248, 0.06)', border: '1.5px solid rgba(56, 189, 248, 0.3)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <div style={{ fontWeight: 700, fontSize: '0.92rem', color: '#7dd3fc', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Calendar size={16} /> Member Walk Proposals ({pendingProposedEvents.length})
+                    </div>
+                    {pendingProposedEvents.map(pe => (
+                      <div key={pe.id} style={{ padding: '12px', background: 'rgba(0,0,0,0.3)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '10px' }}>
+                          <div>
+                            <div style={{ fontWeight: 700, color: 'var(--white)', fontSize: '0.92rem' }}>{pe.title.replace('[Proposal]', '').trim()}</div>
+                            <div style={{ fontSize: '0.78rem', color: 'var(--slate-400)', marginTop: '2px' }}>📅 {pe.date} at {pe.time || '10:00'} • 📍 {pe.location}</div>
+                          </div>
+                          <div style={{ display: 'flex', gap: '6px' }}>
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                await updateEvent(pe.id, { status: 'published', title: pe.title.replace('[Proposal]', '').trim() });
+                                toast.success('Event Published! 🎉', 'The proposed walk is now live on your calendar.');
+                              }}
+                              className="btn btn-primary interactive-press"
+                              style={{ padding: '6px 12px', fontSize: '0.78rem', borderRadius: '8px', background: 'var(--teal-500)' }}
+                            >
+                              Approve & Publish ✓
+                            </button>
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                await cancelEvent(pe.id);
+                                toast.info('Proposal Declined', 'The proposed walk has been dismissed.');
+                              }}
+                              className="btn btn-outline interactive-press"
+                              style={{ padding: '6px 10px', fontSize: '0.78rem', borderRadius: '8px', color: '#f87171', borderColor: 'rgba(239,68,68,0.3)' }}
+                            >
+                              Decline
+                            </button>
+                          </div>
+                        </div>
+                        {pe.description && (
+                          <div style={{ fontSize: '0.76rem', color: 'var(--slate-300)', lineHeight: 1.4, background: 'rgba(255,255,255,0.02)', padding: '8px', borderRadius: '6px' }}>
+                            {pe.description}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Partner & Specialist Pitches */}
+                {communityPitches.length > 0 ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <div style={{ fontSize: '0.86rem', fontWeight: 700, color: 'var(--white)' }}>
+                      Guest Workshop & Sponsor Pitches ({communityPitches.length})
+                    </div>
+                    {communityPitches.map(p => (
+                      <div key={p.id} style={{ padding: '14px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '10px' }}>
+                          <div>
+                            <div style={{ fontWeight: 700, color: 'var(--white)', fontSize: '0.95rem' }}>{p.title || p.businessName || 'Specialist Session'}</div>
+                            <div style={{ fontSize: '0.78rem', color: 'var(--teal-300)', marginTop: '2px' }}>
+                              Type: {p.type || p.discipline || 'Workshop'} {p.fee ? `• Offer: £${p.fee}` : ''}
+                            </div>
+                            <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', marginTop: '2px' }}>
+                              By: {p.authorName || p.contactName || 'Local Specialist'} ({p.contactEmail || p.email || 'Partner'})
+                            </div>
+                          </div>
+                          {p.status === 'pending' ? (
+                            <div style={{ display: 'flex', gap: '6px' }}>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  updateServiceStatus(p.id, 'approved');
+                                  toast.success('Pitch Approved! 🎉', 'Partner collaboration accepted.');
+                                }}
+                                className="btn btn-primary interactive-press"
+                                style={{ padding: '6px 12px', fontSize: '0.78rem', borderRadius: '8px', background: 'var(--teal-500)' }}
+                              >
+                                Approve Pitch ✓
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  updateServiceStatus(p.id, 'rejected');
+                                  toast.info('Pitch Declined', 'Pitch has been dismissed.');
+                                }}
+                                className="btn btn-outline interactive-press"
+                                style={{ padding: '6px 10px', fontSize: '0.78rem', borderRadius: '8px', color: '#f87171', borderColor: 'rgba(239,68,68,0.3)' }}
+                              >
+                                Decline
+                              </button>
+                            </div>
+                          ) : (
+                            <span style={{ fontSize: '0.75rem', padding: '3px 8px', borderRadius: '6px', background: p.status === 'approved' ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)', color: p.status === 'approved' ? '#4ade80' : '#f87171', fontWeight: 600 }}>
+                              {p.status === 'approved' ? 'Approved' : 'Declined'}
+                            </span>
+                          )}
+                        </div>
+                        {p.description && (
+                          <div style={{ fontSize: '0.78rem', color: 'var(--slate-300)', lineHeight: 1.45, background: 'rgba(0,0,0,0.25)', padding: '8px 10px', borderRadius: '8px' }}>
+                            {p.description}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  pendingProposedEvents.length === 0 && (
+                    <div style={{ padding: '24px', textAlign: 'center', color: 'var(--slate-400)', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px dashed rgba(255,255,255,0.08)' }}>
+                      No incoming pitches right now. When instructors, businesses, or members pitch sessions via your community page, they will appear here for 1-tap review.
+                    </div>
+                  )
+                )}
+
+                <div style={{ padding: '12px 14px', background: 'rgba(245, 158, 11, 0.08)', border: '1px solid rgba(245, 158, 11, 0.25)', borderRadius: '12px', fontSize: '0.8rem', color: '#fef08a', lineHeight: 1.45 }}>
+                  💡 <strong>100% Leader Revenue Control:</strong> Any sponsorship or workshop fee you negotiate with local businesses or guides goes 100% to you and your community club fund.
+                </div>
+              </div>
+            )}
+
             {modalType === 'chapter-info' && (
               <div style={{ color: 'var(--white)', display: 'flex', flexDirection: 'column', gap: '16px', padding: '16px 20px', maxHeight: '75vh', overflowY: 'auto' }}>
                 

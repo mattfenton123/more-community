@@ -2304,41 +2304,43 @@ export default function EventClient({ id }) {
               </div>
             )}
 
-            {/* +1 Guest Pass (Lu.ma viral loop) */}
-            <div style={{ marginBottom: '20px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '14px' }}>
-              <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}>
-                <div>
-                  <div style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--white)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Users size={16} color="var(--teal-400)" /> Bring a +1 / Guest Pass
+            {/* +1 Guest Pass (Controlled by leader slider) */}
+            {(event?.allow_guests !== false && event?.allowGuests !== false && community?.allow_guests !== false && community?.allowGuests !== false) && (
+              <div style={{ marginBottom: '20px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '14px' }}>
+                <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}>
+                  <div>
+                    <div style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--white)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Users size={16} color="var(--teal-400)" /> Bring a +1 / Guest Pass
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', marginTop: '2px' }}>
+                      Reserve a spot for a friend without requiring them to sign up
+                    </div>
                   </div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', marginTop: '2px' }}>
-                    Reserve a spot for a friend without requiring them to sign up
-                  </div>
-                </div>
-                <input
-                  type="checkbox"
-                  checked={rsvpHasGuest}
-                  onChange={e => setRsvpHasGuest(e.target.checked)}
-                  style={{ width: '18px', height: '18px', accentColor: 'var(--teal-500)', cursor: 'pointer' }}
-                />
-              </label>
-
-              {rsvpHasGuest && (
-                <div style={{ marginTop: '12px' }}>
                   <input
-                    type="text"
-                    placeholder="Friend's first name (e.g. Sarah)..."
-                    value={rsvpGuestName}
-                    onChange={e => setRsvpGuestName(e.target.value)}
-                    style={{
-                      width: '100%', padding: '10px 14px', borderRadius: '10px',
-                      background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(45,212,191,0.3)',
-                      color: 'var(--white)', fontSize: '0.88rem', outline: 'none'
-                    }}
+                    type="checkbox"
+                    checked={rsvpHasGuest}
+                    onChange={e => setRsvpHasGuest(e.target.checked)}
+                    style={{ width: '18px', height: '18px', accentColor: 'var(--teal-500)', cursor: 'pointer' }}
                   />
-                </div>
-              )}
-            </div>
+                </label>
+
+                {rsvpHasGuest && (
+                  <div style={{ marginTop: '12px' }}>
+                    <input
+                      type="text"
+                      placeholder="Friend's first name (e.g. Sarah)..."
+                      value={rsvpGuestName}
+                      onChange={e => setRsvpGuestName(e.target.value)}
+                      style={{
+                        width: '100%', padding: '10px 14px', borderRadius: '10px',
+                        background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(45,212,191,0.3)',
+                        color: 'var(--white)', fontSize: '0.88rem', outline: 'none'
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
 
             <button
               onClick={() => handleRSVP({
