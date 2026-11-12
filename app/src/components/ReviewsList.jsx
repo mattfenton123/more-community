@@ -74,7 +74,7 @@ export default function ReviewsList({ communityId, onAddReview }) {
       {/* Review Cards */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         {communityReviews.map(review => {
-          const author = users.find(u => u.id === review.user_id) || { name: 'Community Member', avatar: 'https://i.pravatar.cc/150' };
+          const author = users.find(u => u.id === review.user_id) || { name: 'Community Member', avatar: '/images/default-avatar.svg' };
           return (
             <div key={review.id} className="review-card" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '16px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>

@@ -879,7 +879,7 @@ export default function HomeFeed() {
                         <div style={{ display: 'flex' }}>
                           {rsvps.slice(0, 3).map((r, i) => {
                             const ru = users?.find(u => u.id === r.userId);
-                            return <img key={i} src={ru?.avatar || 'https://i.pravatar.cc/24'} alt="" style={{ width: '28px', height: '28px', borderRadius: '50%', border: '2px solid var(--slate-900)', marginLeft: i > 0 ? '-8px' : 0, objectFit: 'cover' }} />;
+                            return <img key={i} src={ru?.avatar || '/images/default-avatar.svg'} alt="" style={{ width: '28px', height: '28px', borderRadius: '50%', border: '2px solid var(--slate-900)', marginLeft: i > 0 ? '-8px' : 0, objectFit: 'cover' }} />;
                           })}
                         </div>
                         {rsvps.length} members attending

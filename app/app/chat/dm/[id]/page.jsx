@@ -345,7 +345,7 @@ export default function DirectMessage() {
                 const threadParent = activeMessages.find(m => m.id === activeThreadId);
                 const threadReplies = activeMessages.filter(m => m.parentId === activeThreadId);
                 if (!threadParent) return null;
-                const authorObj = users.find(u => u.id === (threadParent.senderId || threadParent.authorId)) || { name: 'Unknown', avatar: 'https://i.pravatar.cc/150' };
+                const authorObj = users.find(u => u.id === (threadParent.senderId || threadParent.authorId)) || { name: 'Unknown', avatar: '/images/default-avatar.svg' };
                 return (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                     <div style={{ display: 'flex', gap: '12px', paddingBottom: '16px', borderBottom: '1px solid var(--slate-800)' }}>
@@ -360,7 +360,7 @@ export default function DirectMessage() {
                     </div>
                     <div style={{ fontSize: '0.8rem', color: 'var(--slate-500)', fontWeight: 600, marginBottom: '-8px' }}>{threadReplies.length} {threadReplies.length === 1 ? 'Reply' : 'Replies'}</div>
                     {threadReplies.map(reply => {
-                      const repAuth = users.find(u => u.id === (reply.senderId || reply.authorId)) || { name: 'Unknown', avatar: 'https://i.pravatar.cc/150' };
+                      const repAuth = users.find(u => u.id === (reply.senderId || reply.authorId)) || { name: 'Unknown', avatar: '/images/default-avatar.svg' };
                       return (
                         <div key={reply.id} style={{ display: 'flex', gap: '10px' }}>
                           <img src={repAuth.avatar} style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }} />

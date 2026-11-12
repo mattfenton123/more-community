@@ -116,7 +116,7 @@ export default function ReelViewer({ highlights, initialIndex = 0, onClose, isLe
         <div style={{ position: 'absolute', top: '32px', left: '16px', right: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', zIndex: 10 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(255,255,255,0.2)', overflow: 'hidden' }}>
-              <img src={currentHighlight.uploaderAvatar || 'https://i.pravatar.cc/150'} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Uploader" />
+              <img src={currentHighlight.uploaderAvatar || '/images/default-avatar.svg'} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Uploader" />
             </div>
             <div>
               <div style={{ color: '#fff', fontWeight: 600, fontSize: '0.9rem', textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>

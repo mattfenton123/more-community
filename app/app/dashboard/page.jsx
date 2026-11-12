@@ -5142,6 +5142,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   >
                     <ImageIcon size={16} /> {coverImagePreview ? 'Change Cover Photo' : 'Upload Cover Photo'}
                   </button>
+                  <div style={{ fontSize: '0.74rem', color: 'var(--slate-400)', marginTop: '6px', textAlign: 'center' }}>Tip: Landscape photos (16:9, e.g. 1920×1080) display sharpest. Avoid small or portrait photos.</div>
                 </div>
 
                 {/* 6. Description */}

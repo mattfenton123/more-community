@@ -96,7 +96,7 @@ export default function Chat() {
         dmUsers.add(otherUserId);
       });
       dmUsers.forEach(otherId => {
-        const otherUserObj = users.find(u => u.id === otherId) || { id: otherId, name: 'Unknown User', avatar: 'https://i.pravatar.cc/150' };
+        const otherUserObj = users.find(u => u.id === otherId) || { id: otherId, name: 'Unknown User', avatar: '/images/default-avatar.svg' };
         inboxItems.push({ type: 'dm', otherUser: otherUserObj, id: otherId });
       });
     }
@@ -484,7 +484,7 @@ export default function Chat() {
           ) : (
             activeMessages.map((msg, index) => {
               const currentAuthorId = msg.senderId || msg.authorId; 
-              const authorObj = users.find(u => u.id === currentAuthorId) || { name: 'Unknown', id: currentAuthorId, avatar: 'https://i.pravatar.cc/150' };
+              const authorObj = users.find(u => u.id === currentAuthorId) || { name: 'Unknown', id: currentAuthorId, avatar: '/images/default-avatar.svg' };
               const isMe = currentAuthorId === user.id;
               const authorIsLeader = !isDirectMessage && communityMemberships[communityId]?.find(m => m.userId === currentAuthorId)?.role === 'Leader';
               

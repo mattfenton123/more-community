@@ -25,7 +25,7 @@ export default function CarpoolHub({ event, user, isAttendee = false, community 
       const raw = localStorage.getItem(`more_event_carpools_${event.id}`);
       if (raw) {
         const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed.filter(p => !p.id.startsWith('sample_carpool_') && p.driverId !== 'sample_host_1');
       }
     } catch (e) {}
     return [];
@@ -54,30 +54,9 @@ export default function CarpoolHub({ event, user, isAttendee = false, community 
       if (raw) {
         pools = JSON.parse(raw);
       }
-      if (!Array.isArray(pools) || pools.length === 0) {
-        const defaultPools = [
-          {
-            id: `sample_carpool_${event.id}_1`,
-            eventId: event.id,
-            driverId: 'sample_host_1',
-            driverName: community?.leader_name || 'Mark D.',
-            driverAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
-            origin: event?.location?.includes('Heathfield') ? 'Heathfield High St / Co-op area' : 'Tunbridge Wells Station / Nevill area',
-            time: event?.time ? `${parseInt(event.time.split(':')[0], 10) - 1 || 9}:20 AM` : '09:15 AM',
-            seatsTotal: 3,
-            seatsAvailable: 2,
-            passengers: [
-              { userId: 'sample_rider_1', name: 'Dave B.', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=Dave' }
-            ],
-            flexibleOnRoute: true,
-            notes: 'Muddy boots welcome in the boot, medium dog friendly 🐕',
-            chipIn: 'Free',
-            createdAt: new Date().toISOString()
-          }
-        ];
-        pools = defaultPools;
-        localStorage.setItem(`more_event_carpools_${event.id}`, JSON.stringify(defaultPools));
-      }
+      // Clean up any old mock sample carpools from previous test runs
+      pools = pools.filter(p => !p.id.startsWith('sample_carpool_') && p.driverId !== 'sample_host_1');
+      localStorage.setItem(`more_event_carpools_${event.id}`, JSON.stringify(pools));
       setLocalCarpools(pools);
       if (typeof setCarpools === 'function') {
         setCarpools(prev => ({ ...prev, [event.id]: pools }));
@@ -256,18 +235,18 @@ export default function CarpoolHub({ event, user, isAttendee = false, community 
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <h3 style={{ margin: 0, fontSize: '1.25rem', color: 'var(--white)', fontWeight: 800, fontFamily: 'var(--font-heading)' }}>
-                Trail Carpool Hub
+                Share a Lift
               </h3>
               <span style={{
                 fontSize: '0.68rem', padding: '2px 8px', borderRadius: '99px',
                 background: 'rgba(20, 184, 166, 0.2)', border: '1px solid rgba(20, 184, 166, 0.4)',
                 color: '#2dd4bf', fontWeight: 700
               }}>
-                ATTENDEE RIDES
+                COMMUNITY CARPOOL
               </span>
             </div>
             <p style={{ margin: '3px 0 0', fontSize: '0.82rem', color: 'var(--slate-300)' }}>
-              Share lifts, travel sustainably, and make friends before arriving at the trail.
+              Coordinate rides with fellow members heading to this meetup.
             </p>
           </div>
         </div>
@@ -291,7 +270,7 @@ export default function CarpoolHub({ event, user, isAttendee = false, community 
               boxShadow: '0 4px 16px rgba(16, 185, 129, 0.3)'
             }}
           >
-            <Plus size={16} /> Offer a Ride
+            <Plus size={16} /> Offer a Lift
           </button>
         )}
       </div>
@@ -305,7 +284,7 @@ export default function CarpoolHub({ event, user, isAttendee = false, community 
       }}>
         <Shield size={16} color="var(--teal-400)" style={{ flexShrink: 0 }} />
         <span>
-          <strong style={{ color: 'var(--white)' }}>Privacy-First Neighborhood Hubs:</strong> Drivers share their road, village, or general area. Exact door numbers are exchanged in 1-to-1 private chat once confirmed.
+          <strong style={{ color: 'var(--white)' }}>Friendly & Local:</strong> Drivers share their general neighbourhood or landmark. Exact meeting spots are arranged directly in community chat.
         </span>
       </div>
 
@@ -319,10 +298,10 @@ export default function CarpoolHub({ event, user, isAttendee = false, community 
           }}>
             <Car size={32} color="var(--slate-500)" style={{ margin: '0 auto 10px' }} />
             <div style={{ fontWeight: 700, color: 'var(--white)', fontSize: '0.95rem', marginBottom: '4px' }}>
-              No carpools posted yet
+              No lifts offered yet
             </div>
             <p style={{ margin: '0 0 14px', fontSize: '0.82rem', color: 'var(--slate-400)' }}>
-              Are you driving to {event.title}? Be the first to offer spare seats in your car!
+              Driving to this gathering? Offer a couple of spare seats to help fellow members get there.
             </p>
             <button
               onClick={() => setShowOfferModal(true)}
@@ -333,7 +312,7 @@ export default function CarpoolHub({ event, user, isAttendee = false, community 
                 color: 'var(--teal-300)', fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer'
               }}
             >
-              + Offer First Ride
+              + Offer a Lift
             </button>
           </div>
         ) : (
@@ -524,7 +503,7 @@ export default function CarpoolHub({ event, user, isAttendee = false, community 
         )}
       </div>
 
-      {/* Offer a Ride Modal */}
+      {/* Offer a Lift Modal */}
       {showOfferModal && (
         <div style={{
           position: 'fixed', inset: 0, zIndex: 100000,

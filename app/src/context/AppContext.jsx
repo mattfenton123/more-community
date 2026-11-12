@@ -135,7 +135,7 @@ export function AppProvider({ children }) {
     id: authUser?.id,
     name: authUser?.user_metadata?.full_name || authUser?.email || 'New User',
     role: 'Member',
-    avatar: 'https://i.pravatar.cc/150',
+    avatar: '/images/default-avatar.svg',
     bio: 'New here.',
     joined: new Date().toISOString(),
     onboarded: !authUser ? true : false,
@@ -409,7 +409,7 @@ export function AppProvider({ children }) {
             return {
               ...u,
               name: (u.name === 'alex@morecommunity.app' || !u.name) ? 'Alex' : u.name,
-              avatar: u.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+              avatar: u.avatar || 'https://ui-avatars.com/api/?name=Alex&background=21726c&color=fff&size=200&bold=true',
               role: 'Leader'
             };
           }
@@ -420,7 +420,7 @@ export function AppProvider({ children }) {
             id: ALEX_ID,
             name: 'Alex',
             role: 'Leader',
-            avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+            avatar: 'https://ui-avatars.com/api/?name=Alex&background=21726c&color=fff&size=200&bold=true',
             bio: 'Community Leader & Founder at more.',
             onboarded: true
           });
@@ -444,7 +444,9 @@ export function AppProvider({ children }) {
           if (c.id === 'more-leaders-network') {
             return {
               ...c,
-              name: 'The More. Community Leaders Network',
+              name: (c.name && c.name !== 'more community Network' && c.name !== 'The More. Community Leaders Network')
+                ? c.name
+                : 'More Community Leaders Network',
               leader_id: c.leader_id || ALEX_ID
             };
           }
@@ -455,7 +457,7 @@ export function AppProvider({ children }) {
         if (!comms.find(c => c.id === 'more-leaders-network')) {
           const leadersComm = {
              id: 'more-leaders-network',
-             name: 'The More. Community Leaders Network',
+             name: 'More Community Leaders Network',
              description: 'A private space for more. leaders to collaborate, share tips, and organize cross-community events.',
              tags: ['leadership', 'network'],
              image: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1200&q=80',
@@ -1686,26 +1688,29 @@ export function AppProvider({ children }) {
       const data = await createEventsBatchAction(formattedEvents, token);
 
       if (data && Array.isArray(data)) {
-        const mapped = data.map((e, idx) => ({
-          id: e.id,
-          communityId: e.community_id,
-          collabCommunityIds: e.cohost_community_ids || formattedEvents[idx]?.collabCommunityIds || [],
-          title: e.title,
-          description: e.description || '',
-          date: e.date,
-          time: e.time,
-          location: e.location,
-          image: e.image,
-          attendees: e.attendees || 0,
-          status: e.status || 'published',
-          maxCapacity: e.max_capacity || null,
-          ticketPrice: e.ticket_price || 0,
-          requireApproval: Boolean(e.require_approval || (e.description && e.description.includes('[Host Approval Required]')) || newEvent.requireApproval),
-          rsvpQuestion: eventData.rsvpQuestion?.trim() || '',
-          whatsappGroup: eventData.whatsappGroup?.trim() || '',
-          galleryImages: [],
-          createdAt: e.created_at
-        }));
+        const mapped = data.map((e, idx) => {
+          const item = eventsList[idx] || {};
+          return {
+            id: e.id,
+            communityId: e.community_id,
+            collabCommunityIds: e.cohost_community_ids || formattedEvents[idx]?.collabCommunityIds || [],
+            title: e.title,
+            description: e.description || '',
+            date: e.date,
+            time: e.time,
+            location: e.location,
+            image: e.image,
+            attendees: e.attendees || 0,
+            status: e.status || 'published',
+            maxCapacity: e.max_capacity || null,
+            ticketPrice: e.ticket_price || 0,
+            requireApproval: Boolean(e.require_approval || (e.description && e.description.includes('[Host Approval Required]')) || item.requireApproval),
+            rsvpQuestion: item.rsvpQuestion?.trim() || '',
+            whatsappGroup: item.whatsappGroup?.trim() || '',
+            galleryImages: [],
+            createdAt: e.created_at
+          };
+        });
         setEvents(prev => [...prev, ...mapped]);
       }
       return data;
@@ -1885,7 +1890,7 @@ export function AppProvider({ children }) {
     }
   };
 
-  const uploadImage = async (file) => {
+  const uploadImage = async (file, bucketOrOptions) => {
     try {
       if (!file) throw new Error("No file provided");
 
@@ -1895,10 +1900,16 @@ export function AppProvider({ children }) {
         throw new Error("File exceeds the 50MB limit. Please choose a smaller file.");
       }
 
-      // Compress the image before uploading (Skip for videos)
+      // High-resolution options for banners, covers, and retina screens
+      const isBannerOrCover = typeof bucketOrOptions === 'string' && (
+        bucketOrOptions.includes('cover') || bucketOrOptions.includes('banner') || bucketOrOptions.includes('event')
+      );
+
+      // Compress with high fidelity (up to 2560px for banners, 3.5MB max size, 92% quality)
       const options = {
-        maxSizeMB: 0.8,
-        maxWidthOrHeight: 1200,
+        maxSizeMB: isBannerOrCover ? 3.5 : 2.0,
+        maxWidthOrHeight: isBannerOrCover ? 2560 : 1800,
+        initialQuality: 0.92,
         useWebWorker: true,
         fileType: "image/webp",
       };
@@ -1914,7 +1925,7 @@ export function AppProvider({ children }) {
           const conversionResult = await heic2any({
             blob: file,
             toType: "image/jpeg",
-            quality: 0.8
+            quality: 0.92
           });
           
           const jpegBlob = Array.isArray(conversionResult) ? conversionResult[0] : conversionResult;

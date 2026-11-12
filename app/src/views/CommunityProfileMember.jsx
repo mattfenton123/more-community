@@ -536,7 +536,7 @@ export default function CommunityProfile() {
                             <div style={{ display: 'flex' }}>
                               {rsvps.slice(0, 3).map((r, i) => {
                                 const ru = users.find(u => u.id === r.userId);
-                                return <img onClick={(e) => { e.stopPropagation(); navigate.push(`/profile/${r.userId}`); }} key={i} src={ru?.avatar || 'https://i.pravatar.cc/24'} alt="" style={{ width: '22px', height: '22px', borderRadius: '50%', border: '2px solid var(--slate-950)', marginLeft: i > 0 ? '-6px' : 0, objectFit: 'cover', cursor: 'pointer' }} />;
+                                return <img onClick={(e) => { e.stopPropagation(); navigate.push(`/profile/${r.userId}`); }} key={i} src={ru?.avatar || '/images/default-avatar.svg'} alt="" style={{ width: '22px', height: '22px', borderRadius: '50%', border: '2px solid var(--slate-950)', marginLeft: i > 0 ? '-6px' : 0, objectFit: 'cover', cursor: 'pointer' }} />;
                               })}
                             </div>
                             {rsvps.length} going

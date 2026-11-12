@@ -118,12 +118,30 @@ export default function AppHeader({ title, subtitle, rightElement, showBack = fa
           </button>
         ) : null}
         
-        <img 
-          src="/logo.png" className="theme-invert" 
-          alt="more." 
-          style={{ height: '22px', cursor: 'pointer', flexShrink: 0 }} 
-          onClick={() => navigate.push('/app')} 
-        />
+        <button
+          type="button"
+          onClick={() => navigate.push('/app')}
+          aria-label="Go to More Home"
+          className="interactive-press"
+          style={{
+            background: "none",
+            border: "none",
+            padding: "6px 8px",
+            margin: "-6px -4px",
+            cursor: "pointer",
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+            borderRadius: "8px"
+          }}
+        >
+          <img 
+            src="/logo.png" className="theme-invert" 
+            alt="more." 
+            style={{ height: "22px", display: "block", pointerEvents: "none" }} 
+          />
+        </button>
         
         {title && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0, overflow: 'hidden' }}>

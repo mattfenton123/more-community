@@ -62,7 +62,7 @@ export default function ChatIndex() {
       dmUsers.add(otherUserId);
     });
     dmUsers.forEach(otherId => {
-      const otherUserObj = users.find(u => u.id === otherId) || { id: otherId, name: 'Unknown User', avatar: 'https://i.pravatar.cc/150' };
+      const otherUserObj = users.find(u => u.id === otherId) || { id: otherId, name: 'Unknown User', avatar: '/images/default-avatar.svg' };
       inboxItems.push({ type: 'dm', otherUser: otherUserObj, id: otherId });
     });
   }

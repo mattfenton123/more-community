@@ -519,9 +519,24 @@ export default function CommunityProfile() {
           </button>
           
           {/* Centered more. Logo */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <img src="/logo.png" alt="more." style={{ height: '22px' }} />
-          </div>
+          <button
+            type="button"
+            onClick={() => navigate.push('/app')}
+            aria-label="Go to More Home"
+            className="interactive-press"
+            style={{
+              background: 'none',
+              border: 'none',
+              padding: '6px 12px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: '8px'
+            }}
+          >
+            <img src="/logo.png" alt="more." style={{ height: '22px', display: 'block', pointerEvents: 'none' }} />
+          </button>
 
           {/* Action buttons (Share, Flag, Leader Panel) */}
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
@@ -908,7 +923,7 @@ export default function CommunityProfile() {
             {(isMember || isLeader) && (
               <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '16px', marginBottom: '16px' }}>
                 <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                  <img src={user?.avatar || 'https://i.pravatar.cc/150'} alt="You" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
+                  <img src={user?.avatar || '/images/default-avatar.svg'} alt="You" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
                   <div style={{ flex: 1 }}>
                     <textarea 
                       placeholder="Share something with the community..." 
@@ -1299,7 +1314,7 @@ export default function CommunityProfile() {
                   return (
                     <div key={post.id} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '16px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-                        <img src={author?.avatar || 'https://i.pravatar.cc/150'} alt="" style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }} />
+                        <img src={author?.avatar || '/images/default-avatar.svg'} alt="" style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }} />
                         <div>
                           <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
                             {author?.name}
@@ -2001,7 +2016,7 @@ export default function CommunityProfile() {
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {topReviews.length > 0 ? topReviews.map((review) => {
-                  const author = users.find(u => u.id === review.user_id) || { name: 'Community Member', avatar: 'https://i.pravatar.cc/150' };
+                  const author = users.find(u => u.id === review.user_id) || { name: 'Community Member', avatar: '/images/default-avatar.svg' };
                   return (
                     <div key={review.id} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px', padding: '16px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
@@ -2243,7 +2258,7 @@ export default function CommunityProfile() {
                             <div style={{ display: 'flex' }}>
                               {rsvps.slice(0, 3).map((r, i) => {
                                 const ru = users.find(u => u.id === r.userId);
-                                return <img key={i} src={ru?.avatar || 'https://i.pravatar.cc/24'} alt="" style={{ width: '22px', height: '22px', borderRadius: '50%', border: '2px solid var(--slate-950)', marginLeft: i > 0 ? '-6px' : 0, objectFit: 'cover' }} />;
+                                return <img key={i} src={ru?.avatar || '/images/default-avatar.svg'} alt="" style={{ width: '22px', height: '22px', borderRadius: '50%', border: '2px solid var(--slate-950)', marginLeft: i > 0 ? '-6px' : 0, objectFit: 'cover' }} />;
                               })}
                             </div>
                             {rsvps.length} going
@@ -2320,7 +2335,7 @@ export default function CommunityProfile() {
                               <div style={{ display: 'flex' }}>
                                 {rsvps.slice(0, 3).map((r, i) => {
                                   const ru = users.find(u => u.id === r.userId);
-                                  return <img key={i} src={ru?.avatar || 'https://i.pravatar.cc/24'} alt="" style={{ width: '22px', height: '22px', borderRadius: '50%', border: '2px solid var(--slate-950)', marginLeft: i > 0 ? '-6px' : 0, objectFit: 'cover' }} />;
+                                  return <img key={i} src={ru?.avatar || '/images/default-avatar.svg'} alt="" style={{ width: '22px', height: '22px', borderRadius: '50%', border: '2px solid var(--slate-950)', marginLeft: i > 0 ? '-6px' : 0, objectFit: 'cover' }} />;
                                 })}
                               </div>
                               {rsvps.length} attended

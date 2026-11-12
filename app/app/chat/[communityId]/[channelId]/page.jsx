@@ -96,7 +96,7 @@ export default function Chat() {
       });
       
       dmUsers.forEach(otherId => {
-        const otherUserObj = users.find(u => u.id === otherId) || { id: otherId, name: 'Unknown User', avatar: 'https://i.pravatar.cc/150' };
+        const otherUserObj = users.find(u => u.id === otherId) || { id: otherId, name: 'Unknown User', avatar: '/images/default-avatar.svg' };
         dmInboxItems.push({
           type: 'dm',
           otherUser: otherUserObj,
@@ -405,7 +405,7 @@ export default function Chat() {
           ) : (
             activeMessages.filter(m => !m.parentId).map((msg, index, topLevelMessages) => {
               const currentAuthorId = msg.senderId || msg.authorId; // Handle both schemas
-              const authorObj = users.find(u => u.id === currentAuthorId) || { name: 'Unknown', id: currentAuthorId, avatar: 'https://i.pravatar.cc/150' };
+              const authorObj = users.find(u => u.id === currentAuthorId) || { name: 'Unknown', id: currentAuthorId, avatar: '/images/default-avatar.svg' };
               const isMe = currentAuthorId === user.id;
               const isLeader = !isDirectMessage && communityMemberships[communityId]?.find(m => m.userId === currentAuthorId)?.role === 'Leader';
               
@@ -608,7 +608,7 @@ export default function Chat() {
               const threadParent = activeMessages.find(m => m.id === activeThreadId);
               const threadReplies = activeMessages.filter(m => m.parentId === activeThreadId);
               if (!threadParent) return null;
-              const authorObj = users.find(u => u.id === (threadParent.senderId || threadParent.authorId)) || { name: 'Unknown', avatar: 'https://i.pravatar.cc/150' };
+              const authorObj = users.find(u => u.id === (threadParent.senderId || threadParent.authorId)) || { name: 'Unknown', avatar: '/images/default-avatar.svg' };
               return (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   {/* Thread Parent */}
@@ -625,7 +625,7 @@ export default function Chat() {
                   {/* Replies */}
                   <div style={{ fontSize: '0.8rem', color: 'var(--slate-500)', fontWeight: 600, marginBottom: '-8px' }}>{threadReplies.length} {threadReplies.length === 1 ? 'Reply' : 'Replies'}</div>
                   {threadReplies.map(reply => {
-                    const repAuth = users.find(u => u.id === (reply.senderId || reply.authorId)) || { name: 'Unknown', avatar: 'https://i.pravatar.cc/150' };
+                    const repAuth = users.find(u => u.id === (reply.senderId || reply.authorId)) || { name: 'Unknown', avatar: '/images/default-avatar.svg' };
                     return (
                       <div key={reply.id} style={{ display: 'flex', gap: '10px' }}>
                         <img src={repAuth.avatar} style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }} />

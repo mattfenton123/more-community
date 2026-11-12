@@ -13,7 +13,8 @@ export async function GET(request) {
     const members = searchParams.get('members');
     const community = searchParams.get('community') || 'More Community';
     const type = searchParams.get('type') || (date ? 'event' : 'community');
-    const image = searchParams.get('image');
+    const rawImage = searchParams.get('image');
+    const image = (rawImage && !rawImage.includes('1544367567-0f2fcb009e0b')) ? rawImage : null;
 
     return new ImageResponse(
       (
@@ -51,18 +52,12 @@ export async function GET(request) {
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <div
-                style={{
-                  color: 'white',
-                  fontSize: 36,
-                  fontWeight: 900,
-                  letterSpacing: '-0.04em',
-                  display: 'flex',
-                  alignItems: 'center',
-                }}
-              >
-                <span>More Community</span>
-              </div>
+              <img
+                src="https://www.morecommunity.app/images/logo.png"
+                alt="More Community"
+                height="40"
+                style={{ objectFit: 'contain' }}
+              />
               <div
                 style={{
                   display: 'flex',

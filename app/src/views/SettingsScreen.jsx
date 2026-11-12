@@ -96,7 +96,7 @@ export default function SettingsScreen() {
       <div style={{ padding: '0 20px 24px' }}>
         <div className="glass-panel" style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '20px' }}>
           <img
-            src={user.avatar || `https://i.pravatar.cc/150?u=${user.id}`}
+            src={user.avatar || `/images/default-avatar.svg?u=${user.id}`}
             alt={user.name}
             style={{ width: '56px', height: '56px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--slate-700)' }}
           />
