@@ -279,36 +279,75 @@ export default function AdminDashboard() {
   }, [platformStats.communityHealth]);
 
   // ─── Recent Activity ─────────────────────────────────────
+  const formatActivityDateTime = (timestamp, fallbackDate, fallbackTime) => {
+    let d = timestamp ? new Date(timestamp) : null;
+    if (!d || isNaN(d.getTime())) {
+      if (fallbackDate) {
+        d = new Date(`${fallbackDate}T${fallbackTime || '12:00'}`);
+      }
+    }
+    if (!d || isNaN(d.getTime())) return 'Recently';
+
+    const now = new Date();
+    const isToday = d.toDateString() === now.toDateString();
+    const yesterday = new Date(now);
+    yesterday.setDate(now.getDate() - 1);
+    const isYesterday = d.toDateString() === yesterday.toDateString();
+    const isCurrentYear = d.getFullYear() === now.getFullYear();
+
+    const timeStr = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
+
+    if (isToday) return `Today at ${timeStr}`;
+    if (isYesterday) return `Yesterday at ${timeStr}`;
+    if (isCurrentYear) {
+      const dateStr = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+      return `${dateStr}, ${timeStr}`;
+    }
+    const fullDateStr = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    return `${fullDateStr}, ${timeStr}`;
+  };
+
   const recentActivity = useMemo(() => {
     const acts = [];
-    users.slice(-3).forEach(u => acts.push({ 
-      id: u.id,
-      text: `${u.name} joined the platform`, 
-      icon: UserCheck, 
-      color: '#22c55e', 
-      time: 'Recently', 
-      link: `/profile/${u.id}` 
-    }));
-    communities.slice(-2).forEach(c => acts.push({ 
-      id: c.id,
-      text: `${c.name} community created`, 
-      icon: Globe, 
-      color: '#3b82f6', 
-      time: 'Recently', 
-      link: `/community/${c.id}` 
-    }));
-    events.slice(-3).forEach(e => {
+    users.forEach(u => {
+      const ts = u.created_at || u.createdAt;
+      acts.push({ 
+        id: u.id,
+        text: `${u.name} joined the platform`, 
+        icon: UserCheck, 
+        color: '#22c55e', 
+        timestamp: ts ? new Date(ts).getTime() : 0,
+        time: formatActivityDateTime(ts), 
+        link: `/profile/${u.id}` 
+      });
+    });
+    communities.forEach(c => {
+      const ts = c.created_at || c.createdAt;
+      acts.push({ 
+        id: c.id,
+        text: `${c.name} community created`, 
+        icon: Globe, 
+        color: '#3b82f6', 
+        timestamp: ts ? new Date(ts).getTime() : 0,
+        time: formatActivityDateTime(ts), 
+        link: `/community/${c.id}` 
+      });
+    });
+    events.forEach(e => {
       const comm = communities.find(c => c.id === e.communityId);
+      const ts = e.created_at || e.createdAt;
       acts.push({ 
         id: e.id,
         text: `${e.title} scheduled in ${comm?.name || 'Community'}`, 
         icon: Calendar, 
         color: '#14b8a6', 
-        time: 'Recently', 
+        timestamp: ts ? new Date(ts).getTime() : (e.date ? new Date(`${e.date}T${e.time || '10:00'}`).getTime() : 0),
+        time: formatActivityDateTime(ts, e.date, e.time), 
         link: `/events/${e.id}` 
       });
     });
-    return acts.slice(0, 8);
+    acts.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+    return acts.slice(0, 10);
   }, [users, communities, events]);
 
   // ─── Growth data (8 weeks) ────────────────────────────────
@@ -1104,7 +1143,7 @@ export default function AdminDashboard() {
                         <a.icon size={15} color={a.color} />
                       </div>
                       <span style={{ flex: 1, fontSize: '0.82rem', color: 'var(--slate-300)' }}>{a.text}</span>
-                      <span style={{ fontSize: '0.68rem', color: 'var(--slate-500)' }}>{a.time}</span>
+                      <span style={{ fontSize: '0.72rem', color: 'var(--slate-400)', whiteSpace: 'nowrap', fontWeight: 500 }}>{a.time}</span>
                       <ExternalLink size={12} color="var(--slate-600)" />
                     </div>
                   ))}

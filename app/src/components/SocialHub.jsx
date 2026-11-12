@@ -617,7 +617,7 @@ ${postText}
               </div>
               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                 <PlatformToggle 
-                  name="App Feed & In-App Alert (100% Live)" 
+                  name="App Feed & In-App Alert" 
                   active={destinations.app} 
                   onChange={() => setDestinations(p => ({ ...p, app: !p.app }))} 
                   color="var(--teal-400)" 
