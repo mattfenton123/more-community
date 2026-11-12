@@ -8,7 +8,7 @@ import PageTransition from './components/PageTransition';
 import { useAppContext } from './context/AppContext';
 import { useChat } from './context/ChatContext';
 
-// Lazy-loaded routes — only downloaded when navigated to
+// Lazy-loaded routes - only downloaded when navigated to
 const Discover = React.lazy(() => import('./views/Discover'));
 const CommunityProfile = React.lazy(() => import('./views/CommunityProfile'));
 const EventDetail = React.lazy(() => import('./views/EventDetail'));
@@ -108,14 +108,20 @@ function TabBar() {
         <div style={{ position: 'relative' }}>
           <Bell size={22} />
           {unreadCount > 0 && (
-            <div style={{
-              position: 'absolute', top: '-4px', right: '-6px',
-              background: 'var(--rose-500)', color: 'var(--white)',
-              fontSize: '0.6rem', fontWeight: 700,
-              width: '16px', height: '16px', borderRadius: '50%',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              border: '2px solid var(--slate-950)',
-            }}>
+            <div 
+              className="notification-badge"
+              style={{
+                position: 'absolute', top: '-4px', right: '-6px',
+                background: '#ef4444', color: '#ffffff',
+                fontSize: '0.62rem', fontWeight: 800,
+                minWidth: '16px', height: '16px', borderRadius: '999px',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                padding: '0 4px',
+                border: '2px solid var(--slate-950)',
+                boxShadow: '0 2px 6px rgba(239,68,68,0.4)',
+                lineHeight: 1
+              }}
+            >
               {unreadCount > 9 ? '9+' : unreadCount}
             </div>
           )}

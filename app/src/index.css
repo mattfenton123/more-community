@@ -2432,3 +2432,34 @@ button:disabled, [role="button"][aria-disabled="true"] {
 [data-theme="light"] .town-chapters-blueprint-card .current-chapter-text {
   color: #0f172a !important;
 }
+
+
+/* ─── Notification Badge Day & Dark Mode Contrast Fix ─── */
+.notification-badge,
+[data-badge="notification"] {
+  background-color: #ef4444 !important;
+  color: #ffffff !important;
+  font-weight: 800 !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3) !important;
+}
+
+[data-theme="light"] .app-header .notification-badge,
+[data-theme="light"] .bottom-nav .notification-badge,
+[data-theme="light"] .notification-badge {
+  background-color: #ef4444 !important;
+  color: #ffffff !important;
+  border-color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.45) !important;
+}
+
+
+@keyframes slideDownFade {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

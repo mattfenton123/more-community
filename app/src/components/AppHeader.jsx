@@ -2,10 +2,31 @@
 import { useRouter as useNavigate, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { Activity, Compass, Calendar, Sparkles, MessageCircle } from 'lucide-react';
-import { ChevronLeft, Bell, Sun, Moon, Monitor } from 'lucide-react';
+import { ChevronLeft, Bell, Sun, Moon, Monitor, X } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import NotificationsFeed from './NotificationsFeed';
 import { useAppContext } from '../context/AppContext';
 
 export default function AppHeader({ title, subtitle, rightElement, showBack = false, onBack, avatar, onAvatarClick }) {
+  const [showNotificationsModal, setShowNotificationsModal] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  useEffect(() => {
+    const checkWidth = () => {
+      setIsDesktop(typeof window !== 'undefined' && window.innerWidth >= 768);
+    };
+    checkWidth();
+    window.addEventListener('resize', checkWidth);
+    return () => window.removeEventListener('resize', checkWidth);
+  }, []);
+
+  const handleBellClick = () => {
+    if (isDesktop) {
+      setShowNotificationsModal(prev => !prev);
+    } else {
+      navigate.push('/notifications');
+    }
+  };
   const navigate = useNavigate();
   const currentPath = usePathname();
   const { user, notifications, theme, setTheme } = useAppContext();
@@ -52,20 +73,26 @@ export default function AppHeader({ title, subtitle, rightElement, showBack = fa
       </div>
       <div 
         className="interactive-press" 
-        onClick={() => navigate.push('/notifications')}
+        onClick={handleBellClick}
         style={{ position: 'relative', cursor: 'pointer', padding: '4px', flexShrink: 0 }}
         title="Notifications"
+        aria-label="Notifications"
       >
-        <Bell size={20} color="var(--slate-300)" />
+        <Bell size={20} color={theme === 'light' ? '#334155' : 'var(--slate-300)'} />
         {unreadCount > 0 && (
-          <div style={{
-            position: 'absolute', top: '1px', right: '1px',
-            background: 'var(--rose-500)', color: '#ffffff',
-            fontSize: '0.55rem', fontWeight: 700,
-            width: '15px', height: '15px', borderRadius: '50%',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            border: '2px solid var(--slate-900)',
-          }}>
+          <div 
+            className="notification-badge"
+            style={{
+              position: 'absolute', top: '1px', right: '1px',
+              background: '#ef4444', color: '#ffffff',
+              fontSize: '0.55rem', fontWeight: 800,
+              minWidth: '15px', height: '15px', borderRadius: '999px',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              padding: '0 3px',
+              border: theme === 'light' ? '2px solid #ffffff' : '2px solid var(--slate-900)',
+              lineHeight: 1
+            }}
+          >
             {unreadCount > 9 ? '9+' : unreadCount}
           </div>
         )}
@@ -164,6 +191,38 @@ export default function AppHeader({ title, subtitle, rightElement, showBack = fa
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
         {rightElement !== undefined ? rightElement : defaultRightElement}
       </div>
+
+      {showNotificationsModal && (
+        <div 
+          className="modal-overlay notifications-desktop-overlay"
+          onClick={() => setShowNotificationsModal(false)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 99999,
+            background: 'rgba(0, 0, 0, 0.45)',
+            backdropFilter: 'blur(3px)',
+            display: 'flex',
+            alignItems: 'flex-start',
+            justifyContent: 'flex-end',
+            padding: '58px 24px 24px'
+          }}
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: '100%',
+              maxWidth: '440px',
+              borderRadius: '16px',
+              overflow: 'hidden',
+              boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.1)',
+              animation: 'slideDownFade 0.2s cubic-bezier(0.16, 1, 0.3, 1)'
+            }}
+          >
+            <NotificationsFeed onClose={() => setShowNotificationsModal(false)} isModal={true} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
