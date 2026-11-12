@@ -13,6 +13,7 @@ import { useToast } from '../../src/components/Toast';
 import { isEventUpcoming, isEventPast } from '../../src/lib/calendar';
 import { cleanLocationName, getCommunityLocation } from '../../src/lib/location';
 import { getEventPath } from '../../src/lib/eventLinks';
+import { getCommunitySlug } from '../../src/lib/communityLinks';
 
 export default function HomeFeed() {
   const { user, communities, events, users, eventRsvps, isLoading, notifications, sponsors, sponsorshipAssignments, communityMemberships } = useAppContext();
@@ -304,7 +305,7 @@ export default function HomeFeed() {
             {joinedCommunities.map((community) => (
               <div
                 key={community.id}
-                onClick={() => router.push(`/community/${community.id}`)}
+                onClick={() => router.push(`/community/${getCommunitySlug(community, communities)}`)}
                 className="interactive-press"
                 style={{
                   borderRadius: '14px',
@@ -364,7 +365,7 @@ export default function HomeFeed() {
           </div>
           <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', WebkitOverflowScrolling: 'touch', paddingBottom: '4px' }}>
             {nearYouCommunities.map(c => (
-              <div key={c.id} onClick={() => router.push(`/community/${c.id}`)} className="interactive-press"
+              <div key={c.id} onClick={() => router.push(`/community/${getCommunitySlug(c, communities)}`)} className="interactive-press"
                 style={{ flex: '0 0 140px', borderRadius: '12px', overflow: 'hidden', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', cursor: 'pointer' }}>
                 <div style={{ height: '75px', background: `url(${c.image || c.cover_image}) center/cover`, position: 'relative' }}>
                   <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 40%, rgba(15,23,42,0.9))' }} />
@@ -479,7 +480,7 @@ export default function HomeFeed() {
               return (
                 <div
                   key={c.id}
-                  onClick={() => router.push(`/community/${c.id}`)}
+                  onClick={() => router.push(`/community/${getCommunitySlug(c, communities)}`)}
                   className="interactive-press"
                   style={{
                     display: 'flex',
@@ -818,7 +819,7 @@ export default function HomeFeed() {
                 <div 
                   onClick={(e) => {
                     e.stopPropagation();
-                    if (community?.id) router.push(`/community/${community.id}`);
+                    if (community?.id) router.push(`/community/${getCommunitySlug(community, communities)}`);
                   }}
                   className="interactive-press"
                   style={{
@@ -979,7 +980,7 @@ export default function HomeFeed() {
           {communities?.slice(0, 3).map(comm => (
             <div
               key={comm.id}
-              onClick={() => router.push(`/community/${comm.id}`)}
+              onClick={() => router.push(`/community/${getCommunitySlug(comm, communities)}`)}
               className="interactive-press"
               style={{
                 display: 'flex', gap: '12px', alignItems: 'center', padding: '10px',

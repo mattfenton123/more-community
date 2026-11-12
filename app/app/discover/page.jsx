@@ -382,7 +382,7 @@ export default function Discover() {
           {/* Featured Community Hero */}
           {featuredCommunity && activePill === 'All' && !searchQuery && (
             <div 
-              onClick={() => navigate.push('/community/' + featuredCommunity.id)} 
+              onClick={() => navigate.push('/community/' + getCommunitySlug(featuredCommunity, communities))} 
               className="interactive-press stagger-item"
               style={{ margin: '0 20px 20px', borderRadius: '20px', overflow: 'hidden', position: 'relative', height: '220px', cursor: 'pointer' }}
             >
@@ -558,7 +558,7 @@ export default function Discover() {
                   >
                     {/* Cover Image */}
                     <div 
-                      onClick={() => navigate.push('/community/' + community.id)}
+                      onClick={() => navigate.push('/community/' + getCommunitySlug(community, communities))}
                       style={{ 
                         height: '140px', 
                         background: community.image ? `url(${community.image})` : `linear-gradient(135deg, var(--teal-600), var(--slate-800))`, 
@@ -578,7 +578,7 @@ export default function Discover() {
                     {/* Content */}
                     <div style={{ padding: '16px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px' }}>
-                        <div onClick={() => navigate.push('/community/' + community.id)} style={{ flex: 1, minWidth: 0 }}>
+                        <div onClick={() => navigate.push('/community/' + getCommunitySlug(community, communities))} style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
                             <h3 style={{ margin: 0, fontFamily: 'var(--font-heading)', fontSize: '1.1rem', color: 'var(--white)' }}>{community.name}</h3>
                             {community.verified && <BadgeCheck size={15} color="#3b82f6" />}

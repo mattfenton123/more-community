@@ -491,14 +491,58 @@ export function AppProvider({ children }) {
 
           const count = memberCountsMap[c.id] || (c.leader_id ? 1 : 1);
 
+          const rawTags = Array.isArray(c.tags) ? c.tags : [];
+          const cfgTag = rawTags.find(t => typeof t === 'string' && t.startsWith('__cfg:'));
+          const visibleTags = rawTags.filter(t => !(typeof t === 'string' && t.startsWith('__cfg:')));
+          const tagSettingsObj = {};
+          if (cfgTag) {
+            cfgTag.replace('__cfg:', '').split(',').forEach(pair => {
+              const [k, v] = pair.split('=');
+              if (k === 'chapters') tagSettingsObj.allow_chapters = v === '1' || v === 'true';
+              if (k === 'pitches') tagSettingsObj.accepts_pitches = v === '1' || v === 'true';
+              if (k === 'carpool') tagSettingsObj.allow_carpool = v === '1' || v === 'true';
+            });
+          }
+
+          const rawLinks = Array.isArray(c.external_links) ? c.external_links : [];
+          const dbSettingsObj = rawLinks.find(item => item && item.__type === 'community_settings') || {};
+          const cleanExternalLinks = rawLinks.filter(item => !item || item.__type !== 'community_settings');
+
+          let localSettingsObj = {};
+          if (typeof window !== 'undefined') {
+            try {
+              const rawSettings = localStorage.getItem(`more_community_settings_${c.id}`);
+              if (rawSettings) localSettingsObj = JSON.parse(rawSettings);
+            } catch (e) {}
+          }
+
+          // Priority: localSettingsObj (latest on this device) + tagSettingsObj / dbSettingsObj (persisted in Supabase)
+          const mergedSettings = { ...dbSettingsObj, ...tagSettingsObj, ...localSettingsObj };
+          const defaultAllowChapters = c.id === 'more-leaders-network' ? false : true;
+          const allowChaptersVal = mergedSettings.allow_chapters !== undefined
+            ? Boolean(mergedSettings.allow_chapters)
+            : (c.allow_chapters !== undefined ? Boolean(c.allow_chapters) : defaultAllowChapters);
+          const acceptsPitchesVal = mergedSettings.accepts_pitches !== undefined
+            ? Boolean(mergedSettings.accepts_pitches)
+            : (c.accepts_pitches !== undefined ? Boolean(c.accepts_pitches) : (c.id === 'more-leaders-network' ? false : true));
+          const allowCarpoolVal = mergedSettings.allow_carpool !== undefined
+            ? Boolean(mergedSettings.allow_carpool)
+            : (c.allow_carpool !== undefined ? Boolean(c.allow_carpool) : true);
+
           return {
             ...c, // pass through ALL columns from Supabase
+            external_links: cleanExternalLinks,
+            allow_chapters: allowChaptersVal,
+            allowChapters: allowChaptersVal,
+            accepts_pitches: acceptsPitchesVal,
+            allow_carpool: allowCarpoolVal,
+            allowCarpool: allowCarpoolVal,
             members: count,
             memberCount: count,
             guidelines: storedGuidelines,
-            tags: c.tags || [],
+            tags: visibleTags,
             image: c.image || c.cover_image, // support both column names
-            category: (c.tags && c.tags.length > 0) ? c.tags[0] : 'All',
+            category: visibleTags.length > 0 ? visibleTags[0] : 'All',
             metrics: { members: count, cost: c.cost || 'Free', eventsRun: 0 },
             colors: ['#3b82f6', '#14b8a6'], // fallback gradient
             highlights: c.highlights || []
@@ -683,7 +727,8 @@ export function AppProvider({ children }) {
               );
               if (!isGoing) return;
 
-              const eventDateTimeStr = e.time ? `${e.date}T${e.time}` : `${e.date}T12:00:00`;
+              const rawStartHm = e.time ? (String(e.time).match(/\d{1,2}:\d{2}/)?.[0] || '12:00') : '12:00';
+              const eventDateTimeStr = `${e.date}T${rawStartHm}:00`;
               const eventTime = new Date(eventDateTimeStr).getTime();
               if (isNaN(eventTime)) return;
 
@@ -1766,10 +1811,39 @@ export function AppProvider({ children }) {
   };
 
   const createCommunity = async (communityData) => {
-    const baseSlug = communityData.name.toLowerCase().replace(/[^a-z0-9]/g, '-');
-    const suffix = Math.random().toString(36).substring(2, 7);
-    const newId = `${baseSlug}-${suffix}`;
-    const newCommunity = { id: newId, ...communityData, leader_id: user.id };
+    const baseSlug = communityData.name
+      .toLowerCase()
+      .trim()
+      .replace(/&/g, ' and ')
+      .replace(/['’`.]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+    const slugTaken = communities.some(
+      c => c.id === baseSlug || String(c.id || '').replace(/-[a-z0-9]{5}$/i, '') === baseSlug
+    );
+    const newId = slugTaken ? `${baseSlug}-${Math.random().toString(36).substring(2, 6)}` : baseSlug;
+    const initialSettings = {
+      __type: "community_settings",
+      allow_chapters: communityData.allow_chapters !== undefined ? Boolean(communityData.allow_chapters) : false,
+      accepts_pitches: communityData.accepts_pitches !== undefined ? Boolean(communityData.accepts_pitches) : true,
+      allow_carpool: communityData.allow_carpool !== undefined ? Boolean(communityData.allow_carpool) : true
+    };
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem(`more_community_settings_${newId}`, JSON.stringify(initialSettings));
+      } catch (e) {}
+    }
+    const newCommunity = {
+      id: newId,
+      ...communityData,
+      allow_chapters: initialSettings.allow_chapters,
+      allowChapters: initialSettings.allow_chapters,
+      accepts_pitches: initialSettings.accepts_pitches,
+      acceptsPitches: initialSettings.accepts_pitches,
+      allow_carpool: initialSettings.allow_carpool,
+      allowCarpool: initialSettings.allow_carpool,
+      leader_id: user.id
+    };
     
     // Optimistic UI update
     setCommunities(prev => [...prev, newCommunity]);
@@ -1784,7 +1858,10 @@ export function AppProvider({ children }) {
         id: newId,
         name: communityData.name,
         description: communityData.description,
-        tags: communityData.tags || [],
+        tags: [
+          ...(Array.isArray(communityData.tags) ? communityData.tags.filter(t => !(typeof t === 'string' && t.startsWith('__cfg:'))) : []),
+          `__cfg:chapters=${initialSettings.allow_chapters ? 1 : 0},pitches=${initialSettings.accepts_pitches ? 1 : 0},carpool=${initialSettings.allow_carpool ? 1 : 0}`
+        ],
         cover_image: communityData.image || communityData.cover_image || null,
         creatorId: user.id,
         whatsapp_group: communityData.whatsapp_group || null,
@@ -1792,7 +1869,8 @@ export function AppProvider({ children }) {
         cost: communityData.cost || 'Free',
         target_audience: communityData.target_audience || null,
         location_name: communityData.location_name || null,
-        activity_level: communityData.activity_level || 'Active'
+        activity_level: communityData.activity_level || 'Active',
+        external_links: [...(Array.isArray(communityData.external_links) ? communityData.external_links : []), initialSettings]
       }, session?.access_token);
       
       return newId;
@@ -2012,7 +2090,49 @@ export function AppProvider({ children }) {
           } catch (e) {}
         }
       }
+      const targetComm = communities.find(c => c.id === communityId) || {};
+      const hasSettingsUpdate =
+        updates.allow_chapters !== undefined ||
+        updates.allowChapters !== undefined ||
+        updates.accepts_pitches !== undefined ||
+        updates.allow_carpool !== undefined ||
+        updates.allowCarpool !== undefined;
+
+      const nextSettings = {
+        __type: 'community_settings',
+        allow_chapters: Boolean(updates.allow_chapters ?? updates.allowChapters ?? targetComm.allow_chapters ?? true),
+        accepts_pitches: Boolean(updates.accepts_pitches ?? targetComm.accepts_pitches ?? true),
+        allow_carpool: Boolean(updates.allow_carpool ?? updates.allowCarpool ?? targetComm.allow_carpool ?? true),
+      };
+
+      if (hasSettingsUpdate && typeof window !== 'undefined') {
+        try {
+          localStorage.setItem(`more_community_settings_${communityId}`, JSON.stringify(nextSettings));
+        } catch (e) {}
+      }
+
+      if (hasSettingsUpdate || updates.tags !== undefined) {
+        const baseTags = Array.isArray(updates.tags !== undefined ? updates.tags : targetComm.tags)
+          ? (updates.tags !== undefined ? updates.tags : targetComm.tags).filter(t => !(typeof t === 'string' && t.startsWith('__cfg:')))
+          : [];
+        const cfgStr = `__cfg:chapters=${nextSettings.allow_chapters ? 1 : 0},pitches=${nextSettings.accepts_pitches ? 1 : 0},carpool=${nextSettings.allow_carpool ? 1 : 0}`;
+        dbUpdates.tags = [...baseTags, cfgStr];
+      }
+
+      if (hasSettingsUpdate || updates.external_links !== undefined) {
+        const sourceLinks = updates.external_links !== undefined ? updates.external_links : targetComm.external_links;
+        const baseLinks = Array.isArray(sourceLinks)
+          ? sourceLinks.filter(item => !item || item.__type !== 'community_settings')
+          : [];
+        dbUpdates.external_links = [...baseLinks, nextSettings];
+      }
+
       // Prevent throwing error for non-existent mock CRM columns
+      delete dbUpdates.allow_chapters;
+      delete dbUpdates.allowChapters;
+      delete dbUpdates.accepts_pitches;
+      delete dbUpdates.allow_carpool;
+      delete dbUpdates.allowCarpool;
       delete dbUpdates.autoWelcomeEnabled;
       delete dbUpdates.autoRemindersEnabled;
       delete dbUpdates.autoFeedbackEnabled;

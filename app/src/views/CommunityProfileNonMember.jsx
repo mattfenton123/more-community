@@ -43,7 +43,7 @@ export default function CommunityProfileNonMember({
   const isDemoCommunity = SEED_COMMUNITY_IDS.includes(community.id);
   const galleryType = getGalleryType(community.tags);
   const dbPhotos = (community.gallery_photos || []).map(p => typeof p === 'string' ? { url: p, uploaderId: null } : p);
-  const stockPhotos = isDemoCommunity && dbPhotos.length === 0 ? GALLERY_PHOTOS[galleryType].map(url => ({ url, uploaderId: 'stock' })) : [];
+  const stockPhotos = [];
   const galleryPhotos = dbPhotos.length > 0 ? dbPhotos : stockPhotos;
   const nextEvent = upcomingEvents[0] || null;
   const subPrice = community.subscription_price || community.subscriptionPrice || 0;

@@ -1317,8 +1317,10 @@ export default function EventClient({ id }) {
           <EventLocationMap location={event.location} event={event} isLocationShielded={!canSeeSecretLocation} />
         )}
 
-        {/* Trail Carpool Hub (Flexible & Privacy-Safe Rides) */}
-        <CarpoolHub event={event} user={user} isAttendee={isGoing} community={community} />
+        {/* Community Carpool Hub (Respects leader toggle) */}
+        {(community?.allow_carpool !== false && community?.allowCarpool !== false && event?.allowCarpool !== false) && (
+          <CarpoolHub event={event} user={user} isAttendee={isGoing} community={community} />
+        )}
 
         {/* Joint Co-Hosting & Partner Community Discovery */}
         {partnerCommunities.length > 0 && (

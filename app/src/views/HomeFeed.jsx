@@ -150,7 +150,7 @@ export default function HomeFeed() {
             {joinedCommunities.map((comm) => (
               <div 
                 key={comm.id}
-                onClick={() => router.push(`/community/${comm.id}`)}
+                onClick={() => router.push(`/community/${getCommunitySlug(comm, communities)}`)}
                 className="glass-panel interactive-press"
                 style={{ overflow: 'hidden', cursor: 'pointer', padding: 0 }}
               >

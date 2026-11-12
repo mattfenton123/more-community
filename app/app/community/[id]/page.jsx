@@ -1,5 +1,6 @@
 import { supabase } from '../../../src/lib/supabaseClient';
 import { cleanLocationName } from '../../../src/lib/location';
+import { findCommunityByParam } from '../../../src/lib/communityLinks';
 import CommunityClient from './client-page';
 
 // Next.js 15 requires params to be awaited
@@ -7,11 +8,16 @@ export async function generateMetadata({ params }) {
   const resolvedParams = await params;
   const { id } = resolvedParams;
   
-  const { data: community } = await supabase
+  let { data: community } = await supabase
     .from('communities')
     .select('*')
     .eq('id', id)
-    .single();
+    .maybeSingle();
+
+  if (!community) {
+    const { data: allCommunities } = await supabase.from('communities').select('*');
+    community = findCommunityByParam(allCommunities || [], id);
+  }
     
   if (!community) {
     return {

@@ -28,9 +28,59 @@ export default function RecurringSchedulePicker({
   // Mode: 'single' | 'recurring' | 'custom'
   const [scheduleMode, setScheduleMode] = useState('single');
   
+  // Parse initialTime into startTime + optional duration / endTime
+  const parseInitialTime = (raw) => {
+    const str = (raw || '10:00').trim();
+    const rangeMatch = str.match(/^(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})$/);
+    if (rangeMatch) {
+      return { startTime: rangeMatch[1], durationMode: 'exact', approxDuration: '~2 hrs', endTime: rangeMatch[2] };
+    }
+    const approxMatch = str.match(/^(\d{1,2}:\d{2})\s*\(([^)]+)\)$/);
+    if (approxMatch) {
+      return { startTime: approxMatch[1], durationMode: 'approx', approxDuration: approxMatch[2].trim(), endTime: '12:00' };
+    }
+    const timeOnly = str.match(/^(\d{1,2}:\d{2})/)?.[1] || '10:00';
+    return { startTime: timeOnly, durationMode: 'none', approxDuration: '~2 hrs', endTime: '12:00' };
+  };
+
+  const parsedInit = parseInitialTime(initialTime);
+
   // Base date and time
   const [startDate, setStartDate] = useState(initialDate || '');
-  const [time, setTime] = useState(initialTime || '10:00');
+  const [startTime, setStartTime] = useState(parsedInit.startTime);
+  const [durationMode, setDurationMode] = useState(parsedInit.durationMode); // 'none' | 'approx' | 'exact'
+  const [approxDuration, setApproxDuration] = useState(parsedInit.approxDuration);
+  const [endTime, setEndTime] = useState(parsedInit.endTime);
+
+  const addHoursToTime = (tStr, hrs = 2) => {
+    const m = (tStr || '10:00').match(/^(\d{1,2}):(\d{2})/);
+    if (!m) return '12:00';
+    const h = (parseInt(m[1], 10) + hrs) % 24;
+    return `${String(h).padStart(2, '0')}:${m[2]}`;
+  };
+
+  const getExactDurationLabel = (sTime, eTime) => {
+    const sm = (sTime || '').match(/^(\d{1,2}):(\d{2})/);
+    const em = (eTime || '').match(/^(\d{1,2}):(\d{2})/);
+    if (!sm || !em) return '';
+    let diffMins = (parseInt(em[1], 10) * 60 + parseInt(em[2], 10)) - (parseInt(sm[1], 10) * 60 + parseInt(sm[2], 10));
+    if (diffMins <= 0) diffMins += 24 * 60;
+    const hrs = Math.floor(diffMins / 60);
+    const mins = diffMins % 60;
+    if (hrs > 0 && mins > 0) return `${hrs} hr${hrs > 1 ? 's' : ''} ${mins} mins`;
+    if (hrs > 0) return `${hrs} hr${hrs > 1 ? 's' : ''}`;
+    return `${mins} mins`;
+  };
+
+  const time = useMemo(() => {
+    if (durationMode === 'approx' && approxDuration.trim()) {
+      return `${startTime} (${approxDuration.trim()})`;
+    }
+    if (durationMode === 'exact' && endTime) {
+      return `${startTime} - ${endTime}`;
+    }
+    return startTime;
+  }, [startTime, durationMode, approxDuration, endTime]);
 
   // Recurring options
   // 'weekly' | 'biweekly' | 'monthly_weekday' | 'monthly_date' | 'weekdays'
@@ -52,8 +102,12 @@ export default function RecurringSchedulePicker({
   }, [initialDate]);
 
   useEffect(() => {
-    if (initialTime && !time) {
-      setTime(initialTime);
+    if (initialTime) {
+      const p = parseInitialTime(initialTime);
+      setStartTime(p.startTime);
+      setDurationMode(p.durationMode);
+      if (p.durationMode === 'approx') setApproxDuration(p.approxDuration);
+      if (p.durationMode === 'exact') setEndTime(p.endTime);
     }
   }, [initialTime]);
 
@@ -287,16 +341,138 @@ export default function RecurringSchedulePicker({
 
         <div className="form-group" style={{ marginBottom: 0 }}>
           <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <Clock size={14} color="var(--teal-400)" /> Time <span style={{ color: 'var(--rose-400)', fontSize: '0.7rem' }}>*</span>
+            <Clock size={14} color="var(--teal-400)" /> Start Time <span style={{ color: 'var(--rose-400)', fontSize: '0.7rem' }}>*</span>
           </label>
           <input 
             type="time" 
             className="form-input" 
-            value={time} 
-            onChange={e => setTime(e.target.value)} 
+            value={startTime} 
+            onChange={e => setStartTime(e.target.value)} 
             style={{ colorScheme: 'dark', padding: '12px 14px', width: '100%', borderRadius: '10px' }} 
           />
         </div>
+      </div>
+
+      {/* Duration / End Time (Optional - Approximate or Exact) */}
+      <div style={{
+        background: 'rgba(255,255,255,0.025)',
+        border: '1px solid rgba(255,255,255,0.08)',
+        borderRadius: '12px',
+        padding: '12px 14px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '10px'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+          <label className="form-label" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.82rem' }}>
+            <Clock size={14} color="var(--teal-400)" /> Duration / Finish Time <span style={{ color: 'var(--slate-400)', fontWeight: 400, fontSize: '0.75rem' }}>(Optional)</span>
+          </label>
+          <div style={{ display: 'flex', gap: '4px', background: 'rgba(0,0,0,0.25)', padding: '3px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.06)' }}>
+            {[
+              { id: 'none', label: 'Start Only' },
+              { id: 'approx', label: 'Approx Duration' },
+              { id: 'exact', label: 'Exact End Time' }
+            ].map(opt => (
+              <button
+                key={opt.id}
+                type="button"
+                onClick={() => {
+                  setDurationMode(opt.id);
+                  if (opt.id === 'exact' && !endTime) {
+                    setEndTime(addHoursToTime(startTime, 2));
+                  }
+                }}
+                style={{
+                  padding: '5px 10px',
+                  borderRadius: '6px',
+                  border: 'none',
+                  background: durationMode === opt.id ? 'var(--teal-500)' : 'transparent',
+                  color: durationMode === opt.id ? '#fff' : 'var(--slate-400)',
+                  fontSize: '0.74rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {durationMode === 'approx' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+              {['~45 mins', '~1 hr', '~1.5 hrs', '~2 hrs', '~2.5 hrs', '~3 hrs', '~4 hrs', 'Half day'].map(preset => {
+                const active = approxDuration === preset;
+                return (
+                  <button
+                    key={preset}
+                    type="button"
+                    onClick={() => setApproxDuration(preset)}
+                    style={{
+                      padding: '6px 11px',
+                      borderRadius: '99px',
+                      fontSize: '0.76rem',
+                      fontWeight: active ? 700 : 500,
+                      border: active ? '1px solid var(--teal-400)' : '1px solid rgba(255,255,255,0.1)',
+                      background: active ? 'rgba(20,184,166,0.18)' : 'rgba(255,255,255,0.03)',
+                      color: active ? 'var(--teal-300)' : 'var(--slate-300)',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {preset}
+                  </button>
+                );
+              })}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '0.76rem', color: 'var(--slate-400)', whiteSpace: 'nowrap' }}>Custom duration:</span>
+              <input
+                type="text"
+                className="form-input"
+                placeholder="e.g. ~2 hrs or 1-2 hours"
+                value={approxDuration}
+                onChange={e => setApproxDuration(e.target.value)}
+                style={{ padding: '7px 12px', fontSize: '0.82rem', borderRadius: '8px', flex: 1 }}
+              />
+              <span style={{ fontSize: '0.74rem', color: 'var(--teal-300)', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                Shows: {time}
+              </span>
+            </div>
+          </div>
+        )}
+
+        {durationMode === 'exact' && (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1 }}>
+              <span style={{ fontSize: '0.8rem', color: 'var(--slate-300)', fontWeight: 500, whiteSpace: 'nowrap' }}>Finish Time:</span>
+              <input
+                type="time"
+                className="form-input"
+                value={endTime}
+                onChange={e => setEndTime(e.target.value)}
+                style={{ colorScheme: 'dark', padding: '8px 12px', borderRadius: '8px', width: '140px' }}
+              />
+              {getExactDurationLabel(startTime, endTime) && (
+                <span style={{
+                  fontSize: '0.74rem',
+                  padding: '4px 10px',
+                  borderRadius: '99px',
+                  background: 'rgba(20,184,166,0.12)',
+                  border: '1px solid rgba(20,184,166,0.28)',
+                  color: 'var(--teal-300)',
+                  fontWeight: 600
+                }}>
+                  {getExactDurationLabel(startTime, endTime)}
+                </span>
+              )}
+            </div>
+            <span style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>
+              Shows: <strong style={{ color: 'var(--white)' }}>{time}</strong>
+            </span>
+          </div>
+        )}
       </div>
 
       {/* ─────────────────────────────────────────────────────────────

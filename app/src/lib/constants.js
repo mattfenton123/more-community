@@ -3,7 +3,7 @@ export const LAUNCH_LOCATION_DISPLAY = 'Tunbridge Wells, UK';
 
 export const FALLBACK_IMAGES = {
   community: 'https://images.unsplash.com/photo-1543269865-cbf427effbad?w=800&q=80',
-  user: 'https://images.unsplash.com/photo-1531384441138-2736e62e0919?w=400&q=80',
+  user: '/images/default-avatar.svg',
   event: 'https://images.unsplash.com/photo-1523580494112-071dcb849be5?w=800&q=80',
   general: 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=800&q=80'
 };
@@ -19,7 +19,7 @@ export const initialExperiences = [
     leaderMarkup: 10,
     capacity: 'Up to 45 people',
     amenities: ['4K Projector', 'Fibre WiFi', 'Kitchenette', 'Coffee Bar', 'Natural Light'],
-    promotedBy: 'more-leaders-network',
+    promotedBy: null,
     provider: 'Pantiles Creative Studios',
     duration: 'Hourly / Half Day',
     location: 'The Pantiles, Tunbridge Wells',
@@ -37,7 +37,7 @@ export const initialExperiences = [
     leaderMarkup: 10,
     capacity: 'Up to 90 people',
     amenities: ['Commercial Kitchen', 'Private Garden', 'Free Parking', 'Accessible', 'PA Sound System'],
-    promotedBy: 'more-leaders-network',
+    promotedBy: null,
     provider: 'High Weald Community Trust',
     duration: 'Hourly / Full Day',
     location: 'High Weald, Kent',

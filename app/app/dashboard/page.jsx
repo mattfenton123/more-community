@@ -1,11 +1,12 @@
 "use client";
 import { supabase } from '../../src/lib/supabaseClient';
 import { useState, useRef, useMemo, useEffect } from 'react';
-import { Printer, ExternalLink, HelpCircle, Users, Calendar, MessageCircle, TrendingUp, Search, Plus, MapPin, Image as ImageIcon, CreditCard, ChevronRight, ChevronLeft, Download, Activity, Globe, Heart, Crown, Info, X, Map, Zap, Mail, Trash2, UserCheck, Ban, ChevronDown, ChevronUp, Settings, Megaphone, QrCode, BarChart3, Ticket, ScanLine, UserPlus, DollarSign, Clock, Edit3, Check, CheckCircle2, Eye, EyeOff, Shield, Star, Sparkles, BookOpen, ListChecks, Bell, Archive, Mic, MicOff, Wand2, Lightbulb } from 'lucide-react';
+import { Printer, ExternalLink, HelpCircle, Users, Calendar, MessageCircle, TrendingUp, Search, Plus, MapPin, Image as ImageIcon, CreditCard, ChevronRight, ChevronLeft, Download, Activity, Globe, Heart, Crown, Info, X, Map, Zap, Mail, Trash2, UserCheck, Ban, ChevronDown, ChevronUp, Settings, Megaphone, QrCode, BarChart3, Ticket, ScanLine, UserPlus, DollarSign, Clock, Edit3, Check, CheckCircle2, Eye, EyeOff, Shield, Star, Sparkles, BookOpen, ListChecks, Bell, Archive, Mic, MicOff, Wand2, Lightbulb, Car } from 'lucide-react';
 import AppHeader from '../../src/components/AppHeader';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { isEventUpcoming, isEventPast, parseEventDateTime } from '../../src/lib/calendar';
 import { getEventPath } from '../../src/lib/eventLinks';
+import { findCommunityByParam, getCommunitySlug } from '../../src/lib/communityLinks';
 import { useAppContext } from '../../src/context/AppContext';
 import { useChat } from '../../src/context/ChatContext';
 import { useToast } from '../../src/components/Toast';
@@ -153,8 +154,20 @@ export default function LeaderDashboard({ initialCommunityId }) {
     }
   }, [availableCommunities, activeCommunityId]);
 
-  const communityIdLed = activeCommunityId || availableCommunities[0]?.id || user?.ledCommunities?.[0] || (user?.isAdmin && communities.length > 0 ? communities[0].id : null);
-  const community = communities.find(c => c.id === communityIdLed);
+  const rawCommunityParam = activeCommunityId || availableCommunities[0]?.id || user?.ledCommunities?.[0] || (user?.isAdmin && communities.length > 0 ? communities[0].id : null);
+  const community = findCommunityByParam(communities, rawCommunityParam) || findCommunityByParam(availableCommunities, rawCommunityParam);
+  const communityIdLed = community?.id || rawCommunityParam;
+
+  useEffect(() => {
+    if (!community || typeof window === 'undefined') return;
+    const cleanSlug = getCommunitySlug(community, communities);
+    const url = new URL(window.location.href);
+    const currentParam = url.searchParams.get('community');
+    if (currentParam && currentParam !== cleanSlug) {
+      url.searchParams.set('community', cleanSlug);
+      window.history.replaceState(null, '', url.pathname + url.search);
+    }
+  }, [community, communities]);
   const memberList = community ? (communityMemberships[community.id] || []) : [];
   const communityEvents = community ? events.filter(e => e.communityId === community.id || e.collabCommunityIds?.includes(community.id)).sort((a, b) => new Date(a.date) - new Date(b.date)) : [];
   const publishedEvents = communityEvents.filter(e => e.status !== 'cancelled');
@@ -4919,6 +4932,40 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   <div style={{
                     width: '22px', height: '22px', borderRadius: '50%', background: 'white', position: 'absolute', top: '2px',
                     left: (community.allow_chapters ?? community.allowChapters ?? true) ? '22px' : '2px', transition: 'left 0.2s'
+                  }}></div>
+                </button>
+              </div>
+
+              {/* Community Carpool & Lift Sharing Toggle */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px 18px', background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px' }}>
+                <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(16, 185, 129, 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#10b981', flexShrink: 0 }}>
+                  <Car size={20} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontFamily: 'var(--font-heading)', fontSize: '0.98rem', fontWeight: 600, color: 'var(--white)', marginBottom: '2px' }}>
+                    Community Carpool & Lift Sharing
+                  </div>
+                  <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.82rem', color: 'var(--slate-400)' }}>
+                    Allow attendees to offer spare seats and coordinate lifts on your event pages
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const currentVal = community.allow_carpool ?? community.allowCarpool ?? true;
+                    const newVal = !currentVal;
+                    updateCommunity(community.id, { allow_carpool: newVal, allowCarpool: newVal });
+                    toast.info(newVal ? 'Carpool Enabled' : 'Carpool Disabled', newVal ? 'Share a Lift section is visible on your event pages' : 'Share a Lift section hidden from your event pages');
+                  }}
+                  style={{
+                    width: '46px', height: '26px', borderRadius: '99px', border: 'none',
+                    background: (community.allow_carpool ?? community.allowCarpool ?? true) ? 'var(--teal-500)' : 'rgba(255,255,255,0.1)',
+                    position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0
+                  }}
+                >
+                  <div style={{
+                    width: '22px', height: '22px', borderRadius: '50%', background: 'white', position: 'absolute', top: '2px',
+                    left: (community.allow_carpool ?? community.allowCarpool ?? true) ? '22px' : '2px', transition: 'left 0.2s'
                   }}></div>
                 </button>
               </div>

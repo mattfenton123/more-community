@@ -127,12 +127,23 @@ async function ensureRlsManagerMembership(db, userId, communityId, isAdmin = fal
       .select('role')
       .match({ user_id: userId, community_id: communityId })
       .maybeSingle();
-    if (!mem || (mem.role !== 'Leader' && mem.role !== 'Co-Leader')) {
-      await db.from('community_memberships').upsert([{
+    const targetRole = isAdmin ? 'Co-Leader' : 'Leader';
+    if (!mem) {
+      await db.from('community_memberships').insert({
         community_id: communityId,
         user_id: userId,
-        role: isAdmin ? 'Co-Leader' : 'Leader'
-      }], { onConflict: 'community_id,user_id' });
+        role: targetRole
+      });
+    } else if (mem.role !== 'Leader' && mem.role !== 'Co-Leader') {
+      // Verified manager whose row says 'Member': replace it (own-row DELETE + INSERT are allowed by RLS)
+      await db.from('community_memberships')
+        .delete()
+        .match({ community_id: communityId, user_id: userId });
+      await db.from('community_memberships').insert({
+        community_id: communityId,
+        user_id: userId,
+        role: targetRole
+      });
     }
   } catch (e) {
     console.warn('RLS membership sync warning:', e?.message || e);
@@ -228,7 +239,8 @@ export async function createCommunityAction(communityData, token) {
     activity_level: communityData.activity_level || 'Active',
     leader_id: communityData.creatorId || null,
     whatsapp_group: communityData.whatsapp_group || null,
-    instagram_handle: communityData.instagram_handle || null
+    instagram_handle: communityData.instagram_handle || null,
+    external_links: Array.isArray(communityData.external_links) ? communityData.external_links : []
   }).select().single();
 
   if (error) throw new Error(error.message);
@@ -717,8 +729,8 @@ export async function updateCommunityAction(communityId, updates, token) {
       const { data: currentRow } = await db.from('communities').select('*').eq('id', communityId).maybeSingle();
       return { ...(currentRow || { id: communityId }), ...dbUpdates };
     }
-    const { data, error } = await db.from('communities').update(payload).eq('id', communityId).select().single();
-    if (!error) return { ...data, ...dbUpdates };
+    const { data, error } = await db.from('communities').update(payload).eq('id', communityId).select().maybeSingle();
+    if (!error) return { ...(data || { id: communityId }), ...dbUpdates };
 
     // If a column has not been migrated yet in Supabase, strip that missing column and retry remaining fields
     const colMatch = error.message?.match(/column ["']?(?:communities\.)?([a-zA-Z0-9_]+)["']? does not exist/i) ||

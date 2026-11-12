@@ -3,6 +3,7 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import { Compass, Plus, ArrowRight, Shield, CheckCircle2, MapPin } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
+import { getCommunitySlug } from '../lib/communityLinks';
 
 export default function TownChaptersBlueprint({ community }) {
   const router = useRouter();
@@ -120,7 +121,7 @@ export default function TownChaptersBlueprint({ community }) {
         {sisterChapters.map(sc => (
           <div
             key={sc.id}
-            onClick={() => router.push(`/community/${sc.id}`)}
+            onClick={() => router.push(`/community/${getCommunitySlug(sc, communities)}`)}
             className="interactive-press"
             style={{
               display: 'inline-flex',

@@ -8,8 +8,8 @@ export default function CouncilImpactMetrics({ community, events = [], members =
   const [reportingPeriod, setReportingPeriod] = useState('quarter');
 
   // Realistic calculated metrics
-  const totalEvents = events.filter(e => e.communityId === community?.id).length || 18;
-  const totalMembers = members.length || 142;
+  const totalEvents = events.filter(e => e.communityId === community?.id).length;
+  const totalMembers = members.length || (community?.members || 1);
   const estimatedHours = (totalEvents * 2.2 * 14).toFixed(0); // ~550 hours of face-to-face social contact
   const socialValueGbp = (estimatedHours * 18.50).toLocaleString('en-GB', { maximumFractionDigits: 0 }); // Treasury Green Book value of social connection
 

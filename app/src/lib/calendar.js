@@ -1,9 +1,42 @@
 import { cleanLocationName } from './location';
 import { getEventUrl } from './eventLinks';
 
+export function parseEventEndDateTime(dateStr, timeStr, fallbackStart) {
+  const startTime = fallbackStart || parseEventDateTime(dateStr, timeStr) || new Date();
+  if (!timeStr) return new Date(startTime.getTime() + 2 * 60 * 60 * 1000);
+
+  // 1. Check for exact range e.g. "10:00 - 12:30"
+  const rangeMatch = String(timeStr).match(/(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})/);
+  if (rangeMatch && rangeMatch[2]) {
+    const endDt = parseEventDateTime(dateStr, rangeMatch[2]);
+    if (endDt) {
+      if (endDt <= startTime) endDt.setDate(endDt.getDate() + 1);
+      return endDt;
+    }
+  }
+
+  // 2. Check for approximate duration in hours or minutes e.g. "(~1.5 hrs)" or "(~45 mins)"
+  const hrMatch = String(timeStr).match(/(\d+(?:\.\d+)?)\s*(?:hr|hrs|hour|hours)/i);
+  if (hrMatch) {
+    const hrs = parseFloat(hrMatch[1]);
+    if (!isNaN(hrs) && hrs > 0) {
+      return new Date(startTime.getTime() + hrs * 60 * 60 * 1000);
+    }
+  }
+  const minMatch = String(timeStr).match(/(\d+)\s*(?:min|mins|minute|minutes)/i);
+  if (minMatch) {
+    const mins = parseInt(minMatch[1], 10);
+    if (!isNaN(mins) && mins > 0) {
+      return new Date(startTime.getTime() + mins * 60 * 1000);
+    }
+  }
+
+  return new Date(startTime.getTime() + 2 * 60 * 60 * 1000);
+}
+
 export function downloadIcs(event, communityName) {
   const startTime = parseDateTime(event.date, event.time);
-  const endTime = new Date(startTime.getTime() + 2 * 60 * 60 * 1000); // Assume 2 hours duration
+  const endTime = parseEventEndDateTime(event.date, event.time, startTime);
   const cleanLoc = cleanLocationName(event.location || '');
   const eventUrl = getEventUrl(event);
 
@@ -48,7 +81,7 @@ export function getCalendarFeedUrls(communityId) {
 
 export function getGoogleCalendarEventUrl(event, communityName) {
   const startTime = parseEventDateTime(event.date, event.time) || new Date();
-  const endTime = new Date(startTime.getTime() + 2 * 60 * 60 * 1000);
+  const endTime = parseEventEndDateTime(event.date, event.time, startTime);
   const formatDate = (date) => date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
   const startStr = formatDate(startTime);
   const endStr = formatDate(endTime);

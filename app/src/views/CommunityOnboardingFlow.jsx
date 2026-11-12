@@ -68,7 +68,7 @@ function StepBasics({ name, setName, description, setDescription, parentCommunit
   );
 }
 
-function StepDetails({ targetAudience, setTargetAudience, cost, setCost, activityLevel, setActivityLevel, locationName, setLocationName, regionCoords, setRegionCoords, regionRadius, setRegionRadius }) {
+function StepDetails({ targetAudience, setTargetAudience, cost, setCost, activityLevel, setActivityLevel, locationName, setLocationName, regionCoords, setRegionCoords, regionRadius, setRegionRadius, allowChapters, setAllowChapters, allowCarpool, setAllowCarpool }) {
   return (
     <div className="step-wrapper">
       <div className="step-header">
@@ -123,6 +123,59 @@ function StepDetails({ targetAudience, setTargetAudience, cost, setCost, activit
           radius={regionRadius}
           onRadiusChange={setRegionRadius}
         />
+      </div>
+
+      {/* Multi-Town Chapter Network & Carpool Toggles */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '8px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '14px', padding: '14px 16px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px' }}>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: '0.92rem', fontWeight: 700, color: 'var(--white)', marginBottom: '2px' }}>
+              Multi-Town Chapter Network
+            </div>
+            <div style={{ fontSize: '0.78rem', color: 'var(--slate-400)', lineHeight: 1.4 }}>
+              Allow leaders in other villages or towns to apply to launch official chapters of your community
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setAllowChapters(!allowChapters)}
+            style={{
+              width: '46px', height: '26px', borderRadius: '99px', border: 'none',
+              background: allowChapters ? 'var(--teal-500)' : 'rgba(255,255,255,0.12)',
+              position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0
+            }}
+          >
+            <div style={{
+              width: '22px', height: '22px', borderRadius: '50%', background: 'white', position: 'absolute', top: '2px',
+              left: allowChapters ? '22px' : '2px', transition: 'left 0.2s'
+            }} />
+          </button>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '14px', padding: '14px 16px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px' }}>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: '0.92rem', fontWeight: 700, color: 'var(--white)', marginBottom: '2px' }}>
+              Community Carpool & Lift Sharing
+            </div>
+            <div style={{ fontSize: '0.78rem', color: 'var(--slate-400)', lineHeight: 1.4 }}>
+              Enable the Share a Lift section on your event pages so attendees can coordinate rides
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setAllowCarpool(!allowCarpool)}
+            style={{
+              width: '46px', height: '26px', borderRadius: '99px', border: 'none',
+              background: allowCarpool ? 'var(--teal-500)' : 'rgba(255,255,255,0.12)',
+              position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0
+            }}
+          >
+            <div style={{
+              width: '22px', height: '22px', borderRadius: '50%', background: 'white', position: 'absolute', top: '2px',
+              left: allowCarpool ? '22px' : '2px', transition: 'left 0.2s'
+            }} />
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -387,6 +440,25 @@ function StepCoverPhoto({ coverImagePreview, handleImageSelect, fileInputRef }) 
 }
 
 function StepEvent({ eventTitle, setEventTitle, eventDate, setEventDate, eventTime, setEventTime, eventLocation, setEventLocation }) {
+  const [startOnlyTime, setStartOnlyTime] = useState(() => (eventTime || '').match(/^(\d{1,2}:\d{2})/)?.[1] || '');
+  const [durationMode, setDurationMode] = useState('none'); // 'none' | 'approx' | 'exact'
+  const [approxDuration, setApproxDuration] = useState('~2 hrs');
+  const [endTime, setEndTime] = useState('12:00');
+
+  useEffect(() => {
+    if (!startOnlyTime) {
+      setEventTime('');
+      return;
+    }
+    if (durationMode === 'approx' && approxDuration.trim()) {
+      setEventTime(`${startOnlyTime} (${approxDuration.trim()})`);
+    } else if (durationMode === 'exact' && endTime) {
+      setEventTime(`${startOnlyTime} - ${endTime}`);
+    } else {
+      setEventTime(startOnlyTime);
+    }
+  }, [startOnlyTime, durationMode, approxDuration, endTime]);
+
   const isPartiallyFilled = (eventTitle || eventDate || eventTime || eventLocation) && 
                             !(eventTitle && eventDate && eventTime && eventLocation);
 
@@ -420,15 +492,95 @@ function StepEvent({ eventTitle, setEventTitle, eventDate, setEventDate, eventTi
             />
           </div>
           <div className="event-time-col">
-            <label className="input-label">Time</label>
+            <label className="input-label">Start Time</label>
             <input
               type="time"
-              value={eventTime}
-              onChange={e => setEventTime(e.target.value)}
+              value={startOnlyTime}
+              onChange={e => setStartOnlyTime(e.target.value)}
               className="text-input"
             />
           </div>
         </div>
+
+        {startOnlyTime && (
+          <div style={{
+            background: 'rgba(255,255,255,0.025)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            borderRadius: '12px',
+            padding: '12px 14px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '10px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+              <span style={{ fontSize: '0.84rem', fontWeight: 600, color: 'var(--slate-200)' }}>
+                Duration / Finish Time <span style={{ color: 'var(--slate-400)', fontWeight: 400, fontSize: '0.76rem' }}>(Optional)</span>
+              </span>
+              <div style={{ display: 'flex', gap: '4px', background: 'rgba(0,0,0,0.25)', padding: '3px', borderRadius: '8px' }}>
+                {[
+                  { id: 'none', label: 'Start Only' },
+                  { id: 'approx', label: 'Approx Duration' },
+                  { id: 'exact', label: 'Exact End Time' }
+                ].map(opt => (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    onClick={() => setDurationMode(opt.id)}
+                    style={{
+                      padding: '5px 10px',
+                      borderRadius: '6px',
+                      border: 'none',
+                      background: durationMode === opt.id ? 'var(--teal-500)' : 'transparent',
+                      color: durationMode === opt.id ? '#fff' : 'var(--slate-400)',
+                      fontSize: '0.74rem',
+                      fontWeight: 600,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {durationMode === 'approx' && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                {['~45 mins', '~1 hr', '~1.5 hrs', '~2 hrs', '~2.5 hrs', '~3 hrs', 'Half day'].map(preset => (
+                  <button
+                    key={preset}
+                    type="button"
+                    onClick={() => setApproxDuration(preset)}
+                    style={{
+                      padding: '5px 10px',
+                      borderRadius: '99px',
+                      fontSize: '0.75rem',
+                      fontWeight: approxDuration === preset ? 700 : 500,
+                      border: approxDuration === preset ? '1px solid var(--teal-400)' : '1px solid rgba(255,255,255,0.1)',
+                      background: approxDuration === preset ? 'rgba(20,184,166,0.18)' : 'rgba(255,255,255,0.03)',
+                      color: approxDuration === preset ? 'var(--teal-300)' : 'var(--slate-300)',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {preset}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {durationMode === 'exact' && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ fontSize: '0.8rem', color: 'var(--slate-300)' }}>Finish Time:</span>
+                <input
+                  type="time"
+                  value={endTime}
+                  onChange={e => setEndTime(e.target.value)}
+                  className="text-input"
+                  style={{ width: '140px', padding: '8px 12px' }}
+                />
+              </div>
+            )}
+          </div>
+        )}
 
         <div className="input-group">
           <label className="input-label">Meeting Point / Pinpoint Location</label>
@@ -637,6 +789,8 @@ export default function CommunityOnboardingFlow({ onComplete }) {
   const [locationName, setLocationName] = useState('');
   const [regionCoords, setRegionCoords] = useState(null);
   const [regionRadius, setRegionRadius] = useState(5);
+  const [allowChapters, setAllowChapters] = useState(false);
+  const [allowCarpool, setAllowCarpool] = useState(true);
   
   // Step 3: Aesthetics
   const [tags, setTags] = useState([]);
@@ -796,7 +950,12 @@ export default function CommunityOnboardingFlow({ onComplete }) {
         target_audience: targetAudience.trim(),
         location_name: locationName.trim(),
         lat: finalLat,
-        lng: finalLng
+        lng: finalLng,
+        allow_chapters: allowChapters,
+        allowChapters: allowChapters,
+        allow_carpool: allowCarpool,
+        allowCarpool: allowCarpool,
+        parent_community_id: parentCommunity?.id || null
       };
 
       // Create Community
@@ -900,6 +1059,10 @@ export default function CommunityOnboardingFlow({ onComplete }) {
       setRegionCoords={setRegionCoords}
       regionRadius={regionRadius}
       setRegionRadius={setRegionRadius}
+      allowChapters={allowChapters}
+      setAllowChapters={setAllowChapters}
+      allowCarpool={allowCarpool}
+      setAllowCarpool={setAllowCarpool}
     />,
     <StepTags key="tags" tags={tags} toggleTag={toggleTag} addCustomTag={addCustomTag} removeTag={removeTag} />,
     <StepCoverPhoto key="cover" coverImagePreview={coverImagePreview} handleImageSelect={handleImageSelect} fileInputRef={fileInputRef} />,

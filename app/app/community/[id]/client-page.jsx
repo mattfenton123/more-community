@@ -20,6 +20,7 @@ import dynamic from 'next/dynamic';
 import { downloadIcs, getCalendarFeedUrls, isEventUpcoming, isEventPast, parseEventDateTime } from '../../../src/lib/calendar';
 import { cleanLocationName } from '../../../src/lib/location';
 import { getEventPath } from '../../../src/lib/eventLinks';
+import { findCommunityByParam, getCommunitySlug } from '../../../src/lib/communityLinks';
 
 const VideoUploader = dynamic(() => import('../../../src/components/VideoUploader'), { ssr: false });
 const EmojiPicker = dynamic(() => import('emoji-picker-react'), { ssr: false });
@@ -119,8 +120,18 @@ export default function CommunityProfile() {
   const searchParams = useSearchParams();
   const autoJoinParam = searchParams?.get('autoJoin');
   
-  const communityId = id || (user?.joinedCommunities?.length > 0 ? user.joinedCommunities[0] : 'tw-tech-meetup');
-  const community = communities.find(c => c.id === communityId);
+  const rawParam = id || (user?.joinedCommunities?.length > 0 ? user.joinedCommunities[0] : 'tw-tech-meetup');
+  const community = findCommunityByParam(communities, rawParam);
+  const communityId = community?.id || rawParam;
+
+  useEffect(() => {
+    if (!community || typeof window === 'undefined') return;
+    const cleanSlug = getCommunitySlug(community, communities);
+    if (id && id !== cleanSlug) {
+      const url = new URL(window.location.href);
+      window.history.replaceState(null, '', `/community/${cleanSlug}${url.search}`);
+    }
+  }, [community, communities, id]);
 
   useEffect(() => {
     if (user?.id && !user?.joinedCommunities?.includes(communityId) && autoJoinParam === 'true') {
@@ -202,7 +213,7 @@ export default function CommunityProfile() {
   const isDemoCommunity = SEED_COMMUNITY_IDS.includes(community.id);
   const galleryType = getGalleryType(community.tags);
   const dbPhotos = (community.gallery_photos || []).map(p => typeof p === 'string' ? { url: p, uploaderId: null } : p);
-  const stockPhotos = isDemoCommunity && dbPhotos.length === 0 ? GALLERY_PHOTOS[galleryType].map(url => ({ url, uploaderId: 'stock' })) : [];
+  const stockPhotos = [];
   const galleryPhotos = dbPhotos.length > 0 ? dbPhotos : stockPhotos;
   const nextEvent = upcomingEvents[0] || null;
   const communityFeed = feedPosts?.filter(p => p.communityId === communityId) || [];
@@ -1713,7 +1724,7 @@ export default function CommunityProfile() {
                   <Users size={20} />
                 </div>
                 <div className="info-title" style={{ fontSize: '0.75rem', color: 'var(--slate-400)', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px', letterSpacing: '0.05em' }}>Who It's For</div>
-                <div className="info-value" style={{ fontSize: '0.9rem', color: 'var(--white)', fontWeight: 500, lineHeight: 1.4 }}>All ages & abilities welcome. No experience needed.</div>
+                <div className="info-value" style={{ fontSize: '0.9rem', color: 'var(--white)', fontWeight: 500, lineHeight: 1.4 }}>{community.target_audience || 'All ages & abilities welcome. No experience needed.'}</div>
               </div>
               <div className="community-key-info-card" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '16px' }}>
                 <div className="info-icon-box" style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(20,184,166,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px', color: 'var(--teal-400)' }}>
@@ -1904,17 +1915,19 @@ export default function CommunityProfile() {
             )}
 
             {/* Multi-Chapter Franchise Network (Respects leader setting) */}
-            {(community.allow_chapters !== false && community.allowChapters !== false) && (
+            {(community.id !== 'more-leaders-network' && community.allow_chapters !== false && community.allowChapters !== false) && (
               <TownChaptersBlueprint community={community} />
             )}
 
             {/* Town Cross-Pollination (Local Sister Groups) */}
-            <div style={{ marginBottom: '32px' }}>
-              <TownCrossPollination currentCommunity={community} />
-            </div>
+            {community.id !== 'more-leaders-network' && (
+              <div style={{ marginBottom: '32px' }}>
+                <TownCrossPollination currentCommunity={community} />
+              </div>
+            )}
 
             {/* Unified Partner & Collaborate Card (Respects leader setting) */}
-            {(community.accepts_pitches !== false) && (
+            {(community.id !== 'more-leaders-network' && community.accepts_pitches !== false) && (
               <div style={{
                 marginBottom: '32px',
                 padding: '20px',

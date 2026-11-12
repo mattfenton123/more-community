@@ -81,7 +81,7 @@ export default function PartnerHub() {
   }, [communities, selectedClubIds]);
 
   const combinedAudience = useMemo(() => {
-    return selectedClubs.reduce((acc, c) => acc + (c.member_count || c.members_count || 12), 0);
+    return selectedClubs.reduce((acc, c) => acc + (c.members ?? c.member_count ?? c.members_count ?? 1), 0);
   }, [selectedClubs]);
 
   const openPitchModal = (community, tab = 'session') => {
@@ -326,7 +326,7 @@ export default function PartnerHub() {
           ) : (
             filteredCommunities.map(comm => {
               const isSelected = selectedClubIds.includes(comm.id);
-              const memberCount = comm.member_count || comm.members_count || 12;
+              const memberCount = comm.members ?? comm.member_count ?? comm.members_count ?? 1;
 
               return (
                 <div
