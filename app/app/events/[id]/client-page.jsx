@@ -1317,8 +1317,8 @@ export default function EventClient({ id }) {
           <EventLocationMap location={event.location} event={event} isLocationShielded={!canSeeSecretLocation} />
         )}
 
-        {/* Community Carpool Hub (Respects leader toggle) */}
-        {(community?.allow_carpool !== false && community?.allowCarpool !== false && event?.allowCarpool !== false) && (
+        {/* Community Carpool Hub (Respects leader community & event toggles) */}
+        {(community?.allow_carpool !== false && community?.allowCarpool !== false && event?.allowCarpool !== false && event?.allow_carpool !== false && !event?.description?.includes('[Carpool: disabled]')) && (
           <CarpoolHub event={event} user={user} isAttendee={isGoing} community={community} />
         )}
 
@@ -2054,38 +2054,40 @@ export default function EventClient({ id }) {
                     </a>
                   )}
 
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                    <a
-                      href={`https://api.whatsapp.com/send?text=${encodeURIComponent(carpoolOfferMsg)}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="interactive-press"
-                      style={{
-                        padding: '9px 10px', borderRadius: '10px',
-                        background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
-                        color: 'var(--slate-200)', fontSize: '0.78rem', fontWeight: 600,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px',
-                        textDecoration: 'none'
-                      }}
-                    >
-                      🚗 Offer a Ride
-                    </a>
-                    <a
-                      href={`https://api.whatsapp.com/send?text=${encodeURIComponent(carpoolReqMsg)}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="interactive-press"
-                      style={{
-                        padding: '9px 10px', borderRadius: '10px',
-                        background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
-                        color: 'var(--slate-200)', fontSize: '0.78rem', fontWeight: 600,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px',
-                        textDecoration: 'none'
-                      }}
-                    >
-                      🙋 Need a Ride
-                    </a>
-                  </div>
+                  {(community?.allow_carpool !== false && community?.allowCarpool !== false && event?.allowCarpool !== false && event?.allow_carpool !== false && !event?.description?.includes('[Carpool: disabled]')) && (
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                      <a
+                        href={`https://api.whatsapp.com/send?text=${encodeURIComponent(carpoolOfferMsg)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="interactive-press"
+                        style={{
+                          padding: '9px 10px', borderRadius: '10px',
+                          background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+                          color: 'var(--slate-200)', fontSize: '0.78rem', fontWeight: 600,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px',
+                          textDecoration: 'none'
+                        }}
+                      >
+                        🚗 Offer a Ride
+                      </a>
+                      <a
+                        href={`https://api.whatsapp.com/send?text=${encodeURIComponent(carpoolReqMsg)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="interactive-press"
+                        style={{
+                          padding: '9px 10px', borderRadius: '10px',
+                          background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+                          color: 'var(--slate-200)', fontSize: '0.78rem', fontWeight: 600,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px',
+                          textDecoration: 'none'
+                        }}
+                      >
+                        🙋 Need a Ride
+                      </a>
+                    </div>
+                  )}
                 </div>
               );
             })()}

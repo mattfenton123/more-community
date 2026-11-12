@@ -1488,16 +1488,18 @@ export default function CommunityProfile() {
                   >
                     RSVP &amp; View Walk Details <ChevronRight size={16} />
                   </button>
-                  <button
-                    onClick={() => navigate.push(`/events/${nextEvent.id}#carpool`)}
-                    className="btn btn-outline interactive-press"
-                    style={{
-                      padding: '12px 16px', borderRadius: '12px', fontSize: '0.86rem', fontWeight: 600,
-                      display: 'flex', alignItems: 'center', gap: '6px'
-                    }}
-                  >
-                    🚗 Carpool
-                  </button>
+                  {(community?.allow_carpool !== false && community?.allowCarpool !== false && nextEvent?.allowCarpool !== false && nextEvent?.allow_carpool !== false && !nextEvent?.description?.includes('[Carpool: disabled]')) && (
+                    <button
+                      onClick={() => navigate.push(`/events/${nextEvent.id}#carpool`)}
+                      className="btn btn-outline interactive-press"
+                      style={{
+                        padding: '12px 16px', borderRadius: '12px', fontSize: '0.86rem', fontWeight: 600,
+                        display: 'flex', alignItems: 'center', gap: '6px'
+                      }}
+                    >
+                      🚗 Carpool
+                    </button>
+                  )}
                 </div>
               </div>
             )}

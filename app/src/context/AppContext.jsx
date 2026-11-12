@@ -588,6 +588,8 @@ export function AppProvider({ children }) {
           requireApproval: Boolean(e.require_approval || (e.description && e.description.includes('[Host Approval Required]'))),
           rsvpQuestion: e.rsvp_question || (e.description?.match(/\[RSVP Question: ([^\]]+)\]/)?.[1] || ''),
             whatsappGroup: e.whatsapp_group || (e.description?.match(/\[WhatsApp: ([^\]]+)\]/)?.[1] || ''),
+          allowCarpool: e.allow_carpool !== undefined ? Boolean(e.allow_carpool) : (e.description && e.description.includes('[Carpool: disabled]') ? false : true),
+          allowGuests: e.allow_guests !== undefined ? Boolean(e.allow_guests) : (e.description && e.description.includes('[Guests: disabled]') ? false : true),
           galleryImages: Array.isArray(e.gallery_images) ? e.gallery_images : (Array.isArray(e.galleryImages) ? e.galleryImages : []),
           createdAt: e.created_at
         })));
@@ -1669,6 +1671,12 @@ export function AppProvider({ children }) {
       if (eventData.whatsappGroup?.trim() && !desc.includes('[WhatsApp:')) {
         desc = (desc ? desc + '\n\n' : '') + `[WhatsApp: ${eventData.whatsappGroup.trim()}]`;
       }
+      if (eventData.allowCarpool === false && !desc.includes('[Carpool: disabled]')) {
+        desc = (desc ? desc + '\n\n' : '') + '[Carpool: disabled]';
+      }
+      if (eventData.allowGuests === false && !desc.includes('[Guests: disabled]')) {
+        desc = (desc ? desc + '\n\n' : '') + '[Guests: disabled]';
+      }
       const newEvent = {
         communityId: communityId,
         collabCommunityIds: eventData.collabCommunityIds || [],
@@ -1707,6 +1715,8 @@ export function AppProvider({ children }) {
           requireApproval: Boolean(e.require_approval || (e.description && e.description.includes('[Host Approval Required]')) || newEvent.requireApproval),
           rsvpQuestion: eventData.rsvpQuestion?.trim() || '',
           whatsappGroup: eventData.whatsappGroup?.trim() || '',
+          allowCarpool: eventData.allowCarpool !== false,
+          allowGuests: eventData.allowGuests !== false,
           galleryImages: [],
           createdAt: e.created_at
         }]);
@@ -1764,6 +1774,8 @@ export function AppProvider({ children }) {
             requireApproval: Boolean(e.require_approval || (e.description && e.description.includes('[Host Approval Required]')) || item.requireApproval),
             rsvpQuestion: item.rsvpQuestion?.trim() || '',
             whatsappGroup: item.whatsappGroup?.trim() || '',
+            allowCarpool: item.allowCarpool !== false,
+            allowGuests: item.allowGuests !== false,
             galleryImages: [],
             createdAt: e.created_at
           };
@@ -1806,6 +1818,30 @@ export function AppProvider({ children }) {
       }
       finalUpdates.description = desc;
       finalUpdates.whatsappGroup = updates.whatsappGroup.trim();
+    }
+    if (updates.allowCarpool !== undefined) {
+      const existing = events.find(e => e.id === eventId);
+      let desc = finalUpdates.description !== undefined ? finalUpdates.description : (updates.description !== undefined ? updates.description : (existing?.description || ''));
+      if (!updates.allowCarpool && !desc.includes('[Carpool: disabled]')) {
+        desc = (desc ? desc + '\n\n' : '') + '[Carpool: disabled]';
+      } else if (updates.allowCarpool && desc.includes('[Carpool: disabled]')) {
+        desc = desc.replace(/\[Carpool: disabled\]/g, '').trim();
+      }
+      finalUpdates.description = desc;
+      finalUpdates.allowCarpool = updates.allowCarpool;
+      finalUpdates.allow_carpool = updates.allowCarpool;
+    }
+    if (updates.allowGuests !== undefined) {
+      const existing = events.find(e => e.id === eventId);
+      let desc = finalUpdates.description !== undefined ? finalUpdates.description : (updates.description !== undefined ? updates.description : (existing?.description || ''));
+      if (!updates.allowGuests && !desc.includes('[Guests: disabled]')) {
+        desc = (desc ? desc + '\n\n' : '') + '[Guests: disabled]';
+      } else if (updates.allowGuests && desc.includes('[Guests: disabled]')) {
+        desc = desc.replace(/\[Guests: disabled\]/g, '').trim();
+      }
+      finalUpdates.description = desc;
+      finalUpdates.allowGuests = updates.allowGuests;
+      finalUpdates.allow_guests = updates.allowGuests;
     }
     const prevEvents = events;
     setEvents(prev => prev.map(e => e.id === eventId ? { ...e, ...finalUpdates } : e));

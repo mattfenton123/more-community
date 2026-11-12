@@ -95,6 +95,242 @@ function getEngagementScore(member, events, eventRsvps, messages, communityId) {
 }
 
 // ─── Component ──────────────────────────────────────────────────
+// ─── Searchable Community Switcher ──────────────────────────────
+function CommunitySwitcher({ currentCommunity, communities, activeId, onSelect, onCreateNew, isMobile = false }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [query, setQuery] = useState('');
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isOpen]);
+
+  const filtered = useMemo(() => {
+    if (!query.trim()) return communities;
+    const q = query.toLowerCase().trim();
+    return communities.filter(c => 
+      c.name?.toLowerCase().includes(q) ||
+      c.location_name?.toLowerCase().includes(q) ||
+      c.town?.toLowerCase().includes(q) ||
+      c.id?.toLowerCase().includes(q)
+    );
+  }, [communities, query]);
+
+  if (!currentCommunity) return null;
+  if (!communities || communities.length <= 1) {
+    return isMobile ? (
+      <span style={{ color: 'var(--white)', fontWeight: 600 }}>{currentCommunity.name}</span>
+    ) : (
+      <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.2rem', color: 'var(--white)', margin: '0 0 4px' }}>
+        {currentCommunity.name}
+      </h2>
+    );
+  }
+
+  return (
+    <div ref={dropdownRef} style={{ position: 'relative', width: isMobile ? 'auto' : '100%', maxWidth: isMobile ? '230px' : '100%', marginBottom: isMobile ? '0' : '4px' }}>
+      <button
+        type="button"
+        onClick={() => {
+          setIsOpen(!isOpen);
+          setQuery('');
+        }}
+        className="interactive-press"
+        style={{
+          width: '100%',
+          background: '#0f172a',
+          color: '#f8fafc',
+          border: isOpen ? '1px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.18)',
+          padding: isMobile ? '6px 10px' : '8px 12px',
+          borderRadius: '8px',
+          fontSize: isMobile ? '0.85rem' : '0.95rem',
+          fontFamily: 'var(--font-heading)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '8px',
+          cursor: 'pointer',
+          textAlign: 'left',
+          boxShadow: isOpen ? '0 0 0 2px rgba(20,184,166,0.2)' : 'none',
+          transition: 'all 0.15s ease'
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
+          {currentCommunity.cover_image || currentCommunity.image ? (
+            <img
+              src={currentCommunity.cover_image || currentCommunity.image}
+              alt=""
+              style={{ width: isMobile ? '18px' : '22px', height: isMobile ? '18px' : '22px', borderRadius: '4px', objectFit: 'cover', flexShrink: 0 }}
+            />
+          ) : (
+            <div style={{ width: isMobile ? '18px' : '22px', height: isMobile ? '18px' : '22px', borderRadius: '4px', background: 'var(--teal-600)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', fontWeight: 700, flexShrink: 0 }}>
+              {currentCommunity.name?.charAt(0) || 'C'}
+            </div>
+          )}
+          <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontWeight: 600 }}>
+            {currentCommunity.name}
+          </span>
+        </div>
+        <ChevronDown size={14} color="var(--slate-400)" style={{ transform: isOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s', flexShrink: 0 }} />
+      </button>
+
+      {isOpen && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 'calc(100% + 6px)',
+            left: 0,
+            width: isMobile ? '280px' : '100%',
+            minWidth: '240px',
+            maxWidth: '340px',
+            background: '#0f172a',
+            border: '1px solid rgba(255,255,255,0.18)',
+            borderRadius: '12px',
+            boxShadow: '0 12px 32px rgba(0,0,0,0.65)',
+            zIndex: 1000,
+            overflow: 'hidden',
+            backdropFilter: 'blur(16px)'
+          }}
+        >
+          {/* Sticky Search Header */}
+          <div style={{ padding: '8px 10px', borderBottom: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.02)' }}>
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+              <Search size={14} color="var(--slate-400)" style={{ position: 'absolute', left: '10px' }} />
+              <input
+                type="text"
+                autoFocus
+                placeholder="Search communities..."
+                value={query}
+                onChange={e => setQuery(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '7px 26px 7px 30px',
+                  background: 'rgba(255,255,255,0.06)',
+                  border: '1px solid rgba(255,255,255,0.12)',
+                  borderRadius: '8px',
+                  color: '#fff',
+                  fontSize: '0.82rem',
+                  outline: 'none'
+                }}
+              />
+              {query && (
+                <button
+                  type="button"
+                  onClick={() => setQuery('')}
+                  style={{ position: 'absolute', right: '8px', background: 'none', border: 'none', color: 'var(--slate-400)', cursor: 'pointer', padding: 0 }}
+                >
+                  <X size={13} />
+                </button>
+              )}
+            </div>
+            <div style={{ fontSize: '0.68rem', color: 'var(--slate-400)', marginTop: '4px', paddingLeft: '2px' }}>
+              {filtered.length} {filtered.length === 1 ? 'community' : 'communities'} found
+            </div>
+          </div>
+
+          {/* Scrollable Filtered List */}
+          <div style={{ maxHeight: '240px', overflowY: 'auto', padding: '4px' }}>
+            {filtered.length === 0 ? (
+              <div style={{ padding: '16px', textAlign: 'center', fontSize: '0.8rem', color: 'var(--slate-400)' }}>
+                No communities matching "{query}"
+              </div>
+            ) : (
+              filtered.map(c => {
+                const isSelected = c.id === activeId || c.id === currentCommunity.id;
+                return (
+                  <button
+                    key={c.id}
+                    type="button"
+                    onClick={() => {
+                      onSelect(c.id);
+                      setIsOpen(false);
+                    }}
+                    style={{
+                      width: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '8px 10px',
+                      borderRadius: '8px',
+                      background: isSelected ? 'rgba(20,184,166,0.12)' : 'transparent',
+                      border: isSelected ? '1px solid rgba(20,184,166,0.3)' : '1px solid transparent',
+                      color: isSelected ? 'var(--teal-300)' : '#f8fafc',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      marginBottom: '2px',
+                      transition: 'background 0.15s'
+                    }}
+                    onMouseEnter={e => !isSelected && (e.currentTarget.style.background = 'rgba(255,255,255,0.05)')}
+                    onMouseLeave={e => !isSelected && (e.currentTarget.style.background = 'transparent')}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: 1 }}>
+                      {c.cover_image || c.image ? (
+                        <img src={c.cover_image || c.image} alt="" style={{ width: '24px', height: '24px', borderRadius: '6px', objectFit: 'cover', flexShrink: 0 }} />
+                      ) : (
+                        <div style={{ width: '24px', height: '24px', borderRadius: '6px', background: 'rgba(255,255,255,0.1)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, flexShrink: 0 }}>
+                          {c.name?.charAt(0) || 'C'}
+                        </div>
+                      )}
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ fontSize: '0.84rem', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {c.name}
+                        </div>
+                        {c.location_name && (
+                          <div style={{ fontSize: '0.7rem', color: 'var(--slate-400)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {c.location_name}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    {isSelected && <Check size={15} color="var(--teal-400)" style={{ flexShrink: 0, marginLeft: '6px' }} />}
+                  </button>
+                );
+              })
+            )}
+          </div>
+
+          {/* Footer: Create Community Action */}
+          {onCreateNew && (
+            <div style={{ padding: '6px 8px', borderTop: '1px solid rgba(255,255,255,0.08)', background: 'rgba(0,0,0,0.2)' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsOpen(false);
+                  onCreateNew();
+                }}
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px',
+                  padding: '7px',
+                  borderRadius: '6px',
+                  background: 'rgba(20,184,166,0.1)',
+                  border: '1px dashed rgba(20,184,166,0.3)',
+                  color: 'var(--teal-300)',
+                  fontSize: '0.78rem',
+                  fontWeight: 600,
+                  cursor: 'pointer'
+                }}
+              >
+                <Plus size={13} /> Start Another Community
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function LeaderDashboard({ initialCommunityId }) {
   const { user, communities, events, updateCommunity, deleteCommunity, approveChapter, declineChapter, users, communityMemberships, createEvent, createEventsBatch, updateEvent, cancelEvent, uploadImage, eventRsvps, updateAttendeeStatus, whatsappSettings, setWhatsappSettings, promoteMember, removeMember, checkInMember, broadcastNotification, sendEventReminder, experiences, setExperiences, isLoading, services = [], updateServiceStatus } = useAppContext();
     const { messages } = useChat();
@@ -189,7 +425,8 @@ export default function LeaderDashboard({ initialCommunityId }) {
     maxCapacity: '', 
     ticketPrice: '',
     allowCash: false, 
-    allowGuests: true,
+    allowGuests: community?.allow_guests ?? community?.allowGuests ?? true,
+    allowCarpool: community?.allow_carpool ?? community?.allowCarpool ?? true,
     collabCommunityIds: [],
     autoReminders: true, 
     autoFeedback: true,
@@ -1093,6 +1330,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
           autoReminders: eventForm.autoReminders,
           autoFeedback: eventForm.autoFeedback,
           allowGuests: eventForm.allowGuests !== false,
+          allowCarpool: eventForm.allowCarpool !== false,
           requireApproval: Boolean(eventForm.requireApproval),
           rsvpQuestion: eventForm.rsvpQuestion?.trim() || '',
             whatsappGroup: eventForm.whatsappGroup?.trim() || '',
@@ -1107,6 +1345,8 @@ export default function LeaderDashboard({ initialCommunityId }) {
           ticketPrice: eventForm.ticketPrice ? parseFloat(eventForm.ticketPrice) : 0,
           autoReminders: eventForm.autoReminders,
           autoFeedback: eventForm.autoFeedback,
+          allowGuests: eventForm.allowGuests !== false,
+          allowCarpool: eventForm.allowCarpool !== false,
           requireApproval: Boolean(eventForm.requireApproval),
           rsvpQuestion: eventForm.rsvpQuestion?.trim() || '',
             whatsappGroup: eventForm.whatsappGroup?.trim() || '',
@@ -1140,6 +1380,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
       ticketPrice: event.ticketPrice ? event.ticketPrice.toString() : '',
       allowCash: Boolean(event.allowCash || event.allow_cash),
       allowGuests: event.allowGuests !== false && event.allow_guests !== false,
+      allowCarpool: event.allowCarpool !== false && event.allow_carpool !== false && !event.description?.includes('[Carpool: disabled]'),
       collabCommunityIds: event.collabCommunityIds || [],
       autoReminders: event.autoReminders ?? true,
       autoFeedback: event.autoFeedback ?? true,
@@ -1175,6 +1416,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
       ticketPrice: eventForm.ticketPrice ? parseFloat(eventForm.ticketPrice) : 0,
       allowCash: Boolean(eventForm.allowCash),
       allowGuests: eventForm.allowGuests !== false,
+      allowCarpool: eventForm.allowCarpool !== false,
       requireApproval: Boolean(eventForm.requireApproval),
       rsvpQuestion: eventForm.rsvpQuestion?.trim() || '',
             whatsappGroup: eventForm.whatsappGroup?.trim() || '',
@@ -1884,6 +2126,35 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 </div>
               </label>
 
+              {/* Community Carpool & Lift Sharing Toggle */}
+              <label
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  padding: '12px 14px',
+                  borderRadius: '12px',
+                  background: 'rgba(255, 255, 255, 0.03)',
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  cursor: 'pointer'
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={eventForm.allowCarpool ?? true}
+                  onChange={e => setEventForm({ ...eventForm, allowCarpool: e.target.checked })}
+                  style={{ width: '18px', height: '18px', accentColor: 'var(--teal-500)', cursor: 'pointer' }}
+                />
+                <div>
+                  <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Car size={16} color="var(--teal-400)" /> Community Carpool & Lift Sharing
+                  </div>
+                  <div style={{ fontSize: '0.78rem', color: 'var(--slate-400)', marginTop: '2px' }}>
+                    Allow attendees to offer spare seats and coordinate lifts on this event page.
+                  </div>
+                </div>
+              </label>
+
               {/* Payout Account Status Banner */}
               <div style={{
                 padding: '14px 16px',
@@ -2234,19 +2505,14 @@ export default function LeaderDashboard({ initialCommunityId }) {
               <ChevronLeft size={16} /> Back to Community
             </button>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%' }}>
-              {availableCommunities.length > 1 ? (
-                <select 
-                  value={communityIdLed} 
-                  onChange={e => setActiveCommunityId(e.target.value)}
-                  style={{ background: '#0f172a', color: '#f8fafc', border: '1px solid rgba(255,255,255,0.15)', padding: '8px 12px', borderRadius: '8px', fontSize: '1rem', fontFamily: 'var(--font-heading)', outline: 'none', width: '100%', marginBottom: '4px', cursor: 'pointer' }}
-                >
-                  {availableCommunities.map(c => (
-                    <option key={c.id} value={c.id} style={{ background: '#0f172a', color: '#f8fafc' }}>{c.name}</option>
-                  ))}
-                </select>
-              ) : (
-                <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.2rem', color: 'var(--white)', margin: '0 0 4px' }}>{community.name}</h2>
-              )}
+              <CommunitySwitcher
+                currentCommunity={community}
+                communities={availableCommunities}
+                activeId={communityIdLed}
+                onSelect={(id) => setActiveCommunityId(id)}
+                onCreateNew={() => setModalType('community')}
+                isMobile={false}
+              />
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' }}>
               <span style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>Leader View</span>
@@ -2308,21 +2574,16 @@ export default function LeaderDashboard({ initialCommunityId }) {
               onBack={() => community?.id ? router.push(`/community/${community.id}`) : router.back()} 
             />
             <div style={{ padding: '0 20px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                {availableCommunities.length > 1 ? (
-                  <select 
-                    value={communityIdLed} 
-                    onChange={e => setActiveCommunityId(e.target.value)}
-                    style={{ background: '#0f172a', color: '#f8fafc', border: '1px solid rgba(255,255,255,0.15)', padding: '6px 10px', borderRadius: '8px', fontSize: '0.85rem', outline: 'none', cursor: 'pointer' }}
-                  >
-                    {availableCommunities.map(c => (
-                      <option key={c.id} value={c.id} style={{ background: '#0f172a', color: '#f8fafc' }}>{c.name}</option>
-                    ))}
-                  </select>
-                ) : (
-                  <span style={{ color: 'var(--white)', fontWeight: 600 }}>{community.name}</span>
-                )}
-                <span>• Leader View</span>
+              <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)', display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: 1 }}>
+                <CommunitySwitcher
+                  currentCommunity={community}
+                  communities={availableCommunities}
+                  activeId={communityIdLed}
+                  onSelect={(id) => setActiveCommunityId(id)}
+                  onCreateNew={() => setModalType('community')}
+                  isMobile={true}
+                />
+                <span style={{ whiteSpace: 'nowrap' }}>• Leader View</span>
               </div>
               {user?.isAdmin && (
                 <button 
