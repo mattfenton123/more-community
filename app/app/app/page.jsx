@@ -7,6 +7,7 @@ import { Heart, MessageCircle, Share2, Calendar, MapPin, Clock, Compass, Plus, M
 import { SkeletonList, SkeletonCard } from '../../src/components/SkeletonCard';
 import InlineComments from '../../src/components/InlineComments';
 import AppHeader from '../../src/components/AppHeader';
+import PullToRefresh from '../../src/components/PullToRefresh';
 import CreateIdeaModal from '../../src/components/CreateIdeaModal';
 import GettingStarted from '../../src/views/GettingStarted';
 import { useToast } from '../../src/components/Toast';
@@ -16,7 +17,7 @@ import { getEventPath } from '../../src/lib/eventLinks';
 import { getCommunitySlug } from '../../src/lib/communityLinks';
 
 export default function HomeFeed() {
-  const { user, communities, events, users, eventRsvps, isLoading, notifications, sponsors, sponsorshipAssignments, communityMemberships } = useAppContext();
+  const { user, communities, events, refreshData, users, eventRsvps, isLoading, notifications, sponsors, sponsorshipAssignments, communityMemberships } = useAppContext();
   const { feedPosts, likeFeedPost } = useFeed();
   const router = useRouter();
   const { toast } = useToast();
@@ -223,6 +224,7 @@ export default function HomeFeed() {
   return (
     <div className="view-home" style={{ paddingBottom: '80px', background: 'var(--slate-950)', minHeight: '100dvh' }}>
       <AppHeader title="Home" />
+      <PullToRefresh onRefresh={refreshData}>
       
       {/* Personalized Dynamic Header */}
       <div style={{ padding: '16px 20px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', background: 'linear-gradient(to bottom, var(--slate-900), var(--slate-950))' }}>
@@ -355,7 +357,7 @@ export default function HomeFeed() {
         </div>
       )}
 
-      {/* Near You — Location-based recommendations */}
+      {/* Near You - Location-based recommendations */}
       {nearYouCommunities.length > 0 && (
         <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '12px' }}>
@@ -1114,6 +1116,7 @@ export default function HomeFeed() {
         isOpen={showIdeaModal} 
         onClose={() => setShowIdeaModal(false)} 
       />
+      </PullToRefresh>
     </div>
   );
 }

@@ -1,5 +1,5 @@
 "use client";
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { useAuth } from './AuthContext';
 import { initialExperiences } from '../lib/constants';
@@ -382,6 +382,13 @@ export function AppProvider({ children }) {
     }
   }, [theme, highContrast, largeText, reduceMotion]);
 
+  const fetchAllDataRef = useRef(null);
+  const refreshData = async () => {
+    if (fetchAllDataRef.current) {
+      await fetchAllDataRef.current();
+    }
+  };
+
   // Supabase Real-time Setup & Initial Fetch
   useEffect(() => {
     const fetchAllData = async () => {
@@ -707,6 +714,7 @@ export function AppProvider({ children }) {
       setIsLoading(false);
     };
 
+    fetchAllDataRef.current = fetchAllData;
     fetchAllData();
 
     // Safe notification helper  -  uses Service Worker on mobile, falls back to Notification API
@@ -2495,6 +2503,7 @@ export function AppProvider({ children }) {
       broadcastNotification,
       platformBroadcast,
       checkInMember,
+      refreshData,
       flushOfflineCheckinQueue,
       carpools,
       setCarpools,

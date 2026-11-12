@@ -2463,3 +2463,39 @@ button:disabled, [role="button"][aria-disabled="true"] {
     transform: translateY(0) scale(1);
   }
 }
+
+
+/* ─── Day / Light Mode Skeletons & Refinements ─── */
+[data-theme="light"] .skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.05) 0%,
+    rgba(0, 0, 0, 0.09) 40%,
+    rgba(0, 0, 0, 0.05) 80%
+  ) !important;
+}
+
+[data-theme="light"] .skeleton-card,
+[data-theme="light"] .skeleton-event {
+  background: rgba(0, 0, 0, 0.02) !important;
+  border: 1px solid rgba(0, 0, 0, 0.06) !important;
+}
+
+[data-theme="light"] .badge-warning,
+[data-theme="light"] [style*="color: #fbbf24"],
+[data-theme="light"] [style*="color: rgb(251, 191, 36)"] {
+  color: #b45309 !important;
+}
+
+[data-theme="light"] [style*="background: rgba(245, 158, 11,"] {
+  color: #92400e !important;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin {
+  animation: spin 0.85s linear infinite !important;
+}

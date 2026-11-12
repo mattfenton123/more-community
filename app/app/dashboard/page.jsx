@@ -1,7 +1,7 @@
 "use client";
 import { supabase } from '../../src/lib/supabaseClient';
 import { useState, useRef, useMemo, useEffect } from 'react';
-import { Printer, ExternalLink, HelpCircle, Users, Calendar, MessageCircle, TrendingUp, Search, Plus, MapPin, Image as ImageIcon, CreditCard, ChevronRight, ChevronLeft, Download, Activity, Globe, Heart, Crown, Info, X, Map, Zap, Mail, Trash2, UserCheck, Ban, ChevronDown, ChevronUp, Settings, Megaphone, QrCode, BarChart3, Ticket, ScanLine, UserPlus, DollarSign, Clock, Edit3, Check, CheckCircle2, Eye, EyeOff, Shield, Star, Sparkles, BookOpen, ListChecks, Bell, Archive, Mic, MicOff, Wand2, Lightbulb, Car } from 'lucide-react';
+import { Copy, Printer, ExternalLink, HelpCircle, Users, Calendar, MessageCircle, TrendingUp, Search, Plus, MapPin, Image as ImageIcon, CreditCard, ChevronRight, ChevronLeft, Download, Activity, Globe, Heart, Crown, Info, X, Map, Zap, Mail, Trash2, UserCheck, Ban, ChevronDown, ChevronUp, Settings, Megaphone, QrCode, BarChart3, Ticket, ScanLine, UserPlus, DollarSign, Clock, Edit3, Check, CheckCircle2, Eye, EyeOff, Shield, Star, Sparkles, BookOpen, ListChecks, Bell, Archive, Mic, MicOff, Wand2, Lightbulb, Car } from 'lucide-react';
 import AppHeader from '../../src/components/AppHeader';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { isEventUpcoming, isEventPast, parseEventDateTime } from '../../src/lib/calendar';
@@ -17,6 +17,7 @@ import DigitalTicket from '../../src/components/DigitalTicket';
 import QRScanner from '../../src/components/QRScanner';
 import CommunityOnboardingFlow from '../../src/views/CommunityOnboardingFlow';
 import EventFlyerGenerator from '../../src/components/EventFlyerGenerator';
+import RollCallModal from '../../src/components/RollCallModal';
 import LeaderSetupChecklist from '../../src/components/LeaderSetupChecklist';
 import dynamic from 'next/dynamic';
 const LocationPicker = dynamic(() => import('../../src/components/LocationPicker'), { ssr: false });
@@ -341,6 +342,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
   // ─── State ──────────────────────────────────────────────────
   const [isEditing, setIsEditing] = useState(false);
   const [modalType, setModalType] = useState(null);
+  const [rollCallEvent, setRollCallEvent] = useState(null);
   const [waConfig, setWaConfig] = useState({ businessConnected: false, groupLink: '' });
   const [editForm, setEditForm] = useState({ 
     name: '', category: '', description: '', location_name: '', lat: null, lng: null, cost: 'Free', target_audience: '', activity_level: 'Active', tags: [], customTagInput: '', website: '', whatsapp_group: '', instagram_handle: '' 
@@ -1387,6 +1389,49 @@ export default function LeaderDashboard({ initialCommunityId }) {
     } finally {
       setIsUploading(false);
     }
+  };
+
+
+  const handleDuplicateEvent = (event) => {
+    setEditingEventId(null);
+    const parsedCoords = parseLocationCoords(event.location);
+    let nextDate = '';
+    try {
+      if (event.date) {
+        const d = new Date(event.date);
+        if (!isNaN(d.getTime())) {
+          d.setDate(d.getDate() + 7);
+          nextDate = d.toISOString().split('T')[0];
+        }
+      }
+    } catch (e) {}
+
+    setEventForm({
+      title: `${event.title || 'Event'} (Copy)`,
+      description: event.description || '',
+      date: nextDate,
+      time: event.time || '10:00',
+      location: event.location || '',
+      coords: parsedCoords || (event.lat && event.lng ? { lat: event.lat, lng: event.lng } : null),
+      maxCapacity: event.maxCapacity ? event.maxCapacity.toString() : '',
+      ticketPrice: event.ticketPrice ? event.ticketPrice.toString() : '',
+      allowCash: Boolean(event.allowCash || event.allow_cash),
+      allowGuests: event.allowGuests !== false && event.allow_guests !== false,
+      allowCarpool: event.allowCarpool !== false && event.allow_carpool !== false && !event.description?.includes('[Carpool: disabled]'),
+      collabCommunityIds: event.collabCommunityIds || [],
+      autoReminders: event.autoReminders ?? true,
+      autoFeedback: event.autoFeedback ?? true,
+      requireApproval: Boolean(event.requireApproval || event.require_approval || (event.description && event.description.includes('[Host Approval Required]'))),
+      rsvpQuestion: event.rsvpQuestion || (event.description?.match(/\[RSVP Question: ([^\]]+)\]/)?.[1] || ''),
+      whatsappGroup: event.whatsappGroup || (event.description?.match(/\[WhatsApp: ([^\]]+)\]/)?.[1] || '') || '',
+      scheduleMode: 'single',
+      resolvedDates: nextDate ? [nextDate] : [],
+      recurrenceSummary: 'Single event'
+    });
+    setImageFile(null);
+    setEventImage(event.image || null);
+    setModalType('event');
+    toast.success('Event details duplicated!', 'Set the date and publish your repeat walk.');
   };
 
   const handleEditEvent = (event) => {
@@ -3758,6 +3803,14 @@ export default function LeaderDashboard({ initialCommunityId }) {
                                       <Printer size={12} style={{ marginRight: '4px' }} /> Flyer & Poster
                                     </button>
                                     <button 
+                                      onClick={() => handleDuplicateEvent(event)} 
+                                      className="btn btn-outline interactive-press" 
+                                      style={{ padding: '6px 12px', fontSize: '0.75rem', color: '#10b981', borderColor: 'rgba(16,185,129,0.35)' }}
+                                      title="Repeat or duplicate this past walk"
+                                    >
+                                      <Copy size={12} style={{ marginRight: '4px' }} /> Repeat Event
+                                    </button>
+                                    <button 
                                       onClick={() => generateRamsPdf({ community, event, leaderName: user?.name, policyNumber: community.insurance_policy_number })} 
                                       className="btn btn-outline interactive-press" 
                                       style={{ padding: '6px 12px', fontSize: '0.75rem', color: '#2dd4bf', borderColor: 'rgba(20,184,166,0.3)' }}
@@ -3777,8 +3830,24 @@ export default function LeaderDashboard({ initialCommunityId }) {
                                     >
                                       <Bell size={12} style={{ marginRight: '4px' }} /> Remind
                                     </button>
+                                    <button 
+                                      onClick={() => setRollCallEvent(event)} 
+                                      className="btn btn-outline interactive-press" 
+                                      style={{ padding: '6px 12px', fontSize: '0.75rem', color: '#10b981', borderColor: 'rgba(16,185,129,0.35)' }}
+                                      title="Open trailhead roll-call check-in mode"
+                                    >
+                                      <UserCheck size={12} style={{ marginRight: '4px' }} /> Roll Call
+                                    </button>
                                     <button onClick={() => handleEditEvent(event)} className="btn btn-outline interactive-press" style={{ padding: '6px 12px', fontSize: '0.75rem' }}>
                                       <Edit3 size={12} style={{ marginRight: '4px' }} /> Edit
+                                    </button>
+                                    <button 
+                                      onClick={() => handleDuplicateEvent(event)} 
+                                      className="btn btn-outline interactive-press" 
+                                      style={{ padding: '6px 12px', fontSize: '0.75rem', color: '#38bdf8', borderColor: 'rgba(56,189,248,0.35)' }}
+                                      title="Duplicate this event and schedule repeat"
+                                    >
+                                      <Copy size={12} style={{ marginRight: '4px' }} /> Duplicate
                                     </button>
                                     {cancelConfirmId === event.id ? (
                                       <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
@@ -3834,9 +3903,34 @@ export default function LeaderDashboard({ initialCommunityId }) {
                                           </div>
                                         )}
                                       </div>
-                                      <span style={{ fontSize: '0.7rem', padding: '2px 8px', borderRadius: '99px', fontWeight: 600, ...(rsvp.checkedIn ? { background: 'rgba(34,197,94,0.15)', color: '#22c55e' } : { background: 'rgba(255,255,255,0.05)', color: 'var(--slate-500)' }) }}>
-                                        {rsvp.checkedIn ? '✓ Checked In' : 'Pending'}
-                                      </span>
+                                      <button
+                                        type="button"
+                                        onClick={async (e) => {
+                                          e.stopPropagation();
+                                          try {
+                                            await checkInMember(event.id, rsvp.userId);
+                                            toast.success(rsvp.checkedIn ? 'Status updated' : 'Checked in!', `${attendee.name} marked ${rsvp.checkedIn ? 'pending' : 'present'}.`);
+                                          } catch (err) {
+                                            toast.error('Check-in error', err.message);
+                                          }
+                                        }}
+                                        className="interactive-press"
+                                        style={{
+                                          cursor: 'pointer',
+                                          fontSize: '0.72rem',
+                                          padding: '3px 10px',
+                                          borderRadius: '99px',
+                                          fontWeight: 700,
+                                          border: 'none',
+                                          ...(rsvp.checkedIn
+                                            ? { background: 'rgba(34,197,94,0.2)', color: '#22c55e', border: '1px solid rgba(34,197,94,0.4)' }
+                                            : { background: 'rgba(20,184,166,0.15)', color: 'var(--teal-300)', border: '1px solid rgba(20,184,166,0.3)' }
+                                          )
+                                        }}
+                                        title="Click to toggle attendee check-in status"
+                                      >
+                                        {rsvp.checkedIn ? '✓ Checked In' : 'Tap to Check In'}
+                                      </button>
                                     </div>
                                   );
                                 })}
