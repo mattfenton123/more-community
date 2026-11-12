@@ -29,9 +29,10 @@ export default function TownChaptersBlueprint({ community }) {
     brandPrefix = 'creative';
   }
 
-  // Find sister chapters
+  // Find approved sister chapters (exclude pending or declined applications from public display)
   const sisterChapters = communities.filter(c => {
     if (c.id === community.id) return false;
+    if (c.chapter_status === 'pending_approval' || c.chapter_status === 'declined') return false;
     if (community.parent_community_id && c.id === community.parent_community_id) return true;
     if (c.parent_community_id && (c.parent_community_id === community.id || c.parent_community_id === community.parent_community_id)) return true;
     if (brandPrefix && c.name?.toLowerCase().includes(brandPrefix)) return true;
@@ -95,7 +96,7 @@ export default function TownChaptersBlueprint({ community }) {
       </div>
 
       <div className="card-description" style={{ fontSize: '0.84rem', color: 'var(--slate-300)', lineHeight: 1.5, marginBottom: '16px' }}>
-        Want to bring {community.name} to your local village or town? Start an official chapter with verified safety packs, shared branding, and leader onboarding guidance.
+        Want to bring {community.name} to your local village or town? Start an official chapter with verified safety packs, shared branding, and leader onboarding guidance. Chapters keep 90% of local ticket revenue, with applications reviewed by the founding leader before going live.
       </div>
 
       {/* Chapters list */}

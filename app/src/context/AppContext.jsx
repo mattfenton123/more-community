@@ -501,6 +501,9 @@ export function AppProvider({ children }) {
               if (k === 'chapters') tagSettingsObj.allow_chapters = v === '1' || v === 'true';
               if (k === 'pitches') tagSettingsObj.accepts_pitches = v === '1' || v === 'true';
               if (k === 'carpool') tagSettingsObj.allow_carpool = v === '1' || v === 'true';
+              if (k === 'parent') tagSettingsObj.parent_community_id = v;
+              if (k === 'status') tagSettingsObj.chapter_status = v;
+              if (k === 'royalty') tagSettingsObj.chapter_royalty = Number(v);
             });
           }
 
@@ -537,6 +540,9 @@ export function AppProvider({ children }) {
             accepts_pitches: acceptsPitchesVal,
             allow_carpool: allowCarpoolVal,
             allowCarpool: allowCarpoolVal,
+            parent_community_id: mergedSettings.parent_community_id || c.parent_community_id || null,
+            chapter_status: mergedSettings.chapter_status || (mergedSettings.parent_community_id || c.parent_community_id ? 'pending_approval' : 'approved'),
+            chapter_royalty: mergedSettings.chapter_royalty !== undefined ? mergedSettings.chapter_royalty : 5,
             members: count,
             memberCount: count,
             guidelines: storedGuidelines,
@@ -1822,11 +1828,18 @@ export function AppProvider({ children }) {
       c => c.id === baseSlug || String(c.id || '').replace(/-[a-z0-9]{5}$/i, '') === baseSlug
     );
     const newId = slugTaken ? `${baseSlug}-${Math.random().toString(36).substring(2, 6)}` : baseSlug;
+    const parentId = communityData.parent_community_id || null;
+    const chapterStatus = parentId ? (communityData.chapter_status || 'pending_approval') : 'approved';
+    const royaltyPercent = communityData.chapter_royalty !== undefined ? Number(communityData.chapter_royalty) : 5;
+
     const initialSettings = {
       __type: "community_settings",
       allow_chapters: communityData.allow_chapters !== undefined ? Boolean(communityData.allow_chapters) : false,
       accepts_pitches: communityData.accepts_pitches !== undefined ? Boolean(communityData.accepts_pitches) : true,
-      allow_carpool: communityData.allow_carpool !== undefined ? Boolean(communityData.allow_carpool) : true
+      allow_carpool: communityData.allow_carpool !== undefined ? Boolean(communityData.allow_carpool) : true,
+      parent_community_id: parentId,
+      chapter_status: chapterStatus,
+      chapter_royalty: royaltyPercent
     };
     if (typeof window !== "undefined") {
       try {
@@ -1860,7 +1873,7 @@ export function AppProvider({ children }) {
         description: communityData.description,
         tags: [
           ...(Array.isArray(communityData.tags) ? communityData.tags.filter(t => !(typeof t === 'string' && t.startsWith('__cfg:'))) : []),
-          `__cfg:chapters=${initialSettings.allow_chapters ? 1 : 0},pitches=${initialSettings.accepts_pitches ? 1 : 0},carpool=${initialSettings.allow_carpool ? 1 : 0}`
+          `__cfg:chapters=${initialSettings.allow_chapters ? 1 : 0},pitches=${initialSettings.accepts_pitches ? 1 : 0},carpool=${initialSettings.allow_carpool ? 1 : 0}${parentId ? `,parent=${parentId},status=${chapterStatus},royalty=${royaltyPercent}` : ''}`
         ],
         cover_image: communityData.image || communityData.cover_image || null,
         creatorId: user.id,
@@ -1873,6 +1886,21 @@ export function AppProvider({ children }) {
         external_links: [...(Array.isArray(communityData.external_links) ? communityData.external_links : []), initialSettings]
       }, session?.access_token);
       
+      if (parentId) {
+        const parentComm = communities.find(c => c.id === parentId);
+        if (parentComm?.leader_id) {
+          try {
+            await broadcastNotificationAction([{
+              user_id: parentComm.leader_id,
+              title: 'New Chapter Application 🏛️',
+              message: `${user?.name || 'A local leader'} applied to launch a chapter of "${parentComm.name}" in ${communityData.location_name || 'their town'}. Review and approve in your dashboard.`,
+              type: 'alert',
+              link: `/dashboard?community=${parentId}`
+            }], session?.access_token).catch(() => {});
+          } catch (e) {}
+        }
+      }
+
       return newId;
     } catch (err) {
       console.error(err);
@@ -2098,11 +2126,18 @@ export function AppProvider({ children }) {
         updates.allow_carpool !== undefined ||
         updates.allowCarpool !== undefined;
 
+      const parentId = updates.parent_community_id !== undefined ? updates.parent_community_id : (targetComm.parent_community_id || null);
+      const chapterStatus = updates.chapter_status !== undefined ? updates.chapter_status : (targetComm.chapter_status || (parentId ? 'pending_approval' : 'approved'));
+      const chapterRoyalty = updates.chapter_royalty !== undefined ? Number(updates.chapter_royalty) : (targetComm.chapter_royalty !== undefined ? Number(targetComm.chapter_royalty) : 5);
+
       const nextSettings = {
         __type: 'community_settings',
         allow_chapters: Boolean(updates.allow_chapters ?? updates.allowChapters ?? targetComm.allow_chapters ?? true),
         accepts_pitches: Boolean(updates.accepts_pitches ?? targetComm.accepts_pitches ?? true),
         allow_carpool: Boolean(updates.allow_carpool ?? updates.allowCarpool ?? targetComm.allow_carpool ?? true),
+        parent_community_id: parentId,
+        chapter_status: chapterStatus,
+        chapter_royalty: chapterRoyalty
       };
 
       if (hasSettingsUpdate && typeof window !== 'undefined') {
@@ -2115,7 +2150,7 @@ export function AppProvider({ children }) {
         const baseTags = Array.isArray(updates.tags !== undefined ? updates.tags : targetComm.tags)
           ? (updates.tags !== undefined ? updates.tags : targetComm.tags).filter(t => !(typeof t === 'string' && t.startsWith('__cfg:')))
           : [];
-        const cfgStr = `__cfg:chapters=${nextSettings.allow_chapters ? 1 : 0},pitches=${nextSettings.accepts_pitches ? 1 : 0},carpool=${nextSettings.allow_carpool ? 1 : 0}`;
+        const cfgStr = `__cfg:chapters=${nextSettings.allow_chapters ? 1 : 0},pitches=${nextSettings.accepts_pitches ? 1 : 0},carpool=${nextSettings.allow_carpool ? 1 : 0}${parentId ? `,parent=${parentId},status=${chapterStatus},royalty=${chapterRoyalty}` : ''}`;
         dbUpdates.tags = [...baseTags, cfgStr];
       }
 
@@ -2133,6 +2168,9 @@ export function AppProvider({ children }) {
       delete dbUpdates.accepts_pitches;
       delete dbUpdates.allow_carpool;
       delete dbUpdates.allowCarpool;
+      delete dbUpdates.parent_community_id;
+      delete dbUpdates.chapter_status;
+      delete dbUpdates.chapter_royalty;
       delete dbUpdates.autoWelcomeEnabled;
       delete dbUpdates.autoRemindersEnabled;
       delete dbUpdates.autoFeedbackEnabled;
@@ -2322,6 +2360,24 @@ export function AppProvider({ children }) {
       updateUser,
       updateCommunity,
       deleteCommunity,
+      approveChapter: async (chapterId) => {
+        await updateCommunity(chapterId, { chapter_status: 'approved' });
+        const targetComm = communities.find(c => c.id === chapterId);
+        if (targetComm?.leader_id) {
+          try {
+            await broadcastNotificationAction([{
+              user_id: targetComm.leader_id,
+              title: 'Chapter Approved! 🎉',
+              message: `Your chapter "${targetComm.name}" has been approved by the founding leader and is now active across the network!`,
+              type: 'alert',
+              link: `/community/${chapterId}`
+            }], session?.access_token).catch(() => {});
+          } catch (e) {}
+        }
+      },
+      declineChapter: async (chapterId) => {
+        await updateCommunity(chapterId, { chapter_status: 'declined' });
+      },
       toggleUserRole,
       promoteMember,
       removeMember,

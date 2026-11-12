@@ -29,9 +29,71 @@ function StepBasics({ name, setName, description, setDescription, parentCommunit
   return (
     <div className="step-wrapper">
       <div className="step-header">
-        <h2 className="step-title">Start a Community</h2>
-        <p className="step-subtitle">Let's build something great together.</p>
+        <h2 className="step-title">{parentCommunity ? `Launch a Chapter of ${parentCommunity.name}` : 'Start a Community'}</h2>
+        <p className="step-subtitle">{parentCommunity ? 'Expand an established community into your local town or village.' : "Let's build something great together."}</p>
       </div>
+
+      {parentCommunity && (
+        <div style={{
+          background: 'linear-gradient(135deg, rgba(20, 184, 166, 0.12) 0%, rgba(15, 23, 42, 0.95) 100%)',
+          border: '1.5px solid rgba(45, 212, 191, 0.35)',
+          borderRadius: '16px',
+          padding: '16px 18px',
+          marginBottom: '20px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '12px'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <img
+              src={parentCommunity.image || parentCommunity.cover_image || 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b'}
+              alt={parentCommunity.name}
+              style={{ width: '44px', height: '44px', borderRadius: '12px', objectFit: 'cover', border: '1.5px solid var(--teal-400)' }}
+            />
+            <div>
+              <div style={{ fontSize: '0.72rem', color: 'var(--teal-300)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                Official Chapter Application
+              </div>
+              <div style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--white)' }}>
+                Affiliated Chapter of {parentCommunity.name}
+              </div>
+            </div>
+          </div>
+
+          <div style={{ fontSize: '0.82rem', color: 'var(--slate-300)', lineHeight: 1.5 }}>
+            You are applying to launch an official local chapter. As a chapter leader, you run your own local meetups while upholding the proven ethos and verified route standards of the founding community.
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '8px' }}>
+            <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '10px 12px' }}>
+              <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--teal-300)', marginBottom: '3px' }}>
+                ⚖️ 1. Approval Gate
+              </div>
+              <div style={{ fontSize: '0.74rem', color: 'var(--slate-400)', lineHeight: 1.4 }}>
+                Your application goes directly to the Founding Leader of {parentCommunity.name}. Your chapter appears across the public network once approved.
+              </div>
+            </div>
+
+            <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '10px 12px' }}>
+              <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--teal-300)', marginBottom: '3px' }}>
+                💰 2. Payment & Revenue Split
+              </div>
+              <div style={{ fontSize: '0.74rem', color: 'var(--slate-400)', lineHeight: 1.4 }}>
+                <strong>You keep 90%</strong> of local ticket revenue via Stripe Faster Payments. 5% supports the founding network, and 5% platform fee covers processing.
+              </div>
+            </div>
+
+            <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '10px 12px' }}>
+              <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--teal-300)', marginBottom: '3px' }}>
+                📍 3. Local Autonomy
+              </div>
+              <div style={{ fontSize: '0.74rem', color: 'var(--slate-400)', lineHeight: 1.4 }}>
+                Pick your town, set your own meetup dates, and grow your local member base with full organizer authority.
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="input-group">
         <label className="input-label">Community Name</label>
@@ -966,17 +1028,19 @@ export default function CommunityOnboardingFlow({ onComplete }) {
         try {
           await createEvent(newCommunityId, {
             title: eventTitle,
-            description: 'Our inaugural community event!',
+            description: parentCommunity ? `Inaugural chapter meetup for ${parentCommunity.name} in our town!` : 'Our inaugural community event!',
             date: eventDate,
             time: eventTime,
             location: eventLocation,
             image: imageUrl
           });
-          toast.success('Community & Event Created!', 'You are ready to go.');
         } catch (eventErr) {
           console.error("Event creation failed:", eventErr);
-          toast.success('Community Created!', 'However, we failed to create the first event. You can add it later from your dashboard.');
         }
+      }
+
+      if (parentCommunity) {
+        toast.success('Chapter Application Submitted! 🏛️', `The founding leader of ${parentCommunity.name} has been notified and will review your chapter.`);
       } else {
         toast.success('Community Created!', 'You are ready to go.');
       }
@@ -1108,8 +1172,10 @@ export default function CommunityOnboardingFlow({ onComplete }) {
             disabled={!getCanProceed() || isSubmitting}
             className={`btn btn-primary interactive-press btn-continue ${getCanProceed() && !isSubmitting ? '' : 'disabled'}`}
           >
-            {isSubmitting ? 'Creating...' : step < steps.length - 1 ? (
+            {isSubmitting ? (parentCommunity ? 'Submitting Application...' : 'Creating...') : step < steps.length - 1 ? (
               <>Continue <ArrowRight size={18} /></>
+            ) : parentCommunity ? (
+              <>Submit Chapter Application <ArrowRight size={18} /></>
             ) : (
               <>Launch Community <ArrowRight size={18} /></>
             )}

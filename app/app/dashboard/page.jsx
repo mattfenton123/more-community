@@ -96,7 +96,7 @@ function getEngagementScore(member, events, eventRsvps, messages, communityId) {
 
 // ─── Component ──────────────────────────────────────────────────
 export default function LeaderDashboard({ initialCommunityId }) {
-  const { user, communities, events, updateCommunity, deleteCommunity, users, communityMemberships, createEvent, createEventsBatch, updateEvent, cancelEvent, uploadImage, eventRsvps, updateAttendeeStatus, whatsappSettings, setWhatsappSettings, promoteMember, removeMember, checkInMember, broadcastNotification, sendEventReminder, experiences, setExperiences, isLoading, services = [], updateServiceStatus } = useAppContext();
+  const { user, communities, events, updateCommunity, deleteCommunity, approveChapter, declineChapter, users, communityMemberships, createEvent, createEventsBatch, updateEvent, cancelEvent, uploadImage, eventRsvps, updateAttendeeStatus, whatsappSettings, setWhatsappSettings, promoteMember, removeMember, checkInMember, broadcastNotification, sendEventReminder, experiences, setExperiences, isLoading, services = [], updateServiceStatus } = useAppContext();
     const { messages } = useChat();
   const { toast } = useToast();
   const router = useRouter();
@@ -221,6 +221,24 @@ export default function LeaderDashboard({ initialCommunityId }) {
   };
 
   const [selectedNetworkEvent, setSelectedNetworkEvent] = useState(null);
+  const networkChapters = useMemo(() => {
+    if (!community) return [];
+    return communities.filter(c => {
+      if (c.id === community.id) return false;
+      if (c.parent_community_id === community.id) return true;
+      if (community.parent_community_id && (c.id === community.parent_community_id || c.parent_community_id === community.parent_community_id)) return true;
+      return false;
+    });
+  }, [communities, community]);
+
+  const pendingChapterApplications = useMemo(() => {
+    return networkChapters.filter(c => c.chapter_status === 'pending_approval' && c.parent_community_id === community?.id);
+  }, [networkChapters, community]);
+
+  const activeSisterChapters = useMemo(() => {
+    return networkChapters.filter(c => c.chapter_status !== 'pending_approval' && c.chapter_status !== 'declined');
+  }, [networkChapters]);
+
   const communityPitches = useMemo(() => {
     return (services || []).filter(s => s.communityId === community?.id);
   }, [services, community]);
@@ -4898,6 +4916,18 @@ export default function LeaderDashboard({ initialCommunityId }) {
                     <div style={{ fontFamily: 'var(--font-heading)', fontSize: '0.98rem', fontWeight: 600, color: 'var(--white)' }}>
                       Multi-Town Chapter Network
                     </div>
+                    {pendingChapterApplications.length > 0 && (
+                      <span style={{
+                        background: '#ef4444',
+                        color: 'white',
+                        fontSize: '0.68rem',
+                        fontWeight: 800,
+                        padding: '2px 7px',
+                        borderRadius: '99px'
+                      }}>
+                        {pendingChapterApplications.length} Pending
+                      </span>
+                    )}
                     <button 
                       type="button"
                       onClick={() => setModalType('chapter-info')}
@@ -4912,7 +4942,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                     </button>
                   </div>
                   <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.82rem', color: 'var(--slate-400)', marginTop: '2px' }}>
-                    Allow leaders in other villages or towns to launch official chapters of your community
+                    Allow leaders in other villages or towns to launch official chapters of your community ({activeSisterChapters.length} active)
                   </div>
                 </div>
                 <button 
@@ -4935,6 +4965,46 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   }}></div>
                 </button>
               </div>
+
+              {/* Chapter Management Callout */}
+              {(community.allow_chapters ?? community.allowChapters ?? true) && (
+                <div style={{
+                  marginTop: '-4px',
+                  marginBottom: '6px',
+                  padding: '12px 16px',
+                  borderRadius: '12px',
+                  background: pendingChapterApplications.length > 0 ? 'rgba(239, 68, 68, 0.08)' : 'rgba(56, 189, 248, 0.05)',
+                  border: pendingChapterApplications.length > 0 ? '1px solid rgba(239, 68, 68, 0.3)' : '1px solid rgba(56, 189, 248, 0.15)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  flexWrap: 'wrap',
+                  gap: '10px'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '1.05rem' }}>🏛️</span>
+                    <div>
+                      <div style={{ fontSize: '0.86rem', fontWeight: 700, color: 'var(--white)' }}>
+                        {pendingChapterApplications.length > 0 
+                          ? `${pendingChapterApplications.length} Chapter Application${pendingChapterApplications.length > 1 ? 's' : ''} Awaiting Review` 
+                          : `${activeSisterChapters.length} Active Sister Chapter${activeSisterChapters.length === 1 ? '' : 's'}`}
+                      </div>
+                      <div style={{ fontSize: '0.76rem', color: 'var(--slate-400)' }}>
+                        Review applications, payment splits, and network governance
+                      </div>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setModalType('chapter-info')}
+                    className="btn btn-outline interactive-press"
+                    style={{ padding: '6px 12px', fontSize: '0.78rem', borderRadius: '8px', color: '#38bdf8', borderColor: 'rgba(56, 189, 248, 0.4)' }}
+                  >
+                    Manage Chapters & Applications →
+                  </button>
+                </div>
+              )}
 
               {/* Community Carpool & Lift Sharing Toggle */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px 18px', background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px' }}>
@@ -5407,12 +5477,103 @@ export default function LeaderDashboard({ initialCommunityId }) {
 
             {/* WhatsApp Settings */}
             {modalType === 'chapter-info' && (
-              <div style={{ color: 'var(--white)', display: 'flex', flexDirection: 'column', gap: '16px', padding: '16px 20px', maxHeight: '70vh', overflowY: 'auto' }}>
+              <div style={{ color: 'var(--white)', display: 'flex', flexDirection: 'column', gap: '16px', padding: '16px 20px', maxHeight: '75vh', overflowY: 'auto' }}>
+                
+                {/* Pending Applications Section */}
+                {pendingChapterApplications.length > 0 && (
+                  <div style={{
+                    padding: '16px',
+                    borderRadius: '14px',
+                    background: 'rgba(239, 68, 68, 0.08)',
+                    border: '1.5px solid rgba(239, 68, 68, 0.35)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '12px'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontSize: '1.1rem' }}>⏳</span>
+                        <div style={{ fontWeight: 700, fontSize: '0.95rem', color: '#fca5a5' }}>
+                          Chapter Applications Awaiting Your Approval ({pendingChapterApplications.length})
+                        </div>
+                      </div>
+                      <span style={{ fontSize: '0.72rem', background: '#ef4444', color: 'white', padding: '2px 8px', borderRadius: '99px', fontWeight: 700 }}>
+                        Action Required
+                      </span>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      {pendingChapterApplications.map(app => {
+                        const applicantLeader = users.find(u => u.id === app.leader_id);
+                        return (
+                          <div key={app.id} style={{
+                            padding: '12px 14px',
+                            background: 'rgba(0,0,0,0.3)',
+                            border: '1px solid rgba(255,255,255,0.08)',
+                            borderRadius: '12px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '8px'
+                          }}>
+                            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '10px' }}>
+                              <div>
+                                <div style={{ fontWeight: 700, color: 'var(--white)', fontSize: '0.92rem' }}>
+                                  {app.name}
+                                </div>
+                                <div style={{ fontSize: '0.78rem', color: '#7dd3fc', marginTop: '2px' }}>
+                                  📍 Proposed Town: {app.location_name || 'Local Town'}
+                                </div>
+                                <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', marginTop: '2px' }}>
+                                  Applicant: {applicantLeader?.name || 'Local Organizer'} ({applicantLeader?.email || 'Leader'})
+                                </div>
+                              </div>
+                              <div style={{ display: 'flex', gap: '6px' }}>
+                                <button
+                                  type="button"
+                                  onClick={async () => {
+                                    if (typeof approveChapter === 'function') {
+                                      await approveChapter(app.id);
+                                      toast.success('Chapter Approved! 🎉', `"${app.name}" is now active in the network.`);
+                                    }
+                                  }}
+                                  className="btn btn-primary interactive-press"
+                                  style={{ padding: '6px 12px', fontSize: '0.78rem', borderRadius: '8px', background: 'var(--teal-500)' }}
+                                >
+                                  Approve Chapter ✓
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={async () => {
+                                    if (typeof declineChapter === 'function') {
+                                      await declineChapter(app.id);
+                                      toast.info('Application Declined', `"${app.name}" will not be listed.`);
+                                    }
+                                  }}
+                                  className="btn btn-outline interactive-press"
+                                  style={{ padding: '6px 10px', fontSize: '0.78rem', borderRadius: '8px', color: '#f87171', borderColor: 'rgba(239,68,68,0.3)' }}
+                                >
+                                  Decline
+                                </button>
+                              </div>
+                            </div>
+                            {app.description && (
+                              <div style={{ fontSize: '0.75rem', color: 'var(--slate-300)', lineHeight: 1.4, background: 'rgba(255,255,255,0.03)', padding: '6px 10px', borderRadius: '6px' }}>
+                                &quot;{app.description.slice(0, 160)}...&quot;
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Section 1: Overview & What Appears on Your Page */}
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', padding: '14px 16px', background: 'rgba(56, 189, 248, 0.08)', border: '1px solid rgba(56, 189, 248, 0.25)', borderRadius: '14px' }}>
                   <Globe size={22} color="#38bdf8" style={{ flexShrink: 0, marginTop: '2px' }} />
                   <div>
                     <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--white)', marginBottom: '4px' }}>
-                      What is shown on your public page?
+                      1. What is shown on your public page?
                     </div>
                     <div style={{ fontSize: '0.82rem', color: 'var(--slate-300)', lineHeight: 1.5 }}>
                       When enabled, a <strong>&quot;Multi-Town Chapter Network&quot;</strong> section appears under the About tab of your community page ({community?.name}). It displays your active sister chapters and includes a <em>&quot;Launch a Chapter in Your Town&quot;</em> button.
@@ -5420,9 +5581,41 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   </div>
                 </div>
 
+                {/* Section 2: How Approvals & Control Work */}
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', padding: '14px 16px', background: 'rgba(20, 184, 166, 0.08)', border: '1px solid rgba(20, 184, 166, 0.25)', borderRadius: '14px' }}>
+                  <CheckCircle2 size={22} color="var(--teal-400)" style={{ flexShrink: 0, marginTop: '2px' }} />
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--white)', marginBottom: '4px' }}>
+                      2. How the Approval Gate Works (Full Founding Leader Control)
+                    </div>
+                    <div style={{ fontSize: '0.82rem', color: 'var(--slate-300)', lineHeight: 1.5 }}>
+                      When a local organizer clicks <em>Launch a Chapter</em>, their chapter is created in a <strong>&quot;Pending Approval&quot;</strong> state. It does <strong>not</strong> show on your public network until you review and approve it above. You hold complete veto power and can turn chapter applications on or off anytime using the slider.
+                    </div>
+                  </div>
+                </div>
+
+                {/* Section 3: How Payments & Revenue Splits Work */}
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', padding: '14px 16px', background: 'rgba(245, 158, 11, 0.08)', border: '1px solid rgba(245, 158, 11, 0.25)', borderRadius: '14px' }}>
+                  <CreditCard size={22} color="#fbbf24" style={{ flexShrink: 0, marginTop: '2px' }} />
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--white)', marginBottom: '4px' }}>
+                      3. How Payments & Revenue Splits Work (Transparent UK Bank Payouts)
+                    </div>
+                    <div style={{ fontSize: '0.82rem', color: 'var(--slate-300)', lineHeight: 1.5 }}>
+                      Ticket revenue and membership fees for each town are processed through Stripe Faster Payments:
+                      <ul style={{ margin: '6px 0 0 16px', padding: 0 }}>
+                        <li><strong>90% to Local Chapter Leader:</strong> Direct into their registered UK bank account within 24-48 hours.</li>
+                        <li><strong>5% Founding Network Royalty:</strong> Allocated to the founding parent group for brand guidance, route templates, and collective insurance.</li>
+                        <li><strong>5% Platform Fee (or 2% with Leader Pro):</strong> Covers card processing fees, VAT invoices, and attendee check-in systems.</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Section 4: Franchise Benefits & Growth Clout */}
                 <div>
                   <div style={{ fontWeight: 700, fontSize: '0.92rem', color: 'var(--white)', marginBottom: '8px' }}>
-                    🏛️ Is this like a franchise? How founding leaders benefit:
+                    🏛️ Why scale your community with multi-town chapters?
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     <div style={{ padding: '10px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px' }}>
@@ -5454,8 +5647,25 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   </div>
                 </div>
 
+                {/* Active Chapters Roster */}
+                {activeSisterChapters.length > 0 && (
+                  <div style={{ padding: '12px 14px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px' }}>
+                    <div style={{ fontSize: '0.84rem', fontWeight: 700, color: 'var(--white)', marginBottom: '8px' }}>
+                      Active Network Chapters ({activeSisterChapters.length})
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      {activeSisterChapters.map(sc => (
+                        <div key={sc.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 10px', background: 'rgba(255,255,255,0.03)', borderRadius: '8px', fontSize: '0.8rem' }}>
+                          <span style={{ fontWeight: 600, color: 'var(--slate-200)' }}>{sc.name} ({sc.location_name || 'Town'})</span>
+                          <span style={{ color: 'var(--teal-400)', fontSize: '0.74rem' }}>{sc.members || 1} members • Active</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <div style={{ padding: '12px 14px', background: 'rgba(245, 158, 11, 0.08)', border: '1px solid rgba(245, 158, 11, 0.25)', borderRadius: '12px', fontSize: '0.8rem', color: '#fef08a', lineHeight: 1.45 }}>
-                  💡 <strong>Want to keep it purely local?</strong> Turn the toggle off anytime. The chapter network banner and application button will disappear immediately from your public community page.
+                  💡 <strong>Want to keep it purely local?</strong> Turn the toggle off anytime in Settings. The chapter network banner and application button will disappear immediately from your public community page.
                 </div>
               </div>
             )}
