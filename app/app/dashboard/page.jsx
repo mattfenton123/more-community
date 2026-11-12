@@ -620,9 +620,17 @@ export default function LeaderDashboard({ initialCommunityId }) {
     }
     setIsExpandingDescription(true);
     try {
+      let authHeaders = { 'Content-Type': 'application/json' };
+      try {
+        const { data: { session: curSession } } = await supabase.auth.getSession();
+        if (curSession?.access_token) {
+          authHeaders['Authorization'] = `Bearer ${curSession.access_token}`;
+        }
+      } catch (e) {}
+
       const res = await fetch('/api/ai/generate-event', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: authHeaders,
         body: JSON.stringify({
           mode: 'expand-description',
           prompt: rawText,

@@ -1,4 +1,30 @@
 import { NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
+
+// Simple in-memory sliding window rate limiter (10 requests per minute per IP)
+const rateLimitMap = new Map();
+function isRateLimited(identifier, limit = 10, windowMs = 60000) {
+  const now = Date.now();
+  const timestamps = rateLimitMap.get(identifier) || [];
+  const recent = timestamps.filter(t => now - t < windowMs);
+  if (recent.length >= limit) return true;
+  recent.push(now);
+  rateLimitMap.set(identifier, recent);
+  return false;
+}
+
+// Sanitize user inputs: strip dangerous schemes and excessive length
+function sanitizePrompt(rawPrompt) {
+  if (typeof rawPrompt !== 'string') return '';
+  let sanitized = rawPrompt
+    .slice(0, 1000) // Strict 1,000 char cap prevents token exhaustion
+    .replace(/javascript:/gi, '')
+    .replace(/data:/gi, '')
+    .replace(/vbscript:/gi, '')
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+  return sanitized.trim();
+}
+
 
 export const runtime = 'nodejs';
 
@@ -81,8 +107,35 @@ function resolveEventTime(prompt) {
 
 export async function POST(request) {
   try {
+    // 1. IP / Client Rate Limiting
+    const forwardedFor = request.headers.get('x-forwarded-for') || 'unknown-client';
+    const clientIp = forwardedFor.split(',')[0].trim();
+    if (isRateLimited(clientIp, 12, 60000)) {
+      return NextResponse.json({ 
+        error: 'Too many requests. Please wait a moment before trying again.' 
+      }, { status: 429 });
+    }
+
+    // 2. Authentication Check (optional bearer token validation)
+    const authHeader = request.headers.get('authorization') || '';
+    const token = authHeader.replace(/^Bearer\s+/i, '').trim();
+    if (token) {
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+      if (supabaseUrl && supabaseAnonKey) {
+        try {
+          const authClient = createClient(supabaseUrl, supabaseAnonKey, { auth: { persistSession: false } });
+          const { data: { user }, error: authErr } = await authClient.auth.getUser(token);
+          if (authErr || !user) {
+            console.warn('AI generate-event unauthorized token:', authErr?.message);
+          }
+        } catch (e) {}
+      }
+    }
+
     const body = await request.json();
-    const prompt = body.prompt || body.description || '';
+    const rawPrompt = body.prompt || body.description || '';
+    const prompt = sanitizePrompt(rawPrompt);
     const communityName = body.communityName || 'More Community';
     const communityLocation = body.communityLocation || '';
     const communityTags = Array.isArray(body.communityTags) ? body.communityTags : [];
