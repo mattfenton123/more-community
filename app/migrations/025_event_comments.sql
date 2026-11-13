@@ -74,23 +74,23 @@ CREATE POLICY "Authors or hosts can delete event comments" ON public.event_comme
     (select auth.uid())::text = author_id::text
     OR EXISTS (
       SELECT 1 FROM public.events e
-      LEFT JOIN public.communities c ON c.id = e.community_id
-      WHERE e.id = event_comments.event_id::text
+      LEFT JOIN public.communities c ON c.id::text = e.community_id::text
+      WHERE e.id::text = event_comments.event_id::text
         AND (
-          c.leader_id = (select auth.uid())::text
+          c.leader_id::text = (select auth.uid())::text
           OR EXISTS (
             SELECT 1 FROM public.community_memberships cm
-            WHERE cm.user_id = (select auth.uid())::text
+            WHERE cm.user_id::text = (select auth.uid())::text
               AND cm.role IN ('Leader', 'Co-Leader')
               AND (
-                cm.community_id = e.community_id
-                OR COALESCE(e.cohost_community_ids, '[]'::jsonb) @> to_jsonb(cm.community_id)
+                cm.community_id::text = e.community_id::text
+                OR COALESCE(to_jsonb(e.cohost_community_ids), '[]'::jsonb) @> jsonb_build_array(cm.community_id::text)
               )
           )
           OR EXISTS (
             SELECT 1 FROM public.communities pc
-            WHERE pc.leader_id = (select auth.uid())::text
-              AND COALESCE(e.cohost_community_ids, '[]'::jsonb) @> to_jsonb(pc.id)
+            WHERE pc.leader_id::text = (select auth.uid())::text
+              AND COALESCE(to_jsonb(e.cohost_community_ids), '[]'::jsonb) @> jsonb_build_array(pc.id::text)
           )
         )
     )
