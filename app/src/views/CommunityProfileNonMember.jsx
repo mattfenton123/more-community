@@ -3,6 +3,7 @@ import { ChevronLeft, Share2, Users, Calendar, MapPin, Activity, BadgeCheck, Sta
 import AppHeader from '../components/AppHeader';
 import { isEventUpcoming, parseEventDateTime } from '../lib/calendar';
 import { cleanLocationName, formatShareLocation } from '../lib/location';
+import { resolveUserAvatar } from '../lib/avatar';
 
 // Category-specific gallery photos
 const IMG = '/images/communities';
@@ -115,7 +116,7 @@ export default function CommunityProfileNonMember({
 
         {/* Organizer */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '20px', background: 'linear-gradient(to right, rgba(20,184,166,0.1), rgba(255,255,255,0.02))', borderRadius: '20px', border: '1px solid rgba(20,184,166,0.2)' }}>
-          <img src={leaderUser?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(community.name)}&background=0D8B93&color=fff`} alt="Organiser" style={{ width: '56px', height: '56px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--teal-500)' }} />
+          <img src={resolveUserAvatar(leaderUser, community.name)} alt="Organiser" style={{ width: '56px', height: '56px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--teal-500)' }} />
           <div>
             <div style={{ fontSize: '0.8rem', color: 'var(--teal-400)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>Organised by</div>
             <div style={{ fontWeight: 800, color: 'var(--white)', fontSize: '1.1rem' }}>{leaderUser?.name || 'Community Team'}</div>

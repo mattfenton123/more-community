@@ -4,6 +4,7 @@ import { MapPin, Clock, Star, Users, Search, X, ArrowLeft, Sparkles, Loader2, Ex
 import { useRouter as useNavigate } from 'next/navigation';
 import { useAppContext } from '../context/AppContext';
 import { useToast } from '../components/Toast';
+import { isAffiliateExperience } from '../lib/experiencePricing';
 
 export default function ExperiencesMarketplace() {
   const [activePill, setActivePill] = useState('All');
@@ -58,6 +59,9 @@ export default function ExperiencesMarketplace() {
   };
 
   const getTotalPrice = (exp) => {
+    if (isAffiliateExperience(exp)) {
+      return Math.round(exp.basePrice || 35);
+    }
     return Math.round((exp.basePrice || 25) * (1 + (exp.leaderMarkup || 15) / 100));
   };
 
@@ -295,10 +299,10 @@ export default function ExperiencesMarketplace() {
                       WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
                       backgroundClip: 'text'
                     }}>
-                      £{getTotalPrice(exp)}
+                      {isAffiliateExperience(exp) ? `~£${getTotalPrice(exp)}` : `£${getTotalPrice(exp)}`}
                     </div>
                     <div style={{ fontSize: '0.58rem', color: 'var(--slate-600)', marginTop: '1px' }}>
-                      per person
+                      {isAffiliateExperience(exp) ? 'est. + Host Pass' : 'per person'}
                     </div>
                   </div>
                 </div>

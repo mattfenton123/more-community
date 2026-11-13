@@ -33,6 +33,8 @@ import EventReminderModal from '../../src/components/EventReminderModal';
 import NetworkEventPreviewModal from '../../src/components/NetworkEventPreviewModal';
 import ProfileImageModal from '../../src/components/ProfileImageModal';
 import LeaderShieldModal from '../../src/components/LeaderShieldModal';
+import { isAffiliateExperience, getHostPassEconomics } from '../../src/lib/experiencePricing';
+import { resolveUserAvatar } from '../../src/lib/avatar';
 import LeaderProposalsInbox from '../../src/components/LeaderProposalsInbox';
 import SpecialistVaultModal from '../../src/components/SpecialistVaultModal';
 import PayoutBankModal from '../../src/components/PayoutBankModal';
@@ -3780,7 +3782,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                                         return (
                                           <div key={att.userId} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', background: 'rgba(0,0,0,0.25)', padding: '6px 10px', borderRadius: '8px' }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
-                                              <img src={u?.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(u?.name || 'Member')}`} alt={u?.name} style={{ width: '24px', height: '24px', borderRadius: '50%', objectFit: 'cover' }} />
+                                              <img src={resolveUserAvatar(u)} alt={u?.name} style={{ width: '24px', height: '24px', borderRadius: '50%', objectFit: 'cover' }} />
                                               <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--white)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{u?.name || 'Community Member'}</span>
                                             </div>
                                             <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
@@ -4646,7 +4648,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   <h2 style={{ fontSize: '1.4rem', color: 'var(--white)', fontFamily: 'var(--font-heading)', margin: '0 0 8px 0', display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <Globe color="var(--teal-400)" /> Trips & Retreats Marketplace
                   </h2>
-                  <p style={{ color: 'var(--slate-400)', margin: 0, fontSize: '0.95rem' }}>Curate premium, high-margin experiences for your community. Powered by Viator & TourRadar.</p>
+                  <p style={{ color: 'var(--slate-400)', margin: 0, fontSize: '0.95rem' }}>Curate group trips via Viator &amp; TourRadar (Group Host Pass + Tracked Affiliate) or direct local venues.</p>
                 </div>
                 <button onClick={() => setIsDiscoveryModalOpen(true)} className="btn btn-primary interactive-press" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 16px', borderRadius: '12px' }}>
                   <Search size={16} /> Discover via API
@@ -4656,6 +4658,8 @@ export default function LeaderDashboard({ initialCommunityId }) {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
                 {experiences.map(exp => {
                   const isPromoted = exp.promotedBy === community?.id;
+                  const isAff = isAffiliateExperience(exp);
+                  const hostPassFee = exp.hostPassFee ?? 15;
                   const finalPrice = exp.basePrice + Math.round(exp.basePrice * ((exp.leaderMarkup || 0) / 100));
                   return (
                     <div key={exp.id} style={{ background: 'rgba(255,255,255,0.03)', border: isPromoted ? '2px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', overflow: 'hidden' }}>
@@ -4665,8 +4669,11 @@ export default function LeaderDashboard({ initialCommunityId }) {
                         title="Click to view full experience page"
                       >
                         <img src={exp.image} alt={exp.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        <div style={{ position: 'absolute', top: '10px', right: '10px', background: 'rgba(0,0,0,0.6)', padding: '4px 10px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 600, color: 'var(--white)', backdropFilter: 'blur(4px)' }}>
-                          £{exp.basePrice} base
+                        <div style={{ position: 'absolute', top: '10px', left: '10px', background: isAff ? 'rgba(20,184,166,0.9)' : 'rgba(15,23,42,0.85)', padding: '3px 9px', borderRadius: '20px', fontSize: '0.7rem', fontWeight: 700, color: isAff ? '#042f2e' : '#e2e8f0' }}>
+                          {isAff ? `${exp.provider || 'Viator'} • Host Pass` : 'Direct Venue'}
+                        </div>
+                        <div style={{ position: 'absolute', top: '10px', right: '10px', background: 'rgba(0,0,0,0.65)', padding: '4px 10px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 600, color: 'var(--white)', backdropFilter: 'blur(4px)' }}>
+                          {isAff ? `~£${exp.basePrice} on ${exp.provider || 'Viator'}` : `£${exp.basePrice} base`}
                         </div>
                       </div>
                       <div style={{ padding: '16px' }}>
@@ -4699,20 +4706,22 @@ export default function LeaderDashboard({ initialCommunityId }) {
                             }}
                             className="interactive-hover"
                           >
-                            <span>Read more about this experience</span>
+                            <span>Host group / view experience page</span>
                             <ExternalLink size={12} />
                           </a>
                         </div>
                         {!isPromoted ? (
                           <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '16px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                <span style={{ fontSize: '0.85rem', color: 'var(--slate-300)' }}>Your Markup:</span>
+                                <span style={{ fontSize: '0.85rem', color: 'var(--slate-300)' }}>
+                                  {isAff ? 'Group Host Pass:' : 'Your Markup:'}
+                                </span>
                                 <button
                                   type="button"
                                   onClick={() => setMarkupInfoExp(exp)}
                                   className="interactive-press"
-                                  title="How does markup work? Click for full financial breakdown"
+                                  title="How does this work? Click for full breakdown"
                                   style={{
                                     background: 'rgba(20, 184, 166, 0.15)',
                                     border: '1px solid rgba(20, 184, 166, 0.35)',
@@ -4730,17 +4739,40 @@ export default function LeaderDashboard({ initialCommunityId }) {
                                   <Info size={11} />
                                 </button>
                               </div>
-                              <select 
-                                value={exp.leaderMarkup ?? 15}
-                                onChange={(e) => { 
-                                  const val = parseInt(e.target.value) || 0;
-                                  setExperiences(prev => prev.map(item => item.id === exp.id ? { ...item, leaderMarkup: val } : item));
-                                  toast.success(`Markup set to +${val}%`); 
-                                }}
-                                style={{ background: 'var(--slate-800)', color: 'var(--white)', border: '1px solid var(--slate-700)', padding: '4px 8px', borderRadius: '6px', fontSize: '0.85rem' }}>
-                                <option value="0">0%</option><option value="10">+10%</option><option value="15">+15%</option><option value="20">+20%</option><option value="30">+30%</option>
-                              </select>
+                              {isAff ? (
+                                <select
+                                  value={hostPassFee}
+                                  onChange={(e) => {
+                                    const val = parseInt(e.target.value, 10) || 0;
+                                    setExperiences(prev => prev.map(item => item.id === exp.id ? { ...item, hostPassFee: val } : item));
+                                    toast.success(`Group Host Pass set to £${val}`);
+                                  }}
+                                  style={{ background: 'var(--slate-800)', color: 'var(--white)', border: '1px solid var(--slate-700)', padding: '4px 8px', borderRadius: '6px', fontSize: '0.85rem' }}
+                                >
+                                  <option value="0">£0 (Link only)</option>
+                                  <option value="10">£10 Pass</option>
+                                  <option value="15">£15 Pass</option>
+                                  <option value="20">£20 Pass</option>
+                                  <option value="25">£25 Pass</option>
+                                </select>
+                              ) : (
+                                <select 
+                                  value={exp.leaderMarkup ?? 15}
+                                  onChange={(e) => { 
+                                    const val = parseInt(e.target.value) || 0;
+                                    setExperiences(prev => prev.map(item => item.id === exp.id ? { ...item, leaderMarkup: val } : item));
+                                    toast.success(`Markup set to +${val}%`); 
+                                  }}
+                                  style={{ background: 'var(--slate-800)', color: 'var(--white)', border: '1px solid var(--slate-700)', padding: '4px 8px', borderRadius: '6px', fontSize: '0.85rem' }}>
+                                  <option value="0">0%</option><option value="10">+10%</option><option value="15">+15%</option><option value="20">+20%</option><option value="30">+30%</option>
+                                </select>
+                              )}
                             </div>
+                            {isAff && (
+                              <div style={{ fontSize: '0.74rem', color: 'var(--slate-400)', marginBottom: '10px', lineHeight: 1.4 }}>
+                                Members pay {exp.provider || 'Viator'} directly (~£{exp.basePrice}). Your £{hostPassFee} Host Pass funds your spot &amp; fee once min 6 join.
+                              </div>
+                            )}
                             <button 
                               onClick={() => { 
                                 setExperiences(prev => prev.map(item => item.id === exp.id ? { ...item, promotedBy: community?.id } : item));
@@ -4751,8 +4783,17 @@ export default function LeaderDashboard({ initialCommunityId }) {
                         ) : (
                           <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '16px' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', background: 'rgba(20,184,166,0.1)', padding: '10px', borderRadius: '8px' }}>
-                              <span style={{ fontSize: '0.85rem', color: 'var(--teal-300)' }}>Selling: <strong>£{finalPrice}</strong></span>
-                              <span style={{ fontSize: '0.85rem', color: 'var(--teal-300)' }}>Profit: <strong>£{finalPrice - exp.basePrice}</strong></span>
+                              {isAff ? (
+                                <>
+                                  <span style={{ fontSize: '0.82rem', color: 'var(--teal-300)' }}>Host Pass: <strong>£{hostPassFee}</strong></span>
+                                  <span style={{ fontSize: '0.82rem', color: 'var(--slate-300)' }}>Own Ticket: <strong>~£{exp.basePrice}</strong></span>
+                                </>
+                              ) : (
+                                <>
+                                  <span style={{ fontSize: '0.85rem', color: 'var(--teal-300)' }}>Selling: <strong>£{finalPrice}</strong></span>
+                                  <span style={{ fontSize: '0.85rem', color: 'var(--teal-300)' }}>Profit: <strong>£{finalPrice - exp.basePrice}</strong></span>
+                                </>
+                              )}
                             </div>
                             <button 
                               onClick={() => { 
@@ -4828,11 +4869,11 @@ export default function LeaderDashboard({ initialCommunityId }) {
                           <div style={{ position: 'relative' }}>
                             <img 
                               onClick={() => setSelectedProfileImage({
-                                imageUrl: memberUser.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(memberUser.name)}&background=0D8B93&color=fff`,
+                                imageUrl: resolveUserAvatar(memberUser),
                                 name: memberUser.name,
                                 subtitle: `${membership.role || 'Member'} • ${community?.name || ''}`
                               })} 
-                              src={memberUser.avatar} 
+                              src={resolveUserAvatar(memberUser)} 
                               alt={memberUser.name} 
                               title="Click to view full photo"
                               style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', cursor: 'pointer' }} 
@@ -5963,11 +6004,11 @@ export default function LeaderDashboard({ initialCommunityId }) {
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                           <img 
                             onClick={() => setSelectedProfileImage({
-                              imageUrl: memberUser.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(memberUser.name)}&background=0D8B93&color=fff`,
+                              imageUrl: resolveUserAvatar(memberUser),
                               name: memberUser.name,
                               subtitle: `${membership.role || 'Member'} • ${community?.name || ''}`
                             })} 
-                            src={memberUser.avatar} 
+                            src={resolveUserAvatar(memberUser)} 
                             alt={memberUser.name} 
                             title="Click to view full photo"
                             style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', cursor: 'pointer' }} 
@@ -6902,14 +6943,76 @@ export default function LeaderDashboard({ initialCommunityId }) {
                       </button>
                     </div>
 
-                    {/* 3-Pillar Breakdown with More 10% Wholesale Split */}
+                    {/* 3-Pillar Breakdown: Option B for Viator/TourRadar vs Option A for Direct Venues */}
                     {(() => {
+                      const isAff = isAffiliateExperience(markupInfoExp);
                       const basePrice = markupInfoExp.basePrice || 40;
-                      const supplierBase = markupInfoExp.supplierBase || Math.round(basePrice / 1.10);
-                      const moreMargin = markupInfoExp.moreMargin || (basePrice - supplierBase);
+                      const supplierBase = markupInfoExp.supplierBase || (isAff ? basePrice : Math.round(basePrice / 1.10));
+                      const moreMargin = markupInfoExp.moreMargin || Math.max(2, basePrice - supplierBase);
                       const markupPct = markupInfoExp.leaderMarkup ?? 15;
                       const leaderProfit = Math.round((basePrice * markupPct) / 100);
                       const memberFinalPrice = basePrice + leaderProfit;
+                      const hostPassFee = markupInfoExp.hostPassFee ?? 15;
+                      const econ = getHostPassEconomics({ guidePrice: supplierBase, hostPassMember: hostPassFee, minGroupSize: 6 });
+
+                      if (isAff) {
+                        const prov = markupInfoExp.provider || 'Viator';
+                        return (
+                          <>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                              <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '12px', padding: '14px' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                                  <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#fff' }}>1. Tour Ticket (~£{supplierBase}.00 on {prov})</div>
+                                  <div style={{ fontSize: '0.92rem', fontWeight: 700, color: '#38bdf8' }}>Paid Directly to {prov}</div>
+                                </div>
+                                <p style={{ fontSize: '0.8rem', color: 'var(--slate-300)', margin: 0, lineHeight: 1.45 }}>
+                                  Once your group hits minimum numbers, members (and you) pay {prov} directly using your community&apos;s tracked affiliate link. {prov} stays merchant of record — zero tour-operator or refund liability for you or More.
+                                </p>
+                              </div>
+
+                              <div style={{ background: 'rgba(20, 184, 166, 0.08)', border: '1px solid rgba(20, 184, 166, 0.25)', borderRadius: '12px', padding: '14px' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                                  <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#2dd4bf' }}>2. Group Host Pass (+£{hostPassFee}.00 via More Stripe)</div>
+                                  <div style={{ fontSize: '1rem', fontWeight: 800, color: '#34d399' }}>In-App Strip Fund</div>
+                                </div>
+                                <p style={{ fontSize: '0.8rem', color: 'var(--slate-300)', margin: 0, lineHeight: 1.45 }}>
+                                  Collected in More (refundable if min numbers aren&apos;t met). Pays More&apos;s 10% platform fee, covers your hosting cut, and funds <strong>your own ~£{supplierBase} {prov} ticket</strong> so you never host out of pocket.
+                                </p>
+                              </div>
+
+                              <div style={{ background: 'rgba(168, 85, 247, 0.08)', border: '1px solid rgba(168, 85, 247, 0.25)', borderRadius: '12px', padding: '14px' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                                  <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#c084fc' }}>3. Tracked Affiliate Attribution</div>
+                                  <div style={{ fontSize: '0.88rem', fontWeight: 700, color: '#c084fc' }}>Per-Community Tag</div>
+                                </div>
+                                <p style={{ fontSize: '0.8rem', color: 'var(--slate-300)', margin: 0, lineHeight: 1.45 }}>
+                                  Your event automatically appends your community campaign sub-ID so {prov} affiliate commission tracks cleanly back to More and your community share.
+                                </p>
+                              </div>
+                            </div>
+
+                            <div style={{ background: 'rgba(15, 23, 42, 0.6)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '14px' }}>
+                              <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.04em', marginBottom: '8px' }}>
+                                Example Group Outcome ({econ.minGroupSize} Members @ £{hostPassFee} Host Pass)
+                              </div>
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '0.85rem' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--slate-300)' }}>
+                                  <span>Host Pass Pool ({econ.minGroupSize} × £{hostPassFee}):</span>
+                                  <span>£{econ.pot}.00</span>
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', color: '#c084fc' }}>
+                                  <span>More Platform Fee (10% of Host Pass):</span>
+                                  <span>-£{econ.platformFee}.00</span>
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', color: '#34d399', fontWeight: 700 }}>
+                                  <span>Your Net Host Pot (Covers your ~£{supplierBase} spot!):</span>
+                                  <span>£{econ.netToHost}.00</span>
+                                </div>
+                              </div>
+                            </div>
+                          </>
+                        );
+                      }
 
                       return (
                         <>

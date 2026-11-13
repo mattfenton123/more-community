@@ -7,6 +7,7 @@ import { MessageCircle, Users, ChevronRight, Hash, Search, Plus, User, Megaphone
 import AppHeader from '../../src/components/AppHeader';
 import { FALLBACK_IMAGES } from '../../src/lib/constants';
 import { useToast } from '../../src/components/Toast';
+import { resolveUserAvatar, getDefaultAvatar } from '../../src/lib/avatar';
 
 export default function ChatIndex() {
   const { communities, user, users, isLoading, channels, createChannel, communityMemberships } = useAppContext();
@@ -155,9 +156,9 @@ export default function ChatIndex() {
               
               // Use user avatar for DMs. For channels, use a generated avatar based on the channel name
               // so that different groups/channels don't all look identical with the same community image.
-              let avatar = item.type === 'dm' 
-                ? (item.otherUser.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(item.otherUser.name)}&background=0D8B93&color=fff`)
-                : `https://ui-avatars.com/api/?name=${encodeURIComponent(displayTitle)}&background=1e293b&color=2dd4bf`;
+              let avatar = item.type === 'dm'
+                ? resolveUserAvatar(item.otherUser)
+                : getDefaultAvatar(displayTitle);
               
               if (item.type !== 'dm' && title.toLowerCase() === 'general') {
                 // For the main general channel, use the community image

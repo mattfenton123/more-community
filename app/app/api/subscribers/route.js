@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/navigation';
 import { supabase } from '../../../src/lib/supabaseClient';
 import { sendTownAlertConfirmationEmail } from '../../../src/lib/emailService';
+import { getDefaultAvatar } from '../../../src/lib/avatar';
 
 export async function POST(request) {
   try {
@@ -21,7 +22,7 @@ export async function POST(request) {
       role: 'Subscriber',
       bio: `[Email: ${cleanEmail}] [Source: ${source}] [Town: ${town}]`,
       joined: `Joined ${new Date().toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })}`,
-      avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(subscriberName)}&background=0d9488&color=fff`,
+      avatar: getDefaultAvatar(subscriberName),
       interests: [`email:${cleanEmail}`, 'subscriber', 'opt_in:true', `town:${town || 'general'}`],
       location: town || ''
     });

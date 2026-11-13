@@ -5,6 +5,7 @@ import { Car, MapPin, Clock, Users, Shield, Plus, CheckCircle2, MessageCircle, X
 import { useAppContext } from '../context/AppContext';
 import { useToast } from './Toast';
 import InfoExplainer from './InfoExplainer';
+import { resolveUserAvatar } from '../lib/avatar';
 
 export default function CarpoolHub({ event, user, isAttendee = false, community }) {
   const { toast } = useToast();
@@ -141,7 +142,7 @@ export default function CarpoolHub({ event, user, isAttendee = false, community 
             const newPassengers = [...(c.passengers || []), {
               userId: user.id,
               name: user.name || 'Member',
-              avatar: user.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.name || 'Rider')}`,
+              avatar: resolveUserAvatar(user, 'Rider'),
               reservedAt: new Date().toISOString()
             }];
             return {

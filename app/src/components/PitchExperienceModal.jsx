@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { X, Sparkles, Vote, MessageCircle, Copy, Check, ArrowRight } from 'lucide-react';
 import { useToast } from './Toast';
+import { isAffiliateExperience } from '../lib/experiencePricing';
 
 export default function PitchExperienceModal({ experience, communities, user, onClose, onPitch }) {
   const ledCommunities = communities?.filter(c => user?.ledCommunities?.includes(c.id)) || [];
@@ -110,7 +111,7 @@ export default function PitchExperienceModal({ experience, communities, user, on
                   {experience.title}
                 </div>
                 <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)' }}>
-                  From £{Math.round((experience.basePrice || 25) * 1.15)} / person • {experience.duration}
+                  {isAffiliateExperience(experience) ? `~£${experience.basePrice || 35} on ${experience.provider || 'Viator'} (+ ~£15 Group Host Pass)` : `From £${Math.round((experience.basePrice || 25) * 1.15)} / person`} • {experience.duration}
                 </div>
               </div>
             </div>

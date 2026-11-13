@@ -15,6 +15,7 @@ import SwipeDiscovery from '../components/SwipeDiscovery';
 import { isEventUpcoming } from '../lib/calendar';
 import { getCommunityLocation } from '../lib/location';
 import { getCommunitySlug } from '../lib/communityLinks';
+import { resolveUserAvatar } from '../lib/avatar';
 
 export default function Discover() {
   const { communities, user, users, communityMemberships, joinCommunity, isLoading, events, getAffinityScore, sponsors, sponsorshipAssignments } = useAppContext();
@@ -225,7 +226,7 @@ export default function Discover() {
               </button>
             </div>
             <button onClick={() => navigate.back()} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 }}>
-              <img src={user?.avatar || '/images/default-avatar.svg'} alt="Profile" style={{ width: '36px', height: '36px', borderRadius: '50%', border: '2px solid var(--slate-700)', objectFit: 'cover' }} />
+              <img src={resolveUserAvatar(user)} alt="Profile" style={{ width: '36px', height: '36px', borderRadius: '50%', border: '2px solid var(--slate-700)', objectFit: 'cover' }} />
             </button>
           </>
         }

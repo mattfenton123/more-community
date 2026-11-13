@@ -5,6 +5,7 @@ import { useRouter as useNavigate } from 'next/navigation';
 import { useAppContext } from '../context/AppContext';
 import { useChat } from '../context/ChatContext';
 import { useGamification, BadgeRow } from '../components/Gamification';
+import { resolveUserAvatar } from '../lib/avatar';
 
 function UserLeaderboardRow({ userId, rank }) {
   const { users } = useAppContext();
@@ -41,7 +42,7 @@ function UserLeaderboardRow({ userId, rank }) {
 
       {/* Avatar + Level Badge */}
       <div style={{ position: 'relative', flexShrink: 0 }}>
-        <img src={user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=0D8B93&color=fff`} alt="" style={{ width: '44px', height: '44px', borderRadius: '50%', objectFit: 'cover' }} />
+        <img src={resolveUserAvatar(user)} alt="" style={{ width: '44px', height: '44px', borderRadius: '50%', objectFit: 'cover' }} />
         <div style={{ position: 'absolute', bottom: -2, right: -2, width: '20px', height: '20px', borderRadius: '6px', background: 'linear-gradient(135deg, #f59e0b, #ef4444)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid var(--slate-950)' }}>
           <span style={{ fontSize: '0.55rem', fontWeight: 800, color: 'var(--white)' }}>{level}</span>
         </div>
@@ -132,7 +133,7 @@ export default function Leaderboard() {
             const colors = { 0: '#f59e0b', 1: '#94a3b8', 2: '#b45309' };
             return (
               <div key={idx} onClick={() => navigate.push(`/profile/${u.id}`)} className="interactive-press" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer', flex: 1, maxWidth: '110px' }}>
-                <img src={u.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}`} alt="" style={{ width: isFirst ? '56px' : '44px', height: isFirst ? '56px' : '44px', borderRadius: '50%', objectFit: 'cover', border: `3px solid ${colors[idx]}`, marginBottom: '6px' }} />
+                <img src={resolveUserAvatar(u)} alt="" style={{ width: isFirst ? '56px' : '44px', height: isFirst ? '56px' : '44px', borderRadius: '50%', objectFit: 'cover', border: `3px solid ${colors[idx]}`, marginBottom: '6px' }} />
                 <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.75rem', textAlign: 'center', marginBottom: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}>{u.name}</div>
                 <div style={{ fontSize: '0.65rem', color: colors[idx], fontWeight: 700, marginBottom: '6px' }}>{ru.xp} XP</div>
                 <div style={{ width: '100%', height: heights[idx], background: `linear-gradient(180deg, ${colors[idx]}30 0%, ${colors[idx]}08 100%)`, borderRadius: '8px 8px 0 0', border: `1px solid ${colors[idx]}30`, borderBottom: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

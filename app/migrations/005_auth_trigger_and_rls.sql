@@ -60,7 +60,7 @@ BEGIN
   VALUES (
     NEW.id::text, 
     COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.email, 'New User'),
-    COALESCE(NEW.raw_user_meta_data->>'avatar_url', 'https://i.pravatar.cc/150'),
+    COALESCE(NULLIF(NEW.raw_user_meta_data->>'avatar_url', ''), ''),
     'Member',
     'Joined ' || to_char(NOW(), 'Mon YYYY'),
     ''

@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import { useAppContext } from '../context/AppContext';
 import { useChat } from '../context/ChatContext';
 import { useToast } from '../components/Toast';
+import { resolveUserAvatar } from '../lib/avatar';
 
 export default function SettingsScreen() {
   const navigate = useNavigate();
@@ -96,7 +97,7 @@ export default function SettingsScreen() {
       <div style={{ padding: '0 20px 24px' }}>
         <div className="glass-panel" style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '20px' }}>
           <img
-            src={user.avatar || `/images/default-avatar.svg?u=${user.id}`}
+            src={resolveUserAvatar(user)}
             alt={user.name}
             style={{ width: '56px', height: '56px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--slate-700)' }}
           />

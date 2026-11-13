@@ -8,11 +8,12 @@ import {
   ChevronRight, Check, AlertCircle, Info 
 } from 'lucide-react';
 import { useToast } from '../../../../src/components/Toast';
+import { isAffiliateExperience, buildAffiliateUrl } from '../../../../src/lib/experiencePricing';
 
 export default function ExperienceCheckout() {
   const { id } = useParams();
   const router = useRouter();
-  const { experiences, communities } = useAppContext();
+  const { experiences, communities, user } = useAppContext();
   const { toast } = useToast();
   
   const exp = experiences?.find(e => e.id === id || e.productCode === id);
@@ -47,9 +48,17 @@ export default function ExperienceCheckout() {
     );
   }
 
-  // Price calculations
-  const singlePrice = exp.basePrice + Math.round(exp.basePrice * ((exp.leaderMarkup ?? 15) / 100));
+  // Price calculations (Option B for Viator/TourRadar uses More Group Host Pass)
+  const isAffiliate = isAffiliateExperience(exp);
+  const providerLabel = exp.provider || (String(exp.productUrl || '').includes('tourradar') ? 'TourRadar' : 'Viator');
+  const guideEstimate = Math.round(Number(exp.supplierBase || exp.basePrice || 35));
+  const singlePrice = isAffiliate
+    ? Math.max(0, Number(exp.hostPassPrice ?? exp.suggestedHostPass ?? 15))
+    : exp.basePrice + Math.round(exp.basePrice * ((exp.leaderMarkup ?? 15) / 100));
   const totalPrice = singlePrice * guestCount;
+  const trackedProviderUrl = isAffiliate && exp.productUrl
+    ? buildAffiliateUrl(exp.productUrl, { communityId: community?.id || exp.communityId, leaderId: user?.id, experienceId: exp.id })
+    : null;
 
   // Resolve sensible venue location/address if imported from Google Places or generic
   const venueLocation = useMemo(() => {
@@ -138,10 +147,12 @@ export default function ExperienceCheckout() {
             </span>
 
             <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.45rem', fontWeight: 800, margin: '12px 0 6px', color: '#fff' }}>
-              You're Booked In!
+              {isAffiliate ? 'Group Host Pass Reserved!' : "You're Booked In!"}
             </h2>
             <p style={{ color: 'var(--slate-300)', fontSize: '0.9rem', margin: '0 0 20px', lineHeight: 1.5 }}>
-              Your place has been reserved for <strong>{exp.title}</strong> with {community?.name || 'Ruth Breathes'}. A booking confirmation and calendar pass has been sent to your email.
+              {isAffiliate
+                ? <>Step 1 complete! Your More Group Host Pass is reserved for <strong>{exp.title}</strong> with {community?.name || 'your community host'}. Next, book your own direct ticket (~£{guideEstimate}) on {providerLabel} via our tracked group link.</>
+                : <>Your place has been reserved for <strong>{exp.title}</strong> with {community?.name || 'your community host'}. A booking confirmation and calendar pass has been sent to your email.</>}
             </p>
 
             {/* Ticket Pass Container */}
@@ -187,6 +198,17 @@ export default function ExperienceCheckout() {
 
             {/* Actions */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {isAffiliate && trackedProviderUrl && (
+                <a
+                  href={trackedProviderUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-primary interactive-press"
+                  style={{ width: '100%', padding: '13px', borderRadius: '12px', fontSize: '0.92rem', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', textDecoration: 'none' }}
+                >
+                  Step 2: Book Own Ticket on {providerLabel} (~£{guideEstimate}) <ExternalLink size={16} />
+                </a>
+              )}
               <a 
                 href={mapsUrl}
                 target="_blank"
@@ -232,10 +254,12 @@ export default function ExperienceCheckout() {
               <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.3rem', fontWeight: 800, margin: '0 0 6px', color: '#fff', lineHeight: 1.3 }}>
                 {exp.title}
               </h2>
-              <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
                 <span>Curated for {community?.name || 'Community'}</span>
                 <span>•</span>
-                <span style={{ color: 'var(--teal-300)' }}>£{singlePrice} per person</span>
+                <span style={{ color: 'var(--teal-300)' }}>
+                  {isAffiliate ? `£${singlePrice} Host Pass (+ ~£${guideEstimate} ${providerLabel} ticket direct)` : `£${singlePrice} per person`}
+                </span>
               </div>
             </div>
           </div>
@@ -422,9 +446,15 @@ export default function ExperienceCheckout() {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.88rem', marginBottom: '14px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--slate-300)' }}>
-                <span>{exp.title} ({guestCount} guest{guestCount > 1 ? 's' : ''}):</span>
+                <span>{isAffiliate ? `More Group Host Pass` : exp.title} ({guestCount} guest{guestCount > 1 ? 's' : ''}):</span>
                 <span>£{singlePrice} × {guestCount}</span>
               </div>
+              {isAffiliate && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--slate-400)', fontSize: '0.8rem' }}>
+                  <span>Step 2 Own Ticket on {providerLabel} (paid direct later):</span>
+                  <span style={{ color: '#fcd34d' }}>~£{guideEstimate} × {guestCount}</span>
+                </div>
+              )}
               <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--slate-400)', fontSize: '0.8rem' }}>
                 <span>Booking Guarantee & Merchant Fees:</span>
                 <span style={{ color: 'var(--teal-400)' }}>Included (£0.00)</span>

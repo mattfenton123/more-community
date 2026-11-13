@@ -1,6 +1,7 @@
 ﻿import React, { useState } from 'react';
 import { Star, MapPin, Clock, PlusCircle, Info, ExternalLink, X, Eye, Sparkles } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
+import { isAffiliateExperience } from '../lib/experiencePricing';
 
 export default function ExperiencesCatalog({ onPitchExperience }) {
   const { experiences } = useAppContext();
@@ -311,9 +312,13 @@ export default function ExperiencesCatalog({ onPitchExperience }) {
                   </div>
                 </div>
                 <div>
-                  <div style={{ fontSize: '0.68rem', color: 'var(--slate-400)', textTransform: 'uppercase', fontWeight: 600 }}>Indicative Price</div>
+                  <div style={{ fontSize: '0.68rem', color: 'var(--slate-400)', textTransform: 'uppercase', fontWeight: 600 }}>
+                    {isAffiliateExperience(selectedExp) ? '2-Step Guide Price' : 'Indicative Price'}
+                  </div>
                   <div style={{ fontSize: '0.84rem', color: '#34d399', fontWeight: 700, marginTop: '2px' }}>
-                    {selectedExp.basePrice ? `£${selectedExp.basePrice} per person` : 'From £35pp'}
+                    {isAffiliateExperience(selectedExp)
+                      ? (selectedExp.basePrice ? `~£${selectedExp.basePrice}pp direct + Host Pass` : 'From £35pp + Host Pass')
+                      : (selectedExp.basePrice ? `£${selectedExp.basePrice} per person` : 'From £35pp')}
                   </div>
                 </div>
               </div>

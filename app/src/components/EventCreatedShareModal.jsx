@@ -5,6 +5,7 @@ import { useRouter as useNavigate } from 'next/navigation';
 import { useToast } from './Toast';
 import { cleanLocationName } from '../lib/location';
 import { getEventPath, getEventUrl, SITE_ORIGIN } from '../lib/eventLinks';
+import { parseExperienceMeta } from '../lib/experiencePricing';
 
 export default function EventCreatedShareModal({ event, experience, allEvents, onClose }) {
   const [copied, setCopied] = useState(false);
@@ -13,8 +14,15 @@ export default function EventCreatedShareModal({ event, experience, allEvents, o
 
   const origin = typeof window !== 'undefined' ? window.location.origin : SITE_ORIGIN;
   const bookingUrl = getEventUrl(event, { allEvents, origin });
+  const expMeta = parseExperienceMeta(event?.description);
+  const isAffiliate = expMeta?.bookingModel === 'affiliate_host_pass';
+  const providerName = expMeta?.provider || experience?.provider || 'Viator';
+  const minGroup = expMeta?.minGroupSize || 6;
+  const supplierEst = expMeta?.supplierEstimate || experience?.basePrice || 35;
 
-  const shareText = `Tickets & RSVPs are now live for ${event.title} on More Community! 🎟️\nDate: ${event.date} at ${event.time}\nSpots: ${event.maxCapacity || 15} available\n\nRSVP & see details here: ${bookingUrl}`;
+  const shareText = isAffiliate
+    ? `Group trip proposed for ${event.title}! 🌟\nDate: ${event.date} at ${event.time}\nMore Group Host Pass: £${event.ticketPrice} (refundable if under ${minGroup} join)\nYour own ${providerName} ticket (~£${supplierEst}) is booked directly once min ${minGroup} confirm.\n\nJoin & reserve spot: ${bookingUrl}`
+    : `Tickets & RSVPs are now live for ${event.title} on More Community! 🎟️\nDate: ${event.date} at ${event.time}\nSpots: ${event.maxCapacity || 15} available\n\nRSVP & see details here: ${bookingUrl}`;
   const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
 
   const handleCopy = () => {
@@ -53,10 +61,12 @@ export default function EventCreatedShareModal({ event, experience, allEvents, o
         </div>
 
         <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.45rem', margin: '0 0 6px', color: 'var(--white)' }}>
-          Trip Booking Link is Live!
+          {isAffiliate ? 'Group Trip Pitch is Live!' : 'Trip Booking Link is Live!'}
         </h2>
         <p style={{ fontSize: '0.85rem', color: 'var(--slate-400)', margin: '0 0 20px', lineHeight: 1.5 }}>
-          Your community event has been published. Share the direct booking link with your members so they can grab tickets via Stripe.
+          {isAffiliate
+            ? `Members claim a £${event.ticketPrice} More Host Pass first (min ${minGroup} people), then book their own ~£${supplierEst} ticket on ${providerName} via your tracked link once confirmed.`
+            : 'Your community event has been published. Share the direct booking link with your members so they can grab tickets via Stripe.'}
         </p>
 
         {/* Event Preview Card */}
@@ -79,9 +89,15 @@ export default function EventCreatedShareModal({ event, experience, allEvents, o
               </div>
             )}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px', paddingTop: '6px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-              <span style={{ color: 'var(--slate-400)' }}>Member Ticket:</span>
+              <span style={{ color: 'var(--slate-400)' }}>{isAffiliate ? 'More Group Host Pass:' : 'Member Ticket:'}</span>
               <span style={{ color: 'var(--teal-300)', fontWeight: 700, fontSize: '0.95rem' }}>£{event.ticketPrice}</span>
             </div>
+            {isAffiliate && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' }}>
+                <span style={{ color: 'var(--slate-400)' }}>Own {providerName} Ticket (Step 2):</span>
+                <span style={{ color: '#fff', fontWeight: 600, fontSize: '0.88rem' }}>~£{supplierEst} once {minGroup}+ join</span>
+              </div>
+            )}
           </div>
         </div>
 

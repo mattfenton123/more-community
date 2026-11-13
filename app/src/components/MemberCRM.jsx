@@ -5,6 +5,7 @@ import { useAppContext } from '../context/AppContext';
 import { useChat } from '../context/ChatContext';
 import { useToast } from '../components/Toast';
 import ProfileImageModal from './ProfileImageModal';
+import { resolveUserAvatar } from '../lib/avatar';
 
 function getEngagementScore(member, events, eventRsvps, messages, communityId) {
   let score = 0;
@@ -171,11 +172,11 @@ export default function MemberCRM({ communityId }) {
           return (
             <div key={member.userId} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '14px', display: 'flex', alignItems: 'center', gap: '12px' }}>
               <img 
-                src={member.user.avatar} 
+                src={resolveUserAvatar(member.user)} 
                 alt={member.user.name} 
                 title="Click to view full photo"
                 onClick={() => setSelectedMemberImage({
-                  imageUrl: member.user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(member.user.name)}&background=0D8B93&color=fff`,
+                  imageUrl: resolveUserAvatar(member.user),
                   name: member.user.name,
                   subtitle: `${member.role || 'Member'} • Engagement Score: ${member.score}`
                 })}

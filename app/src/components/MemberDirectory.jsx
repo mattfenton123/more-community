@@ -6,6 +6,7 @@ import { useAppContext } from '../context/AppContext';
 import { useChat } from '../context/ChatContext';
 import { BadgeRow, useGamification, CommunityLeaderboard } from './Gamification';
 import { Shield, CheckCircle } from 'lucide-react';
+import { resolveUserAvatar } from '../lib/avatar';
 
 function MemberRow({ member, communityId, isCurrentUserLeader, onUpgradeClick }) {
   const navigate = useNavigate();
@@ -23,7 +24,7 @@ function MemberRow({ member, communityId, isCurrentUserLeader, onUpgradeClick })
   return (
     <div onClick={() => navigate.push(`/profile/${member.userId}`)} className="interactive-press"
       style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 12px', background: 'rgba(255,255,255,0.02)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.04)', cursor: 'pointer', marginBottom: '6px' }}>
-      <img src={user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=0D8B93&color=fff`} alt="" style={{ width: '38px', height: '38px', borderRadius: '50%', objectFit: 'cover' }} />
+      <img src={resolveUserAvatar(user)} alt="" style={{ width: '38px', height: '38px', borderRadius: '50%', objectFit: 'cover' }} />
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
           <span style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.85rem' }}>{user.name}</span>

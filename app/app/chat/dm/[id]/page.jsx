@@ -10,6 +10,7 @@ import LinkSafetyModal from '../../../../src/components/LinkSafetyModal';
 import ChatTrustModal from '../../../../src/components/ChatTrustModal';
 import { calculateUserTrustLevel, checkRateLimit } from '../../../../src/lib/chatSecurity';
 import { Shield, Flag } from 'lucide-react';
+import { resolveUserAvatar } from '../../../../src/lib/avatar';
 
 
 const EmojiPicker = dynamic(() => import('emoji-picker-react'), { ssr: false });
@@ -116,7 +117,7 @@ export default function DirectMessage() {
           <ChevronLeft size={24} />
         </button>
         <img 
-          src={targetUser.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(targetUser.name)}&background=0D8B93&color=fff`}
+          src={resolveUserAvatar(targetUser)}
           alt={targetUser.name}
           onClick={() => router.push(`/profile/${targetUserId}`)}
           style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover', cursor: 'pointer' }}
@@ -192,7 +193,7 @@ export default function DirectMessage() {
                 >
                   {!isOwn && (
                     <img 
-                      src={author?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(author?.name || 'U')}&background=0D8B93&color=fff`}
+                      src={resolveUserAvatar(author)}
                       alt="" 
                       style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0, opacity: isLastConsecutive ? 1 : 0 }}
                     />

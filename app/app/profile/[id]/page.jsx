@@ -11,6 +11,7 @@ import GamificationPanel, { BadgeRow, useGamification } from '../../../src/compo
 import { FALLBACK_IMAGES } from '../../../src/lib/constants';
 import ProfileImageModal from '../../../src/components/ProfileImageModal';
 import { getEventPath } from '../../../src/lib/eventLinks';
+import { resolveUserAvatar } from '../../../src/lib/avatar';
 
 export default function UserProfile() {
   const { id } = useParams();
@@ -62,7 +63,7 @@ export default function UserProfile() {
       fileInputRef.current?.click();
     } else {
       setSelectedImageModal({
-        imageUrl: profileUser.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(profileUser.name)}&background=0D8B93&color=fff`,
+        imageUrl: resolveUserAvatar(profileUser),
         name: profileUser.name,
         subtitle: isOwnProfile ? 'Your Profile Picture' : `${profileUser.name}'s Profile Picture`,
         isOwnProfile: isOwnProfile,
@@ -256,7 +257,7 @@ export default function UserProfile() {
           >
             <div style={{ position: 'relative', borderRadius: '50%', overflow: 'hidden' }}>
               <img 
-                src={profileUser.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(profileUser.name)}&background=0D8B93&color=fff`} 
+                src={resolveUserAvatar(profileUser)} 
                 alt={profileUser.name} 
                 style={{ 
                   width: '110px', 

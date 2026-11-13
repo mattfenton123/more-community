@@ -7,6 +7,7 @@ import { useToast } from '../components/Toast';
 import HostExperienceModal from '../components/HostExperienceModal';
 import PitchExperienceModal from '../components/PitchExperienceModal';
 import EventCreatedShareModal from '../components/EventCreatedShareModal';
+import { isAffiliateExperience, parseExperienceMeta, buildAffiliateUrl, getHostPassEconomics } from '../lib/experiencePricing';
 
 export default function ExperienceMicrosite() {
   const { id } = useParams();
@@ -15,6 +16,7 @@ export default function ExperienceMicrosite() {
   const { toast } = useToast();
   const [showHostModal, setShowHostModal] = useState(false);
   const [showPitchModal, setShowPitchModal] = useState(false);
+  const [showGroupExplainer, setShowGroupExplainer] = useState(false);
   const [createdEvent, setCreatedEvent] = useState(null);
   const [singleExp, setSingleExp] = useState(null);
   const [isLoadingSingle, setIsLoadingSingle] = useState(false);
@@ -59,7 +61,19 @@ export default function ExperienceMicrosite() {
     );
   }
 
+  const isAffiliate = isAffiliateExperience(experience);
+  const guidePrice = experience.supplierBase || experience.basePrice || 35;
+  const hostPassDefault = experience.hostPassFee ?? experience.suggestedHostPass ?? 15;
+  const trackedSoloUrl = isAffiliate && experience.productUrl
+    ? buildAffiliateUrl(experience.productUrl, {
+        communityId: experience.promotedBy || user?.joinedCommunities?.[0] || 'general',
+        leaderId: user?.id,
+        experienceId: experience.id || experience.productCode,
+      })
+    : experience.productUrl;
+
   const getTotalPrice = (exp) => {
+    if (isAffiliateExperience(exp)) return exp.supplierBase || exp.basePrice || 35;
     return Math.round((exp.basePrice || 25) * (1 + (exp.leaderMarkup || 15) / 100));
   };
 
@@ -77,7 +91,12 @@ export default function ExperienceMicrosite() {
       const metadata = {
         isExperience: true,
         baseExperienceId: experience.id,
-        nonMemberPrice: data.nonMemberPrice
+        nonMemberPrice: data.nonMemberPrice,
+        bookingModel: data.bookingModel || (isAffiliate ? 'affiliate_host_pass' : 'direct_escrow'),
+        provider: data.provider || experience.provider || experience.source || '',
+        productUrl: data.productUrl || experience.productUrl || '',
+        supplierEstimate: data.supplierEstimate || guidePrice,
+        minGroupSize: data.minGroupSize || 6,
       };
       
       const newEvent = {
@@ -90,6 +109,7 @@ export default function ExperienceMicrosite() {
         communityId: data.communityId,
         status: data.isPublic ? 'published' : 'private',
         maxCapacity: data.maxCapacity,
+        minGroupSize: metadata.minGroupSize,
         ticketPrice: data.memberPrice,
         nonMemberPrice: data.nonMemberPrice,
         isExperience: true,
@@ -175,14 +195,14 @@ export default function ExperienceMicrosite() {
                 <div style={{ fontSize: '1rem', color: 'var(--white)', fontWeight: 600 }}>{experience.provider}</div>
               </div>
             </div>
-            {experience.productUrl && (
+            {trackedSoloUrl && (
               <a 
-                href={experience.productUrl} 
+                href={trackedSoloUrl} 
                 target="_blank" 
                 rel="noopener noreferrer"
                 style={{ fontSize: '0.75rem', color: 'var(--teal-400)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 600 }}
               >
-                Viator Partner <ExternalLink size={12} />
+                {experience.provider || 'Viator'} Partner <ExternalLink size={12} />
               </a>
             )}
           </div>
@@ -212,29 +232,59 @@ export default function ExperienceMicrosite() {
         {/* LEADER VIEW: Transparent Pricing Breakdown & 2-Step Actions */}
         {isLeader && (
           <div style={{ padding: '24px', background: 'linear-gradient(to right, rgba(45,212,191,0.05), rgba(59,130,246,0.05))', borderRadius: '16px', border: '1px solid rgba(45,212,191,0.2)', marginBottom: '24px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
               <Sparkles size={18} color="var(--teal-400)" />
-              <span style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--teal-300)' }}>Leader Tools & Profit Margin</span>
+              <span style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--teal-300)' }}>
+                {isAffiliate ? 'Leader Guide: Group Host Pass + Affiliate Link' : 'Leader Tools & Profit Margin'}
+              </span>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.9rem' }}>
-                <div style={{ color: 'var(--slate-400)' }}>Base Cost (to Provider)</div>
-                <div style={{ color: 'var(--white)', fontWeight: 600 }}>£{experience.basePrice}</div>
-              </div>
+            {isAffiliate ? (() => {
+              const econ = getHostPassEconomics({ guidePrice, hostPassMember: hostPassDefault, minGroupSize: experience.minGroupSize || 6 });
+              return (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <p style={{ margin: '0 0 4px', fontSize: '0.84rem', color: 'var(--slate-300)', lineHeight: 1.5 }}>
+                    Members pay <strong>{experience.provider || 'Viator'}</strong> directly for their tour ticket via your tracked link once your minimum group size joins. Charge a <strong>More Group Host Pass</strong> to cover hosting, More&apos;s fee, and your own spot.
+                  </p>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.9rem' }}>
+                    <div style={{ color: 'var(--slate-400)' }}>Tour Ticket (Member pays {experience.provider || 'Viator'})</div>
+                    <div style={{ color: 'var(--white)', fontWeight: 600 }}>~£{guidePrice}</div>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.9rem' }}>
+                    <div style={{ color: 'var(--teal-400)' }}>Recommended Group Host Pass (via More)</div>
+                    <div style={{ color: 'var(--teal-300)', fontWeight: 700 }}>+£{econ.hostPassMember} / person</div>
+                  </div>
+                  <div style={{ height: '1px', background: 'rgba(255,255,255,0.1)', margin: '4px 0' }} />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ fontSize: '0.88rem', color: 'var(--slate-200)', fontWeight: 600 }}>
+                      At {econ.minGroupSize} Members (After 10% More Fee)
+                    </div>
+                    <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#34d399' }}>
+                      £{econ.netToHost} ({econ.coversLeaderTicket ? `covers your ~£${guidePrice} ticket + £${econ.leaderNetAfterOwnTicket}` : 'subsidises your ticket'})
+                    </div>
+                  </div>
+                </div>
+              );
+            })() : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.9rem' }}>
+                  <div style={{ color: 'var(--slate-400)' }}>Base Cost (to Provider)</div>
+                  <div style={{ color: 'var(--white)', fontWeight: 600 }}>£{experience.basePrice}</div>
+                </div>
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.9rem' }}>
-                <div style={{ color: 'var(--teal-400)' }}>Your Profit ({experience.leaderMarkup || 15}% markup)</div>
-                <div style={{ color: 'var(--teal-300)', fontWeight: 600 }}>+£{Math.round((experience.basePrice || 25) * ((experience.leaderMarkup || 15) / 100))}</div>
-              </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.9rem' }}>
+                  <div style={{ color: 'var(--teal-400)' }}>Your Profit ({experience.leaderMarkup || 15}% markup)</div>
+                  <div style={{ color: 'var(--teal-300)', fontWeight: 600 }}>+£{Math.round((experience.basePrice || 25) * ((experience.leaderMarkup || 15) / 100))}</div>
+                </div>
 
-              <div style={{ height: '1px', background: 'rgba(255,255,255,0.1)', margin: '4px 0' }} />
+                <div style={{ height: '1px', background: 'rgba(255,255,255,0.1)', margin: '4px 0' }} />
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ fontSize: '0.95rem', color: 'var(--white)', fontWeight: 600 }}>Total Member Ticket Price</div>
-                <div style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--white)' }}>£{getTotalPrice(experience)}</div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ fontSize: '0.95rem', color: 'var(--white)', fontWeight: 600 }}>Total Member Ticket Price</div>
+                  <div style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--white)' }}>£{getTotalPrice(experience)}</div>
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Quick 2-Step Leader Actions */}
             <div style={{ marginTop: '16px', paddingTop: '14px', borderTop: '1px solid rgba(45,212,191,0.2)', display: 'flex', gap: '10px' }}>
@@ -266,40 +316,58 @@ export default function ExperienceMicrosite() {
               {communityEvents.map(ev => {
                 const comm = communities?.find(c => c.id === ev.communityId);
                 
-                let nonMemberPrice = (ev.ticketPrice || 0) + 25;
-                if (ev.description?.includes('<!--META:')) {
-                  try {
-                    const match = ev.description.match(/<!--META:(.*?)-->/);
-                    if (match && match[1]) {
-                      const meta = JSON.parse(match[1]);
-                      if (meta.nonMemberPrice) nonMemberPrice = meta.nonMemberPrice;
-                    }
-                  } catch(e) {}
-                }
+                const meta = parseExperienceMeta(ev.description) || {};
+                const nonMemberPrice = meta.nonMemberPrice || ((ev.ticketPrice || 0) + 10);
+                const isAffTrip = meta.bookingModel === 'affiliate_host_pass' || isAffiliate;
+                const minGroup = meta.minGroupSize || ev.minGroupSize || 6;
+                const supplierEst = meta.supplierEstimate || guidePrice;
+                const providerName = meta.provider || experience.provider || 'Viator';
 
                 return (
                   <div key={ev.id} style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '16px', background: 'var(--slate-900)', borderRadius: '12px', border: '1px solid var(--slate-800)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '10px', flexWrap: 'wrap' }}>
                       <div>
-                        <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>Hosted By</div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px', flexWrap: 'wrap' }}>
+                          <span style={{ fontSize: '0.76rem', color: 'var(--slate-400)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Hosted By</span>
+                          {isAffTrip && (
+                            <span style={{ fontSize: '0.68rem', padding: '2px 8px', borderRadius: '99px', background: 'rgba(20,184,166,0.16)', color: 'var(--teal-300)', fontWeight: 700 }}>
+                              2-Step Group Trip • Min {minGroup}
+                            </span>
+                          )}
+                        </div>
                         <div style={{ color: 'var(--white)', fontWeight: 700, fontSize: '1.1rem' }}>{comm?.name || 'A Community'}</div>
                         <div style={{ fontSize: '0.9rem', color: 'var(--slate-300)', marginTop: '4px' }}><Calendar size={14} style={{ display: 'inline', marginRight: '4px' }} />{ev.date} at {ev.time}</div>
                       </div>
                       <button onClick={() => navigate.push(`/checkout/experience/${ev.id}`)} className="btn btn-primary interactive-press" style={{ padding: '8px 16px', borderRadius: '8px', fontSize: '0.9rem' }}>
-                        Join Trip
+                        {isAffTrip ? `Join (£${ev.ticketPrice} Pass)` : 'Join Trip'}
                       </button>
                     </div>
                     
-                    <div style={{ display: 'flex', gap: '12px', marginTop: '4px' }}>
-                      <div style={{ flex: 1, padding: '12px', background: 'rgba(255,255,255,0.03)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                        <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', marginBottom: '4px' }}>Non-Member</div>
-                        <div style={{ fontSize: '1.1rem', color: 'var(--white)', fontWeight: 600 }}>£{nonMemberPrice}</div>
+                    {isAffTrip ? (
+                      <div style={{ display: 'flex', gap: '12px', marginTop: '4px', flexWrap: 'wrap' }}>
+                        <div style={{ flex: '1 1 180px', padding: '12px', background: 'rgba(20,184,166,0.06)', borderRadius: '8px', border: '1px solid rgba(20,184,166,0.22)' }}>
+                          <div style={{ fontSize: '0.73rem', color: 'var(--teal-400)', marginBottom: '4px', fontWeight: 700 }}>Step 1: More Group Host Pass</div>
+                          <div style={{ fontSize: '1.1rem', color: 'var(--teal-300)', fontWeight: 700 }}>£{ev.ticketPrice} <span style={{ fontSize: '0.74rem', color: 'var(--slate-400)', fontWeight: 500 }}>(£{nonMemberPrice} non-members)</span></div>
+                          <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', marginTop: '3px' }}>Refunded if min {minGroup} don&apos;t join</div>
+                        </div>
+                        <div style={{ flex: '1 1 180px', padding: '12px', background: 'rgba(255,255,255,0.03)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                          <div style={{ fontSize: '0.73rem', color: 'var(--slate-400)', marginBottom: '4px', fontWeight: 600 }}>Step 2: Own {providerName} Ticket</div>
+                          <div style={{ fontSize: '1.1rem', color: 'var(--white)', fontWeight: 600 }}>~£{supplierEst}</div>
+                          <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', marginTop: '3px' }}>Paid directly once confirmed</div>
+                        </div>
                       </div>
-                      <div style={{ flex: 1, padding: '12px', background: 'rgba(20,184,166,0.05)', borderRadius: '8px', border: '1px solid rgba(20,184,166,0.2)' }}>
-                        <div style={{ fontSize: '0.75rem', color: 'var(--teal-400)', marginBottom: '4px', fontWeight: 700 }}>Member Price</div>
-                        <div style={{ fontSize: '1.1rem', color: 'var(--teal-300)', fontWeight: 700 }}>£{ev.ticketPrice}</div>
+                    ) : (
+                      <div style={{ display: 'flex', gap: '12px', marginTop: '4px' }}>
+                        <div style={{ flex: 1, padding: '12px', background: 'rgba(255,255,255,0.03)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                          <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', marginBottom: '4px' }}>Non-Member</div>
+                          <div style={{ fontSize: '1.1rem', color: 'var(--white)', fontWeight: 600 }}>£{nonMemberPrice}</div>
+                        </div>
+                        <div style={{ flex: 1, padding: '12px', background: 'rgba(20,184,166,0.05)', borderRadius: '8px', border: '1px solid rgba(20,184,166,0.2)' }}>
+                          <div style={{ fontSize: '0.75rem', color: 'var(--teal-400)', marginBottom: '4px', fontWeight: 700 }}>Member Price</div>
+                          <div style={{ fontSize: '1.1rem', color: 'var(--teal-300)', fontWeight: 700 }}>£{ev.ticketPrice}</div>
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
                 );
               })}
@@ -316,8 +384,12 @@ export default function ExperienceMicrosite() {
         padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', zIndex: 90
       }}>
         <div>
-          <div style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--white)' }}>£{getTotalPrice(experience)}</div>
-          <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)' }}>per person</div>
+          <div style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--white)' }}>
+            {isAffiliate ? `~£${guidePrice}` : `£${getTotalPrice(experience)}`}
+          </div>
+          <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)' }}>
+            {isAffiliate ? `est. on ${experience.provider || 'Viator'} (+ ~£${hostPassDefault} Group Pass)` : 'per person'}
+          </div>
         </div>
         
         {isLeader ? (
@@ -339,21 +411,21 @@ export default function ExperienceMicrosite() {
           </div>
         ) : (
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-            {experience.productUrl ? (
+            {trackedSoloUrl ? (
               <>
                 <a 
-                  href={experience.productUrl} 
+                  href={trackedSoloUrl} 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="btn btn-primary interactive-press" 
-                  style={{ padding: '10px 22px', borderRadius: '99px', fontSize: '0.92rem', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}
+                  style={{ padding: '10px 18px', borderRadius: '99px', fontSize: '0.88rem', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}
                 >
-                  Book on Viator <ExternalLink size={13} />
+                  Book Solo on {experience.provider || 'Viator'} <ExternalLink size={13} />
                 </a>
                 <button 
-                  onClick={() => toast.success('Interest registered!', 'The leader will contact you to coordinate a group trip.')}
+                  onClick={() => setShowGroupExplainer(true)}
                   className="btn btn-outline interactive-press" 
-                  style={{ padding: '10px 16px', borderRadius: '99px', fontSize: '0.85rem', fontWeight: 600 }}
+                  style={{ padding: '10px 14px', borderRadius: '99px', fontSize: '0.84rem', fontWeight: 600 }}
                 >
                   Group Trip
                 </button>
@@ -397,6 +469,54 @@ export default function ExperienceMicrosite() {
           experience={experience}
           onClose={() => setCreatedEvent(null)}
         />
+      )}
+
+      {showGroupExplainer && (
+        <div
+          onClick={() => setShowGroupExplainer(false)}
+          style={{ position: 'fixed', inset: 0, zIndex: 1050, background: 'rgba(2,6,23,0.85)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{ background: 'var(--slate-900)', border: '1px solid rgba(45,212,191,0.3)', borderRadius: '20px', maxWidth: '460px', width: '100%', padding: '24px', color: 'var(--white)' }}
+          >
+            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--teal-400)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '6px' }}>
+              How More Group Trips Work
+            </div>
+            <h3 style={{ margin: '0 0 12px', fontSize: '1.25rem', fontFamily: 'var(--font-heading)' }}>
+              2-Step Booking with Your Community
+            </h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '0.86rem', color: 'var(--slate-300)', lineHeight: 1.5, marginBottom: '18px' }}>
+              <div style={{ padding: '12px', borderRadius: '12px', background: 'rgba(20,184,166,0.08)', border: '1px solid rgba(20,184,166,0.2)' }}>
+                <strong style={{ color: 'var(--teal-300)' }}>1. Group Host Pass (~£{hostPassDefault})</strong>
+                <div>A community leader proposes a date &amp; minimum group size (e.g. 6). Your Host Pass funds hosting and helps pay for the leader&apos;s own ticket — 100% refunded if numbers aren&apos;t met.</div>
+              </div>
+              <div style={{ padding: '12px', borderRadius: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                <strong style={{ color: '#fff' }}>2. Own Ticket (~£{guidePrice} on {experience.provider || 'Viator'})</strong>
+                <div>Once the group confirms, you book your own ticket directly with {experience.provider || 'Viator'} via the tracked group link so your ticket and cancellation cover stay protected.</div>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button
+                onClick={() => {
+                  setShowGroupExplainer(false);
+                  toast.success('Group Interest Registered!', 'We have logged your interest for community leaders.');
+                }}
+                className="btn btn-primary interactive-press"
+                style={{ flex: 1, padding: '11px 16px', borderRadius: '12px', fontWeight: 700 }}
+              >
+                Register Group Interest
+              </button>
+              <button
+                onClick={() => setShowGroupExplainer(false)}
+                className="btn btn-outline interactive-press"
+                style={{ padding: '11px 16px', borderRadius: '12px' }}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

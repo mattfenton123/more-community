@@ -3,6 +3,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { UserCheck, Check, Search, X, Users, CheckCircle2, RotateCcw, Clock, MapPin } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { useToast } from './Toast';
+import { resolveUserAvatar } from '../lib/avatar';
 
 export default function RollCallModal({ event, onClose }) {
   const { users, eventRsvps, checkInMember, theme } = useAppContext();
@@ -29,7 +30,7 @@ export default function RollCallModal({ event, onClose }) {
       return {
         ...rsvp,
         name: u?.name || 'Community Member',
-        avatar: u?.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(u?.name || 'Member')}`
+        avatar: resolveUserAvatar(u)
       };
     }).sort((a, b) => {
       // Pending first, then checked-in

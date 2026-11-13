@@ -2,6 +2,7 @@ import { NextResponse } from 'next/navigation';
 import { supabase } from '../../../../src/lib/supabaseClient';
 import { sendTicketConfirmationEmail } from '../../../../src/lib/emailService';
 import { formatShareLocation } from '../../../../src/lib/location';
+import { getDefaultAvatar } from '../../../../src/lib/avatar';
 
 export async function POST(request) {
   try {
@@ -36,7 +37,7 @@ export async function POST(request) {
       role: 'Guest',
       bio: bioString,
       joined: `Joined ${new Date().toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })}`,
-      avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(cleanName)}&background=0d9488&color=fff`,
+      avatar: getDefaultAvatar(cleanName),
       interests: [`email:${cleanEmail}`, 'guest', 'opt_in:true'],
       onboarded: true,
       location: formatShareLocation(event.location, '').split(',')[0].trim()
@@ -77,7 +78,7 @@ export async function POST(request) {
           role: 'Guest',
           bio: `[Email: ${plusOneData.email}] [Source: plus_one_guest] [InvitedBy: ${cleanEmail}] [Event: ${eventId}]`,
           joined: `Joined ${new Date().toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })}`,
-          avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(plusOneData.name)}&background=14b8a6&color=fff`,
+          avatar: getDefaultAvatar(plusOneData.name),
           interests: [`email:${plusOneData.email}`, 'plus_one', 'opt_in:true']
         });
 

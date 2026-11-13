@@ -20,6 +20,7 @@ import ReelViewer from '../../../src/components/ReelViewer';
 import dynamic from 'next/dynamic';
 import { downloadIcs, getCalendarFeedUrls, isEventUpcoming, isEventPast, parseEventDateTime } from '../../../src/lib/calendar';
 import { cleanLocationName } from '../../../src/lib/location';
+import { resolveUserAvatar } from '../../../src/lib/avatar';
 import { getEventPath } from '../../../src/lib/eventLinks';
 import { findCommunityByParam, getCommunitySlug } from '../../../src/lib/communityLinks';
 
@@ -780,7 +781,7 @@ export default function CommunityProfile() {
             marginBottom: '8px'
           }}>
             <img 
-              src={leaderUser?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(community.name)}&background=0D8B93&color=fff`} 
+              src={resolveUserAvatar(leaderUser, community.name)} 
               alt="Organiser" 
               onClick={() => leaderUser && navigate.push(`/profile/${leaderUser.id}`)}
               style={{ width: '46px', height: '46px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--teal-500)', cursor: leaderUser ? 'pointer' : 'default' }} 
@@ -826,7 +827,7 @@ export default function CommunityProfile() {
                     title={`View ${coHost.name}'s profile`}
                   >
                     <img 
-                      src={coHost.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(coHost.name || 'Co-Host')}&background=0D8B93&color=fff`} 
+                      src={resolveUserAvatar(coHost, 'Co-Host')} 
                       alt={coHost.name} 
                       style={{ width: '18px', height: '18px', borderRadius: '50%', objectFit: 'cover' }} 
                     />
@@ -935,7 +936,7 @@ export default function CommunityProfile() {
             {(isMember || isLeader) && (
               <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '16px', marginBottom: '16px' }}>
                 <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                  <img src={user?.avatar || '/images/default-avatar.svg'} alt="You" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
+                  <img src={resolveUserAvatar(user)} alt="You" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
                   <div style={{ flex: 1 }}>
                     <textarea 
                       placeholder="Share something with the community..." 
@@ -1024,7 +1025,7 @@ export default function CommunityProfile() {
                       </div>
                     )}
                     <div style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <img onClick={() => author && navigate.push(`/profile/${author.id}`)} src={author?.avatar || 'https://i.pravatar.cc/40'} alt={author?.name} style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', cursor: author ? 'pointer' : 'default' }} />
+                      <img onClick={() => author && navigate.push(`/profile/${author.id}`)} src={resolveUserAvatar(author)} alt={author?.name} style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', cursor: author ? 'pointer' : 'default' }} />
                       <div style={{ flex: 1 }}>
                         <div onClick={() => author && navigate.push(`/profile/${author.id}`)} style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '6px', cursor: author ? 'pointer' : 'default' }}>
                           {author?.name || 'Community Leader'}
@@ -1344,7 +1345,7 @@ export default function CommunityProfile() {
                   return (
                     <div key={post.id} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '16px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-                        <img src={author?.avatar || '/images/default-avatar.svg'} alt="" style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }} />
+                        <img src={resolveUserAvatar(author)} alt="" style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }} />
                         <div>
                           <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
                             {author?.name}
@@ -1541,7 +1542,7 @@ export default function CommunityProfile() {
             {/* Organizer Spotlight */}
             <div className="community-spotlight-card" style={{ marginBottom: '32px', background: 'linear-gradient(135deg, rgba(20,184,166,0.05), rgba(15,23,42,1))', border: '1px solid rgba(20,184,166,0.2)', borderRadius: '16px', padding: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }}>
               <img 
-                src={leaderUser?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(community.name)}&background=0D8B93&color=fff`} 
+                src={resolveUserAvatar(leaderUser, community.name)} 
                 alt="Organiser" 
                 onClick={() => leaderUser && navigate.push(`/profile/${leaderUser.id}`)}
                 style={{ width: '88px', height: '88px', borderRadius: '50%', objectFit: 'cover', border: '3px solid var(--teal-500)', cursor: leaderUser ? 'pointer' : 'default', marginBottom: '16px', boxShadow: '0 4px 12px rgba(20,184,166,0.2)' }} 
@@ -1573,7 +1574,7 @@ export default function CommunityProfile() {
                         style={{ padding: '14px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', borderRadius: '14px' }}
                       >
                         <img 
-                          src={coHost.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(coHost.name || 'Co-Host')}&background=0D8B93&color=fff`} 
+                          src={resolveUserAvatar(coHost, 'Co-Host')} 
                           alt={coHost.name}
                           onClick={() => navigate.push(`/profile/${coHost.id}`)}
                           style={{ width: '56px', height: '56px', borderRadius: '50%', objectFit: 'cover', border: '2px solid rgba(45,212,191,0.5)', marginBottom: '8px', cursor: 'pointer' }}
@@ -1889,7 +1890,7 @@ export default function CommunityProfile() {
               <div style={{ marginBottom: '32px', padding: '20px', background: 'rgba(20,184,166,0.05)', borderRadius: '16px', border: '1px solid rgba(20,184,166,0.2)' }}>
                 <h3 style={{ fontSize: '1.2rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: '0 0 16px 0' }}>Get in Touch</h3>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                  <img src={leaderUser.avatar || `https://ui-avatars.com/api/?name=${leaderUser.name}&background=0D8B93&color=fff`} alt="" style={{ width: '56px', height: '56px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--slate-800)' }} />
+                  <img src={resolveUserAvatar(leaderUser)} alt="" style={{ width: '56px', height: '56px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--slate-800)' }} />
                   <div style={{ flex: 1 }}>
                     <div style={{ fontWeight: 700, fontSize: '1.05rem', color: 'var(--white)' }}>{leaderUser.name}</div>
                     <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)' }}>Community Organiser</div>
@@ -2292,7 +2293,7 @@ export default function CommunityProfile() {
                             <div style={{ display: 'flex' }}>
                               {rsvps.slice(0, 3).map((r, i) => {
                                 const ru = users.find(u => u.id === r.userId);
-                                return <img key={i} src={ru?.avatar || '/images/default-avatar.svg'} alt="" style={{ width: '22px', height: '22px', borderRadius: '50%', border: '2px solid var(--slate-950)', marginLeft: i > 0 ? '-6px' : 0, objectFit: 'cover' }} />;
+                                return <img key={i} src={resolveUserAvatar(ru)} alt="" style={{ width: '22px', height: '22px', borderRadius: '50%', border: '2px solid var(--slate-950)', marginLeft: i > 0 ? '-6px' : 0, objectFit: 'cover' }} />;
                               })}
                             </div>
                             {rsvps.length} going
@@ -2369,7 +2370,7 @@ export default function CommunityProfile() {
                               <div style={{ display: 'flex' }}>
                                 {rsvps.slice(0, 3).map((r, i) => {
                                   const ru = users.find(u => u.id === r.userId);
-                                  return <img key={i} src={ru?.avatar || '/images/default-avatar.svg'} alt="" style={{ width: '22px', height: '22px', borderRadius: '50%', border: '2px solid var(--slate-950)', marginLeft: i > 0 ? '-6px' : 0, objectFit: 'cover' }} />;
+                                  return <img key={i} src={resolveUserAvatar(ru)} alt="" style={{ width: '22px', height: '22px', borderRadius: '50%', border: '2px solid var(--slate-950)', marginLeft: i > 0 ? '-6px' : 0, objectFit: 'cover' }} />;
                                 })}
                               </div>
                               {rsvps.length} attended
@@ -2455,7 +2456,7 @@ export default function CommunityProfile() {
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                     {services.filter(s => s.communityId === communityId && s.status === 'pending').map(srv => {
-                      const srvUser = users.find(u => u.id === srv.userId) || { name: 'Member', avatar: 'https://i.pravatar.cc/40' };
+                      const srvUser = users.find(u => u.id === srv.userId) || { name: 'Member', avatar: '/images/default-avatar.svg' };
                       return (
                         <div key={srv.id} style={{ background: 'var(--slate-800)', border: '1px solid var(--amber-500)', borderRadius: '12px', padding: '16px' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -2531,7 +2532,7 @@ export default function CommunityProfile() {
                 services.filter(s => s.communityId === communityId && s.status === 'approved')
                 .sort((a, b) => (b.isPremium === a.isPremium ? 0 : b.isPremium ? 1 : -1))
                 .map(srv => {
-                  const srvUser = users.find(u => u.id === srv.userId) || { name: 'Member', avatar: 'https://i.pravatar.cc/40' };
+                  const srvUser = users.find(u => u.id === srv.userId) || { name: 'Member', avatar: '/images/default-avatar.svg' };
                   return (
                     <div key={srv.id} style={{ 
                       background: srv.isPremium ? 'linear-gradient(to bottom right, rgba(234,179,8,0.05), rgba(0,0,0,0))' : 'rgba(255,255,255,0.02)', 

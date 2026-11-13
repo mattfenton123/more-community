@@ -15,6 +15,7 @@ import { isEventUpcoming, isEventPast } from '../../src/lib/calendar';
 import { cleanLocationName, getCommunityLocation } from '../../src/lib/location';
 import { getEventPath } from '../../src/lib/eventLinks';
 import { getCommunitySlug } from '../../src/lib/communityLinks';
+import { resolveUserAvatar } from '../../src/lib/avatar';
 
 export default function HomeFeed() {
   const { user, communities, events, refreshData, users, eventRsvps, isLoading, notifications, sponsors, sponsorshipAssignments, communityMemberships } = useAppContext();
@@ -962,7 +963,7 @@ export default function HomeFeed() {
                         <div style={{ display: 'flex' }}>
                           {rsvps.slice(0, 3).map((r, i) => {
                             const ru = users?.find(u => u.id === r.userId);
-                            return <img key={i} src={ru?.avatar || '/images/default-avatar.svg'} alt="" style={{ width: '28px', height: '28px', borderRadius: '50%', border: '2px solid var(--slate-900)', marginLeft: i > 0 ? '-8px' : 0, objectFit: 'cover' }} />;
+                            return <img key={i} src={resolveUserAvatar(ru)} alt="" style={{ width: '28px', height: '28px', borderRadius: '50%', border: '2px solid var(--slate-900)', marginLeft: i > 0 ? '-8px' : 0, objectFit: 'cover' }} />;
                           })}
                         </div>
                         {rsvps.length} members attending

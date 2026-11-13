@@ -18,6 +18,7 @@ const OperationsMap = dynamic(() => import('../../src/components/admin/Operation
 import Commercials from '../../src/components/admin/Commercials';
 import ModerationQueue from '../../src/components/admin/ModerationQueue';
 import InvestorAnalytics from '../../src/components/admin/InvestorAnalytics';
+import { resolveUserAvatar } from '../../src/lib/avatar';
 
 // ─── Shared Components ────────────────────────────────────
 const StatCard = ({ value, label, icon: Icon, color, accent, onClick, description }) => (
@@ -1320,7 +1321,7 @@ const ADMIN_EMAILS = [
                         {/* Leader card */}
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', marginBottom: '16px', padding: '12px 14px', background: 'rgba(255,255,255,0.02)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.05)', flexWrap: 'wrap' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <img src={leaderUser?.avatar || '/images/default-avatar.svg'} alt="" style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover' }} />
+                            <img src={resolveUserAvatar(leaderUser)} alt="" style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover' }} />
                             <div>
                               <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--white)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                                 {leaderUser?.name || 'Unassigned Organizer'}
@@ -1525,7 +1526,7 @@ const ADMIN_EMAILS = [
                         style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', cursor: 'pointer' }}
                       >
                         <div style={{ position: 'relative' }}>
-                          <img src={u.avatar || '/images/default-avatar.svg'} alt="" style={{ width: '42px', height: '42px', borderRadius: '50%', objectFit: 'cover' }} />
+                          <img src={resolveUserAvatar(u)} alt="" style={{ width: '42px', height: '42px', borderRadius: '50%', objectFit: 'cover' }} />
                           <div style={{ position: 'absolute', bottom: -1, right: -1, width: '12px', height: '12px', borderRadius: '50%', background: engColor, border: '2px solid var(--slate-950)' }}></div>
                         </div>
 
@@ -1763,7 +1764,7 @@ const ADMIN_EMAILS = [
                               return (
                                 <div key={rIdx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', background: 'rgba(255,255,255,0.02)', borderRadius: '8px' }}>
                                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                    <img src={attendeeUser?.avatar || '/images/default-avatar.svg'} alt="" style={{ width: '26px', height: '26px', borderRadius: '50%' }} />
+                                    <img src={resolveUserAvatar(attendeeUser)} alt="" style={{ width: '26px', height: '26px', borderRadius: '50%' }} />
                                     <div>
                                       <div style={{ fontSize: '0.8rem', fontWeight: 500, color: 'var(--white)' }}>{attendeeUser?.name || 'Guest'}</div>
                                       <div style={{ fontSize: '0.65rem', color: 'var(--slate-500)' }}>{attendeeUser?.email || ''}</div>
@@ -1929,7 +1930,7 @@ const ADMIN_EMAILS = [
                     <div key={i} style={{ padding: '12px 14px', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.04)' }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <img src={author?.avatar || '/images/default-avatar.svg'} alt="" style={{ width: '24px', height: '24px', borderRadius: '50%' }} />
+                          <img src={resolveUserAvatar(author)} alt="" style={{ width: '24px', height: '24px', borderRadius: '50%' }} />
                           <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--white)' }}>{author?.name || 'Community Member'}</span>
                           <span style={{ fontSize: '0.7rem', color: 'var(--slate-500)' }}>in <strong style={{ color: 'var(--slate-300)' }}>{comm?.name || 'General'}</strong></span>
                         </div>

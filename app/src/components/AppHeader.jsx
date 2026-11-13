@@ -7,6 +7,7 @@ import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import NotificationsFeed from './NotificationsFeed';
 import { useAppContext } from '../context/AppContext';
+import { resolveUserAvatar } from '../lib/avatar';
 
 export default function AppHeader({ title, subtitle, rightElement, showBack = false, onBack, avatar, onAvatarClick }) {
   const [showNotificationsModal, setShowNotificationsModal] = useState(false);
@@ -138,7 +139,7 @@ export default function AppHeader({ title, subtitle, rightElement, showBack = fa
           style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
           title="Profile"
         >
-          <img src={user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || 'User')}&background=14b8a6&color=fff`} alt={user.name || 'User'} style={{ width: '28px', height: '28px', borderRadius: '50%', border: '2px solid var(--slate-800)', objectFit: 'cover' }} />
+          <img src={resolveUserAvatar(user)} alt={user.name || 'User'} style={{ width: '28px', height: '28px', borderRadius: '50%', border: '2px solid var(--slate-800)', objectFit: 'cover' }} />
         </div>
       ) : (
         <button

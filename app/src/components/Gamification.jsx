@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { Trophy, Flame, Star, Zap, Target, Crown, Heart, Users, Calendar, MessageCircle, Award } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { useChat } from '../context/ChatContext';
+import { resolveUserAvatar } from '../lib/avatar';
 
 // ─── Badge Definitions ──────────────────────────────────────
 const BADGES = [
@@ -228,7 +229,7 @@ export function CommunityLeaderboard({ communityId }) {
             <div style={{ width: '28px', fontWeight: 700, color: i === 0 ? '#f59e0b' : i === 1 ? '#a1a1aa' : i === 2 ? '#b45309' : 'var(--slate-500)', fontSize: i < 3 ? '1.1rem' : '0.9rem', textAlign: 'center' }}>
               #{i + 1}
             </div>
-            <img src={m.user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(m.user?.name || 'U')}&background=14b8a6&color=fff`} alt="" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', border: i < 3 ? '2px solid var(--teal-500)' : 'none' }} />
+            <img src={resolveUserAvatar(m.user)} alt="" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', border: i < 3 ? '2px solid var(--teal-500)' : 'none' }} />
             <div style={{ flex: 1 }}>
               <div style={{ fontWeight: 600, color: 'var(--white)' }}>{m.user?.name || 'Unknown User'}</div>
               <div style={{ fontSize: '0.75rem', color: 'var(--teal-300)' }}>Level {m.level} • {m.xp} XP</div>

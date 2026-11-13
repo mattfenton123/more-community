@@ -104,7 +104,7 @@ export default function InlineComments({ post }) {
           </div>
         ) : (
           comments.map(comment => {
-            const author = users.find(u => u.id === comment.author_id) || { name: 'Unknown User', avatar: 'https://ui-avatars.com/api/?name=U' };
+            const author = users.find(u => u.id === comment.author_id) || { name: 'Unknown User', avatar: '/images/default-avatar.svg' };
             return (
               <div key={comment.id} style={{ display: 'flex', gap: '10px' }}>
                 <img onClick={() => navigate.push(`/profile/${author.id}`)} src={author.avatar} alt="" style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover', marginTop: '2px', cursor: 'pointer' }} />

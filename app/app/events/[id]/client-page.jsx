@@ -2,7 +2,7 @@
 import { supabase } from '../../../src/lib/supabaseClient';
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ChevronLeft, Share, MapPin, Calendar, Clock, Users, CheckCircle2, Info, List, Activity, Check, Map, Ticket, DollarSign, Copy, ExternalLink, Navigation, Video, AlertTriangle, Image as ImageIcon, ScanLine, Archive, Repeat, MessageCircle, Banknote, CreditCard, Lock, ChevronRight, X, UserCheck, Shield, ChevronDown, Camera, HelpCircle, MessageSquare, Compass, Trees, WifiOff } from 'lucide-react';
+import { ChevronLeft, Share2, MapPin, Calendar, Clock, Users, CheckCircle2, Info, List, Activity, Check, Map, Ticket, DollarSign, Copy, ExternalLink, Navigation, Video, AlertTriangle, Image as ImageIcon, ScanLine, Archive, Repeat, MessageCircle, Banknote, CreditCard, Lock, ChevronRight, X, UserCheck, Shield, ChevronDown, Camera, HelpCircle, MessageSquare, Compass, Trees, WifiOff } from 'lucide-react';
 import { useAppContext } from '../../../src/context/AppContext';
 import { useToast } from '../../../src/components/Toast';
 import DigitalTicket from '../../../src/components/DigitalTicket';
@@ -15,12 +15,16 @@ import {
   findKnownLocation,
   parseLocationCoords,
   cleanLocationName,
+  formatShareLocation,
   geocodeLocation,
   DEFAULT_TW_CENTER
 } from '../../../src/lib/location';
 import { findEventByParam, getEventPath, getEventUrl } from '../../../src/lib/eventLinks';
 import ShareModal from '../../../src/components/ShareModal';
+import ShareOptions from '../../../src/components/ShareOptions';
 import EventRecapShareCard from '../../../src/components/EventRecapShareCard';
+import { parseExperienceMeta, stripExperienceMeta, buildAffiliateUrl } from '../../../src/lib/experiencePricing';
+import { resolveUserAvatar } from '../../../src/lib/avatar';
 
 function EventLocationMap({ location, event, isLocationShielded = false }) {
   const [copiedSms, setCopiedSms] = useState(false);
@@ -468,7 +472,20 @@ export default function EventClient({ id }) {
     event?.require_approval || 
     (event?.description && event?.description.includes('[Host Approval Required]'))
   );
-  const cleanDescription = (event?.description || '').replace(/\[Host Approval Required\]/g, '').trim();
+  const expMeta = parseExperienceMeta(event?.description);
+  const isAffiliateGroupTrip = expMeta?.bookingModel === 'affiliate_host_pass';
+  const tripProvider = expMeta?.provider || 'Viator';
+  const minTripGroup = expMeta?.minGroupSize || event?.minGroupSize || 6;
+  const supplierEstimate = expMeta?.supplierEstimate || 35;
+  const trackedProviderUrl = expMeta?.productUrl
+    ? buildAffiliateUrl(expMeta.productUrl, {
+        communityId: event.communityId,
+        leaderId: community?.leaderId,
+        experienceId: expMeta.baseExperienceId,
+        eventId: event.id,
+      })
+    : '';
+  const cleanDescription = stripExperienceMeta((event?.description || '').replace(/\[Host Approval Required\]/g, ''));
   const canSeeSecretLocation = !requiresHostApproval || isGoing || isLeader;
   const pendingAttendees = (rsvps || []).filter(r => r.status === 'pending_approval');
 
@@ -663,6 +680,15 @@ export default function EventClient({ id }) {
   const itineraryItems = parseList(event.itinerary);
   const whatToBringItems = event.whatToBring ? event.whatToBring.split(',').map(i => i.trim()).filter(i => i) : [];
 
+  const eventShareUrl = getEventUrl(event, {
+    allEvents: events,
+    origin: typeof window !== 'undefined' ? window.location.origin : undefined
+  });
+  const shareLocationLabel = canSeeSecretLocation
+    ? formatShareLocation(event.location, 'Tunbridge Wells')
+    : 'Tunbridge Wells, Kent (Exact pin revealed upon RSVP approval)';
+  const eventShareText = `Join us for ${event.title}${community?.name ? ` with ${community.name}` : ''}!\n📅 ${event.date} at ${event.time || '10:00'}\n📍 ${shareLocationLabel}`;
+
   return (
     <div className="view-events" style={{ paddingBottom: '100px', minHeight: '100dvh', background: 'var(--slate-950)' }}>
       {/* Zero-Signal Trail Mode Banner */}
@@ -702,13 +728,29 @@ export default function EventClient({ id }) {
           <button onClick={handleBack} aria-label="Go Back" className="interactive-press" style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(10px)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', cursor: 'pointer' }}>
             <ChevronLeft size={24} />
           </button>
-          <button 
-            onClick={() => setShowShareModal(true)} 
+          <button
+            onClick={() => setShowShareModal(true)}
             aria-label="Share Event"
-            className="interactive-press" 
-            style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(10px)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', cursor: 'pointer' }}
+            className="interactive-press"
+            style={{
+              height: '40px',
+              padding: '0 14px',
+              borderRadius: '99px',
+              background: 'rgba(15, 23, 42, 0.72)',
+              backdropFilter: 'blur(12px)',
+              border: '1px solid rgba(255,255,255,0.22)',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '7px',
+              color: 'white',
+              fontSize: '0.85rem',
+              fontWeight: 700,
+              cursor: 'pointer',
+              boxShadow: '0 4px 14px rgba(0,0,0,0.35)'
+            }}
           >
-            <Share size={20} />
+            <Share2 size={16} color="#2dd4bf" />
+            <span>Share</span>
           </button>
         </div>
         {/* Status Badges */}
@@ -993,7 +1035,7 @@ export default function EventClient({ id }) {
             <div style={{ display: 'flex', alignItems: 'center' }}>
               {confirmedAttendees.slice(0, 5).map((att, idx) => {
                 const u = users.find(x => x.id === att.userId);
-                const avatar = u?.avatar || u?.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(u?.name || 'Member')}`;
+                const avatar = resolveUserAvatar(u);
                 return (
                   <img
                     key={att.userId || idx}
@@ -1036,7 +1078,7 @@ export default function EventClient({ id }) {
             <div style={{ display: 'flex', alignItems: 'center' }}>
               {familiarFaces.slice(0, 3).map((f, i) => {
                 const u = users.find(x => x.id === f.userId);
-                const av = u?.avatar || u?.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(u?.name || 'Member')}`;
+                const av = resolveUserAvatar(u);
                 return (
                   <img
                     key={f.userId}
@@ -1080,7 +1122,7 @@ export default function EventClient({ id }) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {pendingAttendees.map(att => {
                 const u = users.find(x => x.id === att.userId);
-                const avatar = u?.avatar || u?.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(u?.name || 'Member')}`;
+                const avatar = resolveUserAvatar(u);
                 const isProcessing = approvingUserId === att.userId;
                 return (
                   <div key={att.userId} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', background: 'rgba(0,0,0,0.25)', padding: '10px 14px', borderRadius: '12px', flexWrap: 'wrap' }}>
@@ -1136,12 +1178,70 @@ export default function EventClient({ id }) {
 
         <hr style={{ border: 'none', borderTop: '1px solid rgba(255,255,255,0.05)', margin: '24px 0' }} />
 
+        {/* Option B: 2-Step Affiliate Group Trip Guide */}
+        {isAffiliateGroupTrip && (
+          <div style={{
+            marginBottom: '28px',
+            padding: '18px 20px',
+            borderRadius: '16px',
+            background: 'linear-gradient(135deg, rgba(20,184,166,0.12) 0%, rgba(56,189,248,0.08) 100%)',
+            border: '1px solid rgba(45,212,191,0.3)'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px', marginBottom: '10px' }}>
+              <div style={{ fontSize: '0.82rem', fontWeight: 800, color: 'var(--teal-300)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                {tripProvider} Group Trip — How Booking Works
+              </div>
+              <span style={{ fontSize: '0.72rem', fontWeight: 700, padding: '3px 10px', borderRadius: '99px', background: confirmedAttendees.length >= minTripGroup ? 'rgba(34,197,94,0.2)' : 'rgba(245,158,11,0.18)', color: confirmedAttendees.length >= minTripGroup ? '#4ade80' : '#fbbf24' }}>
+                {confirmedAttendees.length} / {minTripGroup} min committed
+              </span>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '10px', fontSize: '0.83rem', color: 'var(--slate-200)', lineHeight: 1.45 }}>
+              <div style={{ padding: '10px 12px', borderRadius: '12px', background: 'rgba(15,23,42,0.55)', border: '1px solid rgba(45,212,191,0.2)' }}>
+                <div style={{ fontWeight: 700, color: 'var(--teal-300)', marginBottom: '3px' }}>Step 1: More Group Host Pass (£{(event.ticketPrice || 0).toFixed(2)})</div>
+                <div style={{ color: 'var(--slate-300)', fontSize: '0.78rem' }}>Reserves your group spot, covers hosting &amp; leader ticket share. Refundable if under {minTripGroup} commit.</div>
+              </div>
+              <div style={{ padding: '10px 12px', borderRadius: '12px', background: 'rgba(15,23,42,0.55)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                <div style={{ fontWeight: 700, color: '#fff', marginBottom: '3px' }}>Step 2: Own Ticket (~£{supplierEstimate} on {tripProvider})</div>
+                <div style={{ color: 'var(--slate-300)', fontSize: '0.78rem' }}>Paid directly to {tripProvider} via our tracked group link once {minTripGroup}+ people join.</div>
+              </div>
+            </div>
+            {trackedProviderUrl && (isGoing || isLeader) && (
+              <div style={{ marginTop: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+                <span style={{ fontSize: '0.76rem', color: 'var(--slate-300)' }}>
+                  {confirmedAttendees.length >= minTripGroup
+                    ? `Minimum group reached! Book your own ${tripProvider} ticket:`
+                    : `Save this link for once ${minTripGroup} people join:`}
+                </span>
+                <a
+                  href={trackedProviderUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="interactive-press"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '7px 12px', borderRadius: '10px', background: 'var(--teal-500)', color: '#042f2e', fontWeight: 700, fontSize: '0.8rem', textDecoration: 'none' }}
+                >
+                  Book Own Ticket on {tripProvider} <ExternalLink size={13} />
+                </a>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Description */}
-        <div style={{ marginBottom: '32px' }}>
+        <div style={{ marginBottom: '28px' }}>
           <h3 style={{ fontSize: '1.2rem', margin: '0 0 12px 0', color: 'var(--white)', fontFamily: 'var(--font-heading)' }}>About this event</h3>
           <p style={{ color: 'var(--slate-300)', lineHeight: 1.6, fontSize: '0.95rem', margin: 0, whiteSpace: 'pre-wrap' }}>
             {cleanDescription}
           </p>
+        </div>
+
+        {/* Share Event Options in Main Body */}
+        <div id="event-share-section" style={{ marginBottom: '32px' }}>
+          <ShareOptions
+            layout="inline"
+            title={event.title || 'Community Event'}
+            text={eventShareText}
+            url={eventShareUrl}
+          />
         </div>
 
         {/* Video Embed */}
@@ -1493,7 +1593,7 @@ export default function EventClient({ id }) {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
             <div>
               <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--slate-400)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                Ticket Price
+                {isAffiliateGroupTrip ? 'More Group Host Pass' : 'Ticket Price'}
               </div>
               <div style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--white)', fontFamily: 'var(--font-heading)' }}>
                 {event.ticketPrice > 0 ? `£${event.ticketPrice.toFixed(2)}` : 'Free'}
@@ -1547,9 +1647,9 @@ export default function EventClient({ id }) {
                    isPendingApproval ? '⏳ Request Pending (Cancel)' :
                    isWaitlisted ? `On Waitlist #${myWaitlistPos} (Leave)` :
                    isSoldOut ? (waitlist.length > 0 ? `Join Waitlist (${waitlist.length} in line)` : 'Join Waitlist (Full)') :
-                   !isMember ? (requiresHostApproval ? 'Join Community & Request' : 'Join Community & ' + (event.ticketPrice > 0 ? 'Buy Ticket' : 'RSVP')) :
+                   !isMember ? (requiresHostApproval ? 'Join Community & Request' : 'Join Community & ' + (event.ticketPrice > 0 ? (isAffiliateGroupTrip ? 'Get Host Pass' : 'Buy Ticket') : 'RSVP')) :
                    requiresHostApproval ? 'Request to Join (Host Approval)' :
-                   event.ticketPrice > 0 ? 'Buy Ticket' : 'RSVP Spot'}
+                   event.ticketPrice > 0 ? (isAffiliateGroupTrip ? 'Join Group & Get Pass' : 'Buy Ticket') : 'RSVP Spot'}
                 </button>
 
                 {isGoing && (
@@ -1683,7 +1783,9 @@ export default function EventClient({ id }) {
                 </div>
                 {event.ticketPrice > 0 && (
                   <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', marginTop: '2px' }}>
-                    No extra booking fees • Secure Stripe card checkout
+                    {isAffiliateGroupTrip
+                      ? `Host Pass only • Own ~£${supplierEstimate} ticket paid directly to ${tripProvider}`
+                      : 'No extra booking fees • Secure Stripe card checkout'}
                   </div>
                 )}
                 {spotsLeft !== null && (
@@ -1776,9 +1878,9 @@ export default function EventClient({ id }) {
                    isGoing ? 'Cancel RSVP' : 
                    isPendingApproval ? '⏳ Request Pending (Cancel)' :
                    spotsLeft === 0 ? 'Sold Out' :
-                   !isMember ? (requiresHostApproval ? 'Join & Request' : 'Join Community to ' + (event.ticketPrice > 0 ? 'Buy Ticket' : 'RSVP')) :
+                   !isMember ? (requiresHostApproval ? 'Join & Request' : 'Join Community to ' + (event.ticketPrice > 0 ? (isAffiliateGroupTrip ? 'Get Host Pass' : 'Buy Ticket') : 'RSVP')) :
                    requiresHostApproval ? 'Request to Join' :
-                   event.ticketPrice > 0 ? 'Buy Ticket' : 'RSVP'}
+                   event.ticketPrice > 0 ? (isAffiliateGroupTrip ? 'Get Host Pass' : 'Buy Ticket') : 'RSVP'}
                 </button>
               </>
             )}
@@ -1985,6 +2087,22 @@ export default function EventClient({ id }) {
               )}
             </div>
 
+            {isAffiliateGroupTrip && trackedProviderUrl && (
+              <a
+                href={trackedProviderUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="interactive-press"
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                  width: '100%', padding: '12px 14px', borderRadius: '12px', marginBottom: '14px',
+                  background: 'rgba(20,184,166,0.18)', border: '1px solid rgba(45,212,191,0.45)',
+                  color: 'var(--teal-300)', fontWeight: 700, fontSize: '0.88rem', textDecoration: 'none'
+                }}
+              >
+                Step 2: Book Your Ticket on {tripProvider} (~£{supplierEstimate}) <ExternalLink size={15} />
+              </a>
+            )}
             {/* Payment Summary Banner */}
             {event.ticketPrice > 0 && (
               <div style={{
@@ -2010,10 +2128,12 @@ export default function EventClient({ id }) {
                     <CheckCircle2 size={20} color="#2dd4bf" style={{ flexShrink: 0 }} />
                     <div>
                       <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#2dd4bf' }}>
-                        Ticket Paid Online: £{event.ticketPrice.toFixed(2)}
+                        {isAffiliateGroupTrip ? `Host Pass Confirmed: £${event.ticketPrice.toFixed(2)}` : `Ticket Paid Online: £${event.ticketPrice.toFixed(2)}`}
                       </div>
                       <div style={{ fontSize: '0.75rem', color: 'var(--slate-300)', marginTop: '2px' }}>
-                        Your digital pass is ready. Show the QR code at check-in.
+                        {isAffiliateGroupTrip
+                          ? `Now book your own ~£${supplierEstimate} ticket on ${tripProvider} once ${minTripGroup}+ group members join.`
+                          : 'Your digital pass is ready. Show the QR code at check-in.'}
                       </div>
                     </div>
                   </>
@@ -2226,7 +2346,7 @@ export default function EventClient({ id }) {
               {confirmedAttendees.map(att => {
                 const u = users.find(x => x.id === att.userId);
                 const isHost = u?.id === event.host_id || u?.id === event.hostId;
-                const avatar = u?.avatar || u?.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(u?.name || 'Member')}`;
+                const avatar = resolveUserAvatar(u);
                 return (
                   <div key={att.userId} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '14px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -2432,8 +2552,8 @@ export default function EventClient({ id }) {
           isOpen={showShareModal} 
           onClose={() => setShowShareModal(false)} 
           title={event?.title || 'Community Event'} 
-          text={`Join us for ${event?.title || 'this event'} with ${community?.name || 'More Community'}!`} 
-          url={event ? getEventUrl(event, { allEvents: events, origin: typeof window !== 'undefined' ? window.location.origin : undefined }) : ''} 
+          text={eventShareText}
+          url={eventShareUrl}
         />
       )}
     </div>

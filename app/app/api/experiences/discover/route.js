@@ -65,6 +65,9 @@ export async function GET(request) {
 
           const rating = p.reviews?.combinedAverageRating ? Number(p.reviews.combinedAverageRating.toFixed(1)) : 4.8;
           const reviewsCount = p.reviews?.totalReviews || 12;
+          const supplierBase = p.pricing?.summary?.fromPrice
+            ? Math.max(10, Math.round(p.pricing.summary.fromPrice))
+            : 35;
 
           return NextResponse.json({
             status: 'success',
@@ -74,8 +77,13 @@ export async function GET(request) {
               title: p.title,
               description: p.description || '',
               category: categorize(p.title, p.description),
-              basePrice: 35, // default if pricingInfo is per person
+              supplierBase,
+              basePrice: supplierBase,
               leaderMarkup: 15,
+              hostPassFee: 15,
+              suggestedHostPass: 15,
+              minGroupSize: 6,
+              bookingModel: 'affiliate_host_pass',
               promotedBy: 'more-community',
               provider: 'Viator',
               duration: formatDuration(p.duration),
@@ -125,7 +133,7 @@ export async function GET(request) {
 
         const supplierBase = Math.max(10, Math.round(p.pricing?.summary?.fromPrice || 25));
         const moreMargin = Math.max(2, Math.round(supplierBase * 0.10));
-        const basePrice = supplierBase + moreMargin; // Inflated by More's 10% platform markup
+        const basePrice = supplierBase;
         const rating = p.reviews?.combinedAverageRating ? Number(p.reviews.combinedAverageRating.toFixed(1)) : 4.8;
         const reviewsCount = p.reviews?.totalReviews || (10 + (idx % 15));
 
@@ -135,8 +143,14 @@ export async function GET(request) {
           title: p.title,
           description: p.description || '',
           category: categorize(p.title, p.description),
+          supplierBase,
+          moreMargin,
           basePrice,
           leaderMarkup: 15,
+          hostPassFee: 15,
+          suggestedHostPass: 15,
+          minGroupSize: 6,
+          bookingModel: 'affiliate_host_pass',
           promotedBy: 'more-community',
           provider: 'Viator',
           duration: formatDuration(p.duration),

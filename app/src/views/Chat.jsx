@@ -13,6 +13,7 @@ import { useRouter as useNavigate, useParams, useSearchParams } from 'next/navig
 import { SkeletonChatBubble, SkeletonLine, SkeletonAvatar } from '../components/SkeletonCard';
 import { useToast } from '../components/Toast';
 import { FALLBACK_IMAGES } from '../lib/constants';
+import { resolveUserAvatar, getDefaultAvatar } from '../lib/avatar';
 
 const EmojiPicker = dynamic(() => import('emoji-picker-react'), { ssr: false });
 
@@ -189,8 +190,8 @@ export default function Chat() {
                 }
                 
                 let avatar = item.type === 'dm' 
-                  ? (item.otherUser.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(item.otherUser.name)}&background=0D8B93&color=fff`)
-                  : `https://ui-avatars.com/api/?name=${encodeURIComponent(displayTitle)}&background=1e293b&color=2dd4bf`;
+                  ? resolveUserAvatar(item.otherUser)
+                  : getDefaultAvatar(displayTitle);
                 
                 if (item.type !== 'dm' && title.toLowerCase() === 'general') {
                   avatar = item.comm.image || FALLBACK_IMAGES.community;
@@ -435,7 +436,7 @@ export default function Chat() {
         subtitle={isDirectMessage ? 'Direct Message' : community?.name}
         showBack={true}
         onBack={() => navigate.back()}
-        avatar={isDirectMessage ? (targetUser?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(targetUser?.name || 'User')}&background=0D8B93&color=fff`) : community?.image}
+        avatar={isDirectMessage ? resolveUserAvatar(targetUser) : community?.image}
         onAvatarClick={() => {
           if (isDirectMessage) navigate.push(`/profile/${targetUserId}`);
           else if (communityId) navigate.push(`/chat?communityId=${communityId}`);

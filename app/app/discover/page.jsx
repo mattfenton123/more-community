@@ -16,6 +16,7 @@ import { isEventUpcoming } from '../../src/lib/calendar';
 import { getCommunityLocation } from '../../src/lib/location';
 import { getCommunitySlug } from '../../src/lib/communityLinks';
 import { getEventPath } from '../../src/lib/eventLinks';
+import { resolveUserAvatar } from '../../src/lib/avatar';
 
 export default function Discover() {
   const [activePill, setActivePill] = useState('All');
@@ -222,7 +223,7 @@ export default function Discover() {
               {theme === 'light' ? <Moon size={22} /> : <Sun size={22} />}
             </div>
             <button onClick={() => navigate.push(user?.id ? `/profile/${user.id}` : '/login')} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 }}>
-              <img src={user?.avatar || '/images/default-avatar.svg'} alt="Profile" style={{ width: '36px', height: '36px', borderRadius: '50%', border: '2px solid var(--slate-700)', objectFit: 'cover', cursor: 'pointer' }} />
+              <img src={resolveUserAvatar(user)} alt="Profile" style={{ width: '36px', height: '36px', borderRadius: '50%', border: '2px solid var(--slate-700)', objectFit: 'cover', cursor: 'pointer' }} />
             </button>
           </>
         }

@@ -4,6 +4,7 @@ import { supabase } from '../../../src/lib/supabaseClient';
 import { formatEventDate } from '../../../src/lib/recurrence';
 import { cleanLocationName } from '../../../src/lib/location';
 import { SITE_ORIGIN, getEventUrl, eventMatchesSlug, isUuidLike, parseSlugDate } from '../../../src/lib/eventLinks';
+import { stripExperienceMeta } from '../../../src/lib/experiencePricing';
 
 const EVENT_SELECT = '*, communities(name, image)';
 
@@ -11,7 +12,8 @@ const EVENT_SELECT = '*, communities(name, image)';
 // (bewl-water-community-walk-31st-october-2026) or a legacy id / UUID.
 async function loadEventForParam(param) {
   const byId = async () => {
-    const { data } = await supabase.from('events').select(EVENT_SELECT).eq('id', param).maybeSingle();
+    const { data, error } = await supabase.from('events').select(EVENT_SELECT).eq('id', param).maybeSingle();
+    if (error) return null;
     return data || null;
   };
 
@@ -20,13 +22,22 @@ async function loadEventForParam(param) {
   // Slug: narrow by the date embedded in the slug, then match title + date.
   const isoDate = parseSlugDate(param);
   if (isoDate) {
-    const { data: sameDay } = await supabase.from('events').select(EVENT_SELECT).eq('date', isoDate);
+    const { data: sameDay, error } = await supabase.from('events').select(EVENT_SELECT).eq('date', isoDate);
+    if (error) return null;
     const hit = (sameDay || []).find(e => eventMatchesSlug(e, param));
     if (hit) return hit;
   }
-  const { data: rows } = await supabase.from('events').select(EVENT_SELECT).limit(1000);
+  const { data: rows, error } = await supabase.from('events').select(EVENT_SELECT).limit(1000);
+  if (error) return null;
   const hit = (rows || []).find(e => eventMatchesSlug(e, param));
   return hit || byId();
+}
+
+async function loadEventWithTimeout(param, timeoutMs = 2500) {
+  return Promise.race([
+    loadEventForParam(param),
+    new Promise(resolve => setTimeout(() => resolve(null), timeoutMs)),
+  ]);
 }
 
 export async function generateMetadata({ params }) {
@@ -38,7 +49,7 @@ export async function generateMetadata({ params }) {
   let communityName = 'More Community';
 
   try {
-    const dbEvent = await loadEventForParam(id);
+    const dbEvent = await loadEventWithTimeout(id);
 
     if (dbEvent) {
       event = dbEvent;
@@ -75,7 +86,8 @@ export async function generateMetadata({ params }) {
     ogUrl.searchParams.set('image', eventImg.startsWith('http') ? eventImg : `${baseUrl}${eventImg}`);
   }
 
-  const desc = event.description || `Join us for ${event.title} with ${communityName} on More Community. RSVP, view event details, and connect with your local community in real life.`;
+  const cleanedDesc = stripExperienceMeta(event.description || '');
+  const desc = cleanedDesc || `Join us for ${event.title} with ${communityName} on More Community. RSVP, view event details, and connect with your local community in real life.`;
   const canonicalUrl = getEventUrl(event, { origin: baseUrl });
 
   return {

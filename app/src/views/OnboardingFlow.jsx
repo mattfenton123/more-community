@@ -3,6 +3,7 @@ import { ArrowRight, Camera, Check, Users, Calendar, MessageCircle, Eye, Type, M
 import { useAuth } from '../context/AuthContext';
 import { useAppContext } from '../context/AppContext';
 import { useToast } from '../components/Toast';
+import { resolveUserAvatar, isPlaceholderAvatar } from '../lib/avatar';
 
 const INTEREST_PILLS = [
   '🏃 Fitness', '🚶 Walking', '🐕 Dog Walking', '🧘 Wellness', '⛰️ Outdoors',
@@ -308,7 +309,7 @@ export default function OnboardingFlow({ onComplete }) {
         location: location.trim(),
         interests: interests,
         affinityProfile: buildAffinityProfile(),
-        avatar: avatarUrl || user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=14b8a6&color=fff`,
+        avatar: avatarUrl || (user?.avatar && !isPlaceholderAvatar(user.avatar) ? user.avatar : ''),
         onboarded: true,
       };
 
@@ -704,31 +705,36 @@ export default function OnboardingFlow({ onComplete }) {
 
       <div style={{ textAlign: 'center' }}>
         {/* Avatar upload */}
-        <div 
+        <div
           onClick={() => fileInputRef.current?.click()}
           className="interactive-press"
           style={{
             width: '100px', height: '100px', borderRadius: '50%',
-            background: avatarPreview ? `url("${avatarPreview}")` : 'rgba(255,255,255,0.04)',
-            backgroundSize: 'cover', backgroundPosition: 'center',
-            border: avatarPreview ? '3px solid var(--teal-500)' : '2px dashed rgba(255,255,255,0.15)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            margin: '0 auto 16px', cursor: 'pointer', transition: 'border-color 0.2s',
-            color: 'var(--slate-400)', position: 'relative', overflow: 'hidden',
+            border: avatarPreview ? '3px solid var(--teal-500)' : '2px solid rgba(45,212,191,0.45)',
+            margin: '0 auto 12px', cursor: 'pointer', transition: 'border-color 0.2s',
+            position: 'relative',
           }}
         >
-          {!avatarPreview && <Camera size={32} />}
-          {avatarPreview && (
-            <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0, transition: 'opacity 0.2s' }}
-              onMouseOver={e => e.currentTarget.style.opacity = 1}
-              onMouseOut={e => e.currentTarget.style.opacity = 0}
-            >
-              <Camera size={24} color="white" />
-            </div>
-          )}
+          <img
+            src={avatarPreview || resolveUserAvatar({ name: name.trim(), avatar: '' })}
+            alt="Profile preview"
+            style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover', display: 'block' }}
+          />
+          <div style={{
+            position: 'absolute', bottom: '0', right: '0',
+            width: '30px', height: '30px', borderRadius: '50%',
+            background: 'var(--teal-500)', color: '#042f2e',
+            border: '2px solid var(--slate-950)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 4px 10px rgba(0,0,0,0.4)'
+          }}>
+            <Camera size={15} />
+          </div>
         </div>
         <input type="file" ref={fileInputRef} onChange={handleAvatarSelect} accept="image/*" style={{ display: 'none' }} />
-        <div style={{ fontSize: '0.8rem', color: 'var(--slate-500)', marginBottom: '16px' }}>Tap to add a photo</div>
+        <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)', marginBottom: '16px' }}>
+          {avatarPreview ? 'Photo selected — tap to change' : 'Optional photo (defaults to your initials)'}
+        </div>
         
         <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.6rem', margin: '0 0 8px 0' }}>What should we call you?</h2>
         <p style={{ color: 'var(--slate-400)', fontSize: '0.9rem', margin: 0 }}>This is how you'll appear in communities</p>

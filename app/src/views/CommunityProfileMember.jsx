@@ -15,6 +15,7 @@ import { useRef } from 'react';
 import AppHeader from '../components/AppHeader';
 import { isEventUpcoming, isEventPast, parseEventDateTime } from '../lib/calendar';
 import { formatShareLocation } from '../lib/location';
+import { resolveUserAvatar } from '../lib/avatar';
 
 // Category-specific gallery photos (generated unique images)
 const IMG = '/images/communities';
@@ -326,7 +327,7 @@ export default function CommunityProfile() {
           marginBottom: '20px'
         }}>
           <img 
-            src={leaderUser?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(community.name)}&background=0D8B93&color=fff`} 
+            src={resolveUserAvatar(leaderUser, community.name)} 
             alt="Organiser" 
             onClick={() => leaderUser && navigate.push(`/profile/${leaderUser.id}`)}
             style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--teal-500)', cursor: leaderUser ? 'pointer' : 'default' }} 
@@ -460,7 +461,7 @@ export default function CommunityProfile() {
                 return (
                   <div key={post.id} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', overflow: 'hidden' }}>
                     <div style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <img onClick={() => author && navigate.push(`/profile/${author.id}`)} src={author?.avatar || 'https://i.pravatar.cc/40'} alt={author?.name} style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', cursor: author ? 'pointer' : 'default' }} />
+                      <img onClick={() => author && navigate.push(`/profile/${author.id}`)} src={resolveUserAvatar(author)} alt={author?.name} style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', cursor: author ? 'pointer' : 'default' }} />
                       <div onClick={() => author && navigate.push(`/profile/${author.id}`)} style={{ cursor: author ? 'pointer' : 'default' }}>
                         <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.95rem' }}>{author?.name || 'Community Leader'}</div>
                         <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>
@@ -643,7 +644,7 @@ export default function CommunityProfile() {
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                     {services.filter(s => s.communityId === communityId && s.status === 'pending').map(srv => {
-                      const srvUser = users.find(u => u.id === srv.userId) || { name: 'Member', avatar: 'https://i.pravatar.cc/40' };
+                      const srvUser = users.find(u => u.id === srv.userId) || { name: 'Member', avatar: '/images/default-avatar.svg' };
                       return (
                         <div key={srv.id} style={{ background: 'var(--slate-800)', border: '1px solid var(--amber-500)', borderRadius: '12px', padding: '16px' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -727,7 +728,7 @@ export default function CommunityProfile() {
                 services.filter(s => s.communityId === communityId && s.status === 'approved')
                 .sort((a, b) => (b.isPremium === a.isPremium ? 0 : b.isPremium ? 1 : -1))
                 .map(srv => {
-                  const srvUser = users.find(u => u.id === srv.userId) || { name: 'Member', avatar: 'https://i.pravatar.cc/40' };
+                  const srvUser = users.find(u => u.id === srv.userId) || { name: 'Member', avatar: '/images/default-avatar.svg' };
                   return (
                     <div key={srv.id} style={{ 
                       background: srv.isPremium ? 'linear-gradient(to bottom right, rgba(234,179,8,0.05), rgba(0,0,0,0))' : 'rgba(255,255,255,0.02)', 

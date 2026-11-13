@@ -7,6 +7,7 @@ import imageCompression from 'browser-image-compression';
 import { createEventAction, createEventsBatchAction, joinCommunityAction, leaveCommunityAction, rsvpToEventAction, updateAttendeeStatusAction, addEventPhotoAction, createCommunityAction, uploadImageAction, updateEventAction, updateCommunityAction, deleteCommunityAction, createChannelAction, markNotificationReadAction, updateUserAction, adminVerifyCommunityAction, broadcastNotificationAction, promoteMemberAction, removeMemberAction, subscribeToPushNotificationsAction, ensureLeadersNetworkAction, sendEventReminderAction, createSelfNotificationAction } from '../lib/actions';
 import { Capacitor } from '@capacitor/core';
 import { cleanLocationName } from '../lib/location';
+import { resolveUserAvatar, getDefaultAvatar, isPlaceholderAvatar } from '../lib/avatar';
 
 const AppContext = createContext();
 
@@ -132,17 +133,18 @@ export function AppProvider({ children }) {
   const [isLoading, setIsLoading] = useState(true);
 
   // Compute full user object with memberships based on real authUser
-  const dbUser = users.find(u => u.id === authUser?.id) || {
+  const rawDbUser = users.find(u => u.id === authUser?.id) || {
     id: authUser?.id,
     name: authUser?.user_metadata?.full_name || authUser?.email || 'New User',
     role: 'Member',
-    avatar: '/images/default-avatar.svg',
+    avatar: authUser?.user_metadata?.avatar_url || '',
     bio: 'New here.',
     joined: new Date().toISOString(),
     onboarded: !authUser ? true : false,
     interests: [],
     affinityProfile: { tagScores: {}, likedCommunityIds: [], passedCommunityIds: [] }
   };
+  const dbUser = { ...rawDbUser, avatar: resolveUserAvatar(rawDbUser) };
 
   const user = { ...dbUser, joinedCommunities: [], ledCommunities: [], savedItems: savedItems, isAdmin: false, leaderOf: null };
     if (authUser?.email) {
@@ -414,21 +416,22 @@ export function AppProvider({ children }) {
         const ALEX_ID = 'a31edbf0-db87-4a32-b108-c13d365adbf8';
         const processedUsers = usersRes.data.map(u => {
           if (u.id === ALEX_ID) {
+            const alexName = (u.name === 'alex@morecommunity.app' || !u.name) ? 'Alex' : u.name;
             return {
               ...u,
-              name: (u.name === 'alex@morecommunity.app' || !u.name) ? 'Alex' : u.name,
-              avatar: u.avatar || 'https://ui-avatars.com/api/?name=Alex&background=21726c&color=fff&size=200&bold=true',
+              name: alexName,
+              avatar: resolveUserAvatar({ ...u, name: alexName }),
               role: 'Leader'
             };
           }
-          return u;
+          return { ...u, avatar: resolveUserAvatar(u) };
         });
         if (!processedUsers.some(u => u.id === ALEX_ID)) {
           processedUsers.push({
             id: ALEX_ID,
             name: 'Alex',
             role: 'Leader',
-            avatar: 'https://ui-avatars.com/api/?name=Alex&background=21726c&color=fff&size=200&bold=true',
+            avatar: getDefaultAvatar('Alex'),
             bio: 'Community Leader & Founder at more.',
             onboarded: true
           });
@@ -1578,7 +1581,7 @@ export function AppProvider({ children }) {
       eventId,
       driverId: user?.id,
       driverName: user?.name || 'Community Member',
-      driverAvatar: user?.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user?.name || 'Driver')}`,
+      driverAvatar: resolveUserAvatar(user, 'Driver'),
       origin: offerData.origin,
       time: offerData.time,
       seatsTotal: Number(offerData.seatsTotal) || 3,
@@ -1621,7 +1624,7 @@ export function AppProvider({ children }) {
           const newPassengers = [...(c.passengers || []), {
             userId: user.id,
             name: user.name || 'Community Member',
-            avatar: user.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.name || 'Rider')}`,
+            avatar: resolveUserAvatar(user, 'Rider'),
             reservedAt: new Date().toISOString()
           }];
           return {
@@ -2158,15 +2161,26 @@ export function AppProvider({ children }) {
   };
 
   const updateUser = async (userId, updates) => {
-    // Optimistic UI update
+    const cleanUpdates = { ...updates };
+    if (cleanUpdates.avatar !== undefined && isPlaceholderAvatar(cleanUpdates.avatar)) {
+      cleanUpdates.avatar = '';
+    }
+    // Optimistic UI update with live resolved initials fallback
     setUsers(prev => {
       const exists = prev.find(u => u.id === userId);
-      if (exists) return prev.map(u => u.id === userId ? { ...u, ...updates } : u);
-      return [...prev, { id: userId, ...updates }];
+      if (exists) {
+        return prev.map(u => {
+          if (u.id !== userId) return u;
+          const merged = { ...u, ...cleanUpdates };
+          return { ...merged, avatar: resolveUserAvatar(merged) };
+        });
+      }
+      const created = { id: userId, ...cleanUpdates };
+      return [...prev, { ...created, avatar: resolveUserAvatar(created) }];
     });
     
     // Strip frontend-only mock fields before sending to db
-    const { affinityProfile, banner, ...dbUpdates } = updates;
+    const { affinityProfile, banner, ...dbUpdates } = cleanUpdates;
     
     try {
       let token = session?.access_token;

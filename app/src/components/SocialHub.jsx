@@ -9,6 +9,7 @@ import { useAppContext } from '../context/AppContext';
 import { useToast } from './Toast';
 import { getEventUrl, SITE_ORIGIN } from '../lib/eventLinks';
 import { getCommunityPath } from '../lib/communityLinks';
+import { resolveUserAvatar } from '../lib/avatar';
 
 const ANNOUNCEMENT_TEMPLATES = [
   {
@@ -74,7 +75,7 @@ export default function SocialHub({ communityId }) {
     return {
       id: uid,
       name: userProfile.name || userProfile.full_name || m.userName || m.user_name || 'Community Member',
-      avatar: userProfile.avatar || userProfile.avatar_url || m.userAvatar || m.user_avatar || '',
+      avatar: resolveUserAvatar({ ...userProfile, name: userProfile.name || userProfile.full_name || m.userName || m.user_name, avatar: userProfile.avatar || userProfile.avatar_url || m.userAvatar || m.user_avatar }),
       role: m.role || 'member'
     };
   }).filter(m => Boolean(m.id));
