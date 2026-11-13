@@ -1,12 +1,12 @@
 "use client";
 import { supabase } from '../../src/lib/supabaseClient';
 import { useState, useRef, useMemo, useEffect } from 'react';
-import { Copy, Printer, ExternalLink, HelpCircle, Users, Calendar, MessageCircle, TrendingUp, Search, Plus, MapPin, Image as ImageIcon, CreditCard, ChevronRight, ChevronLeft, Download, Activity, Globe, Heart, Crown, Info, X, Map, Zap, Mail, Trash2, UserCheck, Ban, ChevronDown, ChevronUp, Settings, Megaphone, QrCode, BarChart3, Ticket, ScanLine, UserPlus, DollarSign, Clock, Edit3, Check, CheckCircle2, Eye, EyeOff, Shield, Star, Sparkles, BookOpen, ListChecks, Bell, Archive, Mic, MicOff, Wand2, Lightbulb, Car } from 'lucide-react';
+import { AlertCircle, Copy, Printer, ExternalLink, HelpCircle, Users, Calendar, MessageCircle, TrendingUp, Search, Plus, MapPin, Image as ImageIcon, CreditCard, ChevronRight, ChevronLeft, Download, Activity, Globe, Heart, Crown, Info, X, Map, Zap, Mail, Trash2, UserCheck, Ban, ChevronDown, ChevronUp, Settings, Megaphone, QrCode, BarChart3, Ticket, ScanLine, UserPlus, DollarSign, Clock, Edit3, Check, CheckCircle2, Eye, EyeOff, Shield, Star, Sparkles, BookOpen, ListChecks, Bell, Archive, Mic, MicOff, Wand2, Lightbulb, Car } from 'lucide-react';
 import AppHeader from '../../src/components/AppHeader';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { isEventUpcoming, isEventPast, parseEventDateTime } from '../../src/lib/calendar';
-import { getEventPath } from '../../src/lib/eventLinks';
-import { findCommunityByParam, getCommunitySlug } from '../../src/lib/communityLinks';
+import { getEventPath, SITE_ORIGIN } from '../../src/lib/eventLinks';
+import { findCommunityByParam, getCommunityPath, getCommunitySlug } from '../../src/lib/communityLinks';
 import { useAppContext } from '../../src/context/AppContext';
 import { useChat } from '../../src/context/ChatContext';
 import { useToast } from '../../src/components/Toast';
@@ -23,7 +23,7 @@ import LeaderSetupChecklist from '../../src/components/LeaderSetupChecklist';
 import dynamic from 'next/dynamic';
 const LocationPicker = dynamic(() => import('../../src/components/LocationPicker'), { ssr: false });
 const CommunityRegionPicker = dynamic(() => import('../../src/components/CommunityRegionPicker'), { ssr: false });
-import { cleanLocationName, parseLocationCoords, geocodeLocation } from '../../src/lib/location';
+import { cleanLocationName, parseLocationCoords, encodeLocationWithCoords, geocodeLocation, normalizeCoords } from '../../src/lib/location';
 import RecurringSchedulePicker from '../../src/components/RecurringSchedulePicker';
 import { formatEventDate } from '../../src/lib/recurrence';
 import { COMMUNITY_TAG_CATEGORIES, ALL_COMMUNITY_TAGS } from '../../src/lib/constants';
@@ -284,9 +284,9 @@ function CommunitySwitcher({ currentCommunity, communities, activeId, onSelect, 
                         <div style={{ fontSize: '0.84rem', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                           {c.name}
                         </div>
-                        {c.location_name && (
+                        {cleanLocationName(c.location_name) && (
                           <div style={{ fontSize: '0.7rem', color: 'var(--slate-400)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                            {c.location_name}
+                            {cleanLocationName(c.location_name)}
                           </div>
                         )}
                       </div>
@@ -436,8 +436,8 @@ export default function LeaderDashboard({ initialCommunityId }) {
     description: '', 
     date: '', 
     time: '', 
-    location: community?.location_name || '', 
-    coords: (community?.lat != null && community?.lng != null) ? [community.lat, community.lng] : null,
+    location: '', 
+    coords: (community?.lat != null && community?.lng != null) ? [Number(community.lat), Number(community.lng)] : null,
     maxCapacity: '', 
     ticketPrice: '',
     allowCash: false, 
@@ -1339,6 +1339,25 @@ export default function LeaderDashboard({ initialCommunityId }) {
     let imageUrl = '';
     
     try {
+      let resolvedLocation = eventForm.location;
+      if (resolvedLocation && !parseLocationCoords(resolvedLocation)) {
+        const cleanAddr = cleanLocationName(resolvedLocation);
+        try {
+          const searchRes = await fetch(`/api/places/search?q=${encodeURIComponent(cleanAddr)}&limit=1`);
+          const searchJson = searchRes.ok ? await searchRes.json() : null;
+          const first = searchJson?.results?.[0];
+          if (first?.lat != null && first?.lon != null) {
+            resolvedLocation = encodeLocationWithCoords(cleanAddr, first.lat, first.lon);
+          } else {
+            const geo = await geocodeLocation(cleanAddr);
+            if (geo?.lat && geo?.lng) resolvedLocation = encodeLocationWithCoords(cleanAddr, geo.lat, geo.lng);
+          }
+        } catch {
+          const geo = await geocodeLocation(cleanAddr);
+          if (geo?.lat && geo?.lng) resolvedLocation = encodeLocationWithCoords(cleanAddr, geo.lat, geo.lng);
+        }
+      }
+
       if (imageFile) {
         imageUrl = await uploadImage(imageFile, 'events');
       }
@@ -1348,6 +1367,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
       if (dates.length === 1) {
         await createEvent(community.id, {
           ...eventForm,
+          location: resolvedLocation,
           date: dates[0],
           maxCapacity: eventForm.maxCapacity ? parseInt(eventForm.maxCapacity, 10) : null,
           ticketPrice: eventForm.ticketPrice ? parseFloat(eventForm.ticketPrice) : 0,
@@ -1364,6 +1384,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
       } else {
         const eventsList = dates.map(d => ({
           ...eventForm,
+          location: resolvedLocation,
           date: d,
           maxCapacity: eventForm.maxCapacity ? parseInt(eventForm.maxCapacity, 10) : null,
           ticketPrice: eventForm.ticketPrice ? parseFloat(eventForm.ticketPrice) : 0,
@@ -1413,7 +1434,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
       date: nextDate,
       time: event.time || '10:00',
       location: event.location || '',
-      coords: parsedCoords || (event.lat && event.lng ? { lat: event.lat, lng: event.lng } : null),
+      coords: normalizeCoords(parsedCoords || (event.lat != null && event.lng != null ? [event.lat, event.lng] : null)),
       maxCapacity: event.maxCapacity ? event.maxCapacity.toString() : '',
       ticketPrice: event.ticketPrice ? event.ticketPrice.toString() : '',
       allowCash: Boolean(event.allowCash || event.allow_cash),
@@ -1430,7 +1451,6 @@ export default function LeaderDashboard({ initialCommunityId }) {
       recurrenceSummary: 'Single event'
     });
     setImageFile(null);
-    setEventImage(event.image || null);
     setModalType('event');
     toast.success('Event details duplicated!', 'Set the date and publish your repeat event.');
   };
@@ -1442,7 +1462,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
       title: event.title || '', description: event.description || '',
       date: event.date || '', time: event.time || '',
       location: event.location || '',
-      coords: parsedCoords || (event.lat && event.lng ? { lat: event.lat, lng: event.lng } : null),
+      coords: normalizeCoords(parsedCoords || (event.lat != null && event.lng != null ? [event.lat, event.lng] : null)),
       maxCapacity: event.maxCapacity ? event.maxCapacity.toString() : '',
       ticketPrice: event.ticketPrice ? event.ticketPrice.toString() : '',
       allowCash: Boolean(event.allowCash || event.allow_cash),
@@ -1453,7 +1473,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
       autoFeedback: event.autoFeedback ?? true,
       requireApproval: Boolean(event.requireApproval || event.require_approval || (event.description && event.description.includes('[Host Approval Required]'))),
       rsvpQuestion: event.rsvpQuestion || (event.description?.match(/\[RSVP Question: ([^\]]+)\]/)?.[1] || ''),
-        whatsappGroup: event.whatsappGroup || (event.description?.match(/\[WhatsApp: ([^\]]+)\]/)?.[1] || '') || '',
+      whatsappGroup: event.whatsappGroup || (event.description?.match(/\[WhatsApp: ([^\]]+)\]/)?.[1] || '') || '',
       scheduleMode: 'single',
       resolvedDates: event.date ? [event.date] : [],
       recurrenceSummary: 'Single event'
@@ -1476,9 +1496,27 @@ export default function LeaderDashboard({ initialCommunityId }) {
         toast.error('Upload failed', 'Could not upload event image');
       }
     }
+    let resolvedLocation = eventForm.location;
+    if (resolvedLocation && !parseLocationCoords(resolvedLocation)) {
+      const cleanAddr = cleanLocationName(resolvedLocation);
+      try {
+        const searchRes = await fetch(`/api/places/search?q=${encodeURIComponent(cleanAddr)}&limit=1`);
+        const searchJson = searchRes.ok ? await searchRes.json() : null;
+        const first = searchJson?.results?.[0];
+        if (first?.lat != null && first?.lon != null) {
+          resolvedLocation = encodeLocationWithCoords(cleanAddr, first.lat, first.lon);
+        } else {
+          const geo = await geocodeLocation(cleanAddr);
+          if (geo?.lat && geo?.lng) resolvedLocation = encodeLocationWithCoords(cleanAddr, geo.lat, geo.lng);
+        }
+      } catch {
+        const geo = await geocodeLocation(cleanAddr);
+        if (geo?.lat && geo?.lng) resolvedLocation = encodeLocationWithCoords(cleanAddr, geo.lat, geo.lng);
+      }
+    }
     const updates = {
       title: eventForm.title, description: eventForm.description,
-      date: eventForm.date, time: eventForm.time, location: eventForm.location,
+      date: eventForm.date, time: eventForm.time, location: resolvedLocation,
       maxCapacity: eventForm.maxCapacity ? parseInt(eventForm.maxCapacity, 10) : null,
       ticketPrice: eventForm.ticketPrice ? parseFloat(eventForm.ticketPrice) : 0,
       allowCash: Boolean(eventForm.allowCash),
@@ -2105,6 +2143,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
               <MapPin size={14} color="#3b82f6" /> Location <span style={{ color: 'var(--rose-400)', fontSize: '0.7rem' }}>*</span>
             </label>
             <LocationPicker 
+              key={editingEventId || (modalType === 'event' ? 'create-event' : modalType || 'loc')}
               locationName={eventForm.location} 
               setLocationName={(loc) => setEventForm(prev => ({...prev, location: loc}))} 
               coords={eventForm.coords}
@@ -3419,11 +3458,11 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   {/* Share link bar */}
                   <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
                     <div style={{ flex: 1, padding: '10px 14px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', fontSize: '0.8rem', color: 'var(--slate-400)', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
-                      morecommunity.app/community/{community.id}
+                      www.morecommunity.app{getCommunityPath(community, communities)}
                     </div>
                     <button
                       onClick={() => {
-                        navigator.clipboard.writeText(`https://morecommunity.app/community/${community.id}`);
+                        navigator.clipboard.writeText(`${SITE_ORIGIN}${getCommunityPath(community, communities)}`);
                         setLinkCopied(true);
                         setTimeout(() => setLinkCopied(false), 2000);
                         toast.success('Link copied!', 'Share it anywhere to grow your community');
@@ -3439,7 +3478,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                     <button
                       onClick={() => {
-                        const url = `https://morecommunity.app/community/${community.id}`;
+                        const url = `${SITE_ORIGIN}${getCommunityPath(community, communities)}`;
                         const text = `Join ${community.name} on MoreCommunity! 🌟 ${url}`;
                         window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
                       }}
@@ -3451,7 +3490,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                     </button>
                     <button
                       onClick={() => {
-                        const url = `https://morecommunity.app/community/${community.id}`;
+                        const url = `${SITE_ORIGIN}${getCommunityPath(community, communities)}`;
                         const text = `Join ${community.name} on MoreCommunity!`;
                         window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
                       }}
@@ -6177,7 +6216,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                                   {app.name}
                                 </div>
                                 <div style={{ fontSize: '0.78rem', color: '#7dd3fc', marginTop: '2px' }}>
-                                  📍 Proposed Town: {app.location_name || 'Local Town'}
+                                  📍 Proposed Town: {cleanLocationName(app.location_name) || 'Local Town'}
                                 </div>
                                 <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', marginTop: '2px' }}>
                                   Applicant: {applicantLeader?.name || 'Local Organizer'} ({applicantLeader?.email || 'Leader'})
@@ -6312,7 +6351,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                       {activeSisterChapters.map(sc => (
                         <div key={sc.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 10px', background: 'rgba(255,255,255,0.03)', borderRadius: '8px', fontSize: '0.8rem' }}>
-                          <span style={{ fontWeight: 600, color: 'var(--slate-200)' }}>{sc.name} ({sc.location_name || 'Town'})</span>
+                          <span style={{ fontWeight: 600, color: 'var(--slate-200)' }}>{sc.name} ({cleanLocationName(sc.location_name) || 'Town'})</span>
                           <span style={{ color: 'var(--teal-400)', fontSize: '0.74rem' }}>{sc.members || 1} members • Active</span>
                         </div>
                       ))}

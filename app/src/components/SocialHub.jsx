@@ -7,6 +7,8 @@ import {
 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { useToast } from './Toast';
+import { getEventUrl, SITE_ORIGIN } from '../lib/eventLinks';
+import { getCommunityPath } from '../lib/communityLinks';
 
 const ANNOUNCEMENT_TEMPLATES = [
   {
@@ -150,20 +152,20 @@ export default function SocialHub({ communityId }) {
 
 ${postText}
 
-👉 Event Details: https://www.morecommunity.app/events/${selectedEvent.id}`;
+👉 Event Details: ${getEventUrl(selectedEvent, { allEvents: events })}`;
     }
     if (audienceType === 'members') {
       return `*📢 Message from ${commTitle}*
 
 ${postText}
 
-👉 Community: https://www.morecommunity.app/community/${communityId}`;
+👉 Community: ${SITE_ORIGIN}${getCommunityPath(targetCommunity || communityId, communities)}`;
     }
     return `*📢 Update from ${commTitle}*
 
 ${postText}
 
-👉 View updates: https://www.morecommunity.app/community/${communityId}`;
+👉 View updates: ${SITE_ORIGIN}${getCommunityPath(targetCommunity || communityId, communities)}`;
   };
 
   const handlePost = async () => {
@@ -843,8 +845,8 @@ ${postText}
                   </div>
                   <div style={{ fontSize: '0.75rem', color: '#53bdeb', marginTop: '6px' }}>
                     {audienceType === 'event' && selectedEvent 
-                      ? `https://www.morecommunity.app/events/${selectedEvent.id}`
-                      : `https://www.morecommunity.app/community/${communityId}`}
+                      ? getEventUrl(selectedEvent, { allEvents: events })
+                      : `${SITE_ORIGIN}${getCommunityPath(targetCommunity || communityId, communities)}`}
                   </div>
                   <div style={{ fontSize: '0.65rem', color: 'rgba(233, 237, 239, 0.6)', textAlign: 'right', marginTop: '4px' }}>
                     Just now ✓✓

@@ -416,6 +416,34 @@ const ADMIN_EMAILS = [
     toast.success('Exported!', `${type} data downloaded successfully`);
   };
 
+  const handleExportAudienceCSV = () => {
+    const rows = [];
+    const seen = new Set();
+    users.forEach(u => {
+      const email = (u.email || '').trim().toLowerCase();
+      if (!email || seen.has(email)) return;
+      seen.add(email);
+      rows.push(`"${(u.name || '').replace(/"/g, '""')}","${email}","Member"`);
+    });
+    Object.values(eventRsvps || {}).forEach(list => {
+      (Array.isArray(list) ? list : []).forEach(r => {
+        const email = (r.guestEmail || r.email || '').trim().toLowerCase();
+        if (!email || seen.has(email)) return;
+        seen.add(email);
+        rows.push(`"${(r.guestName || 'Guest').replace(/"/g, '""')}","${email}","Guest"`);
+      });
+    });
+    const csv = 'Name,Email,Type\n' + rows.join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'more-audience-export.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success('Exported!', `${rows.length} audience emails downloaded`);
+  };
+
   const copyToClipboard = (text, label) => {
     if (!text) return;
     navigator.clipboard.writeText(text);

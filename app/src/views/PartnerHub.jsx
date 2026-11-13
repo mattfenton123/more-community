@@ -6,7 +6,7 @@ import {
   Check, CheckCircle2, Shield, Filter, ChevronRight, X 
 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
-import { matchCommunityLocation, UK_REGIONAL_CATCHMENTS } from '../lib/location';
+import { cleanLocationName, matchCommunityLocation, UK_REGIONAL_CATCHMENTS } from '../lib/location';
 import { useToast } from '../components/Toast';
 import CommunityPartnerModal from '../components/CommunityPartnerModal';
 import Link from 'next/link';
@@ -362,7 +362,7 @@ export default function PartnerHub() {
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.78rem', color: 'var(--slate-400)', marginTop: '4px', flexWrap: 'wrap' }}>
                           <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                             <MapPin size={12} color="var(--teal-400)" />
-                            {comm.location_name || comm.city || 'Local Area'}
+                            {cleanLocationName(comm.location_name || comm.city) || 'Local Area'}
                           </span>
                           <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                             <Users size={12} />

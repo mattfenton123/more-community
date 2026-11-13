@@ -808,7 +808,12 @@ export default function EventClient({ id }) {
                 )}
 
                 <a
-                  href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(cleanLocationName(event.location) + ', UK')}`}
+                  href={(() => {
+                    const c = parseLocationCoords(event.location);
+                    return c
+                      ? `https://www.google.com/maps/dir/?api=1&destination=${c.lat},${c.lng}`
+                      : `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(cleanLocationName(event.location) + ', UK')}`;
+                  })()}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="interactive-press"
@@ -826,7 +831,7 @@ export default function EventClient({ id }) {
             </div>
           )}
         
-        <EventRecapShareCard event={event} community={community} attendeeCount={confirmedAttendees.length} />
+        <EventRecapShareCard event={event} community={community} attendeeCount={confirmedAttendees.length} allEvents={events} />
         {isEventPast(event) && (
           <div style={{ background: 'rgba(148,163,184,0.08)', border: '1px solid rgba(148,163,184,0.2)', borderRadius: '14px', padding: '14px 18px', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
             <Archive size={22} color="var(--slate-400)" style={{ flexShrink: 0 }} />
@@ -1608,7 +1613,7 @@ export default function EventClient({ id }) {
           {/* WhatsApp Share */}
           <div style={{ marginBottom: '18px' }}>
             <a
-              href={getWhatsAppShareUrl(event, community?.name)}
+              href={getWhatsAppShareUrl(event, community?.name, events)}
               target="_blank"
               rel="noopener noreferrer"
               className="interactive-press"

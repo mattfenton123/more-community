@@ -2,6 +2,7 @@
 import React from 'react';
 import { Calendar, Clock, MapPin, Users, Ticket, ExternalLink, X, Plus, ShieldCheck } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { formatShareLocation } from '../lib/location';
 
 export default function NetworkEventPreviewModal({
   event,
@@ -217,7 +218,7 @@ export default function NetworkEventPreviewModal({
                 <MapPin size={18} color="#f59e0b" />
                 <div>
                   <div style={{ fontSize: '0.7rem', color: 'var(--slate-500)', textTransform: 'uppercase' }}>Location</div>
-                  <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--white)' }}>{event.location}</div>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--white)' }}>{formatShareLocation(event.location)}</div>
                 </div>
               </div>
             )}

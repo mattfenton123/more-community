@@ -2,6 +2,7 @@ import React from 'react';
 import { ChevronLeft, Share2, Users, Calendar, MapPin, Activity, BadgeCheck, Star, Clock, Heart } from 'lucide-react';
 import AppHeader from '../components/AppHeader';
 import { isEventUpcoming, parseEventDateTime } from '../lib/calendar';
+import { cleanLocationName, formatShareLocation } from '../lib/location';
 
 // Category-specific gallery photos
 const IMG = '/images/communities';
@@ -70,7 +71,7 @@ export default function CommunityProfileNonMember({
           </h1>
           
           <div style={{ display: 'flex', gap: '16px', fontSize: '0.9rem', color: 'var(--slate-300)', marginBottom: '24px', flexWrap: 'wrap', fontWeight: 500 }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><MapPin size={16} color="var(--slate-400)" /> {community.location_name || 'Tunbridge Wells'}</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><MapPin size={16} color="var(--slate-400)" /> {cleanLocationName(community.location_name) || 'Tunbridge Wells'}</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Users size={16} color="var(--slate-400)" /> {community.members || memberList.length || 1} members</span>
           </div>
         </div>
@@ -138,7 +139,7 @@ export default function CommunityProfileNonMember({
                 <div style={{ fontWeight: 800, fontSize: '1.2rem', color: 'var(--white)', marginBottom: '8px' }}>{nextEvent.title}</div>
                 <div style={{ display: 'flex', gap: '16px', fontSize: '0.9rem', color: 'var(--slate-400)' }}>
                   <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={16} /> {nextEvent.time}</span>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><MapPin size={16} /> {nextEvent.location}</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><MapPin size={16} /> {formatShareLocation(nextEvent.location)}</span>
                 </div>
               </div>
             </div>

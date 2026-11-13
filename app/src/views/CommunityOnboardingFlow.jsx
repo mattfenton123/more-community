@@ -2,7 +2,7 @@
 import { supabase } from '../lib/supabaseClient';
 import React, { useState, useRef, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { ArrowRight, Camera, Check, Link as LinkIcon, Calendar, Image as ImageIcon, MessageCircle, ChevronLeft, Plus, X, Search } from 'lucide-react';
+import { ArrowRight, Camera, Check, Link as LinkIcon, Calendar, Image as ImageIcon, MessageCircle, ChevronLeft, Plus, X, Search, CheckCircle2 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { useToast } from '../components/Toast';
 import { COMMUNITY_TAG_CATEGORIES, ALL_COMMUNITY_TAGS } from '../lib/constants';

@@ -11,7 +11,7 @@ import { useAppContext } from '../context/AppContext';
 import { useToast } from './Toast';
 import { useRouter } from 'next/navigation';
 import UnsplashImagePicker from './UnsplashImagePicker';
-import { matchCommunityLocation } from '../lib/location';
+import { cleanLocationName, matchCommunityLocation } from '../lib/location';
 
 const BUSINESS_CATEGORIES = [
   { id: 'Food & Drink', icon: Coffee, label: 'Cafe, Food & Hospitality' },
@@ -665,7 +665,7 @@ export default function CommunityPartnerModal({
                               </span>
                             </div>
                             <div style={{ fontSize: '0.78rem', color: 'var(--slate-400)', marginTop: '2px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><MapPin size={12} color="#2dd4bf" /> {targetCommunity.location_name || 'Local Town'}</span>
+                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><MapPin size={12} color="#2dd4bf" /> {cleanLocationName(targetCommunity.location_name) || 'Local Town'}</span>
                               <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><Users size={12} color="#2dd4bf" /> {targetCommunity.member_count || '50+'} active members</span>
                             </div>
                           </div>
@@ -777,7 +777,7 @@ export default function CommunityPartnerModal({
                             >
                               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 <span style={{ fontSize: '0.82rem', fontWeight: 700, color: isSelected ? '#fff' : 'var(--slate-200)' }}>{c.name}</span>
-                                <span style={{ fontSize: '0.7rem', color: 'var(--slate-400)', display: 'inline-flex', alignItems: 'center', gap: '3px' }}><MapPin size={11} color="var(--slate-400)" /> {c.location_name || 'UK'}</span>
+                                <span style={{ fontSize: '0.7rem', color: 'var(--slate-400)', display: 'inline-flex', alignItems: 'center', gap: '3px' }}><MapPin size={11} color="var(--slate-400)" /> {cleanLocationName(c.location_name) || 'UK'}</span>
                               </div>
                               <span style={{ fontSize: '0.72rem', color: isSelected ? '#2dd4bf' : 'var(--slate-400)' }}>
                                 {isSelected ? 'Selected' : 'Select'}
@@ -1381,7 +1381,7 @@ export default function CommunityPartnerModal({
                           <span style={{ color: 'var(--slate-400)', display: 'block', fontSize: '0.74rem' }}>Target Community</span>
                           <strong style={{ color: 'var(--white)', fontSize: '0.95rem' }}>{targetCommunity?.name}</strong>
                           <span style={{ color: '#2dd4bf', display: 'block', fontSize: '0.74rem', marginTop: '2px' }}>
-                            {targetCommunity?.location_name || 'Local Town'} • {targetCommunity?.member_count || '50+'} members
+                            {cleanLocationName(targetCommunity?.location_name) || 'Local Town'} • {targetCommunity?.member_count || '50+'} members
                           </span>
                         </div>
                         <div>

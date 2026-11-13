@@ -4,6 +4,7 @@ import { getEventUrl } from '../lib/eventLinks';
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { jsPDF } from 'jspdf';
 import { X, Download, Printer, Copy, Check, Image as ImageIcon, Type, Palette, Layout, ChevronDown, MapPin, Clock, Calendar, QrCode } from 'lucide-react';
+import { formatShareLocation } from '../lib/location';
 
 // ─── 20 Curated Google Fonts ────────────────────────────────────
 const FONT_OPTIONS = [
@@ -281,14 +282,15 @@ export default function EventFlyerGenerator({ event, community, onClose, uploadI
     ctx.fillStyle = 'white';
     ctx.fillText(event.time, timeX + 30, pillY + 2);
 
+    const flyerLoc = formatShareLocation(event.location, 'Tunbridge Wells');
     const locY = pillY + 56;
-    const locW = ctx.measureText(event.location).width + 60;
+    const locW = ctx.measureText(flyerLoc).width + 60;
     ctx.fillStyle = 'rgba(255,255,255,0.15)';
     ctx.beginPath();
     ctx.roundRect(108, locY - 28, locW, 48, 12);
     ctx.fill();
     ctx.fillStyle = 'white';
-    ctx.fillText(event.location, 138, locY + 2);
+    ctx.fillText(flyerLoc, 138, locY + 2);
 
     // Description
     if (bodyText) {
@@ -516,7 +518,7 @@ export default function EventFlyerGenerator({ event, community, onClose, uploadI
                     padding: '8px 14px', borderRadius: '10px',
                     fontFamily: `"${font}", sans-serif`, fontSize: '0.75rem', fontWeight: 600, color: tmpl.infoColor, flex: 1,
                   }}>
-                    <MapPin size={13} style={{ opacity: 0.8 }} /> {event.location}
+                    <MapPin size={13} style={{ opacity: 0.8 }} /> {formatShareLocation(event.location, 'Tunbridge Wells')}
                   </div>
                 </div>
               </div>

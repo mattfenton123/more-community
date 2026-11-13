@@ -3,23 +3,26 @@ import React, { useState } from 'react';
 import { Share2, Check, Copy, MessageCircle, Users } from 'lucide-react';
 import { useToast } from './Toast';
 import { isEventPast } from '../lib/calendar';
+import { formatShareLocation } from '../lib/location';
+import { getEventUrl, SITE_ORIGIN } from '../lib/eventLinks';
 
-export default function EventRecapShareCard({ event, community, attendeeCount = 0 }) {
+export default function EventRecapShareCard({ event, community, attendeeCount = 0, allEvents }) {
   const toast = useToast();
   const [copied, setCopied] = useState(false);
 
   const eventTitle = event?.title || 'Community Meetup';
   const communityName = community?.name || event?.communityName || 'Local Community';
-  const location = event?.location || 'Tunbridge Wells';
+  const location = formatShareLocation(event?.location, 'Tunbridge Wells');
   const isPast = isEventPast(event);
   const rawCount = typeof attendeeCount === 'number'
     ? attendeeCount
     : (Array.isArray(event?.attendees) ? event.attendees.length : (typeof event?.attendeeCount === 'number' ? event.attendeeCount : 0));
   const count = Math.max(0, rawCount);
 
-  const shareUrl = typeof window !== 'undefined' 
-    ? `${window.location.origin}/events/${event?.id}`
-    : `https://morecommunity.co.uk/events/${event?.id}`;
+  const origin = typeof window !== 'undefined' ? window.location.origin : SITE_ORIGIN;
+  const shareUrl = event
+    ? getEventUrl(event, { allEvents, origin })
+    : `${origin}/events`;
 
   const defaultShareText = isPast
     ? `Great meetup at ${eventTitle} with ${communityName} in ${location}! Check out photos and join future events here: ${shareUrl}`

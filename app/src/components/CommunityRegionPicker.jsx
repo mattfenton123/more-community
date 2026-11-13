@@ -11,13 +11,15 @@ import {
   parseLocationRadius,
   encodeLocationWithCoords,
   findKnownLocation,
+  searchKnownLocations,
+  normalizeCoords,
   geocodeLocation
 } from '../lib/location';
-import { loadGoogleMaps, getPlacePredictions, getPlaceDetails, DARK_MAP_STYLES } from '../lib/googleMaps';
+import { loadGoogleMaps, getPlacePredictions, getPlaceDetails, onGoogleAuthError, hasGoogleAuthError, DARK_MAP_STYLES } from '../lib/googleMaps';
 
 const REGIONAL_HUB_PRESETS = [
   { name: 'Tunbridge Wells', query: 'Tunbridge Wells, Kent', lat: 51.1322, lng: 0.2637, defaultRadius: 5 },
-  { name: 'Bewl Water & High Weald', query: 'Bewl Water Car Park & Visitor Centre', lat: 51.0763, lng: 0.3875, defaultRadius: 8 },
+  { name: 'Bewl Water & High Weald', query: 'Bewl Water Car Park & Visitor Centre', lat: 51.0793, lng: 0.3914, defaultRadius: 8 },
   { name: 'Heathfield', query: 'Heathfield, East Sussex', lat: 50.9680, lng: 0.2530, defaultRadius: 6 },
   { name: 'Tonbridge', query: 'Tonbridge, Kent', lat: 51.1965, lng: 0.2740, defaultRadius: 5 },
   { name: 'St Leonards & Coast', query: 'St Leonards-on-Sea', lat: 50.8560, lng: 0.5560, defaultRadius: 7 },
@@ -116,13 +118,18 @@ export default function CommunityRegionPicker({
   const mapInstanceRef = useRef(null);
   const markerInstanceRef = useRef(null);
   const circleInstanceRef = useRef(null);
-  const [useLeafletFallback, setUseLeafletFallback] = useState(false);
+  const [useLeafletFallback, setUseLeafletFallback] = useState(() => hasGoogleAuthError());
+  const coordsRef = useRef(coords);
+  coordsRef.current = coords;
+  const searchSeqRef = useRef(0);
+  const debounceRef = useRef(null);
+
+  useEffect(() => onGoogleAuthError(() => setUseLeafletFallback(true)), []);
 
   // Sync coords if external prop updates
   useEffect(() => {
-    if (externalCoords && externalCoords[0] != null && externalCoords[1] != null) {
-      setCoords([Number(externalCoords[0]), Number(externalCoords[1])]);
-    }
+    const norm = normalizeCoords(externalCoords);
+    if (norm) setCoords(norm);
   }, [externalCoords]);
 
   // Native Google Maps Initialization and Synchronization
@@ -234,49 +241,80 @@ export default function CommunityRegionPicker({
     updateLocationPayload(searchQuery, coords[0], coords[1], val);
   };
 
-  const handleSearch = async (e) => {
-    if (e) e.preventDefault();
-    if (!searchQuery.trim()) return;
-
+  const runRegionSearch = async (queryText, autoSelectFirst = false) => {
+    const qClean = cleanLocationName(queryText).trim();
+    if (qClean.length < 2) {
+      setSearchResults([]);
+      return;
+    }
+    const seq = ++searchSeqRef.current;
     setIsSearching(true);
     try {
-      const googleResults = await getPlacePredictions(searchQuery, coords);
-      if (googleResults && googleResults.length > 0) {
-        const first = googleResults[0];
-        const details = await getPlaceDetails(first.placeId);
-        if (details && details.lat != null && details.lng != null) {
-          const newCoords = [details.lat, details.lng];
-          setCoords(newCoords);
-          setSearchResults([]);
-          updateLocationPayload(first.name, details.lat, details.lng, radiusKm);
-          setIsSearching(false);
-          return;
+      const [cLat, cLng] = coordsRef.current;
+      const localMatches = searchKnownLocations(qClean);
+      const [googleResults, apiRes] = await Promise.all([
+        getPlacePredictions(qClean, [cLat, cLng]),
+        fetch(`/api/places/search?q=${encodeURIComponent(qClean)}&lat=${cLat}&lng=${cLng}&limit=10`)
+          .then((r) => (r.ok ? r.json() : { results: [] }))
+          .catch(() => ({ results: [] })),
+      ]);
+      if (seq !== searchSeqRef.current) return;
+
+      const serverResults = Array.isArray(apiRes?.results) ? apiRes.results : [];
+      const merged = [];
+      for (const item of [...googleResults, ...localMatches, ...serverResults]) {
+        if (!item?.name) continue;
+        const dup = merged.some((ex) => ex.name?.toLowerCase() === item.name?.toLowerCase());
+        if (!dup) merged.push(item);
+      }
+      const list = merged.slice(0, 10);
+      setSearchResults(list);
+
+      if (autoSelectFirst && list.length > 0) {
+        await selectRegionResult(list[0], list.length > 1);
+      } else if (autoSelectFirst && list.length === 0) {
+        const res = await geocodeLocation(qClean);
+        if (res?.lat && res?.lng) {
+          const name = res.displayName ? res.displayName.replace(/,\s*(UK|United Kingdom)$/i, '').split(',').slice(0, 2).join(',').trim() : qClean;
+          setSearchQuery(name);
+          setCoords([res.lat, res.lng]);
+          updateLocationPayload(name, res.lat, res.lng, radiusKm);
         }
-      }
-
-      const qClean = cleanLocationName(searchQuery).toLowerCase().trim();
-      const matchedSpot = findKnownLocation(qClean);
-      if (matchedSpot) {
-        const newCoords = [matchedSpot.lat, matchedSpot.lng];
-        setCoords(newCoords);
-        setSearchResults([]);
-        updateLocationPayload(matchedSpot.name, matchedSpot.lat, matchedSpot.lng, radiusKm);
-        setIsSearching(false);
-        return;
-      }
-
-      const res = await geocodeLocation(qClean);
-      if (res && res.lat && res.lng) {
-        const newCoords = [res.lat, res.lng];
-        setCoords(newCoords);
-        setSearchResults([]);
-        updateLocationPayload(res.displayName ? res.displayName.split(',').slice(0, 2).join(',').trim() : searchQuery, res.lat, res.lng, radiusKm);
       }
     } catch (err) {
       console.warn("Region search error:", err);
     } finally {
-      setIsSearching(false);
+      if (seq === searchSeqRef.current) setIsSearching(false);
     }
+  };
+
+  const selectRegionResult = async (result, keepOpen = false) => {
+    if (!result) return;
+    if (!keepOpen) setSearchResults([]);
+    if (result.source === 'google' && result.placeId) {
+      const details = await getPlaceDetails(result.placeId, result, mapInstanceRef.current);
+      if (details?.lat != null && details?.lng != null) {
+        const label = details.formattedAddress || result.address || result.name;
+        setSearchQuery(label);
+        setCoords([details.lat, details.lng]);
+        updateLocationPayload(label, details.lat, details.lng, radiusKm);
+        return;
+      }
+    }
+    const lat = parseFloat(result.lat);
+    const lon = parseFloat(result.lon);
+    if (!Number.isNaN(lat) && !Number.isNaN(lon)) {
+      const label = result.address || result.name;
+      setSearchQuery(label);
+      setCoords([lat, lon]);
+      updateLocationPayload(label, lat, lon, radiusKm);
+    }
+  };
+
+  const handleSearch = async (e) => {
+    if (e) e.preventDefault();
+    if (!searchQuery.trim()) return;
+    await runRegionSearch(searchQuery, true);
   };
 
   const handleUseCurrentLocation = () => {
@@ -322,7 +360,13 @@ export default function CommunityRegionPicker({
           onChange={(e) => {
             const val = e.target.value;
             setSearchQuery(val);
-            updateLocationPayload(val, coords[0], coords[1], radiusKm);
+            if (setLocationName) setLocationName(val);
+            if (debounceRef.current) clearTimeout(debounceRef.current);
+            if (val.trim().length >= 2) {
+              debounceRef.current = setTimeout(() => runRegionSearch(val, false), 260);
+            } else {
+              setSearchResults([]);
+            }
           }}
           onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(e); }}
           style={{ padding: '13px 16px', flex: 1, borderRadius: '12px', fontSize: '0.92rem' }} 
@@ -361,6 +405,36 @@ export default function CommunityRegionPicker({
           {isSearching ? <Loader2 size={18} className="animate-spin" /> : <Search size={18} />}
         </button>
       </div>
+
+      {/* Autocomplete Address Options */}
+      {searchResults.length > 0 && (
+        <div className="places-dropdown" style={{
+          background: 'var(--slate-900)', border: '1px solid rgba(45,212,191,0.3)',
+          borderRadius: '12px', overflow: 'hidden', maxHeight: '240px', overflowY: 'auto',
+          boxShadow: '0 8px 24px rgba(0,0,0,0.35)', zIndex: 15
+        }}>
+          {searchResults.map((res, i) => (
+            <div
+              key={res.id || i}
+              onClick={() => selectRegionResult(res, false)}
+              className="interactive-press"
+              style={{
+                padding: '10px 14px',
+                borderBottom: i < searchResults.length - 1 ? '1px solid rgba(255,255,255,0.06)' : 'none',
+                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
+                <MapPin size={14} color="var(--teal-400)" style={{ flexShrink: 0 }} />
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontWeight: 600, fontSize: '0.84rem', color: 'var(--white)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{res.name}</div>
+                  {res.address && <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{res.address}</div>}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Preset Regional Hub Chips */}
       <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '2px', scrollbarWidth: 'none' }}>

@@ -5,6 +5,7 @@ import { useAppContext } from '../context/AppContext';
 import { useFeed } from '../context/FeedContext';
 import { Heart, MessageCircle, Share2, Calendar, MapPin, Clock, Compass, Plus, Megaphone, Edit3, Briefcase, ChevronUp, Users } from 'lucide-react';
 import { getCommunityLocation } from '../lib/location';
+import { getCommunitySlug } from '../lib/communityLinks';
 import { SkeletonList, SkeletonCard } from '../components/SkeletonCard';
 import InlineComments from '../components/InlineComments';
 import AppHeader from '../components/AppHeader';

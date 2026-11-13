@@ -1,3 +1,4 @@
+import { formatShareLocation } from './location';
 // Utility to generate Google Calendar links and Apple / Outlook .ics calendar invites
 
 export function formatIcsDate(dateStr, timeStr) {
@@ -17,7 +18,7 @@ export function getGoogleCalendarUrl(event) {
   try {
     const title = encodeURIComponent(event.title || 'Community Event');
     const details = encodeURIComponent(`${event.description || ''}\n\nOrganised on more. (https://morecommunity.app)`);
-    const location = encodeURIComponent(event.location || 'Meeting Point provided by host');
+    const location = encodeURIComponent(formatShareLocation(event.location, 'Meeting Point provided by host'));
     
     const start = formatIcsDate(event.date, event.time);
     let end = start;
@@ -58,7 +59,7 @@ export function generateIcsDataUri(event) {
       `DTEND:${end}`,
       `SUMMARY:${(event.title || 'Community Event').replace(/\n/g, ' ')}`,
       `DESCRIPTION:${(event.description || '').replace(/\n/g, '\\n')}`,
-      `LOCATION:${(event.location || 'Meeting Point').replace(/\n/g, ' ')}`,
+      `LOCATION:${formatShareLocation(event.location, 'Meeting Point').replace(/\n/g, ' ')}`,
       'STATUS:CONFIRMED',
       'END:VEVENT',
       'END:VCALENDAR'

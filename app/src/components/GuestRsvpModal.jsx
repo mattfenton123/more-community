@@ -3,6 +3,8 @@ import { useState } from 'react';
 import { Check, X, Calendar, MapPin, Users, Mail, User, Share2, ExternalLink, Ticket, ArrowRight, MessageCircle } from 'lucide-react';
 import { getGoogleCalendarUrl, generateIcsDataUri } from '../lib/calendarInvite';
 import { useAppContext } from '../context/AppContext';
+import { getEventUrl, SITE_ORIGIN } from '../lib/eventLinks';
+import { formatShareLocation } from '../lib/location';
 
 export default function GuestRsvpModal({ event, isOpen, onClose, onSuccess }) {
   const { theme, refreshData } = useAppContext();
@@ -62,14 +64,14 @@ export default function GuestRsvpModal({ event, isOpen, onClose, onSuccess }) {
     }
   };
 
+  const origin = typeof window !== 'undefined' ? window.location.origin : SITE_ORIGIN;
+  const eventLink = event?.id ? getEventUrl(event, { origin }) : (typeof window !== 'undefined' ? window.location.href : SITE_ORIGIN);
+
   const handleCopyLink = () => {
-    const url = typeof window !== 'undefined' ? window.location.href : `https://morecommunity.app/events/${event.id}`;
-    navigator.clipboard?.writeText(url);
+    navigator.clipboard?.writeText(eventLink);
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2000);
   };
-
-  const eventLink = typeof window !== 'undefined' ? window.location.href : `https://morecommunity.app/events/${event.id}`;
   const shareText = encodeURIComponent(`I'm going to ${event.title} on ${event.date}! Come along with me: ${eventLink}`);
   const whatsappUrl = `https://api.whatsapp.com/send?text=${shareText}`;
   const googleCalUrl = getGoogleCalendarUrl(event);
@@ -187,7 +189,7 @@ export default function GuestRsvpModal({ event, isOpen, onClose, onSuccess }) {
                   <MapPin size={12} /> Meeting Point
                 </div>
                 <div style={{ fontSize: '0.92rem', fontWeight: 700, color: isLight ? '#0f172a' : '#ffffff', marginBottom: '6px' }}>
-                  {event.location}
+                  {formatShareLocation(event.location, 'Location on event page')}
                 </div>
                 <div style={{ fontSize: '0.78rem', color: isLight ? '#64748b' : 'var(--slate-300)' }}>
                   {event.date} at {event.time}

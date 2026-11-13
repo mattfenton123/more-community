@@ -1,5 +1,7 @@
 import { Resend } from 'resend';
 import { getGoogleCalendarUrl } from './calendarInvite';
+import { getEventUrl } from './eventLinks';
+import { cleanLocationName, formatShareLocation, parseLocationCoords } from './location';
 
 const resendApiKey = process.env.RESEND_API_KEY;
 const resend = resendApiKey ? new Resend(resendApiKey) : null;
@@ -11,10 +13,12 @@ export async function sendTicketConfirmationEmail({ to, name, event, community, 
   }
 
   const googleCalUrl = getGoogleCalendarUrl(event);
-  const eventLink = `https://morecommunity.app/events/${event.id}`;
+  const eventLink = getEventUrl(event);
   const encodedShareText = encodeURIComponent(`I'm going to ${event.title} on ${event.date}! Come along with me: ${eventLink}`);
   const whatsappShareUrl = `https://api.whatsapp.com/send?text=${encodedShareText}`;
-  const mapsQuery = encodeURIComponent(event.location || '');
+  const emailPin = parseLocationCoords(event.location);
+  const emailLocText = formatShareLocation(event.location, 'Meeting point to be updated by host');
+  const mapsQuery = encodeURIComponent(emailPin ? `${emailPin.lat},${emailPin.lng}` : cleanLocationName(event.location) || '');
   const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${mapsQuery}`;
 
   const subject = `🎟️ Confirmed: Your spot for ${event.title}`;
@@ -65,7 +69,7 @@ export async function sendTicketConfirmationEmail({ to, name, event, community, 
                     <div style="margin-bottom: 14px;">
                       <div style="font-size: 0.72rem; color: #14b8a6; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">📍 Meeting Point</div>
                       <div style="font-size: 0.95rem; color: #ffffff; font-weight: 600; margin-top: 2px;">
-                        ${event.location || 'Meeting point to be updated by host'}
+                        ${emailLocText}
                       </div>
                       <div style="margin-top: 6px;">
                         <a href="${googleMapsUrl}" target="_blank" style="color: #38bdf8; font-size: 0.8rem; text-decoration: underline; font-weight: 600;">

@@ -9,6 +9,7 @@ import DigitalTicket from '../../src/components/DigitalTicket';
 import AppHeader from '../../src/components/AppHeader';
 import SwipeDiscovery from '../../src/components/SwipeDiscovery';
 import { isEventUpcoming, isEventPast, parseEventDateTime } from '../../src/lib/calendar';
+import { formatEventDate } from '../../src/lib/recurrence';
 import { cleanLocationName } from '../../src/lib/location';
 import { getEventPath } from '../../src/lib/eventLinks';
 

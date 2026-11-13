@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from 'react';
 import { Bell, Calendar, Clock, MapPin, X } from 'lucide-react';
+import { formatShareLocation } from '../lib/location';
 
 export default function EventReminderModal({
   event,
@@ -90,7 +91,7 @@ export default function EventReminderModal({
               )}
               {event.location && (
                 <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <MapPin size={12} /> {event.location}
+                  <MapPin size={12} /> {formatShareLocation(event.location)}
                 </span>
               )}
             </div>
@@ -140,7 +141,7 @@ export default function EventReminderModal({
               <button 
                 type="button"
                 onClick={() => {
-                  setCustomMessage(`Quick update for ${event.title}: Meeting point is at ${event.location || 'the venue'}. Look out for the more. sign!`);
+                  setCustomMessage(`Quick update for ${event.title}: Meeting point is at ${formatShareLocation(event.location, 'the venue')}. Look out for the more. sign!`);
                 }}
                 className="btn btn-outline interactive-press"
                 style={{ fontSize: '0.72rem', padding: '4px 8px', borderRadius: '8px' }}

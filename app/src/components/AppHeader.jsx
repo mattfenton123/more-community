@@ -1,8 +1,8 @@
 "use client";
 import { useRouter as useNavigate, usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { Activity, Compass, Calendar, Sparkles, MessageCircle } from 'lucide-react';
-import { ChevronLeft, Bell, Sun, Moon, Monitor, X } from 'lucide-react';
+import { Activity, Compass, Calendar, Sparkles, MessageCircle, Shield, Crown, ChevronLeft, Bell, Sun, Moon, Monitor, X } from 'lucide-react';
+import { useChat } from '../context/ChatContext';
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import NotificationsFeed from './NotificationsFeed';
@@ -33,7 +33,38 @@ export default function AppHeader({ title, subtitle, rightElement, showBack = fa
   const navigate = useNavigate();
   const currentPath = usePathname();
   const { user, notifications, theme, setTheme } = useAppContext();
-  const unreadCount = notifications ? notifications.filter(n => !n.is_read).length : 0;
+  const chatCtx = useChat() || {};
+  const directMessages = Array.isArray(chatCtx.directMessages) ? chatCtx.directMessages : [];
+  const chatReadReceipts = Array.isArray(chatCtx.chatReadReceipts) ? chatCtx.chatReadReceipts : [];
+  const unreadCount = Array.isArray(notifications) ? notifications.filter(n => !n.is_read).length : 0;
+
+  let unreadChatCount = 0;
+  if (user?.id && directMessages.length > 0) {
+    const dmUsers = new Set();
+    directMessages.forEach(dm => {
+      if (dm.senderId === user.id) dmUsers.add(dm.receiverId);
+      if (dm.receiverId === user.id) dmUsers.add(dm.senderId);
+    });
+    dmUsers.forEach(otherId => {
+      const latestDm = directMessages.filter(m => (m.senderId === otherId && m.receiverId === user.id) || (m.senderId === user.id && m.receiverId === otherId)).pop();
+      if (latestDm && latestDm.senderId !== user.id) {
+        const receipt = chatReadReceipts.find(r => !r.community_id && r.channel_id === otherId);
+        if (!receipt || new Date(receipt.last_read_at) < new Date(latestDm.created_at || new Date().toISOString())) {
+          unreadChatCount++;
+        }
+      }
+    });
+  }
+
+  const isLeader = Array.isArray(user?.ledCommunities) && user.ledCommunities.length > 0;
+  const desktopNavItems = [
+    { id: 'home', label: 'Home', icon: Activity, href: '/app', active: currentPath === '/app' || currentPath === '/' },
+    { id: 'discover', label: 'Discover', icon: Compass, href: '/discover', active: Boolean(currentPath?.startsWith('/discover')) },
+    { id: 'events', label: 'Events', icon: Calendar, href: '/events', active: Boolean(currentPath?.startsWith('/events')) },
+    { id: 'chat', label: 'Chat', icon: MessageCircle, href: '/chat', badge: unreadChatCount, active: Boolean(currentPath?.startsWith('/chat')) },
+    ...(isLeader ? [{ id: 'leader', label: 'Leader', icon: Crown, href: '/dashboard', active: Boolean(currentPath?.startsWith('/dashboard')) }] : []),
+    ...((user?.isAdmin || currentPath?.startsWith('/admin')) ? [{ id: 'admin', label: 'Admin', icon: Shield, href: '/admin', active: Boolean(currentPath?.startsWith('/admin')) }] : []),
+  ];
 
   const handleBack = () => {
     if (onBack) onBack();
@@ -191,6 +222,27 @@ export default function AppHeader({ title, subtitle, rightElement, showBack = fa
           </div>
         )}
       </div>
+      <nav className="desktop-nav-bar" aria-label="Primary navigation">
+        {desktopNavItems.map(item => {
+          const Icon = item.icon;
+          return (
+            <Link
+              key={item.id}
+              href={item.href}
+              className={`desktop-nav-item ${item.active ? 'active' : ''}`}
+            >
+              <Icon size={15} strokeWidth={item.active ? 2.4 : 2} />
+              <span>{item.label}</span>
+              {item.badge > 0 && (
+                <span className="desktop-nav-badge">
+                  {item.badge > 9 ? '9+' : item.badge}
+                </span>
+              )}
+            </Link>
+          );
+        })}
+      </nav>
+
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
         {rightElement !== undefined ? rightElement : defaultRightElement}
       </div>

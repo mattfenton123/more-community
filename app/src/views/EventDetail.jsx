@@ -7,7 +7,9 @@ import { SkeletonList, SkeletonEvent } from '../components/SkeletonCard';
 import { useToast } from '../components/Toast';
 import DigitalTicket from '../components/DigitalTicket';
 import ShareModal from '../components/ShareModal';
+import { getEventUrl } from '../lib/eventLinks';
 import { Share2 } from 'lucide-react';
+import { formatShareLocation } from '../lib/location';
 
 // Haversine distance in miles
 function getDistanceMiles(lat1, lon1, lat2, lon2) {
@@ -191,7 +193,7 @@ export default function EventsHub() {
           <h3 style={{ margin: '0 0 8px 0', fontSize: '1.1rem', fontWeight: 700 }}>{event.title}</h3>
           <div style={{ display: 'flex', gap: '16px', fontSize: '0.85rem', color: 'var(--slate-400)' }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><CalIcon size={14} /> {event.date}</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><MapPin size={14} /> {event.location}</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><MapPin size={14} /> {formatShareLocation(event.location)}</span>
           </div>
         </div>
       </div>
@@ -294,7 +296,7 @@ export default function EventsHub() {
           onClose={() => setShowShareModal(false)}
           title={`Join me at ${selectedEvent.title}`}
           text={`I'm going to ${selectedEvent.title} with ${selectedEvent.communityName}. You should come along!`}
-          url={`${window.location.origin}/events/${selectedEvent.id}`}
+          url={getEventUrl(selectedEvent, { allEvents: events, origin: typeof window !== 'undefined' ? window.location.origin : undefined })}
         />
       )}
 
@@ -350,7 +352,7 @@ export default function EventsHub() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--slate-300)' }}>
                     <MapPin size={18} color="var(--slate-400)" />
                     <div>
-                      <div style={{ fontWeight: 500 }}>{selectedEvent.location}</div>
+                      <div style={{ fontWeight: 500 }}>{formatShareLocation(selectedEvent.location)}</div>
                     </div>
                   </div>
                 </div>

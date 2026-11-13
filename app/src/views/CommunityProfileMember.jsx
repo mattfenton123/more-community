@@ -14,6 +14,7 @@ import CreateIdeaModal from '../components/CreateIdeaModal';
 import { useRef } from 'react';
 import AppHeader from '../components/AppHeader';
 import { isEventUpcoming, isEventPast, parseEventDateTime } from '../lib/calendar';
+import { formatShareLocation } from '../lib/location';
 
 // Category-specific gallery photos (generated unique images)
 const IMG = '/images/communities';
@@ -526,7 +527,7 @@ export default function CommunityProfile() {
                         <div style={{ fontWeight: 700, fontSize: '1.05rem', color: 'var(--white)', marginBottom: '6px' }}>{event.title}</div>
                         <div style={{ display: 'flex', gap: '16px', fontSize: '0.8rem', color: 'var(--slate-400)', marginBottom: '8px' }}>
                           <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={14} /> {event.time}</span>
-                          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><MapPin size={14} /> {event.location}</span>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><MapPin size={14} /> {formatShareLocation(event.location)}</span>
                         </div>
                         {event.description && (
                           <p style={{ margin: '0 0 10px 0', fontSize: '0.85rem', color: 'var(--slate-400)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: 1.4 }}>{event.description}</p>
@@ -580,7 +581,7 @@ export default function CommunityProfile() {
                           <div style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--white)', marginBottom: '4px' }}>{event.title}</div>
                           <div style={{ display: 'flex', gap: '14px', fontSize: '0.75rem', color: 'var(--slate-400)', marginBottom: '6px' }}>
                             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={13} /> {event.time}</span>
-                            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><MapPin size={13} /> {event.location}</span>
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><MapPin size={13} /> {formatShareLocation(event.location)}</span>
                           </div>
                           {wentCount > 0 && (
                             <div style={{ fontSize: '0.75rem', color: 'var(--teal-400)', fontWeight: 600 }}>

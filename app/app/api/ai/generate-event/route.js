@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { formatShareLocation } from '../../../../src/lib/location';
 
 // Simple in-memory sliding window rate limiter (10 requests per minute per IP)
 const rateLimitMap = new Map();
@@ -162,11 +163,11 @@ export async function POST(request) {
     if (mode === 'event-recap') {
       const eventTitle = body.eventTitle || 'Community Meetup';
       const community = body.communityName || 'More Community';
-      const loc = body.location || 'Tunbridge Wells';
+      const loc = formatShareLocation(body.location, 'Tunbridge Wells');
       const count = body.attendeeCount || 12;
       const eventDate = body.date || 'today';
 
-      const fallbackWhatsapp = `*What a fantastic meetup!* 🥾✨\n\nHuge thank you to all *${count} legends* who joined us for *${eventTitle}* at ${loc}!\n\nFresh air, great conversations, and wonderful local connections. Community photos have been added to the event gallery 📸\n\nNext session is being scheduled now. Check upcoming dates and RSVP here:\nhttps://morecommunity.co.uk`;
+      const fallbackWhatsapp = `*What a fantastic meetup!* 🥾✨\n\nHuge thank you to all *${count} legends* who joined us for *${eventTitle}* at ${loc}!\n\nFresh air, great conversations, and wonderful local connections. Community photos have been added to the event gallery 📸\n\nNext session is being scheduled now. Check upcoming dates and RSVP here:\nhttps://www.morecommunity.app`;
 
       const fallbackInstagram = `Good people, real life ✨\n\nOver ${count} of us gathered for ${eventTitle} in ${loc}. Real conversations, no screens, pure community.\n\nTag someone who should join the next one! 👇\n\n#LocalEvents #CommunityMatters #MoreCommunity #RealLifeConnection`;
 
@@ -660,9 +661,10 @@ function localSemanticMatch(prompt, candidateEvents = []) {
 
     const defaultReason = reasons.length > 0
       ? ('Great match: ' + reasons.join(', ') + '.')
-      : ('Upcoming community event in ' + (event.location || 'your area') + ' with a friendly local group.');
+      : ('Upcoming community event in ' + formatShareLocation(event.location, 'your area') + ' with a friendly local group.');
 
-    const highlightTag = tags[0] || (event.location ? ('📍 ' + event.location.split(',')[0].trim()) : '✨ Community Pick');
+    const cleanTagLoc = formatShareLocation(event.location, '');
+    const highlightTag = tags[0] || (cleanTagLoc ? ('📍 ' + cleanTagLoc.split(',')[0].trim()) : '✨ Community Pick');
 
     return {
       event,

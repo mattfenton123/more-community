@@ -3,7 +3,7 @@ import { useMemo, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppContext } from '../../src/context/AppContext';
 import { useFeed } from '../../src/context/FeedContext';
-import { Heart, MessageCircle, Share2, Calendar, MapPin, Clock, Compass, Plus, Megaphone, Edit3, Briefcase, ChevronUp, Shield, ArrowRight, Sparkles, Archive, Users, Search } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Calendar, MapPin, Clock, Compass, Plus, Megaphone, Edit3, Briefcase, ChevronUp, Shield, ArrowRight, Sparkles, Archive, Users, Search, Lightbulb } from 'lucide-react';
 import { SkeletonList, SkeletonCard } from '../../src/components/SkeletonCard';
 import InlineComments from '../../src/components/InlineComments';
 import AppHeader from '../../src/components/AppHeader';
@@ -1084,7 +1084,7 @@ export default function HomeFeed() {
                   {comm.name}
                 </div>
                 <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)' }}>
-                  {comm.location || 'Local Community'}
+                  {cleanLocationName(comm.location) || 'Local Community'}
                 </div>
               </div>
               <span style={{ fontSize: '0.75rem', color: 'var(--teal-300)', fontWeight: 600 }}>View</span>

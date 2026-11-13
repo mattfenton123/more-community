@@ -14,6 +14,7 @@ import AppHeader from '../components/AppHeader';
 import SwipeDiscovery from '../components/SwipeDiscovery';
 import { isEventUpcoming } from '../lib/calendar';
 import { getCommunityLocation } from '../lib/location';
+import { getCommunitySlug } from '../lib/communityLinks';
 
 export default function Discover() {
   const { communities, user, users, communityMemberships, joinCommunity, isLoading, events, getAffinityScore, sponsors, sponsorshipAssignments } = useAppContext();

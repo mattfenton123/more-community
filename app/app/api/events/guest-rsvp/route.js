@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/navigation';
 import { supabase } from '../../../../src/lib/supabaseClient';
 import { sendTicketConfirmationEmail } from '../../../../src/lib/emailService';
+import { formatShareLocation } from '../../../../src/lib/location';
 
 export async function POST(request) {
   try {
@@ -38,7 +39,7 @@ export async function POST(request) {
       avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(cleanName)}&background=0d9488&color=fff`,
       interests: [`email:${cleanEmail}`, 'guest', 'opt_in:true'],
       onboarded: true,
-      location: event.location ? event.location.split(',')[0].trim() : ''
+      location: formatShareLocation(event.location, '').split(',')[0].trim()
     };
 
     const { error: userErr } = await supabase.from('users').insert(userPayload);
@@ -114,7 +115,7 @@ export async function POST(request) {
         title: event.title,
         date: event.date,
         time: event.time,
-        location: event.location
+        location: formatShareLocation(event.location, '')
       }
     });
 

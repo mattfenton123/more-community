@@ -3,15 +3,16 @@ import React, { useState } from 'react';
 import { X, Check, Copy, MessageCircle, Calendar, MapPin, ExternalLink, Ticket } from 'lucide-react';
 import { useRouter as useNavigate } from 'next/navigation';
 import { useToast } from './Toast';
+import { cleanLocationName } from '../lib/location';
+import { getEventPath, getEventUrl, SITE_ORIGIN } from '../lib/eventLinks';
 
-export default function EventCreatedShareModal({ event, experience, onClose }) {
+export default function EventCreatedShareModal({ event, experience, allEvents, onClose }) {
   const [copied, setCopied] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const bookingUrl = typeof window !== 'undefined'
-    ? `${window.location.origin}/events/${event.id}`
-    : `https://www.morecommunity.app/events/${event.id}`;
+  const origin = typeof window !== 'undefined' ? window.location.origin : SITE_ORIGIN;
+  const bookingUrl = getEventUrl(event, { allEvents, origin });
 
   const shareText = `Tickets & RSVPs are now live for ${event.title} on More Community! 🎟️\nDate: ${event.date} at ${event.time}\nSpots: ${event.maxCapacity || 15} available\n\nRSVP & see details here: ${bookingUrl}`;
   const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
@@ -74,7 +75,7 @@ export default function EventCreatedShareModal({ event, experience, onClose }) {
             {event.location && (
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <MapPin size={13} color="var(--teal-400)" />
-                <span>{event.location}</span>
+                <span>{cleanLocationName(event.location) || event.location}</span>
               </div>
             )}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px', paddingTop: '6px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
@@ -118,7 +119,7 @@ export default function EventCreatedShareModal({ event, experience, onClose }) {
           <button
             onClick={() => {
               onClose();
-              navigate.push(`/events/${event.id}`);
+              navigate.push(getEventPath(event, allEvents));
             }}
             className="btn btn-primary"
             style={{ flex: 1, padding: '10px', borderRadius: '10px', fontSize: '0.85rem' }}

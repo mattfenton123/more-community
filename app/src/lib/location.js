@@ -41,9 +41,9 @@ export const REGIONAL_KNOWN_LOCATIONS = [
   // Bewl Water & Surrounds (Visitor Centre & Main Car Park)
   {
     name: 'Bewl Water Car Park & Visitor Centre',
-    area: 'Lamberhurst / Wadhurst',
-    lat: 51.0763,
-    lng: 0.3875,
+    area: 'Bewlbridge Lane, Lamberhurst TN3 8JH',
+    lat: 51.0793,
+    lng: 0.3914,
     aliases: [
       'bewl',
       'bewl reservoir',
@@ -76,32 +76,39 @@ export const REGIONAL_KNOWN_LOCATIONS = [
 
   // Tunbridge Wells Parks & Common
   {
-    name: 'Dunorlan Park',
-    area: 'Tunbridge Wells',
-    lat: 51.1345,
-    lng: 0.2710,
-    aliases: ['dunorlan', 'dunorlan park', 'dunorlan park gate', 'dunorlan cafe']
+    name: 'Dunorlan Park (Main Car Park)',
+    area: 'Pembury Road, Royal Tunbridge Wells TN2 3QA',
+    lat: 51.1313,
+    lng: 0.2867,
+    aliases: ['dunorlan', 'dunorlan park', 'dunorlan park gate', 'dunorlan car park', 'dunorlan cafe', 'dunorlan park (main car park)']
   },
   {
     name: 'Calverley Grounds',
-    area: 'Tunbridge Wells',
-    lat: 51.1355,
-    lng: 0.2605,
+    area: 'Royal Tunbridge Wells TN1 1BT',
+    lat: 51.1305,
+    lng: 0.2663,
     aliases: ['calverley', 'calverley grounds', 'calverley park']
   },
   {
     name: 'The Pantiles',
-    area: 'Tunbridge Wells',
-    lat: 51.1280,
-    lng: 0.2620,
-    aliases: ['pantiles', 'the pantiles', 'lower pantiles', 'upper pantiles', 'bandstand']
+    area: 'Royal Tunbridge Wells TN2 5TN',
+    lat: 51.1263,
+    lng: 0.2577,
+    aliases: ['pantiles', 'the pantiles', 'lower pantiles', 'upper pantiles', 'the pantiles tunbridge wells', 'pantiles tunbridge wells']
+  },
+  {
+    name: 'The Pantiles Bandstand',
+    area: 'The Pantiles, Royal Tunbridge Wells TN2 5TN',
+    lat: 51.1257,
+    lng: 0.2573,
+    aliases: ['the pantiles bandstand', 'pantiles bandstand', 'bandstand the pantiles']
   },
   {
     name: 'Tunbridge Wells Common',
-    area: 'Tunbridge Wells',
-    lat: 51.1315,
-    lng: 0.2550,
-    aliases: ['tw common', 'common', 'tunbridge wells common', 'wellington rocks']
+    area: 'Wellington Rocks, Royal Tunbridge Wells',
+    lat: 51.1302,
+    lng: 0.2541,
+    aliases: ['tw common', 'tunbridge wells common', 'wellington rocks']
   },
   {
     name: 'Grosvenor & Hilbert Park',
@@ -337,16 +344,50 @@ export function parseLocationRadius(locationStr) {
  * Cleans the human-facing location string by removing internal coordinate and radius tokens.
  * e.g. "Bewl Water Car Park opp. Visitor Centre [r=5km] • @51.07630,0.38750" -> "Bewl Water Car Park opp. Visitor Centre"
  */
+export function normalizeCoords(coords) {
+  if (!coords) return null;
+  if (Array.isArray(coords) && coords.length >= 2) {
+    const lat = Number(coords[0]);
+    const lng = Number(coords[1]);
+    if (!Number.isNaN(lat) && !Number.isNaN(lng)) return [lat, lng];
+  }
+  if (typeof coords === 'object' && coords.lat != null && coords.lng != null) {
+    const lat = Number(coords.lat);
+    const lng = Number(coords.lng);
+    if (!Number.isNaN(lat) && !Number.isNaN(lng)) return [lat, lng];
+  }
+  return null;
+}
+
 export function cleanLocationName(locationStr) {
   if (!locationStr || typeof locationStr !== 'string') return '';
   return locationStr
-    .replace(/\s*•\s*@(-?\d+\.\d+),\s*(-?\d+\.\d+)/g, '')
-    .replace(/@(-?\d+\.\d+),\s*(-?\d+\.\d+)/g, '')
-    .replace(/[\[\(]-?\d+\.\d+,\s*-?\d+\.\d+[\]\)]/g, '')
+    .replace(/\s*•\s*@(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)/g, '')
+    .replace(/@(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)/g, '')
+    .replace(/[\[\(]-?\d+(?:\.\d+)?,\s*-?\d+(?:\.\d+)?[\]\)]/g, '')
+    .replace(/\b(?:Pinned )?Spot\s*$/i, '')
     .replace(/\s*\[r=\d+(?:\.\d+)?km\]/gi, '')
     .replace(/\s*\(\d+(?:\.\d+)?km\s*radius\)/gi, '')
     .trim()
-    .replace(/\s*•\s*$/, '');
+    .replace(/\s*•\s*$/, '')
+    .replace(/,\s*$/, '');
+}
+
+/**
+ * Formats a location for public sharing, invites, emails, and badges.
+ * Strips embedded map coordinates whenever an address/place name exists.
+ * If literally NO address exists (e.g. an off-grid pin), returns a Google Maps link or coordinate string.
+ */
+export function formatShareLocation(locationStr, fallback = '') {
+  const clean = cleanLocationName(locationStr);
+  if (clean && !/^(?:pinned )?spot$/i.test(clean)) {
+    return clean;
+  }
+  const coords = parseLocationCoords(locationStr);
+  if (coords) {
+    return `https://maps.google.com/?q=${coords.lat.toFixed(5)},${coords.lng.toFixed(5)}`;
+  }
+  return fallback;
 }
 
 /**
@@ -388,30 +429,66 @@ export function getCommunityLocation(comm) {
 /**
  * Searches local verified spot registry.
  */
+export function searchKnownLocations(query) {
+  if (!query || typeof query !== 'string') return [];
+  const qLower = cleanLocationName(query).toLowerCase().trim();
+  if (qLower.length < 2) return [];
+  const matches = [];
+  for (const spot of REGIONAL_KNOWN_LOCATIONS) {
+    const nameL = spot.name.toLowerCase();
+    const areaL = (spot.area || '').toLowerCase();
+    const aliasHit = (spot.aliases || []).some((a) => {
+      const al = a.toLowerCase();
+      return al.includes(qLower) || (qLower.length >= 4 && qLower.includes(al));
+    });
+    if (nameL.includes(qLower) || areaL.includes(qLower) || aliasHit) {
+      matches.push({
+        id: `local_${spot.name.toLowerCase().replace(/[^a-z0-9]+/g, '_')}`,
+        name: spot.name,
+        address: spot.area ? `${spot.name}, ${spot.area}` : spot.name,
+        area: spot.area || 'Kent & East Sussex',
+        lat: spot.lat,
+        lon: spot.lng,
+        source: 'local',
+      });
+    }
+  }
+  return matches;
+}
+
 export function findKnownLocation(query) {
   if (!query || typeof query !== 'string') return null;
-  const qLower = query.toLowerCase().trim();
+  const cleaned = cleanLocationName(query).toLowerCase().trim();
+  if (!cleaned) return null;
+  const primaryPart = cleaned.split(',')[0].trim();
 
-  // 1. Try exact match first
+  // 1. Exact match on full query or primary comma-part (when qualifier is town/county)
   for (const spot of REGIONAL_KNOWN_LOCATIONS) {
-    if (spot.name.toLowerCase() === qLower) return spot;
+    const sName = spot.name.toLowerCase();
+    if (cleaned === sName || primaryPart === sName) return spot;
     if (spot.aliases) {
       for (const alias of spot.aliases) {
-        if (qLower === alias.toLowerCase()) return spot;
+        const al = alias.toLowerCase();
+        if (cleaned === al || primaryPart === al) return spot;
       }
     }
   }
 
-  // 2. Substring matching (only if query is descriptive enough)
-  if (qLower.length >= 4) {
+  // 2. Longest-alias substring match (only when query doesn't name a different sub-venue)
+  if (cleaned.length >= 4) {
+    let bestSpot = null;
+    let bestLen = 0;
     for (const spot of REGIONAL_KNOWN_LOCATIONS) {
-      if (qLower.includes(spot.name.toLowerCase())) return spot;
-      if (spot.aliases) {
-        for (const alias of spot.aliases) {
-          if (qLower.includes(alias.toLowerCase())) return spot;
+      const candidates = [spot.name, ...(spot.aliases || [])];
+      for (const cand of candidates) {
+        const cLow = cand.toLowerCase();
+        if (cleaned.includes(cLow) && cLow.length > bestLen) {
+          bestSpot = spot;
+          bestLen = cLow.length;
         }
       }
     }
+    if (bestSpot) return bestSpot;
   }
 
   return null;

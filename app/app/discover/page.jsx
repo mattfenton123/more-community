@@ -14,6 +14,8 @@ import TownAlertCard from '../../src/components/TownAlertCard';
 import SwipeDiscovery from '../../src/components/SwipeDiscovery';
 import { isEventUpcoming } from '../../src/lib/calendar';
 import { getCommunityLocation } from '../../src/lib/location';
+import { getCommunitySlug } from '../../src/lib/communityLinks';
+import { getEventPath } from '../../src/lib/eventLinks';
 
 export default function Discover() {
   const [activePill, setActivePill] = useState('All');
@@ -449,14 +451,14 @@ export default function Discover() {
                   {events.filter(e => savedItems.includes(e.id)).map(event => {
                     const community = communities.find(c => c.id === event.communityId);
                     return (
-                      <div key={event.id} className="interactive-press" style={{ background: 'rgba(255,255,255,0.02)', backdropFilter: 'blur(10px)', boxShadow: '0 8px 24px rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', overflow: 'hidden', display: 'flex', gap: '12px', cursor: 'pointer' }} onClick={() => navigate.push(`/events/${event.id}`)}>
+                      <div key={event.id} className="interactive-press" style={{ background: 'rgba(255,255,255,0.02)', backdropFilter: 'blur(10px)', boxShadow: '0 8px 24px rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', overflow: 'hidden', display: 'flex', gap: '12px', cursor: 'pointer' }} onClick={() => navigate.push(getEventPath(event, events))}>
                         <img src={event.image || community?.image} alt={event.title} style={{ width: '100px', height: '100%', objectFit: 'cover' }} />
                         <div style={{ padding: '12px', flex: 1 }}>
                           <div style={{ color: 'var(--teal-400)', fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>{community?.name}</div>
                           <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '1rem', lineHeight: 1.2, marginBottom: '6px' }}>{event.title}</div>
                           <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '12px' }}><Calendar size={12} /> {event.date}</div>
                           <button 
-                            onClick={(e) => { e.stopPropagation(); navigate.push(`/events/${event.id}`); }} 
+                            onClick={(e) => { e.stopPropagation(); navigate.push(getEventPath(event, events)); }} 
                             className="btn btn-primary interactive-press"
                             style={{ padding: '6px 16px', fontSize: '0.85rem', borderRadius: '8px', background: 'var(--teal-500)', color: '#0f172a', fontWeight: 700, border: 'none', cursor: 'pointer' }}
                           >
@@ -556,6 +558,7 @@ export default function Discover() {
                     )}
 
                     <div 
+                      onClick={() => navigate.push('/community/' + getCommunitySlug(community, communities))}
                       className="stagger-item interactive-press" 
                       style={{ margin: '0 0 16px', borderRadius: '16px', overflow: 'hidden', background: 'rgba(255,255,255,0.02)', backdropFilter: 'blur(10px)', boxShadow: '0 4px 16px rgba(0,0,0,0.1)', border: '1px solid rgba(255,255,255,0.06)', transition: 'all 0.3s', cursor: 'pointer' }}
                     onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'; e.currentTarget.style.transform = 'scale(1.02)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.2)'; }}

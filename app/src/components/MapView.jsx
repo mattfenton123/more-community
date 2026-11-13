@@ -4,7 +4,9 @@ import { useRouter as useNavigate } from 'next/navigation';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { isEventUpcoming } from '../lib/calendar';
-import { cleanLocationName, parseLocationCoords, parseLocationRadius } from '../lib/location';
+import { cleanLocationName, formatShareLocation, findKnownLocation, parseLocationCoords, parseLocationRadius } from '../lib/location';
+import { getCommunityPath } from '../lib/communityLinks';
+import { getEventPath } from '../lib/eventLinks';
 
 // Regional anchor center: High Weald / Kent & East Sussex border
 const REGION_CENTER = [51.0800, 0.3000];
@@ -20,13 +22,13 @@ const KNOWN_LOCATIONS = [
   { name: 'heathfield', lat: 50.9680, lng: 0.2530 },
   
   // Bewl Water (More Community Walks - Visitor Centre & Main Car Park)
-  { name: 'bewl water car park', lat: 51.0763, lng: 0.3875 },
-  { name: 'bewl car park', lat: 51.0763, lng: 0.3875 },
-  { name: 'bewl visitor centre', lat: 51.0763, lng: 0.3875 },
-  { name: 'bewl water reservoir', lat: 51.0763, lng: 0.3875 },
-  { name: 'bewl reservoir', lat: 51.0763, lng: 0.3875 },
-  { name: 'bewl water', lat: 51.0763, lng: 0.3875 },
-  { name: 'bewl', lat: 51.0763, lng: 0.3875 },
+  { name: 'bewl water car park', lat: 51.0793, lng: 0.3914 },
+  { name: 'bewl car park', lat: 51.0793, lng: 0.3914 },
+  { name: 'bewl visitor centre', lat: 51.0793, lng: 0.3914 },
+  { name: 'bewl water reservoir', lat: 51.0793, lng: 0.3914 },
+  { name: 'bewl reservoir', lat: 51.0793, lng: 0.3914 },
+  { name: 'bewl water', lat: 51.0793, lng: 0.3914 },
+  { name: 'bewl', lat: 51.0793, lng: 0.3914 },
   { name: 'lamberhurst', lat: 51.0990, lng: 0.3950 },
 
   // St Leonards-on-Sea & Hastings Coast (Ruth Breathes)
@@ -35,17 +37,17 @@ const KNOWN_LOCATIONS = [
   { name: 'st leonards', lat: 50.8560, lng: 0.5560 },
   { name: 'hastings', lat: 50.8540, lng: 0.5730 },
 
-  // Tunbridge Wells landmarks & spots
-  { name: 'pantiles', lat: 51.1280, lng: 0.2620 },
-  { name: 'calverley grounds', lat: 51.1355, lng: 0.2605 },
-  { name: 'calverley', lat: 51.1355, lng: 0.2605 },
-  { name: 'dunorlan park', lat: 51.1345, lng: 0.2710 },
-  { name: 'dunorlan', lat: 51.1345, lng: 0.2710 },
+  // Tunbridge Wells landmarks & spots (synced with verified location coordinates)
+  { name: 'pantiles bandstand', lat: 51.1257, lng: 0.2573 },
+  { name: 'pantiles', lat: 51.1263, lng: 0.2577 },
+  { name: 'calverley grounds', lat: 51.1305, lng: 0.2663 },
+  { name: 'calverley', lat: 51.1305, lng: 0.2663 },
+  { name: 'dunorlan park', lat: 51.1313, lng: 0.2867 },
+  { name: 'dunorlan', lat: 51.1313, lng: 0.2867 },
   { name: 'camden road', lat: 51.1330, lng: 0.2630 },
   { name: 'camden', lat: 51.1330, lng: 0.2630 },
-  { name: 'tw common', lat: 51.1315, lng: 0.2550 },
-  { name: 'tunbridge wells common', lat: 51.1315, lng: 0.2550 },
-  { name: 'common', lat: 51.1315, lng: 0.2550 },
+  { name: 'tw common', lat: 51.1302, lng: 0.2541 },
+  { name: 'tunbridge wells common', lat: 51.1302, lng: 0.2541 },
   { name: 'the forum', lat: 51.1310, lng: 0.2650 },
   { name: 'forum', lat: 51.1310, lng: 0.2650 },
   { name: 'trinity theatre', lat: 51.1315, lng: 0.2640 },
@@ -142,7 +144,12 @@ function resolveEventCoords(event, index) {
     return [parsed.lat, parsed.lng];
   }
 
-  const textToScan = `${event.location || ''} ${event.title || ''} ${event.description || ''}`.toLowerCase();
+  const known = findKnownLocation(event.location || '') || findKnownLocation(event.title || '');
+  if (known) {
+    return [known.lat, known.lng];
+  }
+
+  const textToScan = `${cleanLocationName(event.location) || ''} ${event.title || ''} ${event.description || ''}`.toLowerCase();
   for (const loc of KNOWN_LOCATIONS) {
     if (textToScan.includes(loc.name)) {
       return [loc.lat, loc.lng];
@@ -211,14 +218,20 @@ export default function MapView({ communities = [], events = [], onSelect }) {
   const markersLayerRef = useRef(null);
   const [filterType, setFilterType] = useState('all'); // 'all' | 'communities' | 'events'
   const navigate = useNavigate();
+  const communitiesRef = useRef(communities);
+  communitiesRef.current = communities;
+  const eventsRef = useRef(events);
+  eventsRef.current = events;
 
   // Make navigation globally callable from marker popup buttons
   useEffect(() => {
     window.__moreNavigateCommunity = (id) => {
-      navigate.push(`/community/${id}`);
+      const matched = (communitiesRef.current || []).find(c => c.id === id);
+      navigate.push(matched ? getCommunityPath(matched, communitiesRef.current) : `/community/${id}`);
     };
     window.__moreNavigateEvent = (id) => {
-      navigate.push(`/events/${id}`);
+      const matched = (eventsRef.current || []).find(e => e.id === id);
+      navigate.push(matched ? getEventPath(matched, eventsRef.current) : `/events/${id}`);
     };
     return () => {
       delete window.__moreNavigateCommunity;

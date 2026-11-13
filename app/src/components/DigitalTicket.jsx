@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { X, Calendar, MapPin, Clock, Ticket, WifiOff, CheckCircle2, Navigation, Download, Copy, Share2, Sparkles, Users, Banknote, Compass, ShieldCheck, QrCode, MessageCircle } from 'lucide-react';
 import QRCode from 'qrcode';
 import InfoExplainer from './InfoExplainer';
+import { cleanLocationName, formatShareLocation, parseLocationCoords } from '../lib/location';
 
 export default function DigitalTicket({ event, community, user, onClose }) {
   const canvasRef = useRef(null);
@@ -119,7 +120,9 @@ export default function DigitalTicket({ event, community, user, onClose }) {
     }
   };
 
-  const emergencyCoordsText = `${event.title}\n📍 Location: ${event.meetingPoint ? event.meetingPoint + ' (' + event.location + ')' : event.location}\n🧭 GPS: ${event.lat && event.lng ? event.lat + ', ' + event.lng : 'Tunbridge Wells'}\n/// what3words: ///more.community.trail\n👤 Attendee: ${user.name || 'Member'}${event.guestName ? ' (+1 ' + event.guestName + ')' : ''}`;
+  const parsedPin = parseLocationCoords(event.location) || (event.lat && event.lng ? { lat: event.lat, lng: event.lng } : null);
+  const cleanTicketLoc = formatShareLocation(event.location, 'See map directions');
+  const emergencyCoordsText = `${event.title}\n📍 Location: ${event.meetingPoint ? event.meetingPoint + ' (' + cleanTicketLoc + ')' : cleanTicketLoc}\n🧭 GPS: ${parsedPin ? `${Number(parsedPin.lat).toFixed(5)}, ${Number(parsedPin.lng).toFixed(5)}` : 'Tunbridge Wells'}\n/// what3words: ///more.community.trail\n👤 Attendee: ${user.name || 'Member'}${event.guestName ? ' (+1 ' + event.guestName + ')' : ''}`;
 
   const handleCopyEmergencyInfo = () => {
     if (navigator.clipboard) {
@@ -132,7 +135,7 @@ export default function DigitalTicket({ event, community, user, onClose }) {
   const resolvedWhatsApp = event?.whatsappGroup || (event?.description?.match(/\[WhatsApp: ([^\]]+)\]/)?.[1] || '') || community?.whatsapp_group || null;
 
   const handleCopyDirections = () => {
-    const textToCopy = `${event.title}\n📍 Meeting Point: ${event.meetingPoint || event.location}\n📅 ${event.date} at ${event.time}`;
+    const textToCopy = `${event.title}\n📍 Meeting Point: ${event.meetingPoint || cleanTicketLoc}\n📅 ${event.date} at ${event.time}`;
     if (navigator.clipboard) {
       navigator.clipboard.writeText(textToCopy);
       setCopiedCoords(true);
@@ -151,7 +154,7 @@ export default function DigitalTicket({ event, community, user, onClose }) {
     }
   };
 
-  const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(event.location || 'Tunbridge Wells')}`;
+  const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${parsedPin ? `${parsedPin.lat},${parsedPin.lng}` : encodeURIComponent(cleanLocationName(event.location) || 'Tunbridge Wells')}`;
 
   return (
     <div className="modal-overlay" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', zIndex: 10000 }}>
@@ -267,7 +270,7 @@ export default function DigitalTicket({ event, community, user, onClose }) {
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', color: 'var(--slate-300)', fontSize: '0.88rem' }}>
               <MapPin size={15} color="var(--teal-400)" style={{ flexShrink: 0, marginTop: '2px' }} />
               <div>
-                <span>{event.location}</span>
+                <span>{formatShareLocation(event.location, 'Location TBA')}</span>
                 {event.meetingPoint && (
                   <div style={{ fontSize: '0.78rem', color: 'var(--amber-300)', marginTop: '2px', fontWeight: 500 }}>
                     Meeting point: {event.meetingPoint}

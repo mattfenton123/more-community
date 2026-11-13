@@ -1,4 +1,4 @@
-import { cleanLocationName } from './location';
+import { cleanLocationName, formatShareLocation } from './location';
 import { getEventUrl } from './eventLinks';
 
 export function parseEventEndDateTime(dateStr, timeStr, fallbackStart) {
@@ -93,9 +93,10 @@ export function getGoogleCalendarEventUrl(event, communityName) {
   return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startStr}/${endStr}&details=${details}&location=${location}`;
 }
 
-export function getWhatsAppShareUrl(event, communityName) {
-  const eventUrl = getEventUrl(event);
-  const cleanLoc = cleanLocationName(event.location || '') || 'Location on map';
+export function getWhatsAppShareUrl(event, communityName, allEvents) {
+  const origin = typeof window !== 'undefined' ? window.location.origin : undefined;
+  const eventUrl = getEventUrl(event, { allEvents, origin });
+  const cleanLoc = formatShareLocation(event.location, 'Tunbridge Wells');
   const text = encodeURIComponent(
     `Hey everyone! I'm attending ${event.title}${communityName ? ` with ${communityName}` : ''}! 🎉\n\n` +
     `📅 ${event.date} at ${event.time || '10:00'}\n` +

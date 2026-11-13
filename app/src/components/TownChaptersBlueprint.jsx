@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { Compass, Plus, ArrowRight, Shield, CheckCircle2, MapPin } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { getCommunitySlug } from '../lib/communityLinks';
+import { cleanLocationName } from '../lib/location';
 
 export default function TownChaptersBlueprint({ community }) {
   const router = useRouter();
@@ -115,7 +116,7 @@ export default function TownChaptersBlueprint({ community }) {
           fontWeight: 700
         }}>
           <CheckCircle2 size={16} color="var(--teal-400)" />
-          <span className="current-chapter-text">{community.location_name || community.location || 'Tunbridge Wells'} (Current Chapter)</span>
+          <span className="current-chapter-text">{cleanLocationName(community.location_name || community.location) || 'Tunbridge Wells'} (Current Chapter)</span>
         </div>
 
         {/* Sister Chapters */}

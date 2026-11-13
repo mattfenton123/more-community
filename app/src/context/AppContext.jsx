@@ -6,6 +6,7 @@ import { initialExperiences } from '../lib/constants';
 import imageCompression from 'browser-image-compression';
 import { createEventAction, createEventsBatchAction, joinCommunityAction, leaveCommunityAction, rsvpToEventAction, updateAttendeeStatusAction, addEventPhotoAction, createCommunityAction, uploadImageAction, updateEventAction, updateCommunityAction, deleteCommunityAction, createChannelAction, markNotificationReadAction, updateUserAction, adminVerifyCommunityAction, broadcastNotificationAction, promoteMemberAction, removeMemberAction, subscribeToPushNotificationsAction, ensureLeadersNetworkAction, sendEventReminderAction, createSelfNotificationAction } from '../lib/actions';
 import { Capacitor } from '@capacitor/core';
+import { cleanLocationName } from '../lib/location';
 
 const AppContext = createContext();
 
@@ -20,7 +21,7 @@ export function AppProvider({ children }) {
     const handleSignalRestored = async () => {
       const synced = await flushOfflineCheckinQueue();
       if (synced > 0) {
-        toast?.success?.('Signal Restored! 📶', `Synced ${synced} offline trail check-in${synced === 1 ? '' : 's'} to server.`);
+        console.info(`Signal Restored: Synced ${synced} offline trail check-in(s) to server.`);
       }
     };
 
@@ -564,7 +565,7 @@ export function AppProvider({ children }) {
             category: visibleTags.length > 0 ? visibleTags[0] : 'All',
             metrics: { members: count, cost: c.cost || 'Free', eventsRun: 0 },
             colors: ['#3b82f6', '#14b8a6'], // fallback gradient
-            highlights: c.highlights || []
+            highlights: Array.isArray(c.highlights) ? c.highlights : []
           };
         }));
       }
@@ -1974,7 +1975,7 @@ export function AppProvider({ children }) {
             await broadcastNotificationAction([{
               user_id: parentComm.leader_id,
               title: 'New Chapter Application 🏛️',
-              message: `${user?.name || 'A local leader'} applied to launch a chapter of "${parentComm.name}" in ${communityData.location_name || 'their town'}. Review and approve in your dashboard.`,
+              message: `${user?.name || 'A local leader'} applied to launch a chapter of "${parentComm.name}" in ${cleanLocationName(communityData.location_name) || 'their town'}. Review and approve in your dashboard.`,
               type: 'alert',
               link: `/dashboard?community=${parentId}`
             }], session?.access_token).catch(() => {});

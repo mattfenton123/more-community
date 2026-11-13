@@ -2,6 +2,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { LayoutDashboard, Edit3, Compass, ChevronLeft, ChevronRight, Share2, Users, Calendar, Settings, ChevronDown, ChevronUp, Image as ImageIcon, ExternalLink, Camera, Mail, Activity, Sparkles, MapPin, Clock, Star, MessageCircle, Heart, BadgeCheck, Globe, Trash2, Flag, Search, Briefcase, Check, X, MessageSquare, Lightbulb, Info, Megaphone, Video, Plus, Shield, Play, Smile, Archive, Store } from 'lucide-react';
 import { useRouter as useNavigate, useParams, useSearchParams } from 'next/navigation';
+import { supabase } from '../../../src/lib/supabaseClient';
 import { useAppContext } from '../../../src/context/AppContext';
 import { useFeed } from '../../../src/context/FeedContext';
 import { useToast } from '../../../src/components/Toast';

@@ -267,11 +267,14 @@ export function scanMessageForScam(text) {
 export function calculateUserTrustLevel(targetUser, memberships = {}, events = [], rsvps = []) {
   if (!targetUser) return { level: 'New Member', badgeColor: '#94a3b8', isVerified: false, score: 0 };
 
-  const isLeader = targetUser.role === 'Leader' || (targetUser.ledCommunities && targetUser.ledCommunities.length > 0);
+  const isLeader = targetUser.role === 'Leader' || (Array.isArray(targetUser.ledCommunities) && targetUser.ledCommunities.length > 0);
   const isSpecialist = Boolean(targetUser.isSpecialist || targetUser.specialistTitle || targetUser.verifiedSpecialist);
+  const rsvpList = Array.isArray(rsvps)
+    ? rsvps
+    : (rsvps && typeof rsvps === 'object' ? Object.values(rsvps).flat().filter(Boolean) : []);
   
-  const attendedCount = (rsvps || []).filter(r => r.userId === targetUser.id && (r.status === 'checked_in' || r.checkedIn)).length;
-  const rsvpCount = (rsvps || []).filter(r => r.userId === targetUser.id && r.status === 'going').length;
+  const attendedCount = rsvpList.filter(r => r.userId === targetUser.id && (r.status === 'checked_in' || r.checkedIn)).length;
+  const rsvpCount = rsvpList.filter(r => r.userId === targetUser.id && r.status === 'going').length;
 
   if (isLeader) {
     return {

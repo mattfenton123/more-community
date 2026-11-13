@@ -40,8 +40,11 @@ export default function DirectMessage() {
   const { directMessages, sendDirectMessage, reactToMessage, markChatRead } = useChat();
 
   const targetUser = users.find(u => u.id === targetUserId);
-  const { communityMemberships = {}, events = [], eventRsvps = [] } = useAppContext();
-  const trustLevel = calculateUserTrustLevel(targetUser, communityMemberships, events, eventRsvps);
+  const { communityMemberships = {}, events = [], eventRsvps = {} } = useAppContext();
+  const flatEventRsvps = Array.isArray(eventRsvps)
+    ? eventRsvps
+    : Object.values(eventRsvps || {}).flat().filter(Boolean);
+  const trustLevel = calculateUserTrustLevel(targetUser, communityMemberships, events, flatEventRsvps);
 
 
   const activeMessages = directMessages.filter(m =>

@@ -4,8 +4,10 @@ import { useRouter } from 'next/navigation';
 import { useAppContext } from '../context/AppContext';
 import { useToast } from '../components/Toast';
 import { Compass, Users, MapPin, Check, ArrowRight, Sparkles, Activity } from 'lucide-react';
+import AppHeader from '../components/AppHeader';
 import { FALLBACK_IMAGES } from '../lib/constants';
 import { getCommunityLocation } from '../lib/location';
+import { getCommunitySlug } from '../lib/communityLinks';
 
 export default function GettingStarted() {
   const { user, communities, users, communityMemberships, joinCommunity, events } = useAppContext();
@@ -102,6 +104,7 @@ export default function GettingStarted() {
       background: 'var(--slate-950)',
       paddingBottom: '100px',
     }}>
+      <AppHeader title="Home" />
       {/* Hero */}
       <div style={{
         padding: '48px 24px 32px',
@@ -243,7 +246,7 @@ export default function GettingStarted() {
               >
                 {/* Cover image */}
                 <div
-                  onClick={() => router.push(`/community/${comm.id}`)}
+                  onClick={() => router.push(`/community/${getCommunitySlug(comm, communities)}`)}
                   style={{
                     height: '140px',
                     background: `url(${comm.image || comm.cover_image || FALLBACK_IMAGES.community})`,
