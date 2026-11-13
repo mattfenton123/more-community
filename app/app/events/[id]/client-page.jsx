@@ -6,6 +6,7 @@ import { ChevronLeft, Share, MapPin, Calendar, Clock, Users, CheckCircle2, Info,
 import { useAppContext } from '../../../src/context/AppContext';
 import { useToast } from '../../../src/components/Toast';
 import DigitalTicket from '../../../src/components/DigitalTicket';
+import GuestRsvpModal from '../../../src/components/GuestRsvpModal';
 import CarpoolHub from '../../../src/components/CarpoolHub';
 import QRScanner from '../../../src/components/QRScanner';
 import { isEventPast, isEventUpcoming, isEventToday, downloadIcs, getGoogleCalendarEventUrl, getWhatsAppShareUrl } from '../../../src/lib/calendar';
@@ -315,6 +316,8 @@ export default function EventClient({ id }) {
   const [showAttendeesModal, setShowAttendeesModal] = useState(false);
   const [approvingUserId, setApprovingUserId] = useState(null);
   const [showRsvpPromptModal, setShowRsvpPromptModal] = useState(false);
+  const [showGuestRsvpModal, setShowGuestRsvpModal] = useState(false);
+  const [rsvpGuestEmail, setRsvpGuestEmail] = useState('');
   const [rsvpGuestName, setRsvpGuestName] = useState('');
   const [rsvpHasGuest, setRsvpHasGuest] = useState(false);
   const [rsvpAnswer, setRsvpAnswer] = useState('');
@@ -1518,7 +1521,7 @@ export default function EventClient({ id }) {
             ) : (
               <>
                 <button
-                  onClick={!user?.id ? () => router.push(`/login?redirect=/events/${id}`) : (isGoing || isPendingApproval ? handleRSVP : () => setShowRsvpPromptModal(true))}
+                  onClick={!user?.id ? () => setShowGuestRsvpModal(true) : (isGoing || isPendingApproval ? handleRSVP : () => setShowRsvpPromptModal(true))}
                   disabled={checkoutState === 'processing'}
                   className="interactive-press"
                   style={{
@@ -1749,7 +1752,7 @@ export default function EventClient({ id }) {
                   </button>
                 )}
                 <button  
-                  onClick={!user?.id ? () => router.push(`/login?redirect=/events/${id}`) : (isGoing || isPendingApproval ? handleRSVP : () => setShowRsvpPromptModal(true))}
+                  onClick={!user?.id ? () => setShowGuestRsvpModal(true) : (isGoing || isPendingApproval ? handleRSVP : () => setShowRsvpPromptModal(true))}
                   disabled={checkoutState === 'processing'}
                   className="interactive-press"
                   style={{ 
@@ -2327,12 +2330,23 @@ export default function EventClient({ id }) {
                 </label>
 
                 {rsvpHasGuest && (
-                  <div style={{ marginTop: '12px' }}>
+                  <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     <input
                       type="text"
                       placeholder="Friend's first name (e.g. Sarah)..."
                       value={rsvpGuestName}
                       onChange={e => setRsvpGuestName(e.target.value)}
+                      style={{
+                        width: '100%', padding: '10px 14px', borderRadius: '10px',
+                        background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(45,212,191,0.3)',
+                        color: 'var(--white)', fontSize: '0.88rem', outline: 'none'
+                      }}
+                    />
+                    <input
+                      type="email"
+                      placeholder="Friend's email (to send meeting point & pass)..."
+                      value={rsvpGuestEmail}
+                      onChange={e => setRsvpGuestEmail(e.target.value)}
                       style={{
                         width: '100%', padding: '10px 14px', borderRadius: '10px',
                         background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(45,212,191,0.3)',
@@ -2347,6 +2361,7 @@ export default function EventClient({ id }) {
             <button
               onClick={() => handleRSVP({
                 guestName: rsvpHasGuest ? rsvpGuestName.trim() : null,
+                guestEmail: rsvpHasGuest ? rsvpGuestEmail.trim() : null,
                 answer: rsvpAnswer.trim()
               })}
               className="interactive-press"
@@ -2395,6 +2410,15 @@ export default function EventClient({ id }) {
             </div>
           </div>
         </div>
+      )}
+
+      
+      {showGuestRsvpModal && (
+        <GuestRsvpModal
+          event={event}
+          isOpen={showGuestRsvpModal}
+          onClose={() => setShowGuestRsvpModal(false)}
+        />
       )}
 
       {/* Share Modal */}

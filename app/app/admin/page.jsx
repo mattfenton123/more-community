@@ -166,7 +166,18 @@ export default function AdminDashboard() {
     }
   }, [user, realUser, isLoading, navigate]);
 
-  const ADMIN_EMAILS = [
+  
+function extractUserEmail(u) {
+  if (!u) return '';
+  if (u.email) return u.email;
+  const match = (u.bio || '').match(/\[Email:\s*([^\]]+)\]/i);
+  if (match) return match[1].trim();
+  const intMatch = (u.interests || []).find(i => typeof i === 'string' && i.startsWith('email:'));
+  if (intMatch) return intMatch.replace('email:', '').trim();
+  return '';
+}
+
+const ADMIN_EMAILS = [
     'msf199@hotmail.com',
     'mattfenton123@gmail.com',
     'matthewfenton123@gmail.com',
@@ -1408,14 +1419,25 @@ export default function AdminDashboard() {
         {activeTab === 'users' && (
           <div>
             <SearchBar placeholder="Search members by name or email address..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
-            <FilterPills active={userFilter} onChange={setUserFilter} options={[
-              { value: 'all', label: `All (${users.length})` },
-              { value: 'admins', label: '🛡 Admins' },
-              { value: 'leaders', label: '👑 Leaders' },
-              { value: 'members', label: 'Members' },
-              { value: 'active', label: '🟢 Active' },
-              { value: 'dormant', label: '💤 Dormant' }
-            ]} />
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px', marginBottom: '14px' }}>
+              <FilterPills active={userFilter} onChange={setUserFilter} options={[
+                { value: 'all', label: `All (${users.length})` },
+                { value: 'admins', label: '🛡 Admins' },
+                { value: 'leaders', label: '👑 Leaders' },
+                { value: 'members', label: 'Members' },
+                { value: 'active', label: '🟢 Active' },
+                { value: 'dormant', label: '💤 Dormant' }
+              ]} />
+              <button 
+                type="button"
+                onClick={handleExportAudienceCSV}
+                className="btn btn-outline interactive-press"
+                style={{ padding: '6px 14px', fontSize: '0.78rem', color: '#10b981', borderColor: 'rgba(16,185,129,0.3)', display: 'inline-flex', alignItems: 'center', gap: '6px', borderRadius: '8px' }}
+                title="Export all member & guest emails for Mailchimp or Brevo"
+              >
+                <Download size={14} /> Export Audience CSV
+              </button>
+            </div>
 
             {/* User Stats Summary */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '8px', marginBottom: '16px' }}>

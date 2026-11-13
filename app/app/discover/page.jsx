@@ -10,6 +10,7 @@ import { useToast } from '../../src/components/Toast';
 import dynamic from 'next/dynamic';
 const MapView = dynamic(() => import('../../src/components/MapView'), { ssr: false });
 import AppHeader from '../../src/components/AppHeader';
+import TownAlertCard from '../../src/components/TownAlertCard';
 import SwipeDiscovery from '../../src/components/SwipeDiscovery';
 import { isEventUpcoming } from '../../src/lib/calendar';
 import { getCommunityLocation } from '../../src/lib/location';
@@ -647,10 +648,13 @@ export default function Discover() {
               })}
 
               {filteredCommunities.length === 0 && (
-                <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--slate-400)' }}>
-                  <div style={{ fontSize: '3rem', marginBottom: '16px' }}>🔍</div>
-                  <h3 style={{ fontFamily: 'var(--font-heading)', color: 'var(--white)', marginBottom: '8px' }}>No communities found</h3>
-                  <p style={{ fontSize: '0.9rem' }}>Try a different search or filter.</p>
+                <div style={{ gridColumn: '1 / -1', padding: '20px 0', maxWidth: '540px', margin: '0 auto', width: '100%' }}>
+                  <div style={{ textAlign: 'center', marginBottom: '20px', color: 'var(--slate-400)' }}>
+                    <div style={{ fontSize: '2.5rem', marginBottom: '8px' }}>🔍</div>
+                    <h3 style={{ fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: '0 0 4px', fontSize: '1.2rem' }}>No groups found</h3>
+                    <p style={{ margin: 0, fontSize: '0.85rem' }}>No community groups currently match your search.</p>
+                  </div>
+                  <TownAlertCard town={searchQuery || (activePill !== 'All' ? activePill : 'your area')} />
                 </div>
               )}
 
