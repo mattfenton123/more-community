@@ -125,7 +125,7 @@ export const EXPLAINER_CONTENT = {
     steps: [
       'Show your QR code to the host when you arrive for a 1-second check-in.',
       'Tap "Add to Calendar" so you get an automatic reminder before the event.',
-      'Bringing a friend? Use the +1 Free Guest Pass so they get their own ticket too.'
+      'Bringing a friend? Add them with a +1 Guest Pass (no extra sign-up needed, free on free events).'
     ],
     tip: 'Check the exact meeting pin on your ticket before setting off so you know right where to find the group.'
   },

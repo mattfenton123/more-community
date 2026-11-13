@@ -894,8 +894,8 @@ export default function OnboardingFlow({ onComplete }) {
         </div>
         <div style={{ padding: '12px', borderRadius: '14px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
           <div style={{ fontSize: '1.1rem', marginBottom: '4px' }}>🎟️</div>
-          <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--white)', marginBottom: '2px' }}>+1 Free Guest Pass</div>
-          <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', lineHeight: 1.35 }}>Nervous coming alone? Bring a friend free on your Digital Ticket.</div>
+          <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--white)', marginBottom: '2px' }}>+1 Guest Pass</div>
+          <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', lineHeight: 1.35 }}>Nervous coming alone? Reserve a +1 spot for a friend without extra sign-up.</div>
         </div>
         <div style={{ padding: '12px', borderRadius: '14px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
           <div style={{ fontSize: '1.1rem', marginBottom: '4px' }}>🚗</div>
