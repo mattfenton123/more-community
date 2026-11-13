@@ -4,11 +4,12 @@ import { supabase } from '../lib/supabaseClient';
 import { useAuth } from './AuthContext';
 import { initialExperiences } from '../lib/constants';
 import imageCompression from 'browser-image-compression';
-import { createEventAction, createEventsBatchAction, joinCommunityAction, leaveCommunityAction, rsvpToEventAction, updateAttendeeStatusAction, addEventPhotoAction, createCommunityAction, uploadImageAction, updateEventAction, updateCommunityAction, deleteCommunityAction, createChannelAction, markNotificationReadAction, updateUserAction, adminVerifyCommunityAction, broadcastNotificationAction, promoteMemberAction, removeMemberAction, subscribeToPushNotificationsAction, ensureLeadersNetworkAction, sendEventReminderAction, createSelfNotificationAction, offerCarpoolAction, reserveCarpoolSeatAction, cancelCarpoolSeatAction, deleteCarpoolOfferAction } from '../lib/actions';
+import { createEventAction, createEventsBatchAction, joinCommunityAction, leaveCommunityAction, rsvpToEventAction, updateAttendeeStatusAction, addEventPhotoAction, createCommunityAction, uploadImageAction, updateEventAction, updateCommunityAction, deleteCommunityAction, createChannelAction, markNotificationReadAction, updateUserAction, adminVerifyCommunityAction, broadcastNotificationAction, promoteMemberAction, removeMemberAction, subscribeToPushNotificationsAction, ensureLeadersNetworkAction, sendEventReminderAction, createSelfNotificationAction, offerCarpoolAction, reserveCarpoolSeatAction, cancelCarpoolSeatAction, deleteCarpoolOfferAction, createEventCommentAction, deleteEventCommentAction } from '../lib/actions';
 import { Capacitor } from '@capacitor/core';
 import { cleanLocationName } from '../lib/location';
 import { resolveUserAvatar, getDefaultAvatar, isPlaceholderAvatar } from '../lib/avatar';
 import { buildCarpoolsByEvent } from '../lib/carpool';
+import { buildEventCommentsByEvent } from '../lib/eventCollaboration';
 
 const AppContext = createContext();
 
@@ -399,7 +400,7 @@ export function AppProvider({ children }) {
       setIsLoading(true);
 
       // Batch 1: All independent queries run in parallel
-      const [usersRes, commsRes, chanRes, evRes, rsvpRes, memRes, revRes, pollsRes, pollVotesRes, cpRes, cpPassRes] =
+      const [usersRes, commsRes, chanRes, evRes, rsvpRes, memRes, revRes, pollsRes, pollVotesRes, cpRes, cpPassRes, evCommentsRes] =
         await Promise.all([
           supabase.from('users').select('*'),
           supabase.from('communities').select('*'),
@@ -412,6 +413,7 @@ export function AppProvider({ children }) {
           supabase.from('poll_votes').select('*'),
           supabase.from('event_carpools').select('*'),
           supabase.from('event_carpool_passengers').select('*'),
+          supabase.from('event_comments').select('*'),
         ]);
 
       // Process results
@@ -620,6 +622,25 @@ export function AppProvider({ children }) {
           try {
             Object.entries(syncedCarpools).forEach(([evId, list]) => {
               localStorage.setItem(`more_event_carpools_${evId}`, JSON.stringify(list));
+            });
+          } catch (e) {}
+        }
+      }
+
+      if (evCommentsRes && !evCommentsRes.error && Array.isArray(evCommentsRes.data)) {
+        const syncedComments = buildEventCommentsByEvent(evCommentsRes.data, usersRes?.data || []);
+        setEventComments(syncedComments);
+        if (typeof window !== 'undefined') {
+          try {
+            for (let i = localStorage.length - 1; i >= 0; i--) {
+              const key = localStorage.key(i);
+              if (key && key.startsWith('more_event_comments_')) {
+                const evId = key.replace('more_event_comments_', '');
+                if (!syncedComments[evId]) localStorage.removeItem(key);
+              }
+            }
+            Object.entries(syncedComments).forEach(([evId, list]) => {
+              localStorage.setItem(`more_event_comments_${evId}`, JSON.stringify(list));
             });
           } catch (e) {}
         }
@@ -951,6 +972,7 @@ export function AppProvider({ children }) {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'communities' }, () => fetchAllData())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'event_carpools' }, () => fetchAllData())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'event_carpool_passengers' }, () => fetchAllData())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'event_comments' }, () => fetchAllData())
       .subscribe();
 
     return () => {
@@ -1575,8 +1597,9 @@ export function AppProvider({ children }) {
   };
 
 
-  // ─── Carpool Hub State & Actions ─────────────────────────
+  // ─── Carpool & Event Discussion State & Actions ──────────
   const [carpools, setCarpools] = useState({});
+  const [eventComments, setEventComments] = useState({});
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -1592,6 +1615,19 @@ export function AppProvider({ children }) {
       }
       if (Object.keys(loaded).length > 0) {
         setCarpools(loaded);
+      }
+
+      const loadedComments = {};
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('more_event_comments_')) {
+          const eventId = key.replace('more_event_comments_', '');
+          const raw = localStorage.getItem(key);
+          if (raw) loadedComments[eventId] = JSON.parse(raw);
+        }
+      }
+      if (Object.keys(loadedComments).length > 0) {
+        setEventComments(loadedComments);
       }
     } catch (e) {}
   }, []);
@@ -1771,6 +1807,72 @@ export function AppProvider({ children }) {
         await deleteCarpoolOfferAction(carpoolId, token);
       } catch (err) {
         setCarpools(prev => ({ ...prev, [eventId]: snapshot }));
+        throw err;
+      }
+    }
+  };
+
+  const persistEventCommentsCache = (eventId, list) => {
+    if (typeof window === 'undefined') return;
+    try {
+      localStorage.setItem(`more_event_comments_${eventId}`, JSON.stringify(list));
+    } catch (e) {}
+  };
+
+  const addEventComment = async (eventId, text) => {
+    if (!user?.id) throw new Error('Please sign in to post a message.');
+    const cleanedText = String(text || '').trim();
+    if (!cleanedText) throw new Error('Please enter a message first.');
+
+    const commentId = `ec_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+    const newComment = {
+      id: commentId,
+      eventId,
+      authorId: user.id,
+      authorName: user.name || 'Community Member',
+      authorAvatar: resolveUserAvatar(user, 'Member'),
+      text: cleanedText,
+      createdAt: new Date().toISOString(),
+    };
+
+    let snapshot = [];
+    setEventComments(prev => {
+      snapshot = prev[eventId] || [];
+      const next = [...snapshot, newComment];
+      persistEventCommentsCache(eventId, next);
+      return { ...prev, [eventId]: next };
+    });
+
+    const token = await getActiveToken();
+    if (token) {
+      try {
+        await createEventCommentAction(eventId, cleanedText, token, commentId);
+      } catch (err) {
+        setEventComments(prev => ({ ...prev, [eventId]: snapshot }));
+        persistEventCommentsCache(eventId, snapshot);
+        throw err;
+      }
+    }
+    return newComment;
+  };
+
+  const deleteEventComment = async (eventId, commentId) => {
+    if (!user?.id) return;
+    let snapshot = [];
+    setEventComments(prev => {
+      snapshot = prev[eventId] || [];
+      const next = snapshot.filter(c => c.id !== commentId);
+      persistEventCommentsCache(eventId, next);
+      return { ...prev, [eventId]: next };
+    });
+
+    const token = await getActiveToken();
+    if (token) {
+      try {
+        await deleteEventCommentAction(commentId, token);
+      } catch (err) {
+        setEventComments(prev => ({ ...prev, [eventId]: snapshot }));
+        persistEventCommentsCache(eventId, snapshot);
         throw err;
       }
     }
@@ -2609,6 +2711,9 @@ export function AppProvider({ children }) {
       reserveCarpoolSeat,
       cancelCarpoolSeat,
       deleteCarpoolOffer,
+      eventComments,
+      addEventComment,
+      deleteEventComment,
       chatReadReceipts,
       markChatRead,
       sponsors,

@@ -24,8 +24,10 @@ import ShareModal from '../../../src/components/ShareModal';
 import ShareOptions from '../../../src/components/ShareOptions';
 import EventRecapShareCard from '../../../src/components/EventRecapShareCard';
 import { parseExperienceMeta, stripExperienceMeta, buildAffiliateUrl } from '../../../src/lib/experiencePricing';
+import EventDiscussion from '../../../src/components/EventDiscussion';
 import { resolveUserAvatar } from '../../../src/lib/avatar';
 import { getCarpoolHandshakeMessage } from '../../../src/lib/carpool';
+import { isHostOrPartnerMember, shouldAutoJoinPrimaryOnRsvp } from '../../../src/lib/eventCollaboration';
 
 function EventLocationMap({ location, event, isLocationShielded = false }) {
   const [copiedSms, setCopiedSms] = useState(false);
@@ -468,7 +470,7 @@ export default function EventClient({ id }) {
   const isCashAttendee = myRsvp?.ticketType === 'cash_on_arrival';
   const spotsLeft = event.maxCapacity ? Math.max(0, event.maxCapacity - rsvps.filter(r => r.status === 'going').length) : null;
   const isSoldOut = spotsLeft !== null && spotsLeft <= 0;
-  const isMember = user?.joinedCommunities?.includes(event.communityId);
+  const isMember = isHostOrPartnerMember(user, event);
 
   const requiresHostApproval = Boolean(
     event?.requireApproval || 
@@ -582,7 +584,7 @@ export default function EventClient({ id }) {
       router.push(`/login?redirect=/events/${id}`);
       return;
     }
-    if (!isMember && !isGoing && !isPendingApproval) {
+    if (shouldAutoJoinPrimaryOnRsvp({ user, event, isGoing, isPendingApproval })) {
       await joinCommunity(event.communityId);
     }
     if (isWaitlisted) {
@@ -1449,9 +1451,9 @@ export default function EventClient({ id }) {
               </span>
             </div>
             <div style={{ fontSize: '0.88rem', color: 'var(--slate-200)', lineHeight: 1.5, marginBottom: '14px' }}>
-              This event is proudly co-hosted by <strong>{community.name}</strong> alongside {partnerCommunities.map(p => p.name).join(' & ')}. Members from across partner communities in Tunbridge Wells are invited to connect!
+              This event is proudly co-hosted by <strong>{community.name}</strong> alongside {partnerCommunities.map(p => p.name).join(' & ')}. Members from either community can RSVP directly without switching groups and chat together in the shared Event Discussion below.
             </div>
-            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
               {partnerCommunities.map(pc => (
                 <div 
                   key={pc.id}
@@ -1469,9 +1471,31 @@ export default function EventClient({ id }) {
                   <span style={{ fontSize: '0.75rem', color: 'var(--teal-400)', fontWeight: 700 }}>Explore →</span>
                 </div>
               ))}
+              <button
+                type="button"
+                onClick={() => document.getElementById('discussion')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
+                className="interactive-press"
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: '6px',
+                  padding: '8px 14px', borderRadius: '12px',
+                  background: 'rgba(20,184,166,0.14)', border: '1px solid rgba(45,212,191,0.35)',
+                  color: '#5eead4', fontSize: '0.82rem', fontWeight: 700, cursor: 'pointer'
+                }}
+              >
+                <MessageSquare size={14} /> Open Event Discussion ↓
+              </button>
             </div>
           </div>
         )}
+
+        {/* Shared Event Discussion & Q&A across host + co-host communities */}
+        <EventDiscussion
+          event={event}
+          community={community}
+          partnerCommunities={partnerCommunities}
+          user={user}
+          goingUserIds={confirmedAttendees.map(att => att.userId)}
+        />
 
         {/* Deep Dive Grid */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px', marginBottom: '32px' }}>

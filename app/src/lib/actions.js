@@ -1363,13 +1363,15 @@ export async function removeReactionAction(messageId, isDirectMessage, emoji, us
   return true;
 }
 
-// ─── Event Carpools ──────────────────────────────────────
-function isMissingCarpoolRelation(error) {
+// ─── Event Carpools & Discussion ─────────────────────────
+function isMissingOptionalTable(error) {
   if (!error) return false;
   const code = String(error.code || '');
   const msg = String(error.message || '').toLowerCase();
-  return code === '42P01' || code === 'PGRST205' || msg.includes('schema cache') || msg.includes('does not exist');
+  return MISSING_TABLE_CODES.includes(code) || msg.includes('schema cache') || msg.includes('does not exist');
 }
+
+const isMissingCarpoolRelation = isMissingOptionalTable;
 
 export async function offerCarpoolAction(eventId, offerData, token) {
   const authUser = await verifyUser(token);
@@ -1475,6 +1477,103 @@ export async function deleteCarpoolOfferAction(carpoolId, token) {
     .match({ id: carpoolId, driver_id: authUser.id });
 
   if (error && !isMissingCarpoolRelation(error)) {
+    throw new Error(error.message);
+  }
+  return { deleted: true };
+}
+
+export async function createEventCommentAction(eventId, text, token, clientCommentId = null) {
+  const authUser = await verifyUser(token);
+  const cleanedText = String(text || '').trim();
+  if (!cleanedText) throw new Error('Please write a message first.');
+  if (cleanedText.length > 1000) throw new Error('Messages must be 1,000 characters or fewer.');
+
+  const db = getSupabaseClient(token);
+  const id = clientCommentId || `ec_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+  const payload = {
+    id,
+    event_id: eventId,
+    author_id: authUser.id,
+    text: cleanedText,
+  };
+
+  const { data, error } = await db.from('event_comments')
+    .insert(payload)
+    .select()
+    .single();
+
+  if (error) {
+    if (isMissingOptionalTable(error)) return { localOnly: true };
+    throw new Error(error.message);
+  }
+
+  // Non-blocking host notification when service key is configured
+  if (hasValidServiceKey) {
+    try {
+      const [{ data: ev }, { data: author }] = await Promise.all([
+        supabaseAdmin.from('events').select('title, community_id').eq('id', eventId).maybeSingle(),
+        supabaseAdmin.from('users').select('name').eq('id', authUser.id).maybeSingle(),
+      ]);
+      if (ev?.community_id) {
+        const { data: comm } = await supabaseAdmin.from('communities').select('leader_id').eq('id', ev.community_id).maybeSingle();
+        if (comm?.leader_id && comm.leader_id !== authUser.id) {
+          const senderName = author?.name || 'Someone';
+          const preview = cleanedText.length > 120 ? `${cleanedText.slice(0, 117)}...` : cleanedText;
+          await supabaseAdmin.from('notifications').insert({
+            user_id: comm.leader_id,
+            title: `💬 Question on ${ev.title || 'your event'}`,
+            message: `${senderName}: "${preview}"`,
+            type: 'event',
+            link: `/events/${eventId}#discussion`,
+          });
+          await sendPushNotificationAction(comm.leader_id, {
+            title: `${senderName} posted in ${ev.title || 'event discussion'}`,
+            body: preview,
+            url: `/events/${eventId}#discussion`,
+          }).catch(() => {});
+        }
+      }
+    } catch {}
+  }
+
+  return { comment: data };
+}
+
+export async function deleteEventCommentAction(commentId, token) {
+  const authUser = await verifyUser(token);
+  const db = hasValidServiceKey ? supabaseAdmin : getSupabaseClient(token);
+
+  const { data: comment, error: fetchErr } = await db.from('event_comments')
+    .select('id, event_id, author_id')
+    .eq('id', commentId)
+    .maybeSingle();
+
+  if (fetchErr) {
+    if (isMissingOptionalTable(fetchErr)) return { deleted: true, localOnly: true };
+    throw new Error(fetchErr.message);
+  }
+  if (!comment) return { deleted: true };
+
+  if (comment.author_id !== authUser.id && !isAdminUser(authUser)) {
+    const { data: ev } = await db.from('events')
+      .select('community_id, cohost_community_ids')
+      .eq('id', comment.event_id)
+      .maybeSingle();
+    const communityIds = [
+      ev?.community_id,
+      ...(Array.isArray(ev?.cohost_community_ids) ? ev.cohost_community_ids : []),
+    ].filter(Boolean);
+    const roles = await Promise.all(communityIds.map(cid => getCommunityRole(authUser.id, cid, db)));
+    if (!roles.some(role => role === 'Leader' || role === 'Co-Leader')) {
+      throw new Error('Forbidden: You can only delete your own comments.');
+    }
+  }
+
+  const { error } = await db.from('event_comments')
+    .delete()
+    .eq('id', commentId);
+
+  if (error && !isMissingOptionalTable(error)) {
     throw new Error(error.message);
   }
   return { deleted: true };
