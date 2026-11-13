@@ -882,9 +882,32 @@ export default function OnboardingFlow({ onComplete }) {
       <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.8rem', margin: 0, lineHeight: 1.15 }}>
         Welcome, {name || 'friend'}!
       </h2>
-      <p style={{ color: 'var(--slate-400)', fontSize: '0.95rem', margin: 0, lineHeight: 1.6, maxWidth: '300px' }}>
-        You're all set. We'll now show you communities that match your interests — join the ones you like and start connecting.
+      <p style={{ color: 'var(--slate-400)', fontSize: '0.92rem', margin: 0, lineHeight: 1.5, maxWidth: '340px' }}>
+        You are all set! Here is how to get the most out of <strong style={{ color: 'var(--teal-300)' }}>more.</strong> from day one:
       </p>
+
+      <div style={{ width: '100%', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', textAlign: 'left' }}>
+        <div style={{ padding: '12px', borderRadius: '14px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+          <div style={{ fontSize: '1.1rem', marginBottom: '4px' }}>📅</div>
+          <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--white)', marginBottom: '2px' }}>1-Tap RSVP &amp; Sync</div>
+          <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', lineHeight: 1.35 }}>Browse by List or Map, RSVP in one tap, and add straight to your calendar.</div>
+        </div>
+        <div style={{ padding: '12px', borderRadius: '14px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+          <div style={{ fontSize: '1.1rem', marginBottom: '4px' }}>🎟️</div>
+          <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--white)', marginBottom: '2px' }}>+1 Free Guest Pass</div>
+          <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', lineHeight: 1.35 }}>Nervous coming alone? Bring a friend free on your Digital Ticket.</div>
+        </div>
+        <div style={{ padding: '12px', borderRadius: '14px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+          <div style={{ fontSize: '1.1rem', marginBottom: '4px' }}>🚗</div>
+          <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--white)', marginBottom: '2px' }}>Share a Lift</div>
+          <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', lineHeight: 1.35 }}>Offer or request a carpool seat safely without sharing phone numbers.</div>
+        </div>
+        <div style={{ padding: '12px', borderRadius: '14px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+          <div style={{ fontSize: '1.1rem', marginBottom: '4px' }}>💡</div>
+          <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--white)', marginBottom: '2px' }}>Idea Board &amp; XP</div>
+          <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', lineHeight: 1.35 }}>Vote on future events, chat in channels, and earn badges as you show up.</div>
+        </div>
+      </div>
     </div>,
   ];
 

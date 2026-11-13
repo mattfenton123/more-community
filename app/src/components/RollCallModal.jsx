@@ -128,7 +128,7 @@ export default function RollCallModal({ event, onClose }) {
                 alignItems: 'center',
                 gap: '4px'
               }}>
-                <UserCheck size={12} /> Trailhead Roll Call
+                <UserCheck size={12} /> Event Roll Call
               </span>
               <span style={{ fontSize: '0.75rem', color: isLight ? '#64748b' : 'var(--slate-400)' }}>
                 {event.date} • {event.time}

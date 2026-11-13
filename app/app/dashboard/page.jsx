@@ -13,6 +13,7 @@ import { useToast } from '../../src/components/Toast';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip as RechartsTooltip, CartesianGrid } from 'recharts';
 import SocialHub from '../../src/components/SocialHub';
 import MemberCRM from '../../src/components/MemberCRM';
+import InfoExplainer, { FeatureUnlockModal } from '../../src/components/InfoExplainer';
 import DigitalTicket from '../../src/components/DigitalTicket';
 import QRScanner from '../../src/components/QRScanner';
 import CommunityOnboardingFlow from '../../src/views/CommunityOnboardingFlow';
@@ -590,7 +591,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
 
       recognition.onstart = () => {
         setIsDictatingDescription(true);
-        toast.info('Listening...', 'Speak your walk notes. Pauses are safe - tap "Done" when finished.');
+        toast.info('Listening...', 'Speak your event notes. Pauses are safe - tap "Done" when finished.');
       };
 
       recognition.onresult = (event) => {
@@ -712,7 +713,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
 
       recognition.onstart = () => {
         setIsListening(true);
-        toast.info('Listening...', 'Speak your walk idea. Take your time, pauses will not submit.');
+        toast.info('Listening...', 'Speak your event idea. Take your time, pauses will not submit.');
       };
 
       recognition.onresult = (event) => {
@@ -744,11 +745,11 @@ export default function LeaderDashboard({ initialCommunityId }) {
   };
 
   const AI_IDEA_CHIPS = [
-    { emoji: '🌲', label: 'Scenic Trail & Coffee', prompt: 'Scenic nature trail walk followed by coffee at a local cafe' },
-    { emoji: '🐾', label: 'Dog Friendly Social', prompt: 'Dog friendly park walk with open play on the greens' },
+    { emoji: '☕', label: 'Coffee & Conversation', prompt: 'Morning coffee social at a local independent cafe with relaxed conversation' },
+    { emoji: '🎨', label: 'Creative Workshop', prompt: 'Hands-on creative workshop for beginners with materials included' },
     { emoji: '☕', label: 'Morning Stroll & Chat', prompt: 'Gentle morning stroll and community conversation for all fitness levels' },
-    { emoji: '🌅', label: 'Golden Hour & Pub', prompt: 'Sunset golden hour walk finishing at a local pub garden' },
-    { emoji: '🏃', label: 'Beginners 5km Flat Walk', prompt: 'Beginners flat 5km nature walk, step-free and conversational pace' }
+    { emoji: '🥾', label: 'Outdoor Walk & Social', prompt: 'Scenic countryside walk followed by refreshments at a local cafe or pub' },
+    { emoji: '🤝', label: 'Evening Networking', prompt: 'Friendly evening networking and community mixer at a local venue' }
   ];
 
   const handleSelectChip = (chipPrompt) => {
@@ -1431,7 +1432,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
     setImageFile(null);
     setEventImage(event.image || null);
     setModalType('event');
-    toast.success('Event details duplicated!', 'Set the date and publish your repeat walk.');
+    toast.success('Event details duplicated!', 'Set the date and publish your repeat event.');
   };
 
   const handleEditEvent = (event) => {
@@ -1764,7 +1765,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
             {/* Multi-paragraph prompt box (spacious on mobile & desktop) */}
             <div style={{ marginBottom: '14px' }}>
               <textarea 
-                placeholder={isListening ? "Listening... Speak your walk or event idea freely. Take your time, pauses will not submit." : "Type or speak your event thoughts here (several paragraphs or bullet points welcome!)...\n\ne.g. A Saturday morning walk around the heath starting at 10am. Friendly dogs on leads welcome. We will take a relaxed 5km route through the woods with nice views, and finish up at the cafe for warm drinks and chats."} 
+                placeholder={isListening ? "Listening... Speak your event idea freely. Take your time, pauses will not submit." : "Type or speak your event thoughts here (several paragraphs or bullet points welcome!)...\n\ne.g. A Saturday morning creative workshop or social meetup starting at 10am. Open to beginners and regulars alike, with time afterwards for coffee and conversation."} 
                 value={aiPrompt}
                 onChange={(e) => setAiPrompt(e.target.value)}
                 rows={4}
@@ -1920,7 +1921,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
           </div>
           <div className="form-group">
             <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Calendar size={14} color="var(--teal-400)" /> Event Title <span style={{ color: 'var(--rose-400)', fontSize: '0.7rem' }}>*</span></label>
-            <input className="form-input" placeholder="e.g. Saturday Morning Walk" value={eventForm.title} onChange={e => setEventForm({...eventForm, title: e.target.value})} autoFocus style={{ fontSize: '1.05rem', padding: '14px 16px' }} />
+            <input className="form-input" placeholder="e.g. Saturday Morning Coffee & Social" value={eventForm.title} onChange={e => setEventForm({...eventForm, title: e.target.value})} autoFocus style={{ fontSize: '1.05rem', padding: '14px 16px' }} />
           </div>
           <div className="form-group">
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
@@ -2043,7 +2044,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                 <button
                   type="button"
-                  onClick={() => handleAppendToDescription('☕ Post-Walk Coffee:\nWe will wrap up at a local indie cafe for warm drinks, pastries, and relaxed conversations. Everyone is welcome!')}
+                  onClick={() => handleAppendToDescription('☕ Post-Event Coffee:\nWe will wrap up at a local indie cafe for warm drinks, pastries, and relaxed conversations. Everyone is welcome!')}
                   style={{ fontSize: '0.74rem', padding: '4px 10px', borderRadius: '6px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--slate-300)', cursor: 'pointer' }}
                 >
                   ☕ Add Coffee Stop
@@ -2057,7 +2058,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleAppendToDescription('🎒 What to Bring:\n• Comfortable walking trainers or boots\n• Reusable water bottle\n• Weather-appropriate layers')}
+                  onClick={() => handleAppendToDescription('🎒 What to Bring:\n• Comfortable clothes for the session\n• Reusable water bottle\n• Anything else noted in the event details')}
                   style={{ fontSize: '0.74rem', padding: '4px 10px', borderRadius: '6px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--slate-300)', cursor: 'pointer' }}
                 >
                   🎒 Add Kit Checklist
@@ -2479,7 +2480,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 {[
                   'Any dietary requirements?',
                   'Are you bringing a dog?',
-                  'First time joining a walk?',
+                  'First time joining an event?',
                   'Pacing / distance preference?'
                 ].map(q => (
                   <button
@@ -2502,12 +2503,12 @@ export default function LeaderDashboard({ initialCommunityId }) {
             <div style={{ padding: '16px', background: 'rgba(37,211,102,0.04)', border: '1px solid rgba(37,211,102,0.2)', borderRadius: '14px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
                 <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <MessageCircle size={16} color="#25D366" /> Private WhatsApp Carpool & Walk Chat
+                  <MessageCircle size={16} color="#25D366" /> Private WhatsApp Carpool & Event Chat
                   <span style={{ fontSize: '0.68rem', padding: '1px 6px', borderRadius: '4px', background: 'rgba(37,211,102,0.15)', color: '#4ade80', fontWeight: 700 }}>AUTO-INVITE</span>
                 </div>
               </div>
               <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', marginBottom: '10px' }}>
-                Paste a WhatsApp invite link (e.g. chat.whatsapp.com/...). Auto-revealed on RSVP confirmation for carpools & trail coordination.
+                Paste a WhatsApp invite link (e.g. chat.whatsapp.com/...). Auto-revealed on RSVP confirmation for carpools & event coordination.
               </div>
               <input
                 type="text"
@@ -2717,6 +2718,10 @@ export default function LeaderDashboard({ initialCommunityId }) {
             </div>
           </div>
 
+          {['events', 'people', 'monetisation', 'experiences', 'network'].includes(activeTab) && (
+            <FeatureUnlockModal featureKey={`leader_${activeTab}`} />
+          )}
+
           {/* ══════════════════════════════════════════════════════ */}
           {/* TAB: OVERVIEW  -  Command Centre                       */}
           {/* ══════════════════════════════════════════════════════ */}
@@ -2919,6 +2924,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <span style={{ fontWeight: 800, color: 'var(--white)', fontSize: '1rem', letterSpacing: '-0.01em' }}>Upgrade to Leader Pro</span>
                             <span style={{ fontSize: '0.68rem', background: '#f59e0b', color: '#000', padding: '2px 7px', borderRadius: '5px', fontWeight: 800, letterSpacing: '0.04em' }}>PRO</span>
+                            <InfoExplainer explainerKey="leader_pro" size={13} />
                           </div>
                           <div style={{ fontSize: '0.76rem', color: 'var(--slate-300)', marginTop: '3px', display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', lineHeight: 1.3 }}>
                             <span style={{ color: '#38bdf8' }}><strong>✓ £5M Organiser Legal Protection</strong> included</span>
@@ -3470,6 +3476,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                     >
                       <BarChart3 size={16} />
                       Member CRM
+                      <InfoExplainer explainerKey="leader_crm_card" size={12} style={{ marginLeft: 'auto' }} />
                     </button>
                   </div>
                 </div>
@@ -3543,7 +3550,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#fbbf24', fontWeight: 700, fontSize: '0.95rem' }}>
                             <Lightbulb size={18} />
-                            <span>Member Walk Proposals ({proposedEvents.length})</span>
+                            <span>Member Event Proposals ({proposedEvents.length})</span>
                           </div>
                           <span style={{ fontSize: '0.72rem', color: 'var(--slate-400)' }}>1-click to approve & add to schedule</span>
                         </div>
@@ -3572,7 +3579,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                                     onClick={async () => {
                                       try {
                                         await updateEvent(prop.id, { status: 'published', title: cleanTitle });
-                                        toast.success('Walk Approved! 🎉', `"${cleanTitle}" is now live on the calendar.`);
+                                        toast.success('Event Approved! 🎉', `"${cleanTitle}" is now live on the calendar.`);
                                       } catch (e) {
                                         toast.error('Error', 'Could not approve proposal.');
                                       }
@@ -3806,7 +3813,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                                       onClick={() => handleDuplicateEvent(event)} 
                                       className="btn btn-outline interactive-press" 
                                       style={{ padding: '6px 12px', fontSize: '0.75rem', color: '#10b981', borderColor: 'rgba(16,185,129,0.35)' }}
-                                      title="Repeat or duplicate this past walk"
+                                      title="Repeat or duplicate this past event"
                                     >
                                       <Copy size={12} style={{ marginRight: '4px' }} /> Repeat Event
                                     </button>
@@ -3834,7 +3841,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                                       onClick={() => setRollCallEvent(event)} 
                                       className="btn btn-outline interactive-press" 
                                       style={{ padding: '6px 12px', fontSize: '0.75rem', color: '#10b981', borderColor: 'rgba(16,185,129,0.35)' }}
-                                      title="Open trailhead roll-call check-in mode"
+                                      title="Open event roll-call check-in mode"
                                     >
                                       <UserCheck size={12} style={{ marginRight: '4px' }} /> Roll Call
                                     </button>
@@ -6010,7 +6017,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 {pendingProposedEvents.length > 0 && (
                   <div style={{ padding: '16px', borderRadius: '14px', background: 'rgba(56, 189, 248, 0.06)', border: '1.5px solid rgba(56, 189, 248, 0.3)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                     <div style={{ fontWeight: 700, fontSize: '0.92rem', color: '#7dd3fc', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <Calendar size={16} /> Member Walk Proposals ({pendingProposedEvents.length})
+                      <Calendar size={16} /> Member Event Proposals ({pendingProposedEvents.length})
                     </div>
                     {pendingProposedEvents.map(pe => (
                       <div key={pe.id} style={{ padding: '12px', background: 'rgba(0,0,0,0.3)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -6024,7 +6031,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                               type="button"
                               onClick={async () => {
                                 await updateEvent(pe.id, { status: 'published', title: pe.title.replace('[Proposal]', '').trim() });
-                                toast.success('Event Published! 🎉', 'The proposed walk is now live on your calendar.');
+                                toast.success('Event Published! 🎉', 'The proposed event is now live on your calendar.');
                               }}
                               className="btn btn-primary interactive-press"
                               style={{ padding: '6px 12px', fontSize: '0.78rem', borderRadius: '8px', background: 'var(--teal-500)' }}
@@ -6035,7 +6042,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                               type="button"
                               onClick={async () => {
                                 await cancelEvent(pe.id);
-                                toast.info('Proposal Declined', 'The proposed walk has been dismissed.');
+                                toast.info('Proposal Declined', 'The proposed event has been dismissed.');
                               }}
                               className="btn btn-outline interactive-press"
                               style={{ padding: '6px 10px', fontSize: '0.78rem', borderRadius: '8px', color: '#f87171', borderColor: 'rgba(239,68,68,0.3)' }}
@@ -6272,7 +6279,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                         1. Scale your brand & mission without extra legwork
                       </div>
                       <div style={{ fontSize: '0.78rem', color: 'var(--slate-300)', lineHeight: 1.45 }}>
-                        Passionate leaders in nearby towns (e.g. Sevenoaks, Tonbridge, Maidstone) can launch a chapter of your community using your proven walk format, branding, and guidance.
+                        Passionate leaders in nearby towns (e.g. Sevenoaks, Tonbridge, Maidstone) can launch a chapter of your community using your proven event format, branding, and guidance.
                       </div>
                     </div>
 

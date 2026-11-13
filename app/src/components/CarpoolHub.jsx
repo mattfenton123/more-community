@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { Car, MapPin, Clock, Users, Shield, Plus, CheckCircle2, MessageCircle, X, ChevronRight, AlertCircle, Sparkles, Navigation, Fuel, Trash2 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { useToast } from './Toast';
+import InfoExplainer from './InfoExplainer';
 
 export default function CarpoolHub({ event, user, isAttendee = false, community }) {
   const { toast } = useToast();
@@ -102,7 +103,7 @@ export default function CarpoolHub({ event, user, isAttendee = false, community 
         });
       }
 
-      toast.success('Ride Offered! 🚗', 'Your carpool is live for confirmed walk attendees.');
+      toast.success('Ride Offered! 🚗', 'Your carpool is live for confirmed event attendees.');
       setShowOfferModal(false);
       setOrigin('');
       setNotes('');
@@ -124,7 +125,7 @@ export default function CarpoolHub({ event, user, isAttendee = false, community 
       // If user has not RSVP'd yet, automatically confirm RSVP
       if (!isAttendee && typeof rsvpToEvent === 'function') {
         await rsvpToEvent(event.id, 'going');
-        toast.success('RSVP Confirmed! ✓', 'You are attending this walk.');
+        toast.success('RSVP Confirmed! ✓', 'You are attending this event.');
       }
 
       if (typeof reserveCarpoolSeat === 'function') {
@@ -244,6 +245,7 @@ export default function CarpoolHub({ event, user, isAttendee = false, community 
               }}>
                 COMMUNITY CARPOOL
               </span>
+              <InfoExplainer explainerKey="member_carpool" size={13} />
             </div>
             <p style={{ margin: '3px 0 0', fontSize: '0.82rem', color: 'var(--slate-300)' }}>
               Coordinate rides with fellow members heading to this meetup.

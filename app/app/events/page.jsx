@@ -91,13 +91,13 @@ const { events, communities, user, users, eventRsvps, rsvpToEvent, createEvent, 
       return;
     }
     if (!proposeTitle.trim() || !proposeDate) {
-      toast.error('Missing Details', 'Please provide a walk title and preferred date.');
+      toast.error('Missing Details', 'Please provide an event title and preferred date.');
       return;
     }
 
     const targetCommunityId = proposeCommunityId || user.joinedCommunities?.[0] || communities[0]?.id;
     if (!targetCommunityId) {
-      toast.error('Community Required', 'Please select which community this walk is for.');
+      toast.error('Community Required', 'Please select which community this event is for.');
       return;
     }
 
@@ -112,7 +112,7 @@ const { events, communities, user, users, eventRsvps, rsvpToEvent, createEvent, 
         location: proposeLocation.trim() || 'Tunbridge Wells',
         status: 'proposed'
       });
-      toast.success('Walk Idea Proposed! 🎉', 'Your community leader has received your idea and can publish it with 1 click.');
+      toast.success('Event Idea Proposed! 🎉', 'Your community leader has received your idea and can publish it with 1 click.');
       setShowProposeModal(false);
       setProposeTitle('');
       setProposeNotes('');
@@ -576,7 +576,7 @@ const { events, communities, user, users, eventRsvps, rsvpToEvent, createEvent, 
                   display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', fontWeight: 600
                 }}
               >
-                <Lightbulb size={11} /> Propose a Walk
+                <Lightbulb size={11} /> Propose an Event
               </button>
               {aiMatches && (
                 <button
@@ -592,7 +592,7 @@ const { events, communities, user, users, eventRsvps, rsvpToEvent, createEvent, 
           <div style={{ position: 'relative', display: 'flex', gap: '8px' }}>
             <input
               type="text"
-              placeholder="e.g. 'Saturday morning walk with dogs', 'Quiet evening walk'..."
+              placeholder="e.g. 'Saturday coffee & creative session', 'Morning walk with dogs'..."
               value={aiPrompt}
               onChange={e => setAiPrompt(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter') handleAiSearch(); }}
@@ -957,10 +957,10 @@ const { events, communities, user, users, eventRsvps, rsvpToEvent, createEvent, 
         }}>
           <div>
             <div style={{ fontWeight: 800, fontSize: '0.94rem', color: '#ffffff', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span>🌿</span> Upcoming Walks &amp; Community Meetups
+              <span>📅</span> Upcoming Events &amp; Community Meetups
             </div>
             <div style={{ fontSize: '0.8rem', color: 'var(--slate-300)', marginTop: '2px' }}>
-              Free to browse on the web. Select any walk to view meeting spots, itineraries, and carpool offers.
+              Free to browse on the web. Select any event to view meeting spots, schedules, and carpool offers.
             </div>
           </div>
           <button
@@ -1106,7 +1106,7 @@ const { events, communities, user, users, eventRsvps, rsvpToEvent, createEvent, 
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
               <div>
                 <h3 style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--white)', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <Lightbulb size={18} color="#fbbf24" /> Propose a Community Walk
+                  <Lightbulb size={18} color="#fbbf24" /> Propose a Community Event
                 </h3>
                 <div style={{ fontSize: '0.78rem', color: 'var(--slate-400)', marginTop: '2px' }}>
                   Have an idea for a route? Community leaders can approve it with 1 click.
@@ -1153,7 +1153,7 @@ const { events, communities, user, users, eventRsvps, rsvpToEvent, createEvent, 
 
               <div>
                 <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: 'var(--slate-300)', marginBottom: '4px' }}>
-                  Walk Title *
+                  Event Title *
                 </label>
                 <input
                   type="text"
@@ -1310,7 +1310,7 @@ const { events, communities, user, users, eventRsvps, rsvpToEvent, createEvent, 
                   cursor: isSubmittingProposal ? 'wait' : 'pointer'
                 }}
               >
-                {isSubmittingProposal ? 'Submitting Idea...' : 'Submit Walk Idea 💡'}
+                {isSubmittingProposal ? 'Submitting Idea...' : 'Submit Event Idea 💡'}
               </button>
             </form>
           </div>

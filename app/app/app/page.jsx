@@ -983,7 +983,7 @@ export default function HomeFeed() {
                 ? "Your feed is empty. Join some communities to see their updates and events here."
                 : activeFeedTab === 'Events' 
                   ? "There are no upcoming events in your communities right now."
-                  : "No suggestions pitched yet. Have an idea for a meetup or walk? Pitch it to your community!"}
+                  : "No suggestions pitched yet. Have an idea for an event, workshop, or walk? Pitch it to your community!"}
             </p>
             {activeFeedTab === 'Ideas' ? (
               <button onClick={() => setShowIdeaModal(true)} className="btn btn-primary interactive-press" style={{ padding: '14px 24px', borderRadius: '12px', fontSize: '1rem', background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', border: 'none', color: '#fff', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '8px' }}>

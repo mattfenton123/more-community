@@ -12,6 +12,7 @@ const MapView = dynamic(() => import('../../src/components/MapView'), { ssr: fal
 import AppHeader from '../../src/components/AppHeader';
 import TownAlertCard from '../../src/components/TownAlertCard';
 import SwipeDiscovery from '../../src/components/SwipeDiscovery';
+import InfoExplainer from '../../src/components/InfoExplainer';
 import { isEventUpcoming } from '../../src/lib/calendar';
 import { getCommunityLocation } from '../../src/lib/location';
 
@@ -207,6 +208,7 @@ export default function Discover() {
               >
                 <MapIcon size={18} />
               </button>
+              <InfoExplainer explainerKey="member_discover" size={14} style={{ marginLeft: '4px', alignSelf: 'center' }} />
             </div>
             <div 
               className="interactive-press"
@@ -242,7 +244,7 @@ export default function Discover() {
               <span>📍</span> Real-Life Local Communities
             </div>
             <div style={{ fontSize: '0.8rem', color: 'var(--slate-300)', marginTop: '2px' }}>
-              Free to browse on the web. Select any group to see upcoming walks, member reviews, and host bios.
+              Free to browse on the web. Select any group to see upcoming events, member reviews, and host bios.
             </div>
           </div>
           <button

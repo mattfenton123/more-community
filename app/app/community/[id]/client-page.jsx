@@ -856,7 +856,7 @@ export default function CommunityProfile() {
         }} className="no-scrollbar">
           {[
             { id: 'overview', label: 'Overview', Icon: Compass },
-            { id: 'events', label: `Events & Walks (${upcomingEvents.length})`, Icon: Calendar },
+            { id: 'events', label: `Events (${upcomingEvents.length})`, Icon: Calendar },
             { id: 'feed', label: 'Feed & Photos', Icon: MessageSquare },
             { id: 'members', label: `People & Hub (${memberList.length || 1})`, Icon: Users }
           ].map(tab => (
@@ -1466,7 +1466,7 @@ export default function CommunityProfile() {
               <div className="community-featured-event-card">
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
                   <span style={{ fontSize: '0.72rem', fontWeight: 800, color: 'var(--teal-400)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Calendar size={13} /> Next Upcoming Walk / Meetup
+                    <Calendar size={13} /> Next Upcoming Event
                   </span>
                   <span style={{ fontSize: '0.72rem', fontWeight: 700, padding: '3px 8px', borderRadius: '6px', background: 'rgba(20,184,166,0.15)', color: '#2dd4bf', border: '1px solid rgba(45,212,191,0.3)' }}>
                     {nextEvent.price && Number(nextEvent.price) > 0 ? `£${nextEvent.price}` : 'Free RSVP'}
@@ -1504,7 +1504,7 @@ export default function CommunityProfile() {
                       boxShadow: '0 4px 14px rgba(20,184,166,0.3)'
                     }}
                   >
-                    RSVP &amp; View Walk Details <ChevronRight size={16} />
+                    RSVP &amp; View Event Details <ChevronRight size={16} />
                   </button>
                   {(community?.allow_carpool !== false && community?.allowCarpool !== false && nextEvent?.allowCarpool !== false && nextEvent?.allow_carpool !== false && !nextEvent?.description?.includes('[Carpool: disabled]')) && (
                     <button
@@ -2609,7 +2609,7 @@ export default function CommunityProfile() {
                 {community.name}
               </h3>
               <p style={{ margin: '0 0 16px 0', fontSize: '0.84rem', color: 'var(--slate-400)', lineHeight: 1.4 }}>
-                Join {community.members || memberList.length || 1} local members for walks, meetups, and group chats.
+                Join {community.members || memberList.length || 1} local members for events, meetups, and group chats.
               </p>
 
               {/* Main Action Button */}
@@ -2653,11 +2653,11 @@ export default function CommunityProfile() {
                 </div>
               )}
 
-              {/* Quick Next Walk Widget */}
+              {/* Quick Next Event Widget */}
               {nextEvent && (
                 <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
                   <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--teal-400)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '6px' }}>
-                    Next Walk
+                    Next Event
                   </div>
                   <div style={{ fontWeight: 700, fontSize: '0.92rem', color: 'var(--white)', marginBottom: '4px' }}>
                     {nextEvent.title}

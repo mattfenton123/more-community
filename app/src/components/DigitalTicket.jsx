@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { X, Calendar, MapPin, Clock, Ticket, WifiOff, CheckCircle2, Navigation, Download, Copy, Share2, Sparkles, Users, Banknote, Compass, ShieldCheck, QrCode, MessageCircle } from 'lucide-react';
 import QRCode from 'qrcode';
+import InfoExplainer from './InfoExplainer';
 
 export default function DigitalTicket({ event, community, user, onClose }) {
   const canvasRef = useRef(null);
@@ -111,7 +112,7 @@ export default function DigitalTicket({ event, community, user, onClose }) {
       link.click();
       document.body.removeChild(link);
       if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
-        new Notification('Pass Saved!', { body: `${event.title} digital pass saved for offline trails.` });
+        new Notification('Pass Saved!', { body: `${event.title} digital pass saved for offline access.` });
       }
     } catch (e) {
       console.warn('Wallet save:', e);
@@ -180,11 +181,14 @@ export default function DigitalTicket({ event, community, user, onClose }) {
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             {isOffline ? <WifiOff size={13} /> : <CheckCircle2 size={13} />}
-            <span>{isOffline ? 'Offline Mode Active' : 'Cached for Zero-Signal Trails'}</span>
+            <span>{isOffline ? 'Offline Mode Active' : 'Cached for Offline Access'}</span>
           </div>
-          <span style={{ fontSize: '0.65rem', opacity: 0.8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-            Local Pass
-          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '0.65rem', opacity: 0.8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              Local Pass
+            </span>
+            <InfoExplainer explainerKey="member_ticket" size={12} />
+          </div>
         </div>
 
         {/* Ticket Header */}

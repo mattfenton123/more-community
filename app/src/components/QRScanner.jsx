@@ -135,7 +135,7 @@ export default function QRScanner({ onScan, onClose }) {
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           {isOffline ? <WifiOff size={15} /> : <Trees size={15} />}
-          <span>{isOffline ? '🌲 Zero-Signal Trail Mode: Check-ins Queued Locally' : '📶 Leader Live Scanner'}</span>
+          <span>{isOffline ? '📴 Offline Mode: Check-ins Queued Locally' : '📶 Leader Live Scanner'}</span>
         </div>
         {queuedCount > 0 && (
           <span style={{

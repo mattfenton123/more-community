@@ -168,9 +168,9 @@ export async function POST(request) {
 
       const fallbackWhatsapp = `*What a fantastic meetup!* 🥾✨\n\nHuge thank you to all *${count} legends* who joined us for *${eventTitle}* at ${loc}!\n\nFresh air, great conversations, and wonderful local connections. Community photos have been added to the event gallery 📸\n\nNext session is being scheduled now. Check upcoming dates and RSVP here:\nhttps://morecommunity.co.uk`;
 
-      const fallbackInstagram = `Sunday mornings done right 🥾☕\n\nOver ${count} of us gathered for ${eventTitle} around ${loc}. Real conversations, no screens, pure community.\n\nTag someone who needs a weekend walk in their life! 👇\n\n#TunbridgeWells #KentWalks #CommunityMatters #MoreCommunity #WalkingClub #OutdoorLife`;
+      const fallbackInstagram = `Good people, real life ✨\n\nOver ${count} of us gathered for ${eventTitle} in ${loc}. Real conversations, no screens, pure community.\n\nTag someone who should join the next one! 👇\n\n#LocalEvents #CommunityMatters #MoreCommunity #RealLifeConnection`;
 
-      const fallbackStory = `${count} walkers, great chats & scenic paths in ${loc} ✨`;
+      const fallbackStory = `${count} attendees, great conversations & real connection in ${loc} ✨`;
 
       if (!apiKey) {
         return NextResponse.json({
@@ -272,7 +272,7 @@ Return ONLY a valid JSON object with keys: "whatsapp", "instagram", "storyQuote"
       }));
 
       const systemDirective = `You are the AI Concierge for More Community in Tunbridge Wells, Kent.
-Your role is to help local residents find the exact physical walks, meetups, and social gatherings that fit their schedule, energy, and mood.
+Your role is to help local residents find the exact in-person events, workshops, walks, and social gatherings that fit their schedule, energy, and mood.
 Be warm, enthusiastic, and authentic. 
 
 User query: "${prompt.trim()}"
@@ -359,19 +359,19 @@ Return ONLY a valid JSON object with:
         });
       }
 
-      const systemDirective = `You are an expert community walk director and storyteller for "${communityName}"${communityLocation ? ` in ${communityLocation}` : ''}.
-Your job is to transform raw host notes or rough bullet points into an enticing, warm, beautifully written community walk description.
+      const systemDirective = `You are an expert community event director and storyteller for "${communityName}"${communityLocation ? ` in ${communityLocation}` : ''}.
+Your job is to transform raw host notes or rough bullet points into an enticing, warm, beautifully written community event description (whether it is a workshop, social, fitness session, creative meetup, or walk).
 
 GUIDELINES:
 - Avoid generic corporate clichés ("Whether you are a newcomer or regular...").
 - Keep ALL specific facts provided by the host (times, meeting spots, dogs, coffee, terrain, rules).
 - Write in a welcoming, enthusiastic, local voice.
 - Format cleanly in markdown:
-  1. A lively opening paragraph describing the spirit and scenery of the meetup.
-  2. "**The Route & Vibe:**" (pace, distance, path terrain, accessibility).
-  3. "**Meeting Point:**" (exact landmark and how to spot the group).
-  4. "**What to Bring:**" (bullet points of footwear, layers, water).
-  5. "**Post-Walk Social:**" (cafe, pub, or casual conversation).
+  1. A lively opening paragraph describing the spirit and vibe of the event.
+  2. "**The Plan & Vibe:**" (what to expect, format, pace or skill level, accessibility).
+  3. "**Meeting Point:**" (exact venue or landmark and how to spot the host).
+  4. "**What to Bring:**" (bullet points tailored to the event type).
+  5. "**Afterwards:**" (optional cafe, pub, or casual chat if applicable).
 
 Return ONLY a valid JSON object with the single key "description" containing the markdown string.`;
 
@@ -452,27 +452,27 @@ ${prompt}` }] }
     const today = new Date().toISOString().split('T')[0];
     const systemDirective = `You are a visionary community director and event creator for "${communityName}"${communityLocation ? ` based in ${communityLocation}` : ''}.
 Today's date is ${today}.
-Your task is to take a brief event idea or voice dictation and craft a complete, highly-engaging real-world community walk or meetup.
+Your task is to take a brief event idea or voice dictation and craft a complete, highly-engaging real-world community event (such as a workshop, social, fitness session, creative meetup, talk, or walk).
 
 THE PHILOSOPHY:
-In an era of endless screens, real-world physical presence and walking side-by-side is the ultimate experience. 
+In an era of endless screens, real-world physical presence and shared experiences are what build true belonging.
 Write with warmth, local flavor, and character. Avoid robotic, boilerplate corporate text.
 
 RETURN SPECIFICATIONS:
 Return ONLY a valid JSON object with these exact keys:
-- "title": (string) A catchy, memorable, human title under 50 characters (e.g. "Sunset Heath Stroll & Pub Finish", "Four-Legged Friends Park Loop", "Sunrise Woodland Walk & Flat Whites").
+- "title": (string) A catchy, memorable, human title under 50 characters.
 - "description": (string) Markdown description with:
-  1. An inviting opening hook capturing the vibe and feeling of the walk.
-  2. "**The Route & Vibe:**" (pace, distance e.g. 4-5 km, terrain, accessibility).
-  3. "**Meeting Point:**" (unmistakable landmark near ${communityLocation || communityName}).
-  4. "**What to Bring:**" (bullet points: comfortable trainers/boots, water, layers).
-  5. "**Post-Walk Social:**" (cafe, pub, or casual chats).
+  1. An inviting opening hook capturing the vibe and feeling of the event.
+  2. "**The Plan & Vibe:**" (what happens, format, pace or skill level, accessibility).
+  3. "**Meeting Point:**" (unmistakable venue or landmark near ${communityLocation || communityName}).
+  4. "**What to Bring:**" (bullet points tailored to the activity).
+  5. "**Afterwards:**" (cafe, pub, or casual chats if applicable).
 - "date": (string YYYY-MM-DD) Calculated intelligently relative to today (${today}). If they say "this saturday" or "sunday", calculate the exact next matching date!
 - "time": (string HH:MM 24h format, e.g. "10:00", "09:30", "18:30").
-- "location": (string) A recognizable, specific meeting landmark (e.g. "North Gate Clocktower, Richmond Park").
-- "maxCapacity": (string number) Recommended attendee limit (e.g. "25" for social walks, "16" for intimate groups).
-- "ticketPrice": (string number) "0" for community walks, or reasonable ticket price if specialized.
-- "vibeTags": (array of 3-4 strings, e.g. ["Walk", "Dog Friendly", "Coffee Stop", "Scenic Nature"]).
+- "location": (string) A recognizable, specific meeting venue or landmark.
+- "maxCapacity": (string number) Recommended attendee limit (e.g. "25" for social meetups, "16" for workshops).
+- "ticketPrice": (string number) "0" for free community events, or reasonable ticket price if specialized.
+- "vibeTags": (array of 3-4 strings matching the event, e.g. ["Social", "Beginner Friendly", "Coffee Stop"] or ["Walk", "Dog Friendly", "Scenic"]).
 - "autoReminders": true,
 - "autoFeedback": true`;
 
@@ -551,7 +551,7 @@ Return ONLY a valid JSON object with these exact keys:
 function localSemanticMatch(prompt, candidateEvents = []) {
   if (!Array.isArray(candidateEvents) || candidateEvents.length === 0) {
     return {
-      summary: 'No upcoming walks match this exact search right now. Check out all upcoming walks or propose a new one!',
+      summary: 'No upcoming events match this exact search right now. Check out all upcoming events or propose a new one!',
       recommendations: []
     };
   }
@@ -660,7 +660,7 @@ function localSemanticMatch(prompt, candidateEvents = []) {
 
     const defaultReason = reasons.length > 0
       ? ('Great match: ' + reasons.join(', ') + '.')
-      : ('Upcoming community walk in ' + (event.location || 'Tunbridge Wells') + ' with a friendly local group.');
+      : ('Upcoming community event in ' + (event.location || 'your area') + ' with a friendly local group.');
 
     const highlightTag = tags[0] || (event.location ? ('📍 ' + event.location.split(',')[0].trim()) : '✨ Community Pick');
 
@@ -683,8 +683,8 @@ function localSemanticMatch(prompt, candidateEvents = []) {
   }));
 
   const summary = top.length > 0
-    ? ('Found ' + top.length + ' ' + (top.length === 1 ? 'walk' : 'walks') + ' matching your search in Tunbridge Wells:')
-    : 'Here are the top upcoming walks across the community:';
+    ? ('Found ' + top.length + ' ' + (top.length === 1 ? 'event' : 'events') + ' matching your search:')
+    : 'Here are the top upcoming events across the community:';
 
   return {
     summary,
@@ -694,7 +694,7 @@ function localSemanticMatch(prompt, candidateEvents = []) {
 
 /**
  * Local deterministic bullet points expander.
- * Takes user notes and formats them into an attractive community walk description.
+ * Takes user notes and formats them into an attractive community event description.
  */
 function expandLocalBullets(bullets, communityName, communityLocation = '') {
   const locBase = communityLocation || (communityName ? communityName : 'Local Area');
@@ -709,13 +709,14 @@ function expandLocalBullets(bullets, communityName, communityLocation = '') {
   const hasPub = lower.includes('pub') || lower.includes('drink');
 
   let meetingPoint = `Main Entrance Gates, ${locBase}`;
-  let routeNotes = 'A gentle, conversational route suitable for all paces.';
-  let kitNotes = ['Comfortable walking shoes', 'Water bottle', 'Weather-appropriate layers'];
+  const isWalkPrompt = lower.includes('walk') || lower.includes('hike') || lower.includes('trail') || lower.includes('stroll');
+  let routeNotes = isWalkPrompt ? 'A gentle, conversational route suitable for all paces.' : 'A welcoming, well-paced session suitable for newcomers and regulars alike.';
+  let kitNotes = isWalkPrompt ? ['Comfortable walking shoes', 'Water bottle', 'Weather-appropriate layers'] : ['Just yourself and an open mind', 'Water bottle (optional)'];
   let socialNotes = hasCoffee 
     ? 'Grabbing warm drinks and pastries at a local cafe afterwards.'
     : hasPub 
-      ? 'Wrapping up at a nearby pub garden for relaxed conversation.'
-      : 'Casual post-walk chat with fellow members.';
+      ? 'Wrapping up at a nearby pub for relaxed conversation.'
+      : 'Casual post-event chat with fellow members.';
 
   lines.forEach(line => {
     const l = line.toLowerCase();
@@ -736,18 +737,18 @@ function expandLocalBullets(bullets, communityName, communityLocation = '') {
 
   const uniqueKit = Array.from(new Set(kitNotes));
 
-  return `Join us for a friendly, welcoming community walk in ${locBase}! Whether you are a regular or joining for the very first time, this is a relaxed space to disconnect from screens, get some fresh air, and meet great people from your local area.
+  return `Join us for a friendly, welcoming community ${isWalkPrompt ? 'walk' : 'event'} in ${locBase}! Whether you are a regular or joining for the very first time, this is a relaxed space to disconnect from screens and meet great people from your local area.
 
-**The Route & Vibe:**
-${routeNotes.trim()} All fitness levels and newcomers are warmly welcomed!
+**The Plan & Vibe:**
+${routeNotes.trim()} Newcomers are warmly welcomed!
 
 **Meeting Point:**
-📍 ${meetingPoint}. Look out for the group - we usually gather 5-10 minutes before start time.
+📍 ${meetingPoint}. Look out for the host - we usually gather 5-10 minutes before start time.
 
 **What to Bring:**
 ${uniqueKit.map(k => `• ${k}`).join('\n')}
 
-**Post-Walk Social:**
+**Afterwards:**
 ${socialNotes} Everyone is invited to stay on!`;
 }
 
@@ -768,16 +769,15 @@ function generateRichLocalEvent(prompt, communityName, communityLocation = '', c
   const isHike = lower.includes('hike') || lower.includes('trail') || lower.includes('hill') || lower.includes('nature') || lower.includes('woods');
   const isGentle = lower.includes('beginner') || lower.includes('easy') || lower.includes('slow') || lower.includes('stroll') || lower.includes('accessible');
 
-  let title = 'Weekend Community Walk & Social';
-  let vibes = ['Walk', 'Community'];
-  let meetingSpot = `Main Entrance Gates, ${locBase}`;
-  let routePace = 'Gentle, conversational pace (approx. 4 - 5 km). Mostly flat trails and paved pathways.';
-  let kit = [
-    'Comfortable trainers or walking shoes',
-    'A bottle of water',
-    'Weather-appropriate layer (jacket or sunscreen)'
-  ];
-  let social = 'Casual post-walk chat with fellow members.';
+  const isWalkInput = lower.includes('walk') || lower.includes('stroll') || lower.includes('ramble') || isHike || isDogFriendly;
+  let title = isWalkInput ? 'Weekend Community Walk & Social' : 'Weekend Community Meetup & Social';
+  let vibes = isWalkInput ? ['Walk', 'Community'] : ['Event', 'Community'];
+  let meetingSpot = `Main Entrance / Venue, ${locBase}`;
+  let routePace = isWalkInput ? 'Gentle, conversational pace (approx. 4 - 5 km). Mostly flat paths.' : 'Relaxed, welcoming format open to newcomers and regulars alike.';
+  let kit = isWalkInput
+    ? ['Comfortable trainers or walking shoes', 'A bottle of water', 'Weather-appropriate layer (jacket or sunscreen)']
+    : ['Just yourself', 'A bottle of water (optional)'];
+  let social = 'Casual post-event chat with fellow members.';
 
   if (isDogFriendly) {
     title = isCoffee ? `Paws & Pour: Dog Walk & Coffee at ${locBase}` : `Four-Legged Friends Walk & Play`;
@@ -818,18 +818,18 @@ function generateRichLocalEvent(prompt, communityName, communityLocation = '', c
     social = 'Grab a coffee together at the start or finish with 10% off for community members.';
   }
 
-  const description = `Join us for a friendly, welcoming community walk in ${locBase}! Whether you are a regular or joining for the very first time, this is a relaxed space to disconnect from screens, get some fresh air, and meet wonderful people from your local area.
+  const description = `Join us for a friendly, welcoming community ${isWalkInput ? 'walk' : 'event'} in ${locBase}! Whether you are a regular or joining for the very first time, this is a relaxed space to disconnect from screens and meet wonderful people from your local area.
 
-**The Route & Vibe:**
-${routePace} All fitness and confidence levels are welcome!
+**The Plan & Vibe:**
+${routePace} Newcomers are warmly welcomed!
 
 **Meeting Point:**
-📍 ${meetingSpot}. Look out for the group - we usually gather 5-10 minutes before start time.
+📍 ${meetingSpot}. Look out for the host - we usually gather 5-10 minutes before start time.
 
 **What to Bring:**
 ${kit.map(k => `• ${k}`).join('\n')}
 
-**Post-Walk Social:**
+**Afterwards:**
 ${social} Everyone is invited to stay on!`;
 
   return {

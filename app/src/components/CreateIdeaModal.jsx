@@ -4,6 +4,7 @@ import { X, MapPin, Lightbulb, Users } from 'lucide-react';
 import { useFeed } from '../context/FeedContext';
 import { useAppContext } from '../context/AppContext';
 import { useToast } from './Toast';
+import InfoExplainer from './InfoExplainer';
 
 export default function CreateIdeaModal({ isOpen, onClose, communityId: initialCommunityId }) {
   const { createFeedPost } = useFeed();
@@ -80,10 +81,10 @@ export default function CreateIdeaModal({ isOpen, onClose, communityId: initialC
         </button>
 
         <h2 style={{ fontSize: '1.4rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: '0 0 6px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Lightbulb size={24} color="var(--amber-400)" /> Pitch an Idea or Meetup
+          <Lightbulb size={24} color="var(--amber-400)" /> Pitch an Idea or Meetup <InfoExplainer explainerKey="member_ideas" size={14} />
         </h2>
         <p style={{ color: 'var(--slate-400)', fontSize: '0.88rem', marginBottom: '20px', lineHeight: 1.4 }}>
-          Suggest a hike, workshop, coffee social, or project. Community members can upvote and discuss it, and leaders can turn popular ideas into official events!
+          Suggest a workshop, coffee social, walk, talk, or project. Community members can upvote and discuss it, and leaders can turn popular ideas into official events!
         </p>
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -124,7 +125,7 @@ export default function CreateIdeaModal({ isOpen, onClose, communityId: initialC
               required
               value={title}
               onChange={e => setTitle(e.target.value)}
-              placeholder="e.g. Sunset Walk & Pizza at Dunorlan Park"
+              placeholder="e.g. Pottery & Coffee Morning or Sunset Social"
               style={{ width: '100%', padding: '14px', borderRadius: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--white)', fontSize: '0.95rem' }}
             />
           </div>

@@ -79,7 +79,7 @@ export default function EventRecapShareCard({ event, community, attendeeCount = 
       <p style={{ fontSize: '0.82rem', color: 'var(--slate-300)', margin: '0 0 14px 0', lineHeight: 1.4 }}>
         {isPast
           ? 'Celebrate this community gathering. Share photos and the event link directly to WhatsApp groups and social channels.'
-          : 'Spread the word for this upcoming walk! Share the invite directly to WhatsApp groups and local friends.'}
+          : 'Spread the word for this upcoming event! Share the invite directly to WhatsApp groups and local friends.'}
       </p>
 
       {/* Mini Event Summary Card */}
@@ -102,7 +102,7 @@ export default function EventRecapShareCard({ event, community, attendeeCount = 
             <span>{communityName}</span>
             <span>•</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-              <Users size={12} color="#2dd4bf" /> {isPast ? (count > 0 ? `${count} attended` : 'Completed walk') : (count > 0 ? `${count} going` : 'Be the first to RSVP')}
+              <Users size={12} color="#2dd4bf" /> {isPast ? (count > 0 ? `${count} attended` : 'Completed event') : (count > 0 ? `${count} going` : 'Be the first to RSVP')}
             </span>
           </div>
         </div>

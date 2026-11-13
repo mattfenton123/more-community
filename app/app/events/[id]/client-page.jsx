@@ -231,7 +231,7 @@ function EventLocationMap({ location, event, isLocationShielded = false }) {
             type="button"
             onClick={() => {
               const coordsStr = coords ? `${coords.lat.toFixed(5)}, ${coords.lng.toFixed(5)}` : (event?.lat && event?.lng ? `${event.lat}, ${event.lng}` : cleanName);
-              const text = `${event?.title || 'Community Walk'}\n📍 Start: ${cleanName}${event?.meetingPoint ? ' (Meeting point: ' + event.meetingPoint + ')' : ''}\n🧭 GPS: ${coordsStr}\n/// what3words: ///more.community.trail\n📅 ${event?.date || ''} at ${event?.time || ''}`;
+              const text = `${event?.title || 'Community Event'}\n📍 Start: ${cleanName}${event?.meetingPoint ? ' (Meeting point: ' + event.meetingPoint + ')' : ''}\n🧭 GPS: ${coordsStr}\n/// what3words: ///more.community.trail\n📅 ${event?.date || ''} at ${event?.time || ''}`;
               if (typeof navigator !== 'undefined' && navigator.clipboard) {
                 navigator.clipboard.writeText(text);
                 setCopiedSms(true);
@@ -683,7 +683,7 @@ export default function EventClient({ id }) {
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Trees size={16} color="#34d399" />
-            <span>Zero-Signal Trail Mode Active • Event pass & offline GPS ready</span>
+            <span>Offline Mode Active • Event pass & offline location ready</span>
           </div>
           <span style={{ fontSize: '0.72rem', background: 'rgba(0,0,0,0.3)', padding: '2px 8px', borderRadius: '99px', color: '#6ee7b7' }}>
             Offline Ready
@@ -1049,8 +1049,8 @@ export default function EventClient({ id }) {
             <div style={{ fontSize: '0.84rem', color: 'var(--slate-200)', lineHeight: 1.3 }}>
               <strong style={{ color: 'var(--teal-300)' }}>
                 {familiarFaces.length === 1
-                  ? `${users.find(x => x.id === familiarFaces[0].userId)?.name || 'Someone'} you walked with before is going!`
-                  : `${familiarFaces.length} people you've walked with before are going!`}
+                  ? `${users.find(x => x.id === familiarFaces[0].userId)?.name || 'Someone'} you met at a previous event is going!`
+                  : `${familiarFaces.length} people you've met at previous events are going!`}
               </strong>
             </div>
           </div>
@@ -1253,7 +1253,7 @@ export default function EventClient({ id }) {
               borderRadius: '16px', padding: '24px', textAlign: 'center'
             }}>
               <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)', marginBottom: '10px' }}>
-                No photos shared yet. Snap moments during the walk and drop them here for the group!
+                No photos shared yet. Snap moments during the event and drop them here for the group!
               </div>
               <button
                 onClick={() => {
@@ -2035,7 +2035,7 @@ export default function EventClient({ id }) {
                   </div>
 
                   <p style={{ margin: '0 0 12px 0', fontSize: '0.82rem', color: 'var(--slate-300)', lineHeight: 1.4 }}>
-                    Coordinate lifts, meet walking buddies, and get live trail updates before setting off.
+                    Coordinate lifts, meet fellow attendees, and get live event updates before heading out.
                   </p>
 
                   {waUrl && (
