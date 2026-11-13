@@ -5,7 +5,9 @@ import AppHeader from '../../../../src/components/AppHeader';
 import { useAppContext } from '../../../../src/context/AppContext';
 import { useChat } from '../../../../src/context/ChatContext';
 import { useRouter as useNavigate, useParams } from 'next/navigation';
-import { SkeletonChatBubble, SkeletonLine, SkeletonAvatar } from '../../../../src/components/SkeletonCard';
+import { SkeletonChatBubble } from '../../../../src/components/SkeletonCard';
+import { resolveUserAvatar } from '../../../../src/lib/avatar';
+import { formatChatTime, isCommunityChatLeader, canManageCommunityChat } from '../../../../src/lib/chatUtils';
 import { useToast } from '../../../../src/components/Toast';
 import { FALLBACK_IMAGES } from '../../../../src/lib/constants';
 import dynamic from 'next/dynamic';
@@ -46,7 +48,7 @@ export default function Chat() {
   };
   
   const { user, communities, users, communityMemberships, uploadImage, channels, createChannel, isLoading, whatsappSettings } = useAppContext();
-  const { messages, directMessages, sendMessage, sendDirectMessage, chatReadReceipts, markChatRead, reactToMessage } = useChat();
+  const { messages, directMessages, loadChannelMessages, sendMessage, sendDirectMessage, chatReadReceipts, markChatRead, reactToMessage } = useChat();
   const { toast } = useToast();
   const [showNewChatModal, setShowNewChatModal] = useState(false);
   const [userSearchTerm, setUserSearchTerm] = useState('');
@@ -54,6 +56,13 @@ export default function Chat() {
   const activeMessages = (targetUserId && user)
     ? directMessages.filter(m => (m.senderId === user.id && m.receiverId === targetUserId) || (m.senderId === targetUserId && m.receiverId === user.id))
     : messages.filter(m => m.communityId === communityId && m.channel === channelId);
+
+  // Load up to 200 channel messages cleanly on mount/navigation
+  useEffect(() => {
+    if (communityId && channelId) {
+      loadChannelMessages?.(communityId, channelId);
+    }
+  }, [communityId, channelId]);
 
   // Mark as read when entering a chat
   useEffect(() => {
@@ -66,247 +75,8 @@ export default function Chat() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [activeMessages.length]);
 
-  // INBOX VIEW (If no params provided)
   if (!communityId && !channelId && !targetUserId) {
-    const myCommunities = communities.filter(c => Boolean(user?.joinedCommunities?.includes(c.id)));
-    
-    // Build inbox items from real channels + fallback general
-    const communityInboxItems = [];
-    myCommunities.forEach(c => {
-      const communityChannels = channels.filter(ch => ch.community_id === c.id);
-      if (communityChannels.length === 0) {
-        communityInboxItems.push({ comm: c, type: 'channel', name: 'general', id: 'general' });
-      } else {
-        communityChannels.forEach(ch => {
-          communityInboxItems.push({ comm: c, type: 'channel', name: ch.name, id: ch.id });
-        });
-      }
-      if (user.leaderOf === c.id) {
-        communityInboxItems.push({ comm: c, type: 'group', name: 'Organizers Group', id: 'organizers' });
-      }
-    });
-
-    // Build DM inbox items
-    const dmInboxItems = [];
-    if (directMessages && user) {
-      const dmUsers = new Set();
-      directMessages.forEach(dm => {
-        const otherUserId = dm.senderId === user.id ? dm.receiverId : dm.senderId;
-        dmUsers.add(otherUserId);
-      });
-      
-      dmUsers.forEach(otherId => {
-        const otherUserObj = users.find(u => u.id === otherId) || { id: otherId, name: 'Unknown User', avatar: '/images/default-avatar.svg' };
-        dmInboxItems.push({
-          type: 'dm',
-          otherUser: otherUserObj,
-          id: otherId
-        });
-      });
-    }
-
-    const itemsToRender = activeTab === 'Communities' ? communityInboxItems : dmInboxItems;
-
-    const handleCreateChannel = async () => {
-      if (!newChannelName.trim()) return;
-      const leaderCommunity = user.leaderOf;
-      if (!leaderCommunity) return;
-      await createChannel(leaderCommunity, newChannelName.trim());
-      toast.success('Channel created!', `#${newChannelName.trim()} is now live`);
-      setNewChannelName('');
-      setShowCreateModal(false);
-    };
-
-    return (
-      <div className="view-chat" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-        <AppHeader title="Inbox" />
-        <div style={{ padding: '0 20px', display: 'flex', gap: '16px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-          <button 
-            onClick={() => setActiveTab('Communities')}
-            style={{ 
-              background: 'none', border: 'none', padding: '12px 0', fontSize: '1rem', fontWeight: 600, cursor: 'pointer',
-              color: activeTab === 'Communities' ? 'white' : 'var(--slate-500)',
-              borderBottom: activeTab === 'Communities' ? '2px solid var(--teal-400)' : '2px solid transparent',
-              transition: 'all 0.2s'
-            }}>
-            Communities
-          </button>
-          <button 
-            onClick={() => setActiveTab('Direct Messages')}
-            style={{ 
-              background: 'none', border: 'none', padding: '12px 0', fontSize: '1rem', fontWeight: 600, cursor: 'pointer',
-              color: activeTab === 'Direct Messages' ? 'white' : 'var(--slate-500)',
-              borderBottom: activeTab === 'Direct Messages' ? '2px solid var(--teal-400)' : '2px solid transparent',
-              transition: 'all 0.2s'
-            }}>
-            Direct Messages
-          </button>
-        </div>
-        
-        <div style={{ flex: 1, overflowY: 'auto', padding: '10px 0' }}>
-          {isLoading ? (
-            <div style={{ padding: '0 20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              {[1,2,3,4].map(i => (
-                <div key={i} className="stagger-item" style={{ display: 'flex', gap: '16px', padding: '12px 0' }}>
-                  <SkeletonAvatar size={48} round />
-                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <SkeletonLine width="60%" height="14px" />
-                    <SkeletonLine width="35%" height="10px" />
-                    <SkeletonLine width="80%" height="12px" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : itemsToRender.length === 0 ? (
-            <p style={{ padding: '20px', color: 'var(--slate-400)', textAlign: 'center' }}>
-              {activeTab === 'Communities' ? 'You have no active community chats.' : 'You have no direct messages yet.'}
-            </p>
-          ) : (
-            itemsToRender.map((item, i) => {
-              if (item.type === 'dm') {
-                const latestDm = directMessages.filter(m => (m.senderId === item.id && m.receiverId === user.id) || (m.senderId === user.id && m.receiverId === item.id)).pop();
-                const dmReceipt = chatReadReceipts.find(r => !r.community_id && r.channel_id === item.id);
-                const hasUnread = latestDm && latestDm.senderId !== user.id && (!dmReceipt || new Date(dmReceipt.last_read_at) < new Date(latestDm.createdAt || new Date().toISOString()));
-                
-                return (
-                  <div 
-                    key={`dm-${i}`} 
-                    onClick={() => navigate.push('/chat')}
-                    className="stagger-item interactive-press"
-                    style={{ display: 'flex', gap: '16px', padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.05)', cursor: 'pointer', transition: 'background 0.2s', position: 'relative' }}
-                    onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
-                    onMouseOut={e => e.currentTarget.style.background = 'transparent'}
-                  >
-                    {hasUnread && <div style={{ position: 'absolute', top: '16px', left: '8px', width: '8px', height: '8px', borderRadius: '50%', background: 'var(--teal-400)' }} />}
-                    <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: `url(${item.otherUser.avatar})`, backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative' }}>
-                      <div style={{ position: 'absolute', bottom: '-4px', right: '-4px', background: 'var(--slate-800)', borderRadius: '50%', padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid var(--slate-950)' }}>
-                        <MessageCircle size={12} color="var(--teal-400)" />
-                      </div>
-                    </div>
-                    <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '4px' }}>
-                        <div style={{ fontWeight: hasUnread ? 700 : 600, fontSize: '1rem', color: hasUnread ? 'white' : 'var(--slate-200)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.otherUser.name}</div>
-                        <div style={{ fontSize: '0.75rem', color: hasUnread ? 'var(--teal-400)' : 'var(--slate-500)', fontWeight: hasUnread ? 600 : 400 }}>{latestDm?.timestamp || ''}</div>
-                      </div>
-                      <div style={{ fontSize: '0.85rem', color: hasUnread ? 'var(--slate-300)' : 'var(--slate-400)', fontWeight: hasUnread ? 500 : 400, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {latestDm ? (latestDm.image ? '📸 Image' : `${latestDm.senderId === user.id ? 'You' : item.otherUser.name}: ${latestDm.text}`) : 'No messages yet...'}
-                      </div>
-                    </div>
-                  </div>
-                );
-              }
-
-              // Normal community channel
-              const latestMsg = messages.filter(m => m.communityId === item.comm.id && m.channel === item.id).pop();
-              const commReceipt = chatReadReceipts.find(r => r.community_id === item.comm.id && r.channel_id === item.id);
-              const hasUnread = latestMsg && latestMsg.authorId !== user.id && (!commReceipt || new Date(commReceipt.last_read_at) < new Date(latestMsg.createdAt || new Date().toISOString()));
-
-              return (
-                <div 
-                  key={`comm-${i}`} 
-                  onClick={() => navigate.push('/chat')}
-                  className="stagger-item interactive-press"
-                  style={{ display: 'flex', gap: '16px', padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.05)', cursor: 'pointer', transition: 'background 0.2s', position: 'relative' }}
-                  onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
-                  onMouseOut={e => e.currentTarget.style.background = 'transparent'}
-                >
-                  {hasUnread && <div style={{ position: 'absolute', top: '16px', left: '8px', width: '8px', height: '8px', borderRadius: '50%', background: 'var(--teal-400)' }} />}
-                  <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: `url(${item.comm.image || FALLBACK_IMAGES.community})`, backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative' }}>
-                    <div style={{ position: 'absolute', bottom: '-4px', right: '-4px', background: 'var(--slate-800)', borderRadius: '50%', padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid var(--slate-950)' }}>
-                      {item.type === 'channel' ? <Hash size={12} color="var(--teal-400)" /> : <Users size={12} color="var(--amber-400)" />}
-                    </div>
-                  </div>
-                  <div style={{ flex: 1, overflow: 'hidden' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '4px' }}>
-                      <div style={{ fontWeight: hasUnread ? 700 : 600, fontSize: '1rem', color: hasUnread ? 'white' : 'var(--slate-200)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.comm.name}</div>
-                      <div style={{ fontSize: '0.75rem', color: hasUnread ? 'var(--teal-400)' : 'var(--slate-500)', fontWeight: hasUnread ? 600 : 400 }}>{latestMsg?.timestamp || ''}</div>
-                    </div>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--teal-400)', fontWeight: 500, marginBottom: '2px' }}>{item.type === 'channel' ? '#' : ''}{item.name}</div>
-                    <div style={{ fontSize: '0.85rem', color: hasUnread ? 'var(--slate-300)' : 'var(--slate-400)', fontWeight: hasUnread ? 500 : 400, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      {latestMsg ? (latestMsg.image ? '📸 Image' : `${latestMsg.authorId === user.id ? 'You' : users.find(u=>u.id===latestMsg.authorId)?.name || 'Someone'}: ${latestMsg.text}`) : 'No messages yet...'}
-                    </div>
-                  </div>
-                </div>
-              );
-            })
-          )}
-        </div>
-
-        {/* Create Channel Modal */}
-        {showCreateModal && (
-          <div className="modal-overlay" style={{ display: 'flex', flexDirection: 'column', padding: '20px' }}>
-            <div className="modal-content" style={{ flex: 1 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                <h2 style={{ fontFamily: 'var(--font-heading)', margin: 0 }}>New Channel</h2>
-                <button onClick={() => setShowCreateModal(false)} className="interactive-press" style={{ background: 'rgba(255,255,255,0.05)', border: 'none', color: 'var(--white)', cursor: 'pointer', width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <X size={18} />
-                </button>
-              </div>
-              <p style={{ color: 'var(--slate-400)', marginBottom: '24px' }}>Create a new channel for your community.</p>
-              <input 
-                type="text"
-                placeholder="Channel name (e.g. weekend-planning)" 
-                value={newChannelName}
-                onChange={e => setNewChannelName(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && handleCreateChannel()}
-                style={{ width: '100%', padding: '14px 16px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'var(--white)', fontSize: '1rem', marginBottom: '16px' }}
-              />
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <button onClick={handleCreateChannel} className="btn btn-primary" style={{ display: 'flex', gap: '12px', justifyContent: 'center', padding: '16px', borderRadius: '12px' }}>
-                  <Hash size={20} /> Create Channel
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Start New DM Modal */}
-        {showNewChatModal && (
-          <div className="modal-overlay" style={{ display: 'flex', flexDirection: 'column', padding: '20px' }}>
-            <div className="modal-content" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                <h2 style={{ fontFamily: 'var(--font-heading)', margin: 0 }}>Start a Chat</h2>
-                <button onClick={() => setShowNewChatModal(false)} className="interactive-press" style={{ background: 'rgba(255,255,255,0.05)', border: 'none', color: 'var(--white)', cursor: 'pointer', width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <X size={18} />
-                </button>
-              </div>
-              <input 
-                type="text"
-                placeholder="Search community members..." 
-                value={userSearchTerm}
-                onChange={e => setUserSearchTerm(e.target.value)}
-                style={{ width: '100%', padding: '14px 16px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'var(--white)', fontSize: '1rem', marginBottom: '16px' }}
-              />
-              <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {users
-                  .filter(u => u.id !== user.id)
-                  .filter(u => user.isAdmin || (user.joinedCommunities || []).some(cid => (communityMemberships[cid] || []).some(m => m.userId === u.id)))
-                  .filter(u => !userSearchTerm || u.name.toLowerCase().includes(userSearchTerm.toLowerCase()))
-                  .slice(0, 20)
-                  .map(u => (
-                    <div 
-                      key={u.id}
-                      onClick={() => {
-                        setShowNewChatModal(false);
-                        navigate.push(`/chat/dm/${u.id}`);
-                      }}
-                      className="stagger-item interactive-press"
-                      style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', cursor: 'pointer' }}
-                    >
-                      <img src={u.avatar} alt={u.name} style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontWeight: 600, color: 'var(--white)' }}>{u.name}</div>
-                        <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)' }}>{u.bio || 'Member'}</div>
-                      </div>
-                      <MessageCircle size={18} color="var(--teal-400)" />
-                    </div>
-                  ))}
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    );
+    return null;
   }
 
   // ACTIVE CHAT VIEW
@@ -316,7 +86,7 @@ export default function Chat() {
   const waConfig = communityId ? whatsappSettings[communityId] : null;
 
   const currentChannelObj = channels.find(c => c.id === channelId);
-  const isLeader = !isDirectMessage && communityMemberships[communityId]?.find(m => m.userId === user?.id)?.role === 'Leader';
+  const isLeader = !isDirectMessage && canManageCommunityChat(user, community || { id: communityId }, communityMemberships[communityId]);
   const isReadOnly = currentChannelObj?.type === 'announcement' && !isLeader;
   
   const handleSend = async () => {
@@ -347,7 +117,7 @@ export default function Chat() {
     if (isDirectMessage) {
       await sendDirectMessage(targetUserId, inputText, finalImageValue);
     } else {
-      sendMessage(communityId, channelId, inputText, finalImageValue);
+      await sendMessage(communityId, channelId, inputText, finalImageValue);
     }
     
     setInputText('');
@@ -365,18 +135,38 @@ export default function Chat() {
         onBack={() => navigate.push('/chat')}
       />
 
-      {/* WhatsApp Banners */}
+      {/* Subtle optional WhatsApp group companion strip */}
       {(() => {
         const waGroupLink = community?.whatsapp_group || waConfig?.groupLink;
         if (!waGroupLink || waConfig?.businessConnected || isDirectMessage) return null;
         const normalizedLink = waGroupLink.startsWith('http') ? waGroupLink : `https://${waGroupLink}`;
         return (
-          <div style={{ background: 'rgba(34,197,94,0.1)', borderBottom: '1px solid rgba(34,197,94,0.2)', padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#22c55e', fontSize: '0.85rem', fontWeight: 500 }}>
-              <MessageCircle size={16} /> <span>This community is also on WhatsApp!</span>
-            </div>
-            <a href={normalizedLink} target="_blank" rel="noreferrer" className="interactive-press" style={{ background: '#22c55e', color: 'var(--white)', padding: '6px 12px', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
-              Join Group
+          <div style={{ background: 'rgba(15, 23, 42, 0.45)', borderBottom: '1px solid rgba(255, 255, 255, 0.06)', padding: '7px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+            <span style={{ fontSize: '0.76rem', color: 'var(--slate-400)' }}>
+              Community chat lives here · WhatsApp group also linked
+            </span>
+            <a
+              href={normalizedLink}
+              target="_blank"
+              rel="noreferrer"
+              className="interactive-press"
+              style={{
+                color: '#4ade80',
+                background: 'rgba(34, 197, 94, 0.08)',
+                border: '1px solid rgba(34, 197, 94, 0.22)',
+                padding: '4px 10px',
+                borderRadius: '999px',
+                fontSize: '0.74rem',
+                fontWeight: 600,
+                textDecoration: 'none',
+                whiteSpace: 'nowrap',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '5px'
+              }}
+            >
+              <MessageCircle size={12} />
+              <span>WhatsApp Group ↗</span>
             </a>
           </div>
         );
@@ -405,9 +195,9 @@ export default function Chat() {
           ) : (
             activeMessages.filter(m => !m.parentId).map((msg, index, topLevelMessages) => {
               const currentAuthorId = msg.senderId || msg.authorId; // Handle both schemas
-              const authorObj = users.find(u => u.id === currentAuthorId) || { name: 'Unknown', id: currentAuthorId, avatar: '/images/default-avatar.svg' };
-              const isMe = currentAuthorId === user.id;
-              const isLeader = !isDirectMessage && communityMemberships[communityId]?.find(m => m.userId === currentAuthorId)?.role === 'Leader';
+              const authorObj = users.find(u => u.id === currentAuthorId) || { name: 'Unknown', id: currentAuthorId };
+              const isMe = Boolean(user?.id && currentAuthorId === user.id);
+              const isLeader = !isDirectMessage && isCommunityChatLeader(authorObj, community || { id: communityId }, communityMemberships[communityId]);
               
               const prevMsg = topLevelMessages[index - 1];
               const nextMsg = topLevelMessages[index + 1];
@@ -451,7 +241,7 @@ export default function Chat() {
                   <div className="stagger-item" style={{ alignSelf: isMe ? 'flex-end' : 'flex-start', maxWidth: '85%', marginTop: isConsecutive ? '4px' : '16px' }} onMouseEnter={() => setHoveredMsgId(msg.id)} onMouseLeave={() => setHoveredMsgId(null)}>
                     {!isMe && !isConsecutive && (
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px', marginLeft: '4px' }}>
-                        <img onClick={() => navigate.push(`/profile/${msg.authorId || msg.senderId}`)} src={authorObj.avatar} alt={authorObj.name} style={{ width: '20px', height: '20px', borderRadius: '50%', objectFit: 'cover', cursor: 'pointer' }} />
+                        <img onClick={() => navigate.push(`/profile/${msg.authorId || msg.senderId}`)} src={resolveUserAvatar(authorObj)} alt={authorObj.name} style={{ width: '20px', height: '20px', borderRadius: '50%', objectFit: 'cover', cursor: 'pointer' }} />
                         <div onClick={() => navigate.push(`/profile/${msg.authorId || msg.senderId}`)} style={{ fontSize: '0.75rem', color: isLeader ? 'var(--teal-400)' : 'var(--slate-400)', fontWeight: isLeader ? 600 : 400, cursor: 'pointer' }}>
                           {authorObj.name} {isLeader && '👑'}
                         </div>
@@ -504,7 +294,7 @@ export default function Chat() {
                       {Object.keys(reactionsMap).length > 0 && (
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '4px' }}>
                           {Object.entries(reactionsMap).map(([emoji, usersArr]) => (
-                            <div key={emoji} onClick={() => reactToMessage(msg.id, emoji, isDirectMessage)} style={{ background: usersArr.includes(user.id) ? (isMe ? 'rgba(255,255,255,0.2)' : 'var(--teal-600)') : 'rgba(255,255,255,0.1)', padding: '2px 6px', borderRadius: '12px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.05)' }}>
+                            <div key={emoji} onClick={() => reactToMessage(msg.id, emoji, isDirectMessage)} style={{ background: usersArr.includes(user?.id) ? (isMe ? 'rgba(255,255,255,0.2)' : 'var(--teal-600)') : 'rgba(255,255,255,0.1)', padding: '2px 6px', borderRadius: '12px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.05)' }}>
                               {emoji} <span style={{ opacity: 0.9 }}>{usersArr.length}</span>
                             </div>
                           ))}
@@ -608,16 +398,17 @@ export default function Chat() {
               const threadParent = activeMessages.find(m => m.id === activeThreadId);
               const threadReplies = activeMessages.filter(m => m.parentId === activeThreadId);
               if (!threadParent) return null;
-              const authorObj = users.find(u => u.id === (threadParent.senderId || threadParent.authorId)) || { name: 'Unknown', avatar: '/images/default-avatar.svg' };
+              const authorId = threadParent.senderId || threadParent.authorId;
+              const authorObj = users.find(u => u.id === authorId) || { name: 'Unknown', id: authorId };
               return (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   {/* Thread Parent */}
                   <div style={{ display: 'flex', gap: '12px', paddingBottom: '16px', borderBottom: '1px solid var(--slate-800)' }}>
-                    <img src={authorObj.avatar} style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover' }} />
+                    <img src={resolveUserAvatar(authorObj)} alt={authorObj.name} style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover' }} />
                     <div style={{ flex: 1 }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
                         <span style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--white)' }}>{authorObj.name}</span>
-                        <span style={{ fontSize: '0.7rem', color: 'var(--slate-500)' }}>{threadParent.createdAt ? new Date(threadParent.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}</span>
+                        <span style={{ fontSize: '0.7rem', color: 'var(--slate-500)' }}>{formatChatTime(threadParent)}</span>
                       </div>
                       <div style={{ fontSize: '0.9rem', marginTop: '6px', color: 'var(--slate-200)', lineHeight: 1.4 }}>{threadParent.text}</div>
                     </div>
@@ -625,14 +416,15 @@ export default function Chat() {
                   {/* Replies */}
                   <div style={{ fontSize: '0.8rem', color: 'var(--slate-500)', fontWeight: 600, marginBottom: '-8px' }}>{threadReplies.length} {threadReplies.length === 1 ? 'Reply' : 'Replies'}</div>
                   {threadReplies.map(reply => {
-                    const repAuth = users.find(u => u.id === (reply.senderId || reply.authorId)) || { name: 'Unknown', avatar: '/images/default-avatar.svg' };
+                    const replyAuthorId = reply.senderId || reply.authorId;
+                    const repAuth = users.find(u => u.id === replyAuthorId) || { name: 'Unknown', id: replyAuthorId };
                     return (
                       <div key={reply.id} style={{ display: 'flex', gap: '10px' }}>
-                        <img src={repAuth.avatar} style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }} />
+                        <img src={resolveUserAvatar(repAuth)} alt={repAuth.name} style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }} />
                         <div style={{ flex: 1 }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
                             <span style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--slate-200)' }}>{repAuth.name}</span>
-                            <span style={{ fontSize: '0.65rem', color: 'var(--slate-500)' }}>{reply.createdAt ? new Date(reply.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}</span>
+                            <span style={{ fontSize: '0.65rem', color: 'var(--slate-500)' }}>{formatChatTime(reply)}</span>
                           </div>
                           <div style={{ fontSize: '0.85rem', marginTop: '4px', color: 'var(--slate-300)', lineHeight: 1.4 }}>{reply.text}</div>
                         </div>

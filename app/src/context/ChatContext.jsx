@@ -23,8 +23,24 @@ export function ChatProvider({ children }) {
     const fetchChatData = async () => {
       setIsChatLoading(true);
       try {
+        const joinedCommunityIds = Array.isArray(user?.joinedCommunities)
+          ? user.joinedCommunities.filter(Boolean)
+          : [];
+        const messagesQuery = !user?.isAdmin && joinedCommunityIds.length > 0
+          ? supabase
+              .from('messages')
+              .select('*')
+              .in('community_id', joinedCommunityIds)
+              .order('created_at', { ascending: false })
+              .limit(500)
+          : supabase
+              .from('messages')
+              .select('*')
+              .order('created_at', { ascending: false })
+              .limit(500);
+
         const [msgRes, dmRes, readRes] = await Promise.all([
-          supabase.from('messages').select('*').order('created_at', { ascending: false }).limit(200),
+          messagesQuery,
           supabase.from('direct_messages').select('*')
             .or(`sender_id.eq.${authUser.id},receiver_id.eq.${authUser.id}`)
             .order('created_at', { ascending: true }),
@@ -45,9 +61,12 @@ export function ChatProvider({ children }) {
             communityId: msg.community_id,
             channel: msg.channel,
             senderId: msg.author_id,
+            authorId: msg.author_id,
             text: msg.text,
             image: msg.image,
             createdAt: msg.created_at,
+            created_at: msg.created_at,
+            timestamp: msg.created_at,
             parentId: msg.parent_id || null,
             reactions: msgReactRes.data ? msgReactRes.data.filter(r => r.message_id === msg.id) : []
           })));
@@ -61,6 +80,8 @@ export function ChatProvider({ children }) {
             text: dm.text,
             image: dm.image,
             createdAt: dm.created_at,
+            created_at: dm.created_at,
+            timestamp: dm.created_at,
             parentId: dm.parent_id || null,
             reactions: dmReactRes.data ? dmReactRes.data.filter(r => r.message_id === dm.id) : []
           })));
@@ -88,9 +109,12 @@ export function ChatProvider({ children }) {
             communityId: payload.new.community_id,
             channel: payload.new.channel,
             senderId: payload.new.author_id,
+            authorId: payload.new.author_id,
             text: payload.new.text,
             image: payload.new.image,
             createdAt: payload.new.created_at,
+            created_at: payload.new.created_at,
+            timestamp: payload.new.created_at,
             parentId: payload.new.parent_id || null,
             reactions: []
           }];
@@ -108,6 +132,8 @@ export function ChatProvider({ children }) {
             text: payload.new.text,
             image: payload.new.image,
             createdAt: payload.new.created_at,
+            created_at: payload.new.created_at,
+            timestamp: payload.new.created_at,
             parentId: payload.new.parent_id || null,
             reactions: []
           }];
@@ -261,10 +287,76 @@ export function ChatProvider({ children }) {
     }
   };
 
+  const loadChannelMessages = async (communityId, channel) => {
+    if (!communityId || !channel) return [];
+    try {
+      const { data: channelRows, error } = await supabase
+        .from('messages')
+        .select('*')
+        .eq('community_id', communityId)
+        .eq('channel', channel)
+        .order('created_at', { ascending: false })
+        .limit(200);
+
+      if (error || !channelRows) return [];
+
+      const orderedRows = [...channelRows].reverse();
+      const msgIds = orderedRows.map(m => m.id).filter(Boolean);
+      let reactionsData = [];
+      if (msgIds.length > 0) {
+        const { data: reactRows } = await supabase
+          .from('message_reactions')
+          .select('*')
+          .in('message_id', msgIds);
+        reactionsData = reactRows || [];
+      }
+
+      const mapped = orderedRows.map(msg => ({
+        id: msg.id,
+        communityId: msg.community_id,
+        channel: msg.channel,
+        senderId: msg.author_id,
+        authorId: msg.author_id,
+        text: msg.text,
+        image: msg.image,
+        createdAt: msg.created_at,
+        created_at: msg.created_at,
+        timestamp: msg.created_at,
+        parentId: msg.parent_id || null,
+        reactions: reactionsData.filter(r => r.message_id === msg.id)
+      }));
+
+      setMessages(prev => {
+        const fetchedIds = new Set(mapped.map(m => m.id));
+        const maxFetchedMs = mapped.reduce(
+          (max, m) => Math.max(max, new Date(m.createdAt || 0).getTime()),
+          0
+        );
+        const keepRecentOrOptimistic = prev.filter(m => {
+          if (m.communityId !== communityId || m.channel !== channel) return false;
+          if (fetchedIds.has(m.id)) return false;
+          const msgMs = new Date(m.createdAt || m.created_at || 0).getTime();
+          return String(m.id).startsWith('temp') || String(m.id).startsWith('msg_') || msgMs > maxFetchedMs;
+        });
+        const otherChannelMessages = prev.filter(
+          m => !(m.communityId === communityId && m.channel === channel)
+        );
+        return [...otherChannelMessages, ...mapped, ...keepRecentOrOptimistic].sort(
+          (a, b) => new Date(a.createdAt || a.created_at || 0).getTime() - new Date(b.createdAt || b.created_at || 0).getTime()
+        );
+      });
+
+      return mapped;
+    } catch (err) {
+      console.error('Error loading channel messages:', err);
+      return [];
+    }
+  };
+
   return (
     <ChatContext.Provider value={{
       messages, directMessages, chatReadReceipts, isChatLoading,
-      sendMessage, sendDirectMessage, markChatRead, reactToMessage
+      loadChannelMessages, sendMessage, sendDirectMessage, markChatRead, reactToMessage
     }}>
       {children}
     </ChatContext.Provider>

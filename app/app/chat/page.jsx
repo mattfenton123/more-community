@@ -8,6 +8,7 @@ import AppHeader from '../../src/components/AppHeader';
 import { FALLBACK_IMAGES } from '../../src/lib/constants';
 import { useToast } from '../../src/components/Toast';
 import { resolveUserAvatar, getDefaultAvatar } from '../../src/lib/avatar';
+import { formatChatTime, getManageableCommunities } from '../../src/lib/chatUtils';
 
 export default function ChatIndex() {
   const { communities, user, users, isLoading, channels, createChannel, communityMemberships } = useAppContext();
@@ -26,6 +27,7 @@ export default function ChatIndex() {
   const [isCreating, setIsCreating] = useState(false);
 
   const myCommunities = communities.filter(c => user?.joinedCommunities?.includes(c.id));
+  const manageableCommunities = getManageableCommunities(communities, user, communityMemberships);
 
   // Build unified inbox items
   let inboxItems = [];
@@ -63,7 +65,7 @@ export default function ChatIndex() {
       dmUsers.add(otherUserId);
     });
     dmUsers.forEach(otherId => {
-      const otherUserObj = users.find(u => u.id === otherId) || { id: otherId, name: 'Unknown User', avatar: '/images/default-avatar.svg' };
+      const otherUserObj = users.find(u => u.id === otherId) || { id: otherId, name: 'Unknown User' };
       inboxItems.push({ type: 'dm', otherUser: otherUserObj, id: otherId });
     });
   }
@@ -98,8 +100,11 @@ export default function ChatIndex() {
 
   const handleCreateChannel = async (type = 'text', members = null) => {
     if (!newChannelName.trim() || isCreating) return;
-    const targetCommunity = createChannelCommunityId || user.ledCommunities?.[0] || myCommunities[0]?.id;
-    if (!targetCommunity) return;
+    const targetCommunity = createChannelCommunityId || manageableCommunities[0]?.id;
+    if (!targetCommunity) {
+      toast.error('Leader access required', 'Only community leaders can create group chats.');
+      return;
+    }
     
     setIsCreating(true);
     await createChannel(targetCommunity, newChannelName.trim(), type, members);
@@ -211,7 +216,7 @@ export default function ChatIndex() {
                         )}
                       </div>
                       <div style={{ fontSize: '0.75rem', color: item.hasUnread ? 'var(--teal-400)' : 'var(--slate-500)', fontWeight: item.hasUnread ? 600 : 400 }}>
-                        {item.latestMsg?.timestamp?.split(' ')[0] || ''}
+                        {formatChatTime(item.latestMsg)}
                       </div>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
@@ -271,15 +276,17 @@ export default function ChatIndex() {
                     <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)' }}>1-on-1 private chat</div>
                   </div>
                 </button>
-                <button onClick={() => setCreateMode('group')} className="interactive-press" style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', color: 'white', cursor: 'pointer', textAlign: 'left' }}>
-                  <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(20,184,166,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Users size={20} color="var(--teal-400)" />
-                  </div>
-                  <div>
-                    <div style={{ fontWeight: 600 }}>New Group Chat</div>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)' }}>Create a private group for an event or topic</div>
-                  </div>
-                </button>
+                {manageableCommunities.length > 0 && (
+                  <button onClick={() => setCreateMode('group')} className="interactive-press" style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', color: 'white', cursor: 'pointer', textAlign: 'left' }}>
+                    <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(20,184,166,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Users size={20} color="var(--teal-400)" />
+                    </div>
+                    <div>
+                      <div style={{ fontWeight: 600 }}>New Group Chat</div>
+                      <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)' }}>Create a private group for an event or topic</div>
+                    </div>
+                  </button>
+                )}
               </div>
             )}
 
@@ -292,7 +299,7 @@ export default function ChatIndex() {
                     const sharedUserIds = new Set();
                     user?.joinedCommunities?.forEach(communityId => {
                       const members = communityMemberships?.[communityId] || [];
-                      members.forEach(m => sharedUserIds.add(m.userId));
+                      members.forEach(m => sharedUserIds.add(m.userId || m.user_id));
                     });
                     return users
                       .filter(u => u.id !== user?.id && sharedUserIds.has(u.id))
@@ -300,7 +307,7 @@ export default function ChatIndex() {
                       .slice(0, 20);
                   })().map(u => (
                     <div key={u.id} onClick={() => { setShowCreateModal(false); router.push(`/chat/dm/${u.id}`); }} className="stagger-item interactive-press" style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', cursor: 'pointer' }}>
-                      <img src={u.avatar} alt={u.name} style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
+                      <img src={resolveUserAvatar(u)} alt={u.name} style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
                       <div style={{ flex: 1 }}>
                         <div style={{ fontWeight: 600, color: 'var(--white)' }}>{u.name}</div>
                       </div>
@@ -315,11 +322,15 @@ export default function ChatIndex() {
               <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
                 <input type="text" placeholder="Group Name" value={newChannelName} onChange={e => setNewChannelName(e.target.value)} style={{ width: '100%', padding: '14px 16px', background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '12px', color: 'var(--white)', fontSize: '1rem', marginBottom: '16px' }} />
                 
-                {myCommunities.length > 1 && (
-                  <select value={createChannelCommunityId || myCommunities[0]?.id} onChange={e => setCreateChannelCommunityId(e.target.value)} style={{ width: '100%', padding: '12px', background: 'var(--slate-800)', color: 'var(--white)', border: '1px solid var(--slate-700)', borderRadius: '8px', marginBottom: '16px' }}>
-                    {myCommunities.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                {manageableCommunities.length > 1 ? (
+                  <select value={createChannelCommunityId || manageableCommunities[0]?.id} onChange={e => setCreateChannelCommunityId(e.target.value)} style={{ width: '100%', padding: '12px', background: 'var(--slate-800)', color: 'var(--white)', border: '1px solid var(--slate-700)', borderRadius: '8px', marginBottom: '16px' }}>
+                    {manageableCommunities.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                   </select>
-                )}
+                ) : manageableCommunities[0] ? (
+                  <div style={{ fontSize: '0.82rem', color: 'var(--teal-300)', marginBottom: '12px', fontWeight: 600 }}>
+                    Community: {manageableCommunities[0].name}
+                  </div>
+                ) : null}
 
                 {createMode === 'group' && (
                   <>
@@ -329,7 +340,7 @@ export default function ChatIndex() {
                         const sharedUserIds = new Set();
                         user?.joinedCommunities?.forEach(communityId => {
                           const members = communityMemberships?.[communityId] || [];
-                          members.forEach(m => sharedUserIds.add(m.userId));
+                          members.forEach(m => sharedUserIds.add(m.userId || m.user_id));
                         });
                         return users
                           .filter(u => u.id !== user?.id && sharedUserIds.has(u.id))
@@ -340,7 +351,7 @@ export default function ChatIndex() {
                             if (e.target.checked) setSelectedMembers([...selectedMembers, u.id]);
                             else setSelectedMembers(selectedMembers.filter(id => id !== u.id));
                           }} />
-                          <img src={u.avatar} alt={u.name} style={{ width: '24px', height: '24px', borderRadius: '50%' }} />
+                          <img src={resolveUserAvatar(u)} alt={u.name} style={{ width: '24px', height: '24px', borderRadius: '50%', objectFit: 'cover' }} />
                           <span style={{ color: 'white' }}>{u.name}</span>
                         </label>
                       ))}
