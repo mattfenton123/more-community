@@ -196,7 +196,7 @@
     grid-template-columns: 1fr 1fr;
     gap: 5rem;
     align-items: center;
-    padding: 10rem 0 6rem;
+    padding: 0 0 1.5rem;
 }
 .leaders-hero-image {
     border-radius: var(--radius-xl);

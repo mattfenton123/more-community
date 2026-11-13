@@ -4,12 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>App Preview | more</title>
-    <meta name="description" content="Preview the more community app — discover communities, chat, manage events, and lead your own community, all from your pocket.">
+    <meta name="description" content="Preview the more community app - discover communities, chat, manage events, and lead your own community, all from your pocket.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css?v=8">
-    <link rel="stylesheet" href="pages.css">
+    <link rel="stylesheet" href="pages.css?v=4">
+    <link rel="stylesheet" href="brand-system.css?v=2">
 </head>
 <body class="yentw-theme">
     <div class="menu-overlay" id="menuOverlay"></div>
@@ -21,7 +22,7 @@
                 <li><a href="leaders.html">For Leaders</a></li>
                 <li><a href="about.html">Our Story</a></li>
                 <li><a href="tunbridge-wells.html">Tunbridge Wells</a></li>
-                <li class="nav-dropdown"><a href="#" id="venturesDropdownToggle">Ventures ▾</a><div class="nav-dropdown-menu"><a href="yentw.html">YENTW</a><a href="accelerator.html">Accelerator</a><a href="hackathons.html">Hackathons</a><a href="sponsorship.html">Sponsorship</a></div></li>
+                <li class="nav-dropdown"><a href="#" id="venturesDropdownToggle">Ventures ▾</a><div class="nav-dropdown-menu"><a href="yentw.html">Youth Entrepreneurs</a><a href="accelerator.html">Accelerator</a><a href="hackathons.html">Hackathons</a><a href="sponsorship.html">Sponsorship</a></div></li>
                 <li><a href="index.html#join" class="btn-nav">Join the Movement</a></li>
             </ul>
             <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
@@ -47,11 +48,11 @@
                     <h2 id="screenTitle">Discover</h2>
                     <p id="screenDesc">Browse communities by interest, location, or activity. Your personalised feed of what's happening near you.</p>
                     <ul class="app-screen-list" id="screenList">
-                        <li class="active-screen" data-screen="discover"><span class="screen-icon">🔍</span> Discover</li>
-                        <li data-screen="community"><span class="screen-icon">👥</span> Community Profile</li>
-                        <li data-screen="event"><span class="screen-icon">📅</span> Event Detail</li>
-                        <li data-screen="chat"><span class="screen-icon">💬</span> Chat</li>
-                        <li data-screen="dashboard"><span class="screen-icon">📊</span> Leader Dashboard</li>
+                        <li class="active-screen" data-screen="discover"><span class="screen-icon"><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5" fill="rgba(20,184,166,0.12)"/><path d="M16 16l4 4"/></svg></span></span> Discover</li>
+                        <li data-screen="community"><span class="screen-icon"><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8.5" r="3.2" fill="rgba(20,184,166,0.18)"/><path d="M3.5 19c0-2.8 2.5-4.5 5.5-4.5s5.5 1.7 5.5 4.5"/><circle cx="16.5" cy="9.5" r="2.5" fill="rgba(251,191,36,0.25)"/><path d="M16.5 14.5c2.2 0 4 1.3 4 3.5"/></svg></span></span> Community Profile</li>
+                        <li data-screen="event"><span class="screen-icon"><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="3" fill="rgba(20,184,166,0.16)"/><path d="M3.5 9.5h17M8 3.5v3M16 3.5v3"/><path d="M9 14.5l2 2 4-4" stroke="#fbbf24" stroke-width="2.1"/></svg></span></span> Event Detail</li>
+                        <li data-screen="chat"><span class="screen-icon"><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 6.5a2.5 2.5 0 0 1 2.5-2.5h10a2.5 2.5 0 0 1 2.5 2.5v7a2.5 2.5 0 0 1-2.5 2.5H10l-4.5 3.5V16H7a2.5 2.5 0 0 1-2.5-2.5v-7z" fill="rgba(20,184,166,0.16)"/><circle cx="9.2" cy="10" r="1.1" fill="#fbbf24" stroke="none"/><circle cx="12" cy="10" r="1.1" fill="#fbbf24" stroke="none"/><circle cx="14.8" cy="10" r="1.1" fill="#fbbf24" stroke="none"/></svg></span></span> Chat</li>
+                        <li data-screen="dashboard"><span class="screen-icon"><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="13" width="3.5" height="7" rx="1" fill="rgba(20,184,166,0.2)"/><rect x="10.25" y="9" width="3.5" height="11" rx="1" fill="rgba(20,184,166,0.28)"/><rect x="16.5" y="5" width="3.5" height="15" rx="1" fill="rgba(251,191,36,0.35)"/><path d="M4 11l6-4 4 2 6-5" stroke="#fbbf24"/></svg></span></span> Leader Dashboard</li>
                     </ul>
                     <div style="margin-top: 2rem;">
                         <div class="email-signup" style="max-width: 350px;">
@@ -66,25 +67,25 @@
                     <div class="app-notch"></div>
                     <div class="app-status-bar">
                         <span>9:41</span>
-                        <span>⚡ 87%</span>
+                        <span><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.2 3L6 13h5.5l-1 8L18 11h-5.3L13.2 3z" fill="rgba(251,191,36,0.25)"/></svg></span> 87%</span>
                     </div>
 
                     <!-- Screen 1: Discover -->
                     <div class="app-screen active" id="screen-discover">
                         <div class="app-header">
                             <h2>Discover</h2>
-                            <span style="font-size: 1.3rem;">📍</span>
+                            <span style="font-size: 1.3rem;"><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="10" r="7" fill="rgba(20,184,166,0.16)" stroke="none"/><path d="M12 21s-6-5.3-6-11a6 6 0 1 1 12 0c0 5.7-6 11-6 11z"/><circle cx="12" cy="10" r="2.2" fill="#fbbf24" stroke="none"/></svg></span></span>
                         </div>
                         <div class="app-search-mini">
-                            <span>🔍</span> Search communities...
+                            <span><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5" fill="rgba(20,184,166,0.12)"/><path d="M16 16l4 4"/></svg></span></span> Search communities...
                         </div>
                         <div class="app-pills">
                             <span class="app-pill active-pill">All</span>
-                            <span class="app-pill">🚶 Walking</span>
-                            <span class="app-pill">🏃 Running</span>
-                            <span class="app-pill">🧘 Wellness</span>
-                            <span class="app-pill">💼 Business</span>
-                            <span class="app-pill">⛰️ Adventure</span>
+                            <span class="app-pill"><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="13.5" cy="5" r="2" fill="#fbbf24" stroke="currentColor"/><path d="M9 20l2-5.5 2.5 2V20M11 10.5l-2 4M11 10.5l3 2 3-1"/><path d="M6.5 14c1.2-2.2 2.8-3.5 4.5-3.5"/></svg></span> Walking</span>
+                            <span class="app-pill"><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="15" cy="5.5" r="2" fill="#fbbf24" stroke="currentColor"/><path d="M7 19l3.2-4.5 2.6 1.5L11 20M9.5 11.5l3.5-2.5 3.2 2.2 2.3-.7"/><path d="M4 13h3.5M3 16h2.5"/></svg></span> Running</span>
+                            <span class="app-pill"><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 14c3.5-5 12.5-5 16 0-3.5 4.5-12.5 4.5-16 0z" fill="rgba(20,184,166,0.16)"/><circle cx="12" cy="14" r="2.2" fill="#fbbf24" stroke="none"/><path d="M12 4.5c1.8 2 1.8 4 0 5.5-1.8-1.5-1.8-3.5 0-5.5z"/></svg></span> Wellness</span>
+                            <span class="app-pill"><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="rgba(20,184,166,0.18)"/><path d="M14.5 9.2c-.6-.7-1.5-1.1-2.5-1.1-1.7 0-2.8 1-2.8 2.3 0 1.4 1.2 1.9 2.8 2.2 1.7.3 2.8.9 2.8 2.3 0 1.5-1.3 2.5-3 2.5-1.2 0-2.2-.4-2.8-1.2"/><path d="M12 6.5v11"/></svg></span> Business</span>
+                            <span class="app-pill"><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 19l5.5-9.5 4 6 3.5-5 5 8.5H3z" fill="rgba(20,184,166,0.18)"/><circle cx="17" cy="6" r="2" fill="#fbbf24" stroke="none"/></svg></span> Adventure</span>
                         </div>
                         <div class="app-section-title">Near You</div>
                         <div class="app-community-card">
@@ -92,7 +93,7 @@
                             <div class="app-card-info">
                                 <h4>Mindful Miles</h4>
                                 <p>Walk & talk sessions</p>
-                                <span class="card-mini-meta">📍 0.8mi • 👥 85 • Sat 10am</span>
+                                <span class="card-mini-meta"><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="10" r="7" fill="rgba(20,184,166,0.16)" stroke="none"/><path d="M12 21s-6-5.3-6-11a6 6 0 1 1 12 0c0 5.7-6 11-6 11z"/><circle cx="12" cy="10" r="2.2" fill="#fbbf24" stroke="none"/></svg></span> 0.8mi • <span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8.5" r="3.2" fill="rgba(20,184,166,0.18)"/><path d="M3.5 19c0-2.8 2.5-4.5 5.5-4.5s5.5 1.7 5.5 4.5"/><circle cx="16.5" cy="9.5" r="2.5" fill="rgba(251,191,36,0.25)"/><path d="M16.5 14.5c2.2 0 4 1.3 4 3.5"/></svg></span> 85 • Sat 10am</span>
                             </div>
                             <button class="app-card-join">Join</button>
                         </div>
@@ -101,16 +102,16 @@
                             <div class="app-card-info">
                                 <h4>A-Z Challenge</h4>
                                 <p>Running routes A to Z</p>
-                                <span class="card-mini-meta">📍 1.2mi • 👥 150 • Wed 6:30pm</span>
+                                <span class="card-mini-meta"><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="10" r="7" fill="rgba(20,184,166,0.16)" stroke="none"/><path d="M12 21s-6-5.3-6-11a6 6 0 1 1 12 0c0 5.7-6 11-6 11z"/><circle cx="12" cy="10" r="2.2" fill="#fbbf24" stroke="none"/></svg></span> 1.2mi • <span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8.5" r="3.2" fill="rgba(20,184,166,0.18)"/><path d="M3.5 19c0-2.8 2.5-4.5 5.5-4.5s5.5 1.7 5.5 4.5"/><circle cx="16.5" cy="9.5" r="2.5" fill="rgba(251,191,36,0.25)"/><path d="M16.5 14.5c2.2 0 4 1.3 4 3.5"/></svg></span> 150 • Wed 6:30pm</span>
                             </div>
                             <button class="app-card-join">Join</button>
                         </div>
                         <div class="app-community-card">
-                            <div class="app-card-avatar"><img src="images/entrepreneurs.png" alt=""></div>
+                            <div class="app-card-avatar"><img src="images/communities/entrepreneurs.webp" alt=""></div>
                             <div class="app-card-info">
-                                <h4>YENTW</h4>
-                                <p>Young Entrepreneurs TW</p>
-                                <span class="card-mini-meta">📍 0.5mi • 👥 200 • Thu 7pm</span>
+                                <h4>Youth Entrepreneurs</h4>
+                                <p>The Pantiles, Tunbridge Wells</p>
+                                <span class="card-mini-meta"><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="10" r="7" fill="rgba(20,184,166,0.16)" stroke="none"/><path d="M12 21s-6-5.3-6-11a6 6 0 1 1 12 0c0 5.7-6 11-6 11z"/><circle cx="12" cy="10" r="2.2" fill="#fbbf24" stroke="none"/></svg></span> 0.5mi • <span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8.5" r="3.2" fill="rgba(20,184,166,0.18)"/><path d="M3.5 19c0-2.8 2.5-4.5 5.5-4.5s5.5 1.7 5.5 4.5"/><circle cx="16.5" cy="9.5" r="2.5" fill="rgba(251,191,36,0.25)"/><path d="M16.5 14.5c2.2 0 4 1.3 4 3.5"/></svg></span> Fri 29 Jan • 12pm</span>
                             </div>
                             <button class="app-card-join">Join</button>
                         </div>
@@ -120,7 +121,7 @@
                             <div class="app-card-info">
                                 <h4>TW Yoga Collective</h4>
                                 <p>Outdoor yoga for all levels</p>
-                                <span class="card-mini-meta">📍 1.5mi • 👥 65 • Tue 7am</span>
+                                <span class="card-mini-meta"><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="10" r="7" fill="rgba(20,184,166,0.16)" stroke="none"/><path d="M12 21s-6-5.3-6-11a6 6 0 1 1 12 0c0 5.7-6 11-6 11z"/><circle cx="12" cy="10" r="2.2" fill="#fbbf24" stroke="none"/></svg></span> 1.5mi • <span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8.5" r="3.2" fill="rgba(20,184,166,0.18)"/><path d="M3.5 19c0-2.8 2.5-4.5 5.5-4.5s5.5 1.7 5.5 4.5"/><circle cx="16.5" cy="9.5" r="2.5" fill="rgba(251,191,36,0.25)"/><path d="M16.5 14.5c2.2 0 4 1.3 4 3.5"/></svg></span> 65 • Tue 7am</span>
                             </div>
                             <button class="app-card-join">Join</button>
                         </div>
@@ -129,7 +130,7 @@
                             <div class="app-card-info">
                                 <h4>Kent Adventures</h4>
                                 <p>Kayaking, climbing, camping</p>
-                                <span class="card-mini-meta">📍 2.1mi • 👥 90 • Sat 8am</span>
+                                <span class="card-mini-meta"><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="10" r="7" fill="rgba(20,184,166,0.16)" stroke="none"/><path d="M12 21s-6-5.3-6-11a6 6 0 1 1 12 0c0 5.7-6 11-6 11z"/><circle cx="12" cy="10" r="2.2" fill="#fbbf24" stroke="none"/></svg></span> 2.1mi • <span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8.5" r="3.2" fill="rgba(20,184,166,0.18)"/><path d="M3.5 19c0-2.8 2.5-4.5 5.5-4.5s5.5 1.7 5.5 4.5"/><circle cx="16.5" cy="9.5" r="2.5" fill="rgba(251,191,36,0.25)"/><path d="M16.5 14.5c2.2 0 4 1.3 4 3.5"/></svg></span> 90 • Sat 8am</span>
                             </div>
                             <button class="app-card-join">Join</button>
                         </div>
@@ -141,22 +142,22 @@
                             <img src="images/walking.png" alt="" style="width: 100%; height: 100%; object-fit: cover;">
                             <div style="position: absolute; bottom: 0; left: 0; right: 0; padding: 16px; background: linear-gradient(0deg, rgba(0,0,0,0.8), transparent);">
                                 <div style="font-family: var(--font-heading); font-size: 1.2rem; font-weight: 700; color: var(--white);">Mindful Miles</div>
-                                <div style="font-size: 0.72rem; color: var(--slate-400);">🚶 Walking • 📍 Dunorlan Park</div>
+                                <div style="font-size: 0.72rem; color: var(--slate-400);"><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="13.5" cy="5" r="2" fill="#fbbf24" stroke="currentColor"/><path d="M9 20l2-5.5 2.5 2V20M11 10.5l-2 4M11 10.5l3 2 3-1"/><path d="M6.5 14c1.2-2.2 2.8-3.5 4.5-3.5"/></svg></span> Walking • <span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="10" r="7" fill="rgba(20,184,166,0.16)" stroke="none"/><path d="M12 21s-6-5.3-6-11a6 6 0 1 1 12 0c0 5.7-6 11-6 11z"/><circle cx="12" cy="10" r="2.2" fill="#fbbf24" stroke="none"/></svg></span> Dunorlan Park</div>
                             </div>
                         </div>
                         <div style="padding: 16px; display: flex; gap: 8px;">
                             <button style="flex: 1; padding: 10px; background: var(--teal-600); border: none; border-radius: 10px; color: white; font-weight: 700; font-size: 0.85rem; cursor: pointer;">Join Community</button>
-                            <button style="padding: 10px 16px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: var(--white); font-size: 0.85rem; cursor: pointer;">💬</button>
+                            <button style="padding: 10px 16px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: var(--white); font-size: 0.85rem; cursor: pointer;"><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 6.5a2.5 2.5 0 0 1 2.5-2.5h10a2.5 2.5 0 0 1 2.5 2.5v7a2.5 2.5 0 0 1-2.5 2.5H10l-4.5 3.5V16H7a2.5 2.5 0 0 1-2.5-2.5v-7z" fill="rgba(20,184,166,0.16)"/><circle cx="9.2" cy="10" r="1.1" fill="#fbbf24" stroke="none"/><circle cx="12" cy="10" r="1.1" fill="#fbbf24" stroke="none"/><circle cx="14.8" cy="10" r="1.1" fill="#fbbf24" stroke="none"/></svg></span></button>
                         </div>
                         <div style="padding: 0 16px;">
                             <div style="display: flex; gap: 16px; margin-bottom: 16px;">
                                 <div style="text-align: center;"><div style="font-weight: 700; color: var(--white); font-size: 1.1rem;">85</div><div style="font-size: 0.65rem; color: var(--slate-600);">Members</div></div>
                                 <div style="text-align: center;"><div style="font-weight: 700; color: var(--white); font-size: 1.1rem;">42</div><div style="font-size: 0.65rem; color: var(--slate-600);">Events</div></div>
-                                <div style="text-align: center;"><div style="font-weight: 700; color: var(--teal-400); font-size: 1.1rem;">4.9★</div><div style="font-size: 0.65rem; color: var(--slate-600);">Rating</div></div>
+                                <div style="text-align: center;"><div style="font-weight: 700; color: var(--teal-400); font-size: 1.1rem;">4.9 <span class="m-ico" style="font-size:14px;color:#fbbf24;"><svg viewBox="0 0 24 24" width="14px" height="14px" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5l2.4 5 5.6.8-4 3.9.9 5.5-4.9-2.6-4.9 2.6.9-5.5-4-3.9 5.6-.8z" fill="#fbbf24" stroke="#fbbf24"/></svg></span></div><div style="font-size: 0.65rem; color: var(--slate-600);">Rating</div></div>
                             </div>
                         </div>
                         <div style="padding: 0 16px; margin-bottom: 16px;">
-                            <p style="font-size: 0.8rem; color: var(--slate-400); line-height: 1.6;">Weekly walk and talk sessions in the beautiful TW countryside. A safe space to connect, share, and enjoy the outdoors. No pace, no pressure — just presence.</p>
+                            <p style="font-size: 0.8rem; color: var(--slate-400); line-height: 1.6;">Weekly walk and talk sessions in the beautiful TW countryside. A safe space to connect, share, and enjoy the outdoors. No pace, no pressure - just presence.</p>
                         </div>
                         <div class="app-section-title">Upcoming Events</div>
                         <div style="margin: 0 16px 10px; padding: 14px; background: rgba(20,184,166,0.06); border: 1px solid rgba(20,184,166,0.12); border-radius: 12px;">
@@ -186,27 +187,27 @@
                         <div style="margin: 0 16px 16px; padding: 16px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px;">
                             <div style="display: flex; flex-direction: column; gap: 10px;">
                                 <div style="display: flex; align-items: center; gap: 10px;">
-                                    <span style="font-size: 1.1rem;">📅</span>
-                                    <div><div style="font-weight: 600; color: var(--white); font-size: 0.85rem;">Saturday, 14 June</div><div style="font-size: 0.72rem; color: var(--slate-500);">10:00am — 11:30am</div></div>
+                                    <span style="font-size: 1.1rem;"><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="3" fill="rgba(20,184,166,0.16)"/><path d="M3.5 9.5h17M8 3.5v3M16 3.5v3"/><path d="M9 14.5l2 2 4-4" stroke="#fbbf24" stroke-width="2.1"/></svg></span></span>
+                                    <div><div style="font-weight: 600; color: var(--white); font-size: 0.85rem;">Saturday, 14 June</div><div style="font-size: 0.72rem; color: var(--slate-500);">10:00am - 11:30am</div></div>
                                 </div>
                                 <div style="display: flex; align-items: center; gap: 10px;">
-                                    <span style="font-size: 1.1rem;">📍</span>
+                                    <span style="font-size: 1.1rem;"><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="10" r="7" fill="rgba(20,184,166,0.16)" stroke="none"/><path d="M12 21s-6-5.3-6-11a6 6 0 1 1 12 0c0 5.7-6 11-6 11z"/><circle cx="12" cy="10" r="2.2" fill="#fbbf24" stroke="none"/></svg></span></span>
                                     <div><div style="font-weight: 600; color: var(--white); font-size: 0.85rem;">Dunorlan Park</div><div style="font-size: 0.72rem; color: var(--slate-500);">Tunbridge Wells, TN2 3QN</div></div>
                                 </div>
                                 <div style="display: flex; align-items: center; gap: 10px;">
-                                    <span style="font-size: 1.1rem;">💰</span>
+                                    <span style="font-size: 1.1rem;"><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="rgba(20,184,166,0.18)"/><path d="M14.5 9.2c-.6-.7-1.5-1.1-2.5-1.1-1.7 0-2.8 1-2.8 2.3 0 1.4 1.2 1.9 2.8 2.2 1.7.3 2.8.9 2.8 2.3 0 1.5-1.3 2.5-3 2.5-1.2 0-2.2-.4-2.8-1.2"/><path d="M12 6.5v11"/></svg></span></span>
                                     <div><div style="font-weight: 600; color: var(--white); font-size: 0.85rem;">Free</div><div style="font-size: 0.72rem; color: var(--slate-500);">Always free</div></div>
                                 </div>
                             </div>
                         </div>
                         <div style="padding: 0 16px; margin-bottom: 16px;">
-                            <div style="height: 120px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; display: flex; align-items: center; justify-content: center; color: var(--slate-600); font-size: 0.8rem;">📍 Map — Dunorlan Park</div>
+                            <div style="height: 120px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; display: flex; align-items: center; justify-content: center; color: var(--slate-600); font-size: 0.8rem;"><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="10" r="7" fill="rgba(20,184,166,0.16)" stroke="none"/><path d="M12 21s-6-5.3-6-11a6 6 0 1 1 12 0c0 5.7-6 11-6 11z"/><circle cx="12" cy="10" r="2.2" fill="#fbbf24" stroke="none"/></svg></span> Map - Dunorlan Park</div>
                         </div>
                         <div style="padding: 0 16px; margin-bottom: 16px;">
-                            <p style="font-size: 0.82rem; color: var(--slate-400); line-height: 1.6;">A gentle walk around Dunorlan Park. Meet at the main car park entrance. All paces welcome — we walk together, talk together, and finish together. Dogs welcome too! 🐕</p>
+                            <p style="font-size: 0.82rem; color: var(--slate-400); line-height: 1.6;">A gentle walk around Dunorlan Park. Meet at the main car park entrance. All paces welcome - we walk together, talk together, and finish together. Dogs welcome too! <span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="15.2" rx="4.2" ry="3.2" fill="rgba(20,184,166,0.22)"/><circle cx="7.2" cy="10.2" r="1.4" fill="#fbbf24"/><circle cx="10.4" cy="8.2" r="1.4" fill="#fbbf24"/><circle cx="13.8" cy="8.2" r="1.4" fill="#fbbf24"/><circle cx="16.8" cy="10.2" r="1.4" fill="#fbbf24"/></svg></span></p>
                         </div>
                         <div style="padding: 0 16px 10px;">
-                            <button style="width: 100%; padding: 14px; background: var(--teal-600); border: none; border-radius: 12px; color: white; font-family: var(--font-heading); font-weight: 700; font-size: 0.95rem; cursor: pointer;">RSVP — I'm Going ✓</button>
+                            <button style="width: 100%; padding: 14px; background: var(--teal-600); border: none; border-radius: 12px; color: white; font-family: var(--font-heading); font-weight: 700; font-size: 0.95rem; cursor: pointer;">RSVP - I'm Going <span class="m-ico" style="font-size:15px;color:#ffffff;"><svg viewBox="0 0 24 24" width="15px" height="15px" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="rgba(255,255,255,0.16)"/><path d="M8.5 12.5l2.3 2.3 4.7-4.7"/></svg></span></button>
                         </div>
                         <div class="app-section-title">Attending (12)</div>
                         <div style="display: flex; gap: 8px; padding: 0 16px 20px; flex-wrap: wrap;">
@@ -231,29 +232,29 @@
                         <div class="chat-messages" style="padding-bottom: 60px;">
                             <div class="chat-msg chat-msg-other">
                                 <div class="chat-msg-sender">Sarah K</div>
-                                Lovely walk this morning everyone! The bluebells were stunning 💙
+                                Lovely walk this morning everyone! The bluebells were stunning <span class="m-ico" style="font-size:14px;color:#5eead4;"><svg viewBox="0 0 24 24" width="14px" height="14px" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7-4.5-7-9.5A4.2 4.2 0 0 1 12 7.4a4.2 4.2 0 0 1 7 3.1C19 15.5 12 20 12 20z" fill="rgba(20,184,166,0.28)"/></svg></span>
                             </div>
                             <div class="chat-msg chat-msg-other">
                                 <div class="chat-msg-sender">James D</div>
                                 Agreed! Great turnout today. 14 of us! Who's coming Wednesday?
                             </div>
                             <div class="chat-msg chat-msg-self">
-                                I'll be there! Can we do the High Rocks route again? 🥾
+                                I'll be there! Can we do the High Rocks route again? <span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="13.5" cy="5" r="2" fill="#fbbf24" stroke="currentColor"/><path d="M9 20l2-5.5 2.5 2V20M11 10.5l-2 4M11 10.5l3 2 3-1"/><path d="M6.5 14c1.2-2.2 2.8-3.5 4.5-3.5"/></svg></span>
                             </div>
                             <div class="chat-msg chat-msg-other">
                                 <div class="chat-msg-sender">Mike R</div>
-                                High Rocks +1 🙌 Best views in TW
+                                High Rocks +1 <span class="m-ico" style="font-size:14px;color:#fbbf24;"><svg viewBox="0 0 24 24" width="14px" height="14px" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9L12 3z" fill="rgba(251,191,36,0.35)"/></svg></span> Best views in TW
                             </div>
                             <div class="chat-msg chat-msg-other">
                                 <div class="chat-msg-sender">Laura P</div>
                                 Can I bring my friend? She's new to the area and looking for walking groups
                             </div>
                             <div class="chat-msg chat-msg-self">
-                                Of course! Everyone's welcome. Just share the more link 🔗
+                                Of course! Everyone's welcome. Just share the more link <span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8.5" r="3.2" fill="rgba(20,184,166,0.18)"/><path d="M3.5 19c0-2.8 2.5-4.5 5.5-4.5s5.5 1.7 5.5 4.5"/><circle cx="16.5" cy="9.5" r="2.5" fill="rgba(251,191,36,0.25)"/><path d="M16.5 14.5c2.2 0 4 1.3 4 3.5"/></svg></span>
                             </div>
                             <div class="chat-msg chat-msg-other">
                                 <div class="chat-msg-sender">James D</div>
-                                That's what it's all about 💚 See you all Wednesday!
+                                That's what it's all about <span class="m-ico" style="font-size:14px;color:#5eead4;"><svg viewBox="0 0 24 24" width="14px" height="14px" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7-4.5-7-9.5A4.2 4.2 0 0 1 12 7.4a4.2 4.2 0 0 1 7 3.1C19 15.5 12 20 12 20z" fill="rgba(20,184,166,0.28)"/></svg></span> See you all Wednesday!
                             </div>
                         </div>
                         <div class="chat-input-bar">
@@ -266,7 +267,7 @@
                     <div class="app-screen" id="screen-dashboard">
                         <div class="app-header">
                             <h2>Dashboard</h2>
-                            <span style="font-size: 1.1rem;">⚙️</span>
+                            <span class="m-ico" style="font-size:17px;color:#94a3b8;"><svg viewBox="0 0 24 24" width="17px" height="17px" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3.2" fill="rgba(20,184,166,0.2)"/><path d="M12 3.5v2.2M12 18.3v2.2M4.8 7.8l1.9 1.1M17.3 15.1l1.9 1.1M4.8 16.2l1.9-1.1M17.3 8.9l1.9-1.1"/></svg></span>
                         </div>
                         <div style="padding: 0 16px 12px;">
                             <div style="font-size: 0.78rem; color: var(--slate-500);">Mindful Miles • Leader View</div>
@@ -307,35 +308,35 @@
                         </div>
                         <div class="app-section-title">Quick Actions</div>
                         <div class="dash-quick-action">
-                            <span class="dash-action-icon">📅</span> Create New Event <span class="dash-action-arrow">→</span>
+                            <span class="dash-action-icon"><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="3" fill="rgba(20,184,166,0.16)"/><path d="M3.5 9.5h17M8 3.5v3M16 3.5v3"/><path d="M9 14.5l2 2 4-4" stroke="#fbbf24" stroke-width="2.1"/></svg></span></span> Create New Event <span class="dash-action-arrow">→</span>
                         </div>
                         <div class="dash-quick-action">
-                            <span class="dash-action-icon">📢</span> Send Announcement <span class="dash-action-arrow">→</span>
+                            <span class="dash-action-icon"><span class="m-ico" style="font-size:15px;color:#fbbf24;"><svg viewBox="0 0 24 24" width="15px" height="15px" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11v2l11-4v10L4 13z" fill="rgba(251,191,36,0.25)"/><path d="M15 9l4-2v10l-4-2M7 14l1.5 4.5h2.2L9.5 14"/></svg></span></span> Send Announcement <span class="dash-action-arrow">→</span>
                         </div>
                         <div class="dash-quick-action">
-                            <span class="dash-action-icon">👥</span> Manage Members <span class="dash-action-arrow">→</span>
+                            <span class="dash-action-icon"><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8.5" r="3.2" fill="rgba(20,184,166,0.18)"/><path d="M3.5 19c0-2.8 2.5-4.5 5.5-4.5s5.5 1.7 5.5 4.5"/><circle cx="16.5" cy="9.5" r="2.5" fill="rgba(251,191,36,0.25)"/><path d="M16.5 14.5c2.2 0 4 1.3 4 3.5"/></svg></span></span> Manage Members <span class="dash-action-arrow">→</span>
                         </div>
                         <div class="dash-quick-action">
-                            <span class="dash-action-icon">🤝</span> Add Co-Leader <span class="dash-action-arrow">→</span>
+                            <span class="dash-action-icon"><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7-4.5-7-9.5A4.2 4.2 0 0 1 12 7.4a4.2 4.2 0 0 1 7 3.1C19 15.5 12 20 12 20z" fill="rgba(20,184,166,0.2)"/><circle cx="12" cy="11.5" r="1.8" fill="#fbbf24" stroke="none"/></svg></span></span> Add Co-Leader <span class="dash-action-arrow">→</span>
                         </div>
                     </div>
 
                     <!-- Tab Bar -->
                     <div class="app-tab-bar">
                         <button class="app-tab active" data-target="discover">
-                            <span class="app-tab-icon">🔍</span>Discover
+                            <span class="app-tab-icon"><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5" fill="rgba(20,184,166,0.12)"/><path d="M16 16l4 4"/></svg></span></span>Discover
                         </button>
                         <button class="app-tab" data-target="community">
-                            <span class="app-tab-icon">👥</span>Community
+                            <span class="app-tab-icon"><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8.5" r="3.2" fill="rgba(20,184,166,0.18)"/><path d="M3.5 19c0-2.8 2.5-4.5 5.5-4.5s5.5 1.7 5.5 4.5"/><circle cx="16.5" cy="9.5" r="2.5" fill="rgba(251,191,36,0.25)"/><path d="M16.5 14.5c2.2 0 4 1.3 4 3.5"/></svg></span></span>Community
                         </button>
                         <button class="app-tab" data-target="event">
-                            <span class="app-tab-icon">📅</span>Events
+                            <span class="app-tab-icon"><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="3" fill="rgba(20,184,166,0.16)"/><path d="M3.5 9.5h17M8 3.5v3M16 3.5v3"/><path d="M9 14.5l2 2 4-4" stroke="#fbbf24" stroke-width="2.1"/></svg></span></span>Events
                         </button>
                         <button class="app-tab" data-target="chat">
-                            <span class="app-tab-icon">💬</span>Chat
+                            <span class="app-tab-icon"><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 6.5a2.5 2.5 0 0 1 2.5-2.5h10a2.5 2.5 0 0 1 2.5 2.5v7a2.5 2.5 0 0 1-2.5 2.5H10l-4.5 3.5V16H7a2.5 2.5 0 0 1-2.5-2.5v-7z" fill="rgba(20,184,166,0.16)"/><circle cx="9.2" cy="10" r="1.1" fill="#fbbf24" stroke="none"/><circle cx="12" cy="10" r="1.1" fill="#fbbf24" stroke="none"/><circle cx="14.8" cy="10" r="1.1" fill="#fbbf24" stroke="none"/></svg></span></span>Chat
                         </button>
                         <button class="app-tab" data-target="dashboard">
-                            <span class="app-tab-icon">📊</span>Lead
+                            <span class="app-tab-icon"><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="13" width="3.5" height="7" rx="1" fill="rgba(20,184,166,0.2)"/><rect x="10.25" y="9" width="3.5" height="11" rx="1" fill="rgba(20,184,166,0.28)"/><rect x="16.5" y="5" width="3.5" height="15" rx="1" fill="rgba(251,191,36,0.35)"/><path d="M4 11l6-4 4 2 6-5" stroke="#fbbf24"/></svg></span></span>Lead
                         </button>
                     </div>
                 </div>
@@ -377,7 +378,7 @@
 
         const screenData = {
             discover: { title: 'Discover', desc: 'Browse communities by interest, location, or activity. Your personalised feed of what\'s happening near you.' },
-            community: { title: 'Community Profile', desc: 'See everything about a community at a glance — members, events, leaders, and how to join.' },
+            community: { title: 'Community Profile', desc: 'See everything about a community at a glance - members, events, leaders, and how to join.' },
             event: { title: 'Event Detail', desc: 'Full event information with RSVP, map, attendee list, and automatic reminders.' },
             chat: { title: 'Chat', desc: 'Real-time group messaging built into the community. No more juggling WhatsApp, Facebook, and email.' },
             dashboard: { title: 'Leader Dashboard', desc: 'Analytics, quick actions, and member management. Everything a community leader needs in one place.' }
@@ -403,5 +404,6 @@
         tabs.forEach(tab => tab.addEventListener('click', () => switchScreen(tab.dataset.target)));
         screenListItems.forEach(li => li.addEventListener('click', () => switchScreen(li.dataset.screen)));
     </script>
+    <script src="brand-icons.js?v=1"></script>
 </body>
 </html>

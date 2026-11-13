@@ -1630,6 +1630,20 @@ textarea.form-input {
     backdrop-filter: blur(12px) !important;
   }
 
+  .modal-overlay.notifications-desktop-overlay {
+    align-items: flex-start !important;
+    justify-content: flex-end !important;
+    padding: 68px 24px 24px !important;
+    overflow-y: auto !important;
+    background: rgba(2, 6, 23, 0.72) !important;
+    backdrop-filter: blur(4px) !important;
+    -webkit-backdrop-filter: blur(4px) !important;
+  }
+
+  [data-theme="light"] .modal-overlay.notifications-desktop-overlay {
+    background: rgba(15, 23, 42, 0.45) !important;
+  }
+
   .modal-overlay .modal-content {
     border-radius: 24px !important;
     max-height: 90vh !important;

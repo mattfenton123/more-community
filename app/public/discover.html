@@ -11,7 +11,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css?v=8">
-    <link rel="stylesheet" href="pages.css">
+    <link rel="stylesheet" href="pages.css?v=4">
+    <link rel="stylesheet" href="brand-system.css?v=2">
 </head>
 <body class="yentw-theme">
 
@@ -29,7 +30,7 @@
                 <li class="nav-dropdown">
                     <a href="#" id="venturesDropdownToggle">Ventures ▾</a>
                     <div class="nav-dropdown-menu">
-                        <a href="yentw.html">YENTW</a>
+                        <a href="yentw.html">Youth Entrepreneurs</a>
                         <a href="accelerator.html">Accelerator</a>
                         <a href="hackathons.html">Hackathons</a>
                         <a href="sponsorship.html">Sponsorship</a>
@@ -69,14 +70,14 @@
                 </div>
                 <div class="filter-pills" id="filterPills">
                     <button class="filter-pill active" data-filter="all">All</button>
-                    <button class="filter-pill" data-filter="walking">🚶 Walking</button>
-                    <button class="filter-pill" data-filter="running">🏃 Running</button>
-                    <button class="filter-pill" data-filter="wellness">🧘 Wellness</button>
-                    <button class="filter-pill" data-filter="business">💼 Business</button>
-                    <button class="filter-pill" data-filter="adventure">⛰️ Adventure</button>
-                    <button class="filter-pill" data-filter="volunteering">🤝 Volunteering</button>
-                    <button class="filter-pill" data-filter="faith">🕊️ Faith</button>
-                    <button class="filter-pill" data-filter="arts">🎨 Arts</button>
+                    <button class="filter-pill" data-filter="walking"><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="13.5" cy="5" r="2" fill="#fbbf24" stroke="currentColor"/><path d="M9 20l2-5.5 2.5 2V20M11 10.5l-2 4M11 10.5l3 2 3-1"/><path d="M6.5 14c1.2-2.2 2.8-3.5 4.5-3.5"/></svg></span> Walking</button>
+                    <button class="filter-pill" data-filter="running"><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="15" cy="5.5" r="2" fill="#fbbf24" stroke="currentColor"/><path d="M7 19l3.2-4.5 2.6 1.5L11 20M9.5 11.5l3.5-2.5 3.2 2.2 2.3-.7"/><path d="M4 13h3.5M3 16h2.5"/></svg></span> Running</button>
+                    <button class="filter-pill" data-filter="wellness"><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 14c3.5-5 12.5-5 16 0-3.5 4.5-12.5 4.5-16 0z" fill="rgba(20,184,166,0.16)"/><circle cx="12" cy="14" r="2.2" fill="#fbbf24" stroke="none"/><path d="M12 4.5c1.8 2 1.8 4 0 5.5-1.8-1.5-1.8-3.5 0-5.5z"/></svg></span> Wellness</button>
+                    <button class="filter-pill" data-filter="business"><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="rgba(20,184,166,0.18)"/><path d="M14.5 9.2c-.6-.7-1.5-1.1-2.5-1.1-1.7 0-2.8 1-2.8 2.3 0 1.4 1.2 1.9 2.8 2.2 1.7.3 2.8.9 2.8 2.3 0 1.5-1.3 2.5-3 2.5-1.2 0-2.2-.4-2.8-1.2"/><path d="M12 6.5v11"/></svg></span> Business</button>
+                    <button class="filter-pill" data-filter="adventure"><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 19l5.5-9.5 4 6 3.5-5 5 8.5H3z" fill="rgba(20,184,166,0.18)"/><circle cx="17" cy="6" r="2" fill="#fbbf24" stroke="none"/></svg></span> Adventure</button>
+                    <button class="filter-pill" data-filter="volunteering"><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7-4.5-7-9.5A4.2 4.2 0 0 1 12 7.4a4.2 4.2 0 0 1 7 3.1C19 15.5 12 20 12 20z" fill="rgba(20,184,166,0.2)"/><circle cx="12" cy="11.5" r="1.8" fill="#fbbf24" stroke="none"/></svg></span> Volunteering</button>
+                    <button class="filter-pill" data-filter="faith"><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9L12 3z" fill="rgba(20,184,166,0.22)"/><path d="M18.5 15.5l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8.8-2z" fill="#fbbf24" stroke="none"/><circle cx="6" cy="5.5" r="1.3" fill="#fbbf24" stroke="none"/></svg></span>️ Faith</button>
+                    <button class="filter-pill" data-filter="arts"><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="rgba(20,184,166,0.16)"/><circle cx="9" cy="10" r="1.3" fill="#fbbf24" stroke="none"/><circle cx="13.5" cy="9" r="1.3" fill="#5eead4" stroke="none"/><circle cx="15" cy="13.5" r="1.3" fill="#fb7185" stroke="none"/></svg></span> Arts</button>
                 </div>
             </div>
         </div>
@@ -91,12 +92,12 @@
                 <div class="community-card" data-category="walking">
                     <div class="card-image"><img src="images/walking.png" alt="more Mindful Miles"></div>
                     <div class="card-body">
-                        <span class="card-category">🚶 Walking</span>
+                        <span class="card-category"><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="13.5" cy="5" r="2" fill="#fbbf24" stroke="currentColor"/><path d="M9 20l2-5.5 2.5 2V20M11 10.5l-2 4M11 10.5l3 2 3-1"/><path d="M6.5 14c1.2-2.2 2.8-3.5 4.5-3.5"/></svg></span> Walking</span>
                         <h3 class="card-name">more Mindful Miles</h3>
                         <p class="card-desc">Weekly walk and talk sessions in the TW countryside. No pace, no pressure - just good company and fresh air.</p>
                         <div class="card-meta">
-                            <span>📍 Tunbridge Wells</span>
-                            <span>👥 85 members</span>
+                            <span><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="10" r="7" fill="rgba(20,184,166,0.16)" stroke="none"/><path d="M12 21s-6-5.3-6-11a6 6 0 1 1 12 0c0 5.7-6 11-6 11z"/><circle cx="12" cy="10" r="2.2" fill="#fbbf24" stroke="none"/></svg></span> Tunbridge Wells</span>
+                            <span><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8.5" r="3.2" fill="rgba(20,184,166,0.18)"/><path d="M3.5 19c0-2.8 2.5-4.5 5.5-4.5s5.5 1.7 5.5 4.5"/><circle cx="16.5" cy="9.5" r="2.5" fill="rgba(251,191,36,0.25)"/><path d="M16.5 14.5c2.2 0 4 1.3 4 3.5"/></svg></span> 85 members</span>
                         </div>
                         <div class="card-next-event">
                             <span class="next-label">Next event</span>
@@ -109,12 +110,12 @@
                 <div class="community-card" data-category="walking">
                     <div class="card-image"><img src="images/walking.png" alt="TW Ramblers"></div>
                     <div class="card-body">
-                        <span class="card-category">🚶 Walking</span>
+                        <span class="card-category"><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="13.5" cy="5" r="2" fill="#fbbf24" stroke="currentColor"/><path d="M9 20l2-5.5 2.5 2V20M11 10.5l-2 4M11 10.5l3 2 3-1"/><path d="M6.5 14c1.2-2.2 2.8-3.5 4.5-3.5"/></svg></span> Walking</span>
                         <h3 class="card-name">TW Ramblers</h3>
                         <p class="card-desc">Longer countryside walks exploring Kent and Sussex. 8-12 mile routes with pub lunch stops.</p>
                         <div class="card-meta">
-                            <span>📍 Tunbridge Wells</span>
-                            <span>👥 120 members</span>
+                            <span><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="10" r="7" fill="rgba(20,184,166,0.16)" stroke="none"/><path d="M12 21s-6-5.3-6-11a6 6 0 1 1 12 0c0 5.7-6 11-6 11z"/><circle cx="12" cy="10" r="2.2" fill="#fbbf24" stroke="none"/></svg></span> Tunbridge Wells</span>
+                            <span><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8.5" r="3.2" fill="rgba(20,184,166,0.18)"/><path d="M3.5 19c0-2.8 2.5-4.5 5.5-4.5s5.5 1.7 5.5 4.5"/><circle cx="16.5" cy="9.5" r="2.5" fill="rgba(251,191,36,0.25)"/><path d="M16.5 14.5c2.2 0 4 1.3 4 3.5"/></svg></span> 120 members</span>
                         </div>
                         <div class="card-next-event">
                             <span class="next-label">Next event</span>
@@ -128,12 +129,12 @@
                 <div class="community-card" data-category="running">
                     <div class="card-image"><img src="images/running.png" alt="more A-Z Challenge"></div>
                     <div class="card-body">
-                        <span class="card-category">🏃 Running</span>
+                        <span class="card-category"><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="15" cy="5.5" r="2" fill="#fbbf24" stroke="currentColor"/><path d="M7 19l3.2-4.5 2.6 1.5L11 20M9.5 11.5l3.5-2.5 3.2 2.2 2.3-.7"/><path d="M4 13h3.5M3 16h2.5"/></svg></span> Running</span>
                         <h3 class="card-name">more A-Z Challenge</h3>
                         <p class="card-desc">Our signature running challenge. Complete routes from A to Z across the borough. All abilities welcome.</p>
                         <div class="card-meta">
-                            <span>📍 Tunbridge Wells</span>
-                            <span>👥 150 members</span>
+                            <span><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="10" r="7" fill="rgba(20,184,166,0.16)" stroke="none"/><path d="M12 21s-6-5.3-6-11a6 6 0 1 1 12 0c0 5.7-6 11-6 11z"/><circle cx="12" cy="10" r="2.2" fill="#fbbf24" stroke="none"/></svg></span> Tunbridge Wells</span>
+                            <span><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8.5" r="3.2" fill="rgba(20,184,166,0.18)"/><path d="M3.5 19c0-2.8 2.5-4.5 5.5-4.5s5.5 1.7 5.5 4.5"/><circle cx="16.5" cy="9.5" r="2.5" fill="rgba(251,191,36,0.25)"/><path d="M16.5 14.5c2.2 0 4 1.3 4 3.5"/></svg></span> 150 members</span>
                         </div>
                         <div class="card-next-event">
                             <span class="next-label">Next event</span>
@@ -146,12 +147,12 @@
                 <div class="community-card" data-category="running">
                     <div class="card-image"><img src="images/running.png" alt="TW Parkrun"></div>
                     <div class="card-body">
-                        <span class="card-category">🏃 Running</span>
+                        <span class="card-category"><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="15" cy="5.5" r="2" fill="#fbbf24" stroke="currentColor"/><path d="M7 19l3.2-4.5 2.6 1.5L11 20M9.5 11.5l3.5-2.5 3.2 2.2 2.3-.7"/><path d="M4 13h3.5M3 16h2.5"/></svg></span> Running</span>
                         <h3 class="card-name">TW Parkrun</h3>
                         <p class="card-desc">Free, weekly, timed 5km run at Dunorlan Park. Walk, jog, or run. Volunteers always needed.</p>
                         <div class="card-meta">
-                            <span>📍 Dunorlan Park</span>
-                            <span>👥 500+ members</span>
+                            <span><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="10" r="7" fill="rgba(20,184,166,0.16)" stroke="none"/><path d="M12 21s-6-5.3-6-11a6 6 0 1 1 12 0c0 5.7-6 11-6 11z"/><circle cx="12" cy="10" r="2.2" fill="#fbbf24" stroke="none"/></svg></span> Dunorlan Park</span>
+                            <span><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8.5" r="3.2" fill="rgba(20,184,166,0.18)"/><path d="M3.5 19c0-2.8 2.5-4.5 5.5-4.5s5.5 1.7 5.5 4.5"/><circle cx="16.5" cy="9.5" r="2.5" fill="rgba(251,191,36,0.25)"/><path d="M16.5 14.5c2.2 0 4 1.3 4 3.5"/></svg></span> 500+ members</span>
                         </div>
                         <div class="card-next-event">
                             <span class="next-label">Next event</span>
@@ -163,20 +164,20 @@
 
                 <!-- Business -->
                 <div class="community-card" data-category="business">
-                    <div class="card-image"><img src="images/entrepreneurs.png" alt="YENTW"></div>
+                    <div class="card-image"><img src="images/communities/entrepreneurs.webp" alt="The Youth Entrepreneurs Network"></div>
                     <div class="card-body">
-                        <span class="card-category">💼 Business</span>
-                        <h3 class="card-name">YENTW</h3>
-                        <p class="card-desc">Young Entrepreneurs Network Tunbridge Wells. Mentorship, pitch events, and a community of ambitious builders.</p>
+                        <span class="card-category"><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="rgba(20,184,166,0.18)"/><path d="M14.5 9.2c-.6-.7-1.5-1.1-2.5-1.1-1.7 0-2.8 1-2.8 2.3 0 1.4 1.2 1.9 2.8 2.2 1.7.3 2.8.9 2.8 2.3 0 1.5-1.3 2.5-3 2.5-1.2 0-2.2-.4-2.8-1.2"/><path d="M12 6.5v11"/></svg></span> Business</span>
+                        <h3 class="card-name">The Youth Entrepreneurs Network</h3>
+                        <p class="card-desc">A Tunbridge Wells network for young founders, builders, and creatives. Peer support, meetups, and practical collaboration.</p>
                         <div class="card-meta">
-                            <span>📍 Tunbridge Wells</span>
-                            <span>👥 200 members</span>
+                            <span><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="10" r="7" fill="rgba(20,184,166,0.16)" stroke="none"/><path d="M12 21s-6-5.3-6-11a6 6 0 1 1 12 0c0 5.7-6 11-6 11z"/><circle cx="12" cy="10" r="2.2" fill="#fbbf24" stroke="none"/></svg></span> Tunbridge Wells</span>
+                            <span><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8.5" r="3.2" fill="rgba(20,184,166,0.18)"/><path d="M3.5 19c0-2.8 2.5-4.5 5.5-4.5s5.5 1.7 5.5 4.5"/><circle cx="16.5" cy="9.5" r="2.5" fill="rgba(251,191,36,0.25)"/><path d="M16.5 14.5c2.2 0 4 1.3 4 3.5"/></svg></span> Launch Meetup</span>
                         </div>
                         <div class="card-next-event">
                             <span class="next-label">Next event</span>
-                            <span class="next-date">Thursday, 7:00pm - The Pantiles</span>
+                            <span class="next-date">Fri 29 Jan, 12:00pm - The Buzz on The Pantiles</span>
                         </div>
-                        <a href="/app" class="btn btn-primary btn-sm" style="width: 100%; text-align: center;">Join on App &rarr;</a>
+                        <a href="/community/the-youth-entrepreneurs-network" class="btn btn-primary btn-sm" style="width: 100%; text-align: center;">Join on App &rarr;</a>
                     </div>
                 </div>
 
@@ -184,12 +185,12 @@
                 <div class="community-card" data-category="wellness">
                     <div class="card-image"><img src="images/wellness.png" alt="TW Yoga Collective"></div>
                     <div class="card-body">
-                        <span class="card-category">🧘 Wellness</span>
+                        <span class="card-category"><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 14c3.5-5 12.5-5 16 0-3.5 4.5-12.5 4.5-16 0z" fill="rgba(20,184,166,0.16)"/><circle cx="12" cy="14" r="2.2" fill="#fbbf24" stroke="none"/><path d="M12 4.5c1.8 2 1.8 4 0 5.5-1.8-1.5-1.8-3.5 0-5.5z"/></svg></span> Wellness</span>
                         <h3 class="card-name">TW Yoga Collective</h3>
                         <p class="card-desc">Outdoor and indoor yoga sessions for all levels. Breathwork, meditation, and community connection.</p>
                         <div class="card-meta">
-                            <span>📍 Calverley Grounds</span>
-                            <span>👥 65 members</span>
+                            <span><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="10" r="7" fill="rgba(20,184,166,0.16)" stroke="none"/><path d="M12 21s-6-5.3-6-11a6 6 0 1 1 12 0c0 5.7-6 11-6 11z"/><circle cx="12" cy="10" r="2.2" fill="#fbbf24" stroke="none"/></svg></span> Calverley Grounds</span>
+                            <span><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8.5" r="3.2" fill="rgba(20,184,166,0.18)"/><path d="M3.5 19c0-2.8 2.5-4.5 5.5-4.5s5.5 1.7 5.5 4.5"/><circle cx="16.5" cy="9.5" r="2.5" fill="rgba(251,191,36,0.25)"/><path d="M16.5 14.5c2.2 0 4 1.3 4 3.5"/></svg></span> 65 members</span>
                         </div>
                         <div class="card-next-event">
                             <span class="next-label">Next event</span>
@@ -203,12 +204,12 @@
                 <div class="community-card" data-category="adventure">
                     <div class="card-image"><img src="images/adventure.png" alt="Kent Adventures"></div>
                     <div class="card-body">
-                        <span class="card-category">⛰️ Adventure</span>
+                        <span class="card-category"><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 19l5.5-9.5 4 6 3.5-5 5 8.5H3z" fill="rgba(20,184,166,0.18)"/><circle cx="17" cy="6" r="2" fill="#fbbf24" stroke="none"/></svg></span> Adventure</span>
                         <h3 class="card-name">Kent Adventures</h3>
                         <p class="card-desc">Kayaking, climbing, wild camping, and weekend expeditions across the South East. Get outside your comfort zone.</p>
                         <div class="card-meta">
-                            <span>📍 Kent & Sussex</span>
-                            <span>👥 90 members</span>
+                            <span><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="10" r="7" fill="rgba(20,184,166,0.16)" stroke="none"/><path d="M12 21s-6-5.3-6-11a6 6 0 1 1 12 0c0 5.7-6 11-6 11z"/><circle cx="12" cy="10" r="2.2" fill="#fbbf24" stroke="none"/></svg></span> Kent & Sussex</span>
+                            <span><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8.5" r="3.2" fill="rgba(20,184,166,0.18)"/><path d="M3.5 19c0-2.8 2.5-4.5 5.5-4.5s5.5 1.7 5.5 4.5"/><circle cx="16.5" cy="9.5" r="2.5" fill="rgba(251,191,36,0.25)"/><path d="M16.5 14.5c2.2 0 4 1.3 4 3.5"/></svg></span> 90 members</span>
                         </div>
                         <div class="card-next-event">
                             <span class="next-label">Next event</span>
@@ -222,12 +223,12 @@
                 <div class="community-card" data-category="volunteering">
                     <div class="card-image"><img src="images/charity.png" alt="TW Good Neighbours"></div>
                     <div class="card-body">
-                        <span class="card-category">🤝 Volunteering</span>
+                        <span class="card-category"><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7-4.5-7-9.5A4.2 4.2 0 0 1 12 7.4a4.2 4.2 0 0 1 7 3.1C19 15.5 12 20 12 20z" fill="rgba(20,184,166,0.2)"/><circle cx="12" cy="11.5" r="1.8" fill="#fbbf24" stroke="none"/></svg></span> Volunteering</span>
                         <h3 class="card-name">TW Good Neighbours</h3>
                         <p class="card-desc">Community clean-ups, tree planting, food bank support, and local charity projects. Small actions, big impact.</p>
                         <div class="card-meta">
-                            <span>📍 Tunbridge Wells</span>
-                            <span>👥 110 members</span>
+                            <span><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="10" r="7" fill="rgba(20,184,166,0.16)" stroke="none"/><path d="M12 21s-6-5.3-6-11a6 6 0 1 1 12 0c0 5.7-6 11-6 11z"/><circle cx="12" cy="10" r="2.2" fill="#fbbf24" stroke="none"/></svg></span> Tunbridge Wells</span>
+                            <span><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8.5" r="3.2" fill="rgba(20,184,166,0.18)"/><path d="M3.5 19c0-2.8 2.5-4.5 5.5-4.5s5.5 1.7 5.5 4.5"/><circle cx="16.5" cy="9.5" r="2.5" fill="rgba(251,191,36,0.25)"/><path d="M16.5 14.5c2.2 0 4 1.3 4 3.5"/></svg></span> 110 members</span>
                         </div>
                         <div class="card-next-event">
                             <span class="next-label">Next event</span>
@@ -241,12 +242,12 @@
                 <div class="community-card" data-category="faith">
                     <div class="card-image"><img src="images/faith.png" alt="TW Interfaith Community"></div>
                     <div class="card-body">
-                        <span class="card-category">🕊️ Faith</span>
+                        <span class="card-category"><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9L12 3z" fill="rgba(20,184,166,0.22)"/><path d="M18.5 15.5l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8.8-2z" fill="#fbbf24" stroke="none"/><circle cx="6" cy="5.5" r="1.3" fill="#fbbf24" stroke="none"/></svg></span>️ Faith</span>
                         <h3 class="card-name">TW Interfaith Network</h3>
                         <p class="card-desc">A community bringing together people of all faiths and none. Shared meals, dialogue, and community service.</p>
                         <div class="card-meta">
-                            <span>📍 Tunbridge Wells</span>
-                            <span>👥 45 members</span>
+                            <span><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="10" r="7" fill="rgba(20,184,166,0.16)" stroke="none"/><path d="M12 21s-6-5.3-6-11a6 6 0 1 1 12 0c0 5.7-6 11-6 11z"/><circle cx="12" cy="10" r="2.2" fill="#fbbf24" stroke="none"/></svg></span> Tunbridge Wells</span>
+                            <span><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8.5" r="3.2" fill="rgba(20,184,166,0.18)"/><path d="M3.5 19c0-2.8 2.5-4.5 5.5-4.5s5.5 1.7 5.5 4.5"/><circle cx="16.5" cy="9.5" r="2.5" fill="rgba(251,191,36,0.25)"/><path d="M16.5 14.5c2.2 0 4 1.3 4 3.5"/></svg></span> 45 members</span>
                         </div>
                         <div class="card-next-event">
                             <span class="next-label">Next event</span>
@@ -260,12 +261,12 @@
                 <div class="community-card" data-category="arts">
                     <div class="card-image"><img src="images/arts.png" alt="TW Creative Collective"></div>
                     <div class="card-body">
-                        <span class="card-category">🎨 Arts</span>
+                        <span class="card-category"><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="rgba(20,184,166,0.16)"/><circle cx="9" cy="10" r="1.3" fill="#fbbf24" stroke="none"/><circle cx="13.5" cy="9" r="1.3" fill="#5eead4" stroke="none"/><circle cx="15" cy="13.5" r="1.3" fill="#fb7185" stroke="none"/></svg></span> Arts</span>
                         <h3 class="card-name">TW Creative Collective</h3>
                         <p class="card-desc">Painters, sketchers, photographers, and makers. Weekly outdoor art sessions and monthly exhibitions.</p>
                         <div class="card-meta">
-                            <span>📍 Tunbridge Wells</span>
-                            <span>👥 55 members</span>
+                            <span><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="10" r="7" fill="rgba(20,184,166,0.16)" stroke="none"/><path d="M12 21s-6-5.3-6-11a6 6 0 1 1 12 0c0 5.7-6 11-6 11z"/><circle cx="12" cy="10" r="2.2" fill="#fbbf24" stroke="none"/></svg></span> Tunbridge Wells</span>
+                            <span><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8.5" r="3.2" fill="rgba(20,184,166,0.18)"/><path d="M3.5 19c0-2.8 2.5-4.5 5.5-4.5s5.5 1.7 5.5 4.5"/><circle cx="16.5" cy="9.5" r="2.5" fill="rgba(251,191,36,0.25)"/><path d="M16.5 14.5c2.2 0 4 1.3 4 3.5"/></svg></span> 55 members</span>
                         </div>
                         <div class="card-next-event">
                             <span class="next-label">Next event</span>
@@ -334,5 +335,6 @@
             });
         }
     </script>
+    <script src="brand-icons.js?v=1"></script>
 </body>
 </html>

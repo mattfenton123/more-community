@@ -125,8 +125,8 @@ function SwipeableNotificationItem({ n, type, config, isAlertItem, isLight, onCl
       style={{ 
         position: 'relative', 
         overflow: 'hidden',
-        borderBottom: isLight ? '1px solid rgba(0, 0, 0, 0.06)' : '1px solid rgba(255, 255, 255, 0.04)',
-        background: isLight ? '#ffffff' : 'rgba(15, 23, 42, 0.6)'
+        borderBottom: isLight ? '1px solid rgba(0, 0, 0, 0.06)' : '1px solid rgba(255, 255, 255, 0.06)',
+        background: isLight ? '#ffffff' : '#0f172a'
       }}
     >
       {/* Background action revealed on swipe */}
@@ -136,8 +136,8 @@ function SwipeableNotificationItem({ n, type, config, isAlertItem, isLight, onCl
           top: 0,
           bottom: 0,
           right: 0,
-          width: '100px',
-          background: n.is_read ? (isLight ? '#cbd5e1' : '#334155') : '#0d9488',
+          width: '112px',
+          background: n.is_read ? (isLight ? '#64748b' : '#334155') : '#0d9488',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -145,12 +145,15 @@ function SwipeableNotificationItem({ n, type, config, isAlertItem, isLight, onCl
           gap: '3px',
           color: '#ffffff',
           fontWeight: 700,
-          fontSize: '0.72rem',
+          fontSize: '0.7rem',
+          textAlign: 'center',
+          padding: '0 6px',
+          visibility: dragOffset > 2 ? 'visible' : 'hidden',
           zIndex: 1
         }}
       >
         <Check size={18} strokeWidth={2.5} color="#ffffff" />
-        <span>{n.is_read ? 'Read' : 'Mark Read'}</span>
+        <span>{n.is_read ? 'Already read' : 'Mark as read'}</span>
       </div>
 
       {/* Foreground item */}
@@ -167,7 +170,7 @@ function SwipeableNotificationItem({ n, type, config, isAlertItem, isLight, onCl
           padding: '13px 15px',
           background: isLight 
             ? (n.is_read ? '#ffffff' : (isAlertItem ? '#fffbeb' : '#f0fdfa'))
-            : (n.is_read ? 'transparent' : (isAlertItem ? 'rgba(245,158,11,0.08)' : `${config.color}08`)),
+            : (n.is_read ? '#0f172a' : (isAlertItem ? '#1e1912' : '#10242c')),
           borderLeft: !n.is_read 
             ? (isAlertItem ? '4px solid #f59e0b' : `4px solid ${config.color}`)
             : '4px solid transparent',
@@ -238,9 +241,22 @@ function SwipeableNotificationItem({ n, type, config, isAlertItem, isLight, onCl
             justifyContent: 'space-between'
           }}>
             <span>{timeAgo(n.created_at)}</span>
-            <span style={{ fontSize: '0.65rem', opacity: 0.65, display: 'inline-flex', alignItems: 'center', gap: '2px' }}>
-              swipe 👈
-            </span>
+            {n.is_read ? (
+              <span style={{
+                fontSize: '0.66rem',
+                fontWeight: 600,
+                color: isLight ? '#64748b' : '#94a3b8',
+                background: isLight ? '#f1f5f9' : '#1e293b',
+                padding: '1px 7px',
+                borderRadius: '999px'
+              }}>
+                Already read
+              </span>
+            ) : (
+              <span style={{ fontSize: '0.66rem', fontWeight: 600, color: isLight ? '#0d9488' : '#2dd4bf' }}>
+                Unread
+              </span>
+            )}
           </div>
         </div>
 
@@ -331,15 +347,17 @@ export default function NotificationsFeed({ onClose, isModal = false }) {
 
     return (
       <div 
-        className="glass-panel" 
         style={{ 
           width: '100%', 
           maxWidth: '440px', 
           minHeight: '340px', 
+          maxHeight: isModal ? 'calc(100dvh - 96px)' : 'none',
+          borderRadius: '16px',
           padding: 0, 
           overflow: 'hidden', 
-          border: isLight ? '1px solid rgba(0,0,0,0.1)' : '1px solid rgba(255,255,255,0.1)', 
-          background: isLight ? '#ffffff' : 'rgba(15, 23, 42, 0.95)',
+          border: isLight ? '1px solid rgba(15, 23, 42, 0.12)' : '1px solid rgba(255, 255, 255, 0.14)', 
+          background: isLight ? '#ffffff' : '#0f172a',
+          boxShadow: isLight ? '0 10px 30px rgba(0,0,0,0.12)' : '0 20px 40px rgba(0,0,0,0.6)',
           display: 'flex', 
           flexDirection: 'column' 
         }}
@@ -347,11 +365,11 @@ export default function NotificationsFeed({ onClose, isModal = false }) {
         {/* Header */}
         <div style={{ 
           padding: '14px 16px', 
-          borderBottom: isLight ? '1px solid rgba(0,0,0,0.06)' : '1px solid rgba(255,255,255,0.05)', 
+          borderBottom: isLight ? '1px solid #e2e8f0' : '1px solid #1e293b', 
           display: 'flex', 
           alignItems: 'center', 
           justifyContent: 'space-between',
-          background: isLight ? 'rgba(0,0,0,0.02)' : 'rgba(255,255,255,0.02)' 
+          background: isLight ? '#f8fafc' : '#131c31' 
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <button 
@@ -423,25 +441,25 @@ export default function NotificationsFeed({ onClose, isModal = false }) {
 
   return (
     <div 
-      className="glass-panel" 
       style={{ 
         width: '100%', 
         maxWidth: '440px', 
+        borderRadius: '16px',
         padding: 0, 
         overflow: 'hidden', 
-        border: isLight ? '1px solid rgba(0,0,0,0.1)' : '1px solid rgba(255,255,255,0.1)',
-        background: isLight ? '#ffffff' : 'rgba(15, 23, 42, 0.95)',
-        boxShadow: isLight ? '0 10px 30px rgba(0,0,0,0.08)' : '0 20px 40px rgba(0,0,0,0.4)'
+        border: isLight ? '1px solid rgba(15, 23, 42, 0.12)' : '1px solid rgba(255, 255, 255, 0.14)',
+        background: isLight ? '#ffffff' : '#0f172a',
+        boxShadow: isLight ? '0 10px 30px rgba(0,0,0,0.12)' : '0 20px 40px rgba(0,0,0,0.6)'
       }}
     >
       {/* Header */}
       <div style={{ 
         padding: '14px 16px', 
-        borderBottom: isLight ? '1px solid rgba(0,0,0,0.06)' : '1px solid rgba(255,255,255,0.05)', 
+        borderBottom: isLight ? '1px solid #e2e8f0' : '1px solid #1e293b', 
         display: 'flex', 
         alignItems: 'center', 
         justifyContent: 'space-between', 
-        background: isLight ? 'rgba(0,0,0,0.02)' : 'rgba(255,255,255,0.02)' 
+        background: isLight ? '#f8fafc' : '#131c31' 
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <h3 style={{ margin: 0, color: isLight ? '#0f172a' : 'var(--white)', fontSize: '0.98rem', fontFamily: 'var(--font-heading)', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -484,7 +502,7 @@ export default function NotificationsFeed({ onClose, isModal = false }) {
                 gap: '4px' 
               }}
             >
-              <CheckCheck size={12} /> Mark all read
+              <CheckCheck size={12} /> Mark all as read
             </button>
           )}
           {onClose && (
@@ -511,8 +529,8 @@ export default function NotificationsFeed({ onClose, isModal = false }) {
       {/* 3 Tabs: Inbox, Alerts, History */}
       <div style={{ 
         display: 'flex', 
-        borderBottom: isLight ? '1px solid rgba(0,0,0,0.06)' : '1px solid rgba(255,255,255,0.05)', 
-        background: isLight ? '#f8fafc' : 'rgba(0,0,0,0.2)' 
+        borderBottom: isLight ? '1px solid #e2e8f0' : '1px solid #1e293b', 
+        background: isLight ? '#f1f5f9' : '#0b1222' 
       }}>
         <button 
           onClick={() => setActiveTab('inbox')}
@@ -575,7 +593,7 @@ export default function NotificationsFeed({ onClose, isModal = false }) {
       </div>
       
       {/* List */}
-      <div style={{ maxHeight: isModal ? '430px' : '480px', overflowY: 'auto' }}>
+      <div style={{ maxHeight: isModal ? 'min(430px, calc(100dvh - 230px))' : '480px', overflowY: 'auto', background: isLight ? '#ffffff' : '#0f172a' }}>
         {sorted.length === 0 ? (
           <div style={{ padding: '38px 16px', textAlign: 'center', color: isLight ? '#64748b' : 'var(--slate-400)' }}>
             {activeTab === 'alerts' ? (
@@ -594,7 +612,7 @@ export default function NotificationsFeed({ onClose, isModal = false }) {
               <>
                 <Bell size={34} style={{ opacity: 0.2, marginBottom: '10px' }} />
                 <p style={{ margin: '0 0 4px', fontSize: '0.92rem', fontWeight: 700, color: isLight ? '#0f172a' : 'var(--slate-300)' }}>No history available</p>
-                <p style={{ margin: 0, fontSize: '0.78rem', color: isLight ? '#64748b' : 'var(--slate-500)' }}>Read notifications older than 30 days appear here.</p>
+                <p style={{ margin: 0, fontSize: '0.78rem', color: isLight ? '#64748b' : 'var(--slate-500)' }}>Previously read notifications older than 30 days appear here.</p>
               </>
             )}
           </div>

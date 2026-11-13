@@ -678,6 +678,23 @@ function StepVerification({ instagram, setInstagram, whatsapp, setWhatsapp }) {
         </div>
       </div>
 
+      <div style={{
+        width: '100%',
+        aspectRatio: '16 / 9',
+        borderRadius: '16px',
+        overflow: 'hidden',
+        border: '1px solid rgba(255,255,255,0.12)',
+        marginBottom: '1.25rem',
+        background: '#FAF8F5',
+        boxShadow: '0 8px 28px rgba(0,0,0,0.22)'
+      }}>
+        <iframe
+          src="/explainer-leader.html"
+          title="How more. works for Leaders"
+          style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
+        />
+      </div>
+
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         <div className="input-group">
           <label style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', color: 'var(--slate-300)', fontSize: '0.9rem', fontWeight: 600 }}>

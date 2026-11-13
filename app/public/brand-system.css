@@ -1,0 +1,262 @@
+/* ==========================================================================
+   MORE. SIGNATURE BRAND SYSTEM & DUAL-TONE ICONOGRAPHY
+   Ties dark editorial landing surfaces to warm whiteboard storyboards
+   ========================================================================== */
+
+:root {
+    --more-teal: #14b8a6;
+    --more-teal-bright: #5eead4;
+    --more-amber: #fbbf24;
+    --more-coral: #fb7185;
+    --more-ink: #0f172a;
+}
+
+/* Signature architectural dot-grid surface texture (shared DNA with whiteboard explainers) */
+.more-dot-surface,
+.live-events-section,
+.stats-section,
+.story-section {
+    background-image: radial-gradient(rgba(94, 234, 212, 0.085) 1px, transparent 1px);
+    background-size: 24px 24px;
+}
+
+/* Period accent dot motif on editorial eyebrow markers */
+.eyebrow::before {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--more-teal-bright), var(--more-amber));
+    box-shadow: 0 0 12px rgba(20, 184, 166, 0.55);
+}
+
+/* Inline dual-tone SVG icon wrapper */
+.m-ico {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    vertical-align: middle;
+    line-height: 1;
+}
+.m-ico svg {
+    display: block;
+    width: 1em;
+    height: 1em;
+}
+
+/* Branded squircle icon container for Bento cards, Leader value cards, and Microsite cards */
+.m-badge-ico {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 46px;
+    height: 46px;
+    border-radius: 13px;
+    background: linear-gradient(145deg, rgba(20, 184, 166, 0.16), rgba(15, 23, 42, 0.72));
+    border: 1px solid rgba(94, 234, 212, 0.28);
+    color: var(--more-teal-bright);
+    margin-bottom: 1.05rem;
+    box-shadow: 0 8px 20px rgba(2, 6, 23, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    transition: transform 0.25s ease, border-color 0.25s ease;
+}
+.m-badge-ico svg {
+    display: block;
+    width: 22px;
+    height: 22px;
+}
+.m-badge-ico.is-danger {
+    background: linear-gradient(145deg, rgba(244, 63, 94, 0.15), rgba(15, 23, 42, 0.75));
+    border-color: rgba(251, 113, 133, 0.32);
+    color: #fda4af;
+}
+.m-badge-ico.is-amber {
+    background: linear-gradient(145deg, rgba(245, 158, 11, 0.18), rgba(15, 23, 42, 0.75));
+    border-color: rgba(251, 191, 36, 0.34);
+    color: var(--more-amber);
+}
+.leaders-value-card:hover .m-badge-ico,
+.bento-card:hover .m-badge-ico,
+.microsite-glass-card:hover .m-badge-ico {
+    transform: translateY(-2px) scale(1.04);
+    border-color: rgba(94, 234, 212, 0.55);
+}
+
+/* Override bare emoji sizing on existing slot classes */
+.bento-icon .m-badge-ico,
+.lv-icon .m-badge-ico {
+    margin-bottom: 0;
+}
+.bento-icon,
+.lv-icon {
+    display: inline-flex;
+    align-items: center;
+    margin-bottom: 1rem;
+    font-size: 1rem;
+}
+
+/* Category & Hero Chip Icon alignment */
+.hero-chip,
+.category-pill-top,
+.event-micro-badge,
+.live-meta-item,
+.hero-detail-row,
+.hero-carpool-pill,
+.phone-carpool-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.live-meta-item,
+.hero-detail-row,
+.hero-carpool-pill {
+    display: flex;
+}
+.hero-chip svg,
+.category-pill-top svg,
+.event-micro-badge svg {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+}
+.live-meta-item svg,
+.hero-detail-row svg {
+    width: 15px;
+    height: 15px;
+    flex-shrink: 0;
+    color: var(--more-teal-bright);
+}
+
+/* Branded Verified Seal */
+.more-verified-seal {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: rgba(20, 184, 166, 0.18);
+    border: 1px solid rgba(45, 212, 191, 0.5);
+    color: var(--more-teal-bright);
+    flex-shrink: 0;
+}
+.more-verified-seal svg {
+    width: 11px;
+    height: 11px;
+}
+
+/* Rating stars cluster */
+.more-stars-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--more-amber);
+    margin-bottom: 1rem;
+}
+.more-stars-row svg {
+    width: 17px;
+    height: 17px;
+}
+
+/* 8-card Solution Grid on Leaders page: 4x2 desktop, 2x4 tablet, 1 col mobile (zero orphan card) */
+.leaders-solution-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1.25rem;
+}
+@media (max-width: 1100px) {
+    .leaders-solution-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+@media (max-width: 600px) {
+    .leaders-solution-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Accessible table scroll region */
+.table-scroll-region {
+    overflow-x: auto;
+    border-radius: 16px;
+    scrollbar-gutter: stable;
+}
+.table-scroll-region:focus-visible {
+    outline: 2px solid var(--more-teal-bright);
+    outline-offset: 4px;
+}
+
+/* Balanced live events responsive grid (never breaks on 1, 2, or 3 items) */
+.live-events-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+    gap: 1.5rem;
+}
+
+.live-event-card {
+    display: grid;
+    grid-template-rows: auto 1fr;
+}
+
+/* Loading & Empty States for dynamic Homepage Events */
+.live-event-skeleton {
+    min-height: 360px;
+    border-radius: 20px;
+    background: linear-gradient(120deg, rgba(30, 41, 59, 0.55) 30%, rgba(51, 65, 85, 0.45) 50%, rgba(30, 41, 59, 0.55) 70%);
+    background-size: 200% 100%;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    animation: moreShimmer 1.6s ease-in-out infinite;
+}
+@keyframes moreShimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+.live-empty-card {
+    grid-column: 1 / -1;
+    padding: 2.75rem 2rem;
+    border-radius: 20px;
+    background: rgba(15, 23, 42, 0.72);
+    border: 1px dashed rgba(94, 234, 212, 0.35);
+    text-align: center;
+}
+.live-empty-card h3 {
+    font-family: var(--font-heading);
+    color: var(--white);
+    font-size: 1.35rem;
+    margin-bottom: 0.5rem;
+}
+.live-empty-card p {
+    color: var(--slate-400);
+    max-width: 520px;
+    margin: 0 auto 1.5rem;
+}
+
+/* Navbar logo integrity & balanced 9-item desktop fit */
+.nav-container {
+    max-width: 1240px;
+}
+.nav-brand {
+    flex-shrink: 0;
+}
+.nav-brand img {
+    height: 44px;
+    width: auto;
+    max-width: none;
+    flex-shrink: 0;
+    display: block;
+    object-fit: contain;
+}
+@media (min-width: 969px) {
+    .nav-links {
+        gap: 0.15rem;
+    }
+    .nav-links a {
+        padding: 0.45rem 0.62rem;
+        font-size: 0.84rem;
+    }
+    .nav-links .btn-nav,
+    .nav-links .btn-nav-outline {
+        padding: 0.46rem 1.05rem;
+        font-size: 0.84rem;
+    }
+}

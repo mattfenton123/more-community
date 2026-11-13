@@ -4,14 +4,17 @@ import Link from 'next/link';
 import { Activity, Compass, Calendar, Sparkles, MessageCircle } from 'lucide-react';
 import { ChevronLeft, Bell, Sun, Moon, Monitor, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import NotificationsFeed from './NotificationsFeed';
 import { useAppContext } from '../context/AppContext';
 
 export default function AppHeader({ title, subtitle, rightElement, showBack = false, onBack, avatar, onAvatarClick }) {
   const [showNotificationsModal, setShowNotificationsModal] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
+    setIsMounted(true);
     const checkWidth = () => {
       setIsDesktop(typeof window !== 'undefined' && window.innerWidth >= 768);
     };
@@ -192,36 +195,42 @@ export default function AppHeader({ title, subtitle, rightElement, showBack = fa
         {rightElement !== undefined ? rightElement : defaultRightElement}
       </div>
 
-      {showNotificationsModal && (
+      {isMounted && showNotificationsModal && createPortal(
         <div 
           className="modal-overlay notifications-desktop-overlay"
           onClick={() => setShowNotificationsModal(false)}
           style={{
             position: 'fixed',
             inset: 0,
-            zIndex: 99999,
-            background: 'rgba(0, 0, 0, 0.45)',
-            backdropFilter: 'blur(3px)',
+            zIndex: 100000,
             display: 'flex',
             alignItems: 'flex-start',
             justifyContent: 'flex-end',
-            padding: '58px 24px 24px'
+            padding: '68px 24px 24px',
+            overflowY: 'auto'
           }}
         >
           <div 
+            className="notifications-modal-card"
             onClick={(e) => e.stopPropagation()}
             style={{
               width: '100%',
               maxWidth: '440px',
+              maxHeight: 'calc(100dvh - 92px)',
               borderRadius: '16px',
               overflow: 'hidden',
-              boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.1)',
+              background: theme === 'light' ? '#ffffff' : '#0f172a',
+              border: theme === 'light' ? '1px solid rgba(15, 23, 42, 0.12)' : '1px solid rgba(255, 255, 255, 0.14)',
+              boxShadow: theme === 'light'
+                ? '0 25px 60px -15px rgba(15, 23, 42, 0.25)'
+                : '0 25px 60px -15px rgba(0, 0, 0, 0.7)',
               animation: 'slideDownFade 0.2s cubic-bezier(0.16, 1, 0.3, 1)'
             }}
           >
             <NotificationsFeed onClose={() => setShowNotificationsModal(false)} isModal={true} />
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

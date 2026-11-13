@@ -10,6 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400..800&family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css?v=87">
     <link rel="stylesheet" href="pages.css?v=4">
+    <link rel="stylesheet" href="brand-system.css?v=2">
     <meta property="og:site_name" content="more community">
     <meta property="og:type" content="website">
     <meta property="og:title" content="more | The Power of Real-Life Connection">
@@ -52,9 +53,9 @@
                 <li><a href="leaders.html">For Leaders</a></li>
                 <li><a href="about.html">Our Story</a></li>
                 <li class="nav-dropdown">
-                    <a href="#" id="venturesDropdownToggle">Ventures ▾</a>
+                    <a href="#" id="venturesDropdownToggle">Ventures &#9662;</a>
                     <div class="nav-dropdown-menu">
-                        <a href="yentw.html">YENTW</a>
+                        <a href="yentw.html">Youth Entrepreneurs</a>
                         <a href="accelerator.html">Accelerator</a>
                         <a href="hackathons.html">Hackathons</a>
                         <a href="sponsorship.html">Sponsorship</a>
@@ -78,29 +79,29 @@
                 <div class="hero-modern-left">
                     <div class="live-pulse-badge reveal-text">
                         <span class="pulse-dot"></span>
-                        <span>20+ Communities Active in Tunbridge Wells - Free for Members</span>
+                        <span id="liveNetworkStatus">Active Local Communities Across Kent &amp; Sussex - Free for Members</span>
                     </div>
                     <h1 class="modern-hero-headline reveal-text">
                         Find your people.<br>
                         <em>Experience more</em> <span class="hero-brand-accent">together.</span>
                     </h1>
                     <p class="modern-hero-subtitle reveal-text delay-1">
-                        The free platform connecting you to local events, creative workshops, run clubs, walking groups, wellness circles, and independent communities in your town. Real life happens offline.
+                        The free platform connecting you to local events, creative workshops, run clubs, walking groups, wellness circles, and independent communities near you. Real life happens offline.
                     </p>
-                    
+
                     <div class="hero-cta-group reveal-text delay-2">
-                        <a href="/events" class="btn btn-primary" style="padding: 1rem 2.2rem; font-size: 1.05rem;">Find Local Events →</a>
+                        <a href="/events" class="btn btn-primary" style="padding: 1rem 2.2rem; font-size: 1.05rem;">Find Local Events &rarr;</a>
                         <a href="/discover" class="btn btn-outline" style="padding: 1rem 2rem; font-size: 1.05rem;">Explore Communities</a>
                         <a href="/create-community" class="btn btn-outline" style="border-color: rgba(20,184,166,0.35); color: var(--teal-300); padding: 1rem 1.75rem; font-size: 1.05rem;">+ Start a Community</a>
                     </div>
 
                     <div class="hero-category-chips reveal-text delay-2">
                         <span class="hero-chips-label">Popular:</span>
-                        <a href="/discover" class="hero-chip">🥾 Walks &amp; Hiking</a>
-                        <a href="/discover" class="hero-chip">🏃 Run Clubs</a>
-                        <a href="/discover" class="hero-chip">🧠 Breathwork &amp; Mind</a>
-                        <a href="yentw.html" class="hero-chip">☕ Founders &amp; YENTW</a>
-                        <a href="/discover" class="hero-chip">🐕 Dog Friendly</a>
+                        <a href="/discover" class="hero-chip"><span class="m-ico" style="font-size:14px"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="13.5" cy="5" r="2" fill="#fbbf24" stroke="currentColor"/><path d="M9 20l2-5.5 2.5 2V20M11 10.5l-2 4M11 10.5l3 2 3-1"/><path d="M6.5 14c1.2-2.2 2.8-3.5 4.5-3.5"/></svg></span> Walks &amp; Hiking</a>
+                        <a href="/discover" class="hero-chip"><span class="m-ico" style="font-size:14px"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="15" cy="5.5" r="2" fill="#fbbf24" stroke="currentColor"/><path d="M7 19l3.2-4.5 2.6 1.5L11 20M9.5 11.5l3.5-2.5 3.2 2.2 2.3-.7"/><path d="M4 13h3.5M3 16h2.5"/></svg></span> Run Clubs</a>
+                        <a href="/discover" class="hero-chip"><span class="m-ico" style="font-size:14px"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 14c3.5-5 12.5-5 16 0-3.5 4.5-12.5 4.5-16 0z" fill="rgba(20,184,166,0.16)"/><circle cx="12" cy="14" r="2.2" fill="#fbbf24" stroke="none"/><path d="M12 4.5c1.8 2 1.8 4 0 5.5-1.8-1.5-1.8-3.5 0-5.5z"/></svg></span> Breathwork &amp; Mind</a>
+                        <a href="/community/the-youth-entrepreneurs-network" class="hero-chip"><span class="m-ico" style="font-size:14px"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9h11v6a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V9z" fill="rgba(251,191,36,0.18)"/><path d="M15 10h2.2a2.3 2.3 0 0 1 0 4.6H15"/><path d="M7.5 4.5c0 1 .9 1.3.9 2.3M11 4.5c0 1 .9 1.3.9 2.3"/></svg></span> Youth Entrepreneurs</a>
+                        <a href="/discover" class="hero-chip"><span class="m-ico" style="font-size:14px"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="15.2" rx="4.2" ry="3.2" fill="rgba(20,184,166,0.22)"/><circle cx="7.2" cy="10.2" r="1.4" fill="#fbbf24"/><circle cx="10.4" cy="8.2" r="1.4" fill="#fbbf24"/><circle cx="13.8" cy="8.2" r="1.4" fill="#fbbf24"/><circle cx="16.8" cy="10.2" r="1.4" fill="#fbbf24"/></svg></span> Dog Friendly</a>
                     </div>
 
                     <div class="hero-social-proof reveal-text delay-3">
@@ -110,52 +111,47 @@
                             <div class="avatar-initial" style="background: linear-gradient(135deg, #8b5cf6, #ec4899);">A</div>
                             <div class="avatar-initial" style="background: linear-gradient(135deg, #10b981, #059669);">M</div>
                         </div>
-                        <p class="hero-social-text"><strong>340+ locals</strong> connecting in Tunbridge Wells this month</p>
+                        <p class="hero-social-text"><strong>Local clubs &amp; real meetups</strong> happening in person every week</p>
                     </div>
                 </div>
 
-                <!-- Right Column: Interactive Next Gathering Showcase -->
+                <!-- Right Column: Live Next Gathering Showcase (populated dynamically from /api/events/upcoming) -->
                 <div class="hero-modern-right reveal-text delay-1">
                     <div class="hero-event-showcase">
                         <div class="hero-event-glow"></div>
-                        <div class="hero-event-card">
+                        <div class="hero-event-card" id="heroEventCard" aria-live="polite">
                             <div class="hero-card-top">
-                                <span class="hero-card-badge">🔥 Next Gathering - Saturday 10:00 AM</span>
-                                <span class="hero-card-town">Dunorlan Park</span>
+                                <span class="hero-card-badge" id="heroEventBadge">Loading live schedule...</span>
+                                <span class="hero-card-town" id="heroEventTown">Local Network</span>
                             </div>
-                            <h3 class="hero-card-title">Breathe into Christmas</h3>
-                            <div class="hero-card-host">
-                                <span>By More Performance Breathing</span>
-                                <span class="verified-icon">✓</span>
+                            <h3 class="hero-card-title" id="heroEventTitle">Next Local Gathering</h3>
+                            <div class="hero-card-host" id="heroEventHostRow">
+                                <span id="heroEventHost">Verified Independent Community</span>
+                                <span class="more-verified-seal" id="heroEventVerified" hidden><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.5 12.5l4.2 4.2L18.5 7.5" stroke-width="2.3"/></svg></span>
                             </div>
                             <div class="hero-card-details">
                                 <div class="hero-detail-row">
-                                    <span class="hero-detail-icon">📍</span>
-                                    <span>Dunorlan Park Cafe Entrance, Tunbridge Wells</span>
+                                    <span class="hero-detail-icon"><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="10" r="7" fill="rgba(20,184,166,0.16)" stroke="none"/><path d="M12 21s-6-5.3-6-11a6 6 0 1 1 12 0c0 5.7-6 11-6 11z"/><circle cx="12" cy="10" r="2.2" fill="#fbbf24" stroke="none"/></svg></span></span>
+                                    <span id="heroEventLocation">Fetching verified venue details...</span>
                                 </div>
                                 <div class="hero-detail-row">
-                                    <span class="hero-detail-icon">⏱️</span>
-                                    <span>75 mins circular • Easy pace • All welcome</span>
+                                    <span class="hero-detail-icon"><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="rgba(20,184,166,0.16)"/><path d="M12 7.5V12l3 2"/><circle cx="12" cy="12" r="1.4" fill="#fbbf24" stroke="none"/></svg></span></span>
+                                    <span id="heroEventTimeInfo">Live calendar synced with community leaders</span>
                                 </div>
                                 <div class="hero-detail-row">
-                                    <span class="hero-detail-icon">☕</span>
-                                    <span>Post-session herbal tea and conversation</span>
+                                    <span class="hero-detail-icon"><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9L12 3z" fill="rgba(20,184,166,0.22)"/><path d="M18.5 15.5l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8.8-2z" fill="#fbbf24" stroke="none"/><circle cx="6" cy="5.5" r="1.3" fill="#fbbf24" stroke="none"/></svg></span></span>
+                                    <span id="heroEventSummary">Real events from independent local groups near you</span>
                                 </div>
                             </div>
-                            <div class="hero-carpool-pill">
-                                <span>🚗</span>
-                                <span><strong>3 Carpools Active</strong> from High Brooms, Southborough, and Pantiles</span>
+                            <div class="hero-carpool-pill" id="heroCarpoolRow" hidden>
+                                <span><span class="m-ico" style="font-size:15px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13l1.8-5h10.4L19 13" fill="rgba(20,184,166,0.16)"/><rect x="3.5" y="12.5" width="17" height="5.5" rx="2" fill="rgba(20,184,166,0.16)"/><circle cx="7.5" cy="18" r="1.5" fill="#fbbf24" stroke="currentColor"/><circle cx="16.5" cy="18" r="1.5" fill="#fbbf24" stroke="currentColor"/><path d="M5 13l1.8-5h10.4L19 13"/></svg></span></span>
+                                <span id="heroCarpoolText"><strong>Carpool Share Available</strong> on event RSVP</span>
                             </div>
                             <div class="hero-card-footer">
                                 <div class="hero-card-attendees">
-                                    <div class="hero-avatar-stack">
-                                        <div class="avatar-initial" style="background: #0284c7; width: 28px; height: 28px; font-size: 0.7rem;">E</div>
-                                        <div class="avatar-initial" style="background: #10b981; width: 28px; height: 28px; font-size: 0.7rem;">D</div>
-                                        <div class="avatar-initial" style="background: #f59e0b; width: 28px; height: 28px; font-size: 0.7rem;">R</div>
-                                    </div>
-                                    <span class="hero-attendees-text"><strong>12 going</strong><br><small style="color: var(--teal-300);">Free RSVP</small></span>
+                                    <span class="hero-attendees-text" id="heroEventAttendees"><strong>Upcoming</strong><br><small style="color: var(--teal-300);">Live Database</small></span>
                                 </div>
-                                <a href="/events" class="hero-card-action">RSVP Free →</a>
+                                <a href="/events" class="hero-card-action" id="heroEventAction">Explore Events &rarr;</a>
                             </div>
                         </div>
                     </div>
@@ -164,107 +160,24 @@
         </div>
     </header>
 
-    <!-- ====== LIVE HAPPENING THIS WEEK ====== -->
+    <!-- ====== LIVE UPCOMING GATHERINGS (HYDRATED FROM SUPABASE) ====== -->
     <section class="live-events-section" id="events">
         <div class="container">
             <div class="section-header-modern scroll-reveal">
                 <div>
                     <p class="eyebrow">Live Gatherings</p>
-                    <h2 class="editorial-title" style="margin-bottom: 0.5rem;">Happening this week in<br><em>Tunbridge Wells</em></h2>
-                    <p style="color: var(--slate-400); font-size: 1.05rem;">Join a workshop, social meetup, run club, or weekend walk. Discover local events and meet people in real life.</p>
+                    <h2 class="editorial-title" style="margin-bottom: 0.5rem;">Upcoming events across <br><em>our local network</em></h2>
+                    <p style="color: var(--slate-400); font-size: 1.05rem;">Join a workshop, breathwork circle, support group, or weekend walk. Live calendar synced directly with community hosts.</p>
                 </div>
                 <div>
-                    <a href="/events" class="text-link" style="font-size: 1rem;">View all upcoming events →</a>
+                    <a href="/events" class="text-link" style="font-size: 1rem;">View all upcoming events &rarr;</a>
                 </div>
             </div>
-            
-            <div class="live-events-grid scroll-reveal">
-                <!-- Card 1 -->
-                <a href="/events" class="live-event-card">
-                    <div class="live-card-media">
-                        <img src="images/wellness.png" alt="Breathe into Christmas">
-                        <div class="live-card-date-badge">
-                            <span class="date-badge-day">SAT</span>
-                            <span class="date-badge-time">10:00 AM</span>
-                        </div>
-                        <span class="live-card-tag">Breathwork &amp; Mindful Reset</span>
-                    </div>
-                    <div class="live-card-body">
-                        <h3 class="live-card-title">Breathe into Christmas</h3>
-                        <p class="live-card-community">More Performance Breathing</p>
-                        <div class="live-card-meta">
-                            <div class="live-meta-item"><span>📍</span> Dunorlan Park, Tunbridge Wells</div>
-                            <div class="live-meta-item"><span>⏱️</span> 75 mins • Gentle pace</div>
-                        </div>
-                        <div class="live-card-badges">
-                            <span class="event-micro-badge badge-free">Free to Join</span>
-                            <span class="event-micro-badge badge-carpool">🚗 Carpool Active</span>
-                            <span class="event-micro-badge badge-social">☕ Coffee After</span>
-                        </div>
-                        <div class="live-card-footer">
-                            <span class="live-spots"><strong>12 attending</strong> • 3 spots open</span>
-                            <span class="live-rsvp-link">RSVP →</span>
-                        </div>
-                    </div>
-                </a>
-                
-                <!-- Card 2 -->
-                <a href="/events" class="live-event-card">
-                    <div class="live-card-media">
-                        <img src="images/walking.png" alt="Tunbridge Wells Circular Ridge Walk">
-                        <div class="live-card-date-badge">
-                            <span class="date-badge-day">SUN</span>
-                            <span class="date-badge-time">09:30 AM</span>
-                        </div>
-                        <span class="live-card-tag">Country Hike</span>
-                    </div>
-                    <div class="live-card-body">
-                        <h3 class="live-card-title">Tunbridge Wells Circular Ridge &amp; Rocks Hike</h3>
-                        <p class="live-card-community">TW Weekend Walkers</p>
-                        <div class="live-card-meta">
-                            <div class="live-meta-item"><span>📍</span> The Pantiles to High Rocks</div>
-                            <div class="live-meta-item"><span>⏱️</span> 6.5 km • Moderate loop</div>
-                        </div>
-                        <div class="live-card-badges">
-                            <span class="event-micro-badge badge-free">Free to Join</span>
-                            <span class="event-micro-badge badge-carpool">🚗 Carpool Active</span>
-                            <span class="event-micro-badge badge-social">🐕 Dog Friendly</span>
-                        </div>
-                        <div class="live-card-footer">
-                            <span class="live-spots"><strong>16 attending</strong> • 4 spots open</span>
-                            <span class="live-rsvp-link">RSVP →</span>
-                        </div>
-                    </div>
-                </a>
-                
-                <!-- Card 3 -->
-                <a href="yentw.html" class="live-event-card">
-                    <div class="live-card-media">
-                        <img src="images/entrepreneurs.png" alt="Founders &amp; Creators Morning Coffee">
-                        <div class="live-card-date-badge">
-                            <span class="date-badge-day">THU</span>
-                            <span class="date-badge-time">08:30 AM</span>
-                        </div>
-                        <span class="live-card-tag">Founders &amp; YENTW</span>
-                    </div>
-                    <div class="live-card-body">
-                        <h3 class="live-card-title">Founders &amp; Creators Morning Coffee</h3>
-                        <p class="live-card-community">Young Entrepreneurs TW (YENTW)</p>
-                        <div class="live-card-meta">
-                            <div class="live-meta-item"><span>📍</span> The Pantiles, Tunbridge Wells</div>
-                            <div class="live-meta-item"><span>⏱️</span> 60 mins • Casual peer talk</div>
-                        </div>
-                        <div class="live-card-badges">
-                            <span class="event-micro-badge badge-free">Free to Join</span>
-                            <span class="event-micro-badge badge-social">💡 Peer Support</span>
-                            <span class="event-micro-badge badge-social">☕ Informal</span>
-                        </div>
-                        <div class="live-card-footer">
-                            <span class="live-spots"><strong>9 attending</strong> • Open RSVP</span>
-                            <span class="live-rsvp-link">RSVP →</span>
-                        </div>
-                    </div>
-                </a>
+
+            <div class="live-events-grid scroll-reveal" id="liveEventsGrid" aria-live="polite">
+                <div class="live-event-skeleton" aria-hidden="true"></div>
+                <div class="live-event-skeleton" aria-hidden="true"></div>
+                <div class="live-event-skeleton" aria-hidden="true"></div>
             </div>
         </div>
     </section>
@@ -286,15 +199,15 @@
                 </div>
                 <div class="stat-divider"></div>
                 <div class="stat-card">
-                    <span class="stat-number">£1</span>
-                    <span class="stat-suffix">= £16</span>
+                    <span class="stat-number">&pound;1</span>
+                    <span class="stat-suffix">= &pound;16</span>
                     <p class="stat-label">social return on every<br>pound invested in community</p>
                 </div>
                 <div class="stat-divider"></div>
                 <div class="stat-card">
                     <span class="stat-number stat-number-text">TW</span>
                     <span class="stat-suffix">first</span>
-                    <p class="stat-label">20+ local communities<br>in Tunbridge Wells</p>
+                    <p class="stat-label">Born in Tunbridge Wells,<br>growing across Kent &amp; Sussex</p>
                 </div>
             </div>
         </div>
@@ -306,68 +219,68 @@
             <div class="discover-header scroll-reveal">
                 <p class="eyebrow">Explore Your Town</p>
                 <h2 class="editorial-title">Whatever you're into,<br><em>find your crew.</em></h2>
-                <p style="color: var(--slate-400); font-size: 1.05rem; margin-top: -0.5rem;">Explore independent communities running across Tunbridge Wells.</p>
+                <p style="color: var(--slate-400); font-size: 1.05rem; margin-top: -0.5rem;">Explore independent communities running across Tunbridge Wells and nearby towns.</p>
             </div>
-            
+
             <div class="categories-modern-grid scroll-reveal">
                 <a href="/discover" class="category-modern-card">
                     <img src="images/walking.png" alt="Walking Groups">
                     <div class="category-card-overlay">
-                        <span class="category-pill-top">🥾 8 Groups Active</span>
+                        <span class="category-pill-top"><span class="m-ico" style="font-size:14px"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="13.5" cy="5" r="2" fill="#fbbf24" stroke="currentColor"/><path d="M9 20l2-5.5 2.5 2V20M11 10.5l-2 4M11 10.5l3 2 3-1"/><path d="M6.5 14c1.2-2.2 2.8-3.5 4.5-3.5"/></svg></span> Walking Groups</span>
                         <h3 class="category-card-title">Walking &amp; Hiking</h3>
                         <p class="category-card-desc">Weekend countryside loops, midweek morning strolls, and scenic trail hikes.</p>
-                        <span class="category-card-action">Browse walks →</span>
+                        <span class="category-card-action">Browse walks &rarr;</span>
                     </div>
                 </a>
                 <a href="/discover" class="category-modern-card">
                     <img src="images/running.png" alt="Run Clubs">
                     <div class="category-card-overlay">
-                        <span class="category-pill-top">🏃 5 Running Crews</span>
+                        <span class="category-pill-top"><span class="m-ico" style="font-size:14px"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="15" cy="5.5" r="2" fill="#fbbf24" stroke="currentColor"/><path d="M7 19l3.2-4.5 2.6 1.5L11 20M9.5 11.5l3.5-2.5 3.2 2.2 2.3-.7"/><path d="M4 13h3.5M3 16h2.5"/></svg></span> Run Clubs</span>
                         <h3 class="category-card-title">Running &amp; Challenges</h3>
                         <p class="category-card-desc">Social 5Ks, trail loops, and weekend challenge tracking. All paces welcomed.</p>
-                        <span class="category-card-action">See run clubs →</span>
+                        <span class="category-card-action">See run clubs &rarr;</span>
                     </div>
                 </a>
                 <a href="/discover" class="category-modern-card">
                     <img src="images/wellness.png" alt="Wellness and Breathwork">
                     <div class="category-card-overlay">
-                        <span class="category-pill-top">🧠 Mind &amp; Body</span>
+                        <span class="category-pill-top"><span class="m-ico" style="font-size:14px"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 14c3.5-5 12.5-5 16 0-3.5 4.5-12.5 4.5-16 0z" fill="rgba(20,184,166,0.16)"/><circle cx="12" cy="14" r="2.2" fill="#fbbf24" stroke="none"/><path d="M12 4.5c1.8 2 1.8 4 0 5.5-1.8-1.5-1.8-3.5 0-5.5z"/></svg></span> Mind &amp; Body</span>
                         <h3 class="category-card-title">Wellness &amp; Breathwork</h3>
-                        <p class="category-card-desc">Cold water dipping, outdoor breathwork, and men's mental health circles.</p>
-                        <span class="category-card-action">Find wellness groups →</span>
+                        <p class="category-card-desc">Cold water dipping, outdoor breathwork, and men's peer support circles.</p>
+                        <span class="category-card-action">Find wellness groups &rarr;</span>
                     </div>
                 </a>
-                <a href="yentw.html" class="category-modern-card">
-                    <img src="images/entrepreneurs.png" alt="Young Entrepreneurs Network">
+                <a href="/community/the-youth-entrepreneurs-network" class="category-modern-card">
+                    <img src="images/communities/entrepreneurs.webp" alt="The Youth Entrepreneurs Network">
                     <div class="category-card-overlay">
-                        <span class="category-pill-top">💡 Founders &amp; Builders</span>
-                        <h3 class="category-card-title">YENTW &amp; Business</h3>
-                        <p class="category-card-desc">Young Entrepreneurs Network Tunbridge Wells, founder coffee, and hackathons.</p>
-                        <span class="category-card-action">Explore YENTW →</span>
+                        <span class="category-pill-top"><span class="m-ico" style="font-size:14px"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9h11v6a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V9z" fill="rgba(251,191,36,0.18)"/><path d="M15 10h2.2a2.3 2.3 0 0 1 0 4.6H15"/><path d="M7.5 4.5c0 1 .9 1.3.9 2.3M11 4.5c0 1 .9 1.3.9 2.3"/></svg></span> Founders &amp; Builders</span>
+                        <h3 class="category-card-title">Youth Entrepreneurs Network</h3>
+                        <p class="category-card-desc">The Youth Entrepreneurs Network in Tunbridge Wells, founder coffee, and hackathons.</p>
+                        <span class="category-card-action">Explore Network &rarr;</span>
                     </div>
                 </a>
                 <a href="/discover" class="category-modern-card">
-                    <img src="images/adventure.png" alt="Outdoors &amp; Adventure">
+                    <img src="images/adventure.png" alt="Outdoors and Adventure">
                     <div class="category-card-overlay">
-                        <span class="category-pill-top">🌲 Adventure</span>
+                        <span class="category-pill-top"><span class="m-ico" style="font-size:14px"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 19l5.5-9.5 4 6 3.5-5 5 8.5H3z" fill="rgba(20,184,166,0.18)"/><circle cx="17" cy="6" r="2" fill="#fbbf24" stroke="none"/></svg></span> Adventure</span>
                         <h3 class="category-card-title">Adventure &amp; Outdoors</h3>
-                        <p class="category-card-desc">Kayaking, mountain biking, woodland survival, and weekend expeditions.</p>
-                        <span class="category-card-action">See adventures →</span>
+                        <p class="category-card-desc">Kayaking, mountain biking, woodland skills, and weekend expeditions.</p>
+                        <span class="category-card-action">See adventures &rarr;</span>
                     </div>
                 </a>
                 <a href="/discover" class="category-modern-card">
-                    <img src="images/charity.png" alt="Volunteering &amp; Community">
+                    <img src="images/charity.png" alt="Volunteering and Community">
                     <div class="category-card-overlay">
-                        <span class="category-pill-top">🤝 Giving Back</span>
+                        <span class="category-pill-top"><span class="m-ico" style="font-size:14px"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7-4.5-7-9.5A4.2 4.2 0 0 1 12 7.4a4.2 4.2 0 0 1 7 3.1C19 15.5 12 20 12 20z" fill="rgba(20,184,166,0.2)"/><circle cx="12" cy="11.5" r="1.8" fill="#fbbf24" stroke="none"/></svg></span> Giving Back</span>
                         <h3 class="category-card-title">Charity &amp; Impact</h3>
                         <p class="category-card-desc">Community gardening, park cleanups, and Good Neighbours support networks.</p>
-                        <span class="category-card-action">Find impact projects →</span>
+                        <span class="category-card-action">Find impact projects &rarr;</span>
                     </div>
                 </a>
             </div>
-            
+
             <div style="text-align: center; margin-top: 3rem;">
-                <a href="/discover" class="btn btn-outline" style="padding: 1rem 2.5rem;">Explore All Communities in Directory →</a>
+                <a href="/discover" class="btn btn-outline" style="padding: 1rem 2.5rem;">Explore All Communities in Directory &rarr;</a>
             </div>
         </div>
     </section>
@@ -378,43 +291,43 @@
             <div class="scroll-reveal" style="text-align: center; max-width: 700px; margin: 0 auto 3.5rem;">
                 <p class="eyebrow" style="justify-content: center;">Built for Community Leaders</p>
                 <h2 class="editorial-title">Running a group?<br><em>We eliminated the friction.</em></h2>
-                <p style="color: var(--slate-400); font-size: 1.05rem;">Everything you need to grow and coordinate your gatherings, completely free of the platform taxes that drain grassroots communities.</p>
+                <p style="color: var(--slate-400); font-size: 1.05rem;">Everything you need to launch and coordinate your gatherings with free core tools - without the monthly subscription tax.</p>
             </div>
-            
+
             <div class="bento-grid scroll-reveal">
                 <div class="bento-card bento-card-wide">
-                    <span class="bento-icon">💸</span>
-                    <h3 class="bento-title">Zero Platform Tax (£0 vs £33/mo on Meetup)</h3>
-                    <p class="bento-text">Commercial platforms charge organizers £17 to £33 every month just for the privilege of listing an event. more gives you a free core tier to start. When local businesses sponsor your community, 80% goes straight into your club fund.</p>
+                    <span class="bento-icon"><span class="m-badge-ico"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="3" fill="rgba(20,184,166,0.16)"/><path d="M15 12.5h6v2.5h-6a1.25 1.25 0 0 1 0-2.5z" fill="#fbbf24" stroke="currentColor"/><path d="M5.5 6L16 3.5l1.5 2.5"/></svg></span></span>
+                    <h3 class="bento-title">Zero Monthly Core Tax (&pound;0 Core vs &pound;17-33/mo elsewhere)</h3>
+                    <p class="bento-text">Commercial platforms charge organisers monthly subscription fees just to keep a group listed. more gives you a free core tier to start. When local businesses sponsor your community, 80% goes straight into your club fund.</p>
                 </div>
-                
+
                 <div class="bento-card">
-                    <span class="bento-icon">🚗</span>
+                    <span class="bento-icon"><span class="m-badge-ico is-amber"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13l1.8-5h10.4L19 13" fill="rgba(20,184,166,0.16)"/><rect x="3.5" y="12.5" width="17" height="5.5" rx="2" fill="rgba(20,184,166,0.16)"/><circle cx="7.5" cy="18" r="1.5" fill="#fbbf24" stroke="currentColor"/><circle cx="16.5" cy="18" r="1.5" fill="#fbbf24" stroke="currentColor"/><path d="M5 13l1.8-5h10.4L19 13"/></svg></span></span>
                     <h3 class="bento-title">Integrated Carpool Hub</h3>
-                    <p class="bento-text">Transport can be a barrier for out-of-town events and countryside walks. Members offer and reserve spare seats in 1 tap directly inside the event RSVP.</p>
+                    <p class="bento-text">Transport can be a barrier for countryside walks and rural venues. Members offer and reserve spare seats in 1 tap directly inside the event RSVP.</p>
                 </div>
-                
+
                 <div class="bento-card">
-                    <span class="bento-icon">⚡</span>
+                    <span class="bento-icon"><span class="m-badge-ico"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.2 3L6 13h5.5l-1 8L18 11h-5.3L13.2 3z" fill="rgba(251,191,36,0.25)"/></svg></span></span>
                     <h3 class="bento-title">1-Tap RSVPs &amp; Safety Packs</h3>
-                    <p class="bento-text">Automated attendee rosters, emergency contact storage, and verified safety blueprints for physical community gatherings.</p>
+                    <p class="bento-text">Automated attendee rosters, QR check-in, emergency contact capture, and downloadable council/venue safety packs for real-world gatherings.</p>
                 </div>
-                
+
                 <div class="bento-card bento-card-wide">
-                    <span class="bento-icon">📍</span>
+                    <span class="bento-icon"><span class="m-badge-ico"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="10" r="7" fill="rgba(20,184,166,0.16)" stroke="none"/><path d="M12 21s-6-5.3-6-11a6 6 0 1 1 12 0c0 5.7-6 11-6 11z"/><circle cx="12" cy="10" r="2.2" fill="#fbbf24" stroke="none"/></svg></span></span>
                     <h3 class="bento-title">Town Directory Discovery</h3>
-                    <p class="bento-text">Stop fighting social media algorithms. Your community is featured in the central Tunbridge Wells town directory where locals actively search by interest and location.</p>
+                    <p class="bento-text">Stop fighting social media algorithms. Your community is featured in our local directory where neighbours actively browse by interest and location.</p>
                 </div>
             </div>
-            
+
             <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-                <a href="/create-community" class="btn btn-primary" style="padding: 1.1rem 2.4rem;">Start Your Community Free →</a>
-                <a href="leaders.html" class="btn btn-outline" style="padding: 1.1rem 2.2rem;">Compare Leader Tools &amp; Pro →</a>
+                <a href="/create-community" class="btn btn-primary" style="padding: 1.1rem 2.4rem;">Start Your Community Free &rarr;</a>
+                <a href="leaders.html" class="btn btn-outline" style="padding: 1.1rem 2.2rem;">Compare Leader Tools &amp; Pro &rarr;</a>
             </div>
         </div>
     </section>
 
-    <!-- ====== APP TEASER & REALISTIC MOCKUP ====== -->
+    <!-- ====== APP TEASER & LIVE PREVIEW MOCKUP ====== -->
     <section id="app" class="section app-teaser-section">
         <div class="container">
             <div class="app-teaser-layout scroll-reveal">
@@ -422,22 +335,22 @@
                     <p class="eyebrow">The Digital Home</p>
                     <h2 class="editorial-title">Your community.<br><em>In your pocket.</em></h2>
                     <p>A fast, lightweight web app built for real-life gatherings. Find local groups, book events with one tap, coordinate lifts, and chat with members.</p>
-                    
+
                     <ul class="app-feature-highlights">
                         <li><strong>1-Tap RSVPs:</strong> Instant registration with automated calendar invites and reminder notifications.</li>
-                        <li><strong>Built-in Carpools:</strong> Connect drivers and riders to make countryside trails accessible to everyone.</li>
-                        <li><strong>Leader Dashboard:</strong> Track attendance, manage waitlists, and communicate with members in one place.</li>
-                        <li><strong>Zero Download Friction:</strong> Works instantly on iOS, Android, and web. No app store download required.</li>
+                        <li><strong>Built-in Carpools:</strong> Connect drivers and riders to reach trailheads and venues together.</li>
+                        <li><strong>Leader Dashboard:</strong> Track attendance, manage waitlists, and message your members cleanly.</li>
+                        <li><strong>Zero Download Friction:</strong> Works instantly in your browser on iOS, Android, and desktop.</li>
                     </ul>
-                    
+
                     <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 2.25rem;">
-                        <a href="/events" class="btn btn-primary" style="padding: 1rem 2.2rem;">Browse Live Events →</a>
+                        <a href="/events" class="btn btn-primary" style="padding: 1rem 2.2rem;">Browse Live Events &rarr;</a>
                         <a href="/discover" class="btn btn-outline" style="padding: 1rem 2rem;">Explore Directory</a>
                     </div>
-                    <p style="color: var(--slate-500); font-size: 0.85rem; margin-top: 1rem;">100% free for members. Works seamlessly in any mobile browser.</p>
+                    <p style="color: var(--slate-500); font-size: 0.85rem; margin-top: 1rem;">Free for members to join and RSVP to free community events.</p>
                 </div>
-                
-                                <div class="app-teaser-visual">
+
+                <div class="app-teaser-visual">
                     <a href="/events" style="text-decoration: none;">
                         <div class="phone-mockup-modern">
                             <div class="phone-dynamic-island"></div>
@@ -448,87 +361,51 @@
                                 </div>
                                 <div class="phone-app-header">
                                     <div class="phone-location-pill">
-                                        <span>📍 Tunbridge Wells</span>
-                                        <span style="font-size: 0.6rem;">▾</span>
+                                        <span class="m-ico" style="font-size:12px"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="10" r="7" fill="rgba(20,184,166,0.16)" stroke="none"/><path d="M12 21s-6-5.3-6-11a6 6 0 1 1 12 0c0 5.7-6 11-6 11z"/><circle cx="12" cy="10" r="2.2" fill="#fbbf24" stroke="none"/></svg></span> <span>Tunbridge Wells</span>
                                     </div>
                                     <div class="phone-header-icons">
-                                        <span>🔍</span>
-                                        <span>🔔</span>
+                                        <span class="m-ico" style="font-size:13px"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5" fill="rgba(20,184,166,0.12)"/><path d="M16 16l4 4"/></svg></span>
+                                        <span class="m-ico" style="font-size:13px"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 15.5V10a5.5 5.5 0 0 1 11 0v5.5l1.5 2H5l1.5-2z" fill="rgba(20,184,166,0.16)"/><circle cx="12" cy="19.5" r="1.4" fill="#fbbf24" stroke="none"/></svg></span>
                                     </div>
                                 </div>
                                 <div class="phone-category-tabs">
                                     <span class="phone-tab active">All Events</span>
-                                    <span class="phone-tab">Events</span>
+                                    <span class="phone-tab">Walks</span>
                                     <span class="phone-tab">Running</span>
                                     <span class="phone-tab">Wellness</span>
                                 </div>
-                                <div class="phone-content-stream">
-                                    <!-- Event 1 -->
-                                    <div class="phone-event-item">
-                                        <div class="phone-event-hero">
-                                            <img src="images/wellness.png" alt="Breathe into Christmas">
-                                            <span class="phone-event-hero-badge">SAT 10:00 AM</span>
-                                        </div>
-                                        <div class="phone-event-details">
-                                            <div class="phone-event-title">Breathe into Christmas</div>
-                                            <div class="phone-event-host">More Performance Breathing ✓</div>
-                                            <div class="phone-event-meta">
-                                                <span>📍 Dunorlan Park, Tunbridge Wells</span>
-                                                <span>⏱️ 75 mins &bull; Gentle &bull; Post-session herbal tea</span>
-                                            </div>
-                                            <div class="phone-carpool-row">
-                                                <span>🚗</span>
-                                                <span><strong>Carpool active:</strong> 3 drivers offering seats</span>
-                                            </div>
-                                            <div class="phone-event-action-bar">
-                                                <span class="phone-attendee-count"><strong>12 going</strong> &bull; 3 spots left</span>
-                                                <span class="phone-event-btn">✓ Going</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Event 2 -->
-                                    <div class="phone-event-item">
-                                        <div class="phone-event-hero" style="height: 60px;">
-                                            <img src="images/walking.png" alt="TW Ridge Walk">
-                                            <span class="phone-event-hero-badge">SUN 09:30 AM</span>
-                                        </div>
-                                        <div class="phone-event-details" style="padding: 6px 10px;">
-                                            <div class="phone-event-title" style="font-size: 0.76rem;">TW Circular Ridge &amp; Rocks Hike</div>
-                                            <div class="phone-event-host" style="font-size: 0.62rem; margin-bottom: 2px;">TW Weekend Walkers ✓</div>
-                                            <div class="phone-event-action-bar" style="margin-top: 2px; padding-top: 4px;">
-                                                <span class="phone-attendee-count"><strong>16 going</strong> &bull; Free</span>
-                                                <span class="phone-event-btn" style="background: rgba(20,184,166,0.2); color: var(--teal-300);">RSVP</span>
-                                            </div>
-                                        </div>
+                                <div class="phone-content-stream" id="phoneStream">
+                                    <div class="phone-event-item" style="padding: 12px;">
+                                        <div class="phone-event-title">Live Community Calendar</div>
+                                        <div class="phone-event-host">Loading upcoming local events...</div>
                                     </div>
                                 </div>
-                                
+
                                 <div class="phone-bottom-nav">
                                     <div class="phone-nav-item">
-                                        <span class="phone-nav-icon">🏠</span>
+                                        <span class="phone-nav-icon"><span class="m-ico" style="font-size:14px"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11.5L12 4l8 7.5V19a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 19v-7.5z" fill="rgba(20,184,166,0.16)"/></svg></span></span>
                                         <span>Home</span>
                                     </div>
                                     <div class="phone-nav-item active">
-                                        <span class="phone-nav-icon">📅</span>
+                                        <span class="phone-nav-icon"><span class="m-ico" style="font-size:14px"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="3" fill="rgba(20,184,166,0.16)"/><path d="M3.5 9.5h17M8 3.5v3M16 3.5v3"/><path d="M9 14.5l2 2 4-4" stroke="#fbbf24" stroke-width="2.1"/></svg></span></span>
                                         <span>Events</span>
                                     </div>
                                     <div class="phone-nav-item">
-                                        <span class="phone-nav-icon">🧭</span>
+                                        <span class="phone-nav-icon"><span class="m-ico" style="font-size:14px"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="rgba(20,184,166,0.16)"/><polygon points="15.5,8.5 13.4,13.4 8.5,15.5 10.6,10.6" fill="#fbbf24" stroke="currentColor"/></svg></span></span>
                                         <span>Discover</span>
                                     </div>
                                     <div class="phone-nav-item">
-                                        <span class="phone-nav-icon">💬</span>
+                                        <span class="phone-nav-icon"><span class="m-ico" style="font-size:14px"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 6.5a2.5 2.5 0 0 1 2.5-2.5h10a2.5 2.5 0 0 1 2.5 2.5v7a2.5 2.5 0 0 1-2.5 2.5H10l-4.5 3.5V16H7a2.5 2.5 0 0 1-2.5-2.5v-7z" fill="rgba(20,184,166,0.16)"/><circle cx="9.2" cy="10" r="1.1" fill="#fbbf24" stroke="none"/><circle cx="12" cy="10" r="1.1" fill="#fbbf24" stroke="none"/><circle cx="14.8" cy="10" r="1.1" fill="#fbbf24" stroke="none"/></svg></span></span>
                                         <span>Chat</span>
                                     </div>
                                     <div class="phone-nav-item">
-                                        <span class="phone-nav-icon">👤</span>
+                                        <span class="phone-nav-icon"><span class="m-ico" style="font-size:14px"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5" fill="rgba(20,184,166,0.18)"/><path d="M5 19.5c0-3.2 3.1-5 7-5s7 1.8 7 5"/></svg></span></span>
                                         <span>Profile</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <p style="text-align: center; color: var(--teal-400); font-size: 0.85rem; font-weight: 600; margin-top: 1rem;">Live web app: Click to explore →</p>
+                        <p style="text-align: center; color: var(--teal-400); font-size: 0.85rem; font-weight: 600; margin-top: 1rem;">Live web app: Click to explore &rarr;</p>
                     </a>
                 </div>
             </div>
@@ -554,7 +431,7 @@
                     <p>For years, I was trying to fit in rather than understand who I really was. I hid behind achievement, alcohol, unhealthy patterns, and the noise of a life that looked functional on the outside but felt disconnected underneath.</p>
                     <p>Through challenge, community, and honest self-reflection, I found clarity, purpose, and a completely different way of living.</p>
                     <p class="story-closing"><strong>more community</strong> was built from that journey - to help others step outside their comfort zones and realise they are capable of far more than they think.</p>
-                    <a href="about.html" class="text-link">Read the full story →</a>
+                    <a href="about.html" class="text-link">Read the full story &rarr;</a>
                 </div>
             </div>
         </div>
@@ -570,22 +447,22 @@
             <div class="tw-content scroll-reveal">
                 <p class="eyebrow">Launching First</p>
                 <h2 class="editorial-title">Starting where<br><em>it matters.</em></h2>
-                <p class="tw-desc">Tunbridge Wells is home to over 20 active community groups - walking clubs, running crews, entrepreneur networks, faith groups, volunteer teams, and more. We are starting here because community starts local.</p>
+                <p class="tw-desc">Tunbridge Wells and the surrounding Wealden &amp; Sussex towns are home to active walking clubs, breathwork circles, men's support groups, entrepreneur networks, and more. Community starts local.</p>
                 <div class="tw-highlights">
                     <div class="tw-highlight-item">
-                        <span class="tw-number">20+</span>
-                        <span class="tw-hl-label">Active communities<br>ready to join</span>
+                        <span class="tw-number">TW+</span>
+                        <span class="tw-hl-label">Kent &amp; Sussex<br>regional network</span>
                     </div>
                     <div class="tw-highlight-item">
                         <span class="tw-number">1st</span>
-                        <span class="tw-hl-label">Launch hub at<br>The Pantiles</span>
+                        <span class="tw-hl-label">Launch hub in<br>Tunbridge Wells</span>
                     </div>
                     <div class="tw-highlight-item">
                         <span class="tw-number">Free</span>
-                        <span class="tw-hl-label">For every community<br>member to join</span>
+                        <span class="tw-hl-label">Core tools for every<br>member &amp; organiser</span>
                     </div>
                 </div>
-                <a href="tunbridge-wells.html" class="btn btn-white">Explore Tunbridge Wells →</a>
+                <a href="tunbridge-wells.html" class="btn btn-white">Explore Tunbridge Wells &rarr;</a>
             </div>
         </div>
     </section>
@@ -594,40 +471,40 @@
     <section class="section" style="background: var(--slate-900); border-top: 1px solid rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.05);">
         <div class="container">
             <div class="scroll-reveal" style="text-align: center; margin-bottom: 3rem;">
-                <p class="eyebrow" style="justify-content: center;">What people are saying</p>
+                <p class="eyebrow" style="justify-content: center;">Why People Show Up</p>
                 <h2 class="editorial-title">Real people.<br><em>Real connections.</em></h2>
             </div>
             <div class="leaders-value-grid scroll-reveal" style="grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));">
                 <div class="leaders-value-card" style="border-color: rgba(20,184,166,0.2);">
-                    <div style="font-size: 1.5rem; margin-bottom: 1rem;">⭐⭐⭐⭐⭐</div>
-                    <p style="font-style: italic; color: var(--slate-300); line-height: 1.7; margin-bottom: 1.25rem;">&ldquo;Found my walking and breathing group through more and it completely changed my weekends. I now know people right on my street!&rdquo;</p>
+                    <div class="more-stars-row" aria-label="5 out of 5 rating"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.6 5.4 6 .9-4.3 4.2 1 6-5.3-2.8-5.3 2.8 1-6-4.3-4.2 6-.9L12 3z" fill="currentColor" stroke="none"/></svg><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.6 5.4 6 .9-4.3 4.2 1 6-5.3-2.8-5.3 2.8 1-6-4.3-4.2 6-.9L12 3z" fill="currentColor" stroke="none"/></svg><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.6 5.4 6 .9-4.3 4.2 1 6-5.3-2.8-5.3 2.8 1-6-4.3-4.2 6-.9L12 3z" fill="currentColor" stroke="none"/></svg><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.6 5.4 6 .9-4.3 4.2 1 6-5.3-2.8-5.3 2.8 1-6-4.3-4.2 6-.9L12 3z" fill="currentColor" stroke="none"/></svg><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.6 5.4 6 .9-4.3 4.2 1 6-5.3-2.8-5.3 2.8 1-6-4.3-4.2 6-.9L12 3z" fill="currentColor" stroke="none"/></svg></div>
+                    <p style="font-style: italic; color: var(--slate-300); line-height: 1.7; margin-bottom: 1.25rem;">&ldquo;Found my walking and breathwork sessions through more and it completely changed my weekends. Seeing familiar faces before arriving makes turning up easy.&rdquo;</p>
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <div style="width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #14b8a6, #3b82f6); display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 0.9rem;">S</div>
                         <div>
                             <div style="font-weight: 600; color: white; font-size: 0.9rem;">Sarah M.</div>
-                            <div style="font-size: 0.75rem; color: var(--slate-500);">TW Parkrun &amp; Walking Member</div>
+                            <div style="font-size: 0.75rem; color: var(--slate-500);">Local Walking Member</div>
                         </div>
                     </div>
                 </div>
                 <div class="leaders-value-card" style="border-color: rgba(20,184,166,0.2);">
-                    <div style="font-size: 1.5rem; margin-bottom: 1rem;">⭐⭐⭐⭐⭐</div>
-                    <p style="font-style: italic; color: var(--slate-300); line-height: 1.7; margin-bottom: 1.25rem;">&ldquo;As a community leader I used to drown in admin and WhatsApp threads. more gives me everything in one place - events, carpools, RSVPs. Total game-changer.&rdquo;</p>
+                    <div class="more-stars-row" aria-label="5 out of 5 rating"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.6 5.4 6 .9-4.3 4.2 1 6-5.3-2.8-5.3 2.8 1-6-4.3-4.2 6-.9L12 3z" fill="currentColor" stroke="none"/></svg><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.6 5.4 6 .9-4.3 4.2 1 6-5.3-2.8-5.3 2.8 1-6-4.3-4.2 6-.9L12 3z" fill="currentColor" stroke="none"/></svg><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.6 5.4 6 .9-4.3 4.2 1 6-5.3-2.8-5.3 2.8 1-6-4.3-4.2 6-.9L12 3z" fill="currentColor" stroke="none"/></svg><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.6 5.4 6 .9-4.3 4.2 1 6-5.3-2.8-5.3 2.8 1-6-4.3-4.2 6-.9L12 3z" fill="currentColor" stroke="none"/></svg><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.6 5.4 6 .9-4.3 4.2 1 6-5.3-2.8-5.3 2.8 1-6-4.3-4.2 6-.9L12 3z" fill="currentColor" stroke="none"/></svg></div>
+                    <p style="font-style: italic; color: var(--slate-300); line-height: 1.7; margin-bottom: 1.25rem;">&ldquo;As an organiser I used to drown in WhatsApp threads and spreadsheets. Having events, carpools, and RSVPs in one home saves hours every week.&rdquo;</p>
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <div style="width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #a855f7, #ec4899); display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 0.9rem;">J</div>
                         <div>
                             <div style="font-weight: 600; color: white; font-size: 0.9rem;">James T.</div>
-                            <div style="font-size: 0.75rem; color: var(--slate-500);">YENTW Organiser</div>
+                            <div style="font-size: 0.75rem; color: var(--slate-500);">Community Organiser</div>
                         </div>
                     </div>
                 </div>
                 <div class="leaders-value-card" style="border-color: rgba(20,184,166,0.2);">
-                    <div style="font-size: 1.5rem; margin-bottom: 1rem;">⭐⭐⭐⭐⭐</div>
-                    <p style="font-style: italic; color: var(--slate-300); line-height: 1.7; margin-bottom: 1.25rem;">&ldquo;I moved to Tunbridge Wells six months ago knowing nobody. more helped me find my tribe within a week. The carpool feature is brilliant for rural walks.&rdquo;</p>
+                    <div class="more-stars-row" aria-label="5 out of 5 rating"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.6 5.4 6 .9-4.3 4.2 1 6-5.3-2.8-5.3 2.8 1-6-4.3-4.2 6-.9L12 3z" fill="currentColor" stroke="none"/></svg><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.6 5.4 6 .9-4.3 4.2 1 6-5.3-2.8-5.3 2.8 1-6-4.3-4.2 6-.9L12 3z" fill="currentColor" stroke="none"/></svg><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.6 5.4 6 .9-4.3 4.2 1 6-5.3-2.8-5.3 2.8 1-6-4.3-4.2 6-.9L12 3z" fill="currentColor" stroke="none"/></svg><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.6 5.4 6 .9-4.3 4.2 1 6-5.3-2.8-5.3 2.8 1-6-4.3-4.2 6-.9L12 3z" fill="currentColor" stroke="none"/></svg><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.6 5.4 6 .9-4.3 4.2 1 6-5.3-2.8-5.3 2.8 1-6-4.3-4.2 6-.9L12 3z" fill="currentColor" stroke="none"/></svg></div>
+                    <p style="font-style: italic; color: var(--slate-300); line-height: 1.7; margin-bottom: 1.25rem;">&ldquo;Moving to a new town knowing nobody is tough. Built-in carpool lifts made rural walks accessible without having to chase strangers in group chats.&rdquo;</p>
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <div style="width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #f59e0b, #ef4444); display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 0.9rem;">A</div>
                         <div>
                             <div style="font-weight: 600; color: white; font-size: 0.9rem;">Amara O.</div>
-                            <div style="font-size: 0.75rem; color: var(--slate-500);">Good Neighbours Volunteer</div>
+                            <div style="font-size: 0.75rem; color: var(--slate-500);">Volunteer &amp; Member</div>
                         </div>
                     </div>
                 </div>
@@ -644,9 +521,9 @@
         <div class="cta-final-content scroll-reveal">
             <img src="images/logo.png" alt="more" class="cta-logo">
             <h2>Ready for<br><em>more</em>?</h2>
-            <p>Whether you want to join a workshop, tackle a fitness challenge, build a business, or head out on a weekend walk - there is more waiting for you in Tunbridge Wells.</p>
+            <p>Whether you want to join a workshop, tackle a fitness challenge, build a business, or head out on a weekend walk - there is more waiting for you locally.</p>
             <div class="cta-final-actions">
-                <a href="/events" class="btn btn-white">Find Upcoming Events →</a>
+                <a href="/events" class="btn btn-white">Find Upcoming Events &rarr;</a>
                 <a href="/create-community" class="btn btn-ghost" style="border-color: white; color: white;">+ Start a Community</a>
                 <a href="leaders.html" class="btn btn-ghost">For Leaders</a>
             </div>
@@ -673,12 +550,12 @@
                     <h4>Movement</h4>
                     <a href="/discover">Discover Communities</a>
                     <a href="leaders.html">For Leaders</a>
-                    <a href="/portal/">App Preview</a>
+                    <a href="/events">Live Events</a>
                     <a href="tunbridge-wells.html">Tunbridge Wells</a>
                 </div>
                 <div class="footer-nav-col">
                     <h4>Ventures</h4>
-                    <a href="yentw.html">YENTW</a>
+                    <a href="yentw.html">Youth Entrepreneurs</a>
                     <a href="accelerator.html">Accelerator</a>
                     <a href="hackathons.html">Hackathons</a>
                     <a href="sponsorship.html">Sponsorship</a>
@@ -693,11 +570,12 @@
             </div>
             <div class="footer-bottom-bar">
                 <p>&copy; 2026 more community</p>
-                <p class="footer-motto">do more • experience more • achieve more</p>
+                <p class="footer-motto">do more &bull; experience more &bull; achieve more</p>
             </div>
         </div>
     </footer>
 
-    <script src="script.js?v=23"></script>
+    <script src="brand-icons.js?v=1"></script>
+    <script src="script.js?v=24"></script>
 </body>
 </html>
