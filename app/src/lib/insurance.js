@@ -314,7 +314,7 @@ export function generateRamsPdf({ community, event, leaderName, policyNumber }) 
       hazard: 'Lost / Separated Persons\n(Large groups, parkland trails)',
       risk: 'New Members',
       initial: 'Med',
-      controls: 'Roll-call check-in via QR code at start and finish. Co-leader acts as rear sweeper. Agreed regrouping checkpoints every 15-20 minutes.',
+      controls: 'Attendee check-in via QR code at start and finish. Co-leader acts as rear sweeper. Agreed regrouping checkpoints every 15-20 minutes.',
       res: 'Low'
     }
   ];

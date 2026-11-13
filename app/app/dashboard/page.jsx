@@ -3841,9 +3841,9 @@ export default function LeaderDashboard({ initialCommunityId }) {
                                       onClick={() => setRollCallEvent(event)} 
                                       className="btn btn-outline interactive-press" 
                                       style={{ padding: '6px 12px', fontSize: '0.75rem', color: '#10b981', borderColor: 'rgba(16,185,129,0.35)' }}
-                                      title="Open event roll-call check-in mode"
+                                      title="Open event check-in mode"
                                     >
-                                      <UserCheck size={12} style={{ marginRight: '4px' }} /> Roll Call
+                                      <UserCheck size={12} style={{ marginRight: '4px' }} /> Check-In
                                     </button>
                                     <button onClick={() => handleEditEvent(event)} className="btn btn-outline interactive-press" style={{ padding: '6px 12px', fontSize: '0.75rem' }}>
                                       <Edit3 size={12} style={{ marginRight: '4px' }} /> Edit

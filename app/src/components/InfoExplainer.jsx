@@ -36,7 +36,7 @@ export const EXPLAINER_CONTENT = {
     steps: [
       'Use Magic AI Draft to turn a rough sentence or voice note into a full event description in seconds.',
       'Click "Flyer & Poster" on any event to export a print-ready poster for local cafes and noticeboards.',
-      'On the day, open Roll Call or the QR Scanner on your phone to check members in with one tap.'
+      'On the day, open Event Check-In or the QR Scanner on your phone to check members in with one tap.'
     ],
     tip: 'You can duplicate any past event or set a recurring schedule (weekly, fortnightly, or monthly) in one click.'
   },
@@ -104,7 +104,7 @@ export const EXPLAINER_CONTENT = {
       'Slipping: Members who used to attend but have missed recent events.',
       'Inactive: Members who have not checked in for a while and may appreciate a friendly check-in.'
     ],
-    tip: 'Using QR Roll Call at events keeps these numbers accurate automatically.'
+    tip: 'Using QR Check-In at events keeps these numbers accurate automatically.'
   },
   leader_flyer: {
     badge: 'Flyer & Poster Studio',
