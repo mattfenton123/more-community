@@ -1362,3 +1362,121 @@ export async function removeReactionAction(messageId, isDirectMessage, emoji, us
   if (error) throw new Error(error.message);
   return true;
 }
+
+// ─── Event Carpools ──────────────────────────────────────
+function isMissingCarpoolRelation(error) {
+  if (!error) return false;
+  const code = String(error.code || '');
+  const msg = String(error.message || '').toLowerCase();
+  return code === '42P01' || code === 'PGRST205' || msg.includes('schema cache') || msg.includes('does not exist');
+}
+
+export async function offerCarpoolAction(eventId, offerData, token) {
+  const authUser = await verifyUser(token);
+  const db = getSupabaseClient(token);
+  const payload = {
+    id: offerData.id || `cp_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+    event_id: eventId,
+    driver_id: authUser.id,
+    origin: String(offerData.origin || '').trim(),
+    departure_time: String(offerData.time || '').trim(),
+    seats_total: Math.max(1, Math.min(12, Number(offerData.seatsTotal) || 3)),
+    flexible_on_route: Boolean(offerData.flexibleOnRoute),
+    notes: String(offerData.notes || '').trim(),
+    chip_in: String(offerData.chipIn || 'Free').trim(),
+  };
+
+  // Replace existing offer from the same driver for this event cleanly
+  await db.from('event_carpools')
+    .delete()
+    .match({ event_id: eventId, driver_id: authUser.id });
+
+  const { data, error } = await db.from('event_carpools')
+    .insert(payload)
+    .select()
+    .single();
+
+  if (error) {
+    if (isMissingCarpoolRelation(error)) {
+      return { localOnly: true };
+    }
+    throw new Error(error.message);
+  }
+  return { carpool: data };
+}
+
+export async function reserveCarpoolSeatAction(eventId, carpoolId, token) {
+  const authUser = await verifyUser(token);
+  const db = getSupabaseClient(token);
+
+  const { data: pool, error: poolErr } = await db.from('event_carpools')
+    .select('id, seats_total')
+    .eq('id', carpoolId)
+    .maybeSingle();
+
+  if (poolErr) {
+    if (isMissingCarpoolRelation(poolErr)) return { localOnly: true };
+    throw new Error(poolErr.message);
+  }
+  if (!pool) {
+    return { localOnly: true };
+  }
+
+  const { data: currentPassengers, error: passErr } = await db.from('event_carpool_passengers')
+    .select('user_id')
+    .eq('carpool_id', carpoolId);
+
+  if (passErr) {
+    if (isMissingCarpoolRelation(passErr)) return { localOnly: true };
+    throw new Error(passErr.message);
+  }
+
+  if ((currentPassengers || []).some(r => r.user_id === authUser.id)) {
+    return { alreadyReserved: true };
+  }
+  if ((currentPassengers || []).length >= (Number(pool.seats_total) || 0)) {
+    throw new Error('Sorry, this lift just filled up!');
+  }
+
+  const { error: insErr } = await db.from('event_carpool_passengers').insert({
+    carpool_id: carpoolId,
+    event_id: eventId,
+    user_id: authUser.id,
+  });
+
+  if (insErr) {
+    if (insErr.code === '23505') return { alreadyReserved: true };
+    if (isMissingCarpoolRelation(insErr)) return { localOnly: true };
+    throw new Error(insErr.message);
+  }
+  return { reserved: true };
+}
+
+export async function cancelCarpoolSeatAction(carpoolId, token) {
+  const authUser = await verifyUser(token);
+  const db = getSupabaseClient(token);
+
+  const { error } = await db.from('event_carpool_passengers')
+    .delete()
+    .match({ carpool_id: carpoolId, user_id: authUser.id });
+
+  if (error && !isMissingCarpoolRelation(error)) {
+    throw new Error(error.message);
+  }
+  return { cancelled: true };
+}
+
+export async function deleteCarpoolOfferAction(carpoolId, token) {
+  const authUser = await verifyUser(token);
+  const db = getSupabaseClient(token);
+
+  const { error } = await db.from('event_carpools')
+    .delete()
+    .match({ id: carpoolId, driver_id: authUser.id });
+
+  if (error && !isMissingCarpoolRelation(error)) {
+    throw new Error(error.message);
+  }
+  return { deleted: true };
+}
+

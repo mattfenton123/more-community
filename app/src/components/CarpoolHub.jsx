@@ -5,14 +5,13 @@ import { Car, MapPin, Clock, Users, Shield, Plus, CheckCircle2, MessageCircle, X
 import { useAppContext } from '../context/AppContext';
 import { useToast } from './Toast';
 import InfoExplainer from './InfoExplainer';
-import { resolveUserAvatar } from '../lib/avatar';
+import { getCarpoolHandshakeMessage } from '../lib/carpool';
 
-export default function CarpoolHub({ event, user, isAttendee = false, community }) {
+export default function CarpoolHub({ event, user, isAttendee = false, community, openOfferSignal = 0 }) {
   const { toast } = useToast();
   const router = useRouter();
   const { 
     carpools, 
-    setCarpools,
     offerCarpool, 
     reserveCarpoolSeat, 
     cancelCarpoolSeat, 
@@ -42,29 +41,15 @@ export default function CarpoolHub({ event, user, isAttendee = false, community 
   const [chipIn, setChipIn] = useState('Free');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Merge context state and local fallback
-  const eventCarpools = (carpools && carpools[event?.id] && carpools[event?.id].length > 0)
-    ? carpools[event?.id]
-    : localCarpools;
+  // Use AppContext carpools (hydrated from Supabase) whenever available, with localStorage initial cache fallback
+  const hasContextCarpools = Boolean(carpools && Array.isArray(carpools[event?.id]));
+  const eventCarpools = hasContextCarpools ? carpools[event.id] : localCarpools;
 
-  // Hydrate or seed carpools on mount
   useEffect(() => {
-    if (typeof window === 'undefined' || !event?.id) return;
-    try {
-      const raw = localStorage.getItem(`more_event_carpools_${event.id}`);
-      let pools = [];
-      if (raw) {
-        pools = JSON.parse(raw);
-      }
-      // Clean up any old mock sample carpools from previous test runs
-      pools = pools.filter(p => !p.id.startsWith('sample_carpool_') && p.driverId !== 'sample_host_1');
-      localStorage.setItem(`more_event_carpools_${event.id}`, JSON.stringify(pools));
-      setLocalCarpools(pools);
-      if (typeof setCarpools === 'function') {
-        setCarpools(prev => ({ ...prev, [event.id]: pools }));
-      }
-    } catch (e) {}
-  }, [event?.id, community?.leader_name]);
+    if (openOfferSignal > 0 && user?.id) {
+      setShowOfferModal(true);
+    }
+  }, [openOfferSignal, user?.id]);
 
   // Derived state
   const myCarpoolOffer = eventCarpools.find(c => c.driverId === user?.id);
@@ -133,29 +118,9 @@ export default function CarpoolHub({ event, user, isAttendee = false, community 
         await reserveCarpoolSeat(event.id, carpool.id);
       }
 
-      // Update local state immediately
-      setLocalCarpools(prev => {
-        const updated = prev.map(c => {
-          if (c.id === carpool.id) {
-            const hasUser = (c.passengers || []).some(p => p.userId === user.id);
-            if (hasUser) return c;
-            const newPassengers = [...(c.passengers || []), {
-              userId: user.id,
-              name: user.name || 'Member',
-              avatar: resolveUserAvatar(user, 'Rider'),
-              reservedAt: new Date().toISOString()
-            }];
-            return {
-              ...c,
-              passengers: newPassengers,
-              seatsAvailable: Math.max(0, c.seatsTotal - newPassengers.length)
-            };
-          }
-          return c;
-        });
-        try { localStorage.setItem(`more_event_carpools_${event.id}`, JSON.stringify(updated)); } catch (e) {}
-        return updated;
-      });
+      if (!hasContextCarpools) {
+        setLocalCarpools(prev => prev);
+      }
 
       toast.success('Seat Reserved! 🎉', `You are riding with ${carpool.driverName}. Tap "Coordinate Pickup" to connect.`);
     } catch (err) {
@@ -207,13 +172,10 @@ export default function CarpoolHub({ event, user, isAttendee = false, community 
     }
   };
 
-  const getHandshakeMessage = (carpool) => {
-    const text = `Hey ${carpool.driverName}! I have booked a seat in your carpool for ${event.title} (leaves ${carpool.time} from ${carpool.origin}). Could we meet near [My Street / Corner]? Looking forward to the walk!`;
-    return text;
-  };
+  const getHandshakeMessage = (carpool) => getCarpoolHandshakeMessage(carpool, event);
 
   return (
-    <div className="carpool-hub-card" style={{
+    <div id="carpool" className="carpool-hub-card" style={{
       background: 'linear-gradient(135deg, rgba(20, 184, 166, 0.08) 0%, rgba(15, 23, 42, 0.7) 100%)',
       border: '1px solid rgba(20, 184, 166, 0.25)',
       borderRadius: '20px',

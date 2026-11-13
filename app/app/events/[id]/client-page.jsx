@@ -2,7 +2,7 @@
 import { supabase } from '../../../src/lib/supabaseClient';
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ChevronLeft, Share2, MapPin, Calendar, Clock, Users, CheckCircle2, Info, List, Activity, Check, Map, Ticket, DollarSign, Copy, ExternalLink, Navigation, Video, AlertTriangle, Image as ImageIcon, ScanLine, Archive, Repeat, MessageCircle, Banknote, CreditCard, Lock, ChevronRight, X, UserCheck, Shield, ChevronDown, Camera, HelpCircle, MessageSquare, Compass, Trees, WifiOff } from 'lucide-react';
+import { ChevronLeft, Share2, Car, MapPin, Calendar, Clock, Users, CheckCircle2, Info, List, Activity, Check, Map, Ticket, DollarSign, Copy, ExternalLink, Navigation, Video, AlertTriangle, Image as ImageIcon, ScanLine, Archive, Repeat, MessageCircle, Banknote, CreditCard, Lock, ChevronRight, X, UserCheck, Shield, ChevronDown, Camera, HelpCircle, MessageSquare, Compass, Trees, WifiOff } from 'lucide-react';
 import { useAppContext } from '../../../src/context/AppContext';
 import { useToast } from '../../../src/components/Toast';
 import DigitalTicket from '../../../src/components/DigitalTicket';
@@ -25,6 +25,7 @@ import ShareOptions from '../../../src/components/ShareOptions';
 import EventRecapShareCard from '../../../src/components/EventRecapShareCard';
 import { parseExperienceMeta, stripExperienceMeta, buildAffiliateUrl } from '../../../src/lib/experiencePricing';
 import { resolveUserAvatar } from '../../../src/lib/avatar';
+import { getCarpoolHandshakeMessage } from '../../../src/lib/carpool';
 
 function EventLocationMap({ location, event, isLocationShielded = false }) {
   const [copiedSms, setCopiedSms] = useState(false);
@@ -304,7 +305,7 @@ function EventLocationMap({ location, event, isLocationShielded = false }) {
 
 export default function EventClient({ id }) {
   const router = useRouter();
-  const { events, communities, user, users, eventRsvps, rsvpToEvent, updateAttendeeStatus, addEventPhoto, joinCommunity, checkInMember } = useAppContext();
+  const { events, communities, user, users, eventRsvps, rsvpToEvent, updateAttendeeStatus, addEventPhoto, joinCommunity, checkInMember, carpools, reserveCarpoolSeat } = useAppContext();
   const { toast } = useToast();
   const [event, setEvent] = useState(null);
   const [community, setCommunity] = useState(null);
@@ -316,6 +317,8 @@ export default function EventClient({ id }) {
   const [showPaymentChoiceModal, setShowPaymentChoiceModal] = useState(false);
   const [showRsvpSuccessModal, setShowRsvpSuccessModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [openCarpoolOfferSignal, setOpenCarpoolOfferSignal] = useState(0);
+  const [claimingSeatId, setClaimingSeatId] = useState(null);
   const [hasCheckedInLocally, setHasCheckedInLocally] = useState(false);
   const [showAttendeesModal, setShowAttendeesModal] = useState(false);
   const [approvingUserId, setApprovingUserId] = useState(null);
@@ -1427,7 +1430,7 @@ export default function EventClient({ id }) {
 
         {/* Community Carpool Hub (Respects leader community & event toggles) */}
         {(community?.allow_carpool !== false && community?.allowCarpool !== false && event?.allowCarpool !== false && event?.allow_carpool !== false && !event?.description?.includes('[Carpool: disabled]')) && (
-          <CarpoolHub event={event} user={user} isAttendee={isGoing} community={community} />
+          <CarpoolHub event={event} user={user} isAttendee={isGoing} community={community} openOfferSignal={openCarpoolOfferSignal} />
         )}
 
         {/* Joint Co-Hosting & Partner Community Discovery */}
@@ -2182,40 +2185,172 @@ export default function EventClient({ id }) {
                     </a>
                   )}
 
-                  {(community?.allow_carpool !== false && community?.allowCarpool !== false && event?.allowCarpool !== false && event?.allow_carpool !== false && !event?.description?.includes('[Carpool: disabled]')) && (
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                      <a
-                        href={`https://api.whatsapp.com/send?text=${encodeURIComponent(carpoolOfferMsg)}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="interactive-press"
-                        style={{
-                          padding: '9px 10px', borderRadius: '10px',
-                          background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
-                          color: 'var(--slate-200)', fontSize: '0.78rem', fontWeight: 600,
-                          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px',
-                          textDecoration: 'none'
-                        }}
-                      >
-                        🚗 Offer a Ride
-                      </a>
-                      <a
-                        href={`https://api.whatsapp.com/send?text=${encodeURIComponent(carpoolReqMsg)}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="interactive-press"
-                        style={{
-                          padding: '9px 10px', borderRadius: '10px',
-                          background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
-                          color: 'var(--slate-200)', fontSize: '0.78rem', fontWeight: 600,
-                          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px',
-                          textDecoration: 'none'
-                        }}
-                      >
-                        🙋 Need a Ride
-                      </a>
-                    </div>
-                  )}
+                  {(community?.allow_carpool !== false && community?.allowCarpool !== false && event?.allowCarpool !== false && event?.allow_carpool !== false && !event?.description?.includes('[Carpool: disabled]')) && (() => {
+                    const eventCarpools = carpools?.[event.id] || [];
+                    const myReservedLift = eventCarpools.find(c => (c.passengers || []).some(p => p.userId === user?.id));
+                    const availableLifts = eventCarpools.filter(c => c.driverId !== user?.id && Number(c.seatsAvailable ?? Math.max(0, (c.seatsTotal || 0) - (c.passengers || []).length)) > 0);
+                    const myOfferedLift = eventCarpools.find(c => c.driverId === user?.id);
+
+                    const openCarpoolSection = (triggerOffer = false) => {
+                      setShowRsvpSuccessModal(false);
+                      if (triggerOffer) setOpenCarpoolOfferSignal(n => n + 1);
+                      setTimeout(() => {
+                        document.getElementById('carpool')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                      }, 120);
+                    };
+
+                    const handleQuickClaimSeat = async (lift) => {
+                      setClaimingSeatId(lift.id);
+                      try {
+                        await reserveCarpoolSeat(event.id, lift.id);
+                        toast.success('Seat Reserved!', `You are signed up with ${lift.driverName}. Tap Coordinate Pickup to arrange details.`);
+                      } catch (err) {
+                        toast.error('Could not reserve seat', err?.message || 'Please try again.');
+                      } finally {
+                        setClaimingSeatId(null);
+                      }
+                    };
+
+                    if (myReservedLift) {
+                      return (
+                        <div style={{ background: 'rgba(20,184,166,0.12)', border: '1px solid rgba(45,212,191,0.35)', borderRadius: '12px', padding: '12px' }}>
+                          <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#5eead4', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <Car size={15} /> Seat Reserved with {myReservedLift.driverName}
+                          </div>
+                          <div style={{ fontSize: '0.75rem', color: 'var(--slate-300)', marginBottom: '10px' }}>
+                            Leaving {myReservedLift.time} from {myReservedLift.origin}
+                          </div>
+                          <a
+                            href={`https://api.whatsapp.com/send?text=${encodeURIComponent(getCarpoolHandshakeMessage(myReservedLift, event))}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="interactive-press"
+                            style={{
+                              width: '100%', padding: '9px 12px', borderRadius: '10px',
+                              background: '#25D366', color: '#ffffff', fontWeight: 700, fontSize: '0.8rem',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                              textDecoration: 'none'
+                            }}
+                          >
+                            <MessageCircle size={14} /> Coordinate Pickup on WhatsApp
+                          </a>
+                        </div>
+                      );
+                    }
+
+                    if (availableLifts.length > 0) {
+                      return (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          <div style={{ fontSize: '0.76rem', fontWeight: 700, color: '#5eead4', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <span>🚗 {availableLifts.length} {availableLifts.length === 1 ? 'Lift Already Offered' : 'Lifts Already Offered'}</span>
+                            <button
+                              type="button"
+                              onClick={() => openCarpoolSection(true)}
+                              style={{ background: 'none', border: 'none', color: '#94a3b8', fontSize: '0.72rem', textDecoration: 'underline', cursor: 'pointer', padding: 0 }}
+                            >
+                              Or offer yours
+                            </button>
+                          </div>
+
+                          {availableLifts.slice(0, 3).map((lift) => {
+                            const seatsLeft = Number(lift.seatsAvailable ?? Math.max(0, (lift.seatsTotal || 0) - (lift.passengers || []).length));
+                            return (
+                              <div key={lift.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', background: 'rgba(15,23,42,0.55)', border: '1px solid rgba(45,212,191,0.25)', borderRadius: '10px', padding: '9px 10px' }}>
+                                <div style={{ minWidth: 0 }}>
+                                  <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                    {lift.driverName} • {seatsLeft} {seatsLeft === 1 ? 'seat' : 'seats'} left
+                                  </div>
+                                  <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                    From {lift.origin} ({lift.time})
+                                  </div>
+                                </div>
+                                <button
+                                  type="button"
+                                  disabled={claimingSeatId === lift.id}
+                                  onClick={() => handleQuickClaimSeat(lift)}
+                                  className="interactive-press"
+                                  style={{
+                                    flexShrink: 0, padding: '7px 11px', borderRadius: '9px',
+                                    background: 'linear-gradient(135deg, #10b981 0%, #14b8a6 100%)',
+                                    color: '#0f172a', fontWeight: 800, fontSize: '0.76rem',
+                                    border: 'none', cursor: 'pointer'
+                                  }}
+                                >
+                                  {claimingSeatId === lift.id ? 'Booking...' : '🙋 Claim Seat'}
+                                </button>
+                              </div>
+                            );
+                          })}
+
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginTop: '2px' }}>
+                            <button
+                              type="button"
+                              onClick={() => openCarpoolSection(false)}
+                              style={{ background: 'none', border: 'none', color: '#5eead4', fontSize: '0.74rem', fontWeight: 600, cursor: 'pointer', padding: 0 }}
+                            >
+                              View all lift details ↓
+                            </button>
+                            <a
+                              href={`https://api.whatsapp.com/send?text=${encodeURIComponent(carpoolReqMsg)}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{ color: 'var(--slate-400)', fontSize: '0.72rem', textDecoration: 'underline' }}
+                            >
+                              None match? Ask on WhatsApp
+                            </a>
+                          </div>
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        {myOfferedLift && (
+                          <div style={{ fontSize: '0.76rem', color: '#5eead4', fontWeight: 600, padding: '6px 10px', borderRadius: '8px', background: 'rgba(20,184,166,0.12)' }}>
+                            🚗 Your lift from {myOfferedLift.origin} is live ({myOfferedLift.seatsAvailable} seats left)
+                          </div>
+                        )}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                          <button
+                            type="button"
+                            onClick={() => openCarpoolSection(true)}
+                            className="interactive-press"
+                            style={{
+                              padding: '9px 10px', borderRadius: '10px',
+                              background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(45,212,191,0.3)',
+                              color: '#5eead4', fontSize: '0.78rem', fontWeight: 700,
+                              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', cursor: 'pointer'
+                            }}
+                          >
+                            🚗 Offer a Ride
+                          </button>
+                          <a
+                            href={`https://api.whatsapp.com/send?text=${encodeURIComponent(carpoolReqMsg)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="interactive-press"
+                            style={{
+                              padding: '9px 10px', borderRadius: '10px',
+                              background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+                              color: 'var(--slate-200)', fontSize: '0.78rem', fontWeight: 600,
+                              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px',
+                              textDecoration: 'none'
+                            }}
+                          >
+                            🙋 Need a Ride (WhatsApp)
+                          </a>
+                        </div>
+                        <a
+                          href={`https://api.whatsapp.com/send?text=${encodeURIComponent(carpoolOfferMsg)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ color: 'var(--slate-400)', fontSize: '0.72rem', textAlign: 'center', textDecoration: 'underline' }}
+                        >
+                          Or post spare seats straight to WhatsApp
+                        </a>
+                      </div>
+                    );
+                  })()}
                 </div>
               );
             })()}

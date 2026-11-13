@@ -4,10 +4,11 @@ import { supabase } from '../lib/supabaseClient';
 import { useAuth } from './AuthContext';
 import { initialExperiences } from '../lib/constants';
 import imageCompression from 'browser-image-compression';
-import { createEventAction, createEventsBatchAction, joinCommunityAction, leaveCommunityAction, rsvpToEventAction, updateAttendeeStatusAction, addEventPhotoAction, createCommunityAction, uploadImageAction, updateEventAction, updateCommunityAction, deleteCommunityAction, createChannelAction, markNotificationReadAction, updateUserAction, adminVerifyCommunityAction, broadcastNotificationAction, promoteMemberAction, removeMemberAction, subscribeToPushNotificationsAction, ensureLeadersNetworkAction, sendEventReminderAction, createSelfNotificationAction } from '../lib/actions';
+import { createEventAction, createEventsBatchAction, joinCommunityAction, leaveCommunityAction, rsvpToEventAction, updateAttendeeStatusAction, addEventPhotoAction, createCommunityAction, uploadImageAction, updateEventAction, updateCommunityAction, deleteCommunityAction, createChannelAction, markNotificationReadAction, updateUserAction, adminVerifyCommunityAction, broadcastNotificationAction, promoteMemberAction, removeMemberAction, subscribeToPushNotificationsAction, ensureLeadersNetworkAction, sendEventReminderAction, createSelfNotificationAction, offerCarpoolAction, reserveCarpoolSeatAction, cancelCarpoolSeatAction, deleteCarpoolOfferAction } from '../lib/actions';
 import { Capacitor } from '@capacitor/core';
 import { cleanLocationName } from '../lib/location';
 import { resolveUserAvatar, getDefaultAvatar, isPlaceholderAvatar } from '../lib/avatar';
+import { buildCarpoolsByEvent } from '../lib/carpool';
 
 const AppContext = createContext();
 
@@ -398,7 +399,7 @@ export function AppProvider({ children }) {
       setIsLoading(true);
 
       // Batch 1: All independent queries run in parallel
-      const [usersRes, commsRes, chanRes, evRes, rsvpRes, memRes, revRes, pollsRes, pollVotesRes] =
+      const [usersRes, commsRes, chanRes, evRes, rsvpRes, memRes, revRes, pollsRes, pollVotesRes, cpRes, cpPassRes] =
         await Promise.all([
           supabase.from('users').select('*'),
           supabase.from('communities').select('*'),
@@ -409,6 +410,8 @@ export function AppProvider({ children }) {
           supabase.from('reviews').select('*'),
           supabase.from('polls').select('*'),
           supabase.from('poll_votes').select('*'),
+          supabase.from('event_carpools').select('*'),
+          supabase.from('event_carpool_passengers').select('*'),
         ]);
 
       // Process results
@@ -604,6 +607,22 @@ export function AppProvider({ children }) {
           galleryImages: Array.isArray(e.gallery_images) ? e.gallery_images : (Array.isArray(e.galleryImages) ? e.galleryImages : []),
           createdAt: e.created_at
         })));
+      }
+
+      if (cpRes && !cpRes.error && Array.isArray(cpRes.data)) {
+        const syncedCarpools = buildCarpoolsByEvent(
+          cpRes.data,
+          cpPassRes && !cpPassRes.error ? cpPassRes.data : [],
+          usersRes?.data || []
+        );
+        setCarpools(syncedCarpools);
+        if (typeof window !== 'undefined') {
+          try {
+            Object.entries(syncedCarpools).forEach(([evId, list]) => {
+              localStorage.setItem(`more_event_carpools_${evId}`, JSON.stringify(list));
+            });
+          } catch (e) {}
+        }
       }
 
       if (rsvpRes.data) {
@@ -930,6 +949,8 @@ export function AppProvider({ children }) {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'events' }, () => fetchAllData())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'community_memberships' }, () => fetchAllData())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'communities' }, () => fetchAllData())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'event_carpools' }, () => fetchAllData())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'event_carpool_passengers' }, () => fetchAllData())
       .subscribe();
 
     return () => {
@@ -1575,11 +1596,23 @@ export function AppProvider({ children }) {
     } catch (e) {}
   }, []);
 
+  const getActiveToken = async () => {
+    let token = session?.access_token;
+    if (!token) {
+      try {
+        const { data } = await supabase.auth.getSession();
+        token = data?.session?.access_token;
+      } catch (e) {}
+    }
+    return token;
+  };
+
   const offerCarpool = async (eventId, offerData) => {
+    if (!user?.id) throw new Error('Please sign in to offer a carpool ride.');
     const newOffer = {
       id: `cp_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
       eventId,
-      driverId: user?.id,
+      driverId: user.id,
       driverName: user?.name || 'Community Member',
       driverAvatar: resolveUserAvatar(user, 'Driver'),
       origin: offerData.origin,
@@ -1593,18 +1626,30 @@ export function AppProvider({ children }) {
       createdAt: new Date().toISOString()
     };
 
+    const previousList = carpools[eventId] || [];
+    const nextList = [newOffer, ...previousList.filter(c => c.driverId !== user.id)];
     setCarpools(prev => {
-      const list = [newOffer, ...(prev[eventId] || [])];
       if (typeof window !== 'undefined') {
-        try { localStorage.setItem(`more_event_carpools_${eventId}`, JSON.stringify(list)); } catch (e) {}
+        try { localStorage.setItem(`more_event_carpools_${eventId}`, JSON.stringify(nextList)); } catch (e) {}
       }
-      return { ...prev, [eventId]: list };
+      return { ...prev, [eventId]: nextList };
     });
+
+    const token = await getActiveToken();
+    if (token) {
+      try {
+        await offerCarpoolAction(eventId, newOffer, token);
+      } catch (err) {
+        setCarpools(prev => ({ ...prev, [eventId]: previousList }));
+        throw err;
+      }
+    }
     return newOffer;
   };
 
   const reserveCarpoolSeat = async (eventId, carpoolId) => {
-    if (!user?.id) throw new Error("Must be signed in to reserve a seat");
+    if (!user?.id) throw new Error('Must be signed in to reserve a seat');
+    let snapshot = [];
     setCarpools(prev => {
       let currentList = prev[eventId];
       if (!currentList && typeof window !== 'undefined') {
@@ -1614,6 +1659,7 @@ export function AppProvider({ children }) {
         } catch (e) {}
       }
       currentList = currentList || [];
+      snapshot = currentList;
 
       const updated = currentList.map(c => {
         if (c.id === carpoolId) {
@@ -1641,10 +1687,24 @@ export function AppProvider({ children }) {
       }
       return { ...prev, [eventId]: updated };
     });
+
+    const token = await getActiveToken();
+    if (token) {
+      try {
+        await reserveCarpoolSeatAction(eventId, carpoolId, token);
+      } catch (err) {
+        setCarpools(prev => ({ ...prev, [eventId]: snapshot }));
+        if (typeof window !== 'undefined') {
+          try { localStorage.setItem(`more_event_carpools_${eventId}`, JSON.stringify(snapshot)); } catch (e) {}
+        }
+        throw err;
+      }
+    }
   };
 
   const cancelCarpoolSeat = async (eventId, carpoolId) => {
     if (!user?.id) return;
+    let snapshot = [];
     setCarpools(prev => {
       let currentList = prev[eventId];
       if (!currentList && typeof window !== 'undefined') {
@@ -1654,6 +1714,7 @@ export function AppProvider({ children }) {
         } catch (e) {}
       }
       currentList = currentList || [];
+      snapshot = currentList;
 
       const updated = currentList.map(c => {
         if (c.id === carpoolId) {
@@ -1672,9 +1733,20 @@ export function AppProvider({ children }) {
       }
       return { ...prev, [eventId]: updated };
     });
+
+    const token = await getActiveToken();
+    if (token) {
+      try {
+        await cancelCarpoolSeatAction(carpoolId, token);
+      } catch (err) {
+        setCarpools(prev => ({ ...prev, [eventId]: snapshot }));
+        throw err;
+      }
+    }
   };
 
   const deleteCarpoolOffer = async (eventId, carpoolId) => {
+    let snapshot = [];
     setCarpools(prev => {
       let currentList = prev[eventId];
       if (!currentList && typeof window !== 'undefined') {
@@ -1684,6 +1756,7 @@ export function AppProvider({ children }) {
         } catch (e) {}
       }
       currentList = currentList || [];
+      snapshot = currentList;
 
       const updated = currentList.filter(c => c.id !== carpoolId);
       if (typeof window !== 'undefined') {
@@ -1691,6 +1764,16 @@ export function AppProvider({ children }) {
       }
       return { ...prev, [eventId]: updated };
     });
+
+    const token = await getActiveToken();
+    if (token) {
+      try {
+        await deleteCarpoolOfferAction(carpoolId, token);
+      } catch (err) {
+        setCarpools(prev => ({ ...prev, [eventId]: snapshot }));
+        throw err;
+      }
+    }
   };
 
   const createEvent = async (communityId, eventData) => {
