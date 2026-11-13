@@ -1,5 +1,5 @@
 -- Migration 025: Event Discussion / Q&A Comments (Shared across host & co-host communities)
--- Run this in the Supabase SQL Editor
+-- Run the ENTIRE script in the Supabase SQL Editor
 
 CREATE TABLE IF NOT EXISTS public.event_comments (
   id text PRIMARY KEY,
@@ -9,7 +9,54 @@ CREATE TABLE IF NOT EXISTS public.event_comments (
   created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
+-- Normalize any pre-existing event_comments table schema before indexes & RLS policies run
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'event_comments' AND column_name = 'user_id'
+  ) AND NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'event_comments' AND column_name = 'author_id'
+  ) THEN
+    ALTER TABLE public.event_comments RENAME COLUMN user_id TO author_id;
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'event_comments' AND column_name = 'text'
+  ) THEN
+    IF EXISTS (
+      SELECT 1 FROM information_schema.columns
+      WHERE table_schema = 'public' AND table_name = 'event_comments' AND column_name = 'content'
+    ) THEN
+      ALTER TABLE public.event_comments RENAME COLUMN content TO text;
+    ELSIF EXISTS (
+      SELECT 1 FROM information_schema.columns
+      WHERE table_schema = 'public' AND table_name = 'event_comments' AND column_name = 'body'
+    ) THEN
+      ALTER TABLE public.event_comments RENAME COLUMN body TO text;
+    ELSIF EXISTS (
+      SELECT 1 FROM information_schema.columns
+      WHERE table_schema = 'public' AND table_name = 'event_comments' AND column_name = 'comment'
+    ) THEN
+      ALTER TABLE public.event_comments RENAME COLUMN comment TO text;
+    END IF;
+  END IF;
+END $$;
+
+ALTER TABLE public.event_comments
+  ADD COLUMN IF NOT EXISTS event_id text REFERENCES public.events(id) ON DELETE CASCADE,
+  ADD COLUMN IF NOT EXISTS author_id text REFERENCES public.users(id) ON DELETE CASCADE,
+  ADD COLUMN IF NOT EXISTS text text,
+  ADD COLUMN IF NOT EXISTS created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL;
+
 CREATE INDEX IF NOT EXISTS idx_event_comments_event_id ON public.event_comments(event_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_event_comments_author_id ON public.event_comments(author_id);
+
+GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role;
+GRANT SELECT ON TABLE public.event_comments TO anon, authenticated, service_role;
+GRANT INSERT, DELETE ON TABLE public.event_comments TO authenticated, service_role;
 
 ALTER TABLE public.event_comments ENABLE ROW LEVEL SECURITY;
 
@@ -19,21 +66,21 @@ CREATE POLICY "Anyone can view event comments" ON public.event_comments
 
 DROP POLICY IF EXISTS "Authenticated users can post event comments" ON public.event_comments;
 CREATE POLICY "Authenticated users can post event comments" ON public.event_comments
-  FOR INSERT WITH CHECK (auth.uid()::text = author_id);
+  FOR INSERT WITH CHECK ((select auth.uid())::text = author_id::text);
 
 DROP POLICY IF EXISTS "Authors or hosts can delete event comments" ON public.event_comments;
 CREATE POLICY "Authors or hosts can delete event comments" ON public.event_comments
   FOR DELETE USING (
-    auth.uid()::text = author_id
+    (select auth.uid())::text = author_id::text
     OR EXISTS (
       SELECT 1 FROM public.events e
       LEFT JOIN public.communities c ON c.id = e.community_id
-      WHERE e.id = event_comments.event_id
+      WHERE e.id = event_comments.event_id::text
         AND (
-          c.leader_id = auth.uid()::text
+          c.leader_id = (select auth.uid())::text
           OR EXISTS (
             SELECT 1 FROM public.community_memberships cm
-            WHERE cm.user_id = auth.uid()::text
+            WHERE cm.user_id = (select auth.uid())::text
               AND cm.role IN ('Leader', 'Co-Leader')
               AND (
                 cm.community_id = e.community_id
@@ -42,7 +89,7 @@ CREATE POLICY "Authors or hosts can delete event comments" ON public.event_comme
           )
           OR EXISTS (
             SELECT 1 FROM public.communities pc
-            WHERE pc.leader_id = auth.uid()::text
+            WHERE pc.leader_id = (select auth.uid())::text
               AND COALESCE(e.cohost_community_ids, '[]'::jsonb) @> to_jsonb(pc.id)
           )
         )
@@ -56,3 +103,5 @@ EXCEPTION
   WHEN duplicate_object THEN NULL;
   WHEN undefined_object THEN NULL;
 END $$;
+
+NOTIFY pgrst, 'reload schema';
