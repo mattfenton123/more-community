@@ -5,7 +5,7 @@ import { NextResponse } from 'next/server';
 let _supabaseAdmin;
 function getSupabaseAdmin() {
   if (!_supabaseAdmin) {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://nkyithbhufwgwnbxvqqu.supabase.co';
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://xasaxxjxxkdruuqbrcmf.supabase.co';
     const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     _supabaseAdmin = createClient(supabaseUrl, supabaseKey, {
       auth: { autoRefreshToken: false, persistSession: false }

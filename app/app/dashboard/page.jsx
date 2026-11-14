@@ -1526,9 +1526,8 @@ export default function LeaderDashboard({ initialCommunityId }) {
       allowCarpool: eventForm.allowCarpool !== false,
       requireApproval: Boolean(eventForm.requireApproval),
       rsvpQuestion: eventForm.rsvpQuestion?.trim() || '',
-            whatsappGroup: eventForm.whatsappGroup?.trim() || '',
       collabCommunityIds: eventForm.collabCommunityIds || [],
-        whatsappGroup: eventForm.whatsappGroup?.trim() || '',
+      whatsappGroup: eventForm.whatsappGroup?.trim() || '',
       autoReminders: eventForm.autoReminders,
       autoFeedback: eventForm.autoFeedback
     };
@@ -5335,7 +5334,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                       updateCommunity(community.id, { visibility: v });
                       toast.info('Visibility updated', `Community is now ${v}`);
                     }} className="interactive-press" style={{
-                      flex: 1, padding: '10px 12px', borderRadius: '8px', border: 'none',
+                      flex: 1, padding: '10px 12px', borderRadius: '8px',
                       background: communityVisibility === v ? 'rgba(20,184,166,0.2)' : 'rgba(255,255,255,0.03)',
                       border: communityVisibility === v ? '1px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.05)',
                       color: communityVisibility === v ? 'var(--teal-300)' : 'var(--slate-400)',

@@ -81,7 +81,7 @@ export default function HostExperienceModal({ experience, communities, user, onC
           </div>
 
           <div>
-            <label style={{ display: 'block', color: 'var(--slate-300)', fontSize: '0.9rem', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <label style={{ color: 'var(--slate-300)', fontSize: '0.9rem', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={14} /> Invite Collabs (Optional)
             </label>
             <p style={{ fontSize: '0.75rem', color: 'var(--slate-500)', marginBottom: '8px', lineHeight: 1.4 }}>

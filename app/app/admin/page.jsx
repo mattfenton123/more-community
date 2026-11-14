@@ -2040,7 +2040,7 @@ const ADMIN_EMAILS = [
                 </div>
                 <div>
                   <span style={{ color: 'var(--slate-500)', display: 'block', fontSize: '0.72rem' }}>Build Target</span>
-                  <span style={{ color: 'var(--white)', fontWeight: 600 }}>Next.js 14 App Router (Hybrid SSR/PWA)</span>
+                  <span style={{ color: 'var(--white)', fontWeight: 600 }}>Next.js 15 App Router (Hybrid SSR/PWA)</span>
                 </div>
                 <div>
                   <span style={{ color: 'var(--slate-500)', display: 'block', fontSize: '0.72rem' }}>Database & Auth</span>
