@@ -437,7 +437,7 @@ export function AppProvider({ children }) {
             name: 'Alex',
             role: 'Leader',
             avatar: getDefaultAvatar('Alex'),
-            bio: 'Community Leader & Founder at more.',
+            bio: 'Community Leader & Founder at More Community.',
             onboarded: true
           });
         }
@@ -474,7 +474,7 @@ export function AppProvider({ children }) {
           const leadersComm = {
              id: 'more-leaders-network',
              name: 'More Community Leaders Network',
-             description: 'A private space for more. leaders to collaborate, share tips, and organize cross-community events.',
+             description: 'A private space for More Community leaders to collaborate, share tips, and organize cross-community events.',
              tags: ['leadership', 'network'],
              image: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1200&q=80',
              category: 'leadership',
@@ -874,7 +874,7 @@ export function AppProvider({ children }) {
           if (prev.find(m => m.id === payload.new.id)) return prev;
           // Fire browser notification if message is from someone else
           if (payload.new.author_id !== authUser?.id && 'Notification' in window && Notification.permission === 'granted') {
-            showSafeNotification('New message in more.', {
+            showSafeNotification('New message in More Community', {
               body: payload.new.text?.substring(0, 100) || 'New message',
             });
           }

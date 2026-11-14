@@ -818,7 +818,7 @@ export default function OnboardingFlow({ onComplete }) {
     <div key="experience" className="page-wrapper" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       <div style={{ textAlign: 'center', marginBottom: '8px' }}>
         <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.6rem', margin: '0 0 8px 0' }}>App Experience</h2>
-        <p style={{ color: 'var(--slate-400)', fontSize: '0.9rem', margin: 0 }}>Customize how more. looks and feels for you.</p>
+        <p style={{ color: 'var(--slate-400)', fontSize: '0.9rem', margin: 0 }}>Customize how More Community looks and feels for you.</p>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -881,7 +881,7 @@ export default function OnboardingFlow({ onComplete }) {
         <iframe
           src="/explainer.html"
           style={{ width: '100%', height: '100%', border: 'none' }}
-          title="How more. works"
+          title="How More Community works"
         />
       </div>
 
@@ -889,7 +889,7 @@ export default function OnboardingFlow({ onComplete }) {
         Welcome, {name || 'friend'}!
       </h2>
       <p style={{ color: 'var(--slate-400)', fontSize: '0.92rem', margin: 0, lineHeight: 1.5, maxWidth: '340px' }}>
-        You are all set! Here is how to get the most out of <strong style={{ color: 'var(--teal-300)' }}>more.</strong> from day one:
+        You are all set! Here is how to get the most out of <strong style={{ color: 'var(--teal-300)' }}>More Community</strong> from day one:
       </p>
 
       <div style={{ width: '100%', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', textAlign: 'left' }}>
@@ -931,7 +931,7 @@ export default function OnboardingFlow({ onComplete }) {
       {/* Progress bar and header */}
       <div style={{ padding: '20px 24px 0', display: 'flex', flexDirection: 'column', gap: '16px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <img src={`/images/logo.webp`} alt="more." style={{ height: '24px', opacity: 0.9, filter: 'brightness(0) invert(1)' }} />
+          <img src={`/images/logo.webp`} alt="More Community" style={{ height: '24px', opacity: 0.9, filter: 'brightness(0) invert(1)' }} />
           <button 
             onClick={handleSignOut}
             className="interactive-press"

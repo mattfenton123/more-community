@@ -42,11 +42,11 @@ export default function SettingsScreen() {
       const { outcome } = await deferredPrompt.userChoice;
       if (outcome === 'accepted') {
         setIsInstalled(true);
-        toast.success('App installed!', 'Find more. on your home screen');
+        toast.success('App installed!', 'Find More Community on your home screen');
       }
       setDeferredPrompt(null);
     } else {
-      toast.info('Add to Home Screen', 'Use your browser\'s "Add to Home Screen" option to install more.');
+      toast.info('Add to Home Screen', 'Use your browser\'s "Add to Home Screen" option to install More Community.');
     }
   };
 
@@ -67,9 +67,9 @@ export default function SettingsScreen() {
         try {
           if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
             const registration = await navigator.serviceWorker.ready;
-            await registration.showNotification('more. community', { body: 'Notifications are now enabled! 🎉', icon: '/logo.png', badge: '/logo.png' });
+            await registration.showNotification('More Community', { body: 'Notifications are now enabled! 🎉', icon: '/logo.png', badge: '/logo.png' });
           } else {
-            new Notification('more. community', { body: 'Notifications are now enabled! 🎉', icon: '/logo.png' });
+            new Notification('More Community', { body: 'Notifications are now enabled! 🎉', icon: '/logo.png' });
           }
         } catch(e) { /* Notification not supported */ }
       } else {
@@ -86,7 +86,7 @@ export default function SettingsScreen() {
   const menuItems = [
     { icon: <User size={20} />, label: 'View Profile', color: '#3b82f6', onClick: () => navigate.push(`/profile/${user?.id || ''}`) },
     { icon: <Shield size={20} />, label: 'Privacy & Security', color: '#a78bfa', onClick: () => toast.info('Coming soon', 'Privacy settings are on the way') },
-    { icon: <Info size={20} />, label: 'About more.', color: 'var(--teal-400)', onClick: () => toast.info('more. v1.0.0', 'Built with ❤️ in Tunbridge Wells') },
+    { icon: <Info size={20} />, label: 'About More Community', color: 'var(--teal-400)', onClick: () => toast.info('More Community v1.0.0', 'Built with ❤️ in Tunbridge Wells') },
   ];
 
   return (
@@ -128,7 +128,7 @@ export default function SettingsScreen() {
             </div>
             <div style={{ flex: 1 }}>
               <span style={{ fontWeight: 500, display: 'block' }}>{isInstalled ? 'App Installed' : 'Install App'}</span>
-              <span style={{ fontSize: '0.75rem', color: 'var(--slate-500)' }}>{isInstalled ? 'Running as a standalone app' : 'Add more. to your home screen'}</span>
+              <span style={{ fontSize: '0.75rem', color: 'var(--slate-500)' }}>{isInstalled ? 'Running as a standalone app' : 'Add More Community to your home screen'}</span>
             </div>
             {!isInstalled && <ChevronRight size={18} color="var(--slate-500)" />}
           </button>
@@ -263,7 +263,7 @@ export default function SettingsScreen() {
       </div>
 
       <div style={{ textAlign: 'center', padding: '32px 20px', color: 'var(--slate-600)', fontSize: '0.75rem' }}>
-        more. v1.0.0 • Made in Tunbridge Wells
+        More Community v1.0.0 • Made in Tunbridge Wells
       </div>
     </div>
   );

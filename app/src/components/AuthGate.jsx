@@ -22,7 +22,7 @@ export default function AuthGate({ children }) {
         color: 'var(--white)',
         gap: '16px',
       }}>
-        <img src={`/images/logo.webp`} alt="more." style={{ height: '28px', opacity: 0.8 }} />
+        <img src={`/images/logo.webp`} alt="More Community" style={{ height: '28px', opacity: 0.8 }} />
         <div className="skeleton" style={{ width: '120px', height: '4px', borderRadius: '99px' }} />
       </div>
     );

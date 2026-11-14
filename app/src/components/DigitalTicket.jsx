@@ -78,7 +78,7 @@ export default function DigitalTicket({ event, community, user, onClose }) {
               time: event.time,
               location: event.location,
               meetingPoint: event.meetingPoint || '',
-              communityName: community?.name || event.communityName || 'more. community',
+              communityName: community?.name || event.communityName || 'More Community',
               communityImage: community?.image || event.image || '/logo.png',
               collabCommunityIds: event.collabCommunityIds || [],
               qrDataUrl: dataUrl,
@@ -205,7 +205,7 @@ export default function DigitalTicket({ event, community, user, onClose }) {
                 <img src={community.image} alt="" style={{ width: '18px', height: '18px', borderRadius: '50%', objectFit: 'cover' }} />
               )}
               <span style={{ color: 'var(--slate-300)', fontSize: '0.85rem', fontWeight: 600 }}>
-                {community?.name || 'more. community'}
+                {community?.name || 'More Community'}
               </span>
             </div>
           </div>

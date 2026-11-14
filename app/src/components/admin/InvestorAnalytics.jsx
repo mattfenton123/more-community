@@ -359,7 +359,7 @@ export default function InvestorAnalytics({
 
   // ─── Copy Investor Memo Handler ───────────────────────────
   const handleCopyMemo = () => {
-    const memo = `🚀 More. Community — Traction & Growth Metrics
+    const memo = `🚀 More Community — Traction & Growth Metrics
 Period: Last ${daysCount} Days (${timeRange}) | Mode: ${analyticsMode === 'pitch' ? 'Pitch Deck Model' : 'Live Telemetry'}
 
 📊 Key Investor Highlights:

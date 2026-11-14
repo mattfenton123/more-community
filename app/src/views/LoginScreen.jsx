@@ -165,7 +165,7 @@ export default function LoginScreen() {
       }}>
         {/* Logo & tagline area */}
         <div style={{ marginBottom: '32px', textAlign: 'center', width: '100%' }}>
-          <img src={`/images/logo.webp`} alt="more." style={{ height: '32px', marginBottom: '16px', opacity: 0.9 }} />
+          <img src={`/images/logo.webp`} alt="More Community" style={{ height: '32px', marginBottom: '16px', opacity: 0.9 }} />
           <h1 style={{
             fontFamily: 'var(--font-heading)',
             fontSize: '2.4rem',

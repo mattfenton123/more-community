@@ -11,17 +11,17 @@ export default function TermsOfUse() {
         <p style={{ color: 'var(--slate-400)', fontSize: '0.82rem', marginBottom: '24px' }}>Last updated: March 2026</p>
         
         <h2 style={{ color: 'var(--teal-400)', fontSize: '1.15rem', marginTop: '28px', marginBottom: '8px', fontWeight: 700 }}>1. Acceptance of Terms</h2>
-        <p>By accessing and using more. ("More Community"), you agree to be bound by these Terms of Service, our Privacy Policy, and any community-specific safety guidelines. If you do not agree, do not use the platform.</p>
+        <p>By accessing and using More Community, you agree to be bound by these Terms of Service, our Privacy Policy, and any community-specific safety guidelines. If you do not agree, do not use the platform.</p>
         
         <h2 style={{ color: 'var(--teal-400)', fontSize: '1.15rem', marginTop: '28px', marginBottom: '8px', fontWeight: 700 }}>2. Real-World Community Meetups &amp; Safety</h2>
-        <p>more. is a platform that connects local clubs, organisers, and members for in-person activities. Participation in any meetup, sports session, walk, or workshop is voluntary. Attendees are responsible for assessing their personal fitness and suitability for activities. Leaders must operate within local council regulations and safety standards.</p>
+        <p>More Community is a platform that connects local clubs, organisers, and members for in-person activities. Participation in any meetup, sports session, walk, or workshop is voluntary. Attendees are responsible for assessing their personal fitness and suitability for activities. Leaders must operate within local council regulations and safety standards.</p>
         
         <h2 style={{ color: 'var(--teal-400)', fontSize: '1.15rem', marginTop: '28px', marginBottom: '8px', fontWeight: 700 }}>3. Paid Events, Tickets &amp; Payment Processing</h2>
-        <p>All ticket purchases, sponsorship contributions, and subscription payments on more. are securely processed through Stripe. By purchasing a ticket or sponsoring a club, you authorise Stripe to charge your designated payment method.</p>
+        <p>All ticket purchases, sponsorship contributions, and subscription payments on More Community are securely processed through Stripe. By purchasing a ticket or sponsoring a club, you authorise Stripe to charge your designated payment method.</p>
         <ul>
           <li><strong>Ticket Pricing:</strong> Prices displayed on event pages are final and inclusive of applicable fees unless explicitly stated.</li>
           <li><strong>Platform &amp; Processing Fees:</strong> Standard card processing fees apply. Leader Pro subscribers benefit from reduced 2% platform fees.</li>
-          <li><strong>Zero Card Data Storage:</strong> more. never stores credit or debit card numbers on our servers. All sensitive financial information is handled on Stripe's PCI-DSS Level 1 certified infrastructure.</li>
+          <li><strong>Zero Card Data Storage:</strong> More Community never stores credit or debit card numbers on our servers. All sensitive financial information is handled on Stripe's PCI-DSS Level 1 certified infrastructure.</li>
         </ul>
 
         <h2 style={{ color: 'var(--teal-400)', fontSize: '1.15rem', marginTop: '28px', marginBottom: '8px', fontWeight: 700 }}>4. Cancellations &amp; Refund Policy</h2>
@@ -40,7 +40,7 @@ export default function TermsOfUse() {
         </ul>
 
         <h2 style={{ color: 'var(--teal-400)', fontSize: '1.15rem', marginTop: '28px', marginBottom: '8px', fontWeight: 700 }}>6. Suspension, Removal &amp; What Happens to Funds</h2>
-        <p>To keep the community safe, more. reserves the right to suspend or permanently remove any user, member, leader, or partner who violates our Code of Conduct, engages in harassment, endangers participant safety, or engages in fraudulent activity.</p>
+        <p>To keep the community safe, More Community reserves the right to suspend or permanently remove any user, member, leader, or partner who violates our Code of Conduct, engages in harassment, endangers participant safety, or engages in fraudulent activity.</p>
         <ul>
           <li><strong>If a Member is Removed:</strong> A member removed for code-of-conduct violations forfeits access immediately. Upcoming paid tickets may be refunded at the discretion of the platform.</li>
           <li><strong>If a Leader is Removed After Collecting Money:</strong>
@@ -56,7 +56,7 @@ export default function TermsOfUse() {
         <p>Sponsorships are intended to support grassroots community groups. Local businesses receive banner placement, in-feed announcements, and perk promotion across their chosen catchment area. 80% of sponsorship fees are routed directly to club leader funds to support equipment, hall hire, and community meetups.</p>
 
         <h2 style={{ color: 'var(--teal-400)', fontSize: '1.15rem', marginTop: '28px', marginBottom: '8px', fontWeight: 700 }}>8. Limitation of Liability</h2>
-        <p>more. acts as a discovery and coordination platform for independent clubs and organizers. To the maximum extent permitted by UK law, more. shall not be liable for indirect, incidental, or consequential damages resulting from event attendance, transport, injuries, or third-party venue conditions.</p>
+        <p>More Community acts as a discovery and coordination platform for independent clubs and organizers. To the maximum extent permitted by UK law, More Community shall not be liable for indirect, incidental, or consequential damages resulting from event attendance, transport, injuries, or third-party venue conditions.</p>
 
         <h2 style={{ color: 'var(--teal-400)', fontSize: '1.15rem', marginTop: '28px', marginBottom: '8px', fontWeight: 700 }}>9. Contact &amp; Dispute Resolution</h2>
         <p>If you have any questions regarding these terms, payment disputes, or safety concerns, please contact our community support team at <strong>support@morecommunity.app</strong>.</p>

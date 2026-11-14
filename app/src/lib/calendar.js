@@ -47,14 +47,14 @@ export function downloadIcs(event, communityName) {
   const icsData = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//more. Community//EN',
+    'PRODID:-//More Community//EN',
     'BEGIN:VEVENT',
     `UID:${event.id}@morecommunity.app`,
     `DTSTAMP:${formatDate(new Date())}`,
     `DTSTART:${formatDate(startTime)}`,
     `DTEND:${formatDate(endTime)}`,
     `SUMMARY:${event.title} - ${communityName}`,
-    `DESCRIPTION:${event.description || ''}\\n\\nView on more.: ${eventUrl}`,
+    `DESCRIPTION:${event.description || ''}\\n\\nView on More Community: ${eventUrl}`,
     `LOCATION:${cleanLoc}`,
     'END:VEVENT',
     'END:VCALENDAR'
@@ -87,8 +87,8 @@ export function getGoogleCalendarEventUrl(event, communityName) {
   const endStr = formatDate(endTime);
   const eventUrl = getEventUrl(event);
   const cleanLoc = cleanLocationName(event.location || '');
-  const title = encodeURIComponent(`${event.title} - ${communityName || 'more. Community'}`);
-  const details = encodeURIComponent(`${event.description || ''}\n\nJoin on more.: ${eventUrl}`);
+  const title = encodeURIComponent(`${event.title} - ${communityName || 'More Community'}`);
+  const details = encodeURIComponent(`${event.description || ''}\n\nJoin on More Community: ${eventUrl}`);
   const location = encodeURIComponent(cleanLoc);
   return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startStr}/${endStr}&details=${details}&location=${location}`;
 }

@@ -107,7 +107,7 @@ export default function SecuritySettings() {
               selected={visibility === 'public'} 
               onClick={() => handleSavePrivacy('visibility', 'public')}
               title="Public" 
-              description="Anyone on more. can view your profile and see your interests." 
+              description="Anyone on More Community can view your profile and see your interests." 
             />
             <ToggleOption 
               selected={visibility === 'members_only'} 

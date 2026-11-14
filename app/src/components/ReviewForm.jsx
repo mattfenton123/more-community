@@ -90,7 +90,7 @@ export default function ReviewForm({ communityId, onClose }) {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <img src={user?.avatar} alt="" style={{ width: '32px', height: '32px', borderRadius: '50%' }} />
                     <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.8)' }}>
-                      <strong>{user?.name}</strong> on more.
+                      <strong>{user?.name}</strong> on More Community
                     </div>
                   </div>
                 </div>
@@ -106,7 +106,7 @@ export default function ReviewForm({ communityId, onClose }) {
                   if (navigator.share) {
                     navigator.share({
                       title: 'My 5-Star Review',
-                      text: `I just gave a 5-star review on more.: "${content}"`,
+                      text: `I just gave a 5-star review on More Community: "${content}"`,
                       url: window.location.href,
                     }).catch(console.error);
                   } else {

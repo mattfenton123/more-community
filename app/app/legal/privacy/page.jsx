@@ -11,7 +11,7 @@ export default function PrivacyPolicy() {
         <p>Last updated: {new Date().toLocaleDateString()}</p>
         
         <h2 style={{ color: 'var(--teal-400)', fontSize: '1.2rem', marginTop: '24px' }}>1. Introduction</h2>
-        <p>Welcome to more. We respect your privacy and are committed to protecting your personal data. This privacy policy will inform you as to how we look after your personal data when you visit our website (regardless of where you visit it from) and tell you about your privacy rights and how the law protects you.</p>
+        <p>Welcome to More Community. We respect your privacy and are committed to protecting your personal data. This privacy policy will inform you as to how we look after your personal data when you visit our website (regardless of where you visit it from) and tell you about your privacy rights and how the law protects you.</p>
         
         <h2 style={{ color: 'var(--teal-400)', fontSize: '1.2rem', marginTop: '24px' }}>2. Data We Collect</h2>
         <p>We may collect, use, store and transfer different kinds of personal data about you which we have grouped together as follows:</p>

@@ -524,7 +524,7 @@ export default function Discover() {
               >
                 <div style={{ fontSize: '0.95rem', color: 'var(--teal-400)', fontWeight: 600, marginBottom: '4px' }}>Don't see your group?</div>
                 <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
-                  Start your own community on <img src="/images/logo.webp" alt="more." style={{ height: '12px', filter: 'brightness(0) invert(1)', opacity: 0.7 }} />
+                  Start your own community on <img src="/images/logo.webp" alt="More Community" style={{ height: '12px', filter: 'brightness(0) invert(1)', opacity: 0.7 }} />
                 </div>
               </div>
             </>

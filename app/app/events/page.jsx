@@ -380,7 +380,7 @@ const { events, communities, user, users, eventRsvps, rsvpToEvent, createEvent, 
     const cleanLoc = cleanLocationName(selectedEvent.location || '') || 'TBA';
     const title = encodeURIComponent(selectedEvent.title);
     const location = encodeURIComponent(cleanLoc);
-    const description = encodeURIComponent(`Hosted by ${selectedEvent.communityName || 'more.'}\n\nJoin us at ${window.location.href}`);
+    const description = encodeURIComponent(`Hosted by ${selectedEvent.communityName || 'More Community'}\n\nJoin us at ${window.location.href}`);
 
     if (type === 'google') {
       const startIso = startDate.toISOString().replace(/-|:|\.\d\d\d/g, '');

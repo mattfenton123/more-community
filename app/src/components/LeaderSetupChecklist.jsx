@@ -263,7 +263,7 @@ export default function LeaderSetupChecklist({ community, events = [], onOpenEve
             gap: '8px'
           }}>
             <span style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>
-              Need help launching? Leaders get free 1-on-1 launch support from the more. team.
+              Need help launching? Leaders get free 1-on-1 launch support from the More Community team.
             </span>
             <button
               onClick={() => handleCopyInvite()}

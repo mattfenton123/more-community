@@ -141,7 +141,7 @@ export default function SponsorProfile() {
              <CheckCircle2 size={32} color="#eab308" style={{ margin: '0 auto 12px' }} />
              <h4 style={{ margin: '0 0 8px 0', color: '#fef08a', fontSize: '1.1rem' }}>Regional Headline Sponsor</h4>
              <p style={{ margin: 0, color: 'var(--slate-300)', fontSize: '0.9rem', lineHeight: 1.5 }}>
-               {sponsor.name} is a cornerstone supporter of the Tunbridge Wells region, helping keep more. accessible to everyone.
+               {sponsor.name} is a cornerstone supporter of the Tunbridge Wells region, helping keep More Community accessible to everyone.
              </p>
            </div>
         )}

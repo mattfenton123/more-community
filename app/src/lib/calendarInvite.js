@@ -17,7 +17,7 @@ export function getGoogleCalendarUrl(event) {
   if (!event) return '#';
   try {
     const title = encodeURIComponent(event.title || 'Community Event');
-    const details = encodeURIComponent(`${event.description || ''}\n\nOrganised on more. (https://morecommunity.app)`);
+    const details = encodeURIComponent(`${event.description || ''}\n\nOrganised on More Community (https://morecommunity.app)`);
     const location = encodeURIComponent(formatShareLocation(event.location, 'Meeting Point provided by host'));
     
     const start = formatIcsDate(event.date, event.time);

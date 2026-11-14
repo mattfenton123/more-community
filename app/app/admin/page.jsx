@@ -2036,7 +2036,7 @@ const ADMIN_EMAILS = [
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', fontSize: '0.82rem' }}>
                 <div>
                   <span style={{ color: 'var(--slate-500)', display: 'block', fontSize: '0.72rem' }}>Application</span>
-                  <span style={{ color: 'var(--white)', fontWeight: 600 }}>more. Community Operating System</span>
+                  <span style={{ color: 'var(--white)', fontWeight: 600 }}>More Community Operating System</span>
                 </div>
                 <div>
                   <span style={{ color: 'var(--slate-500)', display: 'block', fontSize: '0.72rem' }}>Build Target</span>

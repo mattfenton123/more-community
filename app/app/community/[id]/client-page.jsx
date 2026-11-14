@@ -531,11 +531,11 @@ export default function CommunityProfile() {
             <ChevronLeft size={22} />
           </button>
           
-          {/* Centered more. Logo */}
+          {/* Centered More Community Logo */}
           <button
             type="button"
             onClick={() => navigate.push('/app')}
-            aria-label="Go to More Home"
+            aria-label="Go to More Community Home"
             className="interactive-press"
             style={{
               background: 'none',
@@ -548,7 +548,7 @@ export default function CommunityProfile() {
               borderRadius: '8px'
             }}
           >
-            <img src="/logo.png" alt="more." style={{ height: '22px', display: 'block', pointerEvents: 'none' }} />
+            <img src="/logo.png" alt="More Community" style={{ height: '22px', display: 'block', pointerEvents: 'none' }} />
           </button>
 
           {/* Action buttons (Share, Flag, Leader Panel) */}
@@ -1717,7 +1717,7 @@ export default function CommunityProfile() {
                 }}
               >
                 {showFullDesc ? 'Show Less' : (
-                  <>Show <img className="community-show-more-logo" src="/images/logo.webp" alt="more." style={{ height: '14px', filter: 'brightness(0) invert(1)', opacity: 0.8 }} /></>
+                  <>Show <img className="community-show-more-logo" src="/images/logo.webp" alt="More Community" style={{ height: '14px', filter: 'brightness(0) invert(1)', opacity: 0.8 }} /></>
                 )}
               </button>
             </div>
@@ -2593,11 +2593,11 @@ export default function CommunityProfile() {
 
           {/* Right Sticky Sidebar (Desktop only) */}
           <div className="community-sticky-sidebar">
-            {/* more. Community Pass Card */}
+            {/* More Community Pass Card */}
             <div className="community-pass-card">
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <img src="/logo.png" alt="more." style={{ height: '18px' }} />
+                  <img src="/logo.png" alt="More Community" style={{ height: '18px' }} />
                   <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--teal-400)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                     Community Pass
                   </span>

@@ -5,7 +5,7 @@ import { cleanLocationName, formatShareLocation, parseLocationCoords } from './l
 
 const resendApiKey = process.env.RESEND_API_KEY;
 const resend = resendApiKey ? new Resend(resendApiKey) : null;
-const SENDER_EMAIL = process.env.RESEND_FROM_EMAIL || 'more. Community <onboarding@resend.dev>';
+const SENDER_EMAIL = process.env.RESEND_FROM_EMAIL || 'More Community <onboarding@resend.dev>';
 
 export async function sendTicketConfirmationEmail({ to, name, event, community, isGuest = false, plusOne = null }) {
   if (!to || !event) {
@@ -40,7 +40,7 @@ export async function sendTicketConfirmationEmail({ to, name, event, community, 
           <!-- Header Bar -->
           <tr>
             <td style="padding: 24px 28px; background: linear-gradient(135deg, #134e4a 0%, #042f2e 100%); border-bottom: 1px solid rgba(255,255,255,0.1);">
-              <div style="font-size: 1.4rem; font-weight: 800; color: #ffffff; letter-spacing: -0.5px;">more.</div>
+              <div style="font-size: 1.4rem; font-weight: 800; color: #ffffff; letter-spacing: -0.5px;">More Community</div>
               <div style="font-size: 0.8rem; color: #5eead4; margin-top: 4px; font-weight: 600;">COMMUNITY TICKET CONFIRMATION</div>
             </td>
           </tr>
@@ -52,7 +52,7 @@ export async function sendTicketConfirmationEmail({ to, name, event, community, 
                 You're in, ${name || 'friend'}!
               </h1>
               <p style="margin: 0 0 24px 0; color: #94a3b8; font-size: 0.95rem; line-height: 1.5;">
-                Your spot is confirmed for <strong>${event.title}</strong> hosted by <strong>${community?.name || 'more.'}</strong>.
+                Your spot is confirmed for <strong>${event.title}</strong> hosted by <strong>${community?.name || 'More Community'}</strong>.
               </p>
 
               <!-- Event Details Box -->
@@ -116,7 +116,7 @@ export async function sendTicketConfirmationEmail({ to, name, event, community, 
 
               <div style="border-top: 1px solid rgba(255,255,255,0.06); padding-top: 20px; text-align: center;">
                 <a href="${eventLink}" target="_blank" style="color: #94a3b8; font-size: 0.8rem; text-decoration: underline;">
-                  View Event Page on more.
+                  View Event Page on More Community
                 </a>
               </div>
             </td>
@@ -127,7 +127,7 @@ export async function sendTicketConfirmationEmail({ to, name, event, community, 
             <td style="padding: 20px 28px; background: rgba(0,0,0,0.2); border-top: 1px solid rgba(255,255,255,0.04); text-align: center;">
               <p style="margin: 0; color: #64748b; fontSize: 0.75rem; line-height: 1.4;">
                 You received this ticket because an RSVP was submitted on morecommunity.app.<br>
-                more. - Connecting people in real life.
+                More Community - Connecting people in real life.
               </p>
             </td>
           </tr>
@@ -166,14 +166,14 @@ export async function sendTownAlertConfirmationEmail({ to, name, town }) {
   const subject = `📍 You're on the list for ${town}!`;
   const html = `
     <div style="font-family: sans-serif; background: #0f172a; color: #ffffff; padding: 32px; border-radius: 12px; max-width: 500px; margin: 0 auto;">
-      <h2 style="color: #14b8a6;">more.</h2>
+      <h2 style="color: #14b8a6;">More Community</h2>
       <h3>You're on the list, ${name || 'there'}!</h3>
       <p style="color: #94a3b8; line-height: 1.5;">
         We have added you to our notification alert for <strong>${town}</strong>.
         The moment a leader or community schedules an event near ${town}, you'll receive the first invitation.
       </p>
       <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 0.8rem; color: #64748b;">
-        more. Community - https://morecommunity.app
+        More Community - https://morecommunity.app
       </div>
     </div>
   `;

@@ -72,7 +72,7 @@ export async function GET(request, { params }) {
   const lines = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//more. Community//EN',
+    'PRODID:-//More Community//EN',
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
     `X-WR-CALNAME:${escapeIcsText(communityName)}`,

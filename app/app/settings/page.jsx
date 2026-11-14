@@ -47,12 +47,12 @@ export default function SettingsScreen() {
       const { outcome } = await promptEvent.userChoice;
       if (outcome === 'accepted') {
         setIsInstalled(true);
-        toast.success('App installed!', 'Find more. on your home screen');
+        toast.success('App installed!', 'Find More Community on your home screen');
       }
       window.deferredPrompt = null;
       setDeferredPrompt(null);
     } else {
-      toast.info('Add to Home Screen', 'Use your browser\'s "Add to Home Screen" option to install more.');
+      toast.info('Add to Home Screen', 'Use your browser\'s "Add to Home Screen" option to install More Community.');
     }
   };
 
@@ -70,7 +70,7 @@ export default function SettingsScreen() {
         setNotificationsEnabled(true);
         toast.success('Notifications enabled!', 'You\'ll be notified about new messages and events');
         // Send a test notification
-        new Notification('more. community', {
+        new Notification('More Community', {
           body: 'Notifications are now enabled! 🎉',
           icon: '/portal/favicon.svg'
         });
@@ -232,12 +232,12 @@ export default function SettingsScreen() {
         <section>
           <h3 style={{ color: 'var(--slate-400)', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px', paddingLeft: '4px' }}>About & Legal</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-            <MenuItem icon={<Info size={20} />} label="About more." color="#6366f1" onClick={() => navigate.push('/legal/about')} />
+            <MenuItem icon={<Info size={20} />} label="About More Community" color="#6366f1" onClick={() => navigate.push('/legal/about')} />
             <MenuItem icon={<Shield size={20} />} label="Terms of Use" color="#a78bfa" onClick={() => navigate.push('/legal/terms')} />
             <MenuItem icon={<Shield size={20} />} label="Privacy Policy" color="#3b82f6" onClick={() => navigate.push('/legal/privacy')} />
             <MenuItem icon={<Shield size={20} />} label="Cookies Policy" color="#f59e0b" onClick={() => navigate.push('/legal/cookies')} />
             <div style={{ padding: '16px 8px', fontSize: '0.75rem', color: 'var(--slate-500)', lineHeight: 1.5 }}>
-              <strong>Disclaimer:</strong> more. is a platform for independent communities. Users are responsible for their own interactions and must adhere to local guidelines.
+              <strong>Disclaimer:</strong> More Community is a platform for independent communities. Users are responsible for their own interactions and must adhere to local guidelines.
             </div>
           </div>
         </section>

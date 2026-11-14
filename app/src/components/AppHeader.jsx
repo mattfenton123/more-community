@@ -200,7 +200,7 @@ export default function AppHeader({ title, subtitle, rightElement, showBack = fa
         >
           <img 
             src="/logo.png" className="theme-invert" 
-            alt="more." 
+            alt="More Community" 
             style={{ height: "22px", display: "block", pointerEvents: "none" }} 
           />
         </button>

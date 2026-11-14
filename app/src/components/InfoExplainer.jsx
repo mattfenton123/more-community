@@ -98,7 +98,7 @@ export const EXPLAINER_CONTENT = {
   leader_crm_card: {
     badge: 'Member CRM',
     title: 'How Member Engagement Tiers Work',
-    summary: 'more. tracks event check-ins automatically so you know how healthy your community is at a glance.',
+    summary: 'More Community tracks event check-ins automatically so you know how healthy your community is at a glance.',
     steps: [
       'Active & Engaged: Members attending regularly or recently.',
       'Slipping: Members who used to attend but have missed recent events.',

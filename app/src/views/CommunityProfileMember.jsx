@@ -107,7 +107,7 @@ export default function CommunityProfile() {
   if (!community && !isLoading) {
     return (
       <div style={{ height: '100dvh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'var(--slate-950)' }}>
-        <img src={`/images/logo.webp`} alt="more." style={{ height: '24px', opacity: 0.5, marginBottom: '24px', cursor: 'pointer' }} onClick={() => navigate.back()} />
+        <img src={`/images/logo.webp`} alt="More Community" style={{ height: '24px', opacity: 0.5, marginBottom: '24px', cursor: 'pointer' }} onClick={() => navigate.back()} />
         <h2 style={{ color: 'var(--white)', fontFamily: 'var(--font-heading)' }}>Community not found</h2>
         <button onClick={() => navigate.back()} className="btn btn-outline" style={{ marginTop: '16px' }}>Go Home</button>
       </div>
@@ -844,7 +844,7 @@ export default function CommunityProfile() {
 
       </div>
 
-      {showShareModal && <ShareModal title={community.name} text={community.description} url={`https://more.community/${community.id}`} onClose={() => setShowShareModal(false)} />}
+      {showShareModal && <ShareModal title={community.name} text={community.description} url={`https://www.morecommunity.app/community/${community.id}`} onClose={() => setShowShareModal(false)} />}
       <CommentsModal isOpen={!!selectedPostForComments} onClose={() => setSelectedPostForComments(null)} post={selectedPostForComments} />
       
       <CreateServiceModal 

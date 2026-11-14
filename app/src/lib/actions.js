@@ -200,7 +200,7 @@ export async function sendMessageAction(messageData, token) {
         to: targetGroupId,
         type: "text",
         text: { 
-          body: `*${senderName}* (via more. app):\n${messageData.text}` 
+          body: `*${senderName}* (via More Community app):\n${messageData.text}` 
         }
       };
 
@@ -292,7 +292,7 @@ export async function ensureLeadersNetworkAction() {
   const { error } = await supabaseAdmin.from('communities').upsert([{
     id: 'more-leaders-network',
     name: 'More Community Leaders Network',
-    description: 'A private space for more. leaders to collaborate, share tips, and organize cross-community events.',
+    description: 'A private space for More Community leaders to collaborate, share tips, and organize cross-community events.',
     tags: ['leadership', 'network'],
     leader_id: ALEX_USER_ID,
     image: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1200&q=80',

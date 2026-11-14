@@ -6966,7 +6966,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                                   <div style={{ fontSize: '0.92rem', fontWeight: 700, color: '#38bdf8' }}>Paid Directly to {prov}</div>
                                 </div>
                                 <p style={{ fontSize: '0.8rem', color: 'var(--slate-300)', margin: 0, lineHeight: 1.45 }}>
-                                  Once your group hits minimum numbers, members (and you) pay {prov} directly using your community&apos;s tracked affiliate link. {prov} stays merchant of record — zero tour-operator or refund liability for you or More.
+                                  Once your group hits minimum numbers, members (and you) pay {prov} directly using your community&apos;s tracked affiliate link. {prov} stays merchant of record — zero tour-operator or refund liability for you or More Community.
                                 </p>
                               </div>
 

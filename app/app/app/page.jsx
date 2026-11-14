@@ -62,8 +62,8 @@ export default function HomeFeed() {
     if (typeof navigator !== 'undefined' && navigator.share) {
       try {
         await navigator.share({
-          title: title || 'more. Community',
-          text: text || 'Check this out on more.',
+          title: title || 'More Community',
+          text: text || 'Check this out on More Community.',
           url: shareUrl,
         });
         return;
@@ -200,7 +200,7 @@ export default function HomeFeed() {
         type: 'sponsored_post',
         id: `sponsored-${globalSponsor.id}`,
         data: {
-          text: `We are incredibly proud to support more. and help local communities thrive. Check out our story to see why we believe real-life connection is the foundation of wellbeing.`,
+          text: `We are incredibly proud to support More Community and help local communities thrive. Check out our story to see why we believe real-life connection is the foundation of wellbeing.`,
           media: globalSponsor.videoUrl,
         },
         sponsor: globalSponsor,
@@ -541,9 +541,9 @@ export default function HomeFeed() {
       {/* PWA Install Banner */}
       {installPrompt && showInstallBanner && (
         <div style={{ margin: '0 20px 0', padding: '14px 16px', background: 'linear-gradient(135deg, rgba(20,184,166,0.12) 0%, rgba(59,130,246,0.08) 100%)', border: '1px solid rgba(20,184,166,0.2)', borderRadius: '14px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <img src="/logo.png" alt="more." style={{ width: '36px', height: '36px', borderRadius: '10px' }} className="theme-invert" />
+          <img src="/logo.png" alt="More Community" style={{ width: '36px', height: '36px', borderRadius: '10px' }} className="theme-invert" />
           <div style={{ flex: 1 }}>
-            <div style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--white)' }}>Install more.</div>
+            <div style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--white)' }}>Install More Community</div>
             <div style={{ fontSize: '0.7rem', color: 'var(--slate-400)' }}>Add to your home screen for the best experience</div>
           </div>
           <button onClick={async () => { installPrompt.prompt(); const result = await installPrompt.userChoice; if (result.outcome === 'accepted') { setShowInstallBanner(false); localStorage.setItem('pwa-dismissed', 'true'); } }}
@@ -558,9 +558,9 @@ export default function HomeFeed() {
       {/* iOS Install Guide Banner */}
       {showIOSInstallBanner && (
         <div style={{ margin: '0 20px 0', padding: '14px 16px', background: 'linear-gradient(135deg, rgba(20,184,166,0.12) 0%, rgba(59,130,246,0.08) 100%)', border: '1px solid rgba(20,184,166,0.2)', borderRadius: '14px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <img src="/logo.png" alt="more." style={{ width: '36px', height: '36px', borderRadius: '10px' }} className="theme-invert" />
+          <img src="/logo.png" alt="More Community" style={{ width: '36px', height: '36px', borderRadius: '10px' }} className="theme-invert" />
           <div style={{ flex: 1 }}>
-            <div style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--white)' }}>Install more. on iOS</div>
+            <div style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--white)' }}>Install More Community on iOS</div>
             <div style={{ fontSize: '0.72rem', color: 'var(--slate-300)', lineHeight: 1.4 }}>Tap <strong>Share</strong> (square with arrow up) then <strong>'Add to Home Screen'</strong></div>
           </div>
           <button onClick={() => { setShowIOSInstallBanner(false); localStorage.setItem('ios-pwa-dismissed', 'true'); }}
@@ -779,7 +779,7 @@ export default function HomeFeed() {
                   </button>
                   <button 
                     onClick={() => handleShare({
-                      title: 'more. Community Post',
+                      title: 'More Community Post',
                       text: post.text,
                       url: typeof window !== 'undefined' ? `${window.location.origin}/app` : '',
                     })}

@@ -1286,7 +1286,7 @@ export default function AdminDashboard() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '0.8rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span style={{ color: 'var(--slate-400)' }}>App Name</span>
-                  <img src="/logo.png" className="theme-invert" alt="more." style={{ height: '16px' }} />
+                  <img src="/logo.png" className="theme-invert" alt="More Community" style={{ height: '16px' }} />
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span style={{ color: 'var(--slate-400)' }}>Version</span>

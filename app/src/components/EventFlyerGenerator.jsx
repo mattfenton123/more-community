@@ -325,7 +325,7 @@ export default function EventFlyerGenerator({ event, community, onClose, uploadI
     ctx.font = `700 30px "${font}", sans-serif`;
     ctx.fillStyle = 'rgba(255,255,255,0.25)';
     ctx.textAlign = 'right';
-    ctx.fillText('more.', width - 60, height - 50);
+    ctx.fillText('More Community', width - 60, height - 50);
 
     return canvas;
   };
@@ -546,7 +546,7 @@ export default function EventFlyerGenerator({ event, community, onClose, uploadI
                 fontFamily: `"${font}", sans-serif`, fontSize: '0.8rem', fontWeight: 700,
                 color: 'rgba(255,255,255,0.25)', letterSpacing: '0.02em',
               }}>
-                more.
+                More Community
               </div>
             </div>
           </div>

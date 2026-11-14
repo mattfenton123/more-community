@@ -14,7 +14,7 @@ export default function CookiesPolicy() {
         <p>Cookies are small text files that are placed on your device when you visit a website. They are widely used to make websites work, or work more efficiently, as well as to provide information to the owners of the site.</p>
         
         <h2 style={{ color: 'var(--teal-400)', fontSize: '1.2rem', marginTop: '24px' }}>2. How we use cookies</h2>
-        <p>We use cookies to enhance your experience on more. by remembering your preferences (like your dark/light mode theme), keeping you logged in, and understanding how you use our platform so we can improve it.</p>
+        <p>We use cookies to enhance your experience on More Community by remembering your preferences (like your dark/light mode theme), keeping you logged in, and understanding how you use our platform so we can improve it.</p>
         
         <h2 style={{ color: 'var(--teal-400)', fontSize: '1.2rem', marginTop: '24px' }}>3. Types of cookies we use</h2>
         <ul style={{ paddingLeft: '20px' }}>

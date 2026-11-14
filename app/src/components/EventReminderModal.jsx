@@ -141,7 +141,7 @@ export default function EventReminderModal({
               <button 
                 type="button"
                 onClick={() => {
-                  setCustomMessage(`Quick update for ${event.title}: Meeting point is at ${formatShareLocation(event.location, 'the venue')}. Look out for the more. sign!`);
+                  setCustomMessage(`Quick update for ${event.title}: Meeting point is at ${formatShareLocation(event.location, 'the venue')}. Look out for the More Community sign!`);
                 }}
                 className="btn btn-outline interactive-press"
                 style={{ fontSize: '0.72rem', padding: '4px 8px', borderRadius: '8px' }}

@@ -690,7 +690,7 @@ function StepVerification({ instagram, setInstagram, whatsapp, setWhatsapp }) {
       }}>
         <iframe
           src="/explainer-leader.html"
-          title="How more. works for Leaders"
+          title="How More Community works for Leaders"
           style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
         />
       </div>

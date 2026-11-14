@@ -1,4 +1,4 @@
-// Service Worker for more. community PWA
+// Service Worker for More Community PWA
 const CACHE_NAME = 'more-community-v5';
 const TILE_CACHE_NAME = 'more-community-tiles-v1';
 const OFFLINE_URL = '/';
@@ -115,7 +115,7 @@ self.addEventListener('fetch', (event) => {
 // Push notification handler
 self.addEventListener('push', (event) => {
   const data = event.data ? event.data.json() : {};
-  const title = data.title || 'more. community';
+  const title = data.title || 'More Community';
   const options = {
     body: data.body || 'You have a new notification',
     icon: '/logo.png',
