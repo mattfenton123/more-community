@@ -1,6 +1,6 @@
 "use client";
 import { useState, useRef, useEffect } from 'react';
-import { LayoutDashboard, Edit3, Compass, ChevronLeft, ChevronRight, Share2, Users, Calendar, Settings, ChevronDown, ChevronUp, Image as ImageIcon, ExternalLink, Camera, Mail, Activity, Sparkles, MapPin, Clock, Star, MessageCircle, Heart, BadgeCheck, Globe, Trash2, Flag, Search, Briefcase, Check, X, MessageSquare, Lightbulb, Info, Megaphone, Video, Plus, Shield, Play, Smile, Archive, Store } from 'lucide-react';
+import { LayoutDashboard, Edit3, Compass, Copy, ChevronLeft, ChevronRight, Share2, Users, Calendar, Settings, ChevronDown, ChevronUp, Image as ImageIcon, ExternalLink, Camera, Mail, Activity, Sparkles, MapPin, Clock, Star, MessageCircle, Heart, BadgeCheck, Globe, Trash2, Flag, Search, Briefcase, Check, X, MessageSquare, Lightbulb, Info, Megaphone, Video, Plus, Shield, Play, Smile, Archive, Store } from 'lucide-react';
 import { useRouter as useNavigate, useParams, useSearchParams } from 'next/navigation';
 import { supabase } from '../../../src/lib/supabaseClient';
 import { useAppContext } from '../../../src/context/AppContext';
@@ -89,7 +89,7 @@ function getGalleryType(tags) {
 export default function CommunityProfile() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user, communities, events, communityMemberships, users, eventRsvps, uploadImage, joinCommunity, leaveCommunity, experiences, services, updateServiceStatus, reviews, updateCommunity, sponsors, sponsorshipAssignments, addCommunityHighlight } = useAppContext();
+  const { user, communities, events, communityMemberships, users, eventRsvps, uploadImage, addEventPhoto, joinCommunity, leaveCommunity, experiences, services, updateServiceStatus, reviews, updateCommunity, sponsors, sponsorshipAssignments, addCommunityHighlight } = useAppContext();
   const { feedPosts, createFeedPost, likeFeedPost, deleteFeedPost } = useFeed();
   const { toast } = useToast();
   const [showRules, setShowRules] = useState(false);
@@ -119,6 +119,9 @@ export default function CommunityProfile() {
   const [showPartnerModal, setShowPartnerModal] = useState(false);
   const [partnerModalTab, setPartnerModalTab] = useState('session');
   const fileInputRef = useRef(null);
+  const pastEventPhotoInputRef = useRef(null);
+  const [targetPastEventId, setTargetPastEventId] = useState(null);
+  const [uploadingPastEventId, setUploadingPastEventId] = useState(null);
   const searchParams = useSearchParams();
   const autoJoinParam = searchParams?.get('autoJoin');
   
@@ -361,6 +364,23 @@ export default function CommunityProfile() {
     }
     setIsUploadingPhoto(false);
     if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const handleUploadPastEventPhoto = async (e) => {
+    const file = e.target.files?.[0];
+    const targetId = targetPastEventId;
+    if (pastEventPhotoInputRef.current) pastEventPhotoInputRef.current.value = '';
+    if (!file || !targetId) return;
+    setUploadingPastEventId(targetId);
+    try {
+      await addEventPhoto(targetId, file);
+      toast.success('Photo added! 📸', 'Uploaded to this past event’s memories.');
+    } catch (err) {
+      toast.error('Upload failed', err?.message || 'Could not upload photo');
+    } finally {
+      setUploadingPastEventId(null);
+      setTargetPastEventId(null);
+    }
   };
 
   const handleDeletePhoto = async (photoIndex, e) => {
@@ -2326,6 +2346,13 @@ export default function CommunityProfile() {
             {/* Past & Archived Events */}
             {pastEvents.length > 0 && (
               <div style={{ marginTop: '28px', paddingTop: '20px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                <input
+                  type="file"
+                  accept="image/*"
+                  ref={pastEventPhotoInputRef}
+                  onChange={handleUploadPastEventPhoto}
+                  style={{ display: 'none' }}
+                />
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
                   <h4 style={{ fontSize: '1.15rem', fontFamily: 'var(--font-heading)', color: 'var(--slate-300)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <Archive size={18} color="var(--slate-400)" /> Past Events ({pastEvents.length})
@@ -2376,14 +2403,47 @@ export default function CommunityProfile() {
                               {rsvps.length} attended
                             </div>
                           )}
-                          {isLeader && (
-                            <button 
-                              onClick={(e) => { e.stopPropagation(); handleGenerateFomoReel(event); }} 
-                              className="btn interactive-press" 
-                              style={{ marginTop: '12px', width: '100%', padding: '10px', borderRadius: '10px', fontSize: '0.85rem', display: 'flex', gap: '6px', justifyContent: 'center', background: 'linear-gradient(135deg, var(--teal-500), var(--teal-600))', color: 'var(--white)', border: 'none', fontWeight: 600 }}>
-                              <Sparkles size={14} /> Generate FOMO Reel
-                            </button>
-                          )}
+                          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '12px' }}>
+                            {(isMember || isLeader || !user?.id) && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (!user?.id) {
+                                    navigate.push(`/login?redirect=/community/${communityId}`);
+                                    return;
+                                  }
+                                  if (uploadingPastEventId) return;
+                                  setTargetPastEventId(event.id);
+                                  setTimeout(() => pastEventPhotoInputRef.current?.click(), 0);
+                                }}
+                                disabled={uploadingPastEventId === event.id}
+                                className="btn btn-outline interactive-press"
+                                style={{ flex: 1, minWidth: '120px', padding: '9px 12px', borderRadius: '10px', fontSize: '0.82rem', display: 'flex', gap: '6px', justifyContent: 'center', alignItems: 'center', color: 'var(--teal-300)', borderColor: 'rgba(20,184,166,0.35)' }}
+                              >
+                                <Camera size={14} /> {uploadingPastEventId === event.id ? 'Uploading...' : `Add Photo${event.galleryImages?.length ? ` (${event.galleryImages.length})` : ''}`}
+                              </button>
+                            )}
+                            {isLeader && (
+                              <>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    navigate.push(`/dashboard?community=${community.id}&duplicateEvent=${event.id}`);
+                                  }}
+                                  className="btn btn-outline interactive-press"
+                                  style={{ flex: 1, minWidth: '120px', padding: '9px 12px', borderRadius: '10px', fontSize: '0.82rem', display: 'flex', gap: '6px', justifyContent: 'center', alignItems: 'center', color: '#7dd3fc', borderColor: 'rgba(56,189,248,0.35)' }}
+                                >
+                                  <Copy size={14} /> Duplicate Event
+                                </button>
+                                <button 
+                                  onClick={(e) => { e.stopPropagation(); handleGenerateFomoReel(event); }} 
+                                  className="btn interactive-press" 
+                                  style={{ flex: 1, minWidth: '140px', padding: '9px 12px', borderRadius: '10px', fontSize: '0.82rem', display: 'flex', gap: '6px', justifyContent: 'center', alignItems: 'center', background: 'linear-gradient(135deg, var(--teal-500), var(--teal-600))', color: 'var(--white)', border: 'none', fontWeight: 600 }}>
+                                  <Sparkles size={14} /> Generate FOMO Reel
+                                </button>
+                              </>
+                            )}
+                          </div>
                         </div>
                       </div>
                     );

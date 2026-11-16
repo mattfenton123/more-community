@@ -1,12 +1,26 @@
 import { formatShareLocation } from './location';
 // Utility to generate Google Calendar links and Apple / Outlook .ics calendar invites
 
+function parseTimeParts(timeStr) {
+  const match = String(timeStr || '10:00').match(/(\d{1,2}):(\d{2})(?:\s*(am|pm))?/i);
+  if (!match) return { hour: 10, min: 0 };
+  let hour = parseInt(match[1], 10);
+  const min = parseInt(match[2], 10);
+  const meridiem = match[3]?.toLowerCase();
+  if (meridiem === 'pm' && hour < 12) hour += 12;
+  if (meridiem === 'am' && hour === 12) hour = 0;
+  return {
+    hour: Number.isFinite(hour) ? hour : 10,
+    min: Number.isFinite(min) ? min : 0,
+  };
+}
+
 export function formatIcsDate(dateStr, timeStr) {
   try {
     const [year, month, day] = (dateStr || '').split('-').map(Number);
-    const [hour, min] = (timeStr || '10:00').split(':').map(Number);
+    const { hour, min } = parseTimeParts(timeStr);
     if (!year || !month || !day) return null;
-    const d = new Date(Date.UTC(year, month - 1, day, hour || 10, min || 0, 0));
+    const d = new Date(Date.UTC(year, month - 1, day, hour, min, 0));
     return d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
   } catch (e) {
     return null;
@@ -25,8 +39,8 @@ export function getGoogleCalendarUrl(event) {
     if (start) {
       // Default to 2 hours duration
       const [year, month, day] = (event.date || '').split('-').map(Number);
-      const [hour, min] = (event.time || '10:00').split(':').map(Number);
-      const endDate = new Date(Date.UTC(year, month - 1, day, (hour || 10) + 2, min || 0, 0));
+      const { hour, min } = parseTimeParts(event.time);
+      const endDate = new Date(Date.UTC(year, month - 1, day, hour + 2, min, 0));
       end = endDate.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
     }
 
@@ -42,8 +56,8 @@ export function generateIcsDataUri(event) {
   try {
     const start = formatIcsDate(event.date, event.time) || '20261115T100000Z';
     const [year, month, day] = (event.date || '').split('-').map(Number);
-    const [hour, min] = (event.time || '10:00').split(':').map(Number);
-    const endDate = new Date(Date.UTC(year || 2026, (month || 11) - 1, day || 15, (hour || 10) + 2, min || 0, 0));
+    const { hour, min } = parseTimeParts(event.time);
+    const endDate = new Date(Date.UTC(year || 2026, (month || 11) - 1, day || 15, hour + 2, min, 0));
     const end = endDate.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
 
     const icsContent = [

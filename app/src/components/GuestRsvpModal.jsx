@@ -49,9 +49,21 @@ export default function GuestRsvpModal({ event, isOpen, onClose, onSuccess }) {
         })
       });
 
-      const data = await res.json();
+      const rawText = await res.text();
+      let data = {};
+      if (rawText) {
+        try {
+          data = JSON.parse(rawText);
+        } catch {
+          data = {
+            error: res.ok
+              ? 'Unexpected response from server. Please try again.'
+              : `Request failed (${res.status}). Please try again.`
+          };
+        }
+      }
       if (!res.ok || data.error) {
-        throw new Error(data.error || 'Failed to submit RSVP.');
+        throw new Error(data.error || `Failed to submit RSVP (${res.status}).`);
       }
 
       setConfirmedData(data);

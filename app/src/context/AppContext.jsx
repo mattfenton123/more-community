@@ -2330,12 +2330,13 @@ export function AppProvider({ children }) {
         console.log(`Uploading raw video: ${finalFile.size / 1024 / 1024} MB`);
       }
 
-      const formData = new FormData();
-      formData.append('file', finalFile);
-      formData.append('userId', user.id);
-      
       const sessionResponse = await supabase.auth.getSession();
       const session = sessionResponse.data.session;
+      const uid = user?.id || session?.user?.id || 'member';
+
+      const formData = new FormData();
+      formData.append('file', finalFile);
+      formData.append('userId', uid);
       
       const publicUrl = await uploadImageAction(formData, session?.access_token);
       return publicUrl;

@@ -508,19 +508,21 @@ export async function rsvpToEventAction(userId, eventId, status, ticketType, ref
 export async function addEventPhotoAction(eventId, photoUrl, token) {
   if (!eventId || !photoUrl) throw new Error("Missing parameters");
   await verifyUser(token);
+  const db = hasValidServiceKey ? supabaseAdmin : getSupabaseClient(token);
 
-  const { data: event, error: fetchErr } = await supabaseAdmin
+  const { data: event, error: fetchErr } = await db
     .from('events')
     .select('gallery_images')
     .eq('id', eventId)
-    .single();
+    .maybeSingle();
 
-  if (fetchErr || !event) throw new Error("Event not found");
+  if (fetchErr) throw new Error(fetchErr.message);
+  if (!event) throw new Error("Event not found");
 
   const currentGallery = Array.isArray(event.gallery_images) ? event.gallery_images : [];
   const updatedGallery = [...currentGallery, photoUrl];
 
-  const { error } = await supabaseAdmin
+  const { error } = await db
     .from('events')
     .update({ gallery_images: updatedGallery })
     .eq('id', eventId);
@@ -553,15 +555,16 @@ export async function updateAttendeeStatusAction(eventId, attendeeUserId, newSta
 }
 
 export async function uploadImageAction(formData, token) {
-  await verifyUser(token);
+  const authUser = await verifyUser(token);
   
   const file = formData.get('file');
-  const userId = formData.get('userId');
+  const userId = formData.get('userId') || authUser?.id || 'member';
   
   if (!file) throw new Error("No file provided");
   
   const filename = file.name || 'image.webp';
-  const fileExt = filename.split('.').pop();
+  const rawExt = filename.includes('.') ? filename.split('.').pop().toLowerCase() : 'webp';
+  const fileExt = /^[a-z0-9]{1,8}$/.test(rawExt) ? rawExt : 'webp';
   const fileName = `${userId}/${Date.now()}.${fileExt}`;
   
   const arrayBuffer = await file.arrayBuffer();
@@ -571,7 +574,7 @@ export async function uploadImageAction(formData, token) {
   const { data, error } = await db.storage
     .from('uploads')
     .upload(fileName, buffer, {
-      contentType: file.type,
+      contentType: file.type || 'image/webp',
       cacheControl: '3600',
       upsert: false
     });
@@ -639,6 +642,8 @@ export async function updateEventAction(eventId, updates, token) {
   if (updates.ticket_price !== undefined) dbUpdates.ticket_price = Number(updates.ticket_price);
   if (updates.collabCommunityIds !== undefined) dbUpdates.cohost_community_ids = updates.collabCommunityIds;
   if (updates.cohost_community_ids !== undefined) dbUpdates.cohost_community_ids = updates.cohost_community_ids;
+  if (updates.galleryImages !== undefined) dbUpdates.gallery_images = updates.galleryImages;
+  if (updates.gallery_images !== undefined) dbUpdates.gallery_images = updates.gallery_images;
   
   const { data, error } = await db.from('events').update(dbUpdates).eq('id', eventId).select().single();
   if (error) {

@@ -255,7 +255,7 @@ if (notifyBtn && emailInput) {
     function hydrateHero(events, totalComms) {
         var statusEl = document.getElementById('liveNetworkStatus');
         if (statusEl && totalComms) {
-            statusEl.textContent = totalComms + ' Verified Local Communities Active - Free Core Tier';
+            statusEl.textContent = totalComms + ' Local Communities Powered Free for Leaders';
         }
         if (!heroCard) return;
         if (!events || events.length === 0) {

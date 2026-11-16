@@ -1,7 +1,7 @@
 "use client";
 import { supabase } from '../../src/lib/supabaseClient';
 import { useState, useRef, useMemo, useEffect } from 'react';
-import { AlertCircle, Copy, Printer, ExternalLink, HelpCircle, Users, Calendar, MessageCircle, TrendingUp, Search, Plus, MapPin, Image as ImageIcon, CreditCard, ChevronRight, ChevronLeft, Download, Activity, Globe, Heart, Crown, Info, X, Map, Zap, Mail, Trash2, UserCheck, Ban, ChevronDown, ChevronUp, Settings, Megaphone, QrCode, BarChart3, Ticket, ScanLine, UserPlus, DollarSign, Clock, Edit3, Check, CheckCircle2, Eye, EyeOff, Shield, Star, Sparkles, BookOpen, ListChecks, Bell, Archive, Mic, MicOff, Wand2, Lightbulb, Car } from 'lucide-react';
+import { AlertCircle, Copy, Printer, ExternalLink, HelpCircle, Users, Calendar, Camera, MessageCircle, TrendingUp, Search, Plus, MapPin, Image as ImageIcon, CreditCard, ChevronRight, ChevronLeft, Download, Activity, Globe, Heart, Crown, Info, X, Map, Zap, Mail, Trash2, UserCheck, Ban, ChevronDown, ChevronUp, Settings, Megaphone, QrCode, BarChart3, Ticket, ScanLine, UserPlus, DollarSign, Clock, Edit3, Check, CheckCircle2, Eye, EyeOff, Shield, Star, Sparkles, BookOpen, ListChecks, Bell, Archive, Mic, MicOff, Wand2, Lightbulb, Car } from 'lucide-react';
 import AppHeader from '../../src/components/AppHeader';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { isEventUpcoming, isEventPast, parseEventDateTime } from '../../src/lib/calendar';
@@ -336,7 +336,7 @@ function CommunitySwitcher({ currentCommunity, communities, activeId, onSelect, 
 }
 
 export default function LeaderDashboard({ initialCommunityId }) {
-  const { user, communities, events, updateCommunity, deleteCommunity, approveChapter, declineChapter, users, communityMemberships, createEvent, createEventsBatch, updateEvent, cancelEvent, uploadImage, eventRsvps, updateAttendeeStatus, whatsappSettings, setWhatsappSettings, promoteMember, removeMember, checkInMember, broadcastNotification, sendEventReminder, experiences, setExperiences, isLoading, services = [], updateServiceStatus } = useAppContext();
+  const { user, communities, events, updateCommunity, deleteCommunity, approveChapter, declineChapter, users, communityMemberships, createEvent, createEventsBatch, updateEvent, cancelEvent, addEventPhoto, uploadImage, eventRsvps, updateAttendeeStatus, whatsappSettings, setWhatsappSettings, promoteMember, removeMember, checkInMember, broadcastNotification, sendEventReminder, experiences, setExperiences, isLoading, services = [], updateServiceStatus } = useAppContext();
     const { messages } = useChat();
   const { toast } = useToast();
   const router = useRouter();
@@ -451,6 +451,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
     requireApproval: false,
     rsvpQuestion: '',
     whatsappGroup: '',
+    image: '',
     scheduleMode: 'single',
     resolvedDates: [],
     recurrenceSummary: 'Single event'
@@ -463,6 +464,10 @@ export default function LeaderDashboard({ initialCommunityId }) {
   const [coverImagePreview, setCoverImagePreview] = useState(null);
   const coverFileInputRef = useRef(null);
   const bannerFileInputRef = useRef(null);
+  const eventPhotoInputRef = useRef(null);
+  const [photoTargetEventId, setPhotoTargetEventId] = useState(null);
+  const [uploadingPhotoEventId, setUploadingPhotoEventId] = useState(null);
+  const handledDuplicateParamRef = useRef(null);
   const [isUploading, setIsUploading] = useState(false);
   const [cancelConfirmId, setCancelConfirmId] = useState(null);
   const [showScanner, setShowScanner] = useState(false);
@@ -1364,7 +1369,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
         imageUrl = await uploadImage(imageFile, 'events');
       }
       
-      const finalImage = imageUrl || community?.cover_image || community?.image || null;
+      const finalImage = imageUrl || eventForm.image || community?.cover_image || community?.image || null;
 
       if (dates.length === 1) {
         await createEvent(community.id, {
@@ -1422,9 +1427,12 @@ export default function LeaderDashboard({ initialCommunityId }) {
     let nextDate = '';
     try {
       if (event.date) {
-        const d = new Date(event.date);
+        const todayStr = new Date().toISOString().split('T')[0];
+        const d = new Date(event.date + 'T00:00:00');
         if (!isNaN(d.getTime())) {
-          d.setDate(d.getDate() + 7);
+          do {
+            d.setDate(d.getDate() + 7);
+          } while (d.toISOString().split('T')[0] < todayStr);
           nextDate = d.toISOString().split('T')[0];
         }
       }
@@ -1448,13 +1456,43 @@ export default function LeaderDashboard({ initialCommunityId }) {
       requireApproval: Boolean(event.requireApproval || event.require_approval || (event.description && event.description.includes('[Host Approval Required]'))),
       rsvpQuestion: event.rsvpQuestion || (event.description?.match(/\[RSVP Question: ([^\]]+)\]/)?.[1] || ''),
       whatsappGroup: event.whatsappGroup || (event.description?.match(/\[WhatsApp: ([^\]]+)\]/)?.[1] || '') || '',
+      image: event.image || '',
       scheduleMode: 'single',
       resolvedDates: nextDate ? [nextDate] : [],
       recurrenceSummary: 'Single event'
     });
     setImageFile(null);
     setModalType('event');
-    toast.success('Event details duplicated!', 'Set the date and publish your repeat event.');
+    toast.success('Event details duplicated!', 'Pick your new date and publish your repeat event.');
+  };
+
+  useEffect(() => {
+    const dupId = searchParams?.get('duplicateEvent');
+    if (!dupId || handledDuplicateParamRef.current === dupId || !events?.length) return;
+    const targetEvent = events.find(e => e.id === dupId);
+    if (targetEvent) {
+      handledDuplicateParamRef.current = dupId;
+      setActiveTab('events');
+      handleDuplicateEvent(targetEvent);
+    }
+  }, [searchParams, events]);
+
+  const handleDashboardEventPhotoChange = async (e) => {
+    const file = e.target.files?.[0];
+    const targetId = photoTargetEventId;
+    if (eventPhotoInputRef.current) eventPhotoInputRef.current.value = '';
+    if (!file || !targetId) return;
+    setUploadingPhotoEventId(targetId);
+    try {
+      await addEventPhoto(targetId, file);
+      toast.success('Photo Added! 📸', 'Uploaded to this event’s memories.');
+    } catch (err) {
+      console.error(err);
+      toast.error('Upload Failed', err?.message || 'Could not upload photo. Please try again.');
+    } finally {
+      setUploadingPhotoEventId(null);
+      setPhotoTargetEventId(null);
+    }
   };
 
   const handleEditEvent = (event) => {
@@ -1476,6 +1514,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
       requireApproval: Boolean(event.requireApproval || event.require_approval || (event.description && event.description.includes('[Host Approval Required]'))),
       rsvpQuestion: event.rsvpQuestion || (event.description?.match(/\[RSVP Question: ([^\]]+)\]/)?.[1] || ''),
       whatsappGroup: event.whatsappGroup || (event.description?.match(/\[WhatsApp: ([^\]]+)\]/)?.[1] || '') || '',
+      image: event.image || '',
       scheduleMode: 'single',
       resolvedDates: event.date ? [event.date] : [],
       recurrenceSummary: 'Single event'
@@ -2318,10 +2357,16 @@ export default function LeaderDashboard({ initialCommunityId }) {
 
           <div className="form-group">
             <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><ImageIcon size={14} color="#f59e0b" /> Cover Image</label>
+            {eventForm.image && !imageFile && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px', padding: '8px', borderRadius: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                <img src={eventForm.image} alt="Current cover" style={{ width: '48px', height: '48px', borderRadius: '8px', objectFit: 'cover', flexShrink: 0 }} />
+                <div style={{ fontSize: '0.78rem', color: 'var(--slate-300)', flex: 1 }}>Existing cover image will be kept unless you choose a new one.</div>
+              </div>
+            )}
             <div>
               <input type="file" accept="image/*" ref={fileInputRef} onChange={e => setImageFile(e.target.files[0])} style={{ display: 'none' }} />
               <button onClick={() => fileInputRef.current?.click()} className="btn btn-outline interactive-press" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '14px', width: '100%', justifyContent: 'center', borderStyle: 'dashed', borderRadius: '12px' }}>
-                <ImageIcon size={18} /> {imageFile ? imageFile.name : 'Choose Image (optional)'}
+                <ImageIcon size={18} /> {imageFile ? imageFile.name : (eventForm.image ? 'Replace Cover Image (optional)' : 'Choose Image (optional)')}
               </button>
             </div>
           </div>
@@ -3697,6 +3742,13 @@ export default function LeaderDashboard({ initialCommunityId }) {
                     );
                   })()}
 
+                  <input
+                    type="file"
+                    accept="image/*"
+                    ref={eventPhotoInputRef}
+                    onChange={handleDashboardEventPhotoChange}
+                    style={{ display: 'none' }}
+                  />
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                     {(() => {
                       let filteredEvents = communityEvents;
@@ -3749,7 +3801,13 @@ export default function LeaderDashboard({ initialCommunityId }) {
                               {/* Info */}
                               <div style={{ flex: 1, minWidth: 0 }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                                  <h4 style={{ margin: 0, flex: 1, fontSize: '0.95rem', fontWeight: 600, color: isPast ? 'var(--slate-200)' : 'var(--white)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{event.title}</h4>
+                                  <h4
+                                    onClick={() => router.push(getEventPath(event, events))}
+                                    style={{ margin: 0, flex: 1, fontSize: '0.95rem', fontWeight: 600, color: isPast ? 'var(--slate-200)' : 'var(--white)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', cursor: 'pointer' }}
+                                    title="Open event page & memories"
+                                  >
+                                    {event.title}
+                                  </h4>
                                   {isPast ? (
                                     <span style={{ fontSize: '0.65rem', background: 'rgba(51,65,85,0.6)', color: 'var(--slate-300)', padding: '2px 8px', borderRadius: '99px', fontWeight: 600, textTransform: 'uppercase' }}>Archived</span>
                                   ) : (
@@ -3849,13 +3907,21 @@ export default function LeaderDashboard({ initialCommunityId }) {
                                     <button onClick={() => setFlyerEvent(event)} className="btn btn-outline interactive-press" style={{ padding: '6px 12px', fontSize: '0.75rem', color: '#a78bfa', borderColor: 'rgba(167,139,250,0.3)' }}>
                                       <Printer size={12} style={{ marginRight: '4px' }} /> Flyer & Poster
                                     </button>
-                                    <button 
-                                      onClick={() => handleDuplicateEvent(event)} 
-                                      className="btn btn-outline interactive-press" 
-                                      style={{ padding: '6px 12px', fontSize: '0.75rem', color: '#10b981', borderColor: 'rgba(16,185,129,0.35)' }}
-                                      title="Repeat or duplicate this past event"
+                                    <button
+                                      onClick={() => {
+                                        if (uploadingPhotoEventId) return;
+                                        setPhotoTargetEventId(event.id);
+                                        setTimeout(() => eventPhotoInputRef.current?.click(), 0);
+                                      }}
+                                      disabled={uploadingPhotoEventId === event.id}
+                                      className="btn btn-outline interactive-press"
+                                      style={{ padding: '6px 12px', fontSize: '0.75rem', color: '#2dd4bf', borderColor: 'rgba(45,212,191,0.35)' }}
+                                      title="Add a photo to this event"
                                     >
-                                      <Copy size={12} style={{ marginRight: '4px' }} /> Repeat Event
+                                      <Camera size={12} style={{ marginRight: '4px' }} />
+                                      {uploadingPhotoEventId === event.id
+                                        ? 'Uploading...'
+                                        : `Add Photo${event.galleryImages?.length ? ` (${event.galleryImages.length})` : ''}`}
                                     </button>
                                     <button 
                                       onClick={() => generateRamsPdf({ community, event, leaderName: user?.name, policyNumber: community.insurance_policy_number })} 
@@ -3913,6 +3979,33 @@ export default function LeaderDashboard({ initialCommunityId }) {
                                     <span style={{ fontSize: '0.75rem', color: 'var(--slate-400)', display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '4px 10px', background: 'rgba(255,255,255,0.03)', borderRadius: '6px' }}>
                                       <Archive size={12} /> Event Ended (Archived)
                                     </span>
+                                    <button 
+                                      onClick={() => handleDuplicateEvent(event)} 
+                                      className="btn btn-outline interactive-press" 
+                                      style={{ padding: '6px 12px', fontSize: '0.75rem', color: '#38bdf8', borderColor: 'rgba(56,189,248,0.35)' }}
+                                      title="Duplicate this past event and schedule a repeat"
+                                    >
+                                      <Copy size={12} style={{ marginRight: '4px' }} /> Duplicate
+                                    </button>
+                                    <button
+                                      onClick={() => {
+                                        if (uploadingPhotoEventId) return;
+                                        setPhotoTargetEventId(event.id);
+                                        setTimeout(() => eventPhotoInputRef.current?.click(), 0);
+                                      }}
+                                      disabled={uploadingPhotoEventId === event.id}
+                                      className="btn btn-outline interactive-press"
+                                      style={{ padding: '6px 12px', fontSize: '0.75rem', color: '#2dd4bf', borderColor: 'rgba(45,212,191,0.35)' }}
+                                      title="Add a memory photo to this past event"
+                                    >
+                                      <Camera size={12} style={{ marginRight: '4px' }} />
+                                      {uploadingPhotoEventId === event.id
+                                        ? 'Uploading...'
+                                        : `Add Photo${event.galleryImages?.length ? ` (${event.galleryImages.length})` : ''}`}
+                                    </button>
+                                    <button onClick={() => handleEditEvent(event)} className="btn btn-outline interactive-press" style={{ padding: '6px 12px', fontSize: '0.75rem' }}>
+                                      <Edit3 size={12} style={{ marginRight: '4px' }} /> Edit
+                                    </button>
                                     <button onClick={() => setExpandedEventId(isExpanded ? null : event.id)} className="btn btn-outline interactive-press" style={{ padding: '6px 12px', fontSize: '0.75rem' }}>
                                       {isExpanded ? <ChevronUp size={12} style={{ marginRight: '4px' }} /> : <ChevronDown size={12} style={{ marginRight: '4px' }} />}
                                       {isExpanded ? 'Hide' : `Attendees (${attendees.length})`}

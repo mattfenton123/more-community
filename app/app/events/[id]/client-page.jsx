@@ -307,7 +307,7 @@ function EventLocationMap({ location, event, isLocationShielded = false }) {
 
 export default function EventClient({ id }) {
   const router = useRouter();
-  const { events, communities, user, users, eventRsvps, rsvpToEvent, updateAttendeeStatus, addEventPhoto, joinCommunity, checkInMember, carpools, reserveCarpoolSeat } = useAppContext();
+  const { events, communities, user, users, eventRsvps, rsvpToEvent, updateAttendeeStatus, addEventPhoto, updateEvent, joinCommunity, checkInMember, carpools, reserveCarpoolSeat } = useAppContext();
   const { toast } = useToast();
   const [event, setEvent] = useState(null);
   const [community, setCommunity] = useState(null);
@@ -504,7 +504,7 @@ export default function EventClient({ id }) {
       toast.success('Photo Shared! 📸', 'Added to communal event memories.');
     } catch (err) {
       console.error(err);
-      toast.error('Upload Failed', 'Could not upload photo. Please try again.');
+      toast.error('Upload Failed', err?.message || 'Could not upload photo. Please try again.');
     } finally {
       setIsUploadingPhoto(false);
       if (photoInputRef.current) photoInputRef.current.value = '';
@@ -880,13 +880,48 @@ export default function EventClient({ id }) {
         
         <EventRecapShareCard event={event} community={community} attendeeCount={confirmedAttendees.length} allEvents={events} />
         {isEventPast(event) && (
-          <div style={{ background: 'rgba(148,163,184,0.08)', border: '1px solid rgba(148,163,184,0.2)', borderRadius: '14px', padding: '14px 18px', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <Archive size={22} color="var(--slate-400)" style={{ flexShrink: 0 }} />
-            <div>
-              <div style={{ color: 'var(--white)', fontWeight: 700, fontSize: '0.95rem' }}>This event has taken place</div>
-              <div style={{ color: 'var(--slate-400)', fontSize: '0.82rem', marginTop: '2px' }}>
-                Event date: {event.date} at {event.time}. It is now archived for community memory.
+          <div style={{ background: 'rgba(148,163,184,0.08)', border: '1px solid rgba(148,163,184,0.2)', borderRadius: '14px', padding: '14px 18px', marginBottom: '24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <Archive size={22} color="var(--slate-400)" style={{ flexShrink: 0 }} />
+              <div>
+                <div style={{ color: 'var(--white)', fontWeight: 700, fontSize: '0.95rem' }}>This event has taken place</div>
+                <div style={{ color: 'var(--slate-400)', fontSize: '0.82rem', marginTop: '2px' }}>
+                  Event date: {event.date} at {event.time}. It is now archived for community memory.
+                </div>
               </div>
+            </div>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              <button
+                onClick={() => {
+                  if (!user?.id) router.push(`/login?redirect=/events/${id}`);
+                  else photoInputRef.current?.click();
+                }}
+                disabled={isUploadingPhoto}
+                className="interactive-press"
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: '6px',
+                  padding: '8px 14px', borderRadius: '99px',
+                  background: 'rgba(20,184,166,0.16)', border: '1px solid rgba(20,184,166,0.35)',
+                  color: 'var(--teal-300)', fontSize: '0.8rem', fontWeight: 700,
+                  cursor: isUploadingPhoto ? 'wait' : 'pointer'
+                }}
+              >
+                <Camera size={14} /> {isUploadingPhoto ? 'Uploading...' : `+ Add Photo${event.galleryImages?.length ? ` (${event.galleryImages.length})` : ''}`}
+              </button>
+              {isLeader && (
+                <button
+                  onClick={() => router.push(`/dashboard?community=${event.communityId}&duplicateEvent=${event.id}`)}
+                  className="interactive-press"
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: '6px',
+                    padding: '8px 14px', borderRadius: '99px',
+                    background: 'rgba(56,189,248,0.14)', border: '1px solid rgba(56,189,248,0.35)',
+                    color: '#7dd3fc', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer'
+                  }}
+                >
+                  <Copy size={14} /> Duplicate Event
+                </button>
+              )}
             </div>
           </div>
         )}
@@ -1354,6 +1389,31 @@ export default function EventClient({ id }) {
                   }}
                 >
                   <img src={imgUrl} alt={`Event photo ${pIdx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  {isLeader && (
+                    <button
+                      type="button"
+                      onClick={async (e) => {
+                        e.stopPropagation();
+                        if (!window.confirm('Remove this photo from event memories?')) return;
+                        const next = event.galleryImages.filter((_, idx) => idx !== pIdx);
+                        try {
+                          await updateEvent(event.id, { galleryImages: next });
+                          toast.success('Photo Removed', 'Removed from event memories.');
+                        } catch (err) {
+                          toast.error('Remove Failed', err?.message || 'Could not remove photo.');
+                        }
+                      }}
+                      aria-label="Remove photo"
+                      style={{
+                        position: 'absolute', top: '6px', right: '6px',
+                        width: '24px', height: '24px', borderRadius: '50%',
+                        background: 'rgba(15,23,42,0.75)', border: '1px solid rgba(255,255,255,0.2)',
+                        color: '#fca5a5', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer'
+                      }}
+                    >
+                      <X size={13} />
+                    </button>
+                  )}
                 </div>
               ))}
             </div>
@@ -1363,7 +1423,7 @@ export default function EventClient({ id }) {
               borderRadius: '16px', padding: '24px', textAlign: 'center'
             }}>
               <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)', marginBottom: '10px' }}>
-                No photos shared yet. Snap moments during the event and drop them here for the group!
+                No photos shared yet. Snap moments during or after the event and drop them here for the group!
               </div>
               <button
                 onClick={() => {
@@ -1383,21 +1443,6 @@ export default function EventClient({ id }) {
             </div>
           )}
         </div>
-
-
-        {/* Gallery Images */}
-        {event.galleryImages && event.galleryImages.length > 0 && (
-          <div style={{ marginBottom: '32px' }}>
-            <h3 style={{ fontSize: '1.2rem', margin: '0 0 12px 0', color: 'var(--white)', fontFamily: 'var(--font-heading)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <ImageIcon size={20} color="var(--teal-400)" /> Gallery
-            </h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
-              {event.galleryImages.map((img, idx) => (
-                <img key={idx} src={img} alt={`Event gallery ${idx + 1}`} style={{ width: '100%', height: '140px', objectFit: 'cover', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }} />
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* Capacity Info */}
         {(event.maxCapacity || event.minCapacity) && (
