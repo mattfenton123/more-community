@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useAppContext } from '../context/AppContext';
 import { useToast } from '../components/Toast';
 import { resolveUserAvatar, isPlaceholderAvatar } from '../lib/avatar';
+import { isCommunityPubliclyListed } from '../lib/communityVisibility';
 
 const INTEREST_PILLS = [
   '🏃 Fitness', '🚶 Walking', '🐕 Dog Walking', '🧘 Wellness', '⛰️ Outdoors',
@@ -127,7 +128,7 @@ export default function OnboardingFlow({ onComplete }) {
     // Filter candidate communities
     const candidates = communities.filter(c => {
       // Exclude private groups from public onboarding swipe
-      if (c.is_private || c.isPrivate || c.id === 'more-leaders-network') return false;
+      if (c.is_private || c.isPrivate || c.id === 'more-leaders-network' || !isCommunityPubliclyListed(c)) return false;
 
       const cName = (c.name || '').toLowerCase();
       const cDesc = (c.description || '').toLowerCase();

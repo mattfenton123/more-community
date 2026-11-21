@@ -439,12 +439,16 @@ function StepTags({ tags, toggleTag, addCustomTag, removeTag }) {
   );
 }
 
-function StepCoverPhoto({ coverImagePreview, handleImageSelect, fileInputRef }) {
+function StepCoverPhoto({ coverImagePreview, handleImageSelect, fileInputRef, parentCommunity }) {
   return (
     <div className="step-wrapper">
       <div className="step-header">
         <h2 className="step-title">Cover Image</h2>
-        <p className="step-subtitle">Upload a photo to give your group an inviting visual identity.</p>
+        <p className="step-subtitle">
+          {parentCommunity
+            ? `We've pre-loaded ${parentCommunity.name}'s cover photo so your chapter matches the brand—keep it as-is or upload a photo from your local area.`
+            : 'Upload a photo to give your group an inviting visual identity.'}
+        </p>
       </div>
 
       <div 
@@ -891,7 +895,10 @@ export default function CommunityOnboardingFlow({ onComplete }) {
   const { createCommunity, createEvent, uploadImage, communities } = useAppContext();
   const searchParams = useSearchParams();
   const chapterOf = searchParams?.get('chapterOf');
-  const parentCommunity = chapterOf ? (communities || []).find(c => c.id === chapterOf) : null;
+  const directParent = chapterOf ? (communities || []).find(c => c.id === chapterOf) : null;
+  const parentCommunity = directParent?.parent_community_id
+    ? ((communities || []).find(c => c.id === directParent.parent_community_id) || directParent)
+    : directParent;
   const { toast } = useToast();
   const fileInputRef = useRef(null);
 
@@ -917,9 +924,12 @@ export default function CommunityOnboardingFlow({ onComplete }) {
       if (parentCommunity.activity_level) {
         setActivityLevel(parentCommunity.activity_level);
       }
-      if (parentCommunity.image && !coverImagePreview) {
-        setCoverImagePreview(parentCommunity.image);
+      const inheritedImg = parentCommunity.image || parentCommunity.cover_image;
+      if (inheritedImg && !coverImagePreview) {
+        setCoverImagePreview(inheritedImg);
       }
+      // New chapters in a Multi-Town Chapter Network should also allow launching sister chapters
+      setAllowChapters(parentCommunity.allow_chapters !== false && parentCommunity.allowChapters !== false);
     }
   }, [parentCommunity]);
 
@@ -969,13 +979,16 @@ export default function CommunityOnboardingFlow({ onComplete }) {
     setIsSubmitting(true);
     
     try {
-      let imageUrl = null;
+      let imageUrl = (coverImagePreview && !coverImagePreview.startsWith('data:'))
+        ? coverImagePreview
+        : (parentCommunity?.image || parentCommunity?.cover_image || null);
       if (coverImageFile) {
         try {
-          imageUrl = await uploadImage(coverImageFile, 'community_covers');
+          const uploadedUrl = await uploadImage(coverImageFile, 'community_covers');
+          if (uploadedUrl) imageUrl = uploadedUrl;
         } catch (err) {
           console.error("Cover image upload failed:", err);
-          toast.error("Image Upload Failed", "We couldn't upload your cover image, but your community will still be created.");
+          toast.error("Image Upload Failed", "We couldn't upload your new photo, so we kept the default cover image.");
         }
       }
 
@@ -1146,7 +1159,7 @@ export default function CommunityOnboardingFlow({ onComplete }) {
       setAllowCarpool={setAllowCarpool}
     />,
     <StepTags key="tags" tags={tags} toggleTag={toggleTag} addCustomTag={addCustomTag} removeTag={removeTag} />,
-    <StepCoverPhoto key="cover" coverImagePreview={coverImagePreview} handleImageSelect={handleImageSelect} fileInputRef={fileInputRef} />,
+    <StepCoverPhoto key="cover" coverImagePreview={coverImagePreview} handleImageSelect={handleImageSelect} fileInputRef={fileInputRef} parentCommunity={parentCommunity} />,
     <StepEvent key="event" eventTitle={eventTitle} setEventTitle={setEventTitle} eventDate={eventDate} setEventDate={setEventDate} eventTime={eventTime} setEventTime={setEventTime} eventLocation={eventLocation} setEventLocation={setEventLocation} />,
     <StepVerification key="verify" instagram={instagram} setInstagram={setInstagram} whatsapp={whatsapp} setWhatsapp={setWhatsapp} />
   ];

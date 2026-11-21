@@ -15,6 +15,7 @@ import SwipeDiscovery from '../../src/components/SwipeDiscovery';
 import { isEventUpcoming } from '../../src/lib/calendar';
 import { getCommunityLocation } from '../../src/lib/location';
 import { getCommunitySlug } from '../../src/lib/communityLinks';
+import { isCommunityPubliclyListed } from '../../src/lib/communityVisibility';
 import { getEventPath } from '../../src/lib/eventLinks';
 import { resolveUserAvatar } from '../../src/lib/avatar';
 
@@ -32,7 +33,7 @@ export default function Discover() {
 
   // Compute activity & trending data for each community
   const enrichedCommunities = useMemo(() => {
-    return communities.map(c => {
+    return communities.filter(isCommunityPubliclyListed).map(c => {
       const members = (communityMemberships[c.id] || []).length;
       const cEvents = events.filter(e => e.communityId === c.id && e.status !== 'cancelled').length;
       const upcomingEvents = events.filter(e => e.communityId === c.id && e.status !== 'cancelled' && isEventUpcoming(e)).length;
@@ -63,7 +64,7 @@ export default function Discover() {
     );
 
     // 2. Score communities
-    const scoredCommunities = communities.map(c => {
+    const scoredCommunities = communities.filter(isCommunityPubliclyListed).map(c => {
       let score = 0;
       
       // Direct interest match (+3 points)
@@ -173,7 +174,7 @@ export default function Discover() {
   };
 
   // Featured community (most members or first one)
-  const featuredCommunity = communities.length > 0 ? communities[0] : null;
+  const featuredCommunity = enrichedCommunities.length > 0 ? enrichedCommunities[0] : null;
 
   return (
     <div className="view-discover" style={{ display: 'flex', flexDirection: 'column', height: viewMode === 'map' ? '100%' : 'auto' }}>

@@ -13,6 +13,7 @@ import GettingStarted from '../../src/views/GettingStarted';
 import { useToast } from '../../src/components/Toast';
 import { isEventUpcoming, isEventPast } from '../../src/lib/calendar';
 import { cleanLocationName, getCommunityLocation } from '../../src/lib/location';
+import { isCommunityPubliclyListed } from '../../src/lib/communityVisibility';
 import { getEventPath } from '../../src/lib/eventLinks';
 import { getCommunitySlug } from '../../src/lib/communityLinks';
 import { resolveUserAvatar } from '../../src/lib/avatar';
@@ -90,6 +91,7 @@ export default function HomeFeed() {
     if (!user?.location) return [];
     const userLoc = user.location.toLowerCase().trim();
     return communities.filter(c => {
+      if (!isCommunityPubliclyListed(c)) return false;
       if (user?.joinedCommunities?.includes(c.id)) return false;
       const commLoc = (c.location || '').toLowerCase();
       // Match by city/region substring
@@ -102,7 +104,7 @@ export default function HomeFeed() {
   const joinedCommunities = communities?.filter(c => user?.joinedCommunities?.includes(c.id)) || [];
 
   const platformCommunities = useMemo(() => {
-    return (communities || []).filter(c => c.id !== 'more-leaders-network' || user?.isAdmin || user?.ledCommunities?.length > 0);
+    return (communities || []).filter(c => isCommunityPubliclyListed(c) && (c.id !== 'more-leaders-network' || user?.isAdmin || user?.ledCommunities?.length > 0));
   }, [communities, user]);
 
   const filteredCommunities = useMemo(() => {

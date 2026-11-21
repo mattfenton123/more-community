@@ -23,6 +23,7 @@ import { cleanLocationName } from '../../../src/lib/location';
 import { resolveUserAvatar } from '../../../src/lib/avatar';
 import { getEventPath } from '../../../src/lib/eventLinks';
 import { findCommunityByParam, getCommunitySlug } from '../../../src/lib/communityLinks';
+import { isCommunityPendingChapter, isCommunityDeclinedChapter, canViewPendingChapter, isFoundingLeaderOfChapter } from '../../../src/lib/communityVisibility';
 
 const VideoUploader = dynamic(() => import('../../../src/components/VideoUploader'), { ssr: false });
 const EmojiPicker = dynamic(() => import('emoji-picker-react'), { ssr: false });
@@ -89,7 +90,7 @@ function getGalleryType(tags) {
 export default function CommunityProfile() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user, communities, events, communityMemberships, users, eventRsvps, uploadImage, addEventPhoto, joinCommunity, leaveCommunity, experiences, services, updateServiceStatus, reviews, updateCommunity, sponsors, sponsorshipAssignments, addCommunityHighlight } = useAppContext();
+  const { user, communities, events, communityMemberships, users, eventRsvps, uploadImage, addEventPhoto, joinCommunity, leaveCommunity, experiences, services, updateServiceStatus, reviews, updateCommunity, approveChapter, declineChapter, sponsors, sponsorshipAssignments, addCommunityHighlight } = useAppContext();
   const { feedPosts, createFeedPost, likeFeedPost, deleteFeedPost } = useFeed();
   const { toast } = useToast();
   const [showRules, setShowRules] = useState(false);
@@ -447,10 +448,117 @@ export default function CommunityProfile() {
     setActiveTab('feed');
   };
 
+  const isPendingChapter = isCommunityPendingChapter(community);
+  const isDeclinedChapter = isCommunityDeclinedChapter(community);
+  const parentFounderCommunity = community?.parent_community_id
+    ? communities.find(c => c.id === community.parent_community_id)
+    : null;
+  const canPreviewUnpublishedChapter = canViewPendingChapter(community, user, communities);
+  const canApproveThisChapter = isFoundingLeaderOfChapter(community, user, communities);
+
+  if ((isPendingChapter || isDeclinedChapter) && !canPreviewUnpublishedChapter) {
+    return (
+      <div className="view-profile" style={{ background: 'var(--surface-canvas)', minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+        <div style={{ maxWidth: '460px', width: '100%', background: 'var(--surface-card)', border: '1px solid var(--hairline-border-strong)', borderRadius: '20px', padding: '32px 24px', textAlign: 'center' }}>
+          <div style={{ width: '54px', height: '54px', borderRadius: '50%', background: 'var(--brand-accent-soft)', color: 'var(--brand-accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+            <Clock size={26} />
+          </div>
+          <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.5rem', color: 'var(--ink-primary)', margin: '0 0 10px 0' }}>
+            {isPendingChapter ? 'Chapter Awaiting Founder Sign-Off' : 'Chapter Not Currently Active'}
+          </h1>
+          <p style={{ color: 'var(--ink-secondary)', fontSize: '0.92rem', lineHeight: 1.55, margin: '0 0 22px 0' }}>
+            {isPendingChapter
+              ? `${community.name} has been submitted as a new local chapter${parentFounderCommunity ? ` of ${parentFounderCommunity.name}` : ''} and is currently being reviewed by the founding leader before going live.`
+              : 'This chapter application is not active on More Community.'}
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            {parentFounderCommunity && (
+              <button
+                onClick={() => navigate.push(`/community/${getCommunitySlug(parentFounderCommunity, communities)}`)}
+                className="btn btn-primary interactive-press"
+                style={{ width: '100%', padding: '12px 18px', borderRadius: '12px', fontSize: '0.9rem', fontWeight: 700 }}
+              >
+                Visit {parentFounderCommunity.name}
+              </button>
+            )}
+            <button
+              onClick={() => navigate.push('/discover')}
+              className="btn btn-outline interactive-press"
+              style={{ width: '100%', padding: '11px 18px', borderRadius: '12px', fontSize: '0.88rem', fontWeight: 600 }}
+            >
+              Explore Active Communities
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="view-profile" style={{ background: 'var(--slate-950)', minHeight: '100dvh', paddingBottom: '80px', width: '100%' }}>
+      {/* Pending / Declined Chapter Preview Banner for Applicant & Founding Leader */}
+      {(isPendingChapter || isDeclinedChapter) && canPreviewUnpublishedChapter && (
+        <div style={{
+          position: 'sticky',
+          top: 0,
+          zIndex: 10000,
+          background: isPendingChapter ? '#B45309' : '#991B1B',
+          color: '#FFFFFF',
+          padding: '12px 18px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '12px',
+          flexWrap: 'wrap',
+          borderBottom: '1px solid rgba(255,255,255,0.2)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: '240px' }}>
+            <Clock size={18} color="#FFFFFF" style={{ flexShrink: 0 }} />
+            <div>
+              <div style={{ fontSize: '0.86rem', fontWeight: 800, color: '#FFFFFF' }}>
+                {isPendingChapter ? 'Draft Preview — Awaiting Founder Sign-Off (Not Live Publicly)' : 'Chapter Application Declined (Hidden from Public)'}
+              </div>
+              <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.9)', marginTop: '2px' }}>
+                {isPendingChapter
+                  ? (canApproveThisChapter
+                      ? `As the Founding Leader of ${parentFounderCommunity?.name || 'the parent community'}, review this chapter below and approve or decline.`
+                      : `Only you and the Founding Leader of ${parentFounderCommunity?.name || 'the parent community'} can see this preview until approved.`)
+                  : 'This chapter is hidden from public discovery and sister-chapter listings.'}
+              </div>
+            </div>
+          </div>
+          {isPendingChapter && canApproveThisChapter && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+              <button
+                type="button"
+                onClick={async () => {
+                  await approveChapter(community.id);
+                  toast.success('Chapter Approved! 🎉', `"${community.name}" is now live in the chapter network.`);
+                }}
+                className="interactive-press"
+                style={{ background: '#FFFFFF', color: '#1C1915', border: 'none', padding: '8px 14px', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 800, cursor: 'pointer' }}
+              >
+                Approve &amp; Publish ✓
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  if (window.confirm(`Decline chapter application "${community.name}"?`)) {
+                    await declineChapter(community.id);
+                    toast.info('Application Declined', `"${community.name}" will remain hidden.`);
+                  }
+                }}
+                className="interactive-press"
+                style={{ background: 'rgba(0,0,0,0.25)', color: '#FFFFFF', border: '1px solid rgba(255,255,255,0.35)', padding: '8px 12px', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer' }}
+              >
+                Decline
+              </button>
+            </div>
+          )}
+        </div>
+      )}
       {/* Sticky Leader Admin Bar */}
-      {isLeader && (
+      {isLeader && !isPendingChapter && !isDeclinedChapter && (
         <div style={{
           position: 'sticky',
           top: 0,

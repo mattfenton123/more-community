@@ -4443,7 +4443,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                       <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
                         <AlertCircle size={18} color="#f87171" style={{ flexShrink: 0, marginTop: '2px' }} />
                         <div>
-                          <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#fca5a5' }}>
+                          <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--red-400)' }}>
                             Payout Account Required
                           </div>
                           <div style={{ fontSize: '0.78rem', color: 'var(--slate-300)', marginTop: '2px', lineHeight: 1.4 }}>
@@ -6336,8 +6336,8 @@ export default function LeaderDashboard({ initialCommunityId }) {
                         return (
                           <div key={app.id} style={{
                             padding: '12px 14px',
-                            background: 'rgba(0,0,0,0.3)',
-                            border: '1px solid rgba(255,255,255,0.08)',
+                            background: 'var(--surface-elevated)',
+                            border: '1px solid var(--hairline-border)',
                             borderRadius: '12px',
                             display: 'flex',
                             flexDirection: 'column',

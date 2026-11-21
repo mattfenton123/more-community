@@ -5,6 +5,7 @@ import { Users, Compass, ArrowRight } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { getCommunitySlug } from '../lib/communityLinks';
 import { cleanLocationName } from '../lib/location';
+import { isCommunityPubliclyListed } from '../lib/communityVisibility';
 
 export default function TownCrossPollination({ currentCommunity, currentCommunityId, location }) {
   const router = useRouter();
@@ -22,7 +23,7 @@ export default function TownCrossPollination({ currentCommunity, currentCommunit
       c.id !== 'more-leaders-network' &&
       !c.is_private &&
       c.visibility !== 'private' &&
-      !c.is_banned
+      isCommunityPubliclyListed(c)
     )
     .slice(0, 3);
 

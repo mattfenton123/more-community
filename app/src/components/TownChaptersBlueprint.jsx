@@ -11,38 +11,24 @@ export default function TownChaptersBlueprint({ community }) {
   const { communities = [] } = useAppContext();
 
   if (!community) return null;
+  if (community.chapter_status === 'pending_approval' || community.chapter_status === 'declined') return null;
   if (community.allow_chapters === false || community.allowChapters === false) return null;
 
-  // Extract base franchise prefix
-  const commName = community.name || '';
-  const lowerName = commName.toLowerCase();
+  const rootCommunityId = community.parent_community_id || community.id;
+  const rootCommunity = communities.find(c => c.id === rootCommunityId) || community;
 
-  let brandPrefix = '';
-  if (lowerName.includes('mankind')) {
-    brandPrefix = 'mankind';
-  } else if (lowerName.includes('walk') || lowerName.includes('rambler')) {
-    brandPrefix = 'walk';
-  } else if (lowerName.includes('run')) {
-    brandPrefix = 'run';
-  } else if (lowerName.includes('tech')) {
-    brandPrefix = 'tech';
-  } else if (lowerName.includes('creative')) {
-    brandPrefix = 'creative';
-  }
-
-  // Find approved sister chapters (exclude pending or declined applications from public display)
+  // Find approved sister chapters strictly by true network lineage (never fuzzy word matching)
   const sisterChapters = communities.filter(c => {
     if (c.id === community.id) return false;
-    if (c.chapter_status === 'pending_approval' || c.chapter_status === 'declined') return false;
-    if (community.parent_community_id && c.id === community.parent_community_id) return true;
-    if (c.parent_community_id && (c.parent_community_id === community.id || c.parent_community_id === community.parent_community_id)) return true;
-    if (brandPrefix && c.name?.toLowerCase().includes(brandPrefix)) return true;
+    if (c.chapter_status === 'pending_approval' || c.chapter_status === 'declined' || c.is_banned) return false;
+    if (c.id === rootCommunityId) return true;
+    if (c.parent_community_id && c.parent_community_id === rootCommunityId) return true;
     return false;
   });
 
   return (
     <div className="town-chapters-blueprint-card" style={{
-      background: 'linear-gradient(135deg, rgba(235, 87, 56, 0.08) 0%, rgba(27, 27, 27, 0.7) 100%)',
+      background: 'var(--surface-card)',
       border: '1px solid rgba(242, 114, 87, 0.25)',
       borderRadius: '20px',
       padding: '22px 24px',
@@ -69,19 +55,19 @@ export default function TownChaptersBlueprint({ community }) {
             </span>
           </div>
           <div className="card-heading" style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--white)', marginTop: '4px' }}>
-            Town Chapters of {community.name}
+            Town Chapters of {rootCommunity.name}
           </div>
         </div>
 
         <button
           type="button"
-          onClick={() => router.push(`/create-community?chapterOf=${community.id}`)}
+          onClick={() => router.push(`/create-community?chapterOf=${rootCommunityId}`)}
           className="interactive-press"
           style={{
             display: 'inline-flex',
             alignItems: 'center',
             gap: '8px',
-            background: 'linear-gradient(135deg, #10b981 0%, #EB5738 100%)',
+            background: 'var(--brand-accent)',
             border: 'none',
             color: '#FFFFFF',
             fontWeight: 800,

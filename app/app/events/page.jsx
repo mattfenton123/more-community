@@ -12,6 +12,7 @@ import { isEventUpcoming, isEventPast, parseEventDateTime } from '../../src/lib/
 import { formatEventDate } from '../../src/lib/recurrence';
 import { cleanLocationName } from '../../src/lib/location';
 import { getEventPath } from '../../src/lib/eventLinks';
+import { isCommunityPubliclyListed } from '../../src/lib/communityVisibility';
 
 export default function EventsHub() {
   const router = useRouter();
@@ -302,7 +303,11 @@ const { events, communities, user, users, eventRsvps, rsvpToEvent, createEvent, 
     .filter(e => isEventPast(e))
     .sort((a, b) => (parseEventDateTime(b.date, b.time) || 0) - (parseEventDateTime(a.date, a.time) || 0));
 
-  const allExploreEvents = applyAllFilters(events.filter(e => !user?.joinedCommunities?.includes(e.communityId) && e.status !== 'cancelled'));
+  const allExploreEvents = applyAllFilters(events.filter(e => {
+    if (user?.joinedCommunities?.includes(e.communityId) || e.status === 'cancelled') return false;
+    const comm = communities.find(c => c.id === e.communityId);
+    return !comm || isCommunityPubliclyListed(comm);
+  }));
   const upcomingExploreEvents = allExploreEvents
     .filter(e => isEventUpcoming(e))
     .sort((a, b) => (parseEventDateTime(a.date, a.time) || 0) - (parseEventDateTime(b.date, b.time) || 0));

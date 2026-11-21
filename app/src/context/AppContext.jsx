@@ -592,7 +592,7 @@ export function AppProvider({ children }) {
           }
 
           // Priority: localSettingsObj (latest on this device) + tagSettingsObj / dbSettingsObj (persisted in Supabase)
-          const mergedSettings = { ...dbSettingsObj, ...tagSettingsObj, ...localSettingsObj };
+          const mergedSettings = { ...localSettingsObj, ...dbSettingsObj, ...tagSettingsObj };
           const defaultAllowChapters = c.id === 'more-leaders-network' ? false : true;
           const allowChaptersVal = mergedSettings.allow_chapters !== undefined
             ? Boolean(mergedSettings.allow_chapters)
@@ -2150,7 +2150,9 @@ export function AppProvider({ children }) {
       c => c.id === baseSlug || String(c.id || '').replace(/-[a-z0-9]{5}$/i, '') === baseSlug
     );
     const newId = slugTaken ? `${baseSlug}-${Math.random().toString(36).substring(2, 6)}` : baseSlug;
-    const parentId = communityData.parent_community_id || null;
+    const rawParentId = communityData.parent_community_id || null;
+    const rawParentComm = rawParentId ? communities.find(c => c.id === rawParentId) : null;
+    const parentId = rawParentComm?.parent_community_id || rawParentId;
     const chapterStatus = parentId ? (communityData.chapter_status || 'pending_approval') : 'approved';
     const royaltyPercent = communityData.chapter_royalty !== undefined ? Number(communityData.chapter_royalty) : 5;
 
@@ -2180,6 +2182,9 @@ export function AppProvider({ children }) {
       allowCarpool: initialSettings.allow_carpool,
       allow_guests: initialSettings.allow_guests,
       allowGuests: initialSettings.allow_guests,
+      parent_community_id: parentId,
+      chapter_status: chapterStatus,
+      chapter_royalty: royaltyPercent,
       leader_id: user.id
     };
     
@@ -2207,6 +2212,8 @@ export function AppProvider({ children }) {
         cost: communityData.cost || 'Free',
         target_audience: communityData.target_audience || null,
         location_name: communityData.location_name || null,
+        lat: communityData.lat || null,
+        lng: communityData.lng || null,
         activity_level: communityData.activity_level || 'Active',
         external_links: [...(Array.isArray(communityData.external_links) ? communityData.external_links : []), initialSettings]
       }, session?.access_token);
