@@ -965,6 +965,29 @@ export default function EventClient({ id }) {
                   </button>
                 )}
 
+                {!isLeader && (community?.leader_id || community?.leaderId) && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const hostId = community?.leader_id || community?.leaderId;
+                      if (!user?.id) {
+                        router.push(`/login?redirect=/chat/dm/${hostId}`);
+                        return;
+                      }
+                      router.push(`/chat/dm/${hostId}`);
+                    }}
+                    className="interactive-press"
+                    style={{
+                      display: 'inline-flex', alignItems: 'center', gap: '8px',
+                      background: 'rgba(56, 189, 248, 0.14)', border: '1px solid rgba(56, 189, 248, 0.35)',
+                      color: '#38bdf8', fontWeight: 700, fontSize: '0.88rem',
+                      padding: '11px 18px', borderRadius: '12px', cursor: 'pointer'
+                    }}
+                  >
+                    <MessageCircle size={16} /> Message Host (Lost / Questions?)
+                  </button>
+                )}
+
                 <a
                   href={(() => {
                     const c = parseLocationCoords(event.location);
@@ -1132,6 +1155,35 @@ export default function EventClient({ id }) {
                 )}
               </div>
             </div>
+            {(community?.leader_id || community?.leaderId) && !isLeader && (
+              <div style={{ display: 'flex', alignItems: 'center', marginLeft: 'auto' }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const hostId = community?.leader_id || community?.leaderId;
+                    if (!user?.id) {
+                      router.push(`/login?redirect=/chat/dm/${hostId}`);
+                      return;
+                    }
+                    router.push(`/chat/dm/${hostId}`);
+                  }}
+                  className="btn btn-outline interactive-press"
+                  style={{
+                    padding: '9px 14px',
+                    borderRadius: '99px',
+                    fontSize: '0.82rem',
+                    fontWeight: 700,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    whiteSpace: 'nowrap',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <MessageCircle size={14} color="var(--brand-accent)" /> Ask / Message Host
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Other dates in recurring series — starts at current event by default */}

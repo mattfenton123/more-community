@@ -394,17 +394,36 @@ function LoginScreenContent() {
           )}
 
           {!isForgotPassword && !signUpEmailSent && (
-            <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-              <span style={{ color: 'var(--slate-400)', fontSize: '0.9rem' }}>
-                {isSignUp ? 'Already have an account?' : "Don't have an account?"}
-              </span>
-              <button 
-                onClick={() => { setIsSignUp(!isSignUp); setError(null); setResendNotice(''); }}
-                style={{ background: 'none', border: 'none', color: 'var(--teal-400)', fontWeight: 600, fontSize: '0.9rem', marginLeft: '8px', cursor: 'pointer' }}
-              >
-                {isSignUp ? 'Sign In' : 'Sign Up'}
-              </button>
-            </div>
+            <>
+              <div style={{ textAlign: 'center', marginBottom: '14px' }}>
+                <span style={{ color: 'var(--slate-400)', fontSize: '0.9rem' }}>
+                  {isSignUp ? 'Already have an account?' : "Don't have an account?"}
+                </span>
+                <button 
+                  onClick={() => { setIsSignUp(!isSignUp); setError(null); setResendNotice(''); }}
+                  style={{ background: 'none', border: 'none', color: 'var(--teal-400)', fontWeight: 600, fontSize: '0.9rem', marginLeft: '8px', cursor: 'pointer' }}
+                >
+                  {isSignUp ? 'Sign In' : 'Sign Up'}
+                </button>
+              </div>
+              <div style={{ textAlign: 'center', marginBottom: '16px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+                <button
+                  type="button"
+                  onClick={() => navigate.push('/partner?mode=sponsors')}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: 'var(--slate-300)',
+                    fontSize: '0.8rem',
+                    cursor: 'pointer',
+                    textDecoration: 'underline',
+                    textUnderlineOffset: '3px'
+                  }}
+                >
+                  Local business or workshop instructor? Open Partner &amp; Sponsor Portal →
+                </button>
+              </div>
+            </>
           )}
 
           {resendNotice && (

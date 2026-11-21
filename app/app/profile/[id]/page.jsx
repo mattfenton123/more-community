@@ -193,7 +193,7 @@ export default function UserProfile() {
   }, [targetId, communities, communityMemberships]);
 
   const canMessageTarget = Boolean(
-    sharesCommunityWithTarget && (viewerHasVerifiedMeetup || isTargetLeader || currentUser?.isAdmin)
+    isTargetLeader || currentUser?.isAdmin || (sharesCommunityWithTarget && viewerHasVerifiedMeetup)
   );
 
   // Saved items split cleanly across Communities, Events, and Experiences

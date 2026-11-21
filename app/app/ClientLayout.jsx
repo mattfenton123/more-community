@@ -284,6 +284,7 @@ function MainLayout({ children }) {
     currentPath?.startsWith('/community/') ||
     currentPath?.startsWith('/legal/') ||
     currentPath === '/experiences' ||
+    currentPath === '/partner' ||
     currentPath?.startsWith('/sponsors/') ||
     currentPath?.startsWith('/experiences/')
   );

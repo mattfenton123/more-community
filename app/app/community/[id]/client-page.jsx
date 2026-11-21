@@ -2714,6 +2714,7 @@ export default function CommunityProfile() {
         onClose={() => setShowPartnerModal(false)}
         community={community}
         initialTab={partnerModalTab}
+        lockedMode={true}
       />
       
       {showReviewForm && (

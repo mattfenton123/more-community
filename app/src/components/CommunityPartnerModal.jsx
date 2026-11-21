@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   X, Sparkles, Calendar, DollarSign, Shield, Award, CheckCircle2, 
   Store, Coffee, Paintbrush, Dumbbell, Stethoscope, Briefcase, 
@@ -133,20 +133,32 @@ export default function CommunityPartnerModal({
   isOpen,
   onClose,
   community,
-  initialTab = 'session'
+  selectedCommunities = [],
+  initialTab = 'session',
+  lockedMode = false,
 }) {
   const router = useRouter();
   const { user, pitchService, notifyCommunityLeaders, communities } = useAppContext();
   const { toast } = useToast();
 
   const [partnerMode, setPartnerMode] = useState(initialTab === 'sponsor' ? 'sponsor' : 'session');
-  const [currentStep, setCurrentStep] = useState(0);
+  const [currentStep, setCurrentStep] = useState(lockedMode && (community?.id || selectedCommunities.length > 0) ? 2 : 0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedType, setSubmittedType] = useState(null);
   const [unsplashTarget, setUnsplashTarget] = useState(null);
 
   const [selectedCommunityId, setSelectedCommunityId] = useState(community?.id || (communities?.[0]?.id || null));
   const [communitySearch, setCommunitySearch] = useState('');
+
+  useEffect(() => {
+    if (isOpen) {
+      const nextMode = initialTab === 'sponsor' ? 'sponsor' : 'session';
+      setPartnerMode(nextMode);
+      if (community?.id) setSelectedCommunityId(community.id);
+      setSubmittedType(null);
+      setCurrentStep(lockedMode && (community?.id || selectedCommunities.length > 0) ? 2 : 0);
+    }
+  }, [isOpen, initialTab, community?.id, lockedMode, selectedCommunities.length]);
 
   const targetCommunity = (communities && communities.find(c => c.id === selectedCommunityId)) || community || (communities && communities[0]);
 
@@ -259,37 +271,43 @@ export default function CommunityPartnerModal({
         const isPremium = sponsorForm.tier !== 'free';
         const monthlyAmount = sponsorForm.tier === 'headline' ? 49 : (sponsorForm.tier === 'directory' ? 15 : 0);
         const leaderCut = sponsorForm.tier === 'headline' ? 39 : (sponsorForm.tier === 'directory' ? 12 : 0);
+        const targetCommIds =
+          Array.isArray(selectedCommunities) && selectedCommunities.length > 0
+            ? selectedCommunities.map((c) => c.id).filter(Boolean)
+            : [commId];
 
-        pitchService({
-          communityId: commId,
-          userId: user?.id,
-          type: 'business_sponsor',
-          category: sponsorForm.category,
-          title: sponsorForm.businessName.trim(),
-          tagline: sponsorForm.tagline.trim(),
-          description: sponsorForm.pitch.trim() || sponsorForm.tagline.trim(),
-          perk: sponsorForm.perk.trim(),
-          tier: sponsorForm.tier,
-          isPremium,
-          monthlyAmount,
-          leaderCut,
-          bannerUrl: sponsorForm.bannerUrl,
-          accentColor: sponsorForm.accentColor,
-          fontStyle: sponsorForm.fontStyle,
-          ctaText: sponsorForm.ctaText,
-          ctaUrl: sponsorForm.ctaUrl.trim() || sponsorForm.website.trim(),
-          website: sponsorForm.website.trim(),
-          status: 'pending'
+        targetCommIds.forEach((cid) => {
+          pitchService({
+            communityId: cid,
+            userId: user?.id,
+            type: 'business_sponsor',
+            category: sponsorForm.category,
+            title: sponsorForm.businessName.trim(),
+            tagline: sponsorForm.tagline.trim(),
+            description: sponsorForm.pitch.trim() || sponsorForm.tagline.trim(),
+            perk: sponsorForm.perk.trim(),
+            tier: sponsorForm.tier,
+            isPremium,
+            monthlyAmount,
+            leaderCut,
+            bannerUrl: sponsorForm.bannerUrl,
+            accentColor: sponsorForm.accentColor,
+            fontStyle: sponsorForm.fontStyle,
+            ctaText: sponsorForm.ctaText,
+            ctaUrl: sponsorForm.ctaUrl.trim() || sponsorForm.website.trim(),
+            website: sponsorForm.website.trim(),
+            status: 'pending'
+          });
+
+          if (notifyCommunityLeaders) {
+            notifyCommunityLeaders(
+              cid,
+              sponsorForm.perk ? 'New Sponsor & Perk Offer' : 'New Community Sponsor',
+              sponsorForm.businessName + (sponsorForm.perk ? ' offered perk: "' + sponsorForm.perk + '"' : ' joined as a brand supporter') + ' (' + (sponsorForm.tier === 'headline' ? '£49 Headline Sponsor' : '£15 Directory Sponsor') + ')',
+              `/dashboard?tab=overview&community=${cid}`
+            );
+          }
         });
-
-        if (notifyCommunityLeaders) {
-          notifyCommunityLeaders(
-            commId,
-            sponsorForm.perk ? 'New Sponsor & Perk Offer' : 'New Community Sponsor',
-            sponsorForm.businessName + (sponsorForm.perk ? ' offered perk: "' + sponsorForm.perk + '"' : ' joined as a brand supporter') + ' (' + (sponsorForm.tier === 'headline' ? '£49 Headline Sponsor' : '£15 Directory Sponsor') + ')',
-            `/dashboard?tab=overview&community=${commId}`
-          );
-        }
         setSubmittedType('sponsor');
       }
       setIsSubmitting(false);
@@ -354,12 +372,14 @@ export default function CommunityPartnerModal({
                   fontWeight: 800,
                   textTransform: 'uppercase',
                   letterSpacing: '0.08em',
-                  background: 'rgba(242, 114, 87, 0.15)',
-                  color: 'var(--teal-300)',
+                  background: partnerMode === 'sponsor' ? 'rgba(245, 158, 11, 0.16)' : 'rgba(242, 114, 87, 0.15)',
+                  color: partnerMode === 'sponsor' ? '#f59e0b' : 'var(--teal-300)',
                   padding: '3px 9px',
                   borderRadius: '99px'
                 }}>
-                  Partner & Sponsor Journey
+                  {partnerMode === 'sponsor'
+                    ? (selectedCommunities.length > 1 ? `🏪 Business Sponsor Bundle (${selectedCommunities.length} Clubs)` : '🏪 Local Business Sponsor Journey')
+                    : '🎓 Workshop & Session Partner Journey'}
                 </span>
                 <span style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>
                   Step {currentStep + 1} of {JOURNEY_STEPS.length}

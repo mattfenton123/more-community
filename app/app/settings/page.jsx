@@ -14,6 +14,7 @@ import {
   Check,
   Type,
   Contrast,
+  Store,
 } from 'lucide-react';
 import AppHeader from '../../src/components/AppHeader';
 import { useRouter as useNavigate } from 'next/navigation';
@@ -606,6 +607,31 @@ export default function SettingsScreen() {
             />
 
             <PushNotificationManager onOpenInstallGuide={() => setShowInstallModal(true)} />
+          </div>
+        </section>
+
+        {/* Local Partners & Sponsors */}
+        <section>
+          <h2
+            style={{
+              color: 'var(--ink-muted)',
+              fontSize: '0.73rem',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '0.07em',
+              margin: '0 0 10px 4px',
+            }}
+          >
+            Partner &amp; Sponsor Portal
+          </h2>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <MenuItem
+              icon={<Store size={18} />}
+              label="Host a Workshop or Sponsor Local Clubs"
+              subtext="Pitch guest sessions, offer member perks, or track active sponsorships"
+              color="#d97706"
+              onClick={() => navigate.push('/partner')}
+            />
           </div>
         </section>
 
