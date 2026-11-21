@@ -358,6 +358,101 @@ export async function createEventAction(eventData, token) {
   return data;
 }
 
+export async function proposeEventAction(eventData, token) {
+  const user = await verifyUser(token);
+  const communityId = eventData?.communityId;
+  if (!communityId) throw new Error('Missing community ID');
+
+  const isAdmin = isAdminUser(user);
+
+  // Verify the caller is a member (or leader/admin) of the target community
+  const { data: comm } = await supabaseAdmin
+    .from('communities')
+    .select('id, name, leader_id')
+    .eq('id', communityId)
+    .maybeSingle();
+  if (!comm) throw new Error('Community not found');
+
+  if (!isAdmin && comm.leader_id !== user.id) {
+    const { data: mem } = await supabaseAdmin
+      .from('community_memberships')
+      .select('role')
+      .match({ community_id: communityId, user_id: user.id })
+      .maybeSingle();
+    if (!mem) {
+      throw new Error('Join this community first before proposing an event.');
+    }
+  }
+
+  // Resolve proposer's display name
+  const { data: profile } = await supabaseAdmin
+    .from('profiles')
+    .select('name')
+    .eq('id', user.id)
+    .maybeSingle();
+  const proposerName = profile?.name || eventData.proposerName || 'A member';
+
+  const cleanTitle = String(eventData.title || '').replace(/^\[Proposal\]\s*/i, '').trim();
+  if (!cleanTitle) throw new Error('Event title is required');
+
+  const baseDesc = String(eventData.description || '').trim();
+  const taggedDesc = `${baseDesc ? `${baseDesc}\n\n` : ''}Proposed by ${proposerName} [ProposedByUid:${user.id}]`;
+
+  const payload = {
+    id: crypto.randomUUID(),
+    community_id: communityId,
+    title: cleanTitle,
+    date: eventData.date,
+    time: eventData.time || '10:00',
+    location: String(eventData.location || 'Local Area').trim(),
+    image: eventData.image || null,
+    attendees: 0,
+    description: taggedDesc,
+    status: 'proposed', // Always enforced server-side so members cannot self-publish
+    max_capacity: null,
+    ticket_price: 0,
+    cohost_community_ids: [],
+  };
+
+  const { data, error } = await supabaseAdmin.from('events').insert(payload).select().single();
+  if (error) {
+    console.error('Event proposal failed:', error);
+    throw new Error(error.message);
+  }
+
+  // Alert all Leaders & Co-Leaders of this community immediately via in-app notifications
+  try {
+    const { data: managers } = await supabaseAdmin
+      .from('community_memberships')
+      .select('user_id, role')
+      .eq('community_id', communityId)
+      .in('role', ['Leader', 'Co-Leader']);
+
+    const recipientIds = new Set();
+    if (comm.leader_id) recipientIds.add(comm.leader_id);
+    (managers || []).forEach((m) => {
+      if (m.user_id) recipientIds.add(m.user_id);
+    });
+
+    const notifications = Array.from(recipientIds).map((uid) => ({
+      user_id: uid,
+      type: 'event_proposal',
+      title: `💡 New Event Proposal for ${comm.name}`,
+      message: `${proposerName} proposed "${cleanTitle}" for ${eventData.date}${eventData.time ? ` at ${eventData.time}` : ''}. Review & publish in your Leader Dashboard.`,
+      link: `/dashboard?tab=events&community=${communityId}`,
+      is_read: false,
+    }));
+
+    if (notifications.length > 0) {
+      await supabaseAdmin.from('notifications').insert(notifications);
+    }
+  } catch (notifErr) {
+    console.warn('Could not notify leaders of event proposal:', notifErr?.message || notifErr);
+  }
+
+  return data;
+}
+
 export async function createEventsBatchAction(eventsData, token) {
   if (!Array.isArray(eventsData) || eventsData.length === 0) return [];
   if (eventsData.length > 52) {
@@ -623,7 +718,7 @@ export async function uploadVideoAction(formData, token) {
 
 export async function updateEventAction(eventId, updates, token) {
   const db = getSupabaseClient(token);
-  const { data: existingEvent } = await db.from('events').select('community_id').eq('id', eventId).maybeSingle();
+  const { data: existingEvent } = await db.from('events').select('community_id, status, title, description').eq('id', eventId).maybeSingle();
   if (!existingEvent) throw new Error("Event not found");
   const { user, isAdmin } = await verifyCommunityManager(token, existingEvent.community_id);
   await ensureRlsManagerMembership(db, user?.id, existingEvent.community_id, isAdmin);
@@ -644,12 +739,36 @@ export async function updateEventAction(eventId, updates, token) {
   if (updates.cohost_community_ids !== undefined) dbUpdates.cohost_community_ids = updates.cohost_community_ids;
   if (updates.galleryImages !== undefined) dbUpdates.gallery_images = updates.galleryImages;
   if (updates.gallery_images !== undefined) dbUpdates.gallery_images = updates.gallery_images;
+
+  const isPublishingProposal = existingEvent.status === 'proposed' && dbUpdates.status === 'published';
+  const proposerMatch = String(existingEvent.description || '').match(/\[ProposedByUid:([^\]]+)\]/);
+  if (isPublishingProposal && proposerMatch) {
+    const baseDesc = dbUpdates.description !== undefined ? dbUpdates.description : existingEvent.description;
+    dbUpdates.description = String(baseDesc || '').replace(/\s*\[ProposedByUid:[^\]]+\]/g, '').trim();
+  }
   
   const { data, error } = await db.from('events').update(dbUpdates).eq('id', eventId).select().single();
   if (error) {
     console.error('Event update failed:', error);
     throw new Error(error.message);
   }
+
+  // Notify proposing member when their event proposal is approved & published
+  if (isPublishingProposal && proposerMatch?.[1] && proposerMatch[1] !== user?.id) {
+    try {
+      await supabaseAdmin.from('notifications').insert({
+        user_id: proposerMatch[1],
+        type: 'event_proposal_approved',
+        title: '🎉 Your Event Idea Was Published!',
+        message: `Your proposed event "${data.title}" has been approved and added to the community calendar.`,
+        link: `/events/${data.id}`,
+        is_read: false,
+      });
+    } catch (e) {
+      console.warn('Could not notify proposer of approval:', e?.message || e);
+    }
+  }
+
   return data;
 }
 

@@ -49,8 +49,11 @@ export default function AppHeader({ title, subtitle, rightElement, showBack = fa
     dmUsers.forEach(otherId => {
       const latestDm = directMessages.filter(m => (m.senderId === otherId && m.receiverId === user.id) || (m.senderId === user.id && m.receiverId === otherId)).pop();
       if (latestDm && latestDm.senderId !== user.id) {
-        const receipt = chatReadReceipts.find(r => !r.community_id && r.channel_id === otherId);
-        if (!receipt || new Date(receipt.last_read_at) < new Date(latestDm.created_at || new Date().toISOString())) {
+        const lastReadMs = chatReadReceipts
+          .filter(r => !r.community_id && r.channel_id === otherId)
+          .reduce((max, r) => Math.max(max, new Date(r.last_read_at || 0).getTime()), 0);
+        const latestMsgMs = new Date(latestDm.createdAt || latestDm.created_at || new Date().toISOString()).getTime();
+        if (!lastReadMs || lastReadMs < latestMsgMs) {
           unreadChatCount++;
         }
       }

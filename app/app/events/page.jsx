@@ -89,7 +89,7 @@ export default function EventsHub() {
     communities,
     user,
     eventRsvps,
-    createEvent,
+    proposeEvent,
     isLoading,
     saveItem,
     getAffinityScore,
@@ -154,6 +154,12 @@ export default function EventsHub() {
     [publicCommunities]
   );
 
+  // Members may only propose events to communities they have joined
+  const joinedPublicCommunities = useMemo(
+    () => publicCommunities.filter((c) => user?.joinedCommunities?.includes(c.id)),
+    [publicCommunities, user?.joinedCommunities]
+  );
+
   const getUpcomingDayDate = (targetDay) => {
     const now = new Date();
     const current = now.getDay();
@@ -181,9 +187,8 @@ export default function EventsHub() {
       router.push('/login?redirect=/events');
       return;
     }
-    if (!proposeCommunityId) {
-      const joinedPublic = publicCommunities.find((c) => user.joinedCommunities?.includes(c.id));
-      setProposeCommunityId(joinedPublic?.id || publicCommunities[0]?.id || '');
+    if (!proposeCommunityId || !joinedPublicCommunities.some((c) => c.id === proposeCommunityId)) {
+      setProposeCommunityId(joinedPublicCommunities[0]?.id || '');
     }
     setShowProposeModal(true);
   };
@@ -199,26 +204,24 @@ export default function EventsHub() {
       return;
     }
 
-    const targetCommunityId = proposeCommunityId || publicCommunities[0]?.id;
+    const targetCommunityId = proposeCommunityId || joinedPublicCommunities[0]?.id;
     if (!targetCommunityId) {
-      toast.error('Community Required', 'Please select which community this event is for.');
+      toast.error('Join a Community First', 'You can only propose events for communities you have joined.');
       return;
     }
 
     setIsSubmittingProposal(true);
     try {
-      const desc = `${proposeNotes.trim() ? proposeNotes.trim() + '\n\n' : ''}Proposed by community member ${user.name || 'Member'}`;
-      await createEvent(targetCommunityId, {
-        title: `[Proposal] ${proposeTitle.trim()}`,
-        description: desc,
+      await proposeEvent(targetCommunityId, {
+        title: proposeTitle.trim(),
+        description: proposeNotes.trim(),
         date: proposeDate,
         time: proposeTime || '10:00',
         location: proposeLocation.trim() || 'Local Area',
-        status: 'proposed',
       });
       toast.success(
-        'Event Idea Proposed!',
-        'Your community leader has received your idea and can publish it with 1 click.'
+        'Proposal Sent to Leader!',
+        'Your community leader has been notified and can approve or edit it before publishing.'
       );
       setShowProposeModal(false);
       setProposeTitle('');
@@ -226,7 +229,7 @@ export default function EventsHub() {
       setProposeLocation('');
     } catch (err) {
       console.error(err);
-      toast.error('Could not submit', 'Please try again later.');
+      toast.error('Could not submit', err?.message || 'Please try again later.');
     } finally {
       setIsSubmittingProposal(false);
     }
@@ -2104,6 +2107,24 @@ export default function EventsHub() {
               </button>
             </div>
 
+            {joinedPublicCommunities.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '20px 8px' }}>
+                <p style={{ color: 'var(--ink-secondary)', fontSize: '0.9rem', lineHeight: 1.5, margin: '0 0 16px' }}>
+                  Join a community first to propose an event idea to its leader.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowProposeModal(false);
+                    router.push('/discover');
+                  }}
+                  className="btn btn-primary interactive-press"
+                  style={{ padding: '10px 20px', borderRadius: '999px', color: '#FFFFFF', fontWeight: 700 }}
+                >
+                  Explore Communities
+                </button>
+              </div>
+            ) : (
             <form onSubmit={handleProposeWalk} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               <div>
                 <label
@@ -2115,7 +2136,7 @@ export default function EventsHub() {
                     marginBottom: '5px',
                   }}
                 >
-                  Community *
+                  Your Community *
                 </label>
                 <select
                   value={proposeCommunityId}
@@ -2134,14 +2155,11 @@ export default function EventsHub() {
                     colorScheme: isLight ? 'light' : 'dark',
                   }}
                 >
-                  {publicCommunities.map((c) => {
-                    const isMember = user?.joinedCommunities?.includes(c.id);
-                    return (
-                      <option key={c.id} value={c.id}>
-                        {c.name} {isMember ? '(Your Community)' : ''}
-                      </option>
-                    );
-                  })}
+                  {joinedPublicCommunities.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
                 </select>
               </div>
 
@@ -2402,6 +2420,7 @@ export default function EventsHub() {
                 {isSubmittingProposal ? 'Submitting Idea...' : 'Submit Event Idea'}
               </button>
             </form>
+            )}
           </div>
         </div>
       )}

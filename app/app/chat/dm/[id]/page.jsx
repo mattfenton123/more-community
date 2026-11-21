@@ -78,8 +78,8 @@ export default function DirectMessage() {
   const mainMessages = activeMessages.filter((m) => !m.parentId);
 
   useEffect(() => {
-    if (targetUserId) markChatRead(null, targetUserId);
-  }, [targetUserId, activeMessages.length]);
+    if (user?.id && targetUserId) markChatRead(null, targetUserId);
+  }, [user?.id, targetUserId, activeMessages.length]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });

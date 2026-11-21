@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabaseClient';
 import { useAuth } from './AuthContext';
 import { initialExperiences } from '../lib/constants';
 import imageCompression from 'browser-image-compression';
-import { createEventAction, createEventsBatchAction, joinCommunityAction, leaveCommunityAction, rsvpToEventAction, updateAttendeeStatusAction, addEventPhotoAction, createCommunityAction, uploadImageAction, updateEventAction, updateCommunityAction, deleteCommunityAction, createChannelAction, markNotificationReadAction, updateUserAction, adminVerifyCommunityAction, broadcastNotificationAction, promoteMemberAction, removeMemberAction, subscribeToPushNotificationsAction, ensureLeadersNetworkAction, sendEventReminderAction, createSelfNotificationAction, offerCarpoolAction, reserveCarpoolSeatAction, cancelCarpoolSeatAction, deleteCarpoolOfferAction, createEventCommentAction, deleteEventCommentAction } from '../lib/actions';
+import { createEventAction, proposeEventAction, createEventsBatchAction, joinCommunityAction, leaveCommunityAction, rsvpToEventAction, updateAttendeeStatusAction, addEventPhotoAction, createCommunityAction, uploadImageAction, updateEventAction, updateCommunityAction, deleteCommunityAction, createChannelAction, markNotificationReadAction, updateUserAction, adminVerifyCommunityAction, broadcastNotificationAction, promoteMemberAction, removeMemberAction, subscribeToPushNotificationsAction, ensureLeadersNetworkAction, sendEventReminderAction, createSelfNotificationAction, offerCarpoolAction, reserveCarpoolSeatAction, cancelCarpoolSeatAction, deleteCarpoolOfferAction, createEventCommentAction, deleteEventCommentAction } from '../lib/actions';
 import { Capacitor } from '@capacitor/core';
 import { cleanLocationName } from '../lib/location';
 import { resolveUserAvatar, getDefaultAvatar, isPlaceholderAvatar } from '../lib/avatar';
@@ -1302,13 +1302,34 @@ export function AppProvider({ children }) {
       }
     });
 
+    const normCommId = communityId || null;
+    const readIso = new Date().toISOString();
     try {
-      await supabase.from('chat_read_receipts').upsert([{
-        user_id: user.id,
-        community_id: communityId,
-        channel_id: channelId,
-        last_read_at: new Date().toISOString()
-      }], { onConflict: 'user_id,community_id,channel_id' });
+      if (!normCommId) {
+        const { data: updatedRows, error: updateErr } = await supabase
+          .from('chat_read_receipts')
+          .update({ last_read_at: readIso })
+          .eq('user_id', user.id)
+          .is('community_id', null)
+          .eq('channel_id', channelId)
+          .select('id');
+        if (updateErr) throw updateErr;
+        if (!updatedRows || updatedRows.length === 0) {
+          await supabase.from('chat_read_receipts').insert([{
+            user_id: user.id,
+            community_id: null,
+            channel_id: channelId,
+            last_read_at: readIso
+          }]);
+        }
+      } else {
+        await supabase.from('chat_read_receipts').upsert([{
+          user_id: user.id,
+          community_id: normCommId,
+          channel_id: channelId,
+          last_read_at: readIso
+        }], { onConflict: 'user_id,community_id,channel_id' });
+      }
     } catch (err) {
       console.error('Failed to mark read', err);
     }
@@ -1969,7 +1990,7 @@ export function AppProvider({ children }) {
         location: eventData.location,
         image: eventData.image || null,
         attendees: 0,
-        status: 'published',
+        status: eventData.status || 'published',
         maxCapacity: eventData.maxCapacity || null,
       };
 
@@ -1999,6 +2020,48 @@ export function AppProvider({ children }) {
           allowGuests: eventData.allowGuests !== false,
           galleryImages: [],
           createdAt: e.created_at
+        }]);
+      }
+      return data;
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  };
+
+  const proposeEvent = async (communityId, eventData) => {
+    try {
+      let token = session?.access_token;
+      if (!token) {
+        const { data: sessionData } = await supabase.auth.getSession();
+        token = sessionData?.session?.access_token;
+      }
+      const data = await proposeEventAction({
+        communityId,
+        title: eventData.title,
+        description: eventData.description || '',
+        date: eventData.date,
+        time: eventData.time || '10:00',
+        location: eventData.location || 'Local Area',
+        proposerName: user?.name || 'Member',
+      }, token);
+      if (data) {
+        setEvents(prev => [...prev, {
+          id: data.id,
+          communityId: data.community_id,
+          collabCommunityIds: [],
+          title: data.title,
+          description: data.description || '',
+          date: data.date,
+          time: data.time,
+          location: data.location,
+          image: data.image,
+          attendees: 0,
+          status: 'proposed',
+          maxCapacity: null,
+          ticketPrice: 0,
+          galleryImages: [],
+          createdAt: data.created_at,
         }]);
       }
       return data;
@@ -2696,6 +2759,7 @@ export function AppProvider({ children }) {
       sendEventReminder,
       notifyCommunityLeaders,
       createEvent,
+      proposeEvent,
       createEventsBatch,
       updateEvent,
       cancelEvent,

@@ -93,9 +93,10 @@ export default function Chat() {
   }, [communityId, channelId]);
 
   useEffect(() => {
+    if (!user?.id) return;
     if (communityId && channelId) markChatRead(communityId, channelId);
     if (targetUserId) markChatRead(null, targetUserId);
-  }, [communityId, channelId, targetUserId, activeMessages.length]);
+  }, [user?.id, communityId, channelId, targetUserId, activeMessages.length]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });

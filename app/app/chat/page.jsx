@@ -1,7 +1,8 @@
 "use client";
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useAppContext } from '../../src/context/AppContext';
 import { useChat } from '../../src/context/ChatContext';
+import { supabase } from '../../src/lib/supabaseClient';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   MessageCircle,
@@ -32,6 +33,8 @@ export default function ChatIndex() {
   const isLight = theme === 'light';
 
   const [inboxSearch, setInboxSearch] = useState('');
+  const [remoteSearchHits, setRemoteSearchHits] = useState({ channelHits: [], dmHits: [] });
+  const [isSearchingRemote, setIsSearchingRemote] = useState(false);
   const [inboxTab, setInboxTab] = useState('All'); // 'All' | 'Communities' | 'Direct'
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [createMode, setCreateMode] = useState('menu'); // 'menu', 'dm', 'group'
@@ -55,6 +58,73 @@ export default function ChatIndex() {
     if (!communityFilterId) return null;
     return (communities || []).find((c) => c.id === communityFilterId)?.name || 'Community';
   }, [communities, communityFilterId]);
+
+  // Debounced full-history Supabase search across messages & direct_messages
+  useEffect(() => {
+    const q = inboxSearch.trim();
+    if (!user?.id || q.length < 2) {
+      setRemoteSearchHits({ channelHits: [], dmHits: [] });
+      setIsSearchingRemote(false);
+      return;
+    }
+
+    let cancelled = false;
+    setIsSearchingRemote(true);
+    const timer = setTimeout(async () => {
+      try {
+        const joinedIds = (user.joinedCommunities || []).filter(Boolean);
+        const channelPromise =
+          joinedIds.length > 0
+            ? supabase
+                .from('messages')
+                .select('id, community_id, channel, author_id, text, created_at')
+                .in('community_id', joinedIds)
+                .ilike('text', `%${q}%`)
+                .order('created_at', { ascending: false })
+                .limit(50)
+            : Promise.resolve({ data: [] });
+
+        const dmPromise = supabase
+          .from('direct_messages')
+          .select('id, sender_id, receiver_id, text, created_at')
+          .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
+          .ilike('text', `%${q}%`)
+          .order('created_at', { ascending: false })
+          .limit(50);
+
+        const [chRes, dmRes] = await Promise.all([channelPromise, dmPromise]);
+        if (!cancelled) {
+          setRemoteSearchHits({
+            channelHits: (chRes.data || []).map((m) => ({
+              id: m.id,
+              communityId: m.community_id,
+              channel: m.channel,
+              authorId: m.author_id,
+              senderId: m.author_id,
+              text: m.text,
+              createdAt: m.created_at,
+            })),
+            dmHits: (dmRes.data || []).map((dm) => ({
+              id: dm.id,
+              senderId: dm.sender_id,
+              receiverId: dm.receiver_id,
+              text: dm.text,
+              createdAt: dm.created_at,
+            })),
+          });
+        }
+      } catch (err) {
+        console.warn('Chat remote search error:', err);
+      } finally {
+        if (!cancelled) setIsSearchingRemote(false);
+      }
+    }, 280);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [inboxSearch, user?.id, user?.joinedCommunities]);
 
   // Build unified inbox items
   const inboxItems = useMemo(() => {
@@ -97,6 +167,10 @@ export default function ChatIndex() {
         const otherUserId = dm.senderId === user.id ? dm.receiverId : dm.senderId;
         if (otherUserId && otherUserId !== user.id) dmUsers.add(otherUserId);
       });
+      (remoteSearchHits.dmHits || []).forEach((dm) => {
+        const otherUserId = dm.senderId === user.id ? dm.receiverId : dm.senderId;
+        if (otherUserId && otherUserId !== user.id) dmUsers.add(otherUserId);
+      });
       dmUsers.forEach((otherId) => {
         const otherUserObj = (users || []).find((u) => u.id === otherId) || {
           id: otherId,
@@ -106,46 +180,83 @@ export default function ChatIndex() {
       });
     }
 
+    const q = inboxSearch.toLowerCase().trim();
+
     const enriched = items
       .map((item) => {
+        let itemMessages = [];
         let latestMsg = null;
+        let matchedMsg = null;
         let hasUnread = false;
+
         if (item.type === 'dm') {
-          latestMsg = (directMessages || [])
-            .filter(
-              (m) =>
-                (m.senderId === item.id && m.receiverId === user?.id) ||
-                (m.senderId === user?.id && m.receiverId === item.id)
-            )
-            .pop();
-          const dmReceipt = (chatReadReceipts || []).find(
-            (r) => !r.community_id && r.channel_id === item.id
+          itemMessages = (directMessages || []).filter(
+            (m) =>
+              (m.senderId === item.id && m.receiverId === user?.id) ||
+              (m.senderId === user?.id && m.receiverId === item.id)
           );
+          latestMsg = itemMessages[itemMessages.length - 1] || null;
+
+          if (q) {
+            for (let idx = itemMessages.length - 1; idx >= 0; idx--) {
+              if ((itemMessages[idx]?.text || '').toLowerCase().includes(q)) {
+                matchedMsg = itemMessages[idx];
+                break;
+              }
+            }
+            if (!matchedMsg) {
+              matchedMsg =
+                (remoteSearchHits.dmHits || []).find(
+                  (m) =>
+                    (m.senderId === item.id && m.receiverId === user?.id) ||
+                    (m.senderId === user?.id && m.receiverId === item.id)
+                ) || null;
+            }
+          }
+
+          const dmLastReadMs = (chatReadReceipts || [])
+            .filter((r) => !r.community_id && r.channel_id === item.id)
+            .reduce((max, r) => Math.max(max, new Date(r.last_read_at || 0).getTime()), 0);
           hasUnread = Boolean(
             latestMsg &&
               latestMsg.senderId !== user?.id &&
-              (!dmReceipt ||
-                new Date(dmReceipt.last_read_at) <
-                  new Date(latestMsg.createdAt || latestMsg.created_at || new Date().toISOString()))
+              (!dmLastReadMs ||
+                dmLastReadMs <
+                  new Date(latestMsg.createdAt || latestMsg.created_at || new Date().toISOString()).getTime())
           );
         } else {
-          latestMsg = (messages || [])
-            .filter(
-              (m) =>
-                m.communityId === item.comm.id &&
-                (m.channel === item.id || m.channelId === item.id)
-            )
-            .pop();
-          const commReceipt = (chatReadReceipts || []).find(
-            (r) => r.community_id === item.comm.id && r.channel_id === item.id
+          itemMessages = (messages || []).filter(
+            (m) =>
+              m.communityId === item.comm.id &&
+              (m.channel === item.id || m.channelId === item.id)
           );
+          latestMsg = itemMessages[itemMessages.length - 1] || null;
+
+          if (q) {
+            for (let idx = itemMessages.length - 1; idx >= 0; idx--) {
+              if ((itemMessages[idx]?.text || '').toLowerCase().includes(q)) {
+                matchedMsg = itemMessages[idx];
+                break;
+              }
+            }
+            if (!matchedMsg) {
+              matchedMsg =
+                (remoteSearchHits.channelHits || []).find(
+                  (m) => m.communityId === item.comm.id && m.channel === item.id
+                ) || null;
+            }
+          }
+
+          const commLastReadMs = (chatReadReceipts || [])
+            .filter((r) => r.community_id === item.comm.id && r.channel_id === item.id)
+            .reduce((max, r) => Math.max(max, new Date(r.last_read_at || 0).getTime()), 0);
           hasUnread = Boolean(
             latestMsg &&
               latestMsg.authorId !== user?.id &&
               latestMsg.senderId !== user?.id &&
-              (!commReceipt ||
-                new Date(commReceipt.last_read_at) <
-                  new Date(latestMsg.createdAt || latestMsg.created_at || new Date().toISOString()))
+              (!commLastReadMs ||
+                commLastReadMs <
+                  new Date(latestMsg.createdAt || latestMsg.created_at || new Date().toISOString()).getTime())
           );
         }
 
@@ -159,16 +270,20 @@ export default function ChatIndex() {
               : item.comm.name
             : null;
 
+        const previewMsg = matchedMsg || latestMsg;
+
         return {
           ...item,
           displayTitle,
           displaySubtitle,
           latestMsg,
+          matchedMsg,
+          previewMsg,
           hasUnread,
-          sortTime: latestMsg?.createdAt
-            ? new Date(latestMsg.createdAt).getTime()
-            : latestMsg?.created_at
-              ? new Date(latestMsg.created_at).getTime()
+          sortTime: previewMsg?.createdAt
+            ? new Date(previewMsg.createdAt).getTime()
+            : previewMsg?.created_at
+              ? new Date(previewMsg.created_at).getTime()
               : item.created_at
                 ? new Date(item.created_at).getTime()
                 : 0,
@@ -178,12 +293,11 @@ export default function ChatIndex() {
         if (communityFilterId && item.comm?.id !== communityFilterId) return false;
         if (inboxTab === 'Communities' && item.type === 'dm') return false;
         if (inboxTab === 'Direct' && item.type !== 'dm') return false;
-        if (inboxSearch.trim()) {
-          const q = inboxSearch.toLowerCase().trim();
+        if (q) {
           const inTitle = (item.displayTitle || '').toLowerCase().includes(q);
           const inSub = (item.displaySubtitle || '').toLowerCase().includes(q);
-          const inMsg = (item.latestMsg?.text || '').toLowerCase().includes(q);
-          return inTitle || inSub || inMsg;
+          const inAnyMsg = Boolean(item.matchedMsg);
+          return inTitle || inSub || inAnyMsg;
         }
         return true;
       })
@@ -201,6 +315,7 @@ export default function ChatIndex() {
     communityFilterId,
     inboxTab,
     inboxSearch,
+    remoteSearchHits,
   ]);
 
   const sharedCommunityMembers = useMemo(() => {
@@ -507,7 +622,11 @@ export default function ChatIndex() {
                     marginBottom: '6px',
                   }}
                 >
-                  {inboxSearch ? 'No matching chats' : 'No conversations yet'}
+                  {isSearchingRemote
+                    ? 'Searching message history...'
+                    : inboxSearch
+                      ? 'No matching chats'
+                      : 'No conversations yet'}
                 </div>
                 <p style={{ margin: '0 auto 16px', fontSize: '0.86rem', maxWidth: '320px' }}>
                   {inboxSearch
@@ -558,7 +677,8 @@ export default function ChatIndex() {
                   else if (item.channelType === 'announcement') Icon = Megaphone;
                   else if (item.channelType === 'group' || item.memberIds) Icon = Lock;
 
-                  const msgAuthorId = item.latestMsg?.authorId || item.latestMsg?.senderId;
+                  const shownMsg = item.previewMsg || item.latestMsg;
+                  const msgAuthorId = shownMsg?.authorId || shownMsg?.senderId;
                   const isMe = msgAuthorId === user?.id;
                   const authorName = (users || []).find((u) => u.id === msgAuthorId)?.name || 'Member';
 
@@ -684,7 +804,7 @@ export default function ChatIndex() {
                               flexShrink: 0,
                             }}
                           >
-                            {formatChatTime(item.latestMsg)}
+                            {formatChatTime(shownMsg)}
                           </div>
                         </div>
 
@@ -699,22 +819,29 @@ export default function ChatIndex() {
                           <div
                             style={{
                               fontSize: '0.84rem',
-                              color: item.hasUnread ? 'var(--ink-primary)' : 'var(--ink-secondary)',
-                              fontWeight: item.hasUnread ? 600 : 400,
+                              color: item.matchedMsg
+                                ? 'var(--teal-300)'
+                                : item.hasUnread
+                                  ? 'var(--ink-primary)'
+                                  : 'var(--ink-secondary)',
+                              fontWeight: item.matchedMsg || item.hasUnread ? 600 : 400,
                               whiteSpace: 'nowrap',
                               overflow: 'hidden',
                               textOverflow: 'ellipsis',
                               flex: 1,
                             }}
                           >
-                            {item.latestMsg ? (
+                            {shownMsg ? (
                               <>
+                                {item.matchedMsg && (
+                                  <span style={{ fontWeight: 700, marginRight: '4px' }}>Match:</span>
+                                )}
                                 {item.type !== 'dm' && (
                                   <span style={{ color: 'var(--ink-muted)', fontWeight: 600 }}>
                                     {isMe ? 'You' : authorName}:{' '}
                                   </span>
                                 )}
-                                {item.latestMsg.image ? 'Photo attachment' : item.latestMsg.text}
+                                {shownMsg.image ? 'Photo attachment' : shownMsg.text}
                               </>
                             ) : (
                               <span style={{ fontStyle: 'italic', color: 'var(--ink-muted)' }}>

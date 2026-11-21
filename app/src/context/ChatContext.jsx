@@ -8,6 +8,21 @@ import { sendMessageAction, sendDirectMessageAction, updateMessageAction, addRea
 
 const ChatContext = createContext({});
 
+function dedupeLatestReceipts(rows = []) {
+  const map = new Map();
+  (rows || []).forEach((row) => {
+    if (!row || !row.channel_id) return;
+    const key = `${row.community_id || '__DM__'}::${row.channel_id}`;
+    const prev = map.get(key);
+    const rowMs = new Date(row.last_read_at || 0).getTime();
+    const prevMs = prev ? new Date(prev.last_read_at || 0).getTime() : -1;
+    if (!prev || rowMs >= prevMs) {
+      map.set(key, row);
+    }
+  });
+  return Array.from(map.values());
+}
+
 export function ChatProvider({ children }) {
   const { authUser } = useAuth();
   const { user } = useAppContext();
@@ -44,7 +59,7 @@ export function ChatProvider({ children }) {
           supabase.from('direct_messages').select('*')
             .or(`sender_id.eq.${authUser.id},receiver_id.eq.${authUser.id}`)
             .order('created_at', { ascending: true }),
-          supabase.from('chat_read_receipts').select('*').eq('user_id', authUser.id),
+          supabase.from('chat_read_receipts').select('*').eq('user_id', authUser.id).order('last_read_at', { ascending: false }),
         ]);
 
         const msgIds = msgRes.data ? msgRes.data.map(m => m.id) : [];
@@ -88,7 +103,7 @@ export function ChatProvider({ children }) {
         }
 
         if (readRes.data) {
-          setChatReadReceipts(readRes.data);
+          setChatReadReceipts(dedupeLatestReceipts(readRes.data));
         }
       } catch (err) {
         console.error("Chat fetch error:", err);
@@ -159,11 +174,7 @@ export function ChatProvider({ children }) {
     const subReads = supabase.channel('chat:read_receipts')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'chat_read_receipts', filter: `user_id=eq.${authUser.id}` }, payload => {
         if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
-          setChatReadReceipts(prev => {
-            const exists = prev.find(r => r.user_id === payload.new.user_id && r.community_id === payload.new.community_id && r.channel_id === payload.new.channel_id);
-            if (exists) return prev.map(r => r.id === payload.new.id ? payload.new : r);
-            return [...prev, payload.new];
-          });
+          setChatReadReceipts(prev => dedupeLatestReceipts([...prev, payload.new]));
         }
       }).subscribe();
 
@@ -231,19 +242,71 @@ export function ChatProvider({ children }) {
   };
 
   const markChatRead = async (communityId, channelId) => {
-    if (!user.id) return;
-    setChatReadReceipts(prev => {
-      const exists = prev.find(r => r.community_id === communityId && r.channel_id === channelId);
-      if (exists) return prev.map(r => (r.community_id === communityId && r.channel_id === channelId) ? { ...r, last_read_at: new Date().toISOString() } : r);
-      return [...prev, { user_id: user.id, community_id: communityId, channel_id: channelId, last_read_at: new Date().toISOString() }];
-    });
+    if (!user?.id || !channelId) return;
+    const normCommId = communityId || null;
+
+    // Guard against client/server clock skew by ensuring last_read_at >= newest message + 1s
+    let latestMsgMs = 0;
+    if (!normCommId) {
+      directMessages.forEach((m) => {
+        if (
+          (m.senderId === channelId && m.receiverId === user.id) ||
+          (m.senderId === user.id && m.receiverId === channelId)
+        ) {
+          const ms = new Date(m.createdAt || m.created_at || 0).getTime();
+          if (ms > latestMsgMs) latestMsgMs = ms;
+        }
+      });
+    } else {
+      messages.forEach((m) => {
+        if (m.communityId === normCommId && (m.channel === channelId || m.channelId === channelId)) {
+          const ms = new Date(m.createdAt || m.created_at || 0).getTime();
+          if (ms > latestMsgMs) latestMsgMs = ms;
+        }
+      });
+    }
+    const readIso = new Date(Math.max(Date.now(), latestMsgMs + 1000)).toISOString();
+
+    setChatReadReceipts(prev =>
+      dedupeLatestReceipts([
+        ...prev.filter(
+          (r) => !((r.community_id || null) === normCommId && r.channel_id === channelId)
+        ),
+        { user_id: user.id, community_id: normCommId, channel_id: channelId, last_read_at: readIso },
+      ])
+    );
+
     try {
-      await supabase.from('chat_read_receipts').upsert(
-        [{ user_id: user.id, community_id: communityId, channel_id: channelId, last_read_at: new Date().toISOString() }],
-        { onConflict: 'user_id,community_id,channel_id' }
-      );
+      if (!normCommId) {
+        // Postgres UNIQUE(user_id, community_id, channel_id) treats NULL != NULL,
+        // so upsert inserts duplicate DM rows instead of updating. Update existing
+        // NULL rows directly, and only insert when none exist yet.
+        const { data: updatedRows, error: updateErr } = await supabase
+          .from('chat_read_receipts')
+          .update({ last_read_at: readIso })
+          .eq('user_id', user.id)
+          .is('community_id', null)
+          .eq('channel_id', channelId)
+          .select('id');
+
+        if (updateErr) throw updateErr;
+
+        if (!updatedRows || updatedRows.length === 0) {
+          const { error: insertErr } = await supabase
+            .from('chat_read_receipts')
+            .insert([
+              { user_id: user.id, community_id: null, channel_id: channelId, last_read_at: readIso },
+            ]);
+          if (insertErr) throw insertErr;
+        }
+      } else {
+        await supabase.from('chat_read_receipts').upsert(
+          [{ user_id: user.id, community_id: normCommId, channel_id: channelId, last_read_at: readIso }],
+          { onConflict: 'user_id,community_id,channel_id' }
+        );
+      }
     } catch (err) {
-      console.error(err);
+      console.error('Failed to persist read receipt:', err);
     }
   };
 

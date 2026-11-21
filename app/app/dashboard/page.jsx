@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { isEventUpcoming, isEventPast, parseEventDateTime } from '../../src/lib/calendar';
 import { getEventPath, SITE_ORIGIN } from '../../src/lib/eventLinks';
 import { findCommunityByParam, getCommunityPath, getCommunitySlug } from '../../src/lib/communityLinks';
+import { isCommunityPendingChapter, isCommunityDeclinedChapter } from '../../src/lib/communityVisibility';
 import { useAppContext } from '../../src/context/AppContext';
 import { useChat } from '../../src/context/ChatContext';
 import { useToast } from '../../src/components/Toast';
@@ -204,7 +205,7 @@ function CommunitySwitcher({ currentCommunity, communities, activeId, onSelect, 
           }}
         >
           {/* Sticky Search Header */}
-          <div style={{ padding: '8px 10px', borderBottom: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.02)' }}>
+          <div style={{ padding: '8px 10px', borderBottom: '1px solid var(--hairline-border)', background: 'rgba(255,255,255,0.02)' }}>
             <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
               <Search size={14} color="var(--slate-400)" style={{ position: 'absolute', left: '10px' }} />
               <input
@@ -302,7 +303,7 @@ function CommunitySwitcher({ currentCommunity, communities, activeId, onSelect, 
 
           {/* Footer: Create Community Action */}
           {onCreateNew && (
-            <div style={{ padding: '6px 8px', borderTop: '1px solid rgba(255,255,255,0.08)', background: 'rgba(0,0,0,0.2)' }}>
+            <div style={{ padding: '6px 8px', borderTop: '1px solid var(--hairline-border)', background: 'var(--surface-elevated)' }}>
               <button
                 type="button"
                 onClick={() => {
@@ -484,20 +485,25 @@ export default function LeaderDashboard({ initialCommunityId }) {
   const [selectedNetworkEvent, setSelectedNetworkEvent] = useState(null);
   const networkChapters = useMemo(() => {
     if (!community) return [];
+    const commParentId = community.parent_community_id || community.parentCommunityId || null;
     return communities.filter(c => {
       if (c.id === community.id) return false;
-      if (c.parent_community_id === community.id) return true;
-      if (community.parent_community_id && (c.id === community.parent_community_id || c.parent_community_id === community.parent_community_id)) return true;
+      const cParentId = c.parent_community_id || c.parentCommunityId || null;
+      if (cParentId === community.id) return true;
+      if (commParentId && (c.id === commParentId || cParentId === commParentId)) return true;
       return false;
     });
   }, [communities, community]);
 
   const pendingChapterApplications = useMemo(() => {
-    return networkChapters.filter(c => c.chapter_status === 'pending_approval' && c.parent_community_id === community?.id);
+    return networkChapters.filter(c => {
+      const cParentId = c.parent_community_id || c.parentCommunityId || null;
+      return isCommunityPendingChapter(c) && cParentId === community?.id;
+    });
   }, [networkChapters, community]);
 
   const activeSisterChapters = useMemo(() => {
-    return networkChapters.filter(c => c.chapter_status !== 'pending_approval' && c.chapter_status !== 'declined');
+    return networkChapters.filter(c => !isCommunityPendingChapter(c) && !isCommunityDeclinedChapter(c));
   }, [networkChapters]);
 
   const communityPitches = useMemo(() => {
@@ -1571,6 +1577,10 @@ export default function LeaderDashboard({ initialCommunityId }) {
       autoFeedback: eventForm.autoFeedback
     };
     if (imageUrl) updates.image = imageUrl;
+    const editedExisting = events.find((e) => e.id === editingEventId);
+    if (editedExisting?.status === 'proposed') {
+      updates.status = 'published';
+    }
     await updateEvent(editingEventId, updates);
     setIsUploading(false);
     setModalType(null);
@@ -1979,8 +1989,8 @@ export default function LeaderDashboard({ initialCommunityId }) {
 
             {/* Generated Vibes & Status feedback banner if draft active */}
             {generatedVibes && generatedVibes.length > 0 && (
-              <div style={{ marginTop: '10px', paddingTop: '10px', borderTop: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
-                <span style={{ fontSize: '0.72rem', color: '#d8b4fe', fontWeight: 600 }}>Detected Vibes:</span>
+              <div style={{ marginTop: '10px', paddingTop: '10px', borderTop: '1px solid var(--hairline-border)', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
+                <span style={{ fontSize: '0.72rem', color: '#7C3AED', fontWeight: 600 }}>Detected Vibes:</span>
                 {generatedVibes.map((v, i) => (
                   <span key={i} style={{ fontSize: '0.7rem', padding: '2px 8px', borderRadius: '6px', background: 'rgba(242, 114, 87,0.15)', color: '#F79984', border: '1px solid rgba(242, 114, 87,0.3)', fontWeight: 500 }}>
                     {v}
@@ -2198,7 +2208,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
         <>
           <div style={{ background: 'rgba(245,158,11,0.05)', border: '1px solid rgba(245,158,11,0.15)', borderRadius: '12px', padding: '14px', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
             <Zap size={16} color="#f59e0b" style={{ flexShrink: 0 }} />
-            <span style={{ fontSize: '0.8rem', color: '#fcd34d', lineHeight: 1.4 }}>These are optional  -  you can always edit them later.</span>
+            <span style={{ fontSize: '0.8rem', color: '#B45309', lineHeight: 1.4 }}>These are optional  -  you can always edit them later.</span>
           </div>
           <div className="form-row">
             <div className="form-group">
@@ -2223,7 +2233,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   padding: '12px 14px',
                   borderRadius: '12px',
                   background: 'rgba(255, 255, 255, 0.03)',
-                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  border: '1px solid var(--hairline-border)',
                   cursor: 'pointer'
                 }}
               >
@@ -2252,7 +2262,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   padding: '12px 14px',
                   borderRadius: '12px',
                   background: 'rgba(255, 255, 255, 0.03)',
-                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  border: '1px solid var(--hairline-border)',
                   cursor: 'pointer'
                 }}
               >
@@ -2281,7 +2291,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   padding: '12px 14px',
                   borderRadius: '12px',
                   background: 'rgba(255, 255, 255, 0.03)',
-                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  border: '1px solid var(--hairline-border)',
                   cursor: 'pointer'
                 }}
               >
@@ -2358,7 +2368,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
           <div className="form-group">
             <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><ImageIcon size={14} color="#f59e0b" /> Cover Image</label>
             {eventForm.image && !imageFile && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px', padding: '8px', borderRadius: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px', padding: '8px', borderRadius: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--hairline-border)' }}>
                 <img src={eventForm.image} alt="Current cover" style={{ width: '48px', height: '48px', borderRadius: '8px', objectFit: 'cover', flexShrink: 0 }} />
                 <div style={{ fontSize: '0.78rem', color: 'var(--slate-300)', flex: 1 }}>Existing cover image will be kept unless you choose a new one.</div>
               </div>
@@ -2429,14 +2439,14 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 })}
             </div>
             {eventForm.collabCommunityIds?.length > 0 && (
-              <div style={{ fontSize: '0.72rem', color: '#86efac', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <div style={{ fontSize: '0.72rem', color: '#15803D', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                 <Check size={12} /> {eventForm.collabCommunityIds.length} partner {eventForm.collabCommunityIds.length === 1 ? 'community' : 'communities'} selected for cross-promotion
               </div>
             )}
           </div>
           {/* Preview card */}
           {eventForm.title && (
-            <div style={{ marginTop: '4px', padding: '16px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px' }}>
+            <div style={{ marginTop: '4px', padding: '16px', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--hairline-border)', borderRadius: '14px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                 <span style={{ fontSize: '0.65rem', fontWeight: 600, color: 'var(--slate-500)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Preview</span>
                 {eventForm.resolvedDates && eventForm.resolvedDates.length > 1 && (
@@ -2481,7 +2491,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
             <div 
               className="interactive-press"
               onClick={() => setEventForm({...eventForm, autoReminders: !eventForm.autoReminders})}
-              style={{ padding: '16px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
+              style={{ padding: '16px', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--hairline-border)', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div style={{ width: '40px', height: '40px', background: 'rgba(59,130,246,0.1)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -2500,7 +2510,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
             <div 
               className="interactive-press"
               onClick={() => setEventForm({...eventForm, autoFeedback: !eventForm.autoFeedback})}
-              style={{ padding: '16px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
+              style={{ padding: '16px', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--hairline-border)', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div style={{ width: '40px', height: '40px', background: 'rgba(245,158,11,0.1)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -2540,7 +2550,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
             </div>
 
             {/* Lu.ma RSVP Micro-Question */}
-            <div style={{ padding: '16px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '14px' }}>
+            <div style={{ padding: '16px', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--hairline-border)', borderRadius: '14px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
                 <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <HelpCircle size={16} color="var(--teal-400)" /> Custom RSVP Question
@@ -2557,7 +2567,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 onChange={e => setEventForm({ ...eventForm, rsvpQuestion: e.target.value })}
                 style={{
                   width: '100%', padding: '10px 14px', borderRadius: '10px',
-                  background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)',
+                  background: 'var(--surface-elevated)', border: '1px solid rgba(255,255,255,0.1)',
                   color: 'var(--white)', fontSize: '0.88rem', outline: 'none'
                 }}
               />
@@ -2574,7 +2584,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                     onClick={() => setEventForm({ ...eventForm, rsvpQuestion: q })}
                     style={{
                       padding: '3px 8px', borderRadius: '99px',
-                      background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)',
+                      background: 'rgba(255,255,255,0.05)', border: '1px solid var(--hairline-border)',
                       color: 'var(--slate-300)', fontSize: '0.7rem', cursor: 'pointer'
                     }}
                   >
@@ -2602,7 +2612,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 onChange={e => setEventForm({ ...eventForm, whatsappGroup: e.target.value })}
                 style={{
                   width: '100%', padding: '10px 14px', borderRadius: '10px',
-                  background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(37,211,102,0.25)',
+                  background: 'var(--surface-elevated)', border: '1px solid rgba(37,211,102,0.25)',
                   color: 'var(--white)', fontSize: '0.88rem', outline: 'none'
                 }}
               />
@@ -2616,7 +2626,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
             <div 
               className="interactive-press"
               onClick={() => setEventForm({...eventForm, requireWaiver: eventForm.requireWaiver === false ? true : false})}
-              style={{ padding: '16px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
+              style={{ padding: '16px', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--hairline-border)', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div style={{ width: '40px', height: '40px', background: 'rgba(235, 87, 56,0.1)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -2723,7 +2733,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
             <AppHeader 
               title="Dashboard" 
               showBack={true} 
-              onBack={() => community?.id ? router.push(`/community/${community.id}`) : router.back()} 
+              onBack={() => community?.id ? router.push(`/community/${getCommunitySlug(community, communities)}`) : router.back()} 
             />
             <div style={{ padding: '0 20px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)', display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: 1 }}>
@@ -2756,8 +2766,8 @@ export default function LeaderDashboard({ initialCommunityId }) {
               display: 'grid', 
               gridTemplateColumns: 'repeat(4, 1fr)', 
               gap: '6px', 
-              background: 'rgba(255,255,255,0.02)', 
-              border: '1px solid rgba(255,255,255,0.06)', 
+              background: 'var(--surface-card)', 
+              border: '1px solid var(--hairline-border)', 
               borderRadius: '16px', 
               padding: '6px' 
             }}>
@@ -2819,9 +2829,9 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   borderRadius: '16px', 
                   overflow: 'hidden', 
                   height: '140px', 
-                  background: 'linear-gradient(135deg, rgba(235, 87, 56,0.2), rgba(27, 27, 27,0.8))',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                  boxShadow: '0 4px 20px rgba(0,0,0,0.3)'
+                  background: 'var(--surface-elevated)',
+                  border: '1px solid var(--hairline-border)',
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.12)'
                 }}>
                   {(community.cover_image || community.image) ? (
                     <img 
@@ -2830,45 +2840,47 @@ export default function LeaderDashboard({ initialCommunityId }) {
                       style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
                     />
                   ) : (
-                    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--slate-500)', fontSize: '0.85rem' }}>
+                    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--ink-muted)', fontSize: '0.85rem' }}>
                       No cover photo yet
                     </div>
                   )}
                   <div style={{ 
                     position: 'absolute', 
                     inset: 0, 
-                    background: 'linear-gradient(to top, rgba(18, 18, 18,0.9) 0%, rgba(18, 18, 18,0.3) 50%, transparent 100%)',
+                    background: 'linear-gradient(to top, rgba(18, 18, 18, 0.88) 0%, rgba(18, 18, 18, 0.32) 55%, transparent 100%)',
                     display: 'flex',
                     alignItems: 'flex-end',
                     justifyContent: 'space-between',
+                    gap: '12px',
+                    flexWrap: 'wrap',
                     padding: '16px'
                   }}>
                     <div>
-                      <h3 style={{ margin: 0, color: 'var(--ink-primary)', fontSize: '1.2rem', fontFamily: 'var(--font-heading)' }}>{community.name}</h3>
-                      <span style={{ fontSize: '0.75rem', color: 'var(--teal-300)', fontWeight: 500 }}>Public Community Microsite</span>
+                      <h3 style={{ margin: 0, color: '#FFFFFF', fontSize: '1.2rem', fontFamily: 'var(--font-heading)' }}>{community.name}</h3>
+                      <span style={{ fontSize: '0.76rem', color: 'rgba(255, 255, 255, 0.86)', fontWeight: 600 }}>Public Community Microsite</span>
                     </div>
                     <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
                       <a 
-                        href={`/community/${community.id}`}
+                        href={`/community/${getCommunitySlug(community, communities)}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="btn btn-outline interactive-press"
+                        className="interactive-press"
                         style={{ 
-                          background: 'rgba(27, 27, 27,0.85)', 
+                          background: 'rgba(20, 18, 15, 0.82)', 
                           backdropFilter: 'blur(8px)',
-                          border: '1px solid rgba(242, 114, 87,0.4)', 
-                          color: 'var(--teal-300)',
+                          border: '1px solid rgba(255, 255, 255, 0.24)', 
+                          color: '#FFFFFF',
                           padding: '8px 12px',
                           borderRadius: '8px',
                           fontSize: '0.75rem',
                           fontWeight: 600,
-                          display: 'flex',
+                          display: 'inline-flex',
                           alignItems: 'center',
                           gap: '6px',
                           textDecoration: 'none'
                         }}
                       >
-                        <ExternalLink size={14} color="var(--teal-300)" /> View Live Microsite ↗
+                        <ExternalLink size={14} color="#FFFFFF" /> View Live Microsite
                       </a>
                       <button 
                         onClick={handleEditClick}
@@ -2878,13 +2890,14 @@ export default function LeaderDashboard({ initialCommunityId }) {
                           borderRadius: '8px',
                           fontSize: '0.75rem',
                           fontWeight: 700,
-                          display: 'flex',
+                          color: '#FFFFFF',
+                          display: 'inline-flex',
                           alignItems: 'center',
                           gap: '6px',
                           cursor: 'pointer'
                         }}
                       >
-                        <Edit3 size={14} /> Edit Microsite Profile
+                        <Edit3 size={14} /> Edit Profile
                       </button>
                       <input 
                         type="file" 
@@ -2896,18 +2909,20 @@ export default function LeaderDashboard({ initialCommunityId }) {
                       <button 
                         onClick={() => bannerFileInputRef.current?.click()}
                         disabled={isUploading}
-                        className="btn btn-outline interactive-press"
+                        className="interactive-press"
                         style={{ 
-                          background: 'rgba(27, 27, 27,0.85)', 
+                          background: 'rgba(20, 18, 15, 0.82)', 
                           backdropFilter: 'blur(8px)',
-                          border: '1px solid rgba(255,255,255,0.2)', 
-                          color: 'var(--ink-primary)',
+                          border: '1px solid rgba(255, 255, 255, 0.24)', 
+                          color: '#FFFFFF',
                           padding: '8px 12px',
                           borderRadius: '8px',
                           fontSize: '0.75rem',
-                          display: 'flex',
+                          fontWeight: 600,
+                          display: 'inline-flex',
                           alignItems: 'center',
-                          gap: '6px'
+                          gap: '6px',
+                          cursor: 'pointer'
                         }}
                       >
                         <ImageIcon size={14} /> {isUploading ? 'Updating...' : 'Update Cover'}
@@ -2916,6 +2931,76 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   </div>
                 </div>
               </div>
+
+              {/* Pending Chapter Sign-Off Alert on Overview */}
+              {pendingChapterApplications.length > 0 && (
+                <div style={{ padding: '0 20px', marginBottom: '16px' }}>
+                  <div style={{
+                    background: 'var(--surface-card)',
+                    border: '1.5px solid rgba(220, 38, 38, 0.4)',
+                    borderRadius: '16px',
+                    padding: '14px 18px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: '12px',
+                    flexWrap: 'wrap'
+                  }}>
+                    <div>
+                      <div style={{ fontWeight: 700, fontSize: '0.94rem', color: 'var(--ink-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span>{pendingChapterApplications.length} Chapter Application{pendingChapterApplications.length > 1 ? 's' : ''} Awaiting Sign-Off</span>
+                        <span style={{ fontSize: '0.68rem', background: '#DC2626', color: '#FFFFFF', padding: '2px 8px', borderRadius: '99px', fontWeight: 700 }}>Action Required</span>
+                      </div>
+                      <div style={{ fontSize: '0.8rem', color: 'var(--ink-secondary)', marginTop: '2px' }}>
+                        New local chapters stay hidden from public listings until you review and approve them.
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setModalType('chapter-info')}
+                      className="btn btn-primary interactive-press"
+                      style={{ padding: '8px 14px', borderRadius: '10px', fontSize: '0.8rem', fontWeight: 700, color: '#FFFFFF' }}
+                    >
+                      Review &amp; Approve →
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Member Event Proposals Alert on Overview */}
+              {pendingProposedEvents.length > 0 && (
+                <div style={{ padding: '0 20px', marginBottom: '16px' }}>
+                  <div style={{
+                    background: 'var(--surface-card)',
+                    border: '1.5px solid rgba(235, 87, 56, 0.4)',
+                    borderRadius: '16px',
+                    padding: '14px 18px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: '12px',
+                    flexWrap: 'wrap'
+                  }}>
+                    <div>
+                      <div style={{ fontWeight: 700, fontSize: '0.94rem', color: 'var(--ink-primary)', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                        <span>{pendingProposedEvents.length} Member Event Proposal{pendingProposedEvents.length > 1 ? 's' : ''} Awaiting Review</span>
+                        <span style={{ fontSize: '0.68rem', background: 'var(--brand-accent)', color: '#FFFFFF', padding: '2px 8px', borderRadius: '99px', fontWeight: 700 }}>Pending Approval</span>
+                      </div>
+                      <div style={{ fontSize: '0.8rem', color: 'var(--ink-secondary)', marginTop: '2px' }}>
+                        Proposed ideas stay hidden from public calendars until you approve or edit &amp; publish them.
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('events')}
+                      className="btn btn-primary interactive-press"
+                      style={{ padding: '8px 14px', borderRadius: '10px', fontSize: '0.8rem', fontWeight: 700, color: '#FFFFFF' }}
+                    >
+                      Review Proposals →
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {/* Leader Setup & Launch Checklist */}
               <div style={{ padding: '0 20px', marginBottom: '16px' }}>
@@ -2946,8 +3031,8 @@ export default function LeaderDashboard({ initialCommunityId }) {
 
                   return isShieldActive ? (
                     <div style={{
-                      background: 'linear-gradient(135deg, rgba(235, 87, 56,0.14), rgba(27, 27, 27,0.92))',
-                      border: '1px solid rgba(235, 87, 56,0.35)',
+                      background: 'var(--surface-card)',
+                      border: '1px solid rgba(235, 87, 56, 0.35)',
                       borderRadius: '16px',
                       padding: '16px 18px',
                       display: 'flex',
@@ -2959,35 +3044,35 @@ export default function LeaderDashboard({ initialCommunityId }) {
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                         <div style={{
                           width: '42px', height: '42px', borderRadius: '12px',
-                          background: 'rgba(235, 87, 56,0.2)',
+                          background: 'var(--brand-accent-soft)',
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                           flexShrink: 0
                         }}>
-                          <Shield size={22} color="#F27257" />
+                          <Shield size={22} color="var(--brand-accent)" />
                         </div>
                         <div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <span style={{ fontWeight: 700, color: 'var(--white)', fontSize: '0.92rem' }}>MORE Leader Shield Active</span>
-                            <span style={{ fontSize: '0.65rem', background: 'rgba(34,197,94,0.2)', color: '#4ade80', padding: '1px 6px', borderRadius: '4px', fontWeight: 700 }}>£5M COVER</span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                            <span style={{ fontWeight: 700, color: 'var(--ink-primary)', fontSize: '0.94rem' }}>MORE Leader Shield Active</span>
+                            <span style={{ fontSize: '0.66rem', background: '#15803D', color: '#FFFFFF', padding: '2px 7px', borderRadius: '99px', fontWeight: 700 }}>£5M COVER</span>
                           </div>
-                          <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', marginTop: '2px' }}>
+                          <div style={{ fontSize: '0.76rem', color: 'var(--ink-secondary)', marginTop: '2px' }}>
                             Policy #{policyNo} • 2% Reduced Ticket Fees (Save 60%)
                           </div>
                         </div>
                       </div>
                       <div style={{ display: 'flex', gap: '8px' }}>
-                        <button onClick={() => setShowShieldModal(true)} className="btn btn-outline interactive-press" style={{ padding: '8px 12px', fontSize: '0.75rem' }}>
+                        <button onClick={() => setShowShieldModal(true)} className="btn btn-outline interactive-press" style={{ padding: '8px 12px', fontSize: '0.76rem' }}>
                           Manage
                         </button>
-                        <button onClick={() => generatePliCertificatePdf({ community, leaderName: user?.name, policyNumber: policyNo })} className="btn btn-primary interactive-press" style={{ padding: '8px 12px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <button onClick={() => generatePliCertificatePdf({ community, leaderName: user?.name, policyNumber: policyNo })} className="btn btn-primary interactive-press" style={{ padding: '8px 12px', fontSize: '0.76rem', color: '#FFFFFF', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                           <Download size={13} /> Certificate
                         </button>
                       </div>
                     </div>
                   ) : (
                     <div style={{
-                      background: 'linear-gradient(135deg, rgba(245,158,11,0.12), rgba(27, 27, 27,0.92))',
-                      border: '1px solid rgba(245,158,11,0.3)',
+                      background: 'var(--surface-card)',
+                      border: '1px solid rgba(217, 119, 6, 0.35)',
                       borderRadius: '16px',
                       padding: '16px 18px',
                       display: 'flex',
@@ -2999,20 +3084,20 @@ export default function LeaderDashboard({ initialCommunityId }) {
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                         <div style={{
                           width: '42px', height: '42px', borderRadius: '12px',
-                          background: 'rgba(245,158,11,0.2)',
+                          background: 'rgba(217, 119, 6, 0.14)',
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                           flexShrink: 0
                         }}>
-                          <Shield size={22} color="#fbbf24" />
+                          <Shield size={22} color="#D97706" />
                         </div>
                         <div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <span style={{ fontWeight: 800, color: 'var(--white)', fontSize: '1rem', letterSpacing: '-0.01em' }}>Upgrade to Leader Pro</span>
-                            <span style={{ fontSize: '0.68rem', background: '#f59e0b', color: '#000', padding: '2px 7px', borderRadius: '5px', fontWeight: 800, letterSpacing: '0.04em' }}>PRO</span>
+                            <span style={{ fontWeight: 700, color: 'var(--ink-primary)', fontSize: '1rem', fontFamily: 'var(--font-heading)' }}>Upgrade to Leader Pro</span>
+                            <span style={{ fontSize: '0.68rem', background: '#B45309', color: '#FFFFFF', padding: '2px 7px', borderRadius: '5px', fontWeight: 800, letterSpacing: '0.04em' }}>PRO</span>
                             <InfoExplainer explainerKey="leader_pro" size={13} />
                           </div>
-                          <div style={{ fontSize: '0.76rem', color: 'var(--slate-300)', marginTop: '3px', display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', lineHeight: 1.3 }}>
-                            <span style={{ color: '#38bdf8' }}><strong>✓ £5M Organiser Legal Protection</strong> included</span>
+                          <div style={{ fontSize: '0.76rem', color: 'var(--ink-secondary)', marginTop: '3px', display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', lineHeight: 1.35 }}>
+                            <span style={{ color: 'var(--teal-300)' }}><strong>✓ £5M Organiser Legal Protection</strong> included</span>
                             <span><strong>✓ 2% ticket fee</strong> (save 60%)</span>
                             <span><strong>✓ Council & Venue Safety Packs</strong></span>
                             <span><strong>✓ Digital attendee waivers</strong></span>
@@ -3070,7 +3155,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
 
               {/* Drill-down panel */}
               {leaderDrillDown && (
-                <div style={{ margin: '12px 20px 24px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '20px' }}>
+                <div style={{ margin: '12px 20px 24px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--hairline-border)', borderRadius: '16px', padding: '20px' }}>
 
                   {/* Members */}
                   {leaderDrillDown === 'members' && (
@@ -3084,7 +3169,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                           { label: 'Active',   value: stats.activeMembers || 0,                                            color: '#22c55e' },
                           { label: 'Inactive', value: (stats.totalMembers || 0) - (stats.activeMembers || 0),              color: '#6b7280' },
                         ].map(r => (
-                          <div key={r.label} style={{ padding: '12px', background: 'rgba(0,0,0,0.2)', borderRadius: '10px', textAlign: 'center' }}>
+                          <div key={r.label} style={{ padding: '12px', background: 'var(--surface-elevated)', borderRadius: '10px', textAlign: 'center' }}>
                             <div style={{ fontSize: '1.4rem', fontWeight: 700, color: r.color, fontFamily: 'var(--font-heading)' }}>{r.value}</div>
                             <div style={{ fontSize: '0.65rem', color: 'var(--slate-400)', textTransform: 'uppercase', fontWeight: 600 }}>{r.label}</div>
                           </div>
@@ -3096,7 +3181,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                         if (!u) return null;
                         return { u, score: getEngagementScore(m, events, eventRsvps, communityMessages, community.id) };
                       }).filter(Boolean).sort((a, b) => b.score - a.score).slice(0, 5).map(({ u, score }) => (
-                        <div key={u.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                        <div key={u.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 0', borderBottom: '1px solid var(--hairline-border)' }}>
                           <img src={u.avatar} alt={u.name} style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }} />
                           <span style={{ flex: 1, fontSize: '0.85rem', color: 'var(--white)' }}>{u.name}</span>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -3154,7 +3239,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                       {communityEvents.filter(e => (e.ticketPrice || 0) > 0).map(e => {
                         const r = getEventRevenue(e);
                         return (
-                          <div key={e.id} style={{ padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                          <div key={e.id} style={{ padding: '8px 0', borderBottom: '1px solid var(--hairline-border)' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
                               <span style={{ fontSize: '0.85rem', color: 'var(--white)' }}>{e.title}</span>
                               <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#f59e0b' }}>£{r.revenue}</span>
@@ -3190,7 +3275,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                           const r = getEventRevenue(e);
                           const isPast = new Date(e.date + 'T00:00:00') < now;
                           return (
-                            <div key={e.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                            <div key={e.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 0', borderBottom: '1px solid var(--hairline-border)' }}>
                               <div style={{ width: '36px', height: '40px', background: isPast ? 'rgba(107,114,128,0.15)' : 'rgba(235, 87, 56,0.12)', borderRadius: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                                 <div style={{ fontSize: '1rem', fontWeight: 700, color: isPast ? 'var(--slate-400)' : 'var(--teal-300)', lineHeight: 1 }}>{new Date(e.date + 'T00:00:00').getDate()}</div>
                               </div>
@@ -3290,7 +3375,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                                 { label: 'Check-in Rate', value: `${checkinRate}%`,   color: '#3b82f6' },
                                 { label: 'Retention Rate',value: `${retentionRate}%`, color: '#f59e0b', sub: `${repeatAttendees} repeat` },
                               ].map(r => (
-                                <div key={r.label} style={{ padding: '12px', background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.04)', borderRadius: '12px', textAlign: 'center' }}>
+                                <div key={r.label} style={{ padding: '12px', background: 'var(--surface-elevated)', border: '1px solid var(--hairline-border)', borderRadius: '12px', textAlign: 'center' }}>
                                   <div style={{ fontSize: '1.35rem', fontWeight: 800, color: r.color, fontFamily: 'var(--font-heading)' }}>{r.value}</div>
                                   <div style={{ fontSize: '0.65rem', color: 'var(--slate-400)', textTransform: 'uppercase', fontWeight: 600, marginTop: '2px' }}>{r.label}</div>
                                   {r.sub && <div style={{ fontSize: '0.62rem', color: 'var(--slate-500)', marginTop: '2px' }}>{r.sub}</div>}
@@ -3301,7 +3386,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                             {/* Retention & Referral summary cards */}
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '16px' }}>
                               <div style={{ padding: '12px', background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.15)', borderRadius: '12px' }}>
-                                <div style={{ fontSize: '0.72rem', color: '#86efac', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>
+                                <div style={{ fontSize: '0.72rem', color: '#15803D', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>
                                   Loyalty Retention
                                 </div>
                                 <div style={{ fontSize: '0.82rem', color: 'var(--slate-200)', lineHeight: 1.4 }}>
@@ -3309,7 +3394,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                                 </div>
                               </div>
                               <div style={{ padding: '12px', background: 'rgba(56,189,248,0.06)', border: '1px solid rgba(56,189,248,0.15)', borderRadius: '12px' }}>
-                                <div style={{ fontSize: '0.72rem', color: '#7dd3fc', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>
+                                <div style={{ fontSize: '0.72rem', color: 'var(--teal-300)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>
                                   Word of Mouth
                                 </div>
                                 <div style={{ fontSize: '0.82rem', color: 'var(--slate-200)', lineHeight: 1.4 }}>
@@ -3328,7 +3413,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                         const checkedIn = rsvps.filter(r => r.checkedIn || r.status === 'checked_in').length;
                         const pct = going > 0 ? Math.round((checkedIn / going) * 100) : 0;
                         return (
-                          <div key={e.id} style={{ padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                          <div key={e.id} style={{ padding: '10px 0', borderBottom: '1px solid var(--hairline-border)' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
                               <span style={{ fontSize: '0.85rem', color: 'var(--white)', fontWeight: 600 }}>{e.title}</span>
                               <span style={{ fontSize: '0.75rem', fontWeight: 700, color: pct >= 75 ? '#22c55e' : pct >= 40 ? '#f59e0b' : 'var(--slate-400)' }}>
@@ -3354,7 +3439,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                         const d = daysUntil(e.date);
                         const r = getEventRevenue(e);
                         return (
-                          <div key={e.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                          <div key={e.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 0', borderBottom: '1px solid var(--hairline-border)' }}>
                             <div style={{ padding: '4px 10px', background: 'rgba(139,92,246,0.15)', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 700, color: '#a78bfa', whiteSpace: 'nowrap' }}>
                               {d === 0 ? 'Today' : d === 1 ? 'Tomorrow' : `${d}d`}
                             </div>
@@ -3503,7 +3588,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   
                   {/* Share link bar */}
                   <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
-                    <div style={{ flex: 1, padding: '10px 14px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', fontSize: '0.8rem', color: 'var(--slate-400)', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
+                    <div style={{ flex: 1, padding: '10px 14px', background: 'var(--surface-elevated)', border: '1px solid var(--hairline-border)', borderRadius: '10px', fontSize: '0.8rem', color: 'var(--slate-400)', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
                       www.morecommunity.app{getCommunityPath(community, communities)}
                     </div>
                     <button
@@ -3572,7 +3657,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--slate-500)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '10px', paddingLeft: '4px' }}>Recent Activity</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   {recentActivity.length > 0 ? recentActivity.map((a, i) => (
-                    <div key={i} className="stagger-item" style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.04)' }}>
+                    <div key={i} className="stagger-item" style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: '10px', border: '1px solid var(--hairline-border)' }}>
                       <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: `${a.color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                         <a.icon size={14} color={a.color} />
                       </div>
@@ -3601,6 +3686,71 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 </button>
               </div>
 
+              {/* Member Event Proposals Queue (hidden from public until leader approves) */}
+              {pendingProposedEvents.length > 0 && (
+                <div style={{ marginBottom: '20px', padding: '16px', borderRadius: '16px', background: 'var(--surface-card)', border: '1.5px solid rgba(235, 87, 56, 0.35)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+                    <div style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: '0.98rem', color: 'var(--ink-primary)', display: 'flex', alignItems: 'center', gap: '7px' }}>
+                      <Lightbulb size={16} color="var(--brand-accent)" /> Member Event Proposals ({pendingProposedEvents.length})
+                    </div>
+                    <span style={{ fontSize: '0.72rem', color: 'var(--ink-muted)', fontWeight: 600 }}>Hidden from public until approved</span>
+                  </div>
+                  {pendingProposedEvents.map(pe => {
+                    const cleanTitle = (pe.title || '').replace(/^\[Proposal\]\s*/i, '').trim();
+                    const cleanDesc = (pe.description || '').replace(/\s*\[ProposedByUid:[^\]]+\]/g, '').trim();
+                    return (
+                      <div key={pe.id} style={{ padding: '14px', background: 'var(--surface-elevated)', borderRadius: '12px', border: '1px solid var(--hairline-border)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px', flexWrap: 'wrap' }}>
+                          <div style={{ minWidth: 0, flex: '1 1 220px' }}>
+                            <div style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, color: 'var(--ink-primary)', fontSize: '0.96rem' }}>{cleanTitle}</div>
+                            <div style={{ fontSize: '0.78rem', color: 'var(--ink-secondary)', marginTop: '3px' }}>
+                              {formatDisplayDate(pe.date) || pe.date} at {pe.time || '10:00'} • {cleanLocationName(pe.location) || 'Local Area'}
+                            </div>
+                          </div>
+                          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                await updateEvent(pe.id, { status: 'published', title: cleanTitle, description: cleanDesc });
+                                toast.success('Event Published!', 'The proposed event is now live and the member has been notified.');
+                              }}
+                              className="btn btn-primary interactive-press"
+                              style={{ padding: '7px 12px', fontSize: '0.78rem', borderRadius: '8px', fontWeight: 700, color: '#FFFFFF' }}
+                            >
+                              Approve &amp; Publish ✓
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => openEventWizard(true, { ...pe, title: cleanTitle, description: cleanDesc })}
+                              className="interactive-press"
+                              style={{ padding: '7px 12px', fontSize: '0.78rem', borderRadius: '8px', fontWeight: 600, background: 'var(--surface-card)', border: '1px solid var(--hairline-border-strong)', color: 'var(--ink-primary)', cursor: 'pointer' }}
+                            >
+                              Edit First
+                            </button>
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                await cancelEvent(pe.id);
+                                toast.info('Proposal Declined', 'The proposed event has been dismissed.');
+                              }}
+                              className="interactive-press"
+                              style={{ padding: '7px 11px', fontSize: '0.78rem', borderRadius: '8px', fontWeight: 600, background: 'rgba(220, 38, 38, 0.1)', border: '1px solid rgba(220, 38, 38, 0.3)', color: '#DC2626', cursor: 'pointer' }}
+                            >
+                              Decline
+                            </button>
+                          </div>
+                        </div>
+                        {cleanDesc && (
+                          <div style={{ fontSize: '0.8rem', color: 'var(--ink-secondary)', lineHeight: 1.45, background: 'var(--surface-card)', padding: '9px 11px', borderRadius: '8px', border: '1px solid var(--hairline-border)', whiteSpace: 'pre-line' }}>
+                            {cleanDesc}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
               {communityEvents.length === 0 ? (
                 <div 
                   onClick={() => openEventWizard()}
@@ -3620,93 +3770,6 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 </div>
               ) : (
                 <>
-                  {/* Member Walk Proposals (1-Click Approve & Publish) */}
-                  {(() => {
-                    const proposedEvents = communityEvents.filter(e => e.status === 'proposed');
-                    if (proposedEvents.length === 0) return null;
-                    return (
-                      <div style={{
-                        background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(217, 119, 6, 0.08) 100%)',
-                        border: '1px solid rgba(245, 158, 11, 0.35)',
-                        borderRadius: '16px',
-                        padding: '16px 18px',
-                        marginBottom: '16px'
-                      }}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#fbbf24', fontWeight: 700, fontSize: '0.95rem' }}>
-                            <Lightbulb size={18} />
-                            <span>Member Event Proposals ({proposedEvents.length})</span>
-                          </div>
-                          <span style={{ fontSize: '0.72rem', color: 'var(--slate-400)' }}>1-click to approve & add to schedule</span>
-                        </div>
-
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                          {proposedEvents.map(prop => {
-                            const cleanTitle = prop.title.replace(/^\[Proposal\]\s*/i, '');
-                            return (
-                              <div key={prop.id} style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '12px 14px' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', marginBottom: '6px', flexWrap: 'wrap' }}>
-                                  <span style={{ fontWeight: 700, color: 'var(--white)', fontSize: '0.95rem' }}>{cleanTitle}</span>
-                                  <span style={{ fontSize: '0.72rem', color: '#fbbf24', background: 'rgba(245,158,11,0.2)', padding: '2px 8px', borderRadius: '99px', fontWeight: 600 }}>
-                                    Member Idea
-                                  </span>
-                                </div>
-                                <div style={{ fontSize: '0.8rem', color: 'var(--slate-300)', marginBottom: '6px' }}>
-                                  📅 {prop.date} at {prop.time || '10:00'} • 📍 {cleanLocationName(prop.location)}
-                                </div>
-                                {prop.description && (
-                                  <p style={{ fontSize: '0.78rem', color: 'var(--slate-400)', margin: '0 0 10px 0', lineHeight: 1.4, whiteSpace: 'pre-wrap' }}>
-                                    {prop.description}
-                                  </p>
-                                )}
-                                <div style={{ display: 'flex', gap: '8px' }}>
-                                  <button
-                                    onClick={async () => {
-                                      try {
-                                        await updateEvent(prop.id, { status: 'published', title: cleanTitle });
-                                        toast.success('Event Approved! 🎉', `"${cleanTitle}" is now live on the calendar.`);
-                                      } catch (e) {
-                                        toast.error('Error', 'Could not approve proposal.');
-                                      }
-                                    }}
-                                    className="interactive-press"
-                                    style={{
-                                      padding: '6px 14px', borderRadius: '99px',
-                                      background: '#10b981', color: '#fff', border: 'none',
-                                      fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer',
-                                      display: 'flex', alignItems: 'center', gap: '4px'
-                                    }}
-                                  >
-                                    <Check size={14} /> Approve & Publish
-                                  </button>
-                                  <button
-                                    onClick={async () => {
-                                      try {
-                                        await cancelEvent(prop.id);
-                                        toast.info('Proposal Declined', 'Removed from proposal queue.');
-                                      } catch (e) {
-                                        toast.error('Error', 'Could not decline proposal.');
-                                      }
-                                    }}
-                                    className="interactive-press"
-                                    style={{
-                                      padding: '6px 12px', borderRadius: '99px',
-                                      background: 'rgba(239, 68, 68, 0.15)', color: '#f87171',
-                                      border: '1px solid rgba(239,68,68,0.3)', fontWeight: 600,
-                                      fontSize: '0.8rem', cursor: 'pointer'
-                                    }}
-                                  >
-                                    Decline
-                                  </button>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    );
-                  })()}
-
                   {/* Event Filter Tabs */}
                   {(() => {
                     const upcomingCount = publishedEvents.filter(e => isEventUpcoming(e)).length;
@@ -3753,10 +3816,10 @@ export default function LeaderDashboard({ initialCommunityId }) {
                     {(() => {
                       let filteredEvents = communityEvents;
                       if (dashboardEventFilter === 'upcoming') {
-                        filteredEvents = communityEvents.filter(e => isEventUpcoming(e) && e.status !== 'cancelled')
+                        filteredEvents = communityEvents.filter(e => isEventUpcoming(e) && e.status !== 'cancelled' && e.status !== 'proposed')
                           .sort((a, b) => (parseEventDateTime(a.date, a.time) || 0) - (parseEventDateTime(b.date, b.time) || 0));
                       } else if (dashboardEventFilter === 'past') {
-                        filteredEvents = communityEvents.filter(e => isEventPast(e) && e.status !== 'cancelled')
+                        filteredEvents = communityEvents.filter(e => isEventPast(e) && e.status !== 'cancelled' && e.status !== 'proposed')
                           .sort((a, b) => (parseEventDateTime(b.date, b.time) || 0) - (parseEventDateTime(a.date, a.time) || 0));
                       }
 
@@ -3837,7 +3900,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                                       {pendingRequests.map(att => {
                                         const u = users.find(x => x.id === att.userId);
                                         return (
-                                          <div key={att.userId} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', background: 'rgba(0,0,0,0.25)', padding: '6px 10px', borderRadius: '8px' }}>
+                                          <div key={att.userId} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', background: 'var(--surface-elevated)', padding: '6px 10px', borderRadius: '8px' }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
                                               <img src={resolveUserAvatar(u)} alt={u?.name} style={{ width: '24px', height: '24px', borderRadius: '50%', objectFit: 'cover' }} />
                                               <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--white)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{u?.name || 'Community Member'}</span>
@@ -4020,7 +4083,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                             
                             {/* Expandable Attendee List */}
                             {isExpanded && attendees.length > 0 && (
-                              <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                              <div style={{ borderTop: '1px solid var(--hairline-border)', padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                                 <div style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--slate-500)', textTransform: 'uppercase', marginBottom: '4px' }}>Attendees ({attendees.length})</div>
                                 {attendees.map((rsvp, idx) => {
                                   const attendee = users.find(u => u.id === rsvp.userId);
@@ -4032,7 +4095,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                                         <div style={{ fontSize: '0.85rem', color: 'var(--white)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                                           <span>{attendee.name}</span>
                                           {rsvp.guestName && (
-                                            <span style={{ fontSize: '0.68rem', padding: '1px 6px', borderRadius: '4px', background: 'rgba(56,189,248,0.2)', color: '#7dd3fc', fontWeight: 600 }}>
+                                            <span style={{ fontSize: '0.68rem', padding: '1px 6px', borderRadius: '4px', background: 'rgba(56,189,248,0.2)', color: 'var(--teal-300)', fontWeight: 600 }}>
                                               +1 {rsvp.guestName}
                                             </span>
                                           )}
@@ -4077,7 +4140,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                               </div>
                             )}
                             {isExpanded && attendees.length === 0 && (
-                              <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '16px 14px', textAlign: 'center', color: 'var(--slate-500)', fontSize: '0.8rem' }}>No attendees yet</div>
+                              <div style={{ borderTop: '1px solid var(--hairline-border)', padding: '16px 14px', textAlign: 'center', color: 'var(--slate-500)', fontSize: '0.8rem' }}>No attendees yet</div>
                             )}
                           </div>
                         );
@@ -4116,7 +4179,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                     padding: '12px 14px 12px 42px',
                     borderRadius: '12px',
                     background: 'rgba(255, 255, 255, 0.04)',
-                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                    border: '1px solid var(--hairline-border)',
                     color: 'var(--white)',
                     fontSize: '0.9rem'
                   }}
@@ -4164,7 +4227,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                       className="stagger-item interactive-hover" 
                       style={{ 
                         background: 'rgba(255,255,255,0.02)', 
-                        border: '1px solid rgba(255,255,255,0.06)', 
+                        border: '1px solid var(--hairline-border)', 
                         borderRadius: '16px', 
                         padding: '18px',
                         transition: 'all 0.2s ease'
@@ -4343,7 +4406,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
               </div>
 
               {/* Community Subscription Pricing */}
-              <div className="glass-panel" style={{ padding: '24px', marginBottom: '20px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <div className="glass-panel" style={{ padding: '24px', marginBottom: '20px', borderRadius: '20px', border: '1px solid var(--hairline-border)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <Crown size={18} color="#f59e0b" />
@@ -4393,7 +4456,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
 
                 {/* Live Breakdown Box if Price > 0 */}
                 {Number(subscriptionPrice) > 0 && (
-                  <div style={{ background: 'rgba(27, 27, 27, 0.6)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '16px', marginBottom: '16px' }}>
+                  <div style={{ background: 'var(--surface-elevated)', border: '1px solid var(--hairline-border)', borderRadius: '14px', padding: '16px', marginBottom: '16px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                       <span style={{ fontSize: '0.75rem', color: 'var(--slate-400)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.04em' }}>
                         Subscription Revenue Breakdown
@@ -4419,7 +4482,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                         <span>Platform & Card Processing (5% standard / 0% Pro):</span>
                         <span>£{(Number(subscriptionPrice) * 0.05).toFixed(2)}</span>
                       </div>
-                      <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '8px', marginTop: '4px', display: 'flex', justifyContent: 'space-between', color: 'var(--teal-300)', fontSize: '0.8rem' }}>
+                      <div style={{ borderTop: '1px solid var(--hairline-border)', paddingTop: '8px', marginTop: '4px', display: 'flex', justifyContent: 'space-between', color: 'var(--teal-300)', fontSize: '0.8rem' }}>
                         <span>Estimated Annual (20 active members):</span>
                         <span style={{ fontWeight: 700 }}>£{(Number(subscriptionPrice) * 0.95 * 20 * 12).toLocaleString()}/year to your fund</span>
                       </div>
@@ -4544,7 +4607,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                     {/* 3-Pillar Breakdown */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                       {/* 1. Member Fee */}
-                      <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '12px', padding: '14px' }}>
+                      <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--hairline-border)', borderRadius: '12px', padding: '14px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
                           <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--ink-primary)' }}>1. Member Monthly Dues</div>
                           <div style={{ fontSize: '1rem', fontWeight: 800, color: '#38bdf8' }}>£{Number(subscriptionPrice || 20).toFixed(2)}/mo</div>
@@ -4568,7 +4631,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                       </div>
 
                       {/* 3. More Platform & Card Processing */}
-                      <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '12px', padding: '14px' }}>
+                      <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--hairline-border)', borderRadius: '12px', padding: '14px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
                           <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--ink-primary)' }}>3. More Platform & Payment Processing (5% standard / 0% Pro)</div>
                           <div style={{ fontSize: '0.95rem', fontWeight: 800, color: '#a78bfa' }}>
@@ -4600,7 +4663,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   {publishedEvents.length > 0 ? publishedEvents.map(event => {
                     const ev = getEventRevenue(event);
                     return (
-                      <div key={event.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px' }}>
+                      <div key={event.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--hairline-border)', borderRadius: '12px' }}>
                         <div style={{ flex: 1 }}>
                           <div style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--white)', marginBottom: '2px' }}>{event.title}</div>
                           <div style={{ fontSize: '0.75rem', color: 'var(--slate-500)' }}>{ev.rsvpCount} tickets × £{ev.price}</div>
@@ -4626,7 +4689,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
               </div>
 
               {/* Stripe Connect Express Leader Payouts */}
-              <div className="glass-panel" style={{ padding: '24px', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '20px' }}>
+              <div className="glass-panel" style={{ padding: '24px', border: '1px solid var(--hairline-border)', borderRadius: '20px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(235, 87, 56,0.12)', border: '1px solid rgba(235, 87, 56,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -4651,24 +4714,24 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 {stripeConnected ? (
                   <>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '16px', marginBottom: '20px' }}>
-                      <div style={{ background: 'rgba(255,255,255,0.02)', padding: '14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                      <div style={{ background: 'rgba(255,255,255,0.02)', padding: '14px', borderRadius: '12px', border: '1px solid var(--hairline-border)' }}>
                         <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '4px' }}>In Transit</div>
                         <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--teal-400)' }}>£450.00</div>
                         <div style={{ fontSize: '0.75rem', color: 'var(--slate-500)', marginTop: '2px' }}>Rolling daily transfer</div>
                       </div>
-                      <div style={{ background: 'rgba(255,255,255,0.02)', padding: '14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                      <div style={{ background: 'rgba(255,255,255,0.02)', padding: '14px', borderRadius: '12px', border: '1px solid var(--hairline-border)' }}>
                         <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '4px' }}>Lifetime Earnings</div>
                         <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--white)' }}>£3,240.00</div>
                         <div style={{ fontSize: '0.75rem', color: 'var(--slate-500)', marginTop: '2px' }}>95% Leader share</div>
                       </div>
-                      <div style={{ background: 'rgba(255,255,255,0.02)', padding: '14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                      <div style={{ background: 'rgba(255,255,255,0.02)', padding: '14px', borderRadius: '12px', border: '1px solid var(--hairline-border)' }}>
                         <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '4px' }}>Platform Split</div>
                         <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#38bdf8' }}>{isShieldActive ? '98% / 2%' : '95% / 5%'}</div>
                         <div style={{ fontSize: '0.75rem', color: 'var(--slate-500)', marginTop: '2px' }}>{isShieldActive ? '2% reduced fee (Pro)' : '5% standard platform fee'}</div>
                       </div>
                     </div>
 
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', padding: '12px 16px', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.04)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', padding: '12px 16px', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px solid var(--hairline-border)' }}>
                       <div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--teal-400)' }}></div>
@@ -4803,7 +4866,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                           </a>
                         </div>
                         {!isPromoted ? (
-                          <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '16px' }}>
+                          <div style={{ borderTop: '1px solid var(--hairline-border)', paddingTop: '16px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                                 <span style={{ fontSize: '0.85rem', color: 'var(--slate-300)' }}>
@@ -4873,7 +4936,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                               className="btn btn-primary" style={{ width: '100%', padding: '10px', fontSize: '0.9rem' }}>Promote to Community</button>
                           </div>
                         ) : (
-                          <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '16px' }}>
+                          <div style={{ borderTop: '1px solid var(--hairline-border)', paddingTop: '16px' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', background: 'rgba(235, 87, 56,0.1)', padding: '10px', borderRadius: '8px' }}>
                               {isAff ? (
                                 <>
@@ -4956,7 +5019,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                     if (!memberUser) return null;
                     const score = getEngagementScore(membership, events, eventRsvps, communityMessages, community.id);
                     return (
-                      <div key={memberUser.id} className="stagger-item" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px' }}>
+                      <div key={memberUser.id} className="stagger-item" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--hairline-border)', borderRadius: '12px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                           <div style={{ position: 'relative' }}>
                             <img 
@@ -5038,7 +5101,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 className="interactive-press" 
                 style={{ 
                   display: 'flex', alignItems: 'center', gap: '16px', padding: '16px 18px', 
-                  background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)', 
+                  background: 'rgba(255,255,255,0.025)', border: '1px solid var(--hairline-border)', 
                   borderRadius: '14px', color: 'var(--white)', width: '100%', cursor: 'pointer', textAlign: 'left',
                   transition: 'border-color 0.2s, background 0.2s'
                 }}
@@ -5058,7 +5121,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
               </button>
 
               {/* Community Guidelines & Norms Accordion */}
-              <div style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px', overflow: 'hidden' }}>
+              <div style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid var(--hairline-border)', borderRadius: '14px', overflow: 'hidden' }}>
                 <button
                   type="button"
                   onClick={() => setIsGuidelinesExpanded(!isGuidelinesExpanded)}
@@ -5095,7 +5158,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 </button>
 
                 {isGuidelinesExpanded && (
-                  <div style={{ padding: '0 18px 20px 18px', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', gap: '16px', paddingTop: '16px' }}>
+                  <div style={{ padding: '0 18px 20px 18px', borderTop: '1px solid var(--hairline-border)', display: 'flex', flexDirection: 'column', gap: '16px', paddingTop: '16px' }}>
                     {/* Pre-made template pack selector */}
                     <div>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', flexWrap: 'wrap', gap: '4px' }}>
@@ -5183,7 +5246,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                                       className="interactive-press"
                                       style={{
                                         width: '100%', padding: '5px 8px', borderRadius: '6px',
-                                        border: '1px solid rgba(255,255,255,0.08)',
+                                        border: '1px solid var(--hairline-border)',
                                         background: 'rgba(255,255,255,0.03)',
                                         color: 'var(--slate-400)',
                                         fontFamily: 'var(--font-body)', fontSize: '0.72rem', fontWeight: 500, cursor: 'pointer',
@@ -5268,7 +5331,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                               style={{
                                 display: 'flex', alignItems: 'center', gap: '10px',
                                 padding: '10px 14px', background: 'rgba(255,255,255,0.03)',
-                                border: '1px solid rgba(255,255,255,0.06)', borderRadius: '10px'
+                                border: '1px solid var(--hairline-border)', borderRadius: '10px'
                               }}
                             >
                               <span style={{ fontFamily: 'var(--font-heading)', fontSize: '0.78rem', fontWeight: 700, color: 'var(--teal-400)', minWidth: '22px' }}>
@@ -5330,7 +5393,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                     </form>
 
                     {/* Save Guidelines Action Bar */}
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '8px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '8px', borderTop: '1px solid var(--hairline-border)' }}>
                       <span style={{ fontFamily: 'var(--font-body)', fontSize: '0.75rem', color: 'var(--slate-400)' }}>
                         Changes are published to your community microsite immediately.
                       </span>
@@ -5370,7 +5433,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 className="interactive-press" 
                 style={{ 
                   display: 'flex', alignItems: 'center', gap: '16px', padding: '16px 18px', 
-                  background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)', 
+                  background: 'rgba(255,255,255,0.025)', border: '1px solid var(--hairline-border)', 
                   borderRadius: '14px', color: 'var(--white)', width: '100%', cursor: 'pointer', textAlign: 'left',
                   transition: 'border-color 0.2s, background 0.2s'
                 }}
@@ -5406,7 +5469,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
               </div>
 
               {/* Community Visibility */}
-              <div style={{ padding: '16px 18px', background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px' }}>
+              <div style={{ padding: '16px 18px', background: 'rgba(255,255,255,0.025)', border: '1px solid var(--hairline-border)', borderRadius: '14px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '12px' }}>
                   <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(59,130,246,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3b82f6', flexShrink: 0 }}>
                     {communityVisibility === 'public' ? <Eye size={20} /> : <EyeOff size={20} />}
@@ -5440,7 +5503,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
               </div>
 
               {/* Member Approval */}
-              <div style={{ padding: '16px 18px', background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px', display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <div style={{ padding: '16px 18px', background: 'rgba(255,255,255,0.025)', border: '1px solid var(--hairline-border)', borderRadius: '14px', display: 'flex', alignItems: 'center', gap: '16px' }}>
                 <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(139,92,246,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#a78bfa', flexShrink: 0 }}>
                   <Shield size={20} />
                 </div>
@@ -5471,7 +5534,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
               </div>
 
               {/* Accept Guest Sessions & Sponsor Pitches Toggle */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px 18px', background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px 18px', background: 'rgba(255,255,255,0.025)', border: '1px solid var(--hairline-border)', borderRadius: '14px' }}>
                 <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(235, 87, 56,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--teal-400)', flexShrink: 0 }}>
                   <Sparkles size={20} />
                 </div>
@@ -5567,7 +5630,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
               )}
 
               {/* Multi-Town Chapter Network Toggle */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px 18px', background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px 18px', background: 'rgba(255,255,255,0.025)', border: '1px solid var(--hairline-border)', borderRadius: '14px' }}>
                 <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(56, 189, 248, 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#38bdf8', flexShrink: 0 }}>
                   <Globe size={20} />
                 </div>
@@ -5615,7 +5678,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   }} 
                   style={{
                     width: '46px', height: '26px', borderRadius: '99px', border: 'none',
-                    background: (community.allow_chapters ?? community.allowChapters ?? true) ? 'var(--teal-500)' : 'rgba(255,255,255,0.1)',
+                    background: (community.allow_chapters ?? community.allowChapters ?? true) ? 'var(--brand-accent)' : 'var(--surface-elevated)', border: (community.allow_chapters ?? community.allowChapters ?? true) ? 'none' : '1px solid var(--hairline-border-strong)',
                     position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0
                   }}
                 >
@@ -5667,7 +5730,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
               )}
 
               {/* Community Carpool & Lift Sharing Toggle */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px 18px', background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px 18px', background: 'rgba(255,255,255,0.025)', border: '1px solid var(--hairline-border)', borderRadius: '14px' }}>
                 <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(16, 185, 129, 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#10b981', flexShrink: 0 }}>
                   <Car size={20} />
                 </div>
@@ -5701,7 +5764,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
               </div>
 
               {/* +1 Named Guest Passes Toggle */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px 18px', background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px 18px', background: 'rgba(255,255,255,0.025)', border: '1px solid var(--hairline-border)', borderRadius: '14px' }}>
                 <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(245, 158, 11, 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#f59e0b', flexShrink: 0 }}>
                   <Users size={20} />
                 </div>
@@ -5746,7 +5809,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 className="interactive-press" 
                 style={{ 
                   display: 'flex', alignItems: 'center', gap: '16px', padding: '16px 18px', 
-                  background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)', 
+                  background: 'rgba(255,255,255,0.025)', border: '1px solid var(--hairline-border)', 
                   borderRadius: '14px', color: 'var(--white)', width: '100%', cursor: 'pointer', textAlign: 'left',
                   transition: 'border-color 0.2s, background 0.2s'
                 }}
@@ -5809,7 +5872,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
             boxShadow: '0 25px 60px rgba(0,0,0,0.7)',
             overflow: 'hidden'
           }}>
-            <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--hairline-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h2 style={{ margin: 0, fontSize: '1.2rem', fontFamily: 'var(--font-heading)', color: 'var(--white)' }}>
                 {isEditing ? 'Edit Profile' : 
                  modalType === 'pitches-review' ? 'Guest Sessions & Sponsor Partnerships' :
@@ -5974,7 +6037,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
 
                   {/* Selected Tags Chips */}
                   {editForm.tags && editForm.tags.length > 0 && (
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '12px', padding: '10px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '12px', padding: '10px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: '1px solid var(--hairline-border)' }}>
                       {editForm.tags.map((tag, idx) => (
                         <span key={idx} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 10px', borderRadius: '8px', background: 'rgba(235, 87, 56,0.15)', color: 'var(--teal-300)', fontSize: '0.8rem', fontWeight: 600 }}>
                           {tag}
@@ -6032,7 +6095,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   </div>
 
                   {/* Available Tag Buttons */}
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', maxHeight: '160px', overflowY: 'auto', padding: '4px', background: 'rgba(0,0,0,0.2)', borderRadius: '10px' }}>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', maxHeight: '160px', overflowY: 'auto', padding: '4px', background: 'var(--surface-elevated)', borderRadius: '10px' }}>
                     {(editTagCategory === 'All' ? ALL_COMMUNITY_TAGS : (COMMUNITY_TAG_CATEGORIES[editTagCategory] || ALL_COMMUNITY_TAGS)).map(tag => {
                       const selected = editForm.tags?.includes(tag);
                       return (
@@ -6092,7 +6155,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                     const memberUser = users.find(u => u.id === membership.userId);
                     if (!memberUser) return null;
                     return (
-                      <div key={memberUser.id} className="stagger-item" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px' }}>
+                      <div key={memberUser.id} className="stagger-item" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--hairline-border)', borderRadius: '12px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                           <img 
                             onClick={() => setSelectedProfileImage({
@@ -6152,7 +6215,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                       const memberUser = users.find(u => u.id === membership.userId);
                       if (!memberUser) return null;
                       return (
-                        <div key={memberUser.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px' }}>
+                        <div key={memberUser.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--hairline-border)', borderRadius: '12px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                             <img onClick={() => { router.push(`/profile/${memberUser.id}`); setModalType(null); }} src={memberUser.avatar} alt={memberUser.name} style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover', cursor: 'pointer' }} />
                             <span onClick={() => { router.push(`/profile/${memberUser.id}`); setModalType(null); }} style={{ fontWeight: 500, cursor: 'pointer' }}>{memberUser.name}</span>
@@ -6188,11 +6251,11 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 {/* Member Proposed Walks */}
                 {pendingProposedEvents.length > 0 && (
                   <div style={{ padding: '16px', borderRadius: '14px', background: 'rgba(56, 189, 248, 0.06)', border: '1.5px solid rgba(56, 189, 248, 0.3)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    <div style={{ fontWeight: 700, fontSize: '0.92rem', color: '#7dd3fc', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <div style={{ fontWeight: 700, fontSize: '0.92rem', color: 'var(--teal-300)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <Calendar size={16} /> Member Event Proposals ({pendingProposedEvents.length})
                     </div>
                     {pendingProposedEvents.map(pe => (
-                      <div key={pe.id} style={{ padding: '12px', background: 'rgba(0,0,0,0.3)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <div key={pe.id} style={{ padding: '12px', background: 'var(--surface-elevated)', borderRadius: '10px', border: '1px solid var(--hairline-border)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '10px' }}>
                           <div>
                             <div style={{ fontWeight: 700, color: 'var(--white)', fontSize: '0.92rem' }}>{pe.title.replace('[Proposal]', '').trim()}</div>
@@ -6240,7 +6303,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                       Guest Workshop & Sponsor Pitches ({communityPitches.length})
                     </div>
                     {communityPitches.map(p => (
-                      <div key={p.id} style={{ padding: '14px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <div key={p.id} style={{ padding: '14px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: '1px solid var(--hairline-border)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '10px' }}>
                           <div>
                             <div style={{ fontWeight: 700, color: 'var(--white)', fontSize: '0.95rem' }}>{p.title || p.businessName || 'Specialist Session'}</div>
@@ -6283,7 +6346,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                           )}
                         </div>
                         {p.description && (
-                          <div style={{ fontSize: '0.78rem', color: 'var(--slate-300)', lineHeight: 1.45, background: 'rgba(0,0,0,0.25)', padding: '8px 10px', borderRadius: '8px' }}>
+                          <div style={{ fontSize: '0.78rem', color: 'var(--slate-300)', lineHeight: 1.45, background: 'var(--surface-elevated)', padding: '8px 10px', borderRadius: '8px' }}>
                             {p.description}
                           </div>
                         )}
@@ -6321,7 +6384,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <span style={{ fontSize: '1.1rem' }}>⏳</span>
-                        <div style={{ fontWeight: 700, fontSize: '0.95rem', color: '#fca5a5' }}>
+                        <div style={{ fontWeight: 700, fontSize: '0.95rem', color: '#DC2626' }}>
                           Chapter Applications Awaiting Your Approval ({pendingChapterApplications.length})
                         </div>
                       </div>
@@ -6348,7 +6411,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                                 <div style={{ fontWeight: 700, color: 'var(--white)', fontSize: '0.92rem' }}>
                                   {app.name}
                                 </div>
-                                <div style={{ fontSize: '0.78rem', color: '#7dd3fc', marginTop: '2px' }}>
+                                <div style={{ fontSize: '0.78rem', color: 'var(--teal-300)', marginTop: '2px' }}>
                                   📍 Proposed Town: {cleanLocationName(app.location_name) || 'Local Town'}
                                 </div>
                                 <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', marginTop: '2px' }}>
@@ -6446,7 +6509,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                     🏛️ Why scale your community with multi-town chapters?
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <div style={{ padding: '10px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px' }}>
+                    <div style={{ padding: '10px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--hairline-border)', borderRadius: '10px' }}>
                       <div style={{ fontWeight: 600, fontSize: '0.84rem', color: 'var(--teal-300)', marginBottom: '2px' }}>
                         1. Scale your brand & mission without extra legwork
                       </div>
@@ -6455,7 +6518,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                       </div>
                     </div>
 
-                    <div style={{ padding: '10px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px' }}>
+                    <div style={{ padding: '10px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--hairline-border)', borderRadius: '10px' }}>
                       <div style={{ fontWeight: 600, fontSize: '0.84rem', color: 'var(--teal-300)', marginBottom: '2px' }}>
                         2. Higher sponsorship & commercial clout
                       </div>
@@ -6464,7 +6527,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                       </div>
                     </div>
 
-                    <div style={{ padding: '10px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px' }}>
+                    <div style={{ padding: '10px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--hairline-border)', borderRadius: '10px' }}>
                       <div style={{ fontWeight: 600, fontSize: '0.84rem', color: 'var(--teal-300)', marginBottom: '2px' }}>
                         3. Standardized safety & quality control
                       </div>
@@ -6477,7 +6540,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
 
                 {/* Active Chapters Roster */}
                 {activeSisterChapters.length > 0 && (
-                  <div style={{ padding: '12px 14px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px' }}>
+                  <div style={{ padding: '12px 14px', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--hairline-border)', borderRadius: '12px' }}>
                     <div style={{ fontSize: '0.84rem', fontWeight: 700, color: 'var(--white)', marginBottom: '8px' }}>
                       Active Network Chapters ({activeSisterChapters.length})
                     </div>
@@ -6515,7 +6578,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 </div>
 
                 {/* Section 1: Official Group Invite Link */}
-                <div style={{ padding: '16px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px' }}>
+                <div style={{ padding: '16px', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--hairline-border)', borderRadius: '14px' }}>
                   <label style={{ display: 'block', fontFamily: 'var(--font-heading)', fontSize: '0.92rem', fontWeight: 600, color: 'var(--white)', marginBottom: '4px' }}>
                     WhatsApp Group Invite Link
                   </label>
@@ -6545,7 +6608,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 </div>
 
                 {/* Section 2: Automated WhatsApp Reminders & CRM Sync */}
-                <div style={{ padding: '16px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px' }}>
+                <div style={{ padding: '16px', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--hairline-border)', borderRadius: '14px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
                     <div style={{ fontFamily: 'var(--font-heading)', fontSize: '0.92rem', fontWeight: 600, color: 'var(--white)' }}>
                       Automated Meetup Reminders (WhatsApp Cloud API)
@@ -6571,7 +6634,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
 
           {/* Modal Sticky Docked Footer */}
           {(modalType === 'event' || modalType === 'edit-event') ? (
-            <div style={{ padding: '16px 20px', borderTop: '1px solid rgba(255,255,255,0.08)', background: '#1B1B1B', position: 'sticky', bottom: 0, zIndex: 20, paddingBottom: 'max(16px, env(safe-area-inset-bottom, 16px))' }}>
+            <div style={{ padding: '16px 20px', borderTop: '1px solid var(--hairline-border)', background: '#1B1B1B', position: 'sticky', bottom: 0, zIndex: 20, paddingBottom: 'max(16px, env(safe-area-inset-bottom, 16px))' }}>
               <div style={{ display: 'flex', gap: '8px', width: '100%' }}>
                 {eventStep > 0 && (
                   <button onClick={() => setEventStep(eventStep - 1)} className="btn btn-outline interactive-press" style={{ padding: '14px', flex: 1, borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
@@ -6600,7 +6663,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
               </div>
             </div>
           ) : (isEditing || (modalType && modalType !== 'community' && modalType !== 'coleader')) ? (
-            <div style={{ padding: '16px 20px', borderTop: '1px solid rgba(255,255,255,0.08)', background: '#1B1B1B', position: 'sticky', bottom: 0, zIndex: 20, paddingBottom: 'max(16px, env(safe-area-inset-bottom, 16px))' }}>
+            <div style={{ padding: '16px 20px', borderTop: '1px solid var(--hairline-border)', background: '#1B1B1B', position: 'sticky', bottom: 0, zIndex: 20, paddingBottom: 'max(16px, env(safe-area-inset-bottom, 16px))' }}>
               <button 
                 onClick={() => { 
                   if(isEditing) handleSave(); 
@@ -6656,7 +6719,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
 
             {/* Warning Body */}
             <div style={{ padding: '24px 20px', display: 'flex', flexDirection: 'column', gap: '18px' }}>
-              <div style={{ padding: '14px', borderRadius: '12px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)', color: '#fca5a5', fontSize: '0.85rem', lineHeight: 1.5 }}>
+              <div style={{ padding: '14px', borderRadius: '12px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)', color: '#DC2626', fontSize: '0.85rem', lineHeight: 1.5 }}>
                 <strong style={{ color: '#ef4444', display: 'block', marginBottom: '6px' }}>⚠️ Warning: This action cannot be reversed!</strong>
                 Deleting <strong>{community.name}</strong> will permanently erase:
                 <ul style={{ margin: '8px 0 0 16px', padding: 0 }}>
@@ -6705,7 +6768,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
             </div>
 
             {/* Actions */}
-            <div style={{ padding: '16px 20px', borderTop: '1px solid rgba(255,255,255,0.06)', background: 'rgba(0,0,0,0.3)', display: 'flex', gap: '10px' }}>
+            <div style={{ padding: '16px 20px', borderTop: '1px solid var(--hairline-border)', background: 'var(--surface-elevated)', display: 'flex', gap: '10px' }}>
               <button
                 type="button"
                 onClick={() => { setIsDeleteModalOpen(false); setDeleteConfirmText(''); setDeleteConfirmChecked(false); }}
@@ -6834,7 +6897,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
             }}
           >
             {/* Header */}
-            <div style={{ padding: '18px 22px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ padding: '18px 22px', borderBottom: '1px solid var(--hairline-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h2 style={{ margin: 0, fontSize: '1.2rem', fontFamily: 'Outfit, sans-serif', color: 'var(--ink-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Globe color="#F27257" size={20} /> Third-Party Discovery
               </h2>
@@ -6905,7 +6968,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   <h3 style={{ fontSize: '1rem', color: 'var(--ink-primary)', marginBottom: '16px' }}>Results ({discoveryResults.length})</h3>
                   <div style={{ display: 'grid', gap: '14px' }}>
                     {discoveryResults.map(exp => (
-                      <div key={exp.id} style={{ display: 'flex', flexWrap: 'wrap', gap: '14px', padding: '14px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px', alignItems: 'center' }}>
+                      <div key={exp.id} style={{ display: 'flex', flexWrap: 'wrap', gap: '14px', padding: '14px', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--hairline-border)', borderRadius: '14px', alignItems: 'center' }}>
                         <img src={exp.image} alt={exp.title} style={{ width: '90px', height: '90px', objectFit: 'cover', borderRadius: '10px', flexShrink: 0 }} />
                         <div style={{ flex: '1 1 240px', minWidth: 0 }}>
                           <div style={{ fontSize: '0.72rem', color: '#F27257', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px' }}>{exp.category} • {exp.source}</div>
@@ -7052,7 +7115,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                         return (
                           <>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                              <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '12px', padding: '14px' }}>
+                              <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--hairline-border)', borderRadius: '12px', padding: '14px' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
                                   <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--ink-primary)' }}>1. Tour Ticket (~£{supplierBase}.00 on {prov})</div>
                                   <div style={{ fontSize: '0.92rem', fontWeight: 700, color: '#38bdf8' }}>Paid Directly to {prov}</div>
@@ -7083,7 +7146,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                               </div>
                             </div>
 
-                            <div style={{ background: 'rgba(27, 27, 27, 0.6)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '14px' }}>
+                            <div style={{ background: 'var(--surface-elevated)', border: '1px solid var(--hairline-border)', borderRadius: '12px', padding: '14px' }}>
                               <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.04em', marginBottom: '8px' }}>
                                 Example Group Outcome ({econ.minGroupSize} Members @ £{hostPassFee} Host Pass)
                               </div>
@@ -7110,7 +7173,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                         <>
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                             {/* 1. Supplier Base */}
-                            <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '12px', padding: '14px' }}>
+                            <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--hairline-border)', borderRadius: '12px', padding: '14px' }}>
                               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
                                 <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--ink-primary)' }}>1. Supplier Wholesale Rate</div>
                                 <div style={{ fontSize: '1rem', fontWeight: 800, color: '#38bdf8' }}>£{supplierBase}.00</div>
@@ -7146,7 +7209,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                           </div>
 
                           {/* Live Example Calculation */}
-                          <div style={{ background: 'rgba(27, 27, 27, 0.6)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '14px' }}>
+                          <div style={{ background: 'var(--surface-elevated)', border: '1px solid var(--hairline-border)', borderRadius: '12px', padding: '14px' }}>
                             <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.04em', marginBottom: '8px' }}>
                               Stripe Payment Breakdown (Member Pays £{memberFinalPrice}.00)
                             </div>
