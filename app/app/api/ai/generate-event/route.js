@@ -193,17 +193,36 @@ export async function POST(request) {
       const pastEventsSummary = Array.isArray(snapshot.pastEventsSummary) ? snapshot.pastEventsSummary.slice(0, 5) : [];
       const activePolls = Array.isArray(snapshot.activePolls) ? snapshot.activePolls.slice(0, 4) : [];
       const recentFeedPosts = Array.isArray(snapshot.recentFeedPosts) ? snapshot.recentFeedPosts.slice(0, 4) : [];
+      const currentGuidelines = Array.isArray(snapshot.guidelines) ? snapshot.guidelines.filter(Boolean) : [];
+      const existingChannels = Array.isArray(snapshot.channels) ? snapshot.channels.slice(0, 12) : [];
+      const cleanTags = communityTags.filter((t) => typeof t === 'string' && !t.startsWith('__cfg:'));
 
       const systemDirective = `You are "More AI", an expert, proactive, conversational Community Growth & Operations Co-Pilot for the leader of "${communityName}" in ${loc}.
 Today's date is ${today}.
 
-REAL-TIME LIVE COMMUNITY DATA (use these exact real numbers when advising):
+REAL-TIME LIVE COMMUNITY DATA (use these exact live values when advising or editing):
 - Community Name: ${communityName}
 - Town / Location: ${loc}
-- Activity Tags: ${communityTags.join(', ') || 'Local community, social, outdoors'}
-- Current Community Bio: ${snapshot.description ? String(snapshot.description).slice(0, 320) : 'Not set yet'}
-- Current Guidelines Count: ${Array.isArray(snapshot.guidelines) ? snapshot.guidelines.length : 0}
-- WhatsApp Group Linked: ${snapshot.hasWhatsappGroup ? 'Yes' : 'No'}
+- Category: ${snapshot.category || cleanTags[0] || 'Local Community'}
+- Activity Tags: ${cleanTags.join(', ') || 'Local community, social, outdoors'}
+- Meeting Cadence (activity_level): ${snapshot.activity_level || 'Active'}
+- Cost / Pricing Display: ${snapshot.cost || 'Free'}
+- Target Audience ("Who is it for?"): ${snapshot.target_audience || 'All abilities welcome'}
+- Monthly Supporter Subscription (£/mo): £${Number(snapshot.subscription_price || 0)}
+- Visibility: ${snapshot.visibility || 'public'} (options: "public" | "private" | "invite-only")
+- Club Toggles:
+  * Require Member Approval (require_approval): ${Boolean(snapshot.require_approval)}
+  * Accept Business/Workshop Pitches (accepts_pitches): ${snapshot.accepts_pitches !== false}
+  * Carpool Ride-Sharing Enabled (allow_carpool): ${snapshot.allow_carpool !== false}
+  * Allow +1 Guests (allow_guests): ${snapshot.allow_guests !== false}
+  * Allow Sister Chapters (allow_chapters): ${snapshot.allow_chapters !== false}
+- Links:
+  * Website: ${snapshot.website || 'Not set'}
+  * Instagram: ${snapshot.instagram_handle || 'Not set'}
+  * WhatsApp Group: ${snapshot.whatsapp_group || 'Not set'}
+- Current Community Bio: ${snapshot.description ? String(snapshot.description).slice(0, 600) : 'Not set yet'}
+- Current Club Rules / Guidelines (${currentGuidelines.length}): ${currentGuidelines.length > 0 ? JSON.stringify(currentGuidelines) : 'None set yet'}
+- Existing Chat Channels: ${existingChannels.length > 0 ? JSON.stringify(existingChannels) : 'General only'}
 - Member Standing Breakdown:
   * Total Members: ${memberBreakdown.total}
   * Verified Locals (1+ meetup attended): ${memberBreakdown.verifiedLocals}
@@ -211,29 +230,36 @@ REAL-TIME LIVE COMMUNITY DATA (use these exact real numbers when advising):
   * Quiet Members (joined online, 0 meetups attended yet): ${memberBreakdown.quietNeverAttended}
 - Ticket Revenue: £${Number(snapshot.totalRevenue || 0)} all-time (£${Number(snapshot.monthRevenue || 0)} this month)
 - Pending Admin Items: ${Number(snapshot.pendingProposalsCount || 0)} member event proposals, ${Number(snapshot.pendingPitchesCount || 0)} local business/workshop pitches
-- Upcoming Scheduled Events: ${upcomingEvents.length > 0 ? JSON.stringify(upcomingEvents) : 'NONE scheduled — high priority gap!'}
+- Upcoming Scheduled Events (with exact IDs for editing, cancelling, or sending reminders): ${upcomingEvents.length > 0 ? JSON.stringify(upcomingEvents) : 'NONE scheduled — high priority gap!'}
 - Recent Past Events & Turnout: ${pastEventsSummary.length > 0 ? JSON.stringify(pastEventsSummary) : 'No past events recorded yet'}
 - Active Community Polls: ${activePolls.length > 0 ? JSON.stringify(activePolls) : 'None active'}
 - Recent Feed Posts: ${recentFeedPosts.length > 0 ? JSON.stringify(recentFeedPosts) : 'None yet'}
 
 WHERE EVERY LAUNCHED ITEM APPEARS IN MORE COMMUNITY (always tell the leader clearly!):
-- Events: Published immediately to the ${communityName} Calendar, Public Events Discovery (/events), and Dashboard → Events tab.
-- Polls: Published immediately to the top of the ${communityName} Page (Overview + Feed & Photos tab) AND notifies all ${memberBreakdown.total} members to vote.
-- Announcements / Broadcasts: Published to the ${communityName} Feed & Photos tab (optionally pinned) AND sends instant In-App & Push notifications to all members; WhatsApp & Instagram copy is ready to copy in 1 tap.
-- Community Bio & Guidelines Updates: Updates the public ${communityName} community page immediately.
-- UK RAMS / Sponsor Pitches / Council Grants: Exportable documents ready to copy or download (.md).
+- New Events ("events"): Published immediately to the ${communityName} Calendar, Public Events Discovery (/events), and Dashboard → Events tab.
+- Edit or Cancel Existing Event ("event_update"): Updates (or cancels) that live event immediately across the Calendar, /events, and attendee tickets.
+- Event Attendee Reminder ("event_reminder"): Sends an instant In-App & Push notification reminder to every registered attendee of that event.
+- Polls ("poll"): Published immediately to the top of the ${communityName} Page (Overview + Feed & Photos tab) AND notifies all ${memberBreakdown.total} members to vote.
+- Announcements / Broadcasts ("broadcast"): Published to the ${communityName} Feed & Photos tab (optionally pinned) AND sends instant In-App & Push notifications to all members; WhatsApp & Instagram copy is ready to copy in 1 tap.
+- Community Settings, Bio & Club Rules ("community_update"): Updates the public ${communityName} Page, join rules, visibility, links, pricing, and club toggles immediately.
+- New Chat Channel ("create_channel"): Creates a live channel inside the ${communityName} Community Chat (/chat) immediately.
+- UK RAMS / Sponsor Pitches / Council Grants ("document"): Exportable documents ready to copy or download (.md).
 
 HOW TO BE EXTRAORDINARILY USEFUL:
-1. Be sharp, warm, specific to ${loc}, and reference the community's REAL numbers above (e.g. mention their ${memberBreakdown.quietNeverAttended} quiet newcomers, past turnout rates, or calendar gaps). Keep "reply" concise (2-4 short paragraphs) and clearly mention what you built in the Live Output & Launchpad panel and WHERE it will go when launched.
-2. ALWAYS attach an executable "actionCard" whenever the leader asks to:
+1. Be sharp, warm, specific to ${loc}, and reference the community's REAL numbers above. Keep "reply" concise (2-4 short paragraphs) and clearly mention what you built in the Live Output & Launchpad panel and WHERE it will apply when launched.
+2. ALWAYS attach an executable "actionCard" whenever the leader asks to do ANY of the following:
    - Launch a single event or multi-week schedule -> "events"
+   - Edit an existing upcoming event (time, date, title, location, capacity, price, description, approval/carpool/guests) OR cancel an existing event -> "event_update" (MUST match an existing event's "id" from Upcoming Scheduled Events!)
+   - Send a reminder to attendees of an upcoming event -> "event_reminder"
    - Create a poll / ask members to vote -> "poll"
    - Draft an announcement, re-engagement message, WhatsApp or Instagram post -> "broadcast"
-   - Rewrite or improve their Community Bio / Description or Community Guidelines -> "community_update"
-   - Audit their community health, diagnose low turnout, or ask "what should I do this week?" -> "audit" (with 3 concrete metrics + 3 clickable action steps!)
+   - Change ANY club setting, name, bio/description, club rules/guidelines, location, category, cadence, cost, target audience, tags, visibility, links (WhatsApp/Instagram/website), monthly supporter price, or toggles (member approval, carpool, +1 guests, business pitches, sister chapters) -> "community_update"
+   - Create a new Community Chat channel (e.g. #carpool, #beginner-chat, #trail-conditions) -> "create_channel"
+   - Audit community health, diagnose low turnout, or ask "what should I do this week?" -> "audit"
    - Generate a UK Council RAMS, Local Café/Business Sponsor Pitch, or UK Council/Lottery Grant -> "document"
-3. If the leader asks to tweak a previous draft (e.g. "Change time to 9:30", "Make it £5", "Add a 4th poll option", "Make it friendlier"), return the FULL updated "actionCard" immediately so the Output Launchpad updates live!
-4. Always provide 3 crisp, high-value "suggestedReplies" (under 8 words each).
+3. CRITICAL CLUB RULES PRESERVATION: When the leader asks to ADD, APPEND, or TWEAK a club rule/guideline, ALWAYS include ALL existing Current Club Rules (${JSON.stringify(currentGuidelines)}) PLUS the new/edited rule inside "guidelines" — NEVER drop existing rules unless the leader explicitly asked to replace or delete them!
+4. If the leader asks to tweak a previous draft (e.g. "Change time to 9:30", "Make it £5", "Add another rule", "Make it friendlier"), return the FULL updated "actionCard" immediately so the Output Launchpad updates live!
+5. Always provide 3 crisp, high-value "suggestedReplies" (under 8 words each).
 
 RETURN FORMAT:
 Return ONLY a valid JSON object matching this exact structure:
@@ -252,9 +278,38 @@ Return ONLY a valid JSON object matching this exact structure:
             "location": "Specific venue/landmark in ${loc}",
             "description": "Warm description with Meeting Point, What to Expect, What to Bring, and Post-Meetup Social",
             "maxCapacity": 25,
-            "ticketPrice": 0
+            "ticketPrice": 0,
+            "requireApproval": false,
+            "allowCarpool": true,
+            "allowGuests": true
           }
         ]
+      }
+    - {
+        "type": "event_update",
+        "title": "Update Existing Event" | "Cancel Event",
+        "eventId": "exact id from Upcoming Scheduled Events",
+        "eventTitle": "Current event title",
+        "action": "update" | "cancel",
+        "changes": {
+          "title": "Updated title (include only changed or updated fields)",
+          "date": "YYYY-MM-DD",
+          "time": "HH:MM",
+          "location": "Updated location",
+          "description": "Updated description",
+          "maxCapacity": 25,
+          "ticketPrice": 0,
+          "requireApproval": false,
+          "allowCarpool": true,
+          "allowGuests": true
+        }
+      }
+    - {
+        "type": "event_reminder",
+        "title": "Send Event Reminder",
+        "eventId": "exact id from Upcoming Scheduled Events",
+        "eventTitle": "Event title",
+        "message": "Warm, helpful reminder message for attendees (include meeting point, time & what to bring)"
       }
     - {
         "type": "poll",
@@ -273,9 +328,32 @@ Return ONLY a valid JSON object matching this exact structure:
       }
     - {
         "type": "community_update",
-        "title": "Community Profile & Guidelines Upgrade",
-        "description": "Warm, welcoming public community description optimised for local discovery (2-3 short paragraphs)",
-        "guidelines": ["Rule 1...", "Rule 2...", "Rule 3...", "Rule 4..."]
+        "title": "Community Settings & Rules Update",
+        "name": "Only include if changing club name",
+        "description": "Include if updating bio/description",
+        "guidelines": ["Include FULL updated array of club rules if adding/editing rules"],
+        "category": "Optional",
+        "location_name": "Optional",
+        "cost": "Optional (e.g. Free or £5/session)",
+        "target_audience": "Optional",
+        "activity_level": "Optional: Very Active | Active | Casual | Flexible",
+        "tags": ["Optional array of tag strings"],
+        "visibility": "Optional: public | private | invite-only",
+        "subscription_price": 0,
+        "whatsapp_group": "Optional URL",
+        "instagram_handle": "Optional @handle",
+        "website": "Optional URL",
+        "require_approval": false,
+        "accepts_pitches": true,
+        "allow_carpool": true,
+        "allow_guests": true,
+        "allow_chapters": true
+      }
+    - {
+        "type": "create_channel",
+        "title": "Create Chat Channel",
+        "channelName": "e.g. trail-conditions or carpool-chat",
+        "channelType": "text" | "announcement"
       }
     - {
         "type": "audit",
@@ -1560,24 +1638,146 @@ function buildConversationalCoPilotFallback({
     };
   }
 
-  // 0b. Rewrite Community Bio & Guidelines
-  if (lower.includes('bio') || lower.includes('description') || lower.includes('guideline') || lower.includes('rules')) {
+  // 0a. Create a New Community Chat Channel
+  if (lower.includes('channel') && (lower.includes('create') || lower.includes('add') || lower.includes('new') || lower.includes('make') || lower.includes('start'))) {
+    const channelMatch = prompt.match(/(?:called|named|#)\s*["']?([a-zA-Z0-9\s-]{2,30})["']?/i);
+    const rawName = channelMatch ? channelMatch[1].trim() : (lower.includes('carpool') ? 'carpool-rides' : lower.includes('announce') ? 'announcements' : 'members-lounge');
+    const cleanChan = rawName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'members-lounge';
+    const isAnnouncement = lower.includes('announcement') || lower.includes('read-only') || lower.includes('leader only');
     return {
-      reply: `I've drafted a warmer, discovery-optimised **Community Description & Guidelines** for **${communityName}** in the Output & Launchpad panel!\n\nYou can edit any sentence directly on the right, then tap **Apply Live to Community Page** to update your public microsite immediately.`,
+      reply: `I've set up a new **#${cleanChan}** chat channel draft in the **Output & Launchpad** panel!\n\n**Where it goes:** Launching this creates **#${cleanChan}** immediately inside your **${communityName} Community Chat** (`/chat`). You can tweak the name or toggle Discussion vs Announcements-Only before creating it.`,
       actionCard: {
-        type: 'community_update',
-        title: `Profile & Guidelines Upgrade — ${communityName}`,
-        description: `${communityName} is a welcoming, down-to-earth local group in ${loc} bringing friendly neighbours together in real life. Whether you're brand new to the area, coming solo for the first time, or a regular looking for good company, you'll get a warm hello from the moment you arrive.\n\nWe host relaxed, zero-pressure meetups with plenty of time to chat — usually wrapping up at a favourite local café or pub. Come once to earn your Verified Local badge and unlock carpool sharing, 1:1 member messaging, and proposing your own meetup ideas!`,
-        guidelines: [
-          'Everyone is welcome — say hello to newcomers and make sure nobody stands alone at the start.',
-          'Keep RSVPs up to date: if your plans change, cancel at least 24 hours ahead so someone else can take the spot.',
-          'No cold sales pitches, spam, or unsolicited promotion inside chats or events.',
-          'Look out for each other on routes and socials — respect pace, personal space, and privacy.',
-        ],
+        type: 'create_channel',
+        title: `Create #${cleanChan} Chat Channel`,
+        channelName: cleanChan,
+        channelType: isAnnouncement ? 'announcement' : 'text',
       },
       suggestedReplies: [
-        'Make the bio shorter and punchier',
-        'Add a dog-friendly rule to the guidelines',
+        'Make it an announcements-only channel',
+        'Draft a welcome post for the new channel',
+        'Audit our community health & growth',
+      ],
+    };
+  }
+
+  // 0b. Send Reminder to Existing Event Attendees
+  if ((lower.includes('remind') || lower.includes('reminder') || lower.includes('nudge attendees')) && nextEv?.id) {
+    return {
+      reply: `I've prepared an instant attendee reminder for **"${nextEv.title}"** in the **Output & Launchpad** panel!\n\n**Where it goes:** Sending this dispatches an In-App & Push notification directly to everyone registered for **${nextEv.title}** (${nextEv.rsvps || 0} attendees going). You can customise the message or switch target event before sending.`,
+      actionCard: {
+        type: 'event_reminder',
+        title: `Send Reminder — ${nextEv.title}`,
+        eventId: nextEv.id,
+        eventTitle: nextEv.title,
+        message: `⏰ Quick reminder! "${nextEv.title}" is coming up${nextEv.date ? ` on ${nextEv.date}` : ''}${nextEv.time ? ` at ${nextEv.time}` : ''}${nextEv.location ? ` (${nextEv.location})` : ''}. If you're coming for the first time, arrive 10 mins early and come say hello — we can't wait to see you there!`,
+      },
+      suggestedReplies: [
+        'Make the reminder mention bringing waterproofs',
+        'Edit this event time or capacity',
+        'Draft a WhatsApp reminder too',
+      ],
+    };
+  }
+
+  // 0c. Edit or Cancel an Existing Upcoming Event
+  if (
+    nextEv?.id &&
+    ((lower.includes('cancel') && (lower.includes('event') || lower.includes('meetup') || lower.includes('walk') || lower.includes('session'))) ||
+      ((lower.includes('edit') || lower.includes('update') || lower.includes('move') || lower.includes('reschedule') || lower.includes('change')) &&
+        (lower.includes('existing event') || lower.includes('next event') || lower.includes('next meetup') || lower.includes('upcoming event') || (nextEv.title && lower.includes(nextEv.title.toLowerCase().slice(0, 12))))))
+  ) {
+    const isCancel = lower.includes('cancel');
+    const touchedTime = /\b\d{1,2}(:\d{2})?\s*(am|pm)\b|morning|evening|sunset/i.test(prompt);
+    const changes = {};
+    if (!isCancel) {
+      if (touchedTime) changes.time = resolveEventTime(prompt);
+      const capMatch = prompt.match(/\b(\d{1,3})\s*(?:spots|people|max|capacity|attendees)\b/i);
+      if (capMatch) changes.maxCapacity = Number(capMatch[1]);
+      const priceMatch = prompt.match(/£\s*(\d+(?:\.\d{1,2})?)/);
+      if (priceMatch) changes.ticketPrice = Number(priceMatch[1]);
+      if (lower.includes('free')) changes.ticketPrice = 0;
+    }
+    return {
+      reply: isCancel
+        ? `I've loaded **"${nextEv.title}"** into the **Output & Launchpad** panel ready for cancellation.\n\n**Where it applies:** Confirming cancellation marks **${nextEv.title}** as cancelled across your Community Calendar, \`/events\`, and attendee tickets. You can also switch to Edit mode if you'd rather reschedule it instead.`
+        : `I've loaded **"${nextEv.title}"** into the **Output & Launchpad** panel so you can review and save your edits live!\n\n**Where it applies:** Saving updates **${nextEv.title}** immediately across your Community Calendar, \`/events\`, and attendee tickets.`,
+      actionCard: {
+        type: 'event_update',
+        title: isCancel ? `Cancel Event — ${nextEv.title}` : `Edit Event — ${nextEv.title}`,
+        eventId: nextEv.id,
+        eventTitle: nextEv.title,
+        action: isCancel ? 'cancel' : 'update',
+        changes,
+      },
+      suggestedReplies: isCancel
+        ? ['Reschedule this event to next weekend instead', 'Draft a cancellation broadcast for members', 'Plan a replacement meetup']
+        : ['Send a reminder to attendees about the update', 'Draft a WhatsApp update for members', 'Audit our community health'],
+    };
+  }
+
+  // 0d. Community Profile, Settings, Toggles & Club Rules / Guidelines
+  if (
+    lower.includes('bio') ||
+    lower.includes('description') ||
+    lower.includes('guideline') ||
+    lower.includes('rule') ||
+    lower.includes('setting') ||
+    lower.includes('visibility') ||
+    lower.includes('private') ||
+    lower.includes('invite-only') ||
+    lower.includes('approval') ||
+    lower.includes('carpool') ||
+    lower.includes('guest') ||
+    lower.includes('whatsapp link') ||
+    lower.includes('instagram') ||
+    lower.includes('website') ||
+    lower.includes('subscription') ||
+    lower.includes('club name') ||
+    lower.includes('rename')
+  ) {
+    const existingRules = Array.isArray(snapshot.guidelines) ? snapshot.guidelines.filter(Boolean) : [];
+    const isAddingRule = (lower.includes('rule') || lower.includes('guideline')) && (lower.includes('add') || lower.includes('new') || lower.includes('include') || lower.includes('dog'));
+    const updatedCard = {
+      type: 'community_update',
+      title: `Club Settings & Rules — ${communityName}`,
+    };
+
+    if (isAddingRule) {
+      const ruleText = lower.includes('dog')
+        ? 'Friendly dogs on leads are welcome — please keep them under close control around wildlife, livestock, and fellow members.'
+        : prompt.replace(/^(?:please\s+)?(?:add|include|create)\s+(?:a\s+)?(?:new\s+)?(?:club\s+)?(?:rule|guideline)\s*(?:that\s*|saying\s*|:\s*)?/i, '').trim() ||
+          'Be punctual, supportive, and look out for first-time attendees.';
+      const cleanNewRule = ruleText.charAt(0).toUpperCase() + ruleText.slice(1);
+      updatedCard.guidelines = [...existingRules, cleanNewRule];
+    } else if (lower.includes('bio') || lower.includes('description') || lower.includes('guideline') || lower.includes('rule')) {
+      updatedCard.description = `${communityName} is a welcoming, down-to-earth local group in ${loc} bringing friendly neighbours together in real life. Whether you're brand new to the area, coming solo for the first time, or a regular looking for good company, you'll get a warm hello from the moment you arrive.\n\nWe host relaxed, zero-pressure meetups with plenty of time to chat — usually wrapping up at a favourite local café or pub. Come once to earn your Verified Local badge and unlock carpool sharing, 1:1 member messaging, and proposing your own meetup ideas!`;
+      updatedCard.guidelines = existingRules.length > 0
+        ? [...existingRules]
+        : [
+            'Everyone is welcome — say hello to newcomers and make sure nobody stands alone at the start.',
+            'Keep RSVPs up to date: if your plans change, cancel at least 24 hours ahead so someone else can take the spot.',
+            'No cold sales pitches, spam, or unsolicited promotion inside chats or events.',
+            'Look out for each other on routes and socials — respect pace, personal space, and privacy.',
+          ];
+    } else {
+      // Settings tweak — carry current bio/rules + toggle changes requested
+      updatedCard.guidelines = [...existingRules];
+      if (lower.includes('private')) updatedCard.visibility = 'private';
+      else if (lower.includes('invite')) updatedCard.visibility = 'invite-only';
+      else if (lower.includes('public')) updatedCard.visibility = 'public';
+      if (lower.includes('approval')) updatedCard.require_approval = !(lower.includes('turn off') || lower.includes('disable') || lower.includes('no approval'));
+      if (lower.includes('carpool')) updatedCard.allow_carpool = !(lower.includes('turn off') || lower.includes('disable') || lower.includes('no carpool'));
+      if (lower.includes('guest')) updatedCard.allow_guests = !(lower.includes('turn off') || lower.includes('disable') || lower.includes('no guest'));
+    }
+
+    return {
+      reply: isAddingRule
+        ? `I've added that new club rule alongside your existing rules for **${communityName}** in the **Output & Launchpad** panel!\n\nYou can also click **+ Add Club Rule**, remove rules, or expand **All Club Settings** right inside the editor before tapping **Apply Live to Community Page**.`
+        : `I've opened the **Community Settings, Bio & Club Rules** editor for **${communityName}** in the **Output & Launchpad** panel!\n\nYou can edit any text, add or remove club rules, or toggle visibility, links, and member permissions directly, then tap **Apply Live to Community Page** to publish immediately.`,
+      actionCard: updatedCard,
+      suggestedReplies: [
+        'Add a dog-friendly club rule',
+        'Make our community bio shorter & punchier',
         'Audit our community health & growth',
       ],
     };

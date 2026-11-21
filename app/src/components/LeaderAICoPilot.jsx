@@ -26,6 +26,15 @@ import {
   TrendingUp,
   FileEdit,
   Compass,
+  Mic,
+  MicOff,
+  Settings2,
+  Bell,
+  Hash,
+  AlertTriangle,
+  ChevronDown,
+  ChevronUp,
+  ArrowLeft,
 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { useFeed } from '../context/FeedContext';
@@ -36,7 +45,56 @@ import { isEventPast } from '../lib/calendar';
 
 const CONSENT_STORAGE_KEY = 'more_ai_copilot_consent_v1';
 
-function normalizeActionCard(card) {
+const COMMUNITY_SETTING_KEYS = [
+  'name',
+  'description',
+  'guidelines',
+  'category',
+  'location_name',
+  'cost',
+  'target_audience',
+  'activity_level',
+  'tags',
+  'visibility',
+  'subscription_price',
+  'whatsapp_group',
+  'instagram_handle',
+  'website',
+  'require_approval',
+  'accepts_pitches',
+  'allow_carpool',
+  'allow_guests',
+  'allow_chapters',
+];
+
+function buildCommunityBaseData(community) {
+  const rawTags = Array.isArray(community?.tags)
+    ? community.tags.filter((t) => typeof t === 'string' && !t.startsWith('__cfg:'))
+    : [];
+  return {
+    name: community?.name || '',
+    description: community?.description || '',
+    guidelines: Array.isArray(community?.guidelines) ? [...community.guidelines] : [],
+    category: community?.category || rawTags[0] || '',
+    location_name: cleanLocationName(community?.location_name) || '',
+    cost: community?.cost || 'Free',
+    target_audience: community?.target_audience || '',
+    activity_level: community?.activity_level || 'Active',
+    tagsText: rawTags.join(', '),
+    visibility: community?.visibility || 'public',
+    subscription_price: Number(community?.subscription_price || 0),
+    whatsapp_group: community?.whatsapp_group || '',
+    instagram_handle: community?.instagram_handle || '',
+    website: community?.website || '',
+    require_approval: Boolean(community?.require_approval),
+    accepts_pitches: community?.accepts_pitches !== false,
+    allow_carpool: community?.allow_carpool !== false,
+    allow_guests: community?.allow_guests !== false,
+    allow_chapters: community?.allow_chapters !== false,
+  };
+}
+
+function normalizeActionCard(card, { community = null, upcomingEvents = [] } = {}) {
   if (!card || !card.type) return null;
   if (card.type === 'events') {
     const events = Array.isArray(card.data?.events)
@@ -58,7 +116,71 @@ function normalizeActionCard(card) {
           description: ev.description || '',
           maxCapacity: Number(ev.maxCapacity) || 25,
           ticketPrice: Number(ev.ticketPrice) || 0,
+          requireApproval: Boolean(ev.requireApproval),
+          allowCarpool: ev.allowCarpool !== false,
+          allowGuests: ev.allowGuests !== false,
         })),
+      },
+    };
+  }
+  if (card.type === 'event_update') {
+    const src = card.data || card;
+    const rawId = src.eventId || src.id || '';
+    const rawTitle = String(src.eventTitle || src.changes?.title || '').toLowerCase();
+    const matched =
+      upcomingEvents.find((e) => e.id === rawId) ||
+      (rawTitle ? upcomingEvents.find((e) => String(e.title || '').toLowerCase().includes(rawTitle.slice(0, 14))) : null) ||
+      upcomingEvents[0] ||
+      null;
+    if (!matched && !rawId) return null;
+    const ch = src.changes && typeof src.changes === 'object' ? src.changes : src;
+    const action = src.action === 'cancel' || ch.status === 'cancelled' || ch.cancel === true ? 'cancel' : 'update';
+    return {
+      type: 'event_update',
+      title: card.title || (action === 'cancel' ? `Cancel Event — ${matched?.title || src.eventTitle || 'Event'}` : `Edit Event — ${matched?.title || src.eventTitle || 'Event'}`),
+      data: {
+        eventId: matched?.id || rawId,
+        originalTitle: matched?.title || src.eventTitle || '',
+        action,
+        confirmCancel: false,
+        title: ch.title !== undefined && ch.title !== '' ? ch.title : (matched?.title || ''),
+        date: ch.date !== undefined && ch.date !== '' ? ch.date : (matched?.date || ''),
+        time: ch.time !== undefined && ch.time !== '' ? ch.time : (matched?.time || '10:00'),
+        location: ch.location !== undefined && ch.location !== '' ? ch.location : (cleanLocationName(matched?.location) || ''),
+        description: ch.description !== undefined ? ch.description : (matched?.description || ''),
+        maxCapacity: ch.maxCapacity !== undefined ? Number(ch.maxCapacity) : Number(matched?.maxCapacity || matched?.max_capacity || 25),
+        ticketPrice: ch.ticketPrice !== undefined ? Number(ch.ticketPrice) : Number(matched?.ticketPrice ?? matched?.ticket_price ?? 0),
+        requireApproval: ch.requireApproval !== undefined ? Boolean(ch.requireApproval) : Boolean(matched?.requireApproval),
+        allowCarpool: ch.allowCarpool !== undefined ? Boolean(ch.allowCarpool) : (matched?.allowCarpool !== false),
+        allowGuests: ch.allowGuests !== undefined ? Boolean(ch.allowGuests) : (matched?.allowGuests !== false),
+      },
+    };
+  }
+  if (card.type === 'event_reminder') {
+    const src = card.data || card;
+    const rawId = src.eventId || src.id || '';
+    const matched = upcomingEvents.find((e) => e.id === rawId) || upcomingEvents[0] || null;
+    if (!matched && !rawId) return null;
+    return {
+      type: 'event_reminder',
+      title: card.title || `Send Reminder — ${matched?.title || src.eventTitle || 'Event'}`,
+      data: {
+        eventId: matched?.id || rawId,
+        eventTitle: matched?.title || src.eventTitle || 'Upcoming Event',
+        message: src.message || `⏰ Reminder: ${matched?.title || 'Our upcoming meetup'} is coming up${matched?.date ? ` on ${matched.date}` : ''}${matched?.time ? ` at ${matched.time}` : ''}! Looking forward to seeing you there.`,
+      },
+    };
+  }
+  if (card.type === 'create_channel') {
+    const src = card.data || card;
+    const rawName = String(src.channelName || src.name || '').trim();
+    if (!rawName) return null;
+    return {
+      type: 'create_channel',
+      title: card.title || `Create #${rawName} Chat Channel`,
+      data: {
+        channelName: rawName,
+        channelType: src.channelType === 'announcement' || src.type === 'announcement' ? 'announcement' : 'text',
       },
     };
   }
@@ -89,17 +211,67 @@ function normalizeActionCard(card) {
     };
   }
   if (card.type === 'community_update') {
-    const description = card.data?.description || card.description || '';
-    const guidelines = Array.isArray(card.data?.guidelines)
-      ? card.data.guidelines
-      : Array.isArray(card.guidelines)
-      ? card.guidelines
-      : [];
-    if (!description && guidelines.length === 0) return null;
+    const src = card.data || card;
+    const base = buildCommunityBaseData(community);
+    const touched = [];
+    const merged = { ...base };
+
+    COMMUNITY_SETTING_KEYS.forEach((key) => {
+      if (src[key] === undefined || src[key] === null) return;
+      if (key === 'guidelines') {
+        if (Array.isArray(src.guidelines)) {
+          merged.guidelines = [...src.guidelines.map((g) => String(g || ''))];
+          touched.push('guidelines');
+        }
+        return;
+      }
+      if (key === 'tags') {
+        if (Array.isArray(src.tags)) {
+          merged.tagsText = src.tags.filter((t) => typeof t === 'string' && !t.startsWith('__cfg:')).join(', ');
+          touched.push('tags');
+        } else if (typeof src.tags === 'string') {
+          merged.tagsText = src.tags;
+          touched.push('tags');
+        }
+        return;
+      }
+      if (key === 'subscription_price') {
+        const num = Number(src.subscription_price);
+        if (!Number.isNaN(num) && num >= 0) {
+          merged.subscription_price = num;
+          touched.push('subscription_price');
+        }
+        return;
+      }
+      if (
+        key === 'require_approval' ||
+        key === 'accepts_pitches' ||
+        key === 'allow_carpool' ||
+        key === 'allow_guests' ||
+        key === 'allow_chapters'
+      ) {
+        merged[key] = Boolean(src[key]);
+        touched.push(key);
+        return;
+      }
+      if (typeof src[key] === 'string' && (src[key].trim() !== '' || key === 'whatsapp_group' || key === 'instagram_handle' || key === 'website')) {
+        merged[key] = src[key];
+        touched.push(key);
+      }
+    });
+
+    const hasAdvancedTouched = touched.some(
+      (k) => k !== 'description' && k !== 'guidelines'
+    );
+
     return {
       type: 'community_update',
-      title: card.title || 'Community Profile & Guidelines Upgrade',
-      data: { description, guidelines: [...guidelines] },
+      title: card.title || 'Community Settings & Club Rules',
+      data: {
+        ...merged,
+        touchedFields: touched,
+        showAllSettings: Boolean(src.showAllSettings || hasAdvancedTouched),
+      },
     };
   }
   if (card.type === 'audit') {
@@ -151,8 +323,13 @@ export default function LeaderAICoPilot({
     polls,
     pollVotes,
     services,
+    channels,
     createEvent,
     createEventsBatch,
+    updateEvent,
+    cancelEvent,
+    sendEventReminder,
+    createChannel,
     createPost,
     createFeedPost,
     createPoll,
@@ -255,11 +432,30 @@ export default function LeaderAICoPilot({
       return sum + count * Number(ev.ticketPrice || 0);
     }, 0);
 
+    const communityChannels = (channels || [])
+      .filter((ch) => (ch.community_id || ch.communityId) === community?.id && ch.type !== 'dm')
+      .map((ch) => ({ id: ch.id, name: ch.name, type: ch.type || 'text' }));
+
     return {
       upcoming,
       description: community?.description || '',
       guidelines: Array.isArray(community?.guidelines) ? community.guidelines : [],
+      category: community?.category || '',
+      cost: community?.cost || 'Free',
+      target_audience: community?.target_audience || '',
+      activity_level: community?.activity_level || 'Active',
+      visibility: community?.visibility || 'public',
+      subscription_price: Number(community?.subscription_price || 0),
+      website: community?.website || '',
+      instagram_handle: community?.instagram_handle || '',
+      whatsapp_group: community?.whatsapp_group || '',
+      require_approval: Boolean(community?.require_approval),
+      accepts_pitches: community?.accepts_pitches !== false,
+      allow_carpool: community?.allow_carpool !== false,
+      allow_guests: community?.allow_guests !== false,
+      allow_chapters: community?.allow_chapters !== false,
       hasWhatsappGroup: Boolean(community?.whatsapp_group),
+      channels: communityChannels,
       memberBreakdown: { total, verifiedLocals, regulars3Plus, quietNeverAttended },
       pastEventsSummary,
       activePolls,
@@ -277,6 +473,7 @@ export default function LeaderAICoPilot({
     pollVotes,
     feedPosts,
     services,
+    channels,
     memberCount,
     verifiedMemberCount,
   ]);
@@ -295,13 +492,13 @@ export default function LeaderAICoPilot({
       {
         id: 'welcome-msg',
         role: 'assistant',
-        reply: `Hi ${user?.name?.split(' ')[0] || 'there'}! I'm your **${commName}** Co-Pilot — connected to your live club data.\n\n**Live Snapshot:** **${mb.total} members** (${mb.verifiedLocals} Verified Locals, ${mb.quietNeverAttended} quiet newcomers who haven't attended yet). ${nextNote}\n\nTell me what you want to build or tap a quick goal — every draft appears in **Output & Launchpad** where you can **edit any field directly**, see **exactly where it publishes**, and launch in 1 tap.`,
+        reply: `Hi ${user?.name?.split(' ')[0] || 'there'}! I'm your **${commName}** Co-Pilot — connected to your live club data.\n\n**Live Snapshot:** **${mb.total} members** (${mb.verifiedLocals} Verified Locals, ${mb.quietNeverAttended} quiet newcomers who haven't attended yet). ${nextNote}\n\nType or tap the **microphone** to talk — you can create or edit events, add club rules, tweak any club setting, send attendee reminders, create chat channels, launch polls, or broadcast to members. Everything opens in **Output & Launchpad** so you can review, edit inline, and publish in 1 tap.`,
         actionCard: null,
         suggestedReplies: [
           '📈 Audit my community & tell me what to do this week',
           '🚀 Launch a meetup this Sunday at 10am',
           '📊 Create a poll to vote on our next meetup',
-          '✨ Rewrite our community bio & guidelines',
+          '⚙️ Add a new club rule or update settings',
         ],
       },
     ];
@@ -315,6 +512,117 @@ export default function LeaderAICoPilot({
   // Active Output & Mobile Tab state
   const [selectedOutputMsgId, setSelectedOutputMsgId] = useState(null);
   const [mobileView, setMobileView] = useState('chat'); // 'chat' | 'output'
+  const [hasUnreadOutput, setHasUnreadOutput] = useState(false);
+
+  // Voice Input (Web Speech API) state
+  const [speechSupported, setSpeechSupported] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [voiceStatusText, setVoiceStatusText] = useState('');
+  const recognitionRef = useRef(null);
+  const voiceBaseTextRef = useRef('');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      setSpeechSupported(Boolean(SR));
+    }
+    return () => {
+      try {
+        recognitionRef.current?.stop();
+      } catch {}
+      recognitionRef.current = null;
+    };
+  }, []);
+
+  const stopListening = () => {
+    try {
+      recognitionRef.current?.stop();
+    } catch {}
+    recognitionRef.current = null;
+    setIsListening(false);
+    setVoiceStatusText('');
+  };
+
+  const toggleListening = () => {
+    if (isListening) {
+      stopListening();
+      return;
+    }
+    if (typeof window === 'undefined') return;
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      toast.info(
+        'Voice input unavailable here',
+        'Try Chrome, Safari, or Edge — or use the microphone on your phone keyboard.'
+      );
+      return;
+    }
+    try {
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'en-GB';
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      voiceBaseTextRef.current = inputValue.trim();
+
+      recognition.onstart = () => {
+        setIsListening(true);
+        setVoiceStatusText('Listening... speak naturally');
+      };
+
+      recognition.onresult = (event) => {
+        let finalSeg = '';
+        let interimSeg = '';
+        for (let i = 0; i < event.results.length; i++) {
+          const piece = event.results[i]?.[0]?.transcript || '';
+          if (event.results[i].isFinal) {
+            finalSeg += piece;
+          } else {
+            interimSeg += piece;
+          }
+        }
+        const spoken = `${finalSeg}${interimSeg}`.trim();
+        const combined = voiceBaseTextRef.current
+          ? `${voiceBaseTextRef.current} ${spoken}`.trim()
+          : spoken;
+        setInputValue(combined);
+        if (interimSeg.trim()) {
+          setVoiceStatusText('Hearing you...');
+        } else if (finalSeg.trim()) {
+          setVoiceStatusText('Listening... tap Mic to stop or Send to submit');
+        }
+      };
+
+      recognition.onerror = (event) => {
+        const code = event?.error || '';
+        if (code === 'not-allowed' || code === 'service-not-allowed') {
+          toast.error(
+            'Microphone access blocked',
+            'Allow microphone permission in your browser settings to talk to More AI.'
+          );
+        } else if (code === 'audio-capture') {
+          toast.error('No microphone detected', 'Please check your microphone connection and try again.');
+        } else if (code && code !== 'no-speech' && code !== 'aborted') {
+          toast.info('Voice paused', 'Could not hear clearly — tap the microphone to try again.');
+        }
+        recognitionRef.current = null;
+        setIsListening(false);
+        setVoiceStatusText('');
+      };
+
+      recognition.onend = () => {
+        recognitionRef.current = null;
+        setIsListening(false);
+        setVoiceStatusText('');
+      };
+
+      recognitionRef.current = recognition;
+      recognition.start();
+    } catch (err) {
+      toast.error('Could not start microphone', err?.message || 'Please check browser permissions.');
+      setIsListening(false);
+      setVoiceStatusText('');
+    }
+  };
 
   // Launched / Published state + created destination URLs
   const [publishedEventsMap, setPublishedEventsMap] = useState({}); // key -> createdEventId or true
@@ -325,6 +633,12 @@ export default function LeaderAICoPilot({
   const [launchedPollMap, setLaunchedPollMap] = useState({});
   const [applyingProfileMap, setApplyingProfileMap] = useState({});
   const [appliedProfileMap, setAppliedProfileMap] = useState({});
+  const [applyingEventUpdateMap, setApplyingEventUpdateMap] = useState({});
+  const [appliedEventUpdateMap, setAppliedEventUpdateMap] = useState({});
+  const [sendingReminderMap, setSendingReminderMap] = useState({});
+  const [sentReminderMap, setSentReminderMap] = useState({});
+  const [creatingChannelMap, setCreatingChannelMap] = useState({});
+  const [createdChannelMap, setCreatedChannelMap] = useState({});
 
   const chatEndRef = useRef(null);
 
@@ -372,13 +686,48 @@ export default function LeaderAICoPilot({
   };
 
   const handleResetChat = () => {
+    stopListening();
     setMessages(buildInitialMessages());
     setSelectedOutputMsgId(null);
     setMobileView('chat');
+    setHasUnreadOutput(false);
     setInputValue('');
   };
 
+  // Instant 1-tap Club Settings & Rules Editor (no AI wait needed!)
+  const handleOpenLiveSettingsEditor = () => {
+    stopListening();
+    const msgId = `settings-${Date.now()}`;
+    const card = normalizeActionCard(
+      {
+        type: 'community_update',
+        title: `Live Club Settings & Rules — ${community?.name || 'Community'}`,
+        showAllSettings: true,
+      },
+      { community, upcomingEvents }
+    );
+    if (!card) return;
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: msgId,
+        role: 'assistant',
+        reply: `I've loaded all live settings, bio, links, toggles, and **Club Rules** for **${community?.name || 'your community'}** directly into the **Output & Launchpad** panel.\n\nTap **+ Add Club Rule** to add new guidelines, tweak any setting or toggle, or tell me what you'd like me to rewrite — then tap **Apply Live to Community Page**.`,
+        actionCard: card,
+        suggestedReplies: [
+          'Rewrite our club bio to welcome first-timers',
+          'Add a friendly dog-on-lead club rule',
+          'Make our club visibility invite-only',
+        ],
+      },
+    ]);
+    setSelectedOutputMsgId(msgId);
+    setMobileView('output');
+    setHasUnreadOutput(false);
+  };
+
   const handleSendMessage = async (textOverride = null) => {
+    if (isListening) stopListening();
     const text = (textOverride !== null ? textOverride : inputValue).trim();
     if (!text || isThinking) return;
 
@@ -412,20 +761,42 @@ export default function LeaderAICoPilot({
           history: compactHistory,
           communityName: community?.name || 'Local Community',
           communityLocation: communityLoc,
-          communityTags: community?.tags || [],
+          communityTags: (community?.tags || []).filter((t) => typeof t === 'string' && !t.startsWith('__cfg:')),
           memberCount: communitySnapshot.memberBreakdown.total,
           verifiedCount: communitySnapshot.memberBreakdown.verifiedLocals,
-          upcomingEvents: upcomingEvents.slice(0, 5).map((e) => ({
+          upcomingEvents: upcomingEvents.slice(0, 8).map((e) => ({
+            id: e.id,
             title: e.title,
             date: e.date,
             time: e.time,
             location: cleanLocationName(e.location) || communityLoc,
+            maxCapacity: Number(e.maxCapacity || e.max_capacity || 25),
+            ticketPrice: Number(e.ticketPrice ?? e.ticket_price ?? 0),
+            requireApproval: Boolean(e.requireApproval),
+            allowCarpool: e.allowCarpool !== false,
+            allowGuests: e.allowGuests !== false,
+            description: String(e.description || '').slice(0, 220),
             rsvps: (eventRsvps?.[e.id] || []).filter((r) => r.status === 'going').length,
           })),
           communitySnapshot: {
             description: communitySnapshot.description,
             guidelines: communitySnapshot.guidelines,
+            category: communitySnapshot.category,
+            cost: communitySnapshot.cost,
+            target_audience: communitySnapshot.target_audience,
+            activity_level: communitySnapshot.activity_level,
+            visibility: communitySnapshot.visibility,
+            subscription_price: communitySnapshot.subscription_price,
+            website: communitySnapshot.website,
+            instagram_handle: communitySnapshot.instagram_handle,
+            whatsapp_group: communitySnapshot.whatsapp_group,
+            require_approval: communitySnapshot.require_approval,
+            accepts_pitches: communitySnapshot.accepts_pitches,
+            allow_carpool: communitySnapshot.allow_carpool,
+            allow_guests: communitySnapshot.allow_guests,
+            allow_chapters: communitySnapshot.allow_chapters,
             hasWhatsappGroup: communitySnapshot.hasWhatsappGroup,
+            channels: communitySnapshot.channels,
             memberBreakdown: communitySnapshot.memberBreakdown,
             pastEventsSummary: communitySnapshot.pastEventsSummary,
             activePolls: communitySnapshot.activePolls,
@@ -443,7 +814,10 @@ export default function LeaderAICoPilot({
           data.modelUsed.replace(/-/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())
         );
       }
-      const normalizedCard = normalizeActionCard(data?.actionCard);
+      const normalizedCard = normalizeActionCard(data?.actionCard, {
+        community,
+        upcomingEvents,
+      });
       const newMsgId = `ai-${Date.now()}`;
       const assistantMsg = {
         id: newMsgId,
@@ -457,6 +831,7 @@ export default function LeaderAICoPilot({
       setMessages((prev) => [...prev, assistantMsg]);
       if (normalizedCard) {
         setSelectedOutputMsgId(newMsgId);
+        setHasUnreadOutput(true);
       }
     } catch (err) {
       setMessages((prev) => [
@@ -496,6 +871,9 @@ export default function LeaderAICoPilot({
         location: ev.location || communityLoc,
         maxCapacity: Number(ev.maxCapacity) || 25,
         ticketPrice: Number(ev.ticketPrice) || 0,
+        requireApproval: Boolean(ev.requireApproval),
+        allowCarpool: ev.allowCarpool !== false,
+        allowGuests: ev.allowGuests !== false,
         status: 'published',
       });
       setPublishedEventsMap((prev) => ({ ...prev, [key]: created?.id || true }));
@@ -522,6 +900,9 @@ export default function LeaderAICoPilot({
         location: ev.location || communityLoc,
         maxCapacity: Number(ev.maxCapacity) || 25,
         ticketPrice: Number(ev.ticketPrice) || 0,
+        requireApproval: Boolean(ev.requireApproval),
+        allowCarpool: ev.allowCarpool !== false,
+        allowGuests: ev.allowGuests !== false,
         status: 'published',
       }));
 
@@ -541,6 +922,9 @@ export default function LeaderAICoPilot({
             location: ev.location || communityLoc,
             maxCapacity: Number(ev.maxCapacity) || 25,
             ticketPrice: Number(ev.ticketPrice) || 0,
+            requireApproval: Boolean(ev.requireApproval),
+            allowCarpool: ev.allowCarpool !== false,
+            allowGuests: ev.allowGuests !== false,
             status: 'published',
           });
           nextPublished[`${msgId}-${idx}`] = created?.id || true;
@@ -614,18 +998,164 @@ export default function LeaderAICoPilot({
     setApplyingProfileMap((prev) => ({ ...prev, [msgId]: true }));
     try {
       const payload = {};
-      if (updateData.description?.trim()) payload.description = updateData.description.trim();
+      if (updateData.name?.trim()) payload.name = updateData.name.trim();
+      if (updateData.description !== undefined) payload.description = String(updateData.description || '').trim();
       if (Array.isArray(updateData.guidelines)) {
-        const cleanRules = updateData.guidelines.map((g) => String(g || '').trim()).filter(Boolean);
-        if (cleanRules.length > 0) payload.guidelines = cleanRules;
+        payload.guidelines = updateData.guidelines.map((g) => String(g || '').trim()).filter(Boolean);
       }
+      if (updateData.category?.trim()) payload.category = updateData.category.trim();
+      if (updateData.location_name?.trim()) payload.location_name = updateData.location_name.trim();
+      if (updateData.cost !== undefined) payload.cost = String(updateData.cost || '').trim() || 'Free';
+      if (updateData.target_audience !== undefined) payload.target_audience = String(updateData.target_audience || '').trim();
+      if (updateData.activity_level) payload.activity_level = updateData.activity_level;
+      if (updateData.tagsText !== undefined) {
+        const cleanedTags = String(updateData.tagsText || '')
+          .split(',')
+          .map((t) => t.trim())
+          .filter(Boolean);
+        if (cleanedTags.length > 0) payload.tags = cleanedTags;
+      }
+      if (['public', 'private', 'invite-only'].includes(updateData.visibility)) {
+        payload.visibility = updateData.visibility;
+      }
+      if (updateData.subscription_price !== undefined && updateData.subscription_price !== '') {
+        const numPrice = Math.max(0, Number(updateData.subscription_price) || 0);
+        payload.subscription_price = numPrice;
+      }
+      if (updateData.whatsapp_group !== undefined) {
+        let wa = String(updateData.whatsapp_group || '').trim();
+        if (wa && !/^https?:\/\//i.test(wa)) wa = `https://${wa}`;
+        payload.whatsapp_group = wa;
+      }
+      if (updateData.instagram_handle !== undefined) {
+        let ig = String(updateData.instagram_handle || '').trim();
+        if (ig && !ig.startsWith('@') && !ig.startsWith('http')) ig = `@${ig}`;
+        payload.instagram_handle = ig;
+      }
+      if (updateData.website !== undefined) {
+        let web = String(updateData.website || '').trim();
+        if (web && !/^https?:\/\//i.test(web)) web = `https://${web}`;
+        payload.website = web;
+      }
+      if (updateData.require_approval !== undefined) payload.require_approval = Boolean(updateData.require_approval);
+      if (updateData.accepts_pitches !== undefined) payload.accepts_pitches = Boolean(updateData.accepts_pitches);
+      if (updateData.allow_carpool !== undefined) {
+        payload.allow_carpool = Boolean(updateData.allow_carpool);
+        payload.allowCarpool = Boolean(updateData.allow_carpool);
+      }
+      if (updateData.allow_guests !== undefined) {
+        payload.allow_guests = Boolean(updateData.allow_guests);
+        payload.allowGuests = Boolean(updateData.allow_guests);
+      }
+      if (updateData.allow_chapters !== undefined) {
+        payload.allow_chapters = Boolean(updateData.allow_chapters);
+        payload.allowChapters = Boolean(updateData.allow_chapters);
+      }
+
       await updateCommunity(community.id, payload);
       setAppliedProfileMap((prev) => ({ ...prev, [msgId]: true }));
-      toast.success('Community Page Updated! ✨', 'Your new description and guidelines are now live.');
+      toast.success('Club Settings & Rules Saved Live! ✨', 'Your changes are now live on your Community Page.');
     } catch (err) {
-      toast.error('Update Failed', err?.message || 'Could not update community profile.');
+      toast.error('Update Failed', err?.message || 'Could not update community settings.');
     } finally {
       setApplyingProfileMap((prev) => ({ ...prev, [msgId]: false }));
+    }
+  };
+
+  const handleApplyEventUpdate = async (msgId, evData) => {
+    if (!evData?.eventId) {
+      toast.error('Select an event', 'Choose which upcoming event you want to update.');
+      return;
+    }
+    if (evData.action === 'cancel' && !evData.confirmCancel) {
+      toast.error('Confirmation needed', 'Tick the confirmation box before cancelling this event.');
+      return;
+    }
+    setApplyingEventUpdateMap((prev) => ({ ...prev, [msgId]: true }));
+    try {
+      let ok = false;
+      if (evData.action === 'cancel') {
+        ok = await cancelEvent(evData.eventId);
+        if (ok !== false) {
+          setAppliedEventUpdateMap((prev) => ({ ...prev, [msgId]: { id: evData.eventId, action: 'cancel' } }));
+          toast.success('Event Cancelled', `"${evData.title || evData.originalTitle}" has been marked cancelled.`);
+        } else {
+          toast.error('Could not cancel event', 'Please try again from Dashboard → Events.');
+        }
+      } else {
+        if (!evData.title?.trim()) {
+          toast.error('Missing title', 'Please provide an event title.');
+          setApplyingEventUpdateMap((prev) => ({ ...prev, [msgId]: false }));
+          return;
+        }
+        ok = await updateEvent(evData.eventId, {
+          title: evData.title.trim(),
+          date: evData.date,
+          time: evData.time || '10:00',
+          location: evData.location || communityLoc,
+          description: evData.description || '',
+          maxCapacity: Number(evData.maxCapacity) || 25,
+          ticketPrice: Number(evData.ticketPrice) || 0,
+          requireApproval: Boolean(evData.requireApproval),
+          allowCarpool: evData.allowCarpool !== false,
+          allowGuests: evData.allowGuests !== false,
+        });
+        if (ok !== false) {
+          setAppliedEventUpdateMap((prev) => ({ ...prev, [msgId]: { id: evData.eventId, action: 'update' } }));
+          toast.success('Event Updated Live! ✅', `"${evData.title}" changes are now live on Calendar & /events.`);
+        } else {
+          toast.error('Event Update Failed', 'Could not save event changes. Please try again.');
+        }
+      }
+    } catch (err) {
+      toast.error('Event Update Error', err?.message || 'Could not update event.');
+    } finally {
+      setApplyingEventUpdateMap((prev) => ({ ...prev, [msgId]: false }));
+    }
+  };
+
+  const handleSendEventReminderCard = async (msgId, reminderData) => {
+    if (!reminderData?.eventId || typeof sendEventReminder !== 'function') return;
+    setSendingReminderMap((prev) => ({ ...prev, [msgId]: true }));
+    try {
+      const res = await sendEventReminder(reminderData.eventId, reminderData.message?.trim() || null);
+      const count = Number(res?.count ?? 0);
+      setSentReminderMap((prev) => ({ ...prev, [msgId]: { count, eventId: reminderData.eventId } }));
+      toast.success(
+        count > 0 ? `Reminder Sent to ${count} Attendee${count === 1 ? '' : 's'}! 🔔` : 'Reminder Processed',
+        count > 0 ? 'In-app & push notifications delivered.' : 'No registered attendees to notify yet.'
+      );
+    } catch (err) {
+      toast.error('Reminder Failed', err?.message || 'Could not send event reminder.');
+    } finally {
+      setSendingReminderMap((prev) => ({ ...prev, [msgId]: false }));
+    }
+  };
+
+  const handleCreateChannelCard = async (msgId, chanData) => {
+    if (!community?.id || typeof createChannel !== 'function') return;
+    const cleanName = String(chanData?.channelName || '')
+      .trim()
+      .replace(/^#+/, '')
+      .toLowerCase()
+      .replace(/\s+/g, '-');
+    if (!cleanName) {
+      toast.error('Channel name required', 'Enter a short name like carpool-rides or beginner-chat.');
+      return;
+    }
+    setCreatingChannelMap((prev) => ({ ...prev, [msgId]: true }));
+    try {
+      const created = await createChannel(community.id, cleanName, chanData.channelType || 'text');
+      if (created) {
+        setCreatedChannelMap((prev) => ({ ...prev, [msgId]: created }));
+        toast.success(`#${cleanName} Channel Created! 💬`, `Live now inside ${community.name} Community Chat.`);
+      } else {
+        toast.error('Channel Creation Failed', 'Could not create chat channel. Please try again.');
+      }
+    } catch (err) {
+      toast.error('Channel Error', err?.message || 'Could not create channel.');
+    } finally {
+      setCreatingChannelMap((prev) => ({ ...prev, [msgId]: false }));
     }
   };
 
@@ -652,6 +1182,7 @@ export default function LeaderAICoPilot({
   };
 
   const jumpToRoute = (path) => {
+    stopListening();
     if (onClose) onClose();
     router.push(path);
   };
@@ -692,9 +1223,14 @@ export default function LeaderAICoPilot({
       const len = card.data?.events?.length || 1;
       return len === 1 ? '🚀 Event Draft' : `🗓️ ${len}-Event Plan`;
     }
+    if (card.type === 'event_update') {
+      return card.data?.action === 'cancel' ? '⚠️ Cancel Event' : '✏️ Edit Event';
+    }
+    if (card.type === 'event_reminder') return '🔔 Reminder';
+    if (card.type === 'create_channel') return '# New Channel';
     if (card.type === 'poll') return '📊 Poll Draft';
     if (card.type === 'broadcast') return '📣 Broadcast';
-    if (card.type === 'community_update') return '✨ Bio & Rules';
+    if (card.type === 'community_update') return '⚙️ Settings & Rules';
     if (card.type === 'audit') return '📈 Growth Audit';
     if (card.type === 'document') return '🛡️ Document';
     return '✨ Draft';
@@ -733,6 +1269,10 @@ export default function LeaderAICoPilot({
       <style
         dangerouslySetInnerHTML={{
           __html: `
+            @keyframes copilotPulse {
+              0%, 100% { opacity: 1; transform: scale(1); }
+              50% { opacity: 0.45; transform: scale(0.85); }
+            }
             .copilot-portal-shell {
               width: 100%;
               height: 100dvh;
@@ -749,16 +1289,27 @@ export default function LeaderAICoPilot({
             .copilot-split-body {
               display: grid;
               grid-template-columns: minmax(0, 1fr);
+              grid-template-rows: minmax(0, 1fr);
               flex: 1;
+              min-height: 0;
+              overflow: hidden;
+            }
+            .copilot-pane-chat,
+            .copilot-pane-output {
+              display: flex;
+              flex-direction: column;
               min-height: 0;
               overflow: hidden;
             }
             .copilot-mobile-tabs {
               display: flex;
             }
+            .copilot-mobile-only-btn {
+              display: inline-flex;
+            }
             .copilot-pane-chat.mobile-hidden,
             .copilot-pane-output.mobile-hidden {
-              display: none;
+              display: none !important;
             }
             @media (min-width: 860px) {
               .copilot-portal-backdrop {
@@ -782,6 +1333,11 @@ export default function LeaderAICoPilot({
               .copilot-mobile-tabs {
                 display: none !important;
               }
+              .copilot-mobile-only-btn {
+                display: none !important;
+              }
+              .copilot-pane-chat,
+              .copilot-pane-output,
               .copilot-pane-chat.mobile-hidden,
               .copilot-pane-output.mobile-hidden {
                 display: flex !important;
@@ -997,6 +1553,8 @@ export default function LeaderAICoPilot({
             {/* Mobile Top Switcher: Conversation vs Live Output & Launchpad */}
             <div
               className="copilot-mobile-tabs"
+              role="tablist"
+              aria-label="Co-Pilot Studio Views"
               style={{
                 padding: '8px 12px',
                 borderBottom: '1px solid var(--hairline-border)',
@@ -1007,6 +1565,8 @@ export default function LeaderAICoPilot({
             >
               <button
                 type="button"
+                role="tab"
+                aria-selected={mobileView === 'chat'}
                 onClick={() => setMobileView('chat')}
                 style={{
                   flex: 1,
@@ -1032,7 +1592,12 @@ export default function LeaderAICoPilot({
               </button>
               <button
                 type="button"
-                onClick={() => setMobileView('output')}
+                role="tab"
+                aria-selected={mobileView === 'output'}
+                onClick={() => {
+                  setMobileView('output');
+                  setHasUnreadOutput(false);
+                }}
                 style={{
                   flex: 1,
                   padding: '9px 10px',
@@ -1073,6 +1638,7 @@ export default function LeaderAICoPilot({
                       padding: '1px 6px',
                       borderRadius: '99px',
                       fontWeight: 800,
+                      animation: hasUnreadOutput && mobileView === 'chat' ? 'copilotPulse 1.4s ease-in-out infinite' : 'none',
                     }}
                   >
                     {outputHistory.length}
@@ -1087,9 +1653,6 @@ export default function LeaderAICoPilot({
               <div
                 className={`copilot-pane-chat ${mobileView === 'output' ? 'mobile-hidden' : ''}`}
                 style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  minHeight: 0,
                   background: 'var(--surface-canvas)',
                 }}
               >
@@ -1107,6 +1670,11 @@ export default function LeaderAICoPilot({
                 >
                   {[
                     {
+                      label: '⚙️ Club Settings & Rules',
+                      directAction: handleOpenLiveSettingsEditor,
+                      highlight: true,
+                    },
+                    {
                       label: '📈 Health Audit',
                       prompt: `Audit ${community?.name || 'my community'} using our real member and turnout numbers and tell me the top 3 things I should do this week.`,
                     },
@@ -1114,6 +1682,18 @@ export default function LeaderAICoPilot({
                       label: '🚀 New Event',
                       prompt: `Create a single welcoming meetup for ${community?.name || 'our community'} in ${communityLoc} this Sunday at 10:00 AM with a post-event coffee stop.`,
                     },
+                    ...(nextUpcomingEvent
+                      ? [
+                          {
+                            label: '✏️ Edit Next Event',
+                            prompt: `Load our upcoming event "${nextUpcomingEvent.title}" so I can review and edit its details.`,
+                          },
+                          {
+                            label: '🔔 Remind Attendees',
+                            prompt: `Draft an attendee reminder for our upcoming event "${nextUpcomingEvent.title}".`,
+                          },
+                        ]
+                      : []),
                     {
                       label: '🗓️ 4-Week Plan',
                       prompt: `Plan our next 4 weeks of meetups in ${communityLoc} with a mix of beginner-friendly and regular sessions.`,
@@ -1128,8 +1708,8 @@ export default function LeaderAICoPilot({
                         'Draft a warm pinned announcement and WhatsApp message welcoming quiet newcomers to join their first in-person meetup.',
                     },
                     {
-                      label: '✨ Bio & Rules',
-                      prompt: `Rewrite our public Community Description and 4 friendly Community Guidelines for ${community?.name || 'our community'} in ${communityLoc}.`,
+                      label: '# New Chat Channel',
+                      prompt: `Create a new community chat channel for ${community?.name || 'our members'}.`,
                     },
                     {
                       label: '🛡️ UK RAMS',
@@ -1142,7 +1722,7 @@ export default function LeaderAICoPilot({
                       key={idx}
                       type="button"
                       disabled={isThinking}
-                      onClick={() => handleSendMessage(chip.prompt)}
+                      onClick={() => (chip.directAction ? chip.directAction() : handleSendMessage(chip.prompt))}
                       className="interactive-press"
                       style={{
                         padding: '6px 10px',
@@ -1151,9 +1731,9 @@ export default function LeaderAICoPilot({
                         fontWeight: 700,
                         whiteSpace: 'nowrap',
                         cursor: isThinking ? 'not-allowed' : 'pointer',
-                        background: 'var(--surface-card)',
-                        color: 'var(--ink-secondary)',
-                        border: '1px solid var(--hairline-border)',
+                        background: chip.highlight ? 'rgba(139, 92, 246, 0.14)' : 'var(--surface-card)',
+                        color: chip.highlight ? '#8b5cf6' : 'var(--ink-secondary)',
+                        border: chip.highlight ? '1px solid rgba(139, 92, 246, 0.38)' : '1px solid var(--hairline-border)',
                         flexShrink: 0,
                       }}
                     >
@@ -1227,6 +1807,7 @@ export default function LeaderAICoPilot({
                               onClick={() => {
                                 setSelectedOutputMsgId(msg.id);
                                 setMobileView('output');
+                                setHasUnreadOutput(false);
                               }}
                               className="interactive-press"
                               style={{
@@ -1310,6 +1891,55 @@ export default function LeaderAICoPilot({
                   <div ref={chatEndRef} />
                 </div>
 
+                {/* Live Voice Listening Status Banner */}
+                {isListening && (
+                  <div
+                    style={{
+                      padding: '7px 14px',
+                      background: 'rgba(239, 68, 68, 0.12)',
+                      borderTop: '1px solid rgba(239, 68, 68, 0.3)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: '8px',
+                      fontSize: '0.76rem',
+                      fontWeight: 700,
+                      color: '#ef4444',
+                      flexShrink: 0,
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span
+                        style={{
+                          width: '9px',
+                          height: '9px',
+                          borderRadius: '50%',
+                          background: '#ef4444',
+                          display: 'inline-block',
+                          animation: 'copilotPulse 1.1s ease-in-out infinite',
+                        }}
+                      />
+                      <span>{voiceStatusText || 'Listening... speak naturally'}</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={stopListening}
+                      style={{
+                        background: 'rgba(239, 68, 68, 0.16)',
+                        border: '1px solid rgba(239, 68, 68, 0.35)',
+                        color: '#ef4444',
+                        borderRadius: '99px',
+                        padding: '2px 9px',
+                        fontSize: '0.7rem',
+                        fontWeight: 800,
+                        cursor: 'pointer',
+                      }}
+                    >
+                      Stop
+                    </button>
+                  </div>
+                )}
+
                 {/* Chat Composer */}
                 <form
                   className="copilot-portal-composer"
@@ -1326,6 +1956,38 @@ export default function LeaderAICoPilot({
                     flexShrink: 0,
                   }}
                 >
+                  <button
+                    type="button"
+                    onClick={toggleListening}
+                    disabled={isThinking}
+                    className="interactive-press"
+                    title={isListening ? 'Stop voice input' : 'Talk to More AI with microphone'}
+                    aria-label={isListening ? 'Stop voice input' : 'Talk to More AI with microphone'}
+                    style={{
+                      width: '40px',
+                      height: '40px',
+                      borderRadius: '12px',
+                      border: isListening
+                        ? '1.5px solid #ef4444'
+                        : '1px solid var(--hairline-border-strong)',
+                      background: isListening
+                        ? 'rgba(239, 68, 68, 0.16)'
+                        : 'var(--surface-elevated)',
+                      color: isListening
+                        ? '#ef4444'
+                        : speechSupported
+                        ? 'var(--ink-primary)'
+                        : 'var(--ink-muted)',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: isThinking ? 'not-allowed' : 'pointer',
+                      flexShrink: 0,
+                      animation: isListening ? 'copilotPulse 1.4s ease-in-out infinite' : 'none',
+                    }}
+                  >
+                    {isListening ? <MicOff size={17} /> : <Mic size={17} />}
+                  </button>
                   <textarea
                     rows={1}
                     value={inputValue}
@@ -1336,11 +1998,17 @@ export default function LeaderAICoPilot({
                         handleSendMessage();
                       }
                     }}
-                    placeholder="Ask anything, or tweak what's in the launchpad..."
+                    placeholder={
+                      isListening
+                        ? 'Listening... speak your instructions...'
+                        : 'Type or tap the mic — edit events, add rules, launch polls...'
+                    }
                     style={{
                       flex: 1,
                       background: 'var(--surface-elevated)',
-                      border: '1px solid var(--hairline-border-strong)',
+                      border: isListening
+                        ? '1.5px solid rgba(239, 68, 68, 0.5)'
+                        : '1px solid var(--hairline-border-strong)',
                       borderRadius: '12px',
                       outline: 'none',
                       resize: 'none',
@@ -1358,7 +2026,7 @@ export default function LeaderAICoPilot({
                     disabled={!inputValue.trim() || isThinking}
                     className="btn btn-primary interactive-press"
                     style={{
-                      padding: '10px 15px',
+                      padding: '10px 14px',
                       borderRadius: '12px',
                       fontSize: '0.84rem',
                       fontWeight: 800,
@@ -1379,16 +2047,13 @@ export default function LeaderAICoPilot({
               <div
                 className={`copilot-pane-output ${mobileView === 'chat' ? 'mobile-hidden' : ''}`}
                 style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  minHeight: 0,
                   background: 'var(--surface-card)',
                 }}
               >
                 {/* Output Pane Header + Session Draft History Switcher */}
                 <div
                   style={{
-                    padding: '10px 16px',
+                    padding: '10px 14px',
                     borderBottom: '1px solid var(--hairline-border)',
                     background: 'var(--surface-elevated)',
                     display: 'flex',
@@ -1399,7 +2064,26 @@ export default function LeaderAICoPilot({
                     flexShrink: 0,
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <button
+                      type="button"
+                      onClick={() => setMobileView('chat')}
+                      className="copilot-mobile-only-btn interactive-press"
+                      style={{
+                        alignItems: 'center',
+                        gap: '4px',
+                        padding: '4px 9px',
+                        borderRadius: '8px',
+                        background: 'var(--surface-card)',
+                        border: '1px solid var(--hairline-border-strong)',
+                        color: 'var(--ink-primary)',
+                        fontSize: '0.73rem',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <ArrowLeft size={13} /> Chat
+                    </button>
                     <Layers size={15} color="#10b981" />
                     <span
                       style={{
@@ -1493,6 +2177,12 @@ export default function LeaderAICoPilot({
                       >
                         {[
                           {
+                            icon: '⚙️',
+                            title: 'Edit Club Settings & Rules',
+                            sub: 'Add club rules, links, visibility & toggles',
+                            directAction: handleOpenLiveSettingsEditor,
+                          },
+                          {
                             icon: '📈',
                             title: 'Community Health Audit',
                             sub: 'Real turnout & 3-step action plan',
@@ -1510,18 +2200,12 @@ export default function LeaderAICoPilot({
                             sub: 'Publishes to Community Page & notifies',
                             prompt: `Create a community poll asking members which day and time works best for our next meetup in ${communityLoc}.`,
                           },
-                          {
-                            icon: '✨',
-                            title: 'Upgrade Bio & Guidelines',
-                            sub: 'Updates your public community page live',
-                            prompt: `Rewrite our public Community Description and 4 friendly Community Guidelines for ${community?.name || 'our community'} in ${communityLoc}.`,
-                          },
                         ].map((card, i) => (
                           <button
                             key={i}
                             type="button"
                             disabled={isThinking}
-                            onClick={() => handleSendMessage(card.prompt)}
+                            onClick={() => (card.directAction ? card.directAction() : handleSendMessage(card.prompt))}
                             className="interactive-press"
                             style={{
                               padding: '12px',
@@ -1652,33 +2336,50 @@ export default function LeaderAICoPilot({
                                       <span style={{ fontSize: '0.68rem', fontWeight: 800, textTransform: 'uppercase', padding: '2px 8px', borderRadius: '99px', background: 'rgba(235, 87, 56, 0.14)', color: '#EB5738' }}>
                                         {ev.weekLabel || `Event ${idx + 1}`}
                                       </span>
-                                      {isLaunched && (
-                                        <button
-                                          type="button"
-                                          onClick={() =>
-                                            jumpToRoute(
-                                              typeof launchedId === 'string'
-                                                ? `/events/${launchedId}`
-                                                : `/community/${communitySlug || community?.id}?tab=events`
-                                            )
-                                          }
-                                          style={{
-                                            background: 'rgba(16, 185, 129, 0.15)',
-                                            border: '1px solid rgba(16, 185, 129, 0.4)',
-                                            color: '#10b981',
-                                            borderRadius: '99px',
-                                            padding: '4px 10px',
-                                            fontSize: '0.73rem',
-                                            fontWeight: 800,
-                                            cursor: 'pointer',
-                                            display: 'inline-flex',
-                                            alignItems: 'center',
-                                            gap: '4px',
-                                          }}
-                                        >
-                                          View Live Event <ExternalLink size={12} />
-                                        </button>
-                                      )}
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                        {!isLaunched && evList.length > 1 && (
+                                          <button
+                                            type="button"
+                                            title="Remove this draft event"
+                                            onClick={() =>
+                                              updateOutputCardData(msgId, (d) => ({
+                                                ...d,
+                                                events: d.events.filter((_, i) => i !== idx),
+                                              }))
+                                            }
+                                            style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '4px' }}
+                                          >
+                                            <Trash2 size={14} />
+                                          </button>
+                                        )}
+                                        {isLaunched && (
+                                          <button
+                                            type="button"
+                                            onClick={() =>
+                                              jumpToRoute(
+                                                typeof launchedId === 'string'
+                                                  ? `/events/${launchedId}`
+                                                  : `/community/${communitySlug || community?.id}?tab=events`
+                                              )
+                                            }
+                                            style={{
+                                              background: 'rgba(16, 185, 129, 0.15)',
+                                              border: '1px solid rgba(16, 185, 129, 0.4)',
+                                              color: '#10b981',
+                                              borderRadius: '99px',
+                                              padding: '4px 10px',
+                                              fontSize: '0.73rem',
+                                              fontWeight: 800,
+                                              cursor: 'pointer',
+                                              display: 'inline-flex',
+                                              alignItems: 'center',
+                                              gap: '4px',
+                                            }}
+                                          >
+                                            View Live Event <ExternalLink size={12} />
+                                          </button>
+                                        )}
+                                      </div>
                                     </div>
 
                                     <input
@@ -1754,6 +2455,37 @@ export default function LeaderAICoPilot({
                                       style={{ ...inputFieldStyle, resize: 'vertical', lineHeight: 1.45 }}
                                     />
 
+                                    {/* Per-Event Permission Toggles */}
+                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', fontSize: '0.75rem', color: 'var(--ink-secondary)' }}>
+                                      <label style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', cursor: isLaunched ? 'default' : 'pointer' }}>
+                                        <input
+                                          type="checkbox"
+                                          disabled={isLaunched}
+                                          checked={Boolean(ev.requireApproval)}
+                                          onChange={(e) => updateEvField('requireApproval', e.target.checked)}
+                                        />
+                                        Host Approval
+                                      </label>
+                                      <label style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', cursor: isLaunched ? 'default' : 'pointer' }}>
+                                        <input
+                                          type="checkbox"
+                                          disabled={isLaunched}
+                                          checked={ev.allowCarpool !== false}
+                                          onChange={(e) => updateEvField('allowCarpool', e.target.checked)}
+                                        />
+                                        Carpool Hub
+                                      </label>
+                                      <label style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', cursor: isLaunched ? 'default' : 'pointer' }}>
+                                        <input
+                                          type="checkbox"
+                                          disabled={isLaunched}
+                                          checked={ev.allowGuests !== false}
+                                          onChange={(e) => updateEvField('allowGuests', e.target.checked)}
+                                        />
+                                        Allow +1 Guests
+                                      </label>
+                                    </div>
+
                                     {!isLaunched && (
                                       <button
                                         type="button"
@@ -1780,6 +2512,50 @@ export default function LeaderAICoPilot({
                                   </div>
                                 );
                               })}
+
+                              {!allLaunched && (
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    updateOutputCardData(msgId, (d) => ({
+                                      ...d,
+                                      events: [
+                                        ...d.events,
+                                        {
+                                          weekLabel: `Event ${d.events.length + 1}`,
+                                          title: `${community?.name || 'Community'} Meetup`,
+                                          date: new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0],
+                                          time: '10:00',
+                                          location: communityLoc,
+                                          description: '',
+                                          maxCapacity: 25,
+                                          ticketPrice: 0,
+                                          requireApproval: false,
+                                          allowCarpool: true,
+                                          allowGuests: true,
+                                        },
+                                      ],
+                                    }))
+                                  }
+                                  className="interactive-press"
+                                  style={{
+                                    padding: '9px 14px',
+                                    borderRadius: '11px',
+                                    border: '1px dashed var(--hairline-border-strong)',
+                                    background: 'transparent',
+                                    color: 'var(--ink-secondary)',
+                                    fontSize: '0.78rem',
+                                    fontWeight: 700,
+                                    cursor: 'pointer',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '6px',
+                                  }}
+                                >
+                                  <Plus size={14} /> Add Another Event Draft
+                                </button>
+                              )}
                             </div>
                           </div>
                         );
@@ -2056,9 +2832,32 @@ export default function LeaderAICoPilot({
                         );
                       }
 
-                      // 4. COMMUNITY BIO & GUIDELINES LIVE UPGRADE
+                      // 4. COMMUNITY SETTINGS, BIO & CLUB RULES LIVE EDITOR
                       if (card.type === 'community_update' && card.data) {
                         const isApplied = Boolean(appliedProfileMap[msgId]);
+                        const rulesList = Array.isArray(card.data.guidelines) ? card.data.guidelines : [];
+                        const touched = Array.isArray(card.data.touchedFields) ? card.data.touchedFields : [];
+                        const showAll = Boolean(card.data.showAllSettings);
+                        const isTouched = (k) => touched.includes(k);
+
+                        const renderBadge = (key) =>
+                          isTouched(key) ? (
+                            <span
+                              style={{
+                                marginLeft: '6px',
+                                fontSize: '0.62rem',
+                                fontWeight: 800,
+                                padding: '1px 6px',
+                                borderRadius: '99px',
+                                background: 'rgba(139, 92, 246, 0.16)',
+                                color: '#8b5cf6',
+                                textTransform: 'uppercase',
+                              }}
+                            >
+                              Updated
+                            </span>
+                          ) : null;
+
                         return (
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                             <div
@@ -2074,9 +2873,9 @@ export default function LeaderAICoPilot({
                                 gap: '8px',
                               }}
                             >
-                              <FileEdit size={15} color="#a78bfa" style={{ flexShrink: 0 }} />
+                              <Settings2 size={15} color="#8b5cf6" style={{ flexShrink: 0 }} />
                               <span>
-                                <strong>Where this goes:</strong> Updates your public <strong>{community?.name} Page</strong> description and join guidelines immediately.
+                                <strong>Where this goes:</strong> Updates your public <strong>{community?.name} Page</strong>, join club rules, links, visibility &amp; club settings immediately.
                               </span>
                             </div>
 
@@ -2085,14 +2884,30 @@ export default function LeaderAICoPilot({
                                 {card.title}
                               </h3>
                               {isApplied ? (
-                                <button
-                                  type="button"
-                                  onClick={() => jumpToRoute(`/community/${communitySlug || community?.id}`)}
-                                  className="btn btn-primary interactive-press"
-                                  style={{ padding: '9px 15px', borderRadius: '11px', fontSize: '0.82rem', fontWeight: 800, background: '#10b981', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-                                >
-                                  View Updated Page <ExternalLink size={14} />
-                                </button>
+                                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      setAppliedProfileMap((prev) => {
+                                        const next = { ...prev };
+                                        delete next[msgId];
+                                        return next;
+                                      })
+                                    }
+                                    className="btn btn-outline interactive-press"
+                                    style={{ padding: '8px 12px', borderRadius: '10px', fontSize: '0.78rem', fontWeight: 700 }}
+                                  >
+                                    Edit Again
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => jumpToRoute(`/community/${communitySlug || community?.id}`)}
+                                    className="btn btn-primary interactive-press"
+                                    style={{ padding: '9px 15px', borderRadius: '11px', fontSize: '0.82rem', fontWeight: 800, background: '#10b981', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                                  >
+                                    View Updated Page <ExternalLink size={14} />
+                                  </button>
+                                </div>
                               ) : (
                                 <button
                                   type="button"
@@ -2107,40 +2922,852 @@ export default function LeaderAICoPilot({
                               )}
                             </div>
 
-                            <div style={{ background: 'var(--surface-elevated)', borderRadius: '14px', padding: '14px', border: '1px solid var(--hairline-border)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            {/* CLUB RULES / COMMUNITY GUIDELINES */}
+                            <div style={{ background: 'var(--surface-elevated)', borderRadius: '14px', padding: '14px', border: '1px solid var(--hairline-border)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                                <label style={{ fontSize: '0.74rem', fontWeight: 800, color: 'var(--ink-primary)', textTransform: 'uppercase', letterSpacing: '0.03em' }}>
+                                  Club Rules &amp; Join Guidelines ({rulesList.length})
+                                  {renderBadge('guidelines')}
+                                </label>
+                                {!isApplied && (
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      updateOutputCardData(msgId, (d) => ({
+                                        ...d,
+                                        guidelines: [...(Array.isArray(d.guidelines) ? d.guidelines : []), ''],
+                                      }))
+                                    }
+                                    className="interactive-press"
+                                    style={{
+                                      padding: '5px 10px',
+                                      borderRadius: '8px',
+                                      background: 'rgba(139, 92, 246, 0.14)',
+                                      border: '1px solid rgba(139, 92, 246, 0.35)',
+                                      color: '#8b5cf6',
+                                      fontSize: '0.73rem',
+                                      fontWeight: 800,
+                                      cursor: 'pointer',
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      gap: '4px',
+                                    }}
+                                  >
+                                    <Plus size={13} /> Add Club Rule
+                                  </button>
+                                )}
+                              </div>
+
+                              {rulesList.length === 0 ? (
+                                <div style={{ fontSize: '0.8rem', color: 'var(--ink-muted)', fontStyle: 'italic' }}>
+                                  No club rules yet — tap &ldquo;+ Add Club Rule&rdquo; above or ask More AI to add one.
+                                </div>
+                              ) : (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '7px' }}>
+                                  {rulesList.map((rule, rIdx) => (
+                                    <div key={rIdx} style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                                      <span
+                                        style={{
+                                          width: '22px',
+                                          height: '22px',
+                                          borderRadius: '50%',
+                                          background: 'var(--surface-card)',
+                                          border: '1px solid var(--hairline-border)',
+                                          color: 'var(--ink-muted)',
+                                          fontSize: '0.7rem',
+                                          fontWeight: 800,
+                                          display: 'inline-flex',
+                                          alignItems: 'center',
+                                          justifyContent: 'center',
+                                          flexShrink: 0,
+                                        }}
+                                      >
+                                        {rIdx + 1}
+                                      </span>
+                                      <input
+                                        type="text"
+                                        disabled={isApplied}
+                                        value={rule}
+                                        placeholder="Type a clear, friendly club rule..."
+                                        onChange={(e) =>
+                                          updateOutputCardData(msgId, (d) => ({
+                                            ...d,
+                                            guidelines: (d.guidelines || []).map((x, idx2) => (idx2 === rIdx ? e.target.value : x)),
+                                          }))
+                                        }
+                                        style={inputFieldStyle}
+                                      />
+                                      {!isApplied && (
+                                        <button
+                                          type="button"
+                                          title="Remove club rule"
+                                          onClick={() =>
+                                            updateOutputCardData(msgId, (d) => ({
+                                              ...d,
+                                              guidelines: (d.guidelines || []).filter((_, idx2) => idx2 !== rIdx),
+                                            }))
+                                          }
+                                          style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '6px', flexShrink: 0 }}
+                                        >
+                                          <Trash2 size={15} />
+                                        </button>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+
+                            {/* PUBLIC BIO / DESCRIPTION */}
+                            <div style={{ background: 'var(--surface-elevated)', borderRadius: '14px', padding: '14px', border: '1px solid var(--hairline-border)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                               <div>
-                                <label style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--ink-muted)', display: 'block', marginBottom: '4px' }}>
+                                <label style={{ fontSize: '0.72rem', fontWeight: 800, color: 'var(--ink-primary)', display: 'block', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.03em' }}>
                                   Public Community Bio / Description
+                                  {renderBadge('description')}
                                 </label>
                                 <textarea
-                                  rows={5}
+                                  rows={4}
                                   disabled={isApplied}
                                   value={card.data.description || ''}
                                   onChange={(e) => updateOutputCardData(msgId, (d) => ({ ...d, description: e.target.value }))}
+                                  placeholder="Tell local residents what makes your club welcoming..."
                                   style={{ ...inputFieldStyle, resize: 'vertical', lineHeight: 1.5 }}
+                                />
+                              </div>
+                            </div>
+
+                            {/* EXPANDABLE FULL CLUB SETTINGS (ALL LEADER CONTROLS) */}
+                            <div style={{ background: 'var(--surface-elevated)', borderRadius: '14px', border: '1px solid var(--hairline-border)', overflow: 'hidden' }}>
+                              <button
+                                type="button"
+                                onClick={() => updateOutputCardData(msgId, (d) => ({ ...d, showAllSettings: !d.showAllSettings }))}
+                                style={{
+                                  width: '100%',
+                                  padding: '12px 14px',
+                                  background: 'transparent',
+                                  border: 'none',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'space-between',
+                                  gap: '8px',
+                                  cursor: 'pointer',
+                                  color: 'var(--ink-primary)',
+                                  fontWeight: 800,
+                                  fontSize: '0.8rem',
+                                }}
+                              >
+                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '7px' }}>
+                                  <Settings2 size={14} color="#8b5cf6" />
+                                  All Club Details, Visibility, Links &amp; Toggles
+                                </span>
+                                {showAll ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                              </button>
+
+                              {showAll && (
+                                <div style={{ padding: '0 14px 14px', display: 'flex', flexDirection: 'column', gap: '11px', borderTop: '1px solid var(--hairline-border)', paddingTop: '12px' }}>
+                                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(175px, 1fr))', gap: '9px' }}>
+                                    <div>
+                                      <label style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--ink-muted)', display: 'block', marginBottom: '3px' }}>
+                                        Club Name {renderBadge('name')}
+                                      </label>
+                                      <input
+                                        type="text"
+                                        disabled={isApplied}
+                                        value={card.data.name || ''}
+                                        onChange={(e) => updateOutputCardData(msgId, (d) => ({ ...d, name: e.target.value }))}
+                                        style={inputFieldStyle}
+                                      />
+                                    </div>
+                                    <div>
+                                      <label style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--ink-muted)', display: 'block', marginBottom: '3px' }}>
+                                        Town / Hub Location {renderBadge('location_name')}
+                                      </label>
+                                      <input
+                                        type="text"
+                                        disabled={isApplied}
+                                        value={card.data.location_name || ''}
+                                        onChange={(e) => updateOutputCardData(msgId, (d) => ({ ...d, location_name: e.target.value }))}
+                                        style={inputFieldStyle}
+                                      />
+                                    </div>
+                                    <div>
+                                      <label style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--ink-muted)', display: 'block', marginBottom: '3px' }}>
+                                        Category {renderBadge('category')}
+                                      </label>
+                                      <input
+                                        type="text"
+                                        disabled={isApplied}
+                                        value={card.data.category || ''}
+                                        onChange={(e) => updateOutputCardData(msgId, (d) => ({ ...d, category: e.target.value }))}
+                                        placeholder="e.g. Outdoors, Running, Social"
+                                        style={inputFieldStyle}
+                                      />
+                                    </div>
+                                    <div>
+                                      <label style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--ink-muted)', display: 'block', marginBottom: '3px' }}>
+                                        Cadence {renderBadge('activity_level')}
+                                      </label>
+                                      <select
+                                        disabled={isApplied}
+                                        value={card.data.activity_level || 'Active'}
+                                        onChange={(e) => updateOutputCardData(msgId, (d) => ({ ...d, activity_level: e.target.value }))}
+                                        style={inputFieldStyle}
+                                      >
+                                        <option value="Very Active">Very Active (Weekly)</option>
+                                        <option value="Active">Active (Fortnightly)</option>
+                                        <option value="Casual">Casual (Monthly or less)</option>
+                                        <option value="Flexible">Flexible / Pop-up</option>
+                                      </select>
+                                    </div>
+                                    <div>
+                                      <label style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--ink-muted)', display: 'block', marginBottom: '3px' }}>
+                                        Who Is It For? {renderBadge('target_audience')}
+                                      </label>
+                                      <input
+                                        type="text"
+                                        disabled={isApplied}
+                                        value={card.data.target_audience || ''}
+                                        onChange={(e) => updateOutputCardData(msgId, (d) => ({ ...d, target_audience: e.target.value }))}
+                                        placeholder="e.g. All abilities welcome"
+                                        style={inputFieldStyle}
+                                      />
+                                    </div>
+                                    <div>
+                                      <label style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--ink-muted)', display: 'block', marginBottom: '3px' }}>
+                                        Session Cost Label {renderBadge('cost')}
+                                      </label>
+                                      <input
+                                        type="text"
+                                        disabled={isApplied}
+                                        value={card.data.cost || ''}
+                                        onChange={(e) => updateOutputCardData(msgId, (d) => ({ ...d, cost: e.target.value }))}
+                                        placeholder="e.g. Free, Pay for coffee"
+                                        style={inputFieldStyle}
+                                      />
+                                    </div>
+                                  </div>
+
+                                  <div>
+                                    <label style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--ink-muted)', display: 'block', marginBottom: '3px' }}>
+                                      Discovery Tags (comma-separated) {renderBadge('tags')}
+                                    </label>
+                                    <input
+                                      type="text"
+                                      disabled={isApplied}
+                                      value={card.data.tagsText || ''}
+                                      onChange={(e) => updateOutputCardData(msgId, (d) => ({ ...d, tagsText: e.target.value }))}
+                                      placeholder="e.g. Walking, Dog Friendly, Coffee, Outdoors"
+                                      style={inputFieldStyle}
+                                    />
+                                  </div>
+
+                                  {/* Visibility Selector */}
+                                  <div>
+                                    <label style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--ink-muted)', display: 'block', marginBottom: '5px' }}>
+                                      Community Visibility {renderBadge('visibility')}
+                                    </label>
+                                    <div style={{ display: 'flex', gap: '6px' }}>
+                                      {['public', 'private', 'invite-only'].map((v) => {
+                                        const active = (card.data.visibility || 'public') === v;
+                                        return (
+                                          <button
+                                            key={v}
+                                            type="button"
+                                            disabled={isApplied}
+                                            onClick={() => updateOutputCardData(msgId, (d) => ({ ...d, visibility: v }))}
+                                            style={{
+                                              flex: 1,
+                                              padding: '8px 10px',
+                                              borderRadius: '9px',
+                                              border: active ? '1.5px solid var(--brand-accent)' : '1px solid var(--hairline-border-strong)',
+                                              background: active ? 'var(--brand-accent-soft)' : 'var(--surface-card)',
+                                              color: active ? 'var(--brand-accent)' : 'var(--ink-secondary)',
+                                              fontSize: '0.76rem',
+                                              fontWeight: 700,
+                                              textTransform: 'capitalize',
+                                              cursor: isApplied ? 'default' : 'pointer',
+                                            }}
+                                          >
+                                            {v}
+                                          </button>
+                                        );
+                                      })}
+                                    </div>
+                                  </div>
+
+                                  {/* Links & Monthly Supporter Tier */}
+                                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(175px, 1fr))', gap: '9px' }}>
+                                    <div>
+                                      <label style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--ink-muted)', display: 'block', marginBottom: '3px' }}>
+                                        WhatsApp Group URL {renderBadge('whatsapp_group')}
+                                      </label>
+                                      <input
+                                        type="text"
+                                        disabled={isApplied}
+                                        value={card.data.whatsapp_group || ''}
+                                        onChange={(e) => updateOutputCardData(msgId, (d) => ({ ...d, whatsapp_group: e.target.value }))}
+                                        placeholder="https://chat.whatsapp.com/..."
+                                        style={inputFieldStyle}
+                                      />
+                                    </div>
+                                    <div>
+                                      <label style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--ink-muted)', display: 'block', marginBottom: '3px' }}>
+                                        Instagram Handle {renderBadge('instagram_handle')}
+                                      </label>
+                                      <input
+                                        type="text"
+                                        disabled={isApplied}
+                                        value={card.data.instagram_handle || ''}
+                                        onChange={(e) => updateOutputCardData(msgId, (d) => ({ ...d, instagram_handle: e.target.value }))}
+                                        placeholder="@yourclub"
+                                        style={inputFieldStyle}
+                                      />
+                                    </div>
+                                    <div>
+                                      <label style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--ink-muted)', display: 'block', marginBottom: '3px' }}>
+                                        Website URL {renderBadge('website')}
+                                      </label>
+                                      <input
+                                        type="text"
+                                        disabled={isApplied}
+                                        value={card.data.website || ''}
+                                        onChange={(e) => updateOutputCardData(msgId, (d) => ({ ...d, website: e.target.value }))}
+                                        placeholder="https://yourclub.co.uk"
+                                        style={inputFieldStyle}
+                                      />
+                                    </div>
+                                    <div>
+                                      <label style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--ink-muted)', display: 'block', marginBottom: '3px' }}>
+                                        Monthly Supporter (£/mo, 0 = Free) {renderBadge('subscription_price')}
+                                      </label>
+                                      <input
+                                        type="number"
+                                        min="0"
+                                        step="1"
+                                        disabled={isApplied}
+                                        value={card.data.subscription_price ?? 0}
+                                        onChange={(e) => updateOutputCardData(msgId, (d) => ({ ...d, subscription_price: Number(e.target.value) }))}
+                                        style={inputFieldStyle}
+                                      />
+                                    </div>
+                                  </div>
+
+                                  {/* Club Permission Toggles */}
+                                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '8px', paddingTop: '4px' }}>
+                                    {[
+                                      { key: 'require_approval', label: 'Require Member Approval' },
+                                      { key: 'allow_carpool', label: 'Enable Carpool Hub' },
+                                      { key: 'allow_guests', label: 'Allow +1 Guests' },
+                                      { key: 'accepts_pitches', label: 'Accept Business Pitches' },
+                                      { key: 'allow_chapters', label: 'Allow Sister Chapters' },
+                                    ].map((t) => (
+                                      <label
+                                        key={t.key}
+                                        style={{
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          gap: '8px',
+                                          padding: '8px 10px',
+                                          borderRadius: '10px',
+                                          background: 'var(--surface-card)',
+                                          border: isTouched(t.key)
+                                            ? '1px solid rgba(139, 92, 246, 0.5)'
+                                            : '1px solid var(--hairline-border)',
+                                          fontSize: '0.76rem',
+                                          fontWeight: 700,
+                                          color: 'var(--ink-primary)',
+                                          cursor: isApplied ? 'default' : 'pointer',
+                                        }}
+                                      >
+                                        <input
+                                          type="checkbox"
+                                          disabled={isApplied}
+                                          checked={Boolean(card.data[t.key])}
+                                          onChange={(e) => updateOutputCardData(msgId, (d) => ({ ...d, [t.key]: e.target.checked }))}
+                                        />
+                                        <span>{t.label}</span>
+                                      </label>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      }
+
+                      // 4b. EDIT OR CANCEL AN EXISTING UPCOMING EVENT
+                      if (card.type === 'event_update' && card.data) {
+                        const appliedInfo = appliedEventUpdateMap[msgId];
+                        const isApplied = Boolean(appliedInfo);
+                        const isCancel = card.data.action === 'cancel';
+
+                        const handleSelectTargetEvent = (newId) => {
+                          const target = upcomingEvents.find((e) => e.id === newId);
+                          if (!target) return;
+                          updateOutputCardData(msgId, (d) => ({
+                            ...d,
+                            eventId: target.id,
+                            originalTitle: target.title || '',
+                            title: target.title || '',
+                            date: target.date || '',
+                            time: target.time || '10:00',
+                            location: cleanLocationName(target.location) || '',
+                            description: target.description || '',
+                            maxCapacity: Number(target.maxCapacity || target.max_capacity || 25),
+                            ticketPrice: Number(target.ticketPrice ?? target.ticket_price ?? 0),
+                            requireApproval: Boolean(target.requireApproval),
+                            allowCarpool: target.allowCarpool !== false,
+                            allowGuests: target.allowGuests !== false,
+                            confirmCancel: false,
+                          }));
+                        };
+
+                        return (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                            <div
+                              style={{
+                                padding: '10px 13px',
+                                borderRadius: '12px',
+                                background: isCancel ? 'rgba(239, 68, 68, 0.1)' : 'rgba(59, 130, 246, 0.1)',
+                                border: isCancel ? '1px solid rgba(239, 68, 68, 0.35)' : '1px solid rgba(59, 130, 246, 0.28)',
+                                fontSize: '0.78rem',
+                                color: 'var(--ink-primary)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                              }}
+                            >
+                              {isCancel ? (
+                                <AlertTriangle size={15} color="#ef4444" style={{ flexShrink: 0 }} />
+                              ) : (
+                                <Calendar size={15} color="#3b82f6" style={{ flexShrink: 0 }} />
+                              )}
+                              <span>
+                                <strong>Where this applies:</strong> {isCancel ? 'Cancels this live event across your Club Calendar, /events, and attendee tickets.' : 'Updates this live event immediately across your Club Calendar, /events, and attendee tickets.'}
+                              </span>
+                            </div>
+
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', flexWrap: 'wrap', paddingBottom: '10px', borderBottom: '1px solid var(--hairline-border)' }}>
+                              <h3 style={{ margin: 0, fontSize: '1.08rem', fontFamily: 'var(--font-heading)', color: 'var(--ink-primary)' }}>
+                                {isCancel ? 'Cancel Live Event' : 'Edit Live Event'}
+                              </h3>
+
+                              {isApplied ? (
+                                <button
+                                  type="button"
+                                  onClick={() => jumpToRoute(`/events/${appliedInfo.id}`)}
+                                  className="btn btn-primary interactive-press"
+                                  style={{ padding: '9px 15px', borderRadius: '11px', fontSize: '0.82rem', fontWeight: 800, background: '#10b981', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                                >
+                                  View Event <ExternalLink size={14} />
+                                </button>
+                              ) : (
+                                <button
+                                  type="button"
+                                  disabled={applyingEventUpdateMap[msgId] || (isCancel && !card.data.confirmCancel)}
+                                  onClick={() => handleApplyEventUpdate(msgId, card.data)}
+                                  className="btn btn-primary interactive-press"
+                                  style={{
+                                    padding: '10px 16px',
+                                    borderRadius: '11px',
+                                    fontSize: '0.83rem',
+                                    fontWeight: 800,
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    background: isCancel ? '#ef4444' : undefined,
+                                    opacity: isCancel && !card.data.confirmCancel ? 0.55 : 1,
+                                  }}
+                                >
+                                  {applyingEventUpdateMap[msgId] ? <Loader2 size={14} className="spin" /> : isCancel ? <AlertTriangle size={14} /> : <Check size={14} />}
+                                  {isCancel ? 'Confirm Cancel Event' : '✅ Save Event Changes Live'}
+                                </button>
+                              )}
+                            </div>
+
+                            <div style={{ background: 'var(--surface-elevated)', borderRadius: '14px', padding: '14px', border: '1px solid var(--hairline-border)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                              {/* Target Event Selector + Edit/Cancel Switch */}
+                              {upcomingEvents.length > 0 && (
+                                <div>
+                                  <label style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--ink-muted)', display: 'block', marginBottom: '4px' }}>
+                                    Target Upcoming Event
+                                  </label>
+                                  <select
+                                    disabled={isApplied}
+                                    value={card.data.eventId || ''}
+                                    onChange={(e) => handleSelectTargetEvent(e.target.value)}
+                                    style={inputFieldStyle}
+                                  >
+                                    {upcomingEvents.map((ev) => (
+                                      <option key={ev.id} value={ev.id}>
+                                        {ev.title} ({ev.date || 'TBD'} {ev.time || ''})
+                                      </option>
+                                    ))}
+                                  </select>
+                                </div>
+                              )}
+
+                              {!isApplied && (
+                                <div style={{ display: 'flex', gap: '6px' }}>
+                                  <button
+                                    type="button"
+                                    onClick={() => updateOutputCardData(msgId, (d) => ({ ...d, action: 'update', confirmCancel: false }))}
+                                    style={{
+                                      flex: 1,
+                                      padding: '8px',
+                                      borderRadius: '9px',
+                                      border: !isCancel ? '1.5px solid #3b82f6' : '1px solid var(--hairline-border-strong)',
+                                      background: !isCancel ? 'rgba(59, 130, 246, 0.14)' : 'var(--surface-card)',
+                                      color: !isCancel ? '#3b82f6' : 'var(--ink-secondary)',
+                                      fontSize: '0.77rem',
+                                      fontWeight: 800,
+                                      cursor: 'pointer',
+                                    }}
+                                  >
+                                    ✏️ Edit Details
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => updateOutputCardData(msgId, (d) => ({ ...d, action: 'cancel', confirmCancel: false }))}
+                                    style={{
+                                      flex: 1,
+                                      padding: '8px',
+                                      borderRadius: '9px',
+                                      border: isCancel ? '1.5px solid #ef4444' : '1px solid var(--hairline-border-strong)',
+                                      background: isCancel ? 'rgba(239, 68, 68, 0.14)' : 'var(--surface-card)',
+                                      color: isCancel ? '#ef4444' : 'var(--ink-secondary)',
+                                      fontSize: '0.77rem',
+                                      fontWeight: 800,
+                                      cursor: 'pointer',
+                                    }}
+                                  >
+                                    ⚠️ Cancel Event
+                                  </button>
+                                </div>
+                              )}
+
+                              {isCancel ? (
+                                <div style={{ padding: '12px', borderRadius: '11px', background: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.25)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                  <div style={{ fontSize: '0.84rem', fontWeight: 700, color: 'var(--ink-primary)' }}>
+                                    Are you sure you want to cancel &ldquo;{card.data.title || card.data.originalTitle}&rdquo;?
+                                  </div>
+                                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8rem', fontWeight: 700, color: '#ef4444', cursor: isApplied ? 'default' : 'pointer' }}>
+                                    <input
+                                      type="checkbox"
+                                      disabled={isApplied}
+                                      checked={Boolean(card.data.confirmCancel)}
+                                      onChange={(e) => updateOutputCardData(msgId, (d) => ({ ...d, confirmCancel: e.target.checked }))}
+                                    />
+                                    Yes, mark this event as cancelled immediately
+                                  </label>
+                                </div>
+                              ) : (
+                                <>
+                                  <input
+                                    type="text"
+                                    disabled={isApplied}
+                                    value={card.data.title || ''}
+                                    onChange={(e) => updateOutputCardData(msgId, (d) => ({ ...d, title: e.target.value }))}
+                                    placeholder="Event title"
+                                    style={{ ...inputFieldStyle, fontWeight: 800, fontSize: '0.94rem' }}
+                                  />
+                                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                                    <input
+                                      type="date"
+                                      disabled={isApplied}
+                                      value={card.data.date || ''}
+                                      onChange={(e) => updateOutputCardData(msgId, (d) => ({ ...d, date: e.target.value }))}
+                                      style={inputFieldStyle}
+                                    />
+                                    <input
+                                      type="time"
+                                      disabled={isApplied}
+                                      value={card.data.time || '10:00'}
+                                      onChange={(e) => updateOutputCardData(msgId, (d) => ({ ...d, time: e.target.value }))}
+                                      style={inputFieldStyle}
+                                    />
+                                  </div>
+                                  <input
+                                    type="text"
+                                    disabled={isApplied}
+                                    value={card.data.location || ''}
+                                    onChange={(e) => updateOutputCardData(msgId, (d) => ({ ...d, location: e.target.value }))}
+                                    placeholder="Meeting venue / landmark"
+                                    style={inputFieldStyle}
+                                  />
+                                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                                    <div>
+                                      <label style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--ink-muted)', display: 'block', marginBottom: '3px' }}>Max Spots</label>
+                                      <input
+                                        type="number"
+                                        min="2"
+                                        disabled={isApplied}
+                                        value={card.data.maxCapacity ?? 25}
+                                        onChange={(e) => updateOutputCardData(msgId, (d) => ({ ...d, maxCapacity: Number(e.target.value) }))}
+                                        style={inputFieldStyle}
+                                      />
+                                    </div>
+                                    <div>
+                                      <label style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--ink-muted)', display: 'block', marginBottom: '3px' }}>Ticket Price (£, 0 = Free)</label>
+                                      <input
+                                        type="number"
+                                        min="0"
+                                        step="0.5"
+                                        disabled={isApplied}
+                                        value={card.data.ticketPrice ?? 0}
+                                        onChange={(e) => updateOutputCardData(msgId, (d) => ({ ...d, ticketPrice: Number(e.target.value) }))}
+                                        style={inputFieldStyle}
+                                      />
+                                    </div>
+                                  </div>
+                                  <textarea
+                                    rows={3}
+                                    disabled={isApplied}
+                                    value={card.data.description || ''}
+                                    onChange={(e) => updateOutputCardData(msgId, (d) => ({ ...d, description: e.target.value }))}
+                                    style={{ ...inputFieldStyle, resize: 'vertical', lineHeight: 1.45 }}
+                                  />
+                                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', fontSize: '0.75rem', color: 'var(--ink-secondary)' }}>
+                                    <label style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', cursor: isApplied ? 'default' : 'pointer' }}>
+                                      <input
+                                        type="checkbox"
+                                        disabled={isApplied}
+                                        checked={Boolean(card.data.requireApproval)}
+                                        onChange={(e) => updateOutputCardData(msgId, (d) => ({ ...d, requireApproval: e.target.checked }))}
+                                      />
+                                      Host Approval
+                                    </label>
+                                    <label style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', cursor: isApplied ? 'default' : 'pointer' }}>
+                                      <input
+                                        type="checkbox"
+                                        disabled={isApplied}
+                                        checked={card.data.allowCarpool !== false}
+                                        onChange={(e) => updateOutputCardData(msgId, (d) => ({ ...d, allowCarpool: e.target.checked }))}
+                                      />
+                                      Carpool Hub
+                                    </label>
+                                    <label style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', cursor: isApplied ? 'default' : 'pointer' }}>
+                                      <input
+                                        type="checkbox"
+                                        disabled={isApplied}
+                                        checked={card.data.allowGuests !== false}
+                                        onChange={(e) => updateOutputCardData(msgId, (d) => ({ ...d, allowGuests: e.target.checked }))}
+                                      />
+                                      Allow +1 Guests
+                                    </label>
+                                  </div>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      }
+
+                      // 4c. SEND EVENT ATTENDEE REMINDER
+                      if (card.type === 'event_reminder' && card.data) {
+                        const sentInfo = sentReminderMap[msgId];
+                        const isSent = Boolean(sentInfo);
+                        const targetEvent = upcomingEvents.find((e) => e.id === card.data.eventId);
+                        const attendeeCount = (eventRsvps?.[card.data.eventId] || []).filter((r) => r.status === 'going' || r.checkedIn).length;
+
+                        return (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                            <div
+                              style={{
+                                padding: '10px 13px',
+                                borderRadius: '12px',
+                                background: 'rgba(245, 158, 11, 0.12)',
+                                border: '1px solid rgba(245, 158, 11, 0.35)',
+                                fontSize: '0.78rem',
+                                color: 'var(--ink-primary)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                              }}
+                            >
+                              <Bell size={15} color="#f59e0b" style={{ flexShrink: 0 }} />
+                              <span>
+                                <strong>Where this goes:</strong> Sends an instant In-App &amp; Push notification reminder to all <strong>{attendeeCount} registered attendee{attendeeCount === 1 ? '' : 's'}</strong> of <strong>{targetEvent?.title || card.data.eventTitle}</strong>.
+                              </span>
+                            </div>
+
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', flexWrap: 'wrap', paddingBottom: '10px', borderBottom: '1px solid var(--hairline-border)' }}>
+                              <h3 style={{ margin: 0, fontSize: '1.08rem', fontFamily: 'var(--font-heading)', color: 'var(--ink-primary)' }}>
+                                {card.title}
+                              </h3>
+                              {isSent ? (
+                                <button
+                                  type="button"
+                                  onClick={() => jumpToRoute(`/events/${sentInfo.eventId}`)}
+                                  className="btn btn-primary interactive-press"
+                                  style={{ padding: '9px 15px', borderRadius: '11px', fontSize: '0.82rem', fontWeight: 800, background: '#10b981', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                                >
+                                  Sent ({sentInfo.count}) • View Event <ExternalLink size={14} />
+                                </button>
+                              ) : (
+                                <button
+                                  type="button"
+                                  disabled={sendingReminderMap[msgId]}
+                                  onClick={() => handleSendEventReminderCard(msgId, card.data)}
+                                  className="btn btn-primary interactive-press"
+                                  style={{ padding: '10px 16px', borderRadius: '11px', fontSize: '0.83rem', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                                >
+                                  {sendingReminderMap[msgId] ? <Loader2 size={14} className="spin" /> : <Bell size={14} />}
+                                  🔔 Send Reminder Now ({attendeeCount})
+                                </button>
+                              )}
+                            </div>
+
+                            <div style={{ background: 'var(--surface-elevated)', borderRadius: '14px', padding: '14px', border: '1px solid var(--hairline-border)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                              {upcomingEvents.length > 0 && (
+                                <div>
+                                  <label style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--ink-muted)', display: 'block', marginBottom: '4px' }}>
+                                    Event to Remind
+                                  </label>
+                                  <select
+                                    disabled={isSent}
+                                    value={card.data.eventId || ''}
+                                    onChange={(e) => {
+                                      const ev = upcomingEvents.find((x) => x.id === e.target.value);
+                                      updateOutputCardData(msgId, (d) => ({
+                                        ...d,
+                                        eventId: e.target.value,
+                                        eventTitle: ev?.title || d.eventTitle,
+                                      }));
+                                    }}
+                                    style={inputFieldStyle}
+                                  >
+                                    {upcomingEvents.map((ev) => (
+                                      <option key={ev.id} value={ev.id}>
+                                        {ev.title} ({ev.date || 'TBD'})
+                                      </option>
+                                    ))}
+                                  </select>
+                                </div>
+                              )}
+                              <div>
+                                <label style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--ink-muted)', display: 'block', marginBottom: '4px' }}>
+                                  Reminder Message
+                                </label>
+                                <textarea
+                                  rows={4}
+                                  disabled={isSent}
+                                  value={card.data.message || ''}
+                                  onChange={(e) => updateOutputCardData(msgId, (d) => ({ ...d, message: e.target.value }))}
+                                  style={{ ...inputFieldStyle, resize: 'vertical', lineHeight: 1.5 }}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      }
+
+                      // 4d. CREATE NEW COMMUNITY CHAT CHANNEL
+                      if (card.type === 'create_channel' && card.data) {
+                        const createdCh = createdChannelMap[msgId];
+                        const isCreated = Boolean(createdCh);
+                        const previewSlug = String(card.data.channelName || '')
+                          .trim()
+                          .replace(/^#+/, '')
+                          .toLowerCase()
+                          .replace(/\s+/g, '-');
+
+                        return (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                            <div
+                              style={{
+                                padding: '10px 13px',
+                                borderRadius: '12px',
+                                background: 'rgba(16, 185, 129, 0.1)',
+                                border: '1px solid rgba(16, 185, 129, 0.3)',
+                                fontSize: '0.78rem',
+                                color: 'var(--ink-primary)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                              }}
+                            >
+                              <Hash size={15} color="#10b981" style={{ flexShrink: 0 }} />
+                              <span>
+                                <strong>Where this goes:</strong> Creates <strong>#{previewSlug || 'new-channel'}</strong> live inside your <strong>{community?.name} Community Chat</strong> (<code>/chat</code>).
+                              </span>
+                            </div>
+
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', flexWrap: 'wrap', paddingBottom: '10px', borderBottom: '1px solid var(--hairline-border)' }}>
+                              <h3 style={{ margin: 0, fontSize: '1.08rem', fontFamily: 'var(--font-heading)', color: 'var(--ink-primary)' }}>
+                                {card.title}
+                              </h3>
+                              {isCreated ? (
+                                <button
+                                  type="button"
+                                  onClick={() => jumpToRoute('/chat')}
+                                  className="btn btn-primary interactive-press"
+                                  style={{ padding: '9px 15px', borderRadius: '11px', fontSize: '0.82rem', fontWeight: 800, background: '#10b981', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                                >
+                                  Open Community Chat <ExternalLink size={14} />
+                                </button>
+                              ) : (
+                                <button
+                                  type="button"
+                                  disabled={creatingChannelMap[msgId]}
+                                  onClick={() => handleCreateChannelCard(msgId, card.data)}
+                                  className="btn btn-primary interactive-press"
+                                  style={{ padding: '10px 16px', borderRadius: '11px', fontSize: '0.83rem', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                                >
+                                  {creatingChannelMap[msgId] ? <Loader2 size={14} className="spin" /> : <Hash size={14} />}
+                                  ✨ Create Channel Live
+                                </button>
+                              )}
+                            </div>
+
+                            <div style={{ background: 'var(--surface-elevated)', borderRadius: '14px', padding: '14px', border: '1px solid var(--hairline-border)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                              <div>
+                                <label style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--ink-muted)', display: 'block', marginBottom: '4px' }}>
+                                  Channel Name
+                                </label>
+                                <input
+                                  type="text"
+                                  disabled={isCreated}
+                                  value={card.data.channelName || ''}
+                                  onChange={(e) => updateOutputCardData(msgId, (d) => ({ ...d, channelName: e.target.value }))}
+                                  placeholder="e.g. carpool-rides or beginner-chat"
+                                  style={{ ...inputFieldStyle, fontWeight: 800 }}
                                 />
                               </div>
 
                               <div>
-                                <label style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--ink-muted)', display: 'block', marginBottom: '6px' }}>
-                                  Community Guidelines (Shown When New Members Join)
+                                <label style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--ink-muted)', display: 'block', marginBottom: '5px' }}>
+                                  Channel Mode
                                 </label>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '7px' }}>
-                                  {(card.data.guidelines || []).map((rule, rIdx) => (
-                                    <input
-                                      key={rIdx}
-                                      type="text"
-                                      disabled={isApplied}
-                                      value={rule}
-                                      onChange={(e) =>
-                                        updateOutputCardData(msgId, (d) => ({
-                                          ...d,
-                                          guidelines: d.guidelines.map((x, idx2) => (idx2 === rIdx ? e.target.value : x)),
-                                        }))
-                                      }
-                                      style={inputFieldStyle}
-                                    />
-                                  ))}
+                                <div style={{ display: 'flex', gap: '8px' }}>
+                                  {[
+                                    { id: 'text', label: '💬 Open Member Discussion' },
+                                    { id: 'announcement', label: '📣 Announcements Only' },
+                                  ].map((opt) => {
+                                    const active = (card.data.channelType || 'text') === opt.id;
+                                    return (
+                                      <button
+                                        key={opt.id}
+                                        type="button"
+                                        disabled={isCreated}
+                                        onClick={() => updateOutputCardData(msgId, (d) => ({ ...d, channelType: opt.id }))}
+                                        style={{
+                                          flex: 1,
+                                          padding: '9px 10px',
+                                          borderRadius: '10px',
+                                          border: active ? '1.5px solid #10b981' : '1px solid var(--hairline-border-strong)',
+                                          background: active ? 'rgba(16, 185, 129, 0.14)' : 'var(--surface-card)',
+                                          color: active ? '#10b981' : 'var(--ink-secondary)',
+                                          fontSize: '0.76rem',
+                                          fontWeight: 700,
+                                          cursor: isCreated ? 'default' : 'pointer',
+                                        }}
+                                      >
+                                        {opt.label}
+                                      </button>
+                                    );
+                                  })}
                                 </div>
                               </div>
                             </div>

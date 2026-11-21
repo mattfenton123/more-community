@@ -2228,15 +2228,22 @@ export function AppProvider({ children }) {
     setEvents(prev => prev.map(e => e.id === eventId ? { ...e, ...finalUpdates } : e));
     
     try {
-      await updateEventAction(eventId, updates, session?.access_token);
+      let token = session?.access_token;
+      if (!token) {
+        const { data: sessionData } = await supabase.auth.getSession();
+        token = sessionData?.session?.access_token;
+      }
+      await updateEventAction(eventId, finalUpdates, token);
+      return true;
     } catch (err) {
       console.error(err);
       setEvents(prevEvents);
+      return false;
     }
   };
 
   const cancelEvent = async (eventId) => {
-    await updateEvent(eventId, { status: 'cancelled' });
+    return await updateEvent(eventId, { status: 'cancelled' });
   };
 
   const createCommunity = async (communityData) => {
@@ -2426,10 +2433,17 @@ export function AppProvider({ children }) {
     setChannels(prev => [...prev, newChannel]);
 
     try {
-      await createChannelAction({ id: newId, communityId, name: channelName, type, memberIds }, session?.access_token);
+      let token = session?.access_token;
+      if (!token) {
+        const { data: sessionData } = await supabase.auth.getSession();
+        token = sessionData?.session?.access_token;
+      }
+      await createChannelAction({ id: newId, communityId, name: channelName, type, memberIds }, token);
+      return newChannel;
     } catch (err) {
       console.error(err);
       setChannels(prev => prev.filter(c => c.id !== newId));
+      return null;
     }
   };
 
