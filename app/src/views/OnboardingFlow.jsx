@@ -911,8 +911,8 @@ export default function OnboardingFlow({ onComplete }) {
         </div>
         <div style={{ padding: '12px', borderRadius: '14px', background: 'rgba(255,255,255,0.04)', border: '1px solid var(--hairline-border-strong)' }}>
           <div style={{ fontSize: '1.1rem', marginBottom: '4px' }}>💡</div>
-          <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--white)', marginBottom: '2px' }}>Idea Board &amp; XP</div>
-          <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', lineHeight: 1.35 }}>Vote on future events, chat in channels, and earn badges as you show up.</div>
+          <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--white)', marginBottom: '2px' }}>Polls, Ideas &amp; Standing</div>
+          <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', lineHeight: 1.35 }}>Vote in polls, pitch event ideas, and unlock Verified Local standing after your 1st meetup.</div>
         </div>
       </div>
     </div>,

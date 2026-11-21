@@ -1,7 +1,7 @@
 "use client";
 import { supabase } from '../../src/lib/supabaseClient';
 import { useState, useRef, useMemo, useEffect } from 'react';
-import { AlertCircle, Copy, Printer, ExternalLink, HelpCircle, Users, Calendar, Camera, MessageCircle, TrendingUp, Search, Plus, MapPin, Image as ImageIcon, CreditCard, ChevronRight, ChevronLeft, Download, Activity, Globe, Heart, Crown, Info, X, Map, Zap, Mail, Trash2, UserCheck, Ban, ChevronDown, ChevronUp, Settings, Megaphone, QrCode, BarChart3, Ticket, ScanLine, UserPlus, DollarSign, Clock, Edit3, Check, CheckCircle2, Eye, EyeOff, Shield, Star, Sparkles, BookOpen, ListChecks, Bell, Archive, Mic, MicOff, Wand2, Lightbulb, Car } from 'lucide-react';
+import { AlertCircle, Copy, Printer, ExternalLink, HelpCircle, Users, Calendar, Camera, MessageCircle, TrendingUp, Search, Plus, MapPin, Image as ImageIcon, CreditCard, ChevronRight, ChevronLeft, Download, Activity, Globe, Heart, Crown, Info, X, Map, Zap, Mail, Trash2, UserCheck, Ban, ChevronDown, ChevronUp, Settings, Megaphone, QrCode, BarChart3, Ticket, ScanLine, UserPlus, DollarSign, Clock, Edit3, Check, CheckCircle2, Eye, EyeOff, Shield, Star, Sparkles, BookOpen, ListChecks, Bell, Archive, Mic, MicOff, Wand2, Lightbulb, Car, Share2 } from 'lucide-react';
 import AppHeader from '../../src/components/AppHeader';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { isEventUpcoming, isEventPast, parseEventDateTime } from '../../src/lib/calendar';
@@ -349,13 +349,23 @@ export default function LeaderDashboard({ initialCommunityId }) {
     name: '', category: '', description: '', location_name: '', lat: null, lng: null, cost: 'Free', target_audience: '', activity_level: 'Active', tags: [], customTagInput: '', website: '', whatsapp_group: '', instagram_handle: '' 
   });
   const [editTagCategory, setEditTagCategory] = useState('All');
-  const [activeTab, setActiveTab] = useState(searchParams?.get('tab') || 'overview');
+  const normalizeDashboardTab = (rawTab) => {
+    const t = String(rawTab || '').trim().toLowerCase();
+    if (!t || t === 'overview' || t === 'experiences') return 'overview';
+    if (t === 'events' || t === 'network') return 'events';
+    if (t === 'people' || t === 'members' || t === 'crm') return 'people';
+    if (t === 'social hub' || t === 'social' || t === 'broadcast' || t === 'announcements') return 'social hub';
+    if (t === 'monetisation' || t === 'monetization' || t === 'finance' || t === 'billing') return 'monetisation';
+    if (t === 'settings') return 'settings';
+    return 'overview';
+  };
+  const [activeTab, setActiveTab] = useState(() => normalizeDashboardTab(searchParams?.get('tab')));
   const [networkSearchQuery, setNetworkSearchQuery] = useState('');
   const [markupInfoExp, setMarkupInfoExp] = useState(null);
   const [showSubscriptionInfo, setShowSubscriptionInfo] = useState(false);
   const [showShieldModal, setShowShieldModal] = useState(false);
   const [specialistModalState, setSpecialistModalState] = useState({ isOpen: false, mode: 'inspect', specialist: null });
-  const [eventsSubTab, setEventsSubTab] = useState('my-events'); // 'my-events' | 'network'
+  const [eventsSubTab, setEventsSubTab] = useState(() => (searchParams?.get('tab') === 'network' ? 'network' : 'my-events')); // 'my-events' | 'network'
   const [memberSearch, setMemberSearch] = useState('');
   const [openEventMenuId, setOpenEventMenuId] = useState(null);
   const [showAICoPilot, setShowAICoPilot] = useState(false);
@@ -368,10 +378,8 @@ export default function LeaderDashboard({ initialCommunityId }) {
     if (tab === 'network') {
       setActiveTab('events');
       setEventsSubTab('network');
-    } else if (tab === 'experiences') {
-      setActiveTab('overview');
     } else if (tab) {
-      setActiveTab(tab);
+      setActiveTab(normalizeDashboardTab(tab));
     }
     const comm = searchParams?.get('community');
     if (comm) setActiveCommunityId(comm);
@@ -2864,7 +2872,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   }}>
                     <div>
                       <h3 style={{ margin: 0, color: '#FFFFFF', fontSize: '1.2rem', fontFamily: 'var(--font-heading)' }}>{community.name}</h3>
-                      <span style={{ fontSize: '0.76rem', color: 'rgba(255, 255, 255, 0.86)', fontWeight: 600 }}>Public Community Microsite</span>
+                      <span style={{ fontSize: '0.76rem', color: 'rgba(255, 255, 255, 0.86)', fontWeight: 600 }}>Public Community Page</span>
                     </div>
                     <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
                       <a 
@@ -2887,7 +2895,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                           textDecoration: 'none'
                         }}
                       >
-                        <ExternalLink size={14} color="#FFFFFF" /> View Live Microsite
+                        <ExternalLink size={14} color="#FFFFFF" /> View Public Page
                       </a>
                       <button 
                         onClick={handleEditClick}
@@ -3714,13 +3722,13 @@ export default function LeaderDashboard({ initialCommunityId }) {
               {/* Quick Actions */}
               <div style={{ padding: '0 20px', marginBottom: '24px' }}>
                 <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--slate-500)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '10px', paddingLeft: '4px' }}>Quick Actions</div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr', gap: '8px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(84px, 1fr))', gap: '8px' }}>
                   {[
                     { label: 'New Event', icon: Plus, color: '#EB5738', action: () => openEventWizard() },
                     { label: 'Broadcast', icon: Megaphone, color: '#f59e0b', action: () => setActiveTab('social hub') },
                     { label: 'Scan QR', icon: QrCode, color: '#3b82f6', action: () => setShowScanner(true) },
                     { label: 'People', icon: Users, color: '#a78bfa', action: () => setActiveTab('people') },
-                    { label: 'Microsite', icon: Globe, color: '#f43f5e', action: () => router.push(`/community/${community.id}`) },
+                    { label: 'View Page', icon: Globe, color: '#f43f5e', action: () => router.push(`/community/${getCommunitySlug(community, communities)}`) },
                   ].map(a => (
                     <button key={a.label} onClick={a.action} className="interactive-press" style={{
                       display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', padding: '16px 8px',
@@ -3775,24 +3783,35 @@ export default function LeaderDashboard({ initialCommunityId }) {
                       Share on WhatsApp
                     </button>
                     <button
-                      onClick={() => {
+                      onClick={async () => {
                         const url = `${SITE_ORIGIN}${getCommunityPath(community, communities)}`;
-                        const text = `Join ${community.name} on MoreCommunity!`;
-                        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
+                        const text = `Join ${community.name} on More Community!`;
+                        if (typeof navigator !== 'undefined' && navigator.share) {
+                          try {
+                            await navigator.share({ title: community.name, text, url });
+                            return;
+                          } catch (err) {
+                            if (err?.name === 'AbortError') return;
+                          }
+                        }
+                        if (typeof navigator !== 'undefined' && navigator.clipboard) {
+                          navigator.clipboard.writeText(`${text} ${url}`);
+                          toast.success('Invite Copied!', 'Paste it into Instagram, Facebook, SMS, or email.');
+                        }
                       }}
                       className="interactive-press"
                       style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 14px', background: 'rgba(29,161,242,0.1)', border: '1px solid rgba(29,161,242,0.25)', borderRadius: '12px', color: '#1da1f2', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}
                     >
-                      <span style={{ fontSize: '1.2rem' }}>🐦</span>
-                      Share on Twitter
+                      <Share2 size={16} />
+                      Share Invite
                     </button>
                     <button
-                      onClick={() => router.push(`/community/${community.id}`)}
+                      onClick={() => router.push(`/community/${getCommunitySlug(community, communities)}`)}
                       className="interactive-press"
                       style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 14px', background: 'rgba(236,72,153,0.1)', border: '1px solid rgba(236,72,153,0.25)', borderRadius: '12px', color: '#ec4899', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}
                     >
                       <Globe size={16} />
-                      View Microsite
+                      View Public Page
                     </button>
                     <button
                       onClick={() => setActiveTab('people')}
@@ -5335,7 +5354,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontFamily: 'var(--font-heading)', fontSize: '0.98rem', fontWeight: 600, color: 'var(--white)', marginBottom: '2px' }}>
-                    Edit Microsite Profile
+                    Edit Community Page
                   </div>
                   <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.82rem', color: 'var(--slate-400)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     Cover photo, story description, location radius, cadence & links
@@ -5619,7 +5638,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                     {/* Save Guidelines Action Bar */}
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '8px', borderTop: '1px solid var(--hairline-border)' }}>
                       <span style={{ fontFamily: 'var(--font-body)', fontSize: '0.75rem', color: 'var(--slate-400)' }}>
-                        Changes are published to your community microsite immediately.
+                        Changes are published to your public community page immediately.
                       </span>
                       <button
                         type="button"
@@ -6807,7 +6826,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                     WhatsApp Group Invite Link
                   </label>
                   <p style={{ margin: '0 0 10px', fontFamily: 'var(--font-body)', fontSize: '0.8rem', color: 'var(--slate-400)' }}>
-                    Members can tap this link directly from your community microsite and event pages to join your WhatsApp chat.
+                    Members can tap this link directly from your community page and event pages to join your WhatsApp chat.
                   </p>
                   <div style={{ display: 'flex', gap: '8px' }}>
                     <input
@@ -6835,7 +6854,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 <div style={{ padding: '16px', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--hairline-border)', borderRadius: '14px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
                     <div style={{ fontFamily: 'var(--font-heading)', fontSize: '0.92rem', fontWeight: 600, color: 'var(--white)' }}>
-                      Automated Meetup Reminders (WhatsApp Cloud API)
+                      Automated Meetup Reminders (WhatsApp)
                     </div>
                     <button
                       type="button"
@@ -6858,7 +6877,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
 
           {/* Modal Sticky Docked Footer */}
           {(modalType === 'event' || modalType === 'edit-event') ? (
-            <div style={{ padding: '16px 20px', borderTop: '1px solid var(--hairline-border)', background: '#1B1B1B', position: 'sticky', bottom: 0, zIndex: 20, paddingBottom: 'max(16px, env(safe-area-inset-bottom, 16px))' }}>
+            <div style={{ padding: '16px 20px', borderTop: '1px solid var(--hairline-border)', background: 'var(--surface-card)', position: 'sticky', bottom: 0, zIndex: 20, paddingBottom: 'max(16px, env(safe-area-inset-bottom, 16px))' }}>
               <div style={{ display: 'flex', gap: '8px', width: '100%' }}>
                 {eventStep > 0 && (
                   <button onClick={() => setEventStep(eventStep - 1)} className="btn btn-outline interactive-press" style={{ padding: '14px', flex: 1, borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
@@ -6887,7 +6906,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
               </div>
             </div>
           ) : (isEditing || (modalType && modalType !== 'community' && modalType !== 'coleader')) ? (
-            <div style={{ padding: '16px 20px', borderTop: '1px solid var(--hairline-border)', background: '#1B1B1B', position: 'sticky', bottom: 0, zIndex: 20, paddingBottom: 'max(16px, env(safe-area-inset-bottom, 16px))' }}>
+            <div style={{ padding: '16px 20px', borderTop: '1px solid var(--hairline-border)', background: 'var(--surface-card)', position: 'sticky', bottom: 0, zIndex: 20, paddingBottom: 'max(16px, env(safe-area-inset-bottom, 16px))' }}>
               <button 
                 onClick={() => { 
                   if(isEditing) handleSave(); 
@@ -6950,7 +6969,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   <li>All {memberList.length} member connections and roles</li>
                   <li>All past & upcoming events, RSVPs, and ticket records</li>
                   <li>All community feed posts, comments, and chat channels</li>
-                  <li>The community public microsite and branding</li>
+                  <li>The community public page and branding</li>
                 </ul>
               </div>
 
@@ -7472,7 +7491,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
           isPro={Boolean(community?.is_insured || community?.insurance_tier === 'pro')}
           onJumpToUpgrade={() => {
             setShowAICoPilot(false);
-            setActiveTab('settings');
+            setShowShieldModal(true);
           }}
           onClose={() => setShowAICoPilot(false)}
         />

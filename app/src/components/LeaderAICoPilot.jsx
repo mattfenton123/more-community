@@ -1513,7 +1513,7 @@ export default function LeaderAICoPilot({
                           {
                             icon: '✨',
                             title: 'Upgrade Bio & Guidelines',
-                            sub: 'Updates your public microsite live',
+                            sub: 'Updates your public community page live',
                             prompt: `Rewrite our public Community Description and 4 friendly Community Guidelines for ${community?.name || 'our community'} in ${communityLoc}.`,
                           },
                         ].map((card, i) => (
@@ -2314,7 +2314,7 @@ export default function LeaderAICoPilot({
                                   lineHeight: 1.6,
                                 }}
                               >
-                                {`${String(card.data.content).slice(0, 520)}...\n\n[Upgrade to Leader Pro (£20/mo) to export the full document alongside £5M Public Liability Insurance & 2% ticket fees.]`}
+                                {`${String(card.data.content).slice(0, 520)}...\n\n[Upgrade to Leader Pro (£16.50/mo or £165/yr) to export the full document alongside 1-click Venue Safety Packs & 2% reduced ticket fees.]`}
                               </div>
                             )}
                           </div>

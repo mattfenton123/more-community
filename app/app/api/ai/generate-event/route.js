@@ -220,7 +220,7 @@ WHERE EVERY LAUNCHED ITEM APPEARS IN MORE COMMUNITY (always tell the leader clea
 - Events: Published immediately to the ${communityName} Calendar, Public Events Discovery (/events), and Dashboard → Events tab.
 - Polls: Published immediately to the top of the ${communityName} Page (Overview + Feed & Photos tab) AND notifies all ${memberBreakdown.total} members to vote.
 - Announcements / Broadcasts: Published to the ${communityName} Feed & Photos tab (optionally pinned) AND sends instant In-App & Push notifications to all members; WhatsApp & Instagram copy is ready to copy in 1 tap.
-- Community Bio & Guidelines Updates: Updates the public ${communityName} microsite immediately.
+- Community Bio & Guidelines Updates: Updates the public ${communityName} community page immediately.
 - UK RAMS / Sponsor Pitches / Council Grants: Exportable documents ready to copy or download (.md).
 
 HOW TO BE EXTRAORDINARILY USEFUL:

@@ -29,7 +29,7 @@ export default function ExperiencesMarketplace() {
         toast.info('No direct matches found', `Try searching a town or city name like "London" or "Kent"`);
       }
     } catch (err) {
-      toast.error('Search failed', 'Could not query Viator API.');
+      toast.error('Search failed', 'Could not load experiences right now. Please try again.');
     } finally {
       setIsSearchingViator(false);
     }
@@ -100,7 +100,7 @@ export default function ExperiencesMarketplace() {
                 letterSpacing: '0.04em',
                 textTransform: 'uppercase'
               }}>
-                Viator Live
+                Live Bookable
               </span>
             </div>
             <p style={{ fontSize: '0.72rem', color: 'var(--slate-500)', marginTop: '2px', margin: 0 }}>
@@ -122,9 +122,9 @@ export default function ExperiencesMarketplace() {
             <Search size={15} style={{ color: 'var(--slate-500)', flexShrink: 0 }} />
           )}
           <input
-            type="text" 
+            type="text"
             placeholder="Search town, city or activity (Press Enter)..."
-            value={searchQuery} 
+            value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             onKeyDown={e => {
               if (e.key === 'Enter') {
@@ -144,7 +144,7 @@ export default function ExperiencesMarketplace() {
               <X size={14} />
             </button>
           )}
-          <button 
+          <button
             onClick={() => handleViatorSearch(searchQuery)}
             disabled={isSearchingViator}
             style={{
@@ -188,7 +188,7 @@ export default function ExperiencesMarketplace() {
             color: 'var(--slate-500)', fontSize: '0.85rem'
           }}>
             <p>No experiences found matching this filter.</p>
-            <button 
+            <button
               onClick={() => handleViatorSearch('Tunbridge Wells')}
               className="btn btn-outline"
               style={{ marginTop: '12px', fontSize: '0.8rem', padding: '8px 16px' }}
@@ -204,16 +204,16 @@ export default function ExperiencesMarketplace() {
               borderRadius: '14px', overflow: 'hidden',
               transition: 'all 0.3s', cursor: 'pointer'
             }}
-            onMouseEnter={e => {
-              e.currentTarget.style.background = 'rgba(242, 114, 87,0.04)';
-              e.currentTarget.style.borderColor = 'rgba(242, 114, 87,0.18)';
-              e.currentTarget.style.transform = 'translateY(-2px)';
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.background = 'rgba(255,255,255,0.03)';
-              e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)';
-              e.currentTarget.style.transform = 'translateY(0)';
-            }}>
+              onMouseEnter={e => {
+                e.currentTarget.style.background = 'rgba(242, 114, 87,0.04)';
+                e.currentTarget.style.borderColor = 'rgba(242, 114, 87,0.18)';
+                e.currentTarget.style.transform = 'translateY(-2px)';
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.background = 'rgba(255,255,255,0.03)';
+                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)';
+                e.currentTarget.style.transform = 'translateY(0)';
+              }}>
               {/* Image */}
               <div style={{ position: 'relative', height: '160px', overflow: 'hidden' }}>
                 <img src={exp.image} alt={exp.title} style={{

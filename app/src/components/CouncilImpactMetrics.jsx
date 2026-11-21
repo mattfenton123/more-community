@@ -44,7 +44,7 @@ export default function CouncilImpactMetrics({ community, events = [], members =
               textTransform: 'uppercase',
               letterSpacing: '0.05em'
             }}>
-              Civic Infrastructure · Phase 2
+              Civic Impact Insights
             </span>
             <span style={{ fontSize: '0.8rem', color: 'var(--slate-400)' }}>Town Health &amp; Social Prescribing</span>
           </div>

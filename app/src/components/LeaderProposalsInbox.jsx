@@ -109,7 +109,7 @@ export default function LeaderProposalsInbox({
                 textTransform: 'uppercase',
                 letterSpacing: '0.05em'
               }}>
-                Anti-Spam Marketplace · Phase 2
+                Verified Partner Inbox
               </span>
               <span style={{ fontSize: '0.8rem', color: 'var(--slate-400)' }}>Zero Cold DMs to Organizers</span>
             </div>
@@ -172,7 +172,7 @@ export default function LeaderProposalsInbox({
               padding: '8px 16px',
               borderRadius: '10px',
               background: activeTab === 'pending' ? 'var(--teal-500)' : 'rgba(255, 255, 255, 0.04)',
-              color: activeTab === 'pending' ? '#000' : 'var(--slate-300)',
+              color: activeTab === 'pending' ? '#FFFFFF' : 'var(--slate-300)',
               fontWeight: 700,
               fontSize: '0.85rem',
               border: 'none',
@@ -200,7 +200,7 @@ export default function LeaderProposalsInbox({
               padding: '8px 16px',
               borderRadius: '10px',
               background: activeTab === 'accepted' ? 'var(--teal-500)' : 'rgba(255, 255, 255, 0.04)',
-              color: activeTab === 'accepted' ? '#000' : 'var(--slate-300)',
+              color: activeTab === 'accepted' ? '#FFFFFF' : 'var(--slate-300)',
               fontWeight: 700,
               fontSize: '0.85rem',
               border: 'none',
@@ -228,7 +228,7 @@ export default function LeaderProposalsInbox({
               padding: '8px 16px',
               borderRadius: '10px',
               background: activeTab === 'dismissed' ? 'var(--teal-500)' : 'rgba(255, 255, 255, 0.04)',
-              color: activeTab === 'dismissed' ? '#000' : 'var(--slate-300)',
+              color: activeTab === 'dismissed' ? '#FFFFFF' : 'var(--slate-300)',
               fontWeight: 700,
               fontSize: '0.85rem',
               border: 'none',
@@ -342,7 +342,7 @@ export default function LeaderProposalsInbox({
                 </div>
 
                 {/* Main Card Grid */}
-                <div style={{ padding: '20px', display: 'grid', gridTemplateColumns: 'minmax(280px, 1.2fr) minmax(260px, 1fr)', gap: '20px' }}>
+                <div style={{ padding: '20px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '20px' }}>
                   {/* Left Column: Activity Info */}
                   <div>
                     <div style={{ fontSize: '0.72rem', color: 'var(--teal-400)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>
@@ -484,7 +484,7 @@ export default function LeaderProposalsInbox({
 
       {/* Quick Scheduling Drawer / Modal */}
       {schedulingProposal && (
-        <div style={{
+        <div className="modal-overlay" style={{
           position: 'fixed',
           inset: 0,
           zIndex: 10000,

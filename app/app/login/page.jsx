@@ -34,8 +34,8 @@ function LoginScreenContent() {
     const lower = msg.toLowerCase();
     if (lower.includes('error sending confirmation email')) {
       return {
-        title: 'Email Confirmation Unavailable',
-        message: 'Supabase could not dispatch the confirmation email (built-in email rate limit reached). To log in immediately, ask an administrator to disable "Confirm email" in the Supabase Dashboard (Auth > Providers > Email), or configure a custom SMTP provider.',
+        title: 'Email Confirmation Temporarily Busy',
+        message: 'We have hit a temporary email sending limit right now. Please wait a couple of minutes and try again, or contact hello@morecommunity.app for help.',
         isEmailRateLimit: true,
       };
     }
@@ -409,7 +409,7 @@ function LoginScreenContent() {
               <div style={{ textAlign: 'center', marginBottom: '16px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
                 <button
                   type="button"
-                  onClick={() => navigate.push('/partner?mode=sponsors')}
+                  onClick={() => router.push('/partner?mode=sponsors')}
                   style={{
                     background: 'none',
                     border: 'none',

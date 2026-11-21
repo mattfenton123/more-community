@@ -239,7 +239,8 @@ function EventLocationMap({ location, event, isLocationShielded = false }) {
             type="button"
             onClick={() => {
               const coordsStr = coords ? `${coords.lat.toFixed(5)}, ${coords.lng.toFixed(5)}` : (event?.lat && event?.lng ? `${event.lat}, ${event.lng}` : cleanName);
-              const text = `${event?.title || 'Community Event'}\n📍 Start: ${cleanName}${event?.meetingPoint ? ' (Meeting point: ' + event.meetingPoint + ')' : ''}\n🧭 GPS: ${coordsStr}\n/// what3words: ///more.community.trail\n📅 ${event?.date || ''} at ${event?.time || ''}`;
+              const mapsPinLine = coords ? `\n🗺️ Map Pin: https://maps.google.com/?q=${coords.lat.toFixed(5)},${coords.lng.toFixed(5)}` : '';
+              const text = `${event?.title || 'Community Event'}\n📍 Start: ${cleanName}${event?.meetingPoint ? ' (Meeting point: ' + event.meetingPoint + ')' : ''}\n🧭 GPS: ${coordsStr}${mapsPinLine}\n📅 ${event?.date || ''} at ${event?.time || ''}`;
               if (typeof navigator !== 'undefined' && navigator.clipboard) {
                 navigator.clipboard.writeText(text);
                 setCopiedSms(true);

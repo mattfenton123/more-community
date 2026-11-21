@@ -26,7 +26,7 @@ export default function BottomNav() {
   React.useEffect(() => {
     const checkModal = () => {
       if (typeof document !== 'undefined') {
-        const modal = document.querySelector('.modal-overlay');
+        const modal = document.querySelector('.modal-overlay, .copilot-portal-backdrop');
         setHasModalOpen(!!modal);
       }
     };
@@ -78,7 +78,7 @@ export default function BottomNav() {
     { id: 'events', label: 'Events', icon: Calendar, href: '/events' },
     { id: 'chat', label: 'Chat', icon: MessageCircle, href: '/chat', badge: unreadChatCount },
     ...((user?.isAdmin || currentPath?.startsWith('/admin')) ? [{ id: 'admin', label: 'Admin', icon: Shield, href: '/admin' }] : []),
-    { id: 'leader', label: isLeader ? 'Leader' : 'Start', icon: Crown, href: isLeader ? '/dashboard' : '/create-community' },
+    { id: 'leader', label: isLeader ? 'Leader' : 'Host', icon: Crown, href: isLeader ? '/dashboard' : '/create-community' },
     { id: 'profile', label: 'Profile', icon: User, href: user?.id ? `/profile/${user.id}` : '/login' },
   ];
 
@@ -89,7 +89,7 @@ export default function BottomNav() {
           (item.id === 'home' && (currentPath === '/app' || currentPath === '/')) || 
           (item.id === 'chat' && currentPath?.startsWith('/chat')) || 
           (item.id === 'admin' && currentPath?.startsWith('/admin')) ||
-          (item.id === 'leader' && (currentPath?.startsWith('/dashboard') || (currentPath?.startsWith('/community/') && currentPath?.includes('/admin'))));
+          (item.id === 'leader' && (currentPath?.startsWith('/dashboard') || currentPath === '/create-community' || (currentPath?.startsWith('/community/') && currentPath?.includes('/admin'))));
         const Icon = item.icon;
         
         return (

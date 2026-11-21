@@ -778,7 +778,7 @@ function StepPlan({ selectedTier, setSelectedTier, billingInterval, setBillingIn
             </span>
           </div>
           <p style={{ fontSize: '0.8rem', color: 'var(--slate-400)', marginBottom: '14px', lineHeight: 1.4 }}>
-            Zero ticket fees, instant council & venue safety packs & verified organiser trust shield.
+            2% reduced ticket fees (save 60%), instant council &amp; venue safety packs &amp; verified organiser trust shield.
           </p>
           <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 14px 0', fontSize: '0.8rem', color: 'var(--slate-300)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <li style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>✨ <strong>2% Reduced ticket fees</strong> (Save 60% vs 5% standard)</li>

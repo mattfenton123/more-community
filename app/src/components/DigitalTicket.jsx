@@ -122,7 +122,8 @@ export default function DigitalTicket({ event, community, user, onClose }) {
 
   const parsedPin = parseLocationCoords(event.location) || (event.lat && event.lng ? { lat: event.lat, lng: event.lng } : null);
   const cleanTicketLoc = formatShareLocation(event.location, 'See map directions');
-  const emergencyCoordsText = `${event.title}\n📍 Location: ${event.meetingPoint ? event.meetingPoint + ' (' + cleanTicketLoc + ')' : cleanTicketLoc}\n🧭 GPS: ${parsedPin ? `${Number(parsedPin.lat).toFixed(5)}, ${Number(parsedPin.lng).toFixed(5)}` : 'Tunbridge Wells'}\n/// what3words: ///more.community.trail\n👤 Attendee: ${user.name || 'Member'}${event.guestName ? ' (+1 ' + event.guestName + ')' : ''}`;
+  const mapsPinLine = parsedPin ? `\n🗺️ Map Pin: https://maps.google.com/?q=${Number(parsedPin.lat).toFixed(5)},${Number(parsedPin.lng).toFixed(5)}` : '';
+  const emergencyCoordsText = `${event.title}\n📍 Location: ${event.meetingPoint ? event.meetingPoint + ' (' + cleanTicketLoc + ')' : cleanTicketLoc}\n🧭 GPS: ${parsedPin ? `${Number(parsedPin.lat).toFixed(5)}, ${Number(parsedPin.lng).toFixed(5)}` : cleanTicketLoc}${mapsPinLine}\n👤 Attendee: ${user.name || 'Member'}${event.guestName ? ' (+1 ' + event.guestName + ')' : ''}`;
 
   const handleCopyEmergencyInfo = () => {
     if (navigator.clipboard) {

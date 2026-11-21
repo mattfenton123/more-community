@@ -97,9 +97,10 @@ export default function AppHeader({ title, subtitle, rightElement, showBack = fa
           flexShrink: 0
         }}
         title="Start a Community"
+        aria-label="Start a Community"
       >
         <span style={{ fontSize: '1rem', lineHeight: 1, fontWeight: 800 }}>+</span>
-        <span className="header-start-text">Start</span>
+        <span className="header-start-text">Start Group</span>
       </button>
       <div 
         className="interactive-press"

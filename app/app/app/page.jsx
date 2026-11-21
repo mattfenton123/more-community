@@ -444,7 +444,7 @@ export default function HomeFeed() {
                           <Calendar size={15} color="var(--brand-accent)" /> Host Event
                         </button>
                         <button
-                          onClick={() => router.push('/dashboard?tab=crm')}
+                          onClick={() => router.push('/dashboard?tab=broadcast')}
                           className="interactive-press"
                           style={{
                             flex: '0 0 auto',
@@ -2018,7 +2018,7 @@ export default function HomeFeed() {
                     lineHeight: 1.5,
                   }}
                 >
-                  Free microsite, event ticketing, and member tools — 100% free for local leaders.
+                  Free community page, £0 for free events, built-in ticketing, and member tools for local leaders.
                 </p>
                 <button
                   onClick={() => router.push('/create-community')}
@@ -2131,7 +2131,7 @@ export default function HomeFeed() {
                         <Calendar size={14} color="var(--brand-accent)" /> Host Event
                       </button>
                       <button
-                        onClick={() => router.push('/dashboard?tab=members')}
+                        onClick={() => router.push('/dashboard?tab=people')}
                         className="interactive-press"
                         style={{
                           background: 'var(--surface-elevated)',
@@ -2147,10 +2147,10 @@ export default function HomeFeed() {
                           cursor: 'pointer',
                         }}
                       >
-                        <Edit3 size={14} color="var(--brand-accent)" /> Members
+                        <Users size={14} color="var(--brand-accent)" /> Members
                       </button>
                       <button
-                        onClick={() => router.push('/dashboard?tab=crm')}
+                        onClick={() => router.push('/dashboard?tab=broadcast')}
                         className="interactive-press"
                         style={{
                           background: 'var(--surface-elevated)',
@@ -2487,8 +2487,8 @@ export default function HomeFeed() {
                     lineHeight: 1.5,
                   }}
                 >
-                  Free microsite, zero fees, ticketing, and member tools. 100% free forever for
-                  local leaders.
+                  Free community page, £0 for free events, built-in ticketing, and member tools —
+                  free to start, forever.
                 </p>
                 <button
                   onClick={() => router.push('/create-community')}

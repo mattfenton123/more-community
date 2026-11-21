@@ -34,9 +34,9 @@ export const EXPLAINER_CONTENT = {
     title: 'Events, AI Studio & Flyers',
     summary: 'Everything you need to plan, promote, and run great in-person events without juggling five different apps.',
     steps: [
-      'Use Magic AI Draft to turn a rough sentence or voice note into a full event description in seconds.',
+      'Use AI Co-Pilot or Magic AI Draft to turn a rough sentence into a full event, poll, or broadcast in seconds.',
       'Click "Flyer & Poster" on any event to export a print-ready poster for local cafes and noticeboards.',
-      'On the day, open Event Check-In or the QR Scanner on your phone to check members in with one tap.'
+      'On the day, open Roll Call Check-In or the QR Scanner on your phone to check members in with one tap.'
     ],
     tip: 'You can duplicate any past event or set a recurring schedule (weekly, fortnightly, or monthly) in one click.'
   },
@@ -47,7 +47,7 @@ export const EXPLAINER_CONTENT = {
     steps: [
       'Member CRM automatically groups members into Active, Engaged, Slipping, and Inactive based on attendance.',
       'Automated Triggers send friendly welcome notes to new joiners and reminders before events.',
-      'Use Broadcasts or the Idea Board to ask members what they want to do next.'
+      'Use Broadcasts, Community Polls, or the Idea Board to ask members what they want to do next.'
     ],
     tip: 'A quick personal message to a "Slipping" member is the easiest way to bring them back to your next event.'
   },
@@ -86,14 +86,14 @@ export const EXPLAINER_CONTENT = {
   },
   leader_pro: {
     badge: 'Leader Pro (£16.50/mo or £165/yr)',
-    title: 'Protection, Safety Packs & Lower Fees',
+    title: 'Safety Packs, Trust Shield & Lower Fees',
     summary: 'Optional upgrade for organisers running regular events, venue hires, or paid tickets.',
     steps: [
-      'Includes £5M organiser legal protection and a Verified Organiser Trust Shield on your profile.',
+      'Includes a Verified Organiser Trust Shield on your community page plus priority waitlist access to our upcoming group PLI scheme.',
       'Generate 1-click PDF council and venue safety (RAMS) packs plus digital member safety check-ins.',
       'Cuts your platform ticket fee from 5% down to 2% and boosts local discovery.'
     ],
-    tip: 'You never need Leader Pro to start a free community - upgrade only when you want extra cover or lower fees.'
+    tip: 'You never need Leader Pro to start a free community - upgrade only when you want venue safety packs or lower ticket fees.'
   },
   leader_crm_card: {
     badge: 'Member CRM',
@@ -169,6 +169,7 @@ export function ExplainerModal({ isOpen, onClose, badge, title, summary, steps =
 
   return (
     <div
+      className="modal-overlay"
       onClick={onClose}
       style={{
         position: 'fixed',
@@ -229,7 +230,7 @@ export function ExplainerModal({ isOpen, onClose, badge, title, summary, steps =
             fontWeight: 700,
             letterSpacing: '0.06em',
             textTransform: 'uppercase',
-            color: '#F79984',
+            color: 'var(--brand-accent)',
             background: 'rgba(235, 87, 56, 0.14)',
             border: '1px solid rgba(242, 114, 87, 0.3)',
             borderRadius: '999px',
@@ -277,10 +278,10 @@ export function ExplainerModal({ isOpen, onClose, badge, title, summary, steps =
             border: '1px solid rgba(235, 87, 56, 0.25)',
             fontSize: '0.8rem',
             lineHeight: 1.45,
-            color: '#99f6e4',
+            color: 'var(--ink-primary)',
             marginBottom: '16px'
           }}>
-            <strong>Tip:</strong> {tip}
+            <strong style={{ color: 'var(--brand-accent)' }}>Tip:</strong> {tip}
           </div>
         )}
 
@@ -294,7 +295,7 @@ export function ExplainerModal({ isOpen, onClose, badge, title, summary, steps =
                 borderRadius: '10px',
                 border: '1px solid rgba(242, 114, 87, 0.4)',
                 background: 'rgba(235, 87, 56, 0.15)',
-                color: '#F79984',
+                color: 'var(--brand-accent)',
                 fontWeight: 600,
                 fontSize: '0.85rem',
                 cursor: 'pointer'
@@ -311,7 +312,7 @@ export function ExplainerModal({ isOpen, onClose, badge, title, summary, steps =
               borderRadius: '10px',
               border: 'none',
               background: 'linear-gradient(135deg, #EB5738, #D94628)',
-              color: 'var(--ink-primary)',
+              color: '#FFFFFF',
               fontWeight: 700,
               fontSize: '0.86rem',
               cursor: 'pointer'
@@ -358,7 +359,7 @@ export default function InfoExplainer({ explainerKey, badge, title, summary, ste
           borderRadius: '999px',
           border: '1px solid rgba(242, 114, 87, 0.35)',
           background: 'rgba(235, 87, 56, 0.12)',
-          color: '#F79984',
+          color: 'var(--brand-accent)',
           cursor: 'pointer',
           verticalAlign: 'middle',
           flexShrink: 0,

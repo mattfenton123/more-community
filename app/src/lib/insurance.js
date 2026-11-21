@@ -33,12 +33,6 @@ export const LEADER_PRO_CONFIG = {
       desc: 'Automated health and safety confirmations captured whenever members RSVP, keeping emergency contacts accessible on your phone.'
     },
     {
-      id: 'fees',
-      title: '2% Reduced Platform Ticket Fee',
-      badge: 'Save 60% on Fees',
-      desc: 'Keep 98% of your paid event ticket revenue (reduced from 5% standard; standard Stripe card processing fees apply).'
-    },
-    {
       id: 'badge',
       title: 'Verified Organiser Trust Shield',
       badge: 'Higher Trust',

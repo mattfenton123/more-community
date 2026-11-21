@@ -50,7 +50,7 @@ export default function SpecialistVaultModal({ isOpen, onClose, specialist, mode
   };
 
   return (
-    <div style={{
+    <div className="modal-overlay" style={{
       position: 'fixed',
       inset: 0,
       zIndex: 9999,
@@ -114,7 +114,7 @@ export default function SpecialistVaultModal({ isOpen, onClose, specialist, mode
                   padding: '2px 8px',
                   borderRadius: '12px'
                 }}>
-                  {mode === 'inspect' ? 'Verified Pro' : 'Phase 2 Marketplace'}
+                  {mode === 'inspect' ? 'Verified Pro' : 'Verified Partner Network'}
                 </span>
               </div>
               <p style={{ margin: '3px 0 0 0', fontSize: '0.82rem', color: 'var(--slate-400)' }}>
