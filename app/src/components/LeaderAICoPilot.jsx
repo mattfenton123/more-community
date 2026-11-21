@@ -5,7 +5,6 @@ import {
   Calendar,
   Megaphone,
   Shield,
-  Briefcase,
   Check,
   Copy,
   Download,
@@ -18,6 +17,10 @@ import {
   MapPin,
   Clock,
   MessageSquare,
+  Layers,
+  BarChart3,
+  ArrowRight,
+  CheckCircle2,
 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { useToast } from './Toast';
@@ -86,7 +89,8 @@ export default function LeaderAICoPilot({
   onJumpToUpgrade,
   onClose,
 }) {
-  const { user, createEvent, createEventsBatch, createPost, createFeedPost, createPoll } = useAppContext();
+  const { user, createEvent, createEventsBatch, createPost, createFeedPost, createPoll } =
+    useAppContext();
   const { toast } = useToast();
 
   const [hasConsented, setHasConsented] = useState(() => {
@@ -111,20 +115,20 @@ export default function LeaderAICoPilot({
   const buildInitialMessages = () => {
     const commName = community?.name || 'your community';
     const nextNote = nextUpcomingEvent
-      ? `Your next meetup on the calendar is "${nextUpcomingEvent.title}" (${nextUpcomingEvent.date || 'soon'} at ${nextUpcomingEvent.time || '10:00'}).`
-      : `You don't have an upcoming meetup scheduled on the calendar yet — we can sketch out your next few weeks whenever you're ready.`;
+      ? `Your next meetup on the calendar is **"${nextUpcomingEvent.title}"** (${nextUpcomingEvent.date || 'soon'} at ${nextUpcomingEvent.time || '10:00'}).`
+      : `You don't have an upcoming meetup scheduled yet — tell me what you have in mind and I'll build it on the right ready to launch.`;
 
     return [
       {
         id: 'welcome-msg',
         role: 'assistant',
-        reply: `Hi ${user?.name?.split(' ')[0] || 'there'}! I'm your **${commName}** Co-Pilot.\n\nI can see you have **${memberCount} member${memberCount === 1 ? '' : 's'}** (${verifiedMemberCount} Verified Local${verifiedMemberCount === 1 ? '' : 's'} who have attended in person). ${nextNote}\n\nTalk to me like a co-organiser — tell me what you're thinking of planning, ask how to re-engage quiet newcomers, or ask me to draft your next 4 weeks of events, a WhatsApp message, a UK Council RAMS, or a local sponsor pitch. You can always reply to tweak anything I draft.`,
+        reply: `Hi ${user?.name?.split(' ')[0] || 'there'}! I'm your **${commName}** Co-Pilot.\n\nI can see you have **${memberCount} member${memberCount === 1 ? '' : 's'}** (${verifiedMemberCount} Verified Local${verifiedMemberCount === 1 ? '' : 's'}). ${nextNote}\n\nChat with me here — anything I build (new events, 4-week plans, member polls, WhatsApp copy, or UK RAMS docs) will appear live in the **Output & Launchpad** panel ready for 1-tap launch.`,
         actionCard: null,
         suggestedReplies: [
+          '🚀 Launch a meetup this Sunday at 10am',
           '🗓️ Plan our next 4 weeks of meetups',
-          '👋 Draft a warm WhatsApp message for newcomers',
-          '💡 How do I get quiet members to attend their first meetup?',
-          '🛡️ Draft a UK Council Risk Assessment (RAMS)',
+          '📊 Create a poll to vote on meetup day',
+          '👋 Draft a warm WhatsApp welcome',
         ],
       },
     ];
@@ -133,21 +137,48 @@ export default function LeaderAICoPilot({
   const [messages, setMessages] = useState(() => buildInitialMessages());
   const [inputValue, setInputValue] = useState('');
   const [isThinking, setIsThinking] = useState(false);
+  const [activeModelLabel, setActiveModelLabel] = useState('Gemini 3.6 Flash');
 
-  // Track published / copied action states per message ID
+  // Output Workspace state (always synced to latest generated draft or user-selected draft)
+  const [selectedOutputMsgId, setSelectedOutputMsgId] = useState(null);
+  const [mobileView, setMobileView] = useState('chat'); // 'chat' | 'output'
+
+  // Action completion tracking
   const [publishedEventsMap, setPublishedEventsMap] = useState({});
   const [publishingBatchMap, setPublishingBatchMap] = useState({});
   const [sendingBroadcastMap, setSendingBroadcastMap] = useState({});
   const [sentBroadcastMap, setSentBroadcastMap] = useState({});
   const [launchingPollMap, setLaunchingPollMap] = useState({});
   const [launchedPollMap, setLaunchedPollMap] = useState({});
-  const [activeModelLabel, setActiveModelLabel] = useState('Gemini 3.6 Flash');
 
   const chatEndRef = useRef(null);
+
+  // Close modal on Escape key
+  useEffect(() => {
+    const onKeyDown = (e) => {
+      if (e.key === 'Escape' && onClose) onClose();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [onClose]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
   }, [messages, isThinking]);
+
+  // All generated outputs in this session
+  const outputHistory = useMemo(() => {
+    return messages.filter((m) => m.role === 'assistant' && m.actionCard);
+  }, [messages]);
+
+  const activeOutputMessage = useMemo(() => {
+    if (outputHistory.length === 0) return null;
+    if (selectedOutputMsgId) {
+      const found = outputHistory.find((m) => m.id === selectedOutputMsgId);
+      if (found) return found;
+    }
+    return outputHistory[outputHistory.length - 1];
+  }, [outputHistory, selectedOutputMsgId]);
 
   const handleAcceptConsent = () => {
     setHasConsented(true);
@@ -160,6 +191,8 @@ export default function LeaderAICoPilot({
 
   const handleResetChat = () => {
     setMessages(buildInitialMessages());
+    setSelectedOutputMsgId(null);
+    setMobileView('chat');
     setInputValue('');
   };
 
@@ -210,18 +243,25 @@ export default function LeaderAICoPilot({
 
       const data = await res.json();
       if (data?.modelUsed) {
-        setActiveModelLabel(data.modelUsed.replace(/-/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()));
+        setActiveModelLabel(
+          data.modelUsed.replace(/-/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())
+        );
       }
+      const normalizedCard = normalizeActionCard(data?.actionCard);
+      const newMsgId = `ai-${Date.now()}`;
       const assistantMsg = {
-        id: `ai-${Date.now()}`,
+        id: newMsgId,
         role: 'assistant',
         reply:
           data?.reply ||
-          "I've put together a recommendation for you below. Tell me if you'd like to adjust the tone, dates, or format!",
-        actionCard: normalizeActionCard(data?.actionCard),
+          "I've drafted that for you in the Output & Launchpad panel. Tell me if you'd like to tweak anything before launching!",
+        actionCard: normalizedCard,
         suggestedReplies: Array.isArray(data?.suggestedReplies) ? data.suggestedReplies : [],
       };
       setMessages((prev) => [...prev, assistantMsg]);
+      if (normalizedCard) {
+        setSelectedOutputMsgId(newMsgId);
+      }
     } catch (err) {
       setMessages((prev) => [
         ...prev,
@@ -232,8 +272,8 @@ export default function LeaderAICoPilot({
             "I hit a brief connection snag while thinking that through. Try sending that again or tap one of the quick options below!",
           actionCard: null,
           suggestedReplies: [
+            '🚀 Launch a meetup this Sunday at 10am',
             '🗓️ Plan our next 4 weeks of meetups',
-            '👋 Draft a warm WhatsApp message for newcomers',
           ],
         },
       ]);
@@ -259,9 +299,9 @@ export default function LeaderAICoPilot({
         status: 'published',
       });
       setPublishedEventsMap((prev) => ({ ...prev, [key]: true }));
-      toast.success('Event Published! 🎉', `"${ev.title}" is now live on your community calendar.`);
+      toast.success('Event Launched Live! 🚀', `"${ev.title}" is now on your community calendar.`);
     } catch (err) {
-      toast.error('Could not publish event', err?.message || 'Please try again.');
+      toast.error('Could not launch event', err?.message || 'Please try again.');
     }
   };
 
@@ -285,7 +325,7 @@ export default function LeaderAICoPilot({
         status: 'published',
       }));
 
-      if (typeof createEventsBatch === 'function') {
+      if (typeof createEventsBatch === 'function' && payloads.length > 1) {
         await createEventsBatch(community.id, payloads);
       } else {
         for (const p of payloads) {
@@ -298,9 +338,12 @@ export default function LeaderAICoPilot({
         nextPublished[`${msgId}-${idx}`] = true;
       });
       setPublishedEventsMap(nextPublished);
-      toast.success('Schedule Published! 🚀', `Added ${unpub.length} events to your community calendar.`);
+      toast.success(
+        payloads.length === 1 ? 'Event Launched Live! 🚀' : 'Schedule Launched Live! 🚀',
+        `Added ${unpub.length} event${unpub.length === 1 ? '' : 's'} to your community calendar.`
+      );
     } catch (err) {
-      toast.error('Batch publish error', err?.message || 'Could not publish all events.');
+      toast.error('Launch error', err?.message || 'Could not publish events.');
     } finally {
       setPublishingBatchMap((prev) => ({ ...prev, [msgId]: false }));
     }
@@ -338,7 +381,7 @@ export default function LeaderAICoPilot({
         await createPoll(community.id, pollData.question, pollData.options);
       }
       setLaunchedPollMap((prev) => ({ ...prev, [msgId]: true }));
-      toast.success('Poll Launched! 📊', 'Your community poll is now live for members to vote on.');
+      toast.success('Poll Launched Live! 📊', 'Members can now vote in your community.');
     } catch (err) {
       toast.error('Poll Launch Error', err?.message || 'Could not launch community poll.');
     } finally {
@@ -373,14 +416,13 @@ export default function LeaderAICoPilot({
     const lines = String(text).split('\n');
     return lines.map((line, i) => {
       const trimmed = line.trim();
-      if (!trimmed) return <div key={i} style={{ height: '8px' }} />;
-      // Render bold **segments** inline
+      if (!trimmed) return <div key={i} style={{ height: '7px' }} />;
       const parts = line.split(/(\*\*[^*]+\*\*)/g);
       return (
         <div
           key={i}
           style={{
-            marginBottom: '4px',
+            marginBottom: '3px',
             paddingLeft: trimmed.startsWith('•') || trimmed.startsWith('- ') ? '8px' : 0,
           }}
         >
@@ -399,1163 +441,1425 @@ export default function LeaderAICoPilot({
     });
   };
 
+  const getOutputBadgeLabel = (card) => {
+    if (!card) return 'Output';
+    if (card.type === 'events') {
+      const len = card.data?.events?.length || 1;
+      return len === 1 ? '🚀 Event Draft' : `🗓️ ${len}-Week Plan`;
+    }
+    if (card.type === 'poll') return '📊 Poll Draft';
+    if (card.type === 'broadcast') return '📣 Broadcast Copy';
+    if (card.type === 'document') return '🛡️ Document Draft';
+    return '✨ Draft';
+  };
+
   return (
     <div
+      className="modal-overlay"
+      onClick={onClose}
       style={{
-        background: 'var(--surface-card)',
-        border: '1px solid var(--hairline-border)',
-        borderRadius: '22px',
-        padding: '20px',
-        marginBottom: '24px',
-        boxShadow: '0 14px 36px rgba(0, 0, 0, 0.08)',
-        position: 'relative',
+        position: 'fixed',
+        inset: 0,
+        zIndex: 100000,
+        background: 'rgba(10, 12, 18, 0.72)',
+        backdropFilter: 'blur(10px)',
+        WebkitBackdropFilter: 'blur(10px)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '12px',
       }}
     >
-      {/* Top Header */}
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+            .copilot-split-body {
+              display: grid;
+              grid-template-columns: minmax(0, 1fr);
+              flex: 1;
+              min-height: 0;
+              overflow: hidden;
+            }
+            .copilot-mobile-tabs {
+              display: flex;
+            }
+            .copilot-pane-chat.mobile-hidden,
+            .copilot-pane-output.mobile-hidden {
+              display: none;
+            }
+            @media (min-width: 860px) {
+              .copilot-split-body {
+                grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.15fr);
+              }
+              .copilot-mobile-tabs {
+                display: none !important;
+              }
+              .copilot-pane-chat.mobile-hidden,
+              .copilot-pane-output.mobile-hidden {
+                display: flex !important;
+              }
+              .copilot-pane-chat {
+                border-right: 1px solid var(--hairline-border);
+              }
+            }
+          `,
+        }}
+      />
+
       <div
+        onClick={(e) => e.stopPropagation()}
         style={{
+          width: '100%',
+          maxWidth: '1120px',
+          height: 'min(90dvh, 800px)',
+          background: 'var(--surface-card)',
+          border: '1px solid var(--hairline-border-strong)',
+          borderRadius: '22px',
+          boxShadow: '0 30px 80px rgba(0, 0, 0, 0.45)',
           display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          gap: '12px',
-          flexWrap: 'wrap',
-          paddingBottom: '14px',
-          borderBottom: '1px solid var(--hairline-border)',
-          marginBottom: '16px',
+          flexDirection: 'column',
+          overflow: 'hidden',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        {/* Unified Modal Top Header */}
+        <div
+          style={{
+            padding: '14px 18px',
+            borderBottom: '1px solid var(--hairline-border)',
+            background: 'var(--surface-elevated)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '12px',
+            flexShrink: 0,
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+            <div
+              style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '11px',
+                background: 'linear-gradient(135deg, #EB5738, #f59e0b)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#fff',
+                flexShrink: 0,
+              }}
+            >
+              <Sparkles size={18} />
+            </div>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                <h2
+                  style={{
+                    margin: 0,
+                    fontSize: '1.08rem',
+                    fontFamily: 'var(--font-heading)',
+                    color: 'var(--ink-primary)',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}
+                >
+                  More. AI Co-Pilot Studio
+                </h2>
+                <span
+                  style={{
+                    padding: '2px 8px',
+                    borderRadius: '99px',
+                    fontSize: '0.66rem',
+                    fontWeight: 800,
+                    background: 'rgba(16, 185, 129, 0.14)',
+                    color: '#10b981',
+                    border: '1px solid rgba(16, 185, 129, 0.28)',
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  {activeModelLabel}
+                </span>
+              </div>
+              <div
+                style={{
+                  fontSize: '0.75rem',
+                  color: 'var(--ink-muted)',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}
+              >
+                {community?.name || 'Community'} • Conversation on the left, live launchable output on the right
+              </div>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+            {hasConsented && messages.length > 1 && (
+              <button
+                type="button"
+                onClick={handleResetChat}
+                className="interactive-press"
+                title="Start a fresh session"
+                style={{
+                  background: 'var(--surface-card)',
+                  border: '1px solid var(--hairline-border)',
+                  color: 'var(--ink-secondary)',
+                  borderRadius: '10px',
+                  padding: '6px 10px',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  fontSize: '0.76rem',
+                  fontWeight: 700,
+                }}
+              >
+                <RotateCcw size={13} /> New Chat
+              </button>
+            )}
+            {onClose && (
+              <button
+                type="button"
+                onClick={onClose}
+                className="interactive-press"
+                style={{
+                  background: 'var(--surface-card)',
+                  border: '1px solid var(--hairline-border)',
+                  color: 'var(--ink-secondary)',
+                  borderRadius: '10px',
+                  padding: '6px 10px',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  fontSize: '0.78rem',
+                  fontWeight: 700,
+                }}
+              >
+                <X size={16} /> Close
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* One-Time Privacy Consent Gate */}
+        {!hasConsented ? (
           <div
             style={{
-              width: '38px',
-              height: '38px',
-              borderRadius: '12px',
-              background: 'linear-gradient(135deg, #EB5738, #f59e0b)',
+              flex: 1,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: '#fff',
-              boxShadow: '0 6px 16px rgba(235, 87, 56, 0.25)',
-              flexShrink: 0,
-            }}
-          >
-            <Sparkles size={19} />
-          </div>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-              <h3
-                style={{
-                  margin: 0,
-                  fontSize: '1.12rem',
-                  fontFamily: 'var(--font-heading)',
-                  color: 'var(--ink-primary)',
-                }}
-              >
-                More. AI Leader Co-Pilot
-              </h3>
-              <span
-                style={{
-                  padding: '2px 9px',
-                  borderRadius: '99px',
-                  fontSize: '0.68rem',
-                  fontWeight: 800,
-                  background: 'rgba(16, 185, 129, 0.14)',
-                  color: '#10b981',
-                  border: '1px solid rgba(16, 185, 129, 0.28)',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.04em',
-                }}
-              >
-                {activeModelLabel}
-              </span>
-            </div>
-            <div style={{ fontSize: '0.78rem', color: 'var(--ink-muted)', marginTop: '2px' }}>
-              Brainstorm ideas, tweak event schedules, draft WhatsApp messages &amp; create UK Council RAMS in natural conversation
-            </div>
-          </div>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          {hasConsented && messages.length > 1 && (
-            <button
-              type="button"
-              onClick={handleResetChat}
-              className="interactive-press"
-              title="Start a fresh conversation"
-              style={{
-                background: 'var(--surface-elevated)',
-                border: '1px solid var(--hairline-border)',
-                color: 'var(--ink-secondary)',
-                borderRadius: '10px',
-                padding: '7px 11px',
-                cursor: 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '5px',
-                fontSize: '0.76rem',
-                fontWeight: 700,
-              }}
-            >
-              <RotateCcw size={13} /> New Chat
-            </button>
-          )}
-          {onClose && (
-            <button
-              type="button"
-              onClick={onClose}
-              className="interactive-press"
-              style={{
-                background: 'var(--surface-elevated)',
-                border: '1px solid var(--hairline-border)',
-                color: 'var(--ink-secondary)',
-                borderRadius: '10px',
-                padding: '7px 10px',
-                cursor: 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '4px',
-                fontSize: '0.78rem',
-                fontWeight: 600,
-              }}
-            >
-              <X size={15} /> Close
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Apple Guideline 5.1.2(i) & UK GDPR One-Time Consent Gate */}
-      {!hasConsented ? (
-        <div
-          style={{
-            background: 'var(--surface-elevated)',
-            border: '1px solid rgba(235, 87, 56, 0.28)',
-            borderRadius: '16px',
-            padding: '18px',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-            <Shield size={22} color="#EB5738" style={{ flexShrink: 0, marginTop: '2px' }} />
-            <div style={{ flex: 1 }}>
-              <div
-                style={{
-                  fontWeight: 800,
-                  fontSize: '0.95rem',
-                  color: 'var(--ink-primary)',
-                  marginBottom: '6px',
-                }}
-              >
-                Privacy-First AI Disclosure
-              </div>
-              <p
-                style={{
-                  margin: '0 0 12px 0',
-                  fontSize: '0.84rem',
-                  color: 'var(--ink-secondary)',
-                  lineHeight: 1.5,
-                }}
-              >
-                To help you plan events, write announcements, and prepare safety documents, More. AI Co-Pilot sends{' '}
-                <strong>only your community&apos;s public title, town, category tags, and your chat messages</strong>{' '}
-                to Google Gemini API.
-              </p>
-              <div
-                style={{
-                  fontSize: '0.78rem',
-                  color: 'var(--ink-muted)',
-                  background: 'var(--surface-card)',
-                  padding: '10px 12px',
-                  borderRadius: '10px',
-                  border: '1px solid var(--hairline-border)',
-                  marginBottom: '14px',
-                }}
-              >
-                🔒 <strong>Never shared:</strong> Member names, private DMs, email addresses, phone numbers, or attendee
-                rosters are strictly excluded from AI prompts. You always review and approve every draft before it goes
-                live.
-              </div>
-              <button
-                type="button"
-                onClick={handleAcceptConsent}
-                className="btn btn-primary interactive-press"
-                style={{
-                  padding: '10px 18px',
-                  borderRadius: '11px',
-                  fontSize: '0.85rem',
-                  fontWeight: 800,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                }}
-              >
-                <Check size={16} /> Enable Conversational Co-Pilot
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : (
-        <>
-          {/* Quick Topic Bar */}
-          <div
-            style={{
-              display: 'flex',
-              gap: '6px',
-              overflowX: 'auto',
-              paddingBottom: '10px',
-              marginBottom: '12px',
-            }}
-            className="no-scrollbar"
-          >
-            {[
-              {
-                label: '🚀 Launch a New Meetup',
-                prompt: `Create a single welcoming meetup for ${community?.name || 'our community'} in ${communityLoc} this weekend at 10:00 AM with a post-event coffee stop.`,
-              },
-              {
-                label: '🗓️ Plan Next 4 Weeks',
-                prompt: `Can you plan our next 4 weeks of meetups in ${communityLoc} with a mix of beginner-friendly and regular sessions?`,
-              },
-              {
-                label: '📊 Create a Member Poll',
-                prompt: `Create a community poll asking members which day and time works best for our next meetup in ${communityLoc}.`,
-              },
-              {
-                label: '👋 Newcomer WhatsApp Welcome',
-                prompt:
-                  'Draft a warm WhatsApp group message welcoming newcomers and explaining how attending their first in-person meetup unlocks Verified Local standing.',
-              },
-              {
-                label: '💡 Activate Quiet Members',
-                prompt:
-                  'What is the best way to get our quiet members who joined online to actually show up to their first in-person meetup?',
-              },
-              {
-                label: '🛡️ UK Council RAMS',
-                prompt: nextUpcomingEvent
-                  ? `Draft a UK Council Risk Assessment & Method Statement (RAMS) for our upcoming meetup "${nextUpcomingEvent.title}" at ${cleanLocationName(nextUpcomingEvent.location) || communityLoc}.`
-                  : `Draft a UK Council Risk Assessment & Method Statement (RAMS) for our next community meetup in ${communityLoc}.`,
-              },
-              {
-                label: '🤝 Local Café Sponsor Pitch',
-                prompt: `Write a friendly sponsorship outreach email to an independent café or local business in ${communityLoc} to partner with ${community?.name || 'our community'}.`,
-              },
-              {
-                label: '🏛️ UK Council Grant Application',
-                prompt: `Draft a UK Local Council & National Lottery Awards for All community grant funding application for ${community?.name || 'our community'}.`,
-              },
-            ].map((chip, idx) => (
-              <button
-                key={idx}
-                type="button"
-                disabled={isThinking}
-                onClick={() => handleSendMessage(chip.prompt)}
-                className="interactive-press"
-                style={{
-                  padding: '7px 12px',
-                  borderRadius: '99px',
-                  fontSize: '0.76rem',
-                  fontWeight: 700,
-                  whiteSpace: 'nowrap',
-                  cursor: isThinking ? 'not-allowed' : 'pointer',
-                  background: 'var(--surface-elevated)',
-                  color: 'var(--ink-secondary)',
-                  border: '1px solid var(--hairline-border)',
-                  flexShrink: 0,
-                }}
-              >
-                {chip.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Chat Conversation Stream */}
-          <div
-            style={{
-              maxHeight: '520px',
+              padding: '24px',
               overflowY: 'auto',
-              padding: '12px',
-              borderRadius: '16px',
-              background: 'var(--surface-elevated)',
-              border: '1px solid var(--hairline-border)',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '14px',
-              marginBottom: '12px',
             }}
           >
-            {messages.map((msg, msgIdx) => {
-              const isUser = msg.role === 'user';
-              const isLastAssistant = !isUser && msgIdx === messages.length - 1;
-
-              return (
-                <div
-                  key={msg.id}
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: isUser ? 'flex-end' : 'flex-start',
-                    gap: '8px',
-                  }}
-                >
-                  {/* Bubble */}
+            <div
+              style={{
+                maxWidth: '520px',
+                background: 'var(--surface-elevated)',
+                border: '1px solid rgba(235, 87, 56, 0.3)',
+                borderRadius: '18px',
+                padding: '22px',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                <Shield size={24} color="#EB5738" style={{ flexShrink: 0, marginTop: '2px' }} />
+                <div>
                   <div
                     style={{
-                      maxWidth: isUser ? '84%' : '96%',
-                      width: msg.actionCard ? '100%' : 'auto',
-                      padding: isUser ? '11px 15px' : '14px 16px',
-                      borderRadius: isUser ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
-                      background: isUser
-                        ? 'linear-gradient(135deg, #EB5738, #d94627)'
-                        : 'var(--surface-card)',
-                      color: isUser ? '#ffffff' : 'var(--ink-primary)',
-                      border: isUser ? 'none' : '1px solid var(--hairline-border)',
-                      boxShadow: isUser
-                        ? '0 4px 14px rgba(235, 87, 56, 0.25)'
-                        : '0 2px 10px rgba(0, 0, 0, 0.04)',
-                      fontSize: '0.88rem',
+                      fontWeight: 800,
+                      fontSize: '1rem',
+                      color: 'var(--ink-primary)',
+                      marginBottom: '6px',
+                    }}
+                  >
+                    Privacy-First AI Disclosure
+                  </div>
+                  <p
+                    style={{
+                      margin: '0 0 12px 0',
+                      fontSize: '0.85rem',
+                      color: 'var(--ink-secondary)',
                       lineHeight: 1.55,
                     }}
                   >
-                    {!isUser && (
+                    To plan events, create polls, write announcements, and draft safety documents, More. AI Co-Pilot sends{' '}
+                    <strong>only your community&apos;s public title, town, tags, and your chat messages</strong> to Google Gemini.
+                  </p>
+                  <div
+                    style={{
+                      fontSize: '0.78rem',
+                      color: 'var(--ink-muted)',
+                      background: 'var(--surface-card)',
+                      padding: '10px 12px',
+                      borderRadius: '10px',
+                      border: '1px solid var(--hairline-border)',
+                      marginBottom: '16px',
+                    }}
+                  >
+                    🔒 <strong>Never shared:</strong> Member names, private DMs, emails, phone numbers, or attendee rosters are excluded. Nothing publishes until you tap Launch.
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleAcceptConsent}
+                    className="btn btn-primary interactive-press"
+                    style={{
+                      padding: '11px 20px',
+                      borderRadius: '12px',
+                      fontSize: '0.88rem',
+                      fontWeight: 800,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                    }}
+                  >
+                    <Check size={16} /> Open Co-Pilot Studio
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* Mobile View Switcher (Chat vs Live Output) */}
+            <div
+              className="copilot-mobile-tabs"
+              style={{
+                padding: '8px 14px',
+                borderBottom: '1px solid var(--hairline-border)',
+                background: 'var(--surface-card)',
+                gap: '8px',
+                flexShrink: 0,
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => setMobileView('chat')}
+                style={{
+                  flex: 1,
+                  padding: '8px 10px',
+                  borderRadius: '10px',
+                  border:
+                    mobileView === 'chat'
+                      ? '1px solid var(--brand-accent)'
+                      : '1px solid var(--hairline-border)',
+                  background:
+                    mobileView === 'chat' ? 'var(--brand-accent-soft)' : 'var(--surface-elevated)',
+                  color: mobileView === 'chat' ? 'var(--brand-accent)' : 'var(--ink-secondary)',
+                  fontWeight: 800,
+                  fontSize: '0.8rem',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px',
+                }}
+              >
+                <MessageSquare size={14} /> Conversation
+              </button>
+              <button
+                type="button"
+                onClick={() => setMobileView('output')}
+                style={{
+                  flex: 1,
+                  padding: '8px 10px',
+                  borderRadius: '10px',
+                  border:
+                    mobileView === 'output'
+                      ? '1px solid #10b981'
+                      : '1px solid var(--hairline-border)',
+                  background:
+                    mobileView === 'output'
+                      ? 'rgba(16, 185, 129, 0.14)'
+                      : 'var(--surface-elevated)',
+                  color: mobileView === 'output' ? '#10b981' : 'var(--ink-secondary)',
+                  fontWeight: 800,
+                  fontSize: '0.8rem',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px',
+                }}
+              >
+                <Layers size={14} />
+                Output &amp; Launchpad
+                {outputHistory.length > 0 && (
+                  <span
+                    style={{
+                      background: '#10b981',
+                      color: '#fff',
+                      fontSize: '0.68rem',
+                      padding: '1px 6px',
+                      borderRadius: '99px',
+                      fontWeight: 800,
+                    }}
+                  >
+                    {outputHistory.length}
+                  </span>
+                )}
+              </button>
+            </div>
+
+            {/* Split-Pane Studio Body: Left = Conversation, Right = Live Output & Launchpad */}
+            <div className="copilot-split-body">
+              {/* LEFT PANE: CONVERSATION */}
+              <div
+                className={`copilot-pane-chat ${mobileView === 'output' ? 'mobile-hidden' : ''}`}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  minHeight: 0,
+                  background: 'var(--surface-canvas)',
+                }}
+              >
+                {/* Quick Starter Chips */}
+                <div
+                  style={{
+                    padding: '10px 14px',
+                    borderBottom: '1px solid var(--hairline-border)',
+                    display: 'flex',
+                    gap: '6px',
+                    overflowX: 'auto',
+                    flexShrink: 0,
+                  }}
+                  className="no-scrollbar"
+                >
+                  {[
+                    {
+                      label: '🚀 New Meetup',
+                      prompt: `Create a single welcoming meetup for ${community?.name || 'our community'} in ${communityLoc} this weekend at 10:00 AM with a post-event coffee stop.`,
+                    },
+                    {
+                      label: '🗓️ 4-Week Plan',
+                      prompt: `Plan our next 4 weeks of meetups in ${communityLoc} with a mix of beginner-friendly and regular sessions.`,
+                    },
+                    {
+                      label: '📊 Member Poll',
+                      prompt: `Create a community poll asking members which day and time works best for our next meetup in ${communityLoc}.`,
+                    },
+                    {
+                      label: '👋 WhatsApp Copy',
+                      prompt:
+                        'Draft a warm WhatsApp group message welcoming newcomers and explaining how attending their first meetup unlocks Verified Local standing.',
+                    },
+                    {
+                      label: '🛡️ UK RAMS',
+                      prompt: nextUpcomingEvent
+                        ? `Draft a UK Council Risk Assessment (RAMS) for "${nextUpcomingEvent.title}" at ${cleanLocationName(nextUpcomingEvent.location) || communityLoc}.`
+                        : `Draft a UK Council Risk Assessment (RAMS) for our next community meetup in ${communityLoc}.`,
+                    },
+                    {
+                      label: '🤝 Sponsor Pitch',
+                      prompt: `Write a friendly sponsorship outreach email to an independent café in ${communityLoc} to partner with ${community?.name || 'our community'}.`,
+                    },
+                  ].map((chip, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      disabled={isThinking}
+                      onClick={() => handleSendMessage(chip.prompt)}
+                      className="interactive-press"
+                      style={{
+                        padding: '6px 10px',
+                        borderRadius: '99px',
+                        fontSize: '0.73rem',
+                        fontWeight: 700,
+                        whiteSpace: 'nowrap',
+                        cursor: isThinking ? 'not-allowed' : 'pointer',
+                        background: 'var(--surface-card)',
+                        color: 'var(--ink-secondary)',
+                        border: '1px solid var(--hairline-border)',
+                        flexShrink: 0,
+                      }}
+                    >
+                      {chip.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Scrollable Chat Messages */}
+                <div
+                  style={{
+                    flex: 1,
+                    overflowY: 'auto',
+                    padding: '14px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '12px',
+                  }}
+                >
+                  {messages.map((msg, msgIdx) => {
+                    const isUser = msg.role === 'user';
+                    const isLastAssistant = !isUser && msgIdx === messages.length - 1;
+                    const isSelectedOutput = activeOutputMessage?.id === msg.id;
+
+                    return (
                       <div
+                        key={msg.id}
                         style={{
                           display: 'flex',
-                          alignItems: 'center',
+                          flexDirection: 'column',
+                          alignItems: isUser ? 'flex-end' : 'flex-start',
                           gap: '6px',
-                          marginBottom: '6px',
-                          fontSize: '0.72rem',
-                          fontWeight: 800,
-                          color: '#EB5738',
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.04em',
                         }}
                       >
-                        <Sparkles size={12} /> More. Co-Pilot
-                      </div>
-                    )}
-
-                    <div>{renderFormattedReply(msg.reply)}</div>
-
-                    {/* Embedded Executable Action Card: 4-Week / Multi-Event Schedule */}
-                    {!isUser &&
-                      msg.actionCard?.type === 'events' &&
-                      Array.isArray(msg.actionCard?.data?.events) &&
-                      msg.actionCard.data.events.length > 0 && (
                         <div
                           style={{
-                            marginTop: '14px',
-                            padding: '14px',
-                            borderRadius: '14px',
-                            background: 'var(--surface-elevated)',
-                            border: '1px solid rgba(235, 87, 56, 0.25)',
+                            maxWidth: '90%',
+                            padding: isUser ? '10px 14px' : '12px 14px',
+                            borderRadius: isUser ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
+                            background: isUser
+                              ? 'linear-gradient(135deg, #EB5738, #d94627)'
+                              : 'var(--surface-card)',
+                            color: isUser ? '#ffffff' : 'var(--ink-primary)',
+                            border: isUser ? 'none' : '1px solid var(--hairline-border)',
+                            fontSize: '0.85rem',
+                            lineHeight: 1.5,
                           }}
                         >
-                          <div
-                            style={{
-                              display: 'flex',
-                              justifyContent: 'space-between',
-                              alignItems: 'center',
-                              gap: '10px',
-                              flexWrap: 'wrap',
-                              marginBottom: '12px',
-                            }}
-                          >
+                          {!isUser && (
                             <div
                               style={{
-                                fontWeight: 800,
-                                fontSize: '0.86rem',
-                                color: 'var(--ink-primary)',
                                 display: 'flex',
                                 alignItems: 'center',
-                                gap: '6px',
+                                gap: '5px',
+                                marginBottom: '5px',
+                                fontSize: '0.68rem',
+                                fontWeight: 800,
+                                color: '#EB5738',
+                                textTransform: 'uppercase',
                               }}
                             >
-                              <Calendar size={15} color="#EB5738" />
-                              {msg.actionCard.title || 'Drafted Meetup Schedule'}
+                              <Sparkles size={11} /> More. Co-Pilot
                             </div>
+                          )}
+                          <div>{renderFormattedReply(msg.reply)}</div>
+
+                          {/* Compact pill linking directly to the Output Panel on the right (or mobile Output tab) */}
+                          {!isUser && msg.actionCard && (
                             <button
                               type="button"
-                              disabled={
-                                publishingBatchMap[msg.id] ||
-                                msg.actionCard.data.events.every(
-                                  (_, idx) => publishedEventsMap[`${msg.id}-${idx}`]
-                                )
-                              }
-                              onClick={() =>
-                                handlePublishAllEventsInCard(msg.id, msg.actionCard.data.events)
-                              }
-                              className="btn btn-primary interactive-press"
+                              onClick={() => {
+                                setSelectedOutputMsgId(msg.id);
+                                setMobileView('output');
+                              }}
+                              className="interactive-press"
                               style={{
-                                padding: '6px 12px',
-                                borderRadius: '9px',
+                                marginTop: '10px',
+                                width: '100%',
+                                padding: '8px 12px',
+                                borderRadius: '10px',
+                                background: isSelectedOutput
+                                  ? 'rgba(16, 185, 129, 0.14)'
+                                  : 'var(--surface-elevated)',
+                                border: isSelectedOutput
+                                  ? '1px solid rgba(16, 185, 129, 0.45)'
+                                  : '1px solid var(--hairline-border-strong)',
+                                color: isSelectedOutput ? '#10b981' : 'var(--ink-primary)',
                                 fontSize: '0.76rem',
                                 fontWeight: 800,
-                                display: 'inline-flex',
+                                cursor: 'pointer',
+                                display: 'flex',
                                 alignItems: 'center',
-                                gap: '5px',
+                                justifyContent: 'space-between',
+                                gap: '8px',
                               }}
                             >
-                              {publishingBatchMap[msg.id] ? (
-                                <Loader2 size={13} className="spin" />
-                              ) : (
-                                <Check size={13} />
-                              )}
-                              {msg.actionCard.data.events.length === 1
-                                ? '🚀 Launch Event Live'
-                                : `🚀 Launch All (${msg.actionCard.data.events.length})`}
+                              <span>
+                                {getOutputBadgeLabel(msg.actionCard)}: {msg.actionCard.title}
+                              </span>
+                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
+                                {isSelectedOutput ? 'Viewing →' : 'Open Output →'}
+                              </span>
                             </button>
-                          </div>
+                          )}
+                        </div>
 
-                          <div
-                            style={{
-                              display: 'grid',
-                              gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-                              gap: '10px',
-                            }}
-                          >
-                            {msg.actionCard.data.events.map((ev, idx) => {
-                              const isPublished = Boolean(publishedEventsMap[`${msg.id}-${idx}`]);
-                              return (
-                                <div
-                                  key={idx}
+                        {/* Follow-up Suggestion Chips */}
+                        {isLastAssistant &&
+                          Array.isArray(msg.suggestedReplies) &&
+                          msg.suggestedReplies.length > 0 && (
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                              {msg.suggestedReplies.map((suggestion, sIdx) => (
+                                <button
+                                  key={sIdx}
+                                  type="button"
+                                  disabled={isThinking}
+                                  onClick={() => handleSendMessage(suggestion)}
+                                  className="interactive-press"
                                   style={{
-                                    background: 'var(--surface-card)',
-                                    border: isPublished
-                                      ? '1px solid rgba(16, 185, 129, 0.45)'
-                                      : '1px solid var(--hairline-border)',
-                                    borderRadius: '12px',
-                                    padding: '12px',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    justifyContent: 'space-between',
-                                    gap: '8px',
+                                    padding: '5px 11px',
+                                    borderRadius: '99px',
+                                    fontSize: '0.73rem',
+                                    fontWeight: 700,
+                                    background: 'rgba(235, 87, 56, 0.1)',
+                                    color: '#EB5738',
+                                    border: '1px solid rgba(235, 87, 56, 0.28)',
+                                    cursor: isThinking ? 'not-allowed' : 'pointer',
                                   }}
                                 >
-                                  <div>
+                                  {suggestion}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                      </div>
+                    );
+                  })}
+
+                  {isThinking && (
+                    <div
+                      style={{
+                        alignSelf: 'flex-start',
+                        padding: '10px 14px',
+                        borderRadius: '14px',
+                        background: 'var(--surface-card)',
+                        border: '1px solid var(--hairline-border)',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        fontSize: '0.82rem',
+                        color: 'var(--ink-secondary)',
+                        fontWeight: 600,
+                      }}
+                    >
+                      <Loader2 size={14} className="spin" color="#EB5738" />
+                      Building your response &amp; live output...
+                    </div>
+                  )}
+                  <div ref={chatEndRef} />
+                </div>
+
+                {/* Chat Composer Bar */}
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    handleSendMessage();
+                  }}
+                  style={{
+                    padding: '10px 12px',
+                    borderTop: '1px solid var(--hairline-border)',
+                    background: 'var(--surface-card)',
+                    display: 'flex',
+                    gap: '8px',
+                    alignItems: 'flex-end',
+                    flexShrink: 0,
+                  }}
+                >
+                  <textarea
+                    rows={1}
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSendMessage();
+                      }
+                    }}
+                    placeholder="Ask anything or tweak the draft on the right..."
+                    style={{
+                      flex: 1,
+                      background: 'var(--surface-elevated)',
+                      border: '1px solid var(--hairline-border-strong)',
+                      borderRadius: '12px',
+                      outline: 'none',
+                      resize: 'none',
+                      color: 'var(--ink-primary)',
+                      fontSize: '0.86rem',
+                      fontFamily: 'inherit',
+                      padding: '9px 12px',
+                      minHeight: '38px',
+                      maxHeight: '100px',
+                      lineHeight: 1.4,
+                    }}
+                  />
+                  <button
+                    type="submit"
+                    disabled={!inputValue.trim() || isThinking}
+                    className="btn btn-primary interactive-press"
+                    style={{
+                      padding: '10px 14px',
+                      borderRadius: '12px',
+                      fontSize: '0.82rem',
+                      fontWeight: 800,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                      opacity: !inputValue.trim() || isThinking ? 0.5 : 1,
+                      flexShrink: 0,
+                    }}
+                  >
+                    {isThinking ? <Loader2 size={15} className="spin" /> : <Send size={15} />}
+                    Send
+                  </button>
+                </form>
+              </div>
+
+              {/* RIGHT PANE: LIVE OUTPUT & LAUNCHPAD CANVAS */}
+              <div
+                className={`copilot-pane-output ${mobileView === 'chat' ? 'mobile-hidden' : ''}`}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  minHeight: 0,
+                  background: 'var(--surface-card)',
+                }}
+              >
+                {/* Output Pane Header + Draft Switcher */}
+                <div
+                  style={{
+                    padding: '10px 16px',
+                    borderBottom: '1px solid var(--hairline-border)',
+                    background: 'var(--surface-elevated)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: '10px',
+                    flexWrap: 'wrap',
+                    flexShrink: 0,
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+                    <Layers size={15} color="#10b981" />
+                    <span
+                      style={{
+                        fontSize: '0.8rem',
+                        fontWeight: 800,
+                        color: 'var(--ink-primary)',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.04em',
+                      }}
+                    >
+                      Live Output &amp; Launchpad
+                    </span>
+                  </div>
+
+                  {outputHistory.length > 1 && (
+                    <div style={{ display: 'flex', gap: '5px', overflowX: 'auto' }}>
+                      {outputHistory.map((m, idx) => {
+                        const active = activeOutputMessage?.id === m.id;
+                        return (
+                          <button
+                            key={m.id}
+                            type="button"
+                            onClick={() => setSelectedOutputMsgId(m.id)}
+                            style={{
+                              padding: '4px 9px',
+                              borderRadius: '99px',
+                              fontSize: '0.7rem',
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                              border: active
+                                ? '1px solid #10b981'
+                                : '1px solid var(--hairline-border)',
+                              background: active ? 'rgba(16, 185, 129, 0.14)' : 'var(--surface-card)',
+                              color: active ? '#10b981' : 'var(--ink-muted)',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            #{idx + 1} {getOutputBadgeLabel(m.actionCard)}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                {/* Output Canvas Scroll Area */}
+                <div style={{ flex: 1, overflowY: 'auto', padding: '18px' }}>
+                  {!activeOutputMessage?.actionCard ? (
+                    /* Clean Empty State showing exactly what appears here */
+                    <div
+                      style={{
+                        height: '100%',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        textAlign: 'center',
+                        padding: '20px',
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: '56px',
+                          height: '56px',
+                          borderRadius: '16px',
+                          background: 'rgba(235, 87, 56, 0.12)',
+                          border: '1px solid rgba(235, 87, 56, 0.25)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: '#EB5738',
+                          marginBottom: '14px',
+                        }}
+                      >
+                        <Sparkles size={26} />
+                      </div>
+                      <h3
+                        style={{
+                          margin: '0 0 8px 0',
+                          fontSize: '1.08rem',
+                          fontFamily: 'var(--font-heading)',
+                          color: 'var(--ink-primary)',
+                        }}
+                      >
+                        Your Live Drafts Appear Here
+                      </h3>
+                      <p
+                        style={{
+                          margin: '0 0 20px 0',
+                          fontSize: '0.84rem',
+                          color: 'var(--ink-secondary)',
+                          maxWidth: '380px',
+                          lineHeight: 1.5,
+                        }}
+                      >
+                        Ask the Co-Pilot on the left to build anything — your ready-to-launch events, polls, WhatsApp broadcasts, or UK RAMS documents appear right here in full view.
+                      </p>
+
+                      <div
+                        style={{
+                          width: '100%',
+                          maxWidth: '420px',
+                          display: 'grid',
+                          gridTemplateColumns: '1fr 1fr',
+                          gap: '8px',
+                        }}
+                      >
+                        {[
+                          {
+                            icon: '🚀',
+                            title: 'Launch an Event',
+                            sub: '1-tap publish to calendar',
+                            prompt: `Create a single welcoming meetup for ${community?.name || 'our community'} in ${communityLoc} this weekend at 10:00 AM with a post-event coffee stop.`,
+                          },
+                          {
+                            icon: '🗓️',
+                            title: '4-Week Schedule',
+                            sub: 'Batch launch a full month',
+                            prompt: `Plan our next 4 weeks of meetups in ${communityLoc} with a mix of beginner-friendly and regular sessions.`,
+                          },
+                          {
+                            icon: '📊',
+                            title: 'Member Poll',
+                            sub: 'Let members vote live',
+                            prompt: `Create a community poll asking members which day and time works best for our next meetup in ${communityLoc}.`,
+                          },
+                          {
+                            icon: '📣',
+                            title: 'WhatsApp & Feed',
+                            sub: 'Post & copy social invites',
+                            prompt:
+                              'Draft a warm WhatsApp group message and in-app announcement welcoming newcomers to our next meetup.',
+                          },
+                        ].map((card, i) => (
+                          <button
+                            key={i}
+                            type="button"
+                            disabled={isThinking}
+                            onClick={() => handleSendMessage(card.prompt)}
+                            className="interactive-press"
+                            style={{
+                              padding: '12px',
+                              borderRadius: '14px',
+                              background: 'var(--surface-elevated)',
+                              border: '1px solid var(--hairline-border)',
+                              textAlign: 'left',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            <div style={{ fontSize: '1.2rem', marginBottom: '4px' }}>{card.icon}</div>
+                            <div
+                              style={{
+                                fontSize: '0.82rem',
+                                fontWeight: 800,
+                                color: 'var(--ink-primary)',
+                              }}
+                            >
+                              {card.title}
+                            </div>
+                            <div style={{ fontSize: '0.72rem', color: 'var(--ink-muted)', marginTop: '2px' }}>
+                              {card.sub}
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    /* ===== ACTIVE OUTPUT RENDERERS ===== */
+                    (() => {
+                      const msgId = activeOutputMessage.id;
+                      const card = activeOutputMessage.actionCard;
+
+                      // 1. EVENTS LAUNCHPAD (Single Event or Multi-Week Schedule)
+                      if (card.type === 'events' && Array.isArray(card.data?.events)) {
+                        const evList = card.data.events;
+                        const allLaunched = evList.every((_, idx) => publishedEventsMap[`${msgId}-${idx}`]);
+
+                        return (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                            <div
+                              style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                gap: '12px',
+                                flexWrap: 'wrap',
+                                paddingBottom: '12px',
+                                borderBottom: '1px solid var(--hairline-border)',
+                              }}
+                            >
+                              <div>
+                                <div
+                                  style={{
+                                    fontSize: '0.72rem',
+                                    fontWeight: 800,
+                                    color: '#EB5738',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.05em',
+                                  }}
+                                >
+                                  {evList.length === 1 ? 'Ready to Launch Event' : `${evList.length}-Event Schedule Draft`}
+                                </div>
+                                <h3
+                                  style={{
+                                    margin: '2px 0 0',
+                                    fontSize: '1.12rem',
+                                    fontFamily: 'var(--font-heading)',
+                                    color: 'var(--ink-primary)',
+                                  }}
+                                >
+                                  {card.title}
+                                </h3>
+                              </div>
+
+                              <button
+                                type="button"
+                                disabled={publishingBatchMap[msgId] || allLaunched}
+                                onClick={() => handlePublishAllEventsInCard(msgId, evList)}
+                                className="btn btn-primary interactive-press"
+                                style={{
+                                  padding: '10px 16px',
+                                  borderRadius: '11px',
+                                  fontSize: '0.84rem',
+                                  fontWeight: 800,
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '6px',
+                                  background: allLaunched ? '#10b981' : undefined,
+                                }}
+                              >
+                                {publishingBatchMap[msgId] ? (
+                                  <Loader2 size={15} className="spin" />
+                                ) : allLaunched ? (
+                                  <CheckCircle2 size={15} />
+                                ) : (
+                                  <Calendar size={15} />
+                                )}
+                                {allLaunched
+                                  ? 'Launched on Calendar ✓'
+                                  : evList.length === 1
+                                  ? '🚀 Launch Event Live'
+                                  : `🚀 Launch All (${evList.length})`}
+                              </button>
+                            </div>
+
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                              {evList.map((ev, idx) => {
+                                const isLaunched = Boolean(publishedEventsMap[`${msgId}-${idx}`]);
+                                return (
+                                  <div
+                                    key={idx}
+                                    style={{
+                                      background: 'var(--surface-elevated)',
+                                      border: isLaunched
+                                        ? '1.5px solid rgba(16, 185, 129, 0.5)'
+                                        : '1px solid var(--hairline-border)',
+                                      borderRadius: '15px',
+                                      padding: '15px',
+                                    }}
+                                  >
                                     <div
                                       style={{
                                         display: 'flex',
                                         justifyContent: 'space-between',
                                         alignItems: 'center',
-                                        marginBottom: '4px',
+                                        gap: '8px',
+                                        flexWrap: 'wrap',
+                                        marginBottom: '6px',
                                       }}
                                     >
                                       <span
                                         style={{
-                                          fontSize: '0.66rem',
+                                          fontSize: '0.68rem',
                                           fontWeight: 800,
                                           textTransform: 'uppercase',
-                                          padding: '2px 7px',
+                                          padding: '2px 8px',
                                           borderRadius: '99px',
-                                          background: 'rgba(235, 87, 56, 0.12)',
+                                          background: 'rgba(235, 87, 56, 0.14)',
                                           color: '#EB5738',
                                         }}
                                       >
-                                        {ev.themeBadge || `Week ${ev.week || idx + 1}`}
+                                        {ev.weekLabel || ev.themeBadge || `Event ${idx + 1}`}
                                       </span>
                                       <span
                                         style={{
-                                          fontSize: '0.72rem',
+                                          fontSize: '0.78rem',
                                           fontWeight: 700,
-                                          color: 'var(--ink-muted)',
+                                          color: 'var(--ink-secondary)',
+                                          display: 'inline-flex',
+                                          alignItems: 'center',
+                                          gap: '5px',
                                         }}
                                       >
-                                        {ev.date} • {ev.time}
+                                        <Clock size={13} color="#EB5738" /> {ev.date} • {ev.time}
                                       </span>
                                     </div>
+
                                     <div
                                       style={{
                                         fontWeight: 800,
-                                        fontSize: '0.88rem',
+                                        fontSize: '1.02rem',
                                         color: 'var(--ink-primary)',
-                                        marginBottom: '4px',
+                                        marginBottom: '5px',
                                       }}
                                     >
                                       {ev.title}
                                     </div>
                                     <div
                                       style={{
-                                        fontSize: '0.75rem',
+                                        fontSize: '0.8rem',
                                         color: 'var(--ink-secondary)',
                                         display: 'flex',
                                         alignItems: 'center',
-                                        gap: '4px',
-                                        marginBottom: '6px',
+                                        gap: '5px',
+                                        marginBottom: '8px',
                                       }}
                                     >
-                                      <MapPin size={12} color="#EB5738" /> {ev.location}
+                                      <MapPin size={13} color="#EB5738" /> {ev.location}
+                                      <span style={{ opacity: 0.5 }}>•</span>
+                                      <span>Max {ev.maxCapacity || 25} spots</span>
+                                      <span style={{ opacity: 0.5 }}>•</span>
+                                      <span>{Number(ev.ticketPrice) > 0 ? `£${ev.ticketPrice}` : 'Free'}</span>
                                     </div>
                                     <p
                                       style={{
-                                        margin: 0,
-                                        fontSize: '0.76rem',
+                                        margin: '0 0 12px 0',
+                                        fontSize: '0.82rem',
                                         color: 'var(--ink-secondary)',
-                                        lineHeight: 1.4,
+                                        lineHeight: 1.5,
+                                        whiteSpace: 'pre-wrap',
                                       }}
                                     >
                                       {ev.description}
                                     </p>
-                                  </div>
 
-                                  <button
-                                    type="button"
-                                    disabled={isPublished}
-                                    onClick={() => handlePublishSingleEvent(msg.id, ev, idx)}
-                                    className="interactive-press"
+                                    <button
+                                      type="button"
+                                      disabled={isLaunched}
+                                      onClick={() => handlePublishSingleEvent(msgId, ev, idx)}
+                                      className="interactive-press"
+                                      style={{
+                                        padding: '8px 14px',
+                                        borderRadius: '10px',
+                                        border: isLaunched
+                                          ? '1px solid rgba(16, 185, 129, 0.45)'
+                                          : '1px solid rgba(235, 87, 56, 0.4)',
+                                        background: isLaunched
+                                          ? 'rgba(16, 185, 129, 0.14)'
+                                          : 'rgba(235, 87, 56, 0.12)',
+                                        color: isLaunched ? '#10b981' : '#EB5738',
+                                        fontSize: '0.78rem',
+                                        fontWeight: 800,
+                                        cursor: isLaunched ? 'default' : 'pointer',
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: '6px',
+                                      }}
+                                    >
+                                      {isLaunched ? (
+                                        <>
+                                          <Check size={14} /> Live on Community Calendar
+                                        </>
+                                      ) : (
+                                        <>
+                                          <Plus size={14} /> Launch This Event Live
+                                        </>
+                                      )}
+                                    </button>
+                                  </div>
+                                );
+                              })}
+                            </div>
+
+                            <div
+                              style={{
+                                fontSize: '0.76rem',
+                                color: 'var(--ink-muted)',
+                                padding: '10px 12px',
+                                borderRadius: '10px',
+                                background: 'var(--surface-elevated)',
+                                border: '1px dashed var(--hairline-border)',
+                              }}
+                            >
+                              💬 Want to tweak times, dates, ticket price, or make it dog-friendly? Just tell the Co-Pilot in the chat on the left and this output will update automatically.
+                            </div>
+                          </div>
+                        );
+                      }
+
+                      // 2. POLL LAUNCHPAD
+                      if (card.type === 'poll' && card.data?.question) {
+                        const isLaunched = Boolean(launchedPollMap[msgId]);
+                        return (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                            <div
+                              style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                gap: '12px',
+                                flexWrap: 'wrap',
+                                paddingBottom: '12px',
+                                borderBottom: '1px solid var(--hairline-border)',
+                              }}
+                            >
+                              <div>
+                                <div
+                                  style={{
+                                    fontSize: '0.72rem',
+                                    fontWeight: 800,
+                                    color: '#3b82f6',
+                                    textTransform: 'uppercase',
+                                  }}
+                                >
+                                  Community Poll Ready
+                                </div>
+                                <h3
+                                  style={{
+                                    margin: '2px 0 0',
+                                    fontSize: '1.12rem',
+                                    fontFamily: 'var(--font-heading)',
+                                    color: 'var(--ink-primary)',
+                                  }}
+                                >
+                                  {card.title}
+                                </h3>
+                              </div>
+                              <button
+                                type="button"
+                                disabled={launchingPollMap[msgId] || isLaunched}
+                                onClick={() => handleLaunchPollCard(msgId, card.data)}
+                                className="btn btn-primary interactive-press"
+                                style={{
+                                  padding: '10px 16px',
+                                  borderRadius: '11px',
+                                  fontSize: '0.84rem',
+                                  fontWeight: 800,
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '6px',
+                                  background: isLaunched ? '#10b981' : undefined,
+                                }}
+                              >
+                                {launchingPollMap[msgId] ? (
+                                  <Loader2 size={15} className="spin" />
+                                ) : isLaunched ? (
+                                  <CheckCircle2 size={15} />
+                                ) : (
+                                  <BarChart3 size={15} />
+                                )}
+                                {isLaunched ? 'Poll Live ✓' : '🚀 Launch Poll Live'}
+                              </button>
+                            </div>
+
+                            <div
+                              style={{
+                                background: 'var(--surface-elevated)',
+                                border: '1px solid var(--hairline-border)',
+                                borderRadius: '16px',
+                                padding: '16px',
+                              }}
+                            >
+                              <div
+                                style={{
+                                  fontWeight: 800,
+                                  fontSize: '1.02rem',
+                                  color: 'var(--ink-primary)',
+                                  marginBottom: '12px',
+                                }}
+                              >
+                                {card.data.question}
+                              </div>
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                {(card.data.options || []).map((opt, oIdx) => (
+                                  <div
+                                    key={oIdx}
                                     style={{
-                                      width: '100%',
-                                      padding: '7px 10px',
-                                      borderRadius: '8px',
-                                      border: isPublished
-                                        ? '1px solid rgba(16, 185, 129, 0.4)'
-                                        : '1px solid rgba(235, 87, 56, 0.35)',
-                                      background: isPublished
-                                        ? 'rgba(16, 185, 129, 0.12)'
-                                        : 'rgba(235, 87, 56, 0.1)',
-                                      color: isPublished ? '#10b981' : '#EB5738',
-                                      fontSize: '0.76rem',
-                                      fontWeight: 800,
-                                      cursor: isPublished ? 'default' : 'pointer',
-                                      display: 'inline-flex',
-                                      alignItems: 'center',
-                                      justifyContent: 'center',
-                                      gap: '5px',
+                                      padding: '10px 14px',
+                                      borderRadius: '11px',
+                                      background: 'var(--surface-card)',
+                                      border: '1px solid var(--hairline-border)',
+                                      fontSize: '0.86rem',
+                                      color: 'var(--ink-primary)',
+                                      fontWeight: 600,
                                     }}
                                   >
-                                    {isPublished ? (
+                                    {oIdx + 1}. {opt}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      }
+
+                      // 3. BROADCAST & SOCIAL COPY LAUNCHPAD
+                      if (card.type === 'broadcast' && card.data) {
+                        const isSent = Boolean(sentBroadcastMap[msgId]);
+                        return (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                            <div
+                              style={{
+                                paddingBottom: '12px',
+                                borderBottom: '1px solid var(--hairline-border)',
+                              }}
+                            >
+                              <div
+                                style={{
+                                  fontSize: '0.72rem',
+                                  fontWeight: 800,
+                                  color: '#10b981',
+                                  textTransform: 'uppercase',
+                                }}
+                              >
+                                Ready-to-Send Multi-Channel Copy
+                              </div>
+                              <h3
+                                style={{
+                                  margin: '2px 0 0',
+                                  fontSize: '1.12rem',
+                                  fontFamily: 'var(--font-heading)',
+                                  color: 'var(--ink-primary)',
+                                }}
+                              >
+                                {card.title}
+                              </h3>
+                            </div>
+
+                            {card.data.inAppBody && (
+                              <div
+                                style={{
+                                  background: 'var(--surface-elevated)',
+                                  borderRadius: '14px',
+                                  padding: '14px',
+                                  border: '1px solid var(--hairline-border)',
+                                }}
+                              >
+                                <div
+                                  style={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    gap: '8px',
+                                    flexWrap: 'wrap',
+                                    marginBottom: '8px',
+                                  }}
+                                >
+                                  <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#EB5738' }}>
+                                    📣 IN-APP FEED &amp; PUSH NOTIFICATION
+                                  </span>
+                                  <button
+                                    type="button"
+                                    disabled={sendingBroadcastMap[msgId] || isSent}
+                                    onClick={() => handlePublishBroadcastCard(msgId, card.data)}
+                                    className="btn btn-primary interactive-press"
+                                    style={{
+                                      padding: '7px 13px',
+                                      borderRadius: '9px',
+                                      fontSize: '0.76rem',
+                                      fontWeight: 800,
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      gap: '5px',
+                                      background: isSent ? '#10b981' : undefined,
+                                    }}
+                                  >
+                                    {isSent ? (
                                       <>
-                                        <Check size={13} /> Published to Calendar
+                                        <Check size={13} /> Published ✓
+                                      </>
+                                    ) : sendingBroadcastMap[msgId] ? (
+                                      <>
+                                        <Loader2 size={13} className="spin" /> Publishing...
                                       </>
                                     ) : (
                                       <>
-                                        <Plus size={13} /> Publish Week {ev.week || idx + 1}
+                                        <Send size={13} /> Publish to Feed &amp; Notify
                                       </>
                                     )}
                                   </button>
                                 </div>
-                              );
-                            })}
-                          </div>
-                          <div
-                            style={{
-                              marginTop: '10px',
-                              fontSize: '0.74rem',
-                              color: 'var(--ink-muted)',
-                            }}
-                          >
-                            💬 Want to change days, times, or venues? Just reply in the chat below (e.g.{' '}
-                            <em>&ldquo;Move these to Sunday mornings at 10:30&rdquo;</em>).
-                          </div>
-                        </div>
-                      )}
-
-                    {/* Embedded Executable Action Card: Launch Community Poll */}
-                    {!isUser &&
-                      msg.actionCard?.type === 'poll' &&
-                      msg.actionCard?.data?.question && (
-                        <div
-                          style={{
-                            marginTop: '14px',
-                            padding: '14px',
-                            borderRadius: '14px',
-                            background: 'var(--surface-elevated)',
-                            border: '1px solid rgba(59, 130, 246, 0.35)',
-                          }}
-                        >
-                          <div
-                            style={{
-                              display: 'flex',
-                              justifyContent: 'space-between',
-                              alignItems: 'center',
-                              gap: '10px',
-                              flexWrap: 'wrap',
-                              marginBottom: '10px',
-                            }}
-                          >
-                            <div
-                              style={{
-                                fontWeight: 800,
-                                fontSize: '0.86rem',
-                                color: 'var(--ink-primary)',
-                              }}
-                            >
-                              📊 {msg.actionCard.title || 'Draft Community Poll'}
-                            </div>
-                            <button
-                              type="button"
-                              disabled={launchingPollMap[msg.id] || launchedPollMap[msg.id]}
-                              onClick={() => handleLaunchPollCard(msg.id, msg.actionCard.data)}
-                              className="btn btn-primary interactive-press"
-                              style={{
-                                padding: '6px 12px',
-                                borderRadius: '9px',
-                                fontSize: '0.76rem',
-                                fontWeight: 800,
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '5px',
-                              }}
-                            >
-                              {launchedPollMap[msg.id] ? (
-                                <>
-                                  <Check size={13} /> Poll Live!
-                                </>
-                              ) : launchingPollMap[msg.id] ? (
-                                <>
-                                  <Loader2 size={13} className="spin" /> Launching...
-                                </>
-                              ) : (
-                                <>🚀 Launch Poll Live</>
-                              )}
-                            </button>
-                          </div>
-                          <div
-                            style={{
-                              fontWeight: 700,
-                              fontSize: '0.88rem',
-                              color: 'var(--ink-primary)',
-                              marginBottom: '8px',
-                            }}
-                          >
-                            {msg.actionCard.data.question}
-                          </div>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                            {(msg.actionCard.data.options || []).map((opt, oIdx) => (
-                              <div
-                                key={oIdx}
-                                style={{
-                                  padding: '8px 11px',
-                                  borderRadius: '9px',
-                                  background: 'var(--surface-card)',
-                                  border: '1px solid var(--hairline-border)',
-                                  fontSize: '0.8rem',
-                                  color: 'var(--ink-secondary)',
-                                  fontWeight: 600,
-                                }}
-                              >
-                                {oIdx + 1}. {opt}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                    {/* Embedded Executable Action Card: Broadcast & Social Copy */}
-                    {!isUser &&
-                      msg.actionCard?.type === 'broadcast' &&
-                      msg.actionCard?.data && (
-                        <div
-                          style={{
-                            marginTop: '14px',
-                            padding: '14px',
-                            borderRadius: '14px',
-                            background: 'var(--surface-elevated)',
-                            border: '1px solid rgba(16, 185, 129, 0.3)',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: '10px',
-                          }}
-                        >
-                          <div
-                            style={{
-                              fontWeight: 800,
-                              fontSize: '0.86rem',
-                              color: 'var(--ink-primary)',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '6px',
-                            }}
-                          >
-                            <Megaphone size={15} color="#10b981" />
-                            {msg.actionCard.title || 'Ready-to-Send Community Copy'}
-                          </div>
-
-                          {/* In-App Feed & Push */}
-                          {msg.actionCard.data.inAppBody && (
-                            <div
-                              style={{
-                                background: 'var(--surface-card)',
-                                borderRadius: '11px',
-                                padding: '12px',
-                                border: '1px solid var(--hairline-border)',
-                              }}
-                            >
-                              <div
-                                style={{
-                                  display: 'flex',
-                                  justifyContent: 'space-between',
-                                  alignItems: 'center',
-                                  gap: '8px',
-                                  flexWrap: 'wrap',
-                                  marginBottom: '6px',
-                                }}
-                              >
-                                <span
-                                  style={{
-                                    fontSize: '0.72rem',
-                                    fontWeight: 800,
-                                    color: '#EB5738',
-                                    textTransform: 'uppercase',
-                                  }}
-                                >
-                                  📣 In-App Feed &amp; Push Notification
-                                </span>
-                                <button
-                                  type="button"
-                                  disabled={
-                                    sendingBroadcastMap[msg.id] || sentBroadcastMap[msg.id]
-                                  }
-                                  onClick={() =>
-                                    handlePublishBroadcastCard(msg.id, msg.actionCard.data)
-                                  }
-                                  className="btn btn-primary interactive-press"
-                                  style={{
-                                    padding: '5px 11px',
-                                    borderRadius: '8px',
-                                    fontSize: '0.74rem',
-                                    fontWeight: 800,
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    gap: '5px',
-                                  }}
-                                >
-                                  {sentBroadcastMap[msg.id] ? (
-                                    <>
-                                      <Check size={12} /> Posted to Feed
-                                    </>
-                                  ) : sendingBroadcastMap[msg.id] ? (
-                                    <>
-                                      <Loader2 size={12} className="spin" /> Posting...
-                                    </>
-                                  ) : (
-                                    <>
-                                      <Send size={12} /> Publish to Feed &amp; Notify
-                                    </>
-                                  )}
-                                </button>
-                              </div>
-                              {msg.actionCard.data.inAppTitle && (
-                                <div
-                                  style={{
-                                    fontWeight: 800,
-                                    fontSize: '0.86rem',
-                                    color: 'var(--ink-primary)',
-                                    marginBottom: '4px',
-                                  }}
-                                >
-                                  {msg.actionCard.data.inAppTitle}
+                                {card.data.inAppTitle && (
+                                  <div style={{ fontWeight: 800, fontSize: '0.92rem', color: 'var(--ink-primary)', marginBottom: '5px' }}>
+                                    {card.data.inAppTitle}
+                                  </div>
+                                )}
+                                <div style={{ fontSize: '0.84rem', color: 'var(--ink-secondary)', whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>
+                                  {card.data.inAppBody}
                                 </div>
-                              )}
-                              <div
-                                style={{
-                                  fontSize: '0.8rem',
-                                  color: 'var(--ink-secondary)',
-                                  whiteSpace: 'pre-wrap',
-                                }}
-                              >
-                                {msg.actionCard.data.inAppBody}
                               </div>
-                            </div>
-                          )}
+                            )}
 
-                          {/* WhatsApp Copy */}
-                          {msg.actionCard.data.whatsappCopy && (
-                            <div
-                              style={{
-                                background: 'var(--surface-card)',
-                                borderRadius: '11px',
-                                padding: '12px',
-                                border: '1px solid var(--hairline-border)',
-                              }}
-                            >
+                            {card.data.whatsappCopy && (
                               <div
                                 style={{
-                                  display: 'flex',
-                                  justifyContent: 'space-between',
-                                  alignItems: 'center',
-                                  gap: '8px',
-                                  marginBottom: '6px',
+                                  background: 'var(--surface-elevated)',
+                                  borderRadius: '14px',
+                                  padding: '14px',
+                                  border: '1px solid var(--hairline-border)',
                                 }}
                               >
-                                <span
-                                  style={{
-                                    fontSize: '0.72rem',
-                                    fontWeight: 800,
-                                    color: '#10b981',
-                                    textTransform: 'uppercase',
-                                  }}
-                                >
-                                  💬 WhatsApp Group Copy
-                                </span>
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    handleCopyText(
-                                      msg.actionCard.data.whatsappCopy,
-                                      'WhatsApp Message'
-                                    )
-                                  }
-                                  className="interactive-press"
-                                  style={{
-                                    padding: '4px 10px',
-                                    borderRadius: '7px',
-                                    border: '1px solid var(--hairline-border)',
-                                    background: 'var(--surface-elevated)',
-                                    color: 'var(--ink-primary)',
-                                    fontSize: '0.73rem',
-                                    fontWeight: 700,
-                                    cursor: 'pointer',
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    gap: '4px',
-                                  }}
-                                >
-                                  <Copy size={12} /> Copy WhatsApp
-                                </button>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                                  <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#10b981' }}>
+                                    💬 WHATSAPP GROUP MESSAGE
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleCopyText(card.data.whatsappCopy, 'WhatsApp Message')}
+                                    className="btn btn-outline interactive-press"
+                                    style={{ padding: '6px 11px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '5px' }}
+                                  >
+                                    <Copy size={13} /> Copy WhatsApp
+                                  </button>
+                                </div>
+                                <div style={{ fontSize: '0.84rem', color: 'var(--ink-secondary)', whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>
+                                  {card.data.whatsappCopy}
+                                </div>
                               </div>
-                              <div
-                                style={{
-                                  fontSize: '0.8rem',
-                                  color: 'var(--ink-secondary)',
-                                  whiteSpace: 'pre-wrap',
-                                }}
-                              >
-                                {msg.actionCard.data.whatsappCopy}
-                              </div>
-                            </div>
-                          )}
+                            )}
 
-                          {/* Instagram Copy */}
-                          {msg.actionCard.data.instagramCopy && (
-                            <div
-                              style={{
-                                background: 'var(--surface-card)',
-                                borderRadius: '11px',
-                                padding: '12px',
-                                border: '1px solid var(--hairline-border)',
-                              }}
-                            >
+                            {card.data.instagramCopy && (
                               <div
                                 style={{
-                                  display: 'flex',
-                                  justifyContent: 'space-between',
-                                  alignItems: 'center',
-                                  gap: '8px',
-                                  marginBottom: '6px',
+                                  background: 'var(--surface-elevated)',
+                                  borderRadius: '14px',
+                                  padding: '14px',
+                                  border: '1px solid var(--hairline-border)',
                                 }}
                               >
-                                <span
-                                  style={{
-                                    fontSize: '0.72rem',
-                                    fontWeight: 800,
-                                    color: '#ec4899',
-                                    textTransform: 'uppercase',
-                                  }}
-                                >
-                                  📸 Instagram Caption
-                                </span>
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    handleCopyText(
-                                      msg.actionCard.data.instagramCopy,
-                                      'Instagram Caption'
-                                    )
-                                  }
-                                  className="interactive-press"
-                                  style={{
-                                    padding: '4px 10px',
-                                    borderRadius: '7px',
-                                    border: '1px solid var(--hairline-border)',
-                                    background: 'var(--surface-elevated)',
-                                    color: 'var(--ink-primary)',
-                                    fontSize: '0.73rem',
-                                    fontWeight: 700,
-                                    cursor: 'pointer',
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    gap: '4px',
-                                  }}
-                                >
-                                  <Copy size={12} /> Copy Caption
-                                </button>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                                  <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#ec4899' }}>
+                                    📸 INSTAGRAM CAPTION
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleCopyText(card.data.instagramCopy, 'Instagram Caption')}
+                                    className="btn btn-outline interactive-press"
+                                    style={{ padding: '6px 11px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '5px' }}
+                                  >
+                                    <Copy size={13} /> Copy Caption
+                                  </button>
+                                </div>
+                                <div style={{ fontSize: '0.84rem', color: 'var(--ink-secondary)', whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>
+                                  {card.data.instagramCopy}
+                                </div>
                               </div>
-                              <div
-                                style={{
-                                  fontSize: '0.8rem',
-                                  color: 'var(--ink-secondary)',
-                                  whiteSpace: 'pre-wrap',
-                                }}
-                              >
-                                {msg.actionCard.data.instagramCopy}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      )}
-
-                    {/* Embedded Executable Action Card: RAMS / Sponsor / Grant Document */}
-                    {!isUser &&
-                      msg.actionCard?.type === 'document' &&
-                      msg.actionCard?.data?.content && (
-                        <div
-                          style={{
-                            marginTop: '14px',
-                            padding: '14px',
-                            borderRadius: '14px',
-                            background: 'var(--surface-elevated)',
-                            border: '1px solid rgba(245, 158, 11, 0.35)',
-                          }}
-                        >
-                          <div
-                            style={{
-                              display: 'flex',
-                              justifyContent: 'space-between',
-                              alignItems: 'center',
-                              gap: '10px',
-                              flexWrap: 'wrap',
-                              marginBottom: '10px',
-                            }}
-                          >
-                            <div
-                              style={{
-                                fontWeight: 800,
-                                fontSize: '0.86rem',
-                                color: 'var(--ink-primary)',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '6px',
-                              }}
-                            >
-                              <Shield size={15} color="#f59e0b" />
-                              {msg.actionCard.title || 'Generated Community Document'}
-                            </div>
-
-                            {hasProAccess ? (
-                              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    handleCopyText(
-                                      msg.actionCard.data.content,
-                                      msg.actionCard.title || 'Document'
-                                    )
-                                  }
-                                  className="interactive-press"
-                                  style={{
-                                    padding: '5px 10px',
-                                    borderRadius: '8px',
-                                    border: '1px solid var(--hairline-border)',
-                                    background: 'var(--surface-card)',
-                                    color: 'var(--ink-primary)',
-                                    fontSize: '0.74rem',
-                                    fontWeight: 700,
-                                    cursor: 'pointer',
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    gap: '4px',
-                                  }}
-                                >
-                                  <Copy size={12} /> Copy Text
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    handleDownloadMarkdown(
-                                      msg.actionCard.title,
-                                      msg.actionCard.data.content
-                                    )
-                                  }
-                                  className="interactive-press"
-                                  style={{
-                                    padding: '5px 10px',
-                                    borderRadius: '8px',
-                                    border: '1px solid rgba(235, 87, 56, 0.35)',
-                                    background: 'rgba(235, 87, 56, 0.12)',
-                                    color: '#EB5738',
-                                    fontSize: '0.74rem',
-                                    fontWeight: 800,
-                                    cursor: 'pointer',
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    gap: '4px',
-                                  }}
-                                >
-                                  <Download size={12} /> Download (.md)
-                                </button>
-                              </div>
-                            ) : (
-                              onJumpToUpgrade && (
-                                <button
-                                  type="button"
-                                  onClick={onJumpToUpgrade}
-                                  className="btn btn-primary interactive-press"
-                                  style={{
-                                    padding: '5px 11px',
-                                    borderRadius: '8px',
-                                    fontSize: '0.73rem',
-                                    fontWeight: 800,
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    gap: '4px',
-                                  }}
-                                >
-                                  <Lock size={12} /> Unlock Full Export with Leader Pro
-                                </button>
-                              )
                             )}
                           </div>
+                        );
+                      }
 
-                          <div
-                            style={{
-                              maxHeight: hasProAccess ? '280px' : '160px',
-                              overflowY: 'auto',
-                              background: 'var(--surface-card)',
-                              padding: '12px',
-                              borderRadius: '10px',
-                              border: '1px solid var(--hairline-border)',
-                              fontSize: '0.79rem',
-                              color: 'var(--ink-secondary)',
-                              whiteSpace: 'pre-wrap',
-                              lineHeight: 1.55,
-                            }}
-                          >
-                            {hasProAccess
-                              ? msg.actionCard.data.content
-                              : `${String(msg.actionCard.data.content).slice(0, 420)}...\n\n[Leader Pro (£20/mo) unlocks full UK Council RAMS & Sponsor/Grant export alongside £5M Public Liability Insurance]`}
+                      // 4. DOCUMENT LAUNCHPAD (UK Council RAMS / Sponsor Pitch / Grant Application)
+                      if (card.type === 'document' && card.data?.content) {
+                        return (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                            <div
+                              style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                gap: '10px',
+                                flexWrap: 'wrap',
+                                paddingBottom: '12px',
+                                borderBottom: '1px solid var(--hairline-border)',
+                              }}
+                            >
+                              <div>
+                                <div style={{ fontSize: '0.72rem', fontWeight: 800, color: '#f59e0b', textTransform: 'uppercase' }}>
+                                  Ready-to-Use Document
+                                </div>
+                                <h3 style={{ margin: '2px 0 0', fontSize: '1.08rem', fontFamily: 'var(--font-heading)', color: 'var(--ink-primary)' }}>
+                                  {card.title}
+                                </h3>
+                              </div>
+
+                              {hasProAccess ? (
+                                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleCopyText(card.data.content, card.title || 'Document')}
+                                    className="btn btn-outline interactive-press"
+                                    style={{ padding: '7px 12px', borderRadius: '9px', fontSize: '0.76rem', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '5px' }}
+                                  >
+                                    <Copy size={13} /> Copy Text
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDownloadMarkdown(card.title, card.data.content)}
+                                    className="btn btn-primary interactive-press"
+                                    style={{ padding: '7px 13px', borderRadius: '9px', fontSize: '0.76rem', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '5px' }}
+                                  >
+                                    <Download size={13} /> Download (.md)
+                                  </button>
+                                </div>
+                              ) : (
+                                onJumpToUpgrade && (
+                                  <button
+                                    type="button"
+                                    onClick={onJumpToUpgrade}
+                                    className="btn btn-primary interactive-press"
+                                    style={{ padding: '8px 13px', borderRadius: '9px', fontSize: '0.76rem', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '5px' }}
+                                  >
+                                    <Lock size={13} /> Unlock Full Export (Leader Pro)
+                                  </button>
+                                )
+                              )}
+                            </div>
+
+                            <div
+                              style={{
+                                background: 'var(--surface-elevated)',
+                                border: '1px solid var(--hairline-border)',
+                                borderRadius: '14px',
+                                padding: '16px',
+                                fontSize: '0.84rem',
+                                color: 'var(--ink-secondary)',
+                                whiteSpace: 'pre-wrap',
+                                lineHeight: 1.6,
+                              }}
+                            >
+                              {hasProAccess
+                                ? card.data.content
+                                : `${String(card.data.content).slice(0, 520)}...\n\n[Upgrade to Leader Pro (£20/mo) to export the full document alongside £5M Public Liability Insurance & 2% ticket fees.]`}
+                            </div>
                           </div>
-                        </div>
-                      )}
-                  </div>
+                        );
+                      }
 
-                  {/* Follow-up Suggestion Chips under the latest assistant message */}
-                  {isLastAssistant &&
-                    Array.isArray(msg.suggestedReplies) &&
-                    msg.suggestedReplies.length > 0 && (
-                      <div
-                        style={{
-                          display: 'flex',
-                          flexWrap: 'wrap',
-                          gap: '6px',
-                          marginTop: '2px',
-                        }}
-                      >
-                        {msg.suggestedReplies.map((suggestion, sIdx) => (
-                          <button
-                            key={sIdx}
-                            type="button"
-                            disabled={isThinking}
-                            onClick={() => handleSendMessage(suggestion)}
-                            className="interactive-press"
-                            style={{
-                              padding: '6px 12px',
-                              borderRadius: '99px',
-                              fontSize: '0.75rem',
-                              fontWeight: 700,
-                              background: 'rgba(235, 87, 56, 0.1)',
-                              color: '#EB5738',
-                              border: '1px solid rgba(235, 87, 56, 0.28)',
-                              cursor: isThinking ? 'not-allowed' : 'pointer',
-                            }}
-                          >
-                            {suggestion}
-                          </button>
-                        ))}
-                      </div>
-                    )}
+                      return null;
+                    })()
+                  )}
                 </div>
-              );
-            })}
-
-            {isThinking && (
-              <div
-                style={{
-                  alignSelf: 'flex-start',
-                  padding: '12px 16px',
-                  borderRadius: '18px 18px 18px 4px',
-                  background: 'var(--surface-card)',
-                  border: '1px solid var(--hairline-border)',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  fontSize: '0.83rem',
-                  color: 'var(--ink-secondary)',
-                  fontWeight: 600,
-                }}
-              >
-                <Loader2 size={15} className="spin" color="#EB5738" />
-                More. Co-Pilot is thinking...
               </div>
-            )}
-
-            <div ref={chatEndRef} />
-          </div>
-
-          {/* Conversational Input Bar */}
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleSendMessage();
-            }}
-            style={{
-              display: 'flex',
-              gap: '8px',
-              alignItems: 'flex-end',
-              background: 'var(--surface-elevated)',
-              border: '1px solid var(--hairline-border-strong)',
-              borderRadius: '14px',
-              padding: '8px 10px',
-            }}
-          >
-            <textarea
-              rows={1}
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  handleSendMessage();
-                }
-              }}
-              placeholder={`Chat with your ${community?.name || 'Community'} Co-Pilot... (e.g. "Make the schedule Sunday mornings" or "How do I welcome shy newcomers?")`}
-              style={{
-                flex: 1,
-                background: 'transparent',
-                border: 'none',
-                outline: 'none',
-                resize: 'none',
-                color: 'var(--ink-primary)',
-                fontSize: '0.88rem',
-                fontFamily: 'inherit',
-                padding: '6px 4px',
-                minHeight: '34px',
-                maxHeight: '110px',
-                lineHeight: 1.45,
-              }}
-            />
-            <button
-              type="submit"
-              disabled={!inputValue.trim() || isThinking}
-              className="btn btn-primary interactive-press"
-              style={{
-                padding: '9px 15px',
-                borderRadius: '10px',
-                fontSize: '0.82rem',
-                fontWeight: 800,
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                opacity: !inputValue.trim() || isThinking ? 0.5 : 1,
-                cursor: !inputValue.trim() || isThinking ? 'not-allowed' : 'pointer',
-                flexShrink: 0,
-              }}
-            >
-              {isThinking ? <Loader2 size={15} className="spin" /> : <Send size={15} />}
-              Send
-            </button>
-          </form>
-        </>
-      )}
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 }

@@ -2961,29 +2961,8 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 </div>
               </div>
 
-              {/* More AI Community Co-Pilot Banner / Expandable Studio */}
+              {/* More AI Community Co-Pilot Banner */}
               <div style={{ padding: '0 20px', marginBottom: '16px' }}>
-                {showAICoPilot ? (
-                  <LeaderAICoPilot
-                    community={community}
-                    communityEvents={communityEvents}
-                    memberCount={memberList.length || community.members || 1}
-                    verifiedMemberCount={Math.max(
-                      1,
-                      memberList.filter((m) =>
-                        Object.values(eventRsvps || {}).some((rList) =>
-                          (rList || []).some((r) => (r.userId || r.user_id) === m.userId && r.status === 'going')
-                        )
-                      ).length
-                    )}
-                    isPro={Boolean(community?.is_insured || community?.insurance_tier === 'pro')}
-                    onJumpToUpgrade={() => {
-                      setShowAICoPilot(false);
-                      setActiveTab('settings');
-                    }}
-                    onClose={() => setShowAICoPilot(false)}
-                  />
-                ) : (
                   <div
                     onClick={() => setShowAICoPilot(true)}
                     className="interactive-press"
@@ -3053,7 +3032,6 @@ export default function LeaderDashboard({ initialCommunityId }) {
                       Open Studio <ChevronRight size={15} />
                     </span>
                   </div>
-                )}
               </div>
 
               {/* Pending Chapter Sign-Off Alert on Overview */}
@@ -7477,6 +7455,28 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   </div>
                 </div>
               )}
+
+      {showAICoPilot && (
+        <LeaderAICoPilot
+          community={community}
+          communityEvents={communityEvents}
+          memberCount={memberList.length || community.members || 1}
+          verifiedMemberCount={Math.max(
+            1,
+            memberList.filter((m) =>
+              Object.values(eventRsvps || {}).some((rList) =>
+                (rList || []).some((r) => (r.userId || r.user_id) === m.userId && r.status === 'going')
+              )
+            ).length
+          )}
+          isPro={Boolean(community?.is_insured || community?.insurance_tier === 'pro')}
+          onJumpToUpgrade={() => {
+            setShowAICoPilot(false);
+            setActiveTab('settings');
+          }}
+          onClose={() => setShowAICoPilot(false)}
+        />
+      )}
 
       <style dangerouslySetInnerHTML={{__html: `
         @keyframes spin { to { transform: rotate(360deg); } }
