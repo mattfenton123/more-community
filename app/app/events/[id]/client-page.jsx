@@ -345,6 +345,24 @@ export default function EventClient({ id }) {
   }, []);
   const [activePhotoModal, setActivePhotoModal] = useState(null);
   const photoInputRef = useRef(null);
+  const heroImgRef = useRef(null);
+  const [heroImgNeedsContain, setHeroImgNeedsContain] = useState(false);
+
+  const heroImageUrl = event?.image || community?.cover_image || 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=1200&q=80';
+
+  const evaluateHeroImage = (imgEl) => {
+    if (!imgEl || !imgEl.naturalWidth || !imgEl.naturalHeight) return;
+    const isPortrait = imgEl.naturalHeight > imgEl.naturalWidth;
+    const isSmall = imgEl.naturalWidth < 900;
+    setHeroImgNeedsContain(isPortrait || isSmall);
+  };
+
+  useEffect(() => {
+    setHeroImgNeedsContain(false);
+    if (heroImgRef.current?.complete && heroImgRef.current?.naturalWidth > 0) {
+      evaluateHeroImage(heroImgRef.current);
+    }
+  }, [heroImageUrl]);
 
   const isLeader = user?.ledCommunities?.includes(event?.communityId) || user?.isAdmin;
 
@@ -723,58 +741,109 @@ export default function EventClient({ id }) {
       )}
 
       {/* Header / Hero Image */}
-      <div style={{ position: 'relative', width: '100%', height: '300px', background: 'var(--slate-900)' }}>
-        <img 
-          src={event.image || community?.cover_image || 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=1200&q=80'} 
-          alt={event.title} 
-          style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-        />
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, padding: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, transparent 100%)' }}>
-          <button onClick={handleBack} aria-label="Go Back" className="interactive-press" style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(10px)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', cursor: 'pointer' }}>
-            <ChevronLeft size={24} />
-          </button>
-          <button
-            onClick={() => setShowShareModal(true)}
-            aria-label="Share Event"
-            className="interactive-press"
-            style={{
-              height: '40px',
-              padding: '0 14px',
-              borderRadius: '99px',
-              background: 'rgba(27, 27, 27, 0.72)',
-              backdropFilter: 'blur(12px)',
-              border: '1px solid rgba(255,255,255,0.22)',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '7px',
-              color: '#FFFFFF',
-              fontSize: '0.85rem',
-              fontWeight: 700,
-              cursor: 'pointer',
-              boxShadow: '0 4px 14px rgba(0,0,0,0.35)'
-            }}
-          >
-            <Share2 size={16} color="#F27257" />
-            <span>Share</span>
-          </button>
-        </div>
-        {/* Status Badges */}
-        <div style={{ position: 'absolute', bottom: '20px', left: '20px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-          {isEventPast(event) && (
-            <div style={{ background: 'rgba(71,85,105,0.95)', color: 'white', padding: '6px 14px', borderRadius: '99px', fontSize: '0.8rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px', backdropFilter: 'blur(8px)', boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }}>
-              <Archive size={14} /> PAST EVENT • ARCHIVED
-            </div>
+      <div className="event-hero-shell">
+        <div className={`event-hero-frame${heroImgNeedsContain ? ' is-portrait-hero' : ''}`}>
+          {heroImgNeedsContain && (
+            <>
+              <img
+                src={heroImageUrl}
+                alt=""
+                aria-hidden="true"
+                style={{
+                  position: 'absolute',
+                  inset: '-24px',
+                  width: 'calc(100% + 48px)',
+                  height: 'calc(100% + 48px)',
+                  objectFit: 'cover',
+                  filter: 'blur(26px) saturate(1.15) brightness(0.62)',
+                  transform: 'scale(1.06)',
+                  pointerEvents: 'none',
+                }}
+              />
+              <div
+                aria-hidden="true"
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  background: 'radial-gradient(circle at center, rgba(18,18,18,0.08) 0%, rgba(18,18,18,0.42) 100%)',
+                  pointerEvents: 'none',
+                }}
+              />
+            </>
           )}
-          {seriesEvents.length > 1 && (
-            <div style={{ background: 'rgba(235, 87, 56,0.9)', color: 'white', padding: '6px 12px', borderRadius: '99px', fontSize: '0.8rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px', backdropFilter: 'blur(8px)', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}>
-              <Repeat size={13} /> {currentSeriesIndex >= 0 ? `SESSION ${currentSeriesIndex + 1} OF ${seriesEvents.length}` : `${seriesEvents.length} SESSIONS`}
-            </div>
-          )}
-          {isGoing && (
-            <div style={{ background: 'var(--teal-500)', color: 'white', padding: '6px 12px', borderRadius: '99px', fontSize: '0.8rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}>
-              <CheckCircle2 size={14} /> {isEventPast(event) ? 'YOU ATTENDED' : "YOU'RE GOING"}
-            </div>
-          )}
+          <img
+            ref={heroImgRef}
+            src={heroImageUrl}
+            alt={event.title}
+            onLoad={(e) => evaluateHeroImage(e.currentTarget)}
+            style={
+              heroImgNeedsContain
+                ? {
+                    position: 'relative',
+                    zIndex: 1,
+                    display: 'block',
+                    margin: '0 auto',
+                    maxWidth: '100%',
+                    height: '100%',
+                    width: 'auto',
+                    objectFit: 'contain',
+                    boxShadow: '0 12px 36px rgba(0, 0, 0, 0.35)',
+                  }
+                : {
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    display: 'block',
+                  }
+            }
+          />
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 2, padding: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, transparent 100%)' }}>
+            <button onClick={handleBack} aria-label="Go Back" className="interactive-press" style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(18,18,18,0.55)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFFFFF', cursor: 'pointer' }}>
+              <ChevronLeft size={24} />
+            </button>
+            <button
+              onClick={() => setShowShareModal(true)}
+              aria-label="Share Event"
+              className="interactive-press"
+              style={{
+                height: '40px',
+                padding: '0 14px',
+                borderRadius: '99px',
+                background: 'rgba(27, 27, 27, 0.72)',
+                backdropFilter: 'blur(12px)',
+                border: '1px solid rgba(255,255,255,0.22)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '7px',
+                color: '#FFFFFF',
+                fontSize: '0.85rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+                boxShadow: '0 4px 14px rgba(0,0,0,0.35)'
+              }}
+            >
+              <Share2 size={16} color="#F27257" />
+              <span>Share</span>
+            </button>
+          </div>
+          {/* Status Badges */}
+          <div style={{ position: 'absolute', bottom: '18px', left: '18px', zIndex: 2, display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            {isEventPast(event) && (
+              <div style={{ background: 'rgba(28, 25, 21, 0.88)', color: '#FFFFFF', padding: '6px 14px', borderRadius: '99px', fontSize: '0.8rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px', backdropFilter: 'blur(8px)', boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }}>
+                <Archive size={14} /> PAST EVENT • ARCHIVED
+              </div>
+            )}
+            {seriesEvents.length > 1 && (
+              <div style={{ background: 'rgba(235, 87, 56, 0.92)', color: '#FFFFFF', padding: '6px 12px', borderRadius: '99px', fontSize: '0.8rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px', backdropFilter: 'blur(8px)', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}>
+                <Repeat size={13} /> {currentSeriesIndex >= 0 ? `SESSION ${currentSeriesIndex + 1} OF ${seriesEvents.length}` : `${seriesEvents.length} SESSIONS`}
+              </div>
+            )}
+            {isGoing && (
+              <div style={{ background: 'var(--brand-accent)', color: '#FFFFFF', padding: '6px 12px', borderRadius: '99px', fontSize: '0.8rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}>
+                <CheckCircle2 size={14} /> {isEventPast(event) ? 'YOU ATTENDED' : "YOU'RE GOING"}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
