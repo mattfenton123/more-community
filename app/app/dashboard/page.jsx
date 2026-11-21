@@ -37,6 +37,7 @@ import LeaderShieldModal from '../../src/components/LeaderShieldModal';
 import { isAffiliateExperience, getHostPassEconomics } from '../../src/lib/experiencePricing';
 import { resolveUserAvatar } from '../../src/lib/avatar';
 import SpecialistVaultModal from '../../src/components/SpecialistVaultModal';
+import LeaderAICoPilot from '../../src/components/LeaderAICoPilot';
 import { generatePliCertificatePdf, generateRamsPdf } from '../../src/lib/insurance';
 
 // ─── Stat Card Component ──────────────────────────────────
@@ -357,6 +358,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
   const [eventsSubTab, setEventsSubTab] = useState('my-events'); // 'my-events' | 'network'
   const [memberSearch, setMemberSearch] = useState('');
   const [openEventMenuId, setOpenEventMenuId] = useState(null);
+  const [showAICoPilot, setShowAICoPilot] = useState(false);
   const [activeCommunityId, setActiveCommunityId] = useState(
     initialCommunityId || searchParams?.get('community') || user?.ledCommunities?.[0] || null
   );
@@ -2932,9 +2934,126 @@ export default function LeaderDashboard({ initialCommunityId }) {
                       >
                         <ImageIcon size={14} /> {isUploading ? 'Updating...' : 'Update Cover'}
                       </button>
+                      <button
+                        type="button"
+                        onClick={() => setShowAICoPilot((prev) => !prev)}
+                        className="interactive-press"
+                        style={{
+                          background: showAICoPilot ? 'var(--brand-accent)' : 'rgba(20, 18, 15, 0.88)',
+                          backdropFilter: 'blur(8px)',
+                          border: '1px solid rgba(235, 87, 56, 0.55)',
+                          color: '#FFFFFF',
+                          padding: '8px 13px',
+                          borderRadius: '8px',
+                          fontSize: '0.75rem',
+                          fontWeight: 700,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        <Sparkles size={14} color={showAICoPilot ? '#FFFFFF' : '#F27257'} />
+                        {showAICoPilot ? 'Hide AI Co-Pilot' : '✨ AI Co-Pilot'}
+                      </button>
                     </div>
                   </div>
                 </div>
+              </div>
+
+              {/* More AI Community Co-Pilot Banner / Expandable Studio */}
+              <div style={{ padding: '0 20px', marginBottom: '16px' }}>
+                {showAICoPilot ? (
+                  <LeaderAICoPilot
+                    community={community}
+                    communityEvents={communityEvents}
+                    memberCount={memberList.length || community.members || 1}
+                    verifiedMemberCount={Math.max(
+                      1,
+                      memberList.filter((m) =>
+                        Object.values(eventRsvps || {}).some((rList) =>
+                          (rList || []).some((r) => (r.userId || r.user_id) === m.userId && r.status === 'going')
+                        )
+                      ).length
+                    )}
+                    isPro={Boolean(community?.is_insured || community?.insurance_tier === 'pro')}
+                    onJumpToUpgrade={() => {
+                      setShowAICoPilot(false);
+                      setActiveTab('settings');
+                    }}
+                    onClose={() => setShowAICoPilot(false)}
+                  />
+                ) : (
+                  <div
+                    onClick={() => setShowAICoPilot(true)}
+                    className="interactive-press"
+                    style={{
+                      padding: '14px 18px',
+                      borderRadius: '16px',
+                      background: 'var(--surface-card)',
+                      border: '1px solid var(--hairline-border-strong)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: '12px',
+                      flexWrap: 'wrap',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <div
+                        style={{
+                          width: '38px',
+                          height: '38px',
+                          borderRadius: '11px',
+                          background: 'var(--brand-accent-soft)',
+                          border: '1px solid rgba(200, 90, 50, 0.28)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: 'var(--brand-accent)',
+                          flexShrink: 0,
+                        }}
+                      >
+                        <Sparkles size={18} />
+                      </div>
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                          <span style={{ fontWeight: 700, fontSize: '0.92rem', color: 'var(--ink-primary)' }}>
+                            More AI Community Co-Pilot
+                          </span>
+                          <span
+                            style={{
+                              fontSize: '0.65rem',
+                              fontWeight: 800,
+                              padding: '1px 7px',
+                              borderRadius: '999px',
+                              background: 'var(--brand-secondary-soft)',
+                              color: 'var(--brand-secondary)',
+                            }}
+                          >
+                            FREE PLANNER + PRO CONCIERGE
+                          </span>
+                        </div>
+                        <div style={{ fontSize: '0.78rem', color: 'var(--ink-secondary)', marginTop: '2px' }}>
+                          Auto-plan 4 weeks of events, draft WhatsApp &amp; social broadcasts, or generate UK Council RAMS &amp; sponsor pitches.
+                        </div>
+                      </div>
+                    </div>
+                    <span
+                      style={{
+                        fontSize: '0.8rem',
+                        fontWeight: 700,
+                        color: 'var(--teal-300)',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                      }}
+                    >
+                      Open Studio <ChevronRight size={15} />
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* Pending Chapter Sign-Off Alert on Overview */}
