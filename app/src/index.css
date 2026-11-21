@@ -2909,3 +2909,23 @@ button:disabled, [role="button"][aria-disabled="true"] {
   background: #FFFFFF !important;
   border-color: rgba(28, 25, 21, 0.16) !important;
 }
+
+/* Event & badge pastel guards for Light Mode */
+[data-theme="light"] [style*="color: rgb(252, 211, 77)"],
+[data-theme="light"] [style*="color: #fcd34d"] {
+  color: #854D0E !important;
+}
+[data-theme="light"] [style*="color: rgb(249, 168, 212)"],
+[data-theme="light"] [style*="color: #f9a8d4"] {
+  color: #9D174D !important;
+}
+[data-theme="light"] [style*="color: rgb(187, 247, 208)"],
+[data-theme="light"] [style*="color: #bbf7d0"],
+[data-theme="light"] [style*="color: rgb(110, 231, 183)"],
+[data-theme="light"] [style*="color: #6ee7b7"] {
+  color: #1F634D !important;
+}
+[data-theme="light"] [style*="color: rgb(186, 230, 253)"],
+[data-theme="light"] [style*="color: #bae6fd"] {
+  color: #1D4ED8 !important;
+}

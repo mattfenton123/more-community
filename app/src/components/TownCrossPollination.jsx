@@ -33,14 +33,14 @@ export default function TownCrossPollination({ currentCommunity, currentCommunit
       marginTop: '28px',
       marginBottom: '20px',
       padding: '20px',
-      background: 'rgba(255,255,255,0.02)',
+      background: 'var(--surface-card)',
       borderRadius: '18px',
-      border: '1px solid rgba(255,255,255,0.08)'
+      border: '1px solid var(--hairline-border)'
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
         <div>
-          <div style={{ fontSize: '0.92rem', fontWeight: 700, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Compass size={16} color="#F27257" /> More in {displayLocation}
+          <div style={{ fontSize: '0.92rem', fontWeight: 700, color: 'var(--ink-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Compass size={16} color="var(--brand-accent)" /> More in {displayLocation}
           </div>
           <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', marginTop: '2px' }}>
             Discover other local groups and gatherings nearby
@@ -48,7 +48,7 @@ export default function TownCrossPollination({ currentCommunity, currentCommunit
         </div>
         <button
           onClick={() => router.push('/discover')}
-          style={{ background: 'none', border: 'none', color: '#F27257', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+          style={{ background: 'none', border: 'none', color: 'var(--teal-300)', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
         >
           Explore All <ArrowRight size={12} />
         </button>
@@ -67,8 +67,8 @@ export default function TownCrossPollination({ currentCommunity, currentCommunit
               onClick={() => router.push(`/community/${slug}`)}
               className="interactive-press"
               style={{
-                background: 'rgba(18, 18, 18,0.6)',
-                border: '1px solid rgba(255,255,255,0.06)',
+                background: 'var(--surface-canvas)',
+                border: '1px solid var(--hairline-border)',
                 borderRadius: '14px',
                 padding: '12px 14px',
                 cursor: 'pointer',
@@ -82,18 +82,18 @@ export default function TownCrossPollination({ currentCommunity, currentCommunit
                 <img
                   src={img}
                   alt={c.name}
-                  style={{ width: '40px', height: '40px', borderRadius: '10px', objectFit: 'cover', flexShrink: 0, border: '1px solid rgba(255,255,255,0.1)' }}
+                  style={{ width: '40px', height: '40px', borderRadius: '10px', objectFit: 'cover', flexShrink: 0, border: '1px solid var(--hairline-border)' }}
                 />
               ) : (
                 <div style={{
                   width: '40px',
                   height: '40px',
                   borderRadius: '10px',
-                  background: 'rgba(235, 87, 56,0.15)',
+                  background: 'var(--brand-accent-soft)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  color: '#F27257',
+                  color: 'var(--teal-300)',
                   fontWeight: 800,
                   fontSize: '1rem',
                   flexShrink: 0
@@ -102,11 +102,11 @@ export default function TownCrossPollination({ currentCommunity, currentCommunit
                 </div>
               )}
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--ink-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {c.name}
                 </div>
                 <div style={{ fontSize: '0.7rem', color: 'var(--slate-400)', marginTop: '2px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <Users size={11} color="#F27257" /> {realCount} {realCount === 1 ? 'member' : 'members'}
+                  <Users size={11} color="var(--brand-accent)" /> {realCount} {realCount === 1 ? 'member' : 'members'}
                 </div>
               </div>
             </div>

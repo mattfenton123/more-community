@@ -107,8 +107,8 @@ export default function ShareOptions({
   if (layout === 'inline') {
     return (
       <div style={{
-        background: 'rgba(255, 255, 255, 0.03)',
-        border: '1px solid rgba(255, 255, 255, 0.08)',
+        background: 'var(--surface-card)',
+        border: '1px solid var(--hairline-border)',
         borderRadius: '18px',
         padding: '18px 20px',
       }}>
@@ -202,7 +202,7 @@ export default function ShareOptions({
                 borderRadius: '12px',
                 background: 'rgba(235, 87, 56, 0.16)',
                 border: '1px solid rgba(242, 114, 87, 0.4)',
-                color: '#F79984',
+                color: 'var(--teal-300)',
                 fontSize: '0.84rem',
                 fontWeight: 700,
                 cursor: 'pointer',

@@ -86,7 +86,7 @@ function EventLocationMap({ location, event, isLocationShielded = false }) {
           <MapPin size={20} color="#fbbf24" /> Event Start Location
         </h3>
         <div style={{
-          background: 'linear-gradient(135deg, rgba(37, 37, 37, 0.7) 0%, rgba(27, 27, 27, 0.95) 100%)',
+          background: 'var(--surface-card)',
           border: '1px dashed rgba(245, 158, 11, 0.4)',
           borderRadius: '20px',
           padding: '32px 24px',
@@ -107,7 +107,7 @@ function EventLocationMap({ location, event, isLocationShielded = false }) {
           <p style={{ color: 'var(--slate-300)', fontSize: '0.9rem', maxWidth: '440px', margin: '0 auto 16px auto', lineHeight: 1.5 }}>
             This event requires host approval. The exact meeting point, live GPS pin, and route directions are kept private to protect the group and will be revealed immediately upon host approval.
           </p>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '8px 16px', borderRadius: '99px', background: 'rgba(255,255,255,0.05)', fontSize: '0.82rem', color: 'var(--slate-300)', border: '1px solid rgba(255,255,255,0.08)' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '8px 16px', borderRadius: '99px', background: 'rgba(255,255,255,0.05)', fontSize: '0.82rem', color: 'var(--slate-300)', border: '1px solid var(--hairline-border)' }}>
             <MapPin size={14} color="#ec4899" /> General Area: <strong>{areaInfo || 'Tunbridge Wells, Kent'}</strong>
           </div>
         </div>
@@ -140,13 +140,13 @@ function EventLocationMap({ location, event, isLocationShielded = false }) {
         </h3>
 
         {/* Google Maps Layer Toggle: Map vs Satellite */}
-        <div style={{ display: 'flex', gap: '4px', background: 'rgba(255,255,255,0.06)', padding: '3px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
+        <div style={{ display: 'flex', gap: '4px', background: 'var(--surface-card)', padding: '3px', borderRadius: '8px', border: '1px solid var(--hairline-border-strong)' }}>
           <button
             type="button"
             onClick={() => setMapType('m')}
             style={{
-              background: mapType === 'm' ? '#F27257' : 'transparent',
-              color: mapType === 'm' ? '#1B1B1B' : 'var(--slate-300)',
+              background: mapType === 'm' ? 'var(--brand-accent)' : 'transparent',
+              color: mapType === 'm' ? '#FFFFFF' : 'var(--ink-secondary)',
               border: 'none',
               borderRadius: '6px',
               padding: '3px 8px',
@@ -162,8 +162,8 @@ function EventLocationMap({ location, event, isLocationShielded = false }) {
             type="button"
             onClick={() => setMapType('k')}
             style={{
-              background: mapType === 'k' ? '#F27257' : 'transparent',
-              color: mapType === 'k' ? '#1B1B1B' : 'var(--slate-300)',
+              background: mapType === 'k' ? 'var(--brand-accent)' : 'transparent',
+              color: mapType === 'k' ? '#FFFFFF' : 'var(--ink-secondary)',
               border: 'none',
               borderRadius: '6px',
               padding: '3px 8px',
@@ -181,7 +181,7 @@ function EventLocationMap({ location, event, isLocationShielded = false }) {
       {/* Google Maps Embed Container */}
       <div style={{
         borderRadius: '16px', overflow: 'hidden',
-        border: '1px solid rgba(255,255,255,0.08)',
+        border: '1px solid var(--hairline-border)',
         background: 'var(--slate-900)',
         marginBottom: '12px',
         position: 'relative',
@@ -202,7 +202,7 @@ function EventLocationMap({ location, event, isLocationShielded = false }) {
           <div style={{
             position: 'absolute', bottom: '10px', left: '10px', zIndex: 10,
             background: 'rgba(27, 27, 27, 0.88)', backdropFilter: 'blur(8px)',
-            padding: '4px 10px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.12)',
+            padding: '4px 10px', borderRadius: '14px', border: '1px solid var(--hairline-border-strong)',
             fontSize: '0.72rem', color: '#F27257', fontFamily: 'monospace',
             display: 'flex', alignItems: 'center', gap: '6px'
           }}>
@@ -216,8 +216,8 @@ function EventLocationMap({ location, event, isLocationShielded = false }) {
       {/* Location name + directions buttons */}
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px',
-        background: 'rgba(255,255,255,0.03)',
-        border: '1px solid rgba(255,255,255,0.06)',
+        background: 'var(--surface-card)',
+        border: '1px solid var(--hairline-border)',
         borderRadius: '12px', padding: '14px 16px',
       }}>
         <div style={{ minWidth: '180px' }}>
@@ -291,8 +291,8 @@ function EventLocationMap({ location, event, isLocationShielded = false }) {
             style={{
               display: 'flex', alignItems: 'center', gap: '6px',
               padding: '9px 14px', borderRadius: '10px',
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(255,255,255,0.12)',
+              background: 'var(--surface-elevated)',
+              border: '1px solid var(--hairline-border-strong)',
               color: 'var(--white)', fontSize: '0.82rem', fontWeight: 600,
               textDecoration: 'none', cursor: 'pointer',
             }}
@@ -716,7 +716,7 @@ export default function EventClient({ id }) {
             <Trees size={16} color="#34d399" />
             <span>Offline Mode Active • Event pass & offline location ready</span>
           </div>
-          <span style={{ fontSize: '0.72rem', background: 'rgba(0,0,0,0.3)', padding: '2px 8px', borderRadius: '99px', color: '#6ee7b7' }}>
+          <span style={{ fontSize: '0.72rem', background: 'var(--surface-elevated)', padding: '2px 8px', borderRadius: '99px', color: '#6ee7b7' }}>
             Offline Ready
           </span>
         </div>
@@ -784,7 +784,7 @@ export default function EventClient({ id }) {
           {/* Live Meetup Day Radar */}
           {isLive && !isEventPast(event) && (
             <div style={{
-              background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.12) 0%, rgba(27, 27, 27, 0.95) 100%)',
+              background: 'var(--surface-card)',
               border: '1.5px solid rgba(34, 197, 94, 0.4)',
               borderRadius: '20px',
               padding: '20px 22px',
@@ -814,14 +814,14 @@ export default function EventClient({ id }) {
                   <span>{event.meetingPoint ? `Meeting Point: ${event.meetingPoint}` : `Gathering Point: ${cleanLocationName(event.location)}`}</span>
                 </div>
                 {event.instructions && (
-                  <div style={{ color: 'var(--slate-200)', fontSize: '0.88rem', lineHeight: 1.5, background: 'rgba(0,0,0,0.25)', padding: '10px 14px', borderRadius: '10px' }}>
+                  <div style={{ color: 'var(--slate-200)', fontSize: '0.88rem', lineHeight: 1.5, background: 'var(--surface-elevated)', padding: '10px 14px', borderRadius: '10px' }}>
                     {event.instructions}
                   </div>
                 )}
                 <div style={{
                   display: 'flex', alignItems: 'center', gap: '8px',
                   background: 'rgba(34, 197, 94, 0.08)', border: '1px solid rgba(34, 197, 94, 0.2)',
-                  borderRadius: '10px', padding: '10px 14px', color: '#bbf7d0', fontSize: '0.84rem'
+                  borderRadius: '10px', padding: '10px 14px', color: 'var(--brand-secondary)', fontSize: '0.84rem'
                 }}>
                   <span>🤝</span>
                   <span><strong>First-timer friendly:</strong> Warmly greeted upon arrival by the leader. Zero pressure, participate at your own pace!</span>
@@ -972,7 +972,7 @@ export default function EventClient({ id }) {
             {(community?.is_insured || community?.insurance_tier === 'pro') && (
               <>
                 <span style={{ color: 'var(--slate-600)', fontSize: '0.85rem' }}>•</span>
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '3px 10px', background: 'rgba(235, 87, 56,0.1)', border: '1px solid rgba(235, 87, 56,0.25)', borderRadius: '99px', fontSize: '0.75rem', color: '#F27257', fontWeight: 600 }}>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '3px 10px', background: 'rgba(235, 87, 56,0.1)', border: '1px solid rgba(235, 87, 56,0.25)', borderRadius: '99px', fontSize: '0.75rem', color: 'var(--teal-300)', fontWeight: 600 }}>
                   <Shield size={12} color="#F27257" /> Verified Leader • Council Safety & Organiser Insured
                 </div>
               </>
@@ -1012,7 +1012,7 @@ export default function EventClient({ id }) {
 
           {/* Other dates in recurring series */}
           {seriesEvents.length > 1 && (
-            <div style={{ marginTop: '16px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '14px' }}>
+            <div style={{ marginTop: '16px', background: 'var(--surface-card)', border: '1px solid var(--hairline-border)', borderRadius: '14px', padding: '14px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.82rem', fontWeight: 600, color: 'var(--teal-300)' }}>
                   <Repeat size={14} /> Other Dates in this Series ({seriesEvents.length} sessions)
@@ -1063,8 +1063,8 @@ export default function EventClient({ id }) {
               display: 'inline-flex',
               alignItems: 'center',
               gap: '12px',
-              background: 'rgba(255,255,255,0.03)',
-              border: '1px solid rgba(255,255,255,0.08)',
+              background: 'var(--surface-card)',
+              border: '1px solid var(--hairline-border)',
               padding: '8px 16px',
               borderRadius: '99px',
               cursor: 'pointer',
@@ -1085,7 +1085,7 @@ export default function EventClient({ id }) {
                       width: '30px',
                       height: '30px',
                       borderRadius: '50%',
-                      border: '2px solid #1B1B1B',
+                      border: '2px solid var(--surface-canvas)',
                       marginLeft: idx === 0 ? 0 : '-10px',
                       objectFit: 'cover',
                       background: 'var(--surface-card)'
@@ -1126,7 +1126,7 @@ export default function EventClient({ id }) {
                     alt={u?.name}
                     style={{
                       width: '28px', height: '28px', borderRadius: '50%',
-                      border: '2px solid #1B1B1B', marginLeft: i === 0 ? 0 : '-8px',
+                      border: '2px solid var(--surface-canvas)', marginLeft: i === 0 ? 0 : '-8px',
                       objectFit: 'cover'
                     }}
                   />
@@ -1165,7 +1165,7 @@ export default function EventClient({ id }) {
                 const avatar = resolveUserAvatar(u);
                 const isProcessing = approvingUserId === att.userId;
                 return (
-                  <div key={att.userId} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', background: 'rgba(0,0,0,0.25)', padding: '10px 14px', borderRadius: '12px', flexWrap: 'wrap' }}>
+                  <div key={att.userId} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', background: 'var(--surface-elevated)', padding: '10px 14px', borderRadius: '12px', flexWrap: 'wrap' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                       <img src={avatar} alt={u?.name} style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover' }} />
                       <div>
@@ -1216,7 +1216,7 @@ export default function EventClient({ id }) {
           </div>
         )}
 
-        <hr style={{ border: 'none', borderTop: '1px solid rgba(255,255,255,0.05)', margin: '24px 0' }} />
+        <hr style={{ border: 'none', borderTop: '1px solid var(--hairline-border)', margin: '24px 0' }} />
 
         {/* Option B: 2-Step Affiliate Group Trip Guide */}
         {isAffiliateGroupTrip && (
@@ -1236,11 +1236,11 @@ export default function EventClient({ id }) {
               </span>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '10px', fontSize: '0.83rem', color: 'var(--slate-200)', lineHeight: 1.45 }}>
-              <div style={{ padding: '10px 12px', borderRadius: '12px', background: 'rgba(27, 27, 27,0.55)', border: '1px solid rgba(242, 114, 87,0.2)' }}>
+              <div style={{ padding: '10px 12px', borderRadius: '12px', background: 'var(--surface-card)', border: '1px solid rgba(242, 114, 87,0.2)' }}>
                 <div style={{ fontWeight: 700, color: 'var(--teal-300)', marginBottom: '3px' }}>Step 1: More Group Host Pass (£{(event.ticketPrice || 0).toFixed(2)})</div>
                 <div style={{ color: 'var(--slate-300)', fontSize: '0.78rem' }}>Reserves your group spot, covers hosting &amp; leader ticket share. Refundable if under {minTripGroup} commit.</div>
               </div>
-              <div style={{ padding: '10px 12px', borderRadius: '12px', background: 'rgba(27, 27, 27,0.55)', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <div style={{ padding: '10px 12px', borderRadius: '12px', background: 'var(--surface-card)', border: '1px solid var(--hairline-border)' }}>
                 <div style={{ fontWeight: 700, color: 'var(--ink-primary)', marginBottom: '3px' }}>Step 2: Own Ticket (~£{supplierEstimate} on {tripProvider})</div>
                 <div style={{ color: 'var(--slate-300)', fontSize: '0.78rem' }}>Paid directly to {tripProvider} via our tracked group link once {minTripGroup}+ people join.</div>
               </div>
@@ -1257,7 +1257,7 @@ export default function EventClient({ id }) {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="interactive-press"
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '7px 12px', borderRadius: '10px', background: 'var(--teal-500)', color: '#042f2e', fontWeight: 700, fontSize: '0.8rem', textDecoration: 'none' }}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '7px 12px', borderRadius: '10px', background: 'var(--teal-500)', color: '#FFFFFF', fontWeight: 700, fontSize: '0.8rem', textDecoration: 'none' }}
                 >
                   Book Own Ticket on {tripProvider} <ExternalLink size={13} />
                 </a>
@@ -1290,7 +1290,7 @@ export default function EventClient({ id }) {
             <h3 style={{ fontSize: '1.2rem', margin: '0 0 12px 0', color: 'var(--white)', fontFamily: 'var(--font-heading)', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Video size={20} color="var(--teal-400)" /> Watch
             </h3>
-            <div style={{ borderRadius: '16px', overflow: 'hidden', aspectRatio: '16/9', background: 'var(--slate-900)', border: '1px solid rgba(255,255,255,0.06)' }}>
+            <div style={{ borderRadius: '16px', overflow: 'hidden', aspectRatio: '16/9', background: 'var(--slate-900)', border: '1px solid var(--hairline-border)' }}>
               {event.videoUrl.includes('youtube') || event.videoUrl.includes('youtu.be') ? (
                 <iframe
                   src={event.videoUrl.replace('watch?v=', 'embed/').replace('youtu.be/', 'youtube.com/embed/')}
@@ -1385,7 +1385,7 @@ export default function EventClient({ id }) {
                   className="interactive-press"
                   style={{
                     position: 'relative', borderRadius: '12px', overflow: 'hidden', aspectRatio: '1/1',
-                    border: '1px solid rgba(255,255,255,0.08)', cursor: 'pointer', background: '#1B1B1B'
+                    border: '1px solid var(--hairline-border)', cursor: 'pointer', background: '#1B1B1B'
                   }}
                 >
                   <img src={imgUrl} alt={`Event photo ${pIdx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -1419,7 +1419,7 @@ export default function EventClient({ id }) {
             </div>
           ) : (
             <div style={{
-              background: 'rgba(255,255,255,0.02)', border: '1px dashed rgba(255,255,255,0.08)',
+              background: 'var(--surface-card)', border: '1px dashed var(--hairline-border-strong)',
               borderRadius: '16px', padding: '24px', textAlign: 'center'
             }}>
               <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)', marginBottom: '10px' }}>
@@ -1434,7 +1434,7 @@ export default function EventClient({ id }) {
                 style={{
                   display: 'inline-flex', alignItems: 'center', gap: '6px',
                   padding: '8px 16px', borderRadius: '99px',
-                  background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)',
+                  background: 'var(--surface-elevated)', border: '1px solid var(--hairline-border-strong)',
                   color: 'var(--slate-200)', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer'
                 }}
               >
@@ -1448,14 +1448,14 @@ export default function EventClient({ id }) {
         {(event.maxCapacity || event.minCapacity) && (
           <div style={{ display: 'flex', gap: '12px', marginBottom: '32px', flexWrap: 'wrap' }}>
             {event.maxCapacity && (
-              <div style={{ flex: 1, minWidth: '140px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px', padding: '16px', textAlign: 'center' }}>
+              <div style={{ flex: 1, minWidth: '140px', background: 'var(--surface-card)', border: '1px solid var(--hairline-border)', borderRadius: '14px', padding: '16px', textAlign: 'center' }}>
                 <div style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--white)' }}>{event.maxCapacity}</div>
                 <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)', marginTop: '4px' }}>Max capacity</div>
                 {spotsLeft !== null && <div style={{ fontSize: '0.85rem', color: spotsLeft < 5 ? 'var(--rose-400)' : 'var(--teal-400)', fontWeight: 600, marginTop: '6px' }}>{spotsLeft === 0 ? 'Sold out' : `${spotsLeft} spots left`}</div>}
               </div>
             )}
             {event.minCapacity && (
-              <div style={{ flex: 1, minWidth: '140px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px', padding: '16px', textAlign: 'center' }}>
+              <div style={{ flex: 1, minWidth: '140px', background: 'var(--surface-card)', border: '1px solid var(--hairline-border)', borderRadius: '14px', padding: '16px', textAlign: 'center' }}>
                 <div style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--white)' }}>{event.minCapacity}</div>
                 <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)', marginTop: '4px' }}>Min to go ahead</div>
                 {(() => {
@@ -1507,7 +1507,7 @@ export default function EventClient({ id }) {
                   style={{
                     display: 'flex', alignItems: 'center', gap: '10px',
                     padding: '8px 14px', borderRadius: '12px',
-                    background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)',
+                    background: 'var(--surface-elevated)', border: '1px solid var(--hairline-border-strong)',
                     cursor: 'pointer'
                   }}
                 >
@@ -1524,7 +1524,7 @@ export default function EventClient({ id }) {
                   display: 'inline-flex', alignItems: 'center', gap: '6px',
                   padding: '8px 14px', borderRadius: '12px',
                   background: 'rgba(235, 87, 56,0.14)', border: '1px solid rgba(242, 114, 87,0.35)',
-                  color: '#F79984', fontSize: '0.82rem', fontWeight: 700, cursor: 'pointer'
+                  color: 'var(--teal-300)', fontSize: '0.82rem', fontWeight: 700, cursor: 'pointer'
                 }}
               >
                 <MessageSquare size={14} /> Open Event Discussion ↓
@@ -1547,7 +1547,7 @@ export default function EventClient({ id }) {
           
           {/* Itinerary */}
           {itineraryItems.length > 0 && (
-            <div style={{ background: 'rgba(255,255,255,0.02)', padding: '20px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+            <div style={{ background: 'var(--surface-card)', padding: '20px', borderRadius: '16px', border: '1px solid var(--hairline-border)' }}>
               <h4 style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--white)', margin: '0 0 16px 0', fontSize: '1.1rem' }}>
                 <List size={18} color="var(--teal-400)" /> Itinerary
               </h4>
@@ -1574,13 +1574,13 @@ export default function EventClient({ id }) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
             {/* What to Bring */}
             {whatToBringItems.length > 0 && (
-              <div style={{ background: 'rgba(255,255,255,0.02)', padding: '20px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <div style={{ background: 'var(--surface-card)', padding: '20px', borderRadius: '16px', border: '1px solid var(--hairline-border)' }}>
                 <h4 style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--white)', margin: '0 0 16px 0', fontSize: '1.1rem' }}>
                   <Check size={18} color="var(--amber-400)" /> What to Bring
                 </h4>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                   {whatToBringItems.map((item, idx) => (
-                    <span key={idx} style={{ padding: '6px 12px', background: 'rgba(245,158,11,0.1)', color: '#fcd34d', borderRadius: '8px', fontSize: '0.85rem' }}>
+                    <span key={idx} style={{ padding: '6px 12px', background: 'var(--surface-elevated)', color: 'var(--ink-primary)', border: '1px solid var(--hairline-border-strong)', borderRadius: '99px', fontSize: '0.85rem' }}>
                       {item}
                     </span>
                   ))}
@@ -1616,12 +1616,12 @@ export default function EventClient({ id }) {
               }
 
               return (
-                <div style={{ background: 'rgba(255,255,255,0.02)', padding: '22px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                <div style={{ background: 'var(--surface-card)', padding: '22px', borderRadius: '16px', border: '1px solid var(--hairline-border)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
                     <h4 style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--white)', margin: 0, fontSize: '1.1rem' }}>
                       <Activity size={18} color="#ec4899" /> What to Expect
                     </h4>
-                    <span style={{ padding: '4px 12px', background: 'rgba(236,72,153,0.12)', color: '#f9a8d4', borderRadius: '99px', fontSize: '0.8rem', fontWeight: 700, border: '1px solid rgba(236,72,153,0.25)' }}>
+                    <span style={{ padding: '4px 12px', background: 'var(--brand-accent-soft)', color: 'var(--teal-300)', borderRadius: '99px', fontSize: '0.8rem', fontWeight: 700, border: '1px solid rgba(200,90,50,0.25)' }}>
                       {level}
                     </span>
                   </div>
@@ -1631,7 +1631,7 @@ export default function EventClient({ id }) {
                   </p>
 
                   {/* Structured Expectation Highlights */}
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '10px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '10px', paddingTop: '12px', borderTop: '1px solid var(--hairline-border)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8rem', color: 'var(--slate-300)' }}>
                       <CheckCircle2 size={15} color="#F27257" />
                       <span><strong>Atmosphere:</strong> {isPeerSupport ? 'Confidential & casual' : 'Friendly & social'}</span>
@@ -1655,11 +1655,11 @@ export default function EventClient({ id }) {
       {/* Desktop Sticky Booking & Calendar Sidebar */}
       <aside className="desktop-event-sidebar">
         <div style={{
-          background: 'linear-gradient(180deg, rgba(27, 27, 27, 0.95) 0%, rgba(10, 15, 29, 0.98) 100%)',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
+          background: 'var(--surface-card)',
+          border: '1px solid var(--hairline-border-strong)',
           borderRadius: '24px',
           padding: '24px',
-          boxShadow: '0 12px 40px rgba(0, 0, 0, 0.5)'
+          boxShadow: '0 12px 32px rgba(0, 0, 0, 0.12)'
         }}>
           {/* Price Header */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
@@ -1688,8 +1688,8 @@ export default function EventClient({ id }) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
             {isEventPast(event) ? (
               <div style={{
-                background: 'rgba(255, 255, 255, 0.05)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
+                background: 'var(--surface-elevated)',
+                border: '1px solid var(--hairline-border-strong)',
                 padding: '14px', borderRadius: '14px', textAlign: 'center',
                 color: 'var(--slate-400)', fontWeight: 600, fontSize: '0.9rem'
               }}>
@@ -1703,9 +1703,9 @@ export default function EventClient({ id }) {
                   className="interactive-press"
                   style={{
                     width: '100%',
-                    background: isGoing ? 'rgba(255,255,255,0.1)' : isPendingApproval ? 'rgba(245,158,11,0.18)' : 'var(--teal-500)',
-                    color: isGoing ? 'var(--white)' : isPendingApproval ? '#fbbf24' : '#1B1B1B',
-                    border: isGoing ? '1px solid rgba(255,255,255,0.2)' : isPendingApproval ? '1px solid rgba(245,158,11,0.35)' : 'none',
+                    background: isGoing ? 'var(--surface-elevated)' : isPendingApproval ? 'rgba(245,158,11,0.18)' : 'var(--teal-500)',
+                    color: isGoing ? 'var(--ink-primary)' : isPendingApproval ? '#b45309' : '#FFFFFF',
+                    border: isGoing ? '1px solid var(--hairline-border-strong)' : isPendingApproval ? '1px solid rgba(245,158,11,0.35)' : 'none',
                     padding: '14px 20px', borderRadius: '14px', fontSize: '1rem', fontWeight: 800,
                     cursor: (checkoutState === 'processing' || (spotsLeft === 0 && !isGoing && !isPendingApproval && Boolean(user?.id))) ? 'not-allowed' : 'pointer',
                     opacity: (checkoutState === 'processing' || (spotsLeft === 0 && !isGoing && !isPendingApproval && Boolean(user?.id))) ? 0.7 : 1,
@@ -1744,7 +1744,7 @@ export default function EventClient({ id }) {
             )}
           </div>
 
-          <hr style={{ border: 'none', borderTop: '1px solid rgba(255, 255, 255, 0.08)', margin: '16px 0' }} />
+          <hr style={{ border: 'none', borderTop: '1px solid var(--hairline-border)', margin: '16px 0' }} />
 
           {/* Calendar Sync Actions */}
           <div style={{ marginBottom: '18px' }}>
@@ -1757,7 +1757,7 @@ export default function EventClient({ id }) {
                 className="interactive-press"
                 style={{
                   padding: '10px 12px', borderRadius: '10px',
-                  background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
+                  background: 'var(--surface-elevated)', border: '1px solid var(--hairline-border)',
                   color: 'var(--white)', fontSize: '0.82rem', fontWeight: 600,
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', cursor: 'pointer'
                 }}
@@ -1771,7 +1771,7 @@ export default function EventClient({ id }) {
                 className="interactive-press"
                 style={{
                   padding: '10px 12px', borderRadius: '10px',
-                  background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
+                  background: 'var(--surface-elevated)', border: '1px solid var(--hairline-border)',
                   color: 'var(--white)', fontSize: '0.82rem', fontWeight: 600,
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
                   textDecoration: 'none'
@@ -1804,8 +1804,8 @@ export default function EventClient({ id }) {
           {/* Host Info */}
           {community && (
             <div style={{
-              background: 'rgba(255, 255, 255, 0.03)',
-              border: '1px solid rgba(255, 255, 255, 0.06)',
+              background: 'var(--surface-elevated)',
+              border: '1px solid var(--hairline-border)',
               borderRadius: '14px', padding: '14px',
               display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer'
             }} onClick={() => router.push(`/community/${community.id}`)}>
@@ -1828,11 +1828,11 @@ export default function EventClient({ id }) {
     </div>
 
       {/* Sticky RSVP Footer (Mobile only, hidden on desktop >= 1024px) */}
-      <div style={{ 
+      <div className="event-mobile-rsvp-footer" style={{ 
         position: 'fixed', bottom: 0, left: 0, right: 0, 
-        padding: '16px 20px', background: 'rgba(18, 18, 18, 0.65)', 
-        backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', borderTop: '1px solid rgba(255,255,255,0.1)', 
-        boxShadow: '0 -8px 32px rgba(0,0,0,0.4)',
+        padding: '16px 20px', background: 'var(--surface-card)', 
+        borderTop: '1px solid var(--hairline-border-strong)', 
+        boxShadow: '0 -8px 28px rgba(0,0,0,0.12)',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         zIndex: 100,
         paddingBottom: 'max(16px, env(safe-area-inset-bottom))'
@@ -1905,7 +1905,7 @@ export default function EventClient({ id }) {
                   style={{
                     background: 'rgba(255,255,255,0.05)',
                     color: 'var(--slate-400)',
-                    border: '1px solid rgba(255,255,255,0.1)',
+                    border: '1px solid var(--hairline-border-strong)',
                     padding: '12px 24px', borderRadius: '99px', fontSize: '0.95rem', fontWeight: 600,
                     display: 'flex', alignItems: 'center', gap: '8px'
                   }}
@@ -1935,9 +1935,9 @@ export default function EventClient({ id }) {
                   disabled={checkoutState === 'processing'}
                   className="interactive-press"
                   style={{ 
-                    background: isGoing ? 'rgba(255,255,255,0.1)' : isPendingApproval ? 'rgba(245,158,11,0.18)' : 'var(--teal-500)', 
-                    color: isGoing ? 'var(--white)' : isPendingApproval ? '#fbbf24' : '#1B1B1B', 
-                    border: isGoing ? '1px solid rgba(255,255,255,0.2)' : isPendingApproval ? '1px solid rgba(245,158,11,0.35)' : 'none',
+                    background: isGoing ? 'var(--surface-elevated)' : isPendingApproval ? 'rgba(245,158,11,0.18)' : 'var(--teal-500)', 
+                    color: isGoing ? 'var(--ink-primary)' : isPendingApproval ? '#b45309' : '#FFFFFF', 
+                    border: isGoing ? '1px solid var(--hairline-border-strong)' : isPendingApproval ? '1px solid rgba(245,158,11,0.35)' : 'none',
                     padding: '12px 32px', borderRadius: '99px', fontSize: '1rem', fontWeight: 700, 
                     cursor: (checkoutState === 'processing' || (spotsLeft === 0 && !isGoing && !isPendingApproval && Boolean(user?.id))) ? 'not-allowed' : 'pointer',
                     opacity: (checkoutState === 'processing' || (spotsLeft === 0 && !isGoing && !isPendingApproval && Boolean(user?.id))) ? 0.7 : 1,
@@ -1979,7 +1979,7 @@ export default function EventClient({ id }) {
               onClick={() => setShowPaymentChoiceModal(false)}
               style={{
                 position: 'absolute', top: '16px', right: '16px',
-                background: 'rgba(255,255,255,0.06)', border: 'none', borderRadius: '50%',
+                background: 'var(--surface-elevated)', border: 'none', borderRadius: '50%',
                 width: '32px', height: '32px', color: 'var(--slate-400)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer'
               }}
@@ -2134,7 +2134,7 @@ export default function EventClient({ id }) {
 
             {/* Event Summary */}
             <div style={{
-              background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)',
+              background: 'var(--surface-card)', border: '1px solid var(--hairline-border)',
               borderRadius: '16px', padding: '14px 16px', marginBottom: '20px',
               display: 'flex', flexDirection: 'column', gap: '8px'
             }}>
@@ -2244,7 +2244,7 @@ export default function EventClient({ id }) {
                       style={{
                         width: '100%', padding: '12px 16px', borderRadius: '12px',
                         background: 'linear-gradient(135deg, #25D366 0%, #128C7E 100%)',
-                        color: 'var(--ink-primary)', fontWeight: 700, fontSize: '0.92rem',
+                        color: '#FFFFFF', fontWeight: 700, fontSize: '0.92rem',
                         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
                         textDecoration: 'none', marginBottom: '10px',
                         boxShadow: '0 4px 16px rgba(37, 211, 102, 0.25)'
@@ -2283,7 +2283,7 @@ export default function EventClient({ id }) {
                     if (myReservedLift) {
                       return (
                         <div style={{ background: 'rgba(235, 87, 56,0.12)', border: '1px solid rgba(242, 114, 87,0.35)', borderRadius: '12px', padding: '12px' }}>
-                          <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#F79984', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--teal-300)', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                             <Car size={15} /> Seat Reserved with {myReservedLift.driverName}
                           </div>
                           <div style={{ fontSize: '0.75rem', color: 'var(--slate-300)', marginBottom: '10px' }}>
@@ -2310,7 +2310,7 @@ export default function EventClient({ id }) {
                     if (availableLifts.length > 0) {
                       return (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                          <div style={{ fontSize: '0.76rem', fontWeight: 700, color: '#F79984', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <div style={{ fontSize: '0.76rem', fontWeight: 700, color: 'var(--teal-300)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                             <span>🚗 {availableLifts.length} {availableLifts.length === 1 ? 'Lift Already Offered' : 'Lifts Already Offered'}</span>
                             <button
                               type="button"
@@ -2324,7 +2324,7 @@ export default function EventClient({ id }) {
                           {availableLifts.slice(0, 3).map((lift) => {
                             const seatsLeft = Number(lift.seatsAvailable ?? Math.max(0, (lift.seatsTotal || 0) - (lift.passengers || []).length));
                             return (
-                              <div key={lift.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', background: 'rgba(27, 27, 27,0.55)', border: '1px solid rgba(242, 114, 87,0.25)', borderRadius: '10px', padding: '9px 10px' }}>
+                              <div key={lift.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', background: 'var(--surface-card)', border: '1px solid rgba(242, 114, 87,0.25)', borderRadius: '10px', padding: '9px 10px' }}>
                                 <div style={{ minWidth: 0 }}>
                                   <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--ink-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                     {lift.driverName} • {seatsLeft} {seatsLeft === 1 ? 'seat' : 'seats'} left
@@ -2341,7 +2341,7 @@ export default function EventClient({ id }) {
                                   style={{
                                     flexShrink: 0, padding: '7px 11px', borderRadius: '9px',
                                     background: 'linear-gradient(135deg, #10b981 0%, #EB5738 100%)',
-                                    color: '#1B1B1B', fontWeight: 800, fontSize: '0.76rem',
+                                    color: '#FFFFFF', fontWeight: 800, fontSize: '0.76rem',
                                     border: 'none', cursor: 'pointer'
                                   }}
                                 >
@@ -2355,7 +2355,7 @@ export default function EventClient({ id }) {
                             <button
                               type="button"
                               onClick={() => openCarpoolSection(false)}
-                              style={{ background: 'none', border: 'none', color: '#F79984', fontSize: '0.74rem', fontWeight: 600, cursor: 'pointer', padding: 0 }}
+                              style={{ background: 'none', border: 'none', color: 'var(--teal-300)', fontSize: '0.74rem', fontWeight: 600, cursor: 'pointer', padding: 0 }}
                             >
                               View all lift details ↓
                             </button>
@@ -2375,7 +2375,7 @@ export default function EventClient({ id }) {
                     return (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                         {myOfferedLift && (
-                          <div style={{ fontSize: '0.76rem', color: '#F79984', fontWeight: 600, padding: '6px 10px', borderRadius: '8px', background: 'rgba(235, 87, 56,0.12)' }}>
+                          <div style={{ fontSize: '0.76rem', color: 'var(--teal-300)', fontWeight: 600, padding: '6px 10px', borderRadius: '8px', background: 'rgba(235, 87, 56,0.12)' }}>
                             🚗 Your lift from {myOfferedLift.origin} is live ({myOfferedLift.seatsAvailable} seats left)
                           </div>
                         )}
@@ -2386,8 +2386,8 @@ export default function EventClient({ id }) {
                             className="interactive-press"
                             style={{
                               padding: '9px 10px', borderRadius: '10px',
-                              background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(242, 114, 87,0.3)',
-                              color: '#F79984', fontSize: '0.78rem', fontWeight: 700,
+                              background: 'var(--surface-elevated)', border: '1px solid rgba(242, 114, 87,0.3)',
+                              color: 'var(--teal-300)', fontSize: '0.78rem', fontWeight: 700,
                               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', cursor: 'pointer'
                             }}
                           >
@@ -2400,7 +2400,7 @@ export default function EventClient({ id }) {
                             className="interactive-press"
                             style={{
                               padding: '9px 10px', borderRadius: '10px',
-                              background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+                              background: 'rgba(255,255,255,0.05)', border: '1px solid var(--hairline-border-strong)',
                               color: 'var(--slate-200)', fontSize: '0.78rem', fontWeight: 600,
                               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px',
                               textDecoration: 'none'
@@ -2435,7 +2435,7 @@ export default function EventClient({ id }) {
                   className="interactive-press"
                   style={{
                     padding: '10px', borderRadius: '12px',
-                    background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+                    background: 'rgba(255,255,255,0.05)', border: '1px solid var(--hairline-border-strong)',
                     color: 'var(--white)', fontSize: '0.82rem', fontWeight: 600,
                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', cursor: 'pointer'
                   }}
@@ -2449,7 +2449,7 @@ export default function EventClient({ id }) {
                   className="interactive-press"
                   style={{
                     padding: '10px', borderRadius: '12px',
-                    background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+                    background: 'rgba(255,255,255,0.05)', border: '1px solid var(--hairline-border-strong)',
                     color: 'var(--white)', fontSize: '0.82rem', fontWeight: 600,
                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
                     textDecoration: 'none'
@@ -2523,7 +2523,7 @@ export default function EventClient({ id }) {
           <div style={{
             width: '100%', maxWidth: '440px', maxHeight: '80vh',
             background: 'var(--surface-card)',
-            border: '1px solid rgba(255,255,255,0.12)',
+            border: '1px solid var(--hairline-border-strong)',
             borderRadius: '24px', padding: '24px',
             boxShadow: '0 20px 50px rgba(0,0,0,0.7)',
             display: 'flex', flexDirection: 'column'
@@ -2540,7 +2540,7 @@ export default function EventClient({ id }) {
               <button
                 onClick={() => setShowAttendeesModal(false)}
                 className="interactive-press"
-                style={{ background: 'rgba(255,255,255,0.06)', border: 'none', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--slate-400)', cursor: 'pointer' }}
+                style={{ background: 'var(--surface-elevated)', border: 'none', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--slate-400)', cursor: 'pointer' }}
               >
                 <X size={18} />
               </button>
@@ -2552,7 +2552,7 @@ export default function EventClient({ id }) {
                 const isHost = u?.id === event.host_id || u?.id === event.hostId;
                 const avatar = resolveUserAvatar(u);
                 return (
-                  <div key={att.userId} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '14px' }}>
+                  <div key={att.userId} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', background: 'var(--surface-card)', border: '1px solid var(--hairline-border)', borderRadius: '14px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                       <img src={avatar} alt={u?.name || 'Member'} style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', background: 'var(--surface-card)' }} />
                       <div>
@@ -2609,7 +2609,7 @@ export default function EventClient({ id }) {
               <button
                 onClick={() => setShowRsvpPromptModal(false)}
                 className="interactive-press"
-                style={{ background: 'rgba(255,255,255,0.06)', border: 'none', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--slate-400)', cursor: 'pointer' }}
+                style={{ background: 'var(--surface-elevated)', border: 'none', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--slate-400)', cursor: 'pointer' }}
               >
                 <X size={18} />
               </button>
@@ -2631,7 +2631,7 @@ export default function EventClient({ id }) {
                   onChange={e => setRsvpAnswer(e.target.value)}
                   style={{
                     width: '100%', padding: '10px 14px', borderRadius: '10px',
-                    background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)',
+                    background: 'var(--surface-elevated)', border: '1px solid var(--hairline-border-strong)',
                     color: 'var(--white)', fontSize: '0.88rem', outline: 'none'
                   }}
                 />
@@ -2640,7 +2640,7 @@ export default function EventClient({ id }) {
 
             {/* +1 Guest Pass (Controlled by leader slider) */}
             {(event?.allow_guests !== false && event?.allowGuests !== false && community?.allow_guests !== false && community?.allowGuests !== false) && (
-              <div style={{ marginBottom: '20px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '14px' }}>
+              <div style={{ marginBottom: '20px', background: 'var(--surface-card)', border: '1px solid var(--hairline-border)', borderRadius: '14px', padding: '14px' }}>
                 <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}>
                   <div>
                     <div style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--white)', display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -2667,7 +2667,7 @@ export default function EventClient({ id }) {
                       onChange={e => setRsvpGuestName(e.target.value)}
                       style={{
                         width: '100%', padding: '10px 14px', borderRadius: '10px',
-                        background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(242, 114, 87,0.3)',
+                        background: 'var(--surface-elevated)', border: '1px solid rgba(242, 114, 87,0.3)',
                         color: 'var(--white)', fontSize: '0.88rem', outline: 'none'
                       }}
                     />
@@ -2678,7 +2678,7 @@ export default function EventClient({ id }) {
                       onChange={e => setRsvpGuestEmail(e.target.value)}
                       style={{
                         width: '100%', padding: '10px 14px', borderRadius: '10px',
-                        background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(242, 114, 87,0.3)',
+                        background: 'var(--surface-elevated)', border: '1px solid rgba(242, 114, 87,0.3)',
                         color: 'var(--white)', fontSize: '0.88rem', outline: 'none'
                       }}
                     />
@@ -2697,7 +2697,7 @@ export default function EventClient({ id }) {
               style={{
                 width: '100%', padding: '14px', borderRadius: '12px',
                 background: 'linear-gradient(135deg, var(--brand-accent), var(--brand-accent-pressed))',
-                color: '#1B1B1B', fontWeight: 700, fontSize: '0.98rem', border: 'none',
+                color: '#FFFFFF', fontWeight: 700, fontSize: '0.98rem', border: 'none',
                 cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
               }}
             >
@@ -2732,7 +2732,7 @@ export default function EventClient({ id }) {
               </a>
               <button
                 onClick={() => setActivePhotoModal(null)}
-                style={{ padding: '8px 16px', borderRadius: '99px', background: 'rgba(255,255,255,0.1)', color: 'var(--ink-primary)', border: 'none', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer' }}
+                style={{ padding: '8px 16px', borderRadius: '99px', background: 'rgba(255,255,255,0.16)', color: '#FFFFFF', border: '1px solid rgba(255,255,255,0.25)', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer' }}
               >
                 Close
               </button>

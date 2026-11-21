@@ -11,7 +11,7 @@ const BADGE_STYLES = {
   host: {
     background: 'rgba(235, 87, 56, 0.16)',
     border: '1px solid rgba(242, 114, 87, 0.4)',
-    color: '#F79984',
+    color: 'var(--teal-300)',
   },
   cohost: {
     background: 'rgba(56, 189, 248, 0.16)',
@@ -19,9 +19,9 @@ const BADGE_STYLES = {
     color: '#7dd3fc',
   },
   community: {
-    background: 'rgba(255, 255, 255, 0.08)',
-    border: '1px solid rgba(255, 255, 255, 0.14)',
-    color: '#cbd5e1',
+    background: 'var(--surface-elevated)',
+    border: '1px solid var(--hairline-border)',
+    color: 'var(--ink-secondary)',
   },
   partner: {
     background: 'rgba(56, 189, 248, 0.1)',
@@ -106,8 +106,8 @@ export default function EventDiscussion({
     <section
       id="discussion"
       style={{
-        background: 'rgba(255, 255, 255, 0.025)',
-        border: '1px solid rgba(255, 255, 255, 0.09)',
+        background: 'var(--surface-card)',
+        border: '1px solid var(--hairline-border)',
         borderRadius: '18px',
         padding: '20px',
         marginBottom: '28px',
@@ -134,8 +134,8 @@ export default function EventDiscussion({
               fontWeight: 700,
               padding: '2px 8px',
               borderRadius: '99px',
-              background: 'rgba(235, 87, 56, 0.14)',
-              color: '#F79984',
+              background: 'var(--brand-accent-soft)',
+              color: 'var(--teal-300)',
             }}
           >
             {comments.length}
@@ -186,8 +186,8 @@ export default function EventDiscussion({
                   alignItems: 'flex-start',
                   padding: '12px 14px',
                   borderRadius: '14px',
-                  background: 'rgba(27, 27, 27, 0.55)',
-                  border: '1px solid rgba(255, 255, 255, 0.06)',
+                  background: 'var(--surface-elevated)',
+                  border: '1px solid var(--hairline-border)',
                 }}
               >
                 <img
@@ -269,7 +269,7 @@ export default function EventDiscussion({
           style={{
             padding: '16px',
             borderRadius: '14px',
-            border: '1px dashed rgba(255, 255, 255, 0.1)',
+            border: '1px dashed var(--hairline-border-strong)',
             textAlign: 'center',
             color: 'var(--slate-400)',
             fontSize: '0.84rem',
@@ -294,8 +294,8 @@ export default function EventDiscussion({
               maxHeight: '140px',
               padding: '11px 14px',
               borderRadius: '12px',
-              background: 'rgba(27, 27, 27, 0.7)',
-              border: '1px solid rgba(255, 255, 255, 0.12)',
+              background: 'var(--surface-canvas)',
+              border: '1px solid var(--hairline-border-strong)',
               color: 'var(--white)',
               fontSize: '0.9rem',
               fontFamily: 'inherit',
@@ -312,7 +312,7 @@ export default function EventDiscussion({
               borderRadius: '12px',
               border: 'none',
               background: isPosting || !draft.trim() ? 'rgba(235, 87, 56, 0.25)' : 'var(--teal-500)',
-              color: isPosting || !draft.trim() ? '#94a3b8' : '#1B1B1B',
+              color: isPosting || !draft.trim() ? 'var(--ink-muted)' : '#FFFFFF',
               fontWeight: 700,
               fontSize: '0.86rem',
               cursor: isPosting || !draft.trim() ? 'not-allowed' : 'pointer',
@@ -335,8 +335,8 @@ export default function EventDiscussion({
             width: '100%',
             padding: '12px 16px',
             borderRadius: '12px',
-            background: 'rgba(255, 255, 255, 0.05)',
-            border: '1px solid rgba(255, 255, 255, 0.12)',
+            background: 'var(--surface-elevated)',
+            border: '1px solid var(--hairline-border-strong)',
             color: 'var(--teal-300)',
             fontWeight: 700,
             fontSize: '0.86rem',

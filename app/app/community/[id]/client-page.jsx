@@ -569,33 +569,6 @@ export default function CommunityProfile() {
             >
               <Share2 size={17} />
             </button>
-            <button
-              onClick={async () => {
-                if (!user?.id) {
-                  navigate.push(`/login?redirect=/community/${community.id}`);
-                  return;
-                }
-                if (window.confirm('Are you sure you want to flag this community for review?')) {
-                  try {
-                    const [{ flagCommunityAction }, { supabase }] = await Promise.all([
-                      import('../../../src/lib/actions'),
-                      import('../../../src/lib/supabaseClient')
-                    ]);
-                    const { data: sessionData } = await supabase.auth.getSession();
-                    await flagCommunityAction(community.id, 'Flagged by user', sessionData?.session?.access_token);
-                    toast.success('Community Flagged', 'Our moderation team will review this community.');
-                  } catch (err) {
-                    toast.error('Error', err.message || 'Could not flag community.');
-                  }
-                }
-              }}
-              className="interactive-press community-nav-btn"
-              style={{ color: 'var(--ink-muted)' }}
-              title="Report Community"
-              aria-label="Report Community"
-            >
-              <Flag size={16} />
-            </button>
             {isLeader && (
               <button
                 className="interactive-press community-nav-btn"
@@ -2057,6 +2030,48 @@ export default function CommunityProfile() {
                   )}
                 </div>
               )}
+            </div>
+          
+            {/* Report / Flag Community — tucked calmly at bottom with clear text label */}
+            <div style={{ marginTop: '8px', marginBottom: '28px', paddingTop: '16px', borderTop: '1px solid var(--hairline-border)', display: 'flex', justifyContent: 'center' }}>
+              <button
+                type="button"
+                onClick={async () => {
+                  if (!user?.id) {
+                    navigate.push(`/login?redirect=/community/${community.id}`);
+                    return;
+                  }
+                  if (window.confirm('Are you sure you want to report this community for review?')) {
+                    try {
+                      const [{ flagCommunityAction }, { supabase }] = await Promise.all([
+                        import('../../../src/lib/actions'),
+                        import('../../../src/lib/supabaseClient')
+                      ]);
+                      const { data: sessionData } = await supabase.auth.getSession();
+                      await flagCommunityAction(community.id, 'Flagged by user', sessionData?.session?.access_token);
+                      toast.success('Community Reported', 'Our moderation team will review this community.');
+                    } catch (err) {
+                      toast.error('Error', err.message || 'Could not report community.');
+                    }
+                  }
+                }}
+                className="interactive-press"
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  padding: '8px 14px',
+                  borderRadius: '99px',
+                  color: 'var(--ink-muted)',
+                  fontSize: '0.78rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                <Flag size={13} /> Report or flag this community
+              </button>
             </div>
           </>
         )}

@@ -46,12 +46,11 @@ export default function EventRecapShareCard({ event, community, attendeeCount = 
 
   return (
     <div className="event-recap-share-card" style={{
-      background: 'linear-gradient(135deg, rgba(235, 87, 56,0.12) 0%, rgba(27, 27, 27,0.7) 100%)',
-      border: '1px solid rgba(242, 114, 87,0.3)',
+      background: 'var(--surface-card)',
+      border: '1px solid var(--hairline-border)',
       borderRadius: '18px',
       padding: '20px',
       marginBottom: '24px',
-      boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
       position: 'relative',
       overflow: 'hidden'
     }}>
@@ -87,8 +86,8 @@ export default function EventRecapShareCard({ event, community, attendeeCount = 
 
       {/* Mini Event Summary Card */}
       <div className="event-recap-mini-card" style={{
-        background: 'rgba(18, 18, 18,0.7)',
-        border: '1px solid rgba(255,255,255,0.08)',
+        background: 'var(--surface-canvas)',
+        border: '1px solid var(--hairline-border)',
         borderRadius: '12px',
         padding: '12px 14px',
         marginBottom: '14px',
@@ -139,8 +138,8 @@ export default function EventRecapShareCard({ event, community, attendeeCount = 
           onClick={() => copyText(defaultShareText, 'Share link')}
           className="btn btn-outline interactive-press"
           style={{
-            borderColor: 'rgba(255,255,255,0.2)',
-            color: '#fff',
+            borderColor: 'var(--hairline-border-strong)',
+            color: 'var(--ink-primary)',
             fontWeight: 600,
             fontSize: '0.82rem',
             padding: '10px 14px',
