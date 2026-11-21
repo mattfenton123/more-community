@@ -10,97 +10,310 @@ import {
   Heart,
   Users,
   Calendar,
+  Shield,
+  Compass,
+  Sprout,
+  CheckCircle2,
+  Lock,
+  Car,
   MessageCircle,
+  Lightbulb,
 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { useChat } from '../context/ChatContext';
 import { resolveUserAvatar } from '../lib/avatar';
 
-// ─── Badge Definitions ──────────────────────────────────────
-const BADGES = [
-  { id: 'first_join', name: 'Pioneer', description: 'Joined your first community', icon: Star, color: '#D97706', check: (s) => s.communitiesJoined >= 1 },
-  { id: 'social_butterfly', name: 'Social Butterfly', description: 'Joined 3+ communities', icon: Users, color: '#DB2777', check: (s) => s.communitiesJoined >= 3 },
-  { id: 'networker', name: 'Networker', description: 'Joined 5+ communities', icon: Crown, color: '#7C3AED', check: (s) => s.communitiesJoined >= 5 },
-  { id: 'first_event', name: 'First Steps', description: "RSVP'd to your first event", icon: Calendar, color: '#C85A32', check: (s) => s.eventsAttended >= 1 },
-  { id: 'regular', name: 'Regular', description: 'Attended 5+ events', icon: Target, color: '#2563EB', check: (s) => s.eventsAttended >= 5 },
-  { id: 'super_fan', name: 'Super Fan', description: 'Attended 10+ events', icon: Trophy, color: '#D97706', check: (s) => s.eventsAttended >= 10 },
-  { id: 'chatterbox', name: 'Chatterbox', description: 'Sent 10+ messages', icon: MessageCircle, color: '#15803D', check: (s) => s.messagesSent >= 10 },
-  { id: 'storyteller', name: 'Storyteller', description: 'Sent 50+ messages', icon: MessageCircle, color: '#EA580C', check: (s) => s.messagesSent >= 50 },
-  { id: 'streak_3', name: 'On Fire', description: '3-week activity streak', icon: Flame, color: '#DC2626', check: (s) => s.weeklyStreak >= 3 },
-  { id: 'streak_8', name: 'Unstoppable', description: '8-week activity streak', icon: Zap, color: '#CA8A04', check: (s) => s.weeklyStreak >= 8 },
-  { id: 'kind_heart', name: 'Kind Heart', description: 'Joined a volunteering community', icon: Heart, color: '#E11D48', check: (s) => s.hasVolunteering },
-  { id: 'leader', name: 'Leader', description: 'Lead a community', icon: Crown, color: '#B45309', check: (s) => s.isLeader },
+// ─── 4-Tier Real-World Trust & Community Standing ───────────
+export const STANDING_TIERS = [
+  {
+    tier: 0,
+    id: 'newcomer',
+    name: 'Newcomer',
+    shortLabel: 'Newcomer',
+    emoji: '🌱',
+    icon: Sprout,
+    color: '#6E655A',
+    bgSoft: 'rgba(110, 101, 90, 0.14)',
+    borderSoft: 'rgba(110, 101, 90, 0.30)',
+    minMeetups: 0,
+    nextTierMeetups: 1,
+    tagline: 'Welcome to the neighbourhood! Join your first in-person gathering to verify your profile.',
+    activePerks: [
+      'RSVP to local meetups & join the Event Q&A discussion',
+      'Reserve a passenger seat in a verified driver’s carpool',
+      'Message Community Leaders & Co-Leaders directly',
+    ],
+    nextUnlockTitle: 'Attend 1 In-Person Meetup → Unlock Verified Local 🛡️',
+    nextUnlocks: [
+      '🚗 Offer Carpool Lifts as a Verified In-Person Driver',
+      '💬 1:1 Direct Messaging with fellow community members',
+      '💡 Propose Community Events to your leader’s calendar',
+      '💵 Cash-on-Arrival reservation trust on paid meetups',
+    ],
+  },
+  {
+    tier: 1,
+    id: 'verified_local',
+    name: 'Verified Local',
+    shortLabel: 'Verified Local',
+    emoji: '🛡️',
+    icon: Shield,
+    color: '#265E4F',
+    bgSoft: 'rgba(58, 142, 118, 0.14)',
+    borderSoft: 'rgba(58, 142, 118, 0.32)',
+    minMeetups: 1,
+    nextTierMeetups: 5,
+    tagline: 'Verified in person at a local meetup — trusted across your communities.',
+    activePerks: [
+      '🚗 Can offer carpool lifts as a Verified In-Person Driver',
+      '💬 1:1 Direct Messaging unlocked with shared community members',
+      '💡 Can propose community events & ideas to group leaders',
+      '📸 Full access to attendee event photo galleries',
+    ],
+    nextUnlockTitle: 'Attend 5 Meetups → Unlock Community Regular 🔥',
+    nextUnlocks: [
+      '⚡ Priority waitlist & +1 guest privileges on capped events',
+      '🏷️ Local business sponsor perks & member-only discounts',
+      '⭐ Highlighted as eligible for Co-Leader nomination',
+    ],
+  },
+  {
+    tier: 2,
+    id: 'regular',
+    name: 'Community Regular',
+    shortLabel: 'Regular',
+    emoji: '🔥',
+    icon: Flame,
+    color: '#C85A32',
+    bgSoft: 'rgba(200, 90, 50, 0.14)',
+    borderSoft: 'rgba(200, 90, 50, 0.32)',
+    minMeetups: 5,
+    nextTierMeetups: 15,
+    tagline: 'A familiar, trusted face who helps make local gatherings welcoming for everyone.',
+    activePerks: [
+      '✓ All Verified Local privileges (Carpool Driver, 1:1 DMs, Event Proposals)',
+      '⚡ Priority waitlist standing & +1 guest privileges',
+      '🏷️ Local partner & sponsor perks unlocked',
+      '⭐ Eligible for Co-Leader nomination in your groups',
+    ],
+    nextUnlockTitle: 'Attend 15 Meetups (or Lead a Group) → Community Pillar 🧭',
+    nextUnlocks: [
+      '🏛️ Launch a local chapter of an established community brand',
+      '🤝 Host cross-community collaborations & partner sessions',
+    ],
+  },
+  {
+    tier: 3,
+    id: 'pillar',
+    name: 'Community Pillar',
+    shortLabel: 'Pillar',
+    emoji: '🧭',
+    icon: Compass,
+    color: '#D97706',
+    bgSoft: 'rgba(217, 119, 6, 0.14)',
+    borderSoft: 'rgba(217, 119, 6, 0.34)',
+    minMeetups: 15,
+    nextTierMeetups: null,
+    tagline: 'Cornerstone leader & connector building real-world community across the region.',
+    activePerks: [
+      '✓ Full Community Trust & Verified Driver standing',
+      '🏛️ Eligible to launch chapters & co-host multi-group events',
+      '🤝 Trusted mentor & first-timer welcomer across communities',
+    ],
+    nextUnlockTitle: null,
+    nextUnlocks: [],
+  },
 ];
+
+// ─── Meaningful Real-World Milestone Badges ─────────────────
+const BADGES = [
+  {
+    id: 'verified_in_person',
+    name: 'Verified Local',
+    description: 'Attended 1+ meetup in person — unlocks Offering Carpools, 1:1 DMs & Event Proposals',
+    icon: Shield,
+    color: '#265E4F',
+    check: (s) => s.eventsAttended >= 1 || s.isLeader,
+  },
+  {
+    id: 'regular',
+    name: 'Community Regular',
+    description: 'Attended 5+ meetups — unlocks local sponsor perks & Co-Leader eligibility',
+    icon: Target,
+    color: '#C85A32',
+    check: (s) => s.eventsAttended >= 5,
+  },
+  {
+    id: 'super_fan',
+    name: 'Community Pillar',
+    description: 'Attended 10+ meetups — cornerstone local member & connector',
+    icon: Trophy,
+    color: '#D97706',
+    check: (s) => s.eventsAttended >= 10,
+  },
+  {
+    id: 'leader',
+    name: 'Community Host',
+    description: 'Leads or co-leads an active local community on More.',
+    icon: Crown,
+    color: '#B45309',
+    check: (s) => s.isLeader,
+  },
+  {
+    id: 'first_join',
+    name: 'First Step',
+    description: 'Joined your first local community group',
+    icon: Star,
+    color: '#2563EB',
+    check: (s) => s.communitiesJoined >= 1,
+  },
+  {
+    id: 'social_butterfly',
+    name: 'Local Explorer',
+    description: 'Active member across 3+ local communities',
+    icon: Users,
+    color: '#7C3AED',
+    check: (s) => s.communitiesJoined >= 3,
+  },
+  {
+    id: 'streak_3',
+    name: 'Consistent Rhythm',
+    description: '3+ weeks of consistent real-world & community engagement',
+    icon: Flame,
+    color: '#DC2626',
+    check: (s) => s.weeklyStreak >= 3,
+  },
+  {
+    id: 'kind_heart',
+    name: 'Good Neighbour',
+    description: 'Part of a volunteering or peer-support community',
+    icon: Heart,
+    color: '#E11D48',
+    check: (s) => s.hasVolunteering,
+  },
+];
+
+export function getStandingTier(eventsAttended = 0, isLeader = false) {
+  if (isLeader || eventsAttended >= 15) return STANDING_TIERS[3];
+  if (eventsAttended >= 5) return STANDING_TIERS[2];
+  if (eventsAttended >= 1) return STANDING_TIERS[1];
+  return STANDING_TIERS[0];
+}
 
 // ─── Pure Calculation Function ────────────────────────────────
 export function calculateUserGamification(
   targetId,
   { communityMemberships = {}, events = [], eventRsvps = {}, communities = [], messages = [] }
 ) {
+  const defaultTier = STANDING_TIERS[0];
   if (!targetId) {
     return {
       badges: [],
       earnedBadges: [],
       lockedBadges: [],
+      standing: defaultTier,
+      hasVerifiedMeetup: false,
       xp: 0,
       level: 1,
       xpInLevel: 0,
-      xpForNext: 500,
+      xpForNext: 1,
       streak: 0,
-      stats: { communitiesJoined: 0, eventsAttended: 0, messagesSent: 0, weeklyStreak: 0, hasVolunteering: false, isLeader: false },
+      stats: {
+        communitiesJoined: 0,
+        eventsAttended: 0,
+        verifiedPastMeetups: 0,
+        messagesSent: 0,
+        weeklyStreak: 0,
+        hasVolunteering: false,
+        isLeader: false,
+      },
     };
   }
 
   let communitiesJoined = 0;
   let hasVolunteering = false;
+  let isLeader = false;
+
   Object.entries(communityMemberships || {}).forEach(([cId, mems]) => {
-    if ((mems || []).some((m) => (m.userId || m.user_id) === targetId)) {
+    const myMem = (mems || []).find((m) => (m.userId || m.user_id) === targetId);
+    if (myMem) {
       communitiesJoined++;
+      if (myMem.role === 'Leader' || myMem.role === 'Co-Leader') {
+        isLeader = true;
+      }
       const comm = (communities || []).find((c) => c.id === cId);
       if (
         comm?.category?.toLowerCase().includes('volunteer') ||
-        comm?.tags?.some((t) => String(t).toLowerCase().includes('volunteer'))
+        comm?.tags?.some((t) => String(t).toLowerCase().includes('volunteer') || String(t).toLowerCase().includes('support'))
       ) {
         hasVolunteering = true;
       }
     }
   });
 
+  if (!isLeader) {
+    isLeader = (communities || []).some((c) => c.leader_id === targetId || c.creator_id === targetId);
+  }
+
+  const todayIso = new Date().toISOString().split('T')[0];
   let eventsAttended = 0;
-  Object.values(eventRsvps || {}).forEach((rsvps) => {
-    if ((rsvps || []).some((r) => (r.userId || r.user_id) === targetId && r.status === 'going')) {
+  let verifiedPastMeetups = 0;
+
+  Object.entries(eventRsvps || {}).forEach(([evId, rsvps]) => {
+    const myRsvp = (rsvps || []).find((r) => (r.userId || r.user_id) === targetId);
+    if (!myRsvp) return;
+    const isCheckedIn = Boolean(myRsvp.checkedIn || myRsvp.checked_in || myRsvp.status === 'checked_in');
+    const isGoing = myRsvp.status === 'going' || isCheckedIn;
+    if (isGoing) {
       eventsAttended++;
+      const ev = (events || []).find((e) => e.id === evId);
+      if (isCheckedIn || (ev?.date && ev.date <= todayIso)) {
+        verifiedPastMeetups++;
+      }
     }
   });
 
   const messagesSent = (messages || []).filter((m) => (m.authorId || m.senderId) === targetId).length;
-  const weeklyStreak = Math.min(Math.floor((messagesSent + eventsAttended) / 3), 12);
+  const weeklyStreak = Math.min(Math.floor((messagesSent + eventsAttended * 2) / 3), 12);
 
-  let isLeader = false;
-  Object.values(communityMemberships || {}).forEach((mems) => {
-    if ((mems || []).some((m) => (m.userId || m.user_id) === targetId && m.role === 'Leader')) {
-      isLeader = true;
-    }
-  });
+  const standing = getStandingTier(eventsAttended, isLeader);
+  const hasVerifiedMeetup = Boolean(isLeader || eventsAttended >= 1 || verifiedPastMeetups >= 1);
 
-  const stats = { communitiesJoined, eventsAttended, messagesSent, weeklyStreak, hasVolunteering, isLeader };
+  const stats = {
+    communitiesJoined,
+    eventsAttended,
+    verifiedPastMeetups,
+    messagesSent,
+    weeklyStreak,
+    hasVolunteering,
+    isLeader,
+  };
   const earnedBadges = BADGES.filter((b) => b.check(stats));
   const lockedBadges = BADGES.filter((b) => !b.check(stats));
 
-  const xp =
-    communitiesJoined * 50 +
-    eventsAttended * 100 +
-    messagesSent * 10 +
-    weeklyStreak * 75 +
-    earnedBadges.length * 200;
-  const level = Math.max(1, Math.floor(xp / 500) + 1);
-  const xpInLevel = xp % 500;
-  const xpForNext = 500;
+  // Progress towards next real-world meetup tier (replaces arbitrary XP bar)
+  const targetForNext = standing.nextTierMeetups || 15;
+  const currentMeetups = eventsAttended;
+  const xpInLevel = Math.min(currentMeetups, targetForNext);
+  const xpForNext = targetForNext;
+  const trustScore = eventsAttended * 100 + (isLeader ? 300 : 0) + communitiesJoined * 25 + earnedBadges.length * 50;
 
-  return { badges: BADGES, earnedBadges, lockedBadges, xp, level, xpInLevel, xpForNext, streak: weeklyStreak, stats };
+  return {
+    badges: BADGES,
+    earnedBadges,
+    lockedBadges,
+    standing,
+    hasVerifiedMeetup,
+    xp: trustScore,
+    level: standing.tier + 1,
+    xpInLevel,
+    xpForNext,
+    streak: weeklyStreak,
+    stats,
+  };
 }
 
-// ─── Calculate user stats for badge checking ────────────────
+// ─── Hook for Member Standing & Unlocks ─────────────────────
 export function useGamification(userId) {
   const { communityMemberships, events, eventRsvps, communities, user } = useAppContext();
   const { messages } = useChat();
@@ -126,7 +339,7 @@ export function BadgeRow({ userId, maxShow = 5 }) {
       {earnedBadges.slice(0, maxShow).map((badge) => (
         <div
           key={badge.id}
-          title={badge.name}
+          title={`${badge.name}: ${badge.description}`}
           style={{
             width: '28px',
             height: '28px',
@@ -164,124 +377,231 @@ export function BadgeRow({ userId, maxShow = 5 }) {
   );
 }
 
-// ─── Full Gamification Panel (for profile page) ─────────────
+// ─── Full Standing & Real-World Trust Panel (for Profile) ───
 export default function GamificationPanel({ userId, hideStats = false }) {
-  const { earnedBadges, lockedBadges, xp, level, xpInLevel, xpForNext, streak, stats } =
+  const { earnedBadges, lockedBadges, standing, hasVerifiedMeetup, streak, stats } =
     useGamification(userId);
+
+  const nextTarget = standing.nextTierMeetups;
+  const progressPct = nextTarget
+    ? Math.min(100, Math.round((stats.eventsAttended / nextTarget) * 100))
+    : 100;
+  const remainingMeetups = nextTarget ? Math.max(0, nextTarget - stats.eventsAttended) : 0;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-      {/* Level & XP Bar */}
+      {/* Community Standing & Trust Card */}
       <div
         style={{
-          padding: '16px',
+          padding: '18px',
           background: 'var(--surface-card)',
-          border: '1px solid var(--hairline-border)',
-          borderRadius: '16px',
+          border: `1px solid ${standing.borderSoft}`,
+          borderRadius: '18px',
         }}
       >
         <div
           style={{
             display: 'flex',
             justifyContent: 'space-between',
-            alignItems: 'center',
+            alignItems: 'flex-start',
+            gap: '12px',
+            flexWrap: 'wrap',
             marginBottom: '12px',
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div
               style={{
-                width: '42px',
-                height: '42px',
-                borderRadius: '12px',
-                background: 'var(--brand-accent)',
+                width: '46px',
+                height: '46px',
+                borderRadius: '14px',
+                background: standing.bgSoft,
+                border: `1.5px solid ${standing.borderSoft}`,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
+                fontSize: '1.35rem',
+                flexShrink: 0,
               }}
             >
-              <span style={{ fontSize: '1.05rem', fontWeight: 800, color: '#FFFFFF' }}>{level}</span>
+              {standing.emoji}
             </div>
             <div>
-              <div
-                style={{
-                  fontFamily: 'var(--font-heading)',
-                  fontWeight: 700,
-                  color: 'var(--ink-primary)',
-                  fontSize: '0.98rem',
-                }}
-              >
-                Level {level}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                <span
+                  style={{
+                    fontFamily: 'var(--font-heading)',
+                    fontWeight: 700,
+                    color: 'var(--ink-primary)',
+                    fontSize: '1.08rem',
+                  }}
+                >
+                  {standing.name}
+                </span>
+                <span
+                  style={{
+                    fontSize: '0.68rem',
+                    fontWeight: 800,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    padding: '2px 8px',
+                    borderRadius: '999px',
+                    background: standing.bgSoft,
+                    color: standing.color,
+                    border: `1px solid ${standing.borderSoft}`,
+                  }}
+                >
+                  {hasVerifiedMeetup ? 'In-Person Verified' : 'Tier 1 Pending'}
+                </span>
               </div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--ink-muted)' }}>{xp} XP total</div>
+              <div style={{ fontSize: '0.79rem', color: 'var(--ink-secondary)', marginTop: '3px', lineHeight: 1.4 }}>
+                {standing.tagline}
+              </div>
             </div>
           </div>
 
-          {streak > 0 && (
-            <div
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '4px',
-                padding: '4px 10px',
-                borderRadius: '99px',
-                background: 'rgba(220, 38, 38, 0.12)',
-                border: '1px solid rgba(220, 38, 38, 0.28)',
-              }}
-            >
-              <Flame size={13} color="#DC2626" />
-              <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#DC2626' }}>
-                {streak}w streak
-              </span>
-            </div>
-          )}
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '5px',
+              padding: '5px 11px',
+              borderRadius: '99px',
+              background: 'var(--surface-elevated)',
+              border: '1px solid var(--hairline-border-strong)',
+              fontSize: '0.76rem',
+              fontWeight: 700,
+              color: 'var(--ink-primary)',
+            }}
+          >
+            <Calendar size={13} color="var(--brand-accent)" />
+            {stats.eventsAttended} {stats.eventsAttended === 1 ? 'meetup' : 'meetups'}
+          </div>
         </div>
 
-        {/* XP Progress Bar */}
+        {/* Active Unlocks for Current Standing */}
         <div
           style={{
-            height: '8px',
+            padding: '12px 14px',
+            borderRadius: '12px',
             background: 'var(--surface-elevated)',
             border: '1px solid var(--hairline-border)',
-            borderRadius: '99px',
-            overflow: 'hidden',
+            marginBottom: nextTarget ? '14px' : 0,
           }}
         >
           <div
             style={{
-              height: '100%',
-              width: `${Math.min(100, (xpInLevel / xpForNext) * 100)}%`,
-              background: 'var(--brand-accent)',
-              borderRadius: '99px',
-              transition: 'width 0.5s ease',
+              fontSize: '0.7rem',
+              fontWeight: 800,
+              textTransform: 'uppercase',
+              letterSpacing: '0.06em',
+              color: 'var(--ink-muted)',
+              marginBottom: '6px',
             }}
-          />
+          >
+            Unlocked at Your Current Standing
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+            {standing.activePerks.map((perk) => (
+              <div
+                key={perk}
+                style={{
+                  fontSize: '0.8rem',
+                  color: 'var(--ink-primary)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '7px',
+                  lineHeight: 1.35,
+                }}
+              >
+                <CheckCircle2 size={14} color="var(--brand-secondary)" style={{ flexShrink: 0 }} />
+                <span>{perk}</span>
+              </div>
+            ))}
+          </div>
         </div>
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            fontSize: '0.7rem',
-            color: 'var(--ink-muted)',
-            fontWeight: 600,
-            marginTop: '6px',
-          }}
-        >
-          <span>
-            {xpInLevel} / {xpForNext} XP
-          </span>
-          <span>Level {level + 1}</span>
-        </div>
+
+        {/* Next In-Person Milestone & Unlocks */}
+        {nextTarget && (
+          <div
+            style={{
+              padding: '14px',
+              borderRadius: '14px',
+              background: 'var(--brand-accent-soft)',
+              border: '1px solid rgba(200, 90, 50, 0.28)',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                gap: '8px',
+                flexWrap: 'wrap',
+                marginBottom: '8px',
+              }}
+            >
+              <div style={{ fontSize: '0.83rem', fontWeight: 800, color: 'var(--ink-primary)' }}>
+                {standing.nextUnlockTitle}
+              </div>
+              <span style={{ fontSize: '0.74rem', fontWeight: 700, color: 'var(--teal-300)' }}>
+                {remainingMeetups === 1
+                  ? '1 more meetup to unlock'
+                  : `${remainingMeetups} more meetups to unlock`}
+              </span>
+            </div>
+
+            {/* Meetup Milestone Progress Bar */}
+            <div
+              style={{
+                height: '8px',
+                background: 'var(--surface-card)',
+                border: '1px solid var(--hairline-border)',
+                borderRadius: '99px',
+                overflow: 'hidden',
+                marginBottom: '10px',
+              }}
+            >
+              <div
+                style={{
+                  height: '100%',
+                  width: `${Math.max(12, progressPct)}%`,
+                  background: 'var(--brand-accent)',
+                  borderRadius: '99px',
+                  transition: 'width 0.4s ease',
+                }}
+              />
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              {standing.nextUnlocks.map((u) => (
+                <div
+                  key={u}
+                  style={{
+                    fontSize: '0.78rem',
+                    color: 'var(--ink-secondary)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                  }}
+                >
+                  <Lock size={12} color="var(--brand-accent)" style={{ flexShrink: 0 }} />
+                  <span>{u}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Optional Stats Row (hidden on Profile where top summary already renders stats) */}
+      {/* Optional Stats Row */}
       {!hideStats && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
           {[
             { label: 'Groups', value: stats.communitiesJoined, color: '#2563EB' },
-            { label: 'Events', value: stats.eventsAttended, color: 'var(--brand-accent)' },
-            { label: 'Messages', value: stats.messagesSent, color: '#15803D' },
-            { label: 'Streak', value: `${streak}w`, color: '#DC2626' },
+            { label: 'Meetups', value: stats.eventsAttended, color: 'var(--brand-accent)' },
+            { label: 'Milestones', value: earnedBadges.length, color: '#15803D' },
+            { label: 'Rhythm', value: `${streak}w`, color: '#DC2626' },
           ].map((s) => (
             <div
               key={s.label}
@@ -310,7 +630,7 @@ export default function GamificationPanel({ userId, hideStats = false }) {
         </div>
       )}
 
-      {/* Earned Badges */}
+      {/* Earned Milestones */}
       <div>
         <div
           style={{
@@ -322,7 +642,7 @@ export default function GamificationPanel({ userId, hideStats = false }) {
             marginBottom: '10px',
           }}
         >
-          Badges Earned ({earnedBadges.length}/{BADGES.length})
+          Real-World Milestones Earned ({earnedBadges.length}/{BADGES.length})
         </div>
         {earnedBadges.length === 0 ? (
           <div
@@ -336,10 +656,10 @@ export default function GamificationPanel({ userId, hideStats = false }) {
               color: 'var(--ink-secondary)',
             }}
           >
-            Join a community or RSVP to an event to earn your first badge.
+            Join a community and attend your first in-person meetup to earn your Verified Local milestone.
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '10px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))', gap: '10px' }}>
             {earnedBadges.map((badge) => (
               <div
                 key={badge.id}
@@ -355,9 +675,9 @@ export default function GamificationPanel({ userId, hideStats = false }) {
               >
                 <div
                   style={{
-                    width: '34px',
-                    height: '34px',
-                    borderRadius: '9px',
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '10px',
                     background: `${badge.color}18`,
                     display: 'flex',
                     alignItems: 'center',
@@ -365,13 +685,13 @@ export default function GamificationPanel({ userId, hideStats = false }) {
                     flexShrink: 0,
                   }}
                 >
-                  <badge.icon size={16} color={badge.color} />
+                  <badge.icon size={17} color={badge.color} />
                 </div>
                 <div style={{ minWidth: 0 }}>
                   <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--ink-primary)' }}>
                     {badge.name}
                   </div>
-                  <div style={{ fontSize: '0.72rem', color: 'var(--ink-muted)', lineHeight: 1.3 }}>
+                  <div style={{ fontSize: '0.73rem', color: 'var(--ink-secondary)', lineHeight: 1.35 }}>
                     {badge.description}
                   </div>
                 </div>
@@ -381,7 +701,7 @@ export default function GamificationPanel({ userId, hideStats = false }) {
         )}
       </div>
 
-      {/* Locked Badges */}
+      {/* Upcoming Milestones */}
       {lockedBadges.length > 0 && (
         <div>
           <div
@@ -394,9 +714,9 @@ export default function GamificationPanel({ userId, hideStats = false }) {
               marginBottom: '10px',
             }}
           >
-            Locked ({lockedBadges.length})
+            Next Milestones to Unlock ({lockedBadges.length})
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '10px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))', gap: '10px' }}>
             {lockedBadges.map((badge) => (
               <div
                 key={badge.id}
@@ -408,14 +728,14 @@ export default function GamificationPanel({ userId, hideStats = false }) {
                   background: 'var(--surface-elevated)',
                   border: '1px solid var(--hairline-border)',
                   borderRadius: '12px',
-                  opacity: 0.65,
+                  opacity: 0.72,
                 }}
               >
                 <div
                   style={{
-                    width: '34px',
-                    height: '34px',
-                    borderRadius: '9px',
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '10px',
                     background: 'var(--surface-card)',
                     border: '1px solid var(--hairline-border)',
                     display: 'flex',
@@ -427,10 +747,10 @@ export default function GamificationPanel({ userId, hideStats = false }) {
                   <badge.icon size={16} color="var(--ink-muted)" />
                 </div>
                 <div style={{ minWidth: 0 }}>
-                  <div style={{ fontSize: '0.84rem', fontWeight: 600, color: 'var(--ink-secondary)' }}>
+                  <div style={{ fontSize: '0.84rem', fontWeight: 600, color: 'var(--ink-primary)' }}>
                     {badge.name}
                   </div>
-                  <div style={{ fontSize: '0.72rem', color: 'var(--ink-muted)', lineHeight: 1.3 }}>
+                  <div style={{ fontSize: '0.73rem', color: 'var(--ink-muted)', lineHeight: 1.35 }}>
                     {badge.description}
                   </div>
                 </div>
@@ -460,12 +780,13 @@ export function CommunityLeaderboard({ communityId }) {
         user,
         role: m.role,
         xp: gamification.xp,
-        level: gamification.level,
+        standing: gamification.standing,
+        meetups: gamification.stats.eventsAttended,
         badges: gamification.earnedBadges,
       };
     });
 
-    return membersWithScores.sort((a, b) => b.xp - a.xp).slice(0, 10);
+    return membersWithScores.sort((a, b) => b.meetups - a.meetups || b.xp - a.xp).slice(0, 10);
   }, [communityId, communityMemberships, users, events, eventRsvps, communities, messages]);
 
   if (leaderboard.length === 0) return null;
@@ -490,7 +811,7 @@ export function CommunityLeaderboard({ communityId }) {
           background: 'var(--surface-elevated)',
         }}
       >
-        <Trophy size={18} color="var(--brand-accent)" />
+        <Shield size={18} color="var(--brand-secondary)" />
         <h3
           style={{
             margin: 0,
@@ -499,7 +820,7 @@ export function CommunityLeaderboard({ communityId }) {
             fontSize: '1.05rem',
           }}
         >
-          Top Members
+          Active Community Locals
         </h3>
       </div>
       <div>
@@ -522,10 +843,10 @@ export function CommunityLeaderboard({ communityId }) {
                   i === 0
                     ? '#D97706'
                     : i === 1
-                      ? 'var(--ink-secondary)'
-                      : i === 2
-                        ? '#B45309'
-                        : 'var(--ink-muted)',
+                    ? 'var(--ink-secondary)'
+                    : i === 2
+                    ? '#B45309'
+                    : 'var(--ink-muted)',
                 fontSize: i < 3 ? '1rem' : '0.86rem',
                 textAlign: 'center',
               }}
@@ -556,8 +877,8 @@ export function CommunityLeaderboard({ communityId }) {
               >
                 {m.user?.name || 'Community Member'}
               </div>
-              <div style={{ fontSize: '0.74rem', color: 'var(--teal-300)', fontWeight: 600 }}>
-                Level {m.level} • {m.xp} XP
+              <div style={{ fontSize: '0.74rem', color: m.standing.color, fontWeight: 700 }}>
+                {m.standing.emoji} {m.standing.name} • {m.meetups} {m.meetups === 1 ? 'meetup' : 'meetups'}
               </div>
             </div>
             {m.badges.length > 0 && (

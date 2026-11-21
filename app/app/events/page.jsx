@@ -182,9 +182,28 @@ export default function EventsHub() {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   })();
 
+  const hasVerifiedInPersonMeetup = useMemo(() => {
+    if (!user?.id) return false;
+    if (user?.isAdmin || (user?.ledCommunities?.length || 0) > 0) return true;
+    return Object.values(eventRsvps || {}).some((rList) =>
+      (rList || []).some(
+        (r) =>
+          (r.userId || r.user_id) === user.id &&
+          (r.status === 'going' || r.status === 'checked_in' || r.checkedIn || r.checked_in)
+      )
+    );
+  }, [user, eventRsvps]);
+
   const openProposeModal = () => {
     if (!user?.id) {
       router.push('/login?redirect=/events');
+      return;
+    }
+    if (!hasVerifiedInPersonMeetup) {
+      toast.info(
+        'Verified Local Unlock 🛡️',
+        'Attend your first in-person meetup to unlock proposing new events to your community calendar.'
+      );
       return;
     }
     if (!proposeCommunityId || !joinedPublicCommunities.some((c) => c.id === proposeCommunityId)) {

@@ -125,7 +125,8 @@ export default function UserProfile() {
 
   const isOwnProfile = Boolean(targetId && currentUser?.id && targetId === currentUser.id);
   const isLeader = Boolean((currentUser?.ledCommunities?.length || 0) > 0 || currentUser?.leaderOf);
-  const { level, streak, earnedBadges, xp } = useGamification(targetId);
+  const { standing, streak, earnedBadges } = useGamification(targetId);
+  const { hasVerifiedMeetup: viewerHasVerifiedMeetup } = useGamification(currentUser?.id);
 
   const [isEditing, setIsEditing] = useState(false);
   const [customInterestInput, setCustomInterestInput] = useState('');
@@ -182,6 +183,18 @@ export default function UserProfile() {
     });
     return sharedUserIds.has(targetId);
   }, [isOwnProfile, currentUser, targetId, communityMemberships]);
+
+  const isTargetLeader = useMemo(() => {
+    if (!targetId) return false;
+    if ((communities || []).some((c) => c.leader_id === targetId || c.creator_id === targetId)) return true;
+    return Object.values(communityMemberships || {}).some((mems) =>
+      (mems || []).some((m) => (m.userId || m.user_id) === targetId && (m.role === 'Leader' || m.role === 'Co-Leader'))
+    );
+  }, [targetId, communities, communityMemberships]);
+
+  const canMessageTarget = Boolean(
+    sharesCommunityWithTarget && (viewerHasVerifiedMeetup || isTargetLeader || currentUser?.isAdmin)
+  );
 
   // Saved items split cleanly across Communities, Events, and Experiences
   const savedCommunities = useMemo(
@@ -366,7 +379,7 @@ export default function UserProfile() {
       : [{ icon: Plus, label: 'Start a Community', desc: 'Create and lead your own local group', color: 'var(--brand-accent)', href: '/create-community' }]),
     { icon: Compass, label: 'Discover Communities', desc: 'Find groups near you', color: '#265E4F', href: '/discover' },
     { icon: Calendar, label: 'Browse Events', desc: "See what's happening locally", color: '#2563EB', href: '/events' },
-    { icon: Star, label: 'Leaderboard', desc: 'See active community members', color: '#D97706', href: '/leaderboard' },
+    { icon: Shield, label: 'Community Standing', desc: 'In-person trust tiers & active locals', color: '#265E4F', href: '/leaderboard' },
     { icon: Settings, label: 'Settings', desc: 'Account & theme preferences', color: 'var(--ink-secondary)', href: '/settings' },
   ];
 
@@ -387,7 +400,7 @@ export default function UserProfile() {
         showBack={true}
         rightElement={
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-            {!isOwnProfile && sharesCommunityWithTarget && (
+            {!isOwnProfile && canMessageTarget && (
               <button
                 className="btn btn-primary interactive-press"
                 onClick={() => navigate.push(`/chat/dm/${targetId}`)}
@@ -657,8 +670,8 @@ export default function UserProfile() {
                     border: '3px solid var(--surface-card)',
                   }}
                 >
-                  <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#FFFFFF' }}>
-                    {level}
+                  <span title={standing?.name || 'Member'} style={{ fontSize: '0.9rem', lineHeight: 1 }}>
+                    {standing?.emoji || '🌱'}
                   </span>
                 </div>
               </div>
@@ -1045,39 +1058,27 @@ export default function UserProfile() {
                         <MapPin size={12} color="var(--brand-accent)" /> {profileUser.location}
                       </span>
                     )}
-                    {eventsAttended > 0 && (
-                      <span
-                        style={{
-                          fontSize: '0.74rem',
-                          fontWeight: 700,
-                          color: 'var(--brand-secondary)',
-                          background: 'var(--brand-secondary-soft)',
-                          border: '1px solid rgba(58, 142, 118, 0.28)',
-                          padding: '4px 10px',
-                          borderRadius: '99px',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '5px',
-                        }}
-                      >
-                        <Shield size={12} color="var(--brand-secondary)" /> Verified In-Person ({eventsAttended} {eventsAttended === 1 ? 'meetup' : 'meetups'})
-                      </span>
-                    )}
                     <span
                       style={{
-                        fontSize: '0.74rem',
-                        fontWeight: 600,
-                        color: 'var(--ink-secondary)',
-                        background: 'var(--surface-elevated)',
-                        border: '1px solid var(--hairline-border)',
-                        padding: '4px 10px',
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                        color: standing?.color || 'var(--ink-secondary)',
+                        background: standing?.bgSoft || 'var(--surface-elevated)',
+                        border: `1px solid ${standing?.borderSoft || 'var(--hairline-border)'}`,
+                        padding: '4px 11px',
                         borderRadius: '99px',
                         display: 'inline-flex',
                         alignItems: 'center',
                         gap: '5px',
                       }}
                     >
-                      <Trophy size={12} color="var(--brand-accent)" /> Level {level} • {xp} XP
+                      <span>{standing?.emoji || '🌱'}</span>
+                      <span>{standing?.name || 'Newcomer'}</span>
+                      {eventsAttended > 0 && (
+                        <span style={{ opacity: 0.85 }}>
+                          • {eventsAttended} {eventsAttended === 1 ? 'meetup' : 'meetups'}
+                        </span>
+                      )}
                     </span>
                     {streak > 0 && (
                       <span
@@ -1287,7 +1288,7 @@ export default function UserProfile() {
         {/* Message Action (other profile only) */}
         {!isOwnProfile && (
           <div style={{ marginBottom: '20px' }}>
-            {sharesCommunityWithTarget ? (
+            {canMessageTarget ? (
               <button
                 onClick={() => navigate.push(`/chat/dm/${targetId}`)}
                 className="btn btn-primary interactive-press"
@@ -1304,8 +1305,23 @@ export default function UserProfile() {
                   gap: '8px',
                 }}
               >
-                <MessageCircle size={18} /> Message {firstName}
+                <MessageCircle size={18} /> Message {firstName}{isTargetLeader ? ' (Community Leader)' : ''}
               </button>
+            ) : sharesCommunityWithTarget ? (
+              <div
+                style={{
+                  textAlign: 'center',
+                  padding: '14px 16px',
+                  background: 'var(--surface-card)',
+                  borderRadius: '14px',
+                  border: '1px solid var(--hairline-border-strong)',
+                  color: 'var(--ink-secondary)',
+                  fontSize: '0.84rem',
+                  lineHeight: 1.45,
+                }}
+              >
+                <strong style={{ color: 'var(--ink-primary)' }}>🛡️ Verified Local Unlock:</strong> Attend your first in-person meetup to unlock 1:1 direct messages with fellow members (you can always message Community Leaders directly).
+              </div>
             ) : (
               <div
                 style={{
@@ -1318,7 +1334,7 @@ export default function UserProfile() {
                   fontSize: '0.88rem',
                 }}
               >
-                Join a shared community to message {firstName}
+                Join a shared community to connect with {firstName}
               </div>
             )}
           </div>
