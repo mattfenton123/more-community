@@ -147,8 +147,8 @@ export async function POST(request) {
     }
 
     const apiKey = (process.env.GEMINI_API_KEY || process.env.GOOGLE_AI_API_KEY || '').trim();
-    // Use proven, universally supported Gemini models on Google AI Studio
-    const models = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
+    // Use the latest capable Gemini Flash models with automatic fallback
+    const models = ['gemini-3.6-flash', 'gemini-2.5-flash', 'gemini-2.0-flash'];
     let lastApiError = null;
 
     // ==============================================================
@@ -195,9 +195,11 @@ LIVE COMMUNITY SNAPSHOT:
 
 HOW TO RESPOND:
 1. Be genuinely conversational, collaborative, and specific to ${loc} and "${communityName}". Ask a brief clarifying question or offer to tweak details if helpful. Keep your conversational "reply" natural, concise (2-4 short paragraphs max), and easy to read in a chat bubble.
-2. Whenever the leader asks to create/plan an event (or a multi-week schedule), tweak an event just discussed, write a broadcast/WhatsApp/Instagram message, or generate a UK Risk Assessment (RAMS) / Local Sponsor Pitch / Council Grant Pitch, attach an executable "actionCard" in your JSON response so they can publish, copy, or download it with 1 tap right inside the chat!
-3. If the leader is just asking for advice, strategy, or brainstorming (e.g. "How do I get quiet members to attend?", "What are good rainy day meetup ideas in ${loc}?"), give practical, empathetic advice and set "actionCard": null.
-4. Always provide 3 short, natural "suggestedReplies" (under 8 words each) that the leader might want to tap next to continue the conversation (e.g. "Turn Idea #1 into an event draft", "Change the start time to 09:30", "Also draft a WhatsApp invite for this", "Create a RAMS risk assessment for this").
+2. Whenever the leader asks to launch/create a single new event OR plan a multi-week schedule, tweak an event just discussed, launch a community poll, write a broadcast/WhatsApp/Instagram message, or generate a UK Risk Assessment (RAMS) / Local Sponsor Pitch / Council Grant Pitch, attach an executable "actionCard" in your JSON response so they can launch, publish, copy, or download it with 1 tap right inside the chat!
+3. If the leader asks to create/launch ONE specific new event (e.g. "Launch a Sunday 10am dog-friendly coffee walk at Dunorlan Park for 20 people"), return an "events" actionCard with that 1 tailored event ready for 1-tap launch.
+4. If the leader asks to run a vote or poll (e.g. "Ask members which day suits best"), return a "poll" actionCard with a clear question and 2-4 concise options ready for 1-tap launch.
+5. If the leader is just asking for advice, strategy, or brainstorming (e.g. "How do I get quiet members to attend?", "What are good rainy day meetup ideas in ${loc}?"), give practical, empathetic advice and set "actionCard": null.
+6. Always provide 3 short, natural "suggestedReplies" (under 8 words each) that the leader might want to tap next to continue the conversation (e.g. "Launch a single event from Idea #1", "Change the start time to 09:30", "Also draft a WhatsApp invite for this", "Create a poll to vote on the date").
 
 RETURN FORMAT:
 Return ONLY a valid JSON object matching this exact structure:
@@ -206,7 +208,7 @@ Return ONLY a valid JSON object matching this exact structure:
   "actionCard": null OR one of:
     - {
         "type": "events",
-        "title": "Draft Event Schedule",
+        "title": "Launch New Event" | "Draft Event Schedule",
         "events": [
           {
             "weekLabel": "This Weekend",
@@ -221,7 +223,14 @@ Return ONLY a valid JSON object matching this exact structure:
         ]
       }
     - {
+        "type": "poll",
+        "title": "Launch Community Poll",
+        "question": "Short clear question for members?",
+        "options": ["Option 1", "Option 2", "Option 3"]
+      }
+    - {
         "type": "broadcast",
+        "title": "Ready-to-Send Community Copy",
         "announcementTitle": "Short title with emoji",
         "inAppAnnouncement": "2-3 sentence in-app announcement",
         "whatsappCopy": "WhatsApp message with *bold* highlights and emojis",
@@ -238,10 +247,13 @@ Return ONLY a valid JSON object matching this exact structure:
 
       const contents = [
         ...history
-          .filter((m) => m && typeof m.text === 'string' && m.text.trim())
+          .filter((m) => {
+            const msgText = m?.content ?? m?.text;
+            return m && typeof msgText === 'string' && msgText.trim();
+          })
           .map((m) => ({
             role: m.role === 'assistant' ? 'model' : 'user',
-            parts: [{ text: m.text.slice(0, 1200) }],
+            parts: [{ text: String(m.content ?? m.text).slice(0, 1500) }],
           })),
         { role: 'user', parts: [{ text: prompt }] },
       ];
@@ -258,7 +270,7 @@ Return ONLY a valid JSON object matching this exact structure:
                 contents,
                 generationConfig: {
                   temperature: 0.7,
-                  maxOutputTokens: 1800,
+                  maxOutputTokens: 4096,
                   responseMimeType: 'application/json',
                 },
               }),
@@ -1429,6 +1441,29 @@ function buildConversationalCoPilotFallback({
   const lower = String(prompt || '').toLowerCase();
   const nextEv = upcomingEvents[0] || null;
   const lastAssistantMsg = [...(history || [])].reverse().find((m) => m?.role === 'assistant');
+
+  // 1b. Launch a Community Poll
+  if (lower.includes('poll') || lower.includes('vote') || lower.includes('ask members which')) {
+    return {
+      reply: `Great idea — letting members vote dramatically boosts turnout because people feel ownership over the plan. I've drafted a quick poll for **${communityName}** below. Tap **Launch Poll Live** to post it right away, or tell me if you want different options!`,
+      actionCard: {
+        type: 'poll',
+        title: `Community Poll for ${communityName}`,
+        question: `Which slot works best for our next ${communityName} meetup in ${loc}?`,
+        options: [
+          'Saturday morning (9:30 AM)',
+          'Sunday morning (10:00 AM)',
+          'Weekday evening social (6:30 PM)',
+          'Either weekend morning works for me!',
+        ],
+      },
+      suggestedReplies: [
+        'Change options to outdoor vs café social',
+        'Draft a WhatsApp message to share this poll',
+        'Create a new meetup for this Sunday at 10am',
+      ],
+    };
+  }
 
   // 1. Follow-up tweak on a previously drafted event
   if (

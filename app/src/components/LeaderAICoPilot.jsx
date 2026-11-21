@@ -25,6 +25,58 @@ import { cleanLocationName } from '../lib/location';
 
 const CONSENT_STORAGE_KEY = 'more_ai_copilot_consent_v1';
 
+function normalizeActionCard(card) {
+  if (!card || !card.type) return null;
+  if (card.type === 'events') {
+    const events = Array.isArray(card.data?.events)
+      ? card.data.events
+      : Array.isArray(card.events)
+      ? card.events
+      : [];
+    if (events.length === 0) return null;
+    return {
+      type: 'events',
+      title: card.title || (events.length === 1 ? 'Launch New Meetup' : 'Draft Meetup Schedule'),
+      data: { events },
+    };
+  }
+  if (card.type === 'poll') {
+    const question = card.data?.question || card.question || '';
+    const options = Array.isArray(card.data?.options)
+      ? card.data.options
+      : Array.isArray(card.options)
+      ? card.options
+      : [];
+    if (!question || options.length < 2) return null;
+    return {
+      type: 'poll',
+      title: card.title || 'Launch Community Poll',
+      data: { question, options },
+    };
+  }
+  if (card.type === 'broadcast') {
+    const inAppTitle = card.data?.inAppTitle || card.announcementTitle || '';
+    const inAppBody = card.data?.inAppBody || card.inAppAnnouncement || card.body || '';
+    const whatsappCopy = card.data?.whatsappCopy || card.whatsappCopy || '';
+    const instagramCopy = card.data?.instagramCopy || card.instagramCopy || '';
+    return {
+      type: 'broadcast',
+      title: card.title || 'Ready-to-Send Community Copy',
+      data: { inAppTitle, inAppBody, whatsappCopy, instagramCopy },
+    };
+  }
+  if (card.type === 'document') {
+    const content = card.data?.content || card.document || card.content || '';
+    if (!content) return null;
+    return {
+      type: 'document',
+      title: card.title || 'Generated Community Document',
+      data: { content, docType: card.docType || card.data?.docType || 'rams' },
+    };
+  }
+  return null;
+}
+
 export default function LeaderAICoPilot({
   community,
   communityEvents = [],
@@ -34,7 +86,7 @@ export default function LeaderAICoPilot({
   onJumpToUpgrade,
   onClose,
 }) {
-  const { user, createEvent, createEventsBatch, createPost, createFeedPost } = useAppContext();
+  const { user, createEvent, createEventsBatch, createPost, createFeedPost, createPoll } = useAppContext();
   const { toast } = useToast();
 
   const [hasConsented, setHasConsented] = useState(() => {
@@ -87,6 +139,9 @@ export default function LeaderAICoPilot({
   const [publishingBatchMap, setPublishingBatchMap] = useState({});
   const [sendingBroadcastMap, setSendingBroadcastMap] = useState({});
   const [sentBroadcastMap, setSentBroadcastMap] = useState({});
+  const [launchingPollMap, setLaunchingPollMap] = useState({});
+  const [launchedPollMap, setLaunchedPollMap] = useState({});
+  const [activeModelLabel, setActiveModelLabel] = useState('Gemini 3.6 Flash');
 
   const chatEndRef = useRef(null);
 
@@ -154,13 +209,16 @@ export default function LeaderAICoPilot({
       });
 
       const data = await res.json();
+      if (data?.modelUsed) {
+        setActiveModelLabel(data.modelUsed.replace(/-/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()));
+      }
       const assistantMsg = {
         id: `ai-${Date.now()}`,
         role: 'assistant',
         reply:
           data?.reply ||
           "I've put together a recommendation for you below. Tell me if you'd like to adjust the tone, dates, or format!",
-        actionCard: data?.actionCard && data.actionCard.type ? data.actionCard : null,
+        actionCard: normalizeActionCard(data?.actionCard),
         suggestedReplies: Array.isArray(data?.suggestedReplies) ? data.suggestedReplies : [],
       };
       setMessages((prev) => [...prev, assistantMsg]);
@@ -269,6 +327,22 @@ export default function LeaderAICoPilot({
       toast.error('Broadcast Error', err?.message || 'Could not publish announcement.');
     } finally {
       setSendingBroadcastMap((prev) => ({ ...prev, [msgId]: false }));
+    }
+  };
+
+  const handleLaunchPollCard = async (msgId, pollData) => {
+    if (!community?.id || !pollData?.question || !Array.isArray(pollData?.options)) return;
+    setLaunchingPollMap((prev) => ({ ...prev, [msgId]: true }));
+    try {
+      if (typeof createPoll === 'function') {
+        await createPoll(community.id, pollData.question, pollData.options);
+      }
+      setLaunchedPollMap((prev) => ({ ...prev, [msgId]: true }));
+      toast.success('Poll Launched! 📊', 'Your community poll is now live for members to vote on.');
+    } catch (err) {
+      toast.error('Poll Launch Error', err?.message || 'Could not launch community poll.');
+    } finally {
+      setLaunchingPollMap((prev) => ({ ...prev, [msgId]: false }));
     }
   };
 
@@ -392,7 +466,7 @@ export default function LeaderAICoPilot({
                   letterSpacing: '0.04em',
                 }}
               >
-                Conversational Assistant
+                {activeModelLabel}
               </span>
             </div>
             <div style={{ fontSize: '0.78rem', color: 'var(--ink-muted)', marginTop: '2px' }}>
@@ -534,8 +608,16 @@ export default function LeaderAICoPilot({
           >
             {[
               {
+                label: '🚀 Launch a New Meetup',
+                prompt: `Create a single welcoming meetup for ${community?.name || 'our community'} in ${communityLoc} this weekend at 10:00 AM with a post-event coffee stop.`,
+              },
+              {
                 label: '🗓️ Plan Next 4 Weeks',
                 prompt: `Can you plan our next 4 weeks of meetups in ${communityLoc} with a mix of beginner-friendly and regular sessions?`,
+              },
+              {
+                label: '📊 Create a Member Poll',
+                prompt: `Create a community poll asking members which day and time works best for our next meetup in ${communityLoc}.`,
               },
               {
                 label: '👋 Newcomer WhatsApp Welcome',
@@ -718,7 +800,9 @@ export default function LeaderAICoPilot({
                               ) : (
                                 <Check size={13} />
                               )}
-                              Publish All ({msg.actionCard.data.events.length})
+                              {msg.actionCard.data.events.length === 1
+                                ? '🚀 Launch Event Live'
+                                : `🚀 Launch All (${msg.actionCard.data.events.length})`}
                             </button>
                           </div>
 
@@ -861,6 +945,97 @@ export default function LeaderAICoPilot({
                           >
                             💬 Want to change days, times, or venues? Just reply in the chat below (e.g.{' '}
                             <em>&ldquo;Move these to Sunday mornings at 10:30&rdquo;</em>).
+                          </div>
+                        </div>
+                      )}
+
+                    {/* Embedded Executable Action Card: Launch Community Poll */}
+                    {!isUser &&
+                      msg.actionCard?.type === 'poll' &&
+                      msg.actionCard?.data?.question && (
+                        <div
+                          style={{
+                            marginTop: '14px',
+                            padding: '14px',
+                            borderRadius: '14px',
+                            background: 'var(--surface-elevated)',
+                            border: '1px solid rgba(59, 130, 246, 0.35)',
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              gap: '10px',
+                              flexWrap: 'wrap',
+                              marginBottom: '10px',
+                            }}
+                          >
+                            <div
+                              style={{
+                                fontWeight: 800,
+                                fontSize: '0.86rem',
+                                color: 'var(--ink-primary)',
+                              }}
+                            >
+                              📊 {msg.actionCard.title || 'Draft Community Poll'}
+                            </div>
+                            <button
+                              type="button"
+                              disabled={launchingPollMap[msg.id] || launchedPollMap[msg.id]}
+                              onClick={() => handleLaunchPollCard(msg.id, msg.actionCard.data)}
+                              className="btn btn-primary interactive-press"
+                              style={{
+                                padding: '6px 12px',
+                                borderRadius: '9px',
+                                fontSize: '0.76rem',
+                                fontWeight: 800,
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '5px',
+                              }}
+                            >
+                              {launchedPollMap[msg.id] ? (
+                                <>
+                                  <Check size={13} /> Poll Live!
+                                </>
+                              ) : launchingPollMap[msg.id] ? (
+                                <>
+                                  <Loader2 size={13} className="spin" /> Launching...
+                                </>
+                              ) : (
+                                <>🚀 Launch Poll Live</>
+                              )}
+                            </button>
+                          </div>
+                          <div
+                            style={{
+                              fontWeight: 700,
+                              fontSize: '0.88rem',
+                              color: 'var(--ink-primary)',
+                              marginBottom: '8px',
+                            }}
+                          >
+                            {msg.actionCard.data.question}
+                          </div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                            {(msg.actionCard.data.options || []).map((opt, oIdx) => (
+                              <div
+                                key={oIdx}
+                                style={{
+                                  padding: '8px 11px',
+                                  borderRadius: '9px',
+                                  background: 'var(--surface-card)',
+                                  border: '1px solid var(--hairline-border)',
+                                  fontSize: '0.8rem',
+                                  color: 'var(--ink-secondary)',
+                                  fontWeight: 600,
+                                }}
+                              >
+                                {oIdx + 1}. {opt}
+                              </div>
+                            ))}
                           </div>
                         </div>
                       )}
