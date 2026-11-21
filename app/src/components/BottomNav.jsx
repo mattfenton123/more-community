@@ -72,24 +72,29 @@ export default function BottomNav() {
     });
   }
 
+  const isAdmin = Boolean(user?.isAdmin || currentPath?.startsWith('/admin'));
+
   const navItems = [
     { id: 'home', label: 'Home', icon: Activity, href: '/app' },
     { id: 'discover', label: 'Discover', icon: Compass, href: '/discover' },
     { id: 'events', label: 'Events', icon: Calendar, href: '/events' },
     { id: 'chat', label: 'Chat', icon: MessageCircle, href: '/chat', badge: unreadChatCount },
-    ...((user?.isAdmin || currentPath?.startsWith('/admin')) ? [{ id: 'admin', label: 'Admin', icon: Shield, href: '/admin' }] : []),
-    { id: 'leader', label: isLeader ? 'Leader' : 'Host', icon: Crown, href: isLeader ? '/dashboard' : '/create-community' },
+    ...(isLeader
+      ? [{ id: 'leader', label: 'Leader', icon: Crown, href: '/dashboard' }]
+      : isAdmin
+        ? [{ id: 'admin', label: 'Admin', icon: Shield, href: '/admin' }]
+        : []),
     { id: 'profile', label: 'Profile', icon: User, href: user?.id ? `/profile/${user.id}` : '/login' },
   ];
 
   return (
-    <div className="bottom-nav" style={{ maxWidth: navItems.length > 5 ? '480px' : '400px' }}>
+    <div className="bottom-nav" style={{ maxWidth: navItems.length > 5 ? '440px' : '400px' }}>
       {navItems.map(item => {
         const isActive = currentPath === item.href || 
           (item.id === 'home' && (currentPath === '/app' || currentPath === '/')) || 
           (item.id === 'chat' && currentPath?.startsWith('/chat')) || 
           (item.id === 'admin' && currentPath?.startsWith('/admin')) ||
-          (item.id === 'leader' && (currentPath?.startsWith('/dashboard') || currentPath === '/create-community' || (currentPath?.startsWith('/community/') && currentPath?.includes('/admin'))));
+          (item.id === 'leader' && (currentPath?.startsWith('/dashboard') || (currentPath?.startsWith('/community/') && currentPath?.includes('/admin'))));
         const Icon = item.icon;
         
         return (

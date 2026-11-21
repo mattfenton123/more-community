@@ -102,6 +102,30 @@ export default function AppHeader({ title, subtitle, rightElement, showBack = fa
         <span style={{ fontSize: '1rem', lineHeight: 1, fontWeight: 800 }}>+</span>
         <span className="header-start-text">Start Group</span>
       </button>
+      {user?.isAdmin && !isDesktop && (
+        <button
+          type="button"
+          onClick={() => navigate.push('/admin')}
+          className="interactive-press"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '30px',
+            height: '30px',
+            borderRadius: '50%',
+            background: currentPath?.startsWith('/admin') ? 'rgba(59, 130, 246, 0.22)' : 'var(--surface-elevated)',
+            border: currentPath?.startsWith('/admin') ? '1px solid rgba(59, 130, 246, 0.6)' : '1px solid var(--hairline-border-strong)',
+            color: currentPath?.startsWith('/admin') ? '#3b82f6' : 'var(--ink-secondary)',
+            cursor: 'pointer',
+            flexShrink: 0
+          }}
+          title="Platform Admin"
+          aria-label="Platform Admin"
+        >
+          <Shield size={15} />
+        </button>
+      )}
       <div 
         className="interactive-press"
         onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}

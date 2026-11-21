@@ -1079,19 +1079,34 @@ export default function Discover() {
                 <Sparkles size={19} />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div
-                  style={{
-                    fontFamily: 'var(--font-heading)',
-                    fontSize: '0.96rem',
-                    fontWeight: 700,
-                    color: 'var(--ink-primary)',
-                    marginBottom: '2px',
-                  }}
-                >
-                  Experiences Marketplace
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '2px' }}>
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-heading)',
+                      fontSize: '0.96rem',
+                      fontWeight: 700,
+                      color: 'var(--ink-primary)',
+                    }}
+                  >
+                    Guided Days Out &amp; Retreats
+                  </span>
+                  <span
+                    style={{
+                      fontSize: '0.64rem',
+                      fontWeight: 700,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                      padding: '2px 7px',
+                      borderRadius: '999px',
+                      background: 'var(--brand-accent-soft)',
+                      color: 'var(--brand-accent)',
+                    }}
+                  >
+                    Experiences
+                  </span>
                 </div>
                 <div style={{ fontSize: '0.8rem', color: 'var(--ink-secondary)', lineHeight: 1.4 }}>
-                  Retreats, adventures, venues & workshops curated with community leaders
+                  Bookable partner outings, workshops &amp; venues — pitch one to your group or book with a leader
                 </div>
               </div>
               <ChevronRight size={18} color="var(--ink-muted)" style={{ flexShrink: 0 }} />
