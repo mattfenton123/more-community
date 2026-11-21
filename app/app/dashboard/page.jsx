@@ -38,7 +38,19 @@ import { isAffiliateExperience, getHostPassEconomics } from '../../src/lib/exper
 import { resolveUserAvatar } from '../../src/lib/avatar';
 import SpecialistVaultModal from '../../src/components/SpecialistVaultModal';
 import LeaderAICoPilot from '../../src/components/LeaderAICoPilot';
+import EventStudioModal from '../../src/components/EventStudioModal';
 import { generatePliCertificatePdf, generateRamsPdf } from '../../src/lib/insurance';
+
+function stripInternalEventTags(rawDesc) {
+  return String(rawDesc || '')
+    .replace(/\s*\[Host Approval Required\]/g, '')
+    .replace(/\s*\[RSVP Question: [^\]]+\]/g, '')
+    .replace(/\s*\[WhatsApp: [^\]]+\]/g, '')
+    .replace(/\s*\[Carpool: disabled\]/g, '')
+    .replace(/\s*\[Guests: disabled\]/g, '')
+    .replace(/\s*\[ProposedByUid:[^\]]+\]/g, '')
+    .trim();
+}
 
 // ─── Stat Card Component ──────────────────────────────────
 const StatCard = ({ value, label, color, icon: Icon, accent }) => (
@@ -451,7 +463,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
     title: '', 
     description: '', 
     date: '', 
-    time: '', 
+    time: '10:00', 
     location: '', 
     coords: (community?.lat != null && community?.lng != null) ? [Number(community.lat), Number(community.lng)] : null,
     maxCapacity: '', 
@@ -1340,8 +1352,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
     }
 
     if (parseFloat(eventForm.ticketPrice) > 0 && !stripeConnected && !eventForm.allowCash) {
-      toast.error('Payout Account or Cash Option Required', 'Please register a payout account or check "Allow Pay in Cash" to publish a paid event.');
-      setShowPayoutBankModal(true);
+      toast.error('Payout Account or Cash Option Required', 'Connect your UK payout bank account or tick "Allow Pay in Cash at Venue" to publish a paid event.');
       return;
     }
 
@@ -1449,7 +1460,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
 
     setEventForm({
       title: `${event.title || 'Event'} (Copy)`,
-      description: event.description || '',
+      description: stripInternalEventTags(event.description),
       date: nextDate,
       time: event.time || '10:00',
       location: event.location || '',
@@ -1508,8 +1519,8 @@ export default function LeaderDashboard({ initialCommunityId }) {
     setEditingEventId(event.id);
     const parsedCoords = parseLocationCoords(event.location);
     setEventForm({
-      title: event.title || '', description: event.description || '',
-      date: event.date || '', time: event.time || '',
+      title: event.title || '', description: stripInternalEventTags(event.description),
+      date: event.date || '', time: event.time || '10:00',
       location: event.location || '',
       coords: normalizeCoords(parsedCoords || (event.lat != null && event.lng != null ? [event.lat, event.lng] : null)),
       maxCapacity: event.maxCapacity ? event.maxCapacity.toString() : '',
@@ -1535,8 +1546,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
   const handleSaveEvent = async () => {
     if (!eventForm.title || !eventForm.date || !eventForm.time || !eventForm.location) return;
     if (parseFloat(eventForm.ticketPrice) > 0 && !stripeConnected && !eventForm.allowCash) {
-      toast.error('Payout Account or Cash Option Required', 'Please register a payout account or check "Allow Pay in Cash" to publish a paid event.');
-      setShowPayoutBankModal(true);
+      toast.error('Payout Account or Cash Option Required', 'Connect your UK payout bank account or tick "Allow Pay in Cash at Venue" to publish a paid event.');
       return;
     }
     setIsUploading(true);
@@ -1641,18 +1651,24 @@ export default function LeaderDashboard({ initialCommunityId }) {
       });
       const data = await res.json();
       if (data.event) {
-        setEventForm(prev => ({
-          ...prev,
-          title: data.event.title || prev.title,
-          description: data.event.description || prev.description,
-          date: data.event.date || prev.date,
-          time: data.event.time || prev.time,
-          location: data.event.location || prev.location,
-          maxCapacity: data.event.maxCapacity != null ? String(data.event.maxCapacity) : prev.maxCapacity,
-          ticketPrice: data.event.ticketPrice != null ? String(data.event.ticketPrice) : prev.ticketPrice,
-          autoReminders: data.event.autoReminders ?? prev.autoReminders,
-          autoFeedback: data.event.autoFeedback ?? prev.autoFeedback
-        }));
+        setEventForm(prev => {
+          const nextDate = data.event.date || prev.date;
+          return {
+            ...prev,
+            title: data.event.title || prev.title,
+            description: data.event.description || prev.description,
+            date: nextDate,
+            resolvedDates: nextDate ? [nextDate] : prev.resolvedDates,
+            scheduleMode: 'single',
+            recurrenceSummary: 'Single event',
+            time: data.event.time || prev.time || '10:00',
+            location: data.event.location || prev.location,
+            maxCapacity: data.event.maxCapacity != null ? String(data.event.maxCapacity) : prev.maxCapacity,
+            ticketPrice: data.event.ticketPrice != null ? String(data.event.ticketPrice) : prev.ticketPrice,
+            autoReminders: data.event.autoReminders ?? prev.autoReminders,
+            autoFeedback: data.event.autoFeedback ?? prev.autoFeedback
+          };
+        });
         if (Array.isArray(data.event.vibeTags) && data.event.vibeTags.length > 0) {
           setGeneratedVibes(data.event.vibeTags);
         }
@@ -1664,8 +1680,8 @@ export default function LeaderDashboard({ initialCommunityId }) {
           );
         } else {
           toast.success(
-            '✨ Gemini 2.0 Flash!',
-            'Gemini crafted your custom event with rich local details.'
+            '✨ Event Draft Filled!',
+            'Review the details below and tap Publish whenever you are ready.'
           );
         }
       } else {
@@ -6055,7 +6071,62 @@ export default function LeaderDashboard({ initialCommunityId }) {
       {/* ══════════════════════════════════════════════════════════ */}
       {/* MODALS                                                   */}
       {/* ══════════════════════════════════════════════════════════ */}
-      {(isEditing || (modalType && modalType !== 'community')) && (
+      {/* Unified Single-Screen Event Studio Modal (Add & Edit Event) */}
+      {(modalType === 'event' || modalType === 'edit-event') && (
+        <EventStudioModal
+          isOpen={true}
+          isEditing={Boolean(editingEventId)}
+          editingEventId={editingEventId}
+          community={community}
+          communities={communities}
+          eventForm={eventForm}
+          setEventForm={setEventForm}
+          imageFile={imageFile}
+          setImageFile={setImageFile}
+          isUploading={isUploading}
+          stripeConnected={stripeConnected}
+          onOpenPayoutModal={handleConnectStripe}
+          onSubmit={() => {
+            if (editingEventId) handleSaveEvent();
+            else handleCreateEvent();
+          }}
+          onClose={() => {
+            setModalType(null);
+            setEditingEventId(null);
+          }}
+          onDuplicate={
+            editingEventId
+              ? () => {
+                  const target = events.find((e) => e.id === editingEventId);
+                  if (target) handleDuplicateEvent(target);
+                }
+              : undefined
+          }
+          onCancelEvent={
+            editingEventId
+              ? async () => {
+                  await handleCancelEvent(editingEventId);
+                  setModalType(null);
+                  setEditingEventId(null);
+                }
+              : undefined
+          }
+          aiPrompt={aiPrompt}
+          setAiPrompt={setAiPrompt}
+          isGenerating={isGenerating}
+          onAIGenerateEvent={handleAIGenerateEvent}
+          aiIdeaChips={AI_IDEA_CHIPS}
+          isExpandingDescription={isExpandingDescription}
+          onExpandDescription={handleExpandDescriptionWithAI}
+          speechSupported={speechSupported}
+          isListening={isListening}
+          onToggleSpeech={toggleSpeechRecognition}
+          isDictatingDescription={isDictatingDescription}
+          onToggleDictateDescription={handleToggleDictateDescription}
+        />
+      )}
+
+      {(isEditing || (modalType && modalType !== 'community' && modalType !== 'event' && modalType !== 'edit-event')) && (
         <div className="modal-overlay" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', zIndex: 10000 }}>
           <div className="glass-panel" style={{
             width: '100%',

@@ -2192,13 +2192,23 @@ export function AppProvider({ children }) {
     }
     if (updates.whatsappGroup !== undefined) {
       const existing = events.find(e => e.id === eventId);
-      let desc = updates.description !== undefined ? updates.description : (existing?.description || '');
+      let desc = finalUpdates.description !== undefined ? finalUpdates.description : (updates.description !== undefined ? updates.description : (existing?.description || ''));
       desc = desc.replace(/\[WhatsApp: [^\]]+\]/g, '').trim();
       if (updates.whatsappGroup?.trim()) {
         desc = (desc ? desc + '\n\n' : '') + `[WhatsApp: ${updates.whatsappGroup.trim()}]`;
       }
       finalUpdates.description = desc;
       finalUpdates.whatsappGroup = updates.whatsappGroup.trim();
+    }
+    if (updates.rsvpQuestion !== undefined) {
+      const existing = events.find(e => e.id === eventId);
+      let desc = finalUpdates.description !== undefined ? finalUpdates.description : (updates.description !== undefined ? updates.description : (existing?.description || ''));
+      desc = desc.replace(/\[RSVP Question: [^\]]+\]/g, '').trim();
+      if (updates.rsvpQuestion?.trim()) {
+        desc = (desc ? desc + '\n\n' : '') + `[RSVP Question: ${updates.rsvpQuestion.trim()}]`;
+      }
+      finalUpdates.description = desc;
+      finalUpdates.rsvpQuestion = updates.rsvpQuestion.trim();
     }
     if (updates.allowCarpool !== undefined) {
       const existing = events.find(e => e.id === eventId);
