@@ -8,9 +8,14 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <meta charSet="utf-8" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('more_theme')||'dark';var eff=t==='system'?(window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'):t;document.documentElement.setAttribute('data-theme',eff);if(localStorage.getItem('more_high_contrast')==='true')document.documentElement.setAttribute('data-high-contrast','true');if(localStorage.getItem('more_large_text')==='true')document.documentElement.setAttribute('data-large-text','true');if(localStorage.getItem('more_reduce_motion')==='true')document.documentElement.setAttribute('data-reduce-motion','true');}catch(e){}})();`
+          }}
+        />
         <title>More Community | Find Your People, Connect in Real Life</title>
         <meta name="description" content="More Community empowers local leaders and brings people together in the real world. Discover clubs, join in-person meetups, and experience the joy of shared passions. 100% free forever for community champions." />
         <meta property="og:site_name" content="More Community" />

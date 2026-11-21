@@ -38,10 +38,47 @@ export function AppProvider({ children }) {
   }, []);
 
   // Accessibility & Theme State
-  const [theme, setTheme] = useState('dark'); // 'light', 'dark', 'system'
-  const [highContrast, setHighContrast] = useState(false);
-  const [largeText, setLargeText] = useState(false);
-  const [reduceMotion, setReduceMotion] = useState(false);
+  const [theme, setThemeState] = useState('dark'); // 'light', 'dark', 'system'
+  const [highContrast, setHighContrastState] = useState(false);
+  const [largeText, setLargeTextState] = useState(false);
+  const [reduceMotion, setReduceMotionState] = useState(false);
+  const [prefsHydrated, setPrefsHydrated] = useState(false);
+
+  const setTheme = useCallback((next) => {
+    setPrefsHydrated(true);
+    setThemeState(prev => {
+      const value = typeof next === 'function' ? next(prev) : next;
+      if (typeof window !== 'undefined') localStorage.setItem('more_theme', value);
+      return value;
+    });
+  }, []);
+
+  const setHighContrast = useCallback((next) => {
+    setPrefsHydrated(true);
+    setHighContrastState(prev => {
+      const value = typeof next === 'function' ? next(prev) : next;
+      if (typeof window !== 'undefined') localStorage.setItem('more_high_contrast', String(value));
+      return value;
+    });
+  }, []);
+
+  const setLargeText = useCallback((next) => {
+    setPrefsHydrated(true);
+    setLargeTextState(prev => {
+      const value = typeof next === 'function' ? next(prev) : next;
+      if (typeof window !== 'undefined') localStorage.setItem('more_large_text', String(value));
+      return value;
+    });
+  }, []);
+
+  const setReduceMotion = useCallback((next) => {
+    setPrefsHydrated(true);
+    setReduceMotionState(prev => {
+      const value = typeof next === 'function' ? next(prev) : next;
+      if (typeof window !== 'undefined') localStorage.setItem('more_reduce_motion', String(value));
+      return value;
+    });
+  }, []);
 
   // Perspective Simulator & Impersonation State
   const [simulatedPersona, setSimulatedPersonaState] = useState(() => {
@@ -329,19 +366,24 @@ export function AppProvider({ children }) {
     }
   }, [user?.id, session?.access_token]);
 
-  // Load accessibility and user preferences from local storage and apply to DOM
+  // Hydrate theme & accessibility preferences once on mount (never overwrite saved preference with initial default)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const savedTheme = localStorage.getItem('more_theme') || 'dark';
+    const savedHighContrast = localStorage.getItem('more_high_contrast') === 'true';
+    const savedLargeText = localStorage.getItem('more_large_text') === 'true';
+    const savedReduceMotion = localStorage.getItem('more_reduce_motion') === 'true';
+
+    setThemeState(savedTheme);
+    setHighContrastState(savedHighContrast);
+    setLargeTextState(savedLargeText);
+    setReduceMotionState(savedReduceMotion);
+    setPrefsHydrated(true);
+  }, []);
+
+  // Load saved items and merge with DB when user changes
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const savedTheme = localStorage.getItem('more_theme') || 'dark';
-      const savedHighContrast = localStorage.getItem('more_high_contrast') === 'true';
-      const savedLargeText = localStorage.getItem('more_large_text') === 'true';
-      const savedReduceMotion = localStorage.getItem('more_reduce_motion') === 'true';
-      
-      setTheme(savedTheme);
-      setHighContrast(savedHighContrast);
-      setLargeText(savedLargeText);
-      setReduceMotion(savedReduceMotion);
-
       const localSavedItems = localStorage.getItem('more_saved_items');
       let initialSaved = [];
       if (localSavedItems) {
@@ -361,7 +403,7 @@ export function AppProvider({ children }) {
   }, [user?.id]);
 
   useEffect(() => {
-    if (typeof document === 'undefined') return;
+    if (typeof document === 'undefined' || !prefsHydrated) return;
     const root = document.documentElement;
     const mq = window.matchMedia('(prefers-color-scheme: light)');
 
@@ -389,16 +431,16 @@ export function AppProvider({ children }) {
     else root.removeAttribute('data-reduce-motion');
 
     localStorage.setItem('more_theme', theme);
-    localStorage.setItem('more_high_contrast', highContrast);
-    localStorage.setItem('more_large_text', largeText);
-    localStorage.setItem('more_reduce_motion', reduceMotion);
+    localStorage.setItem('more_high_contrast', String(highContrast));
+    localStorage.setItem('more_large_text', String(largeText));
+    localStorage.setItem('more_reduce_motion', String(reduceMotion));
 
     return () => {
       if (theme === 'system' && mq.removeEventListener) {
         mq.removeEventListener('change', applyTheme);
       }
     };
-  }, [theme, highContrast, largeText, reduceMotion]);
+  }, [theme, highContrast, largeText, reduceMotion, prefsHydrated]);
 
   const fetchAllDataRef = useRef(null);
   const refreshData = async () => {
