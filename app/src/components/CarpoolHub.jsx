@@ -7,7 +7,7 @@ import { useToast } from './Toast';
 import InfoExplainer from './InfoExplainer';
 import { getCarpoolHandshakeMessage } from '../lib/carpool';
 
-export default function CarpoolHub({ event, user, isAttendee = false, community, openOfferSignal = 0 }) {
+export default function CarpoolHub({ event, user, isAttendee = false, community, openOfferSignal = 0, canOfferRide }) {
   const { toast } = useToast();
   const router = useRouter();
   const { 
@@ -16,8 +16,31 @@ export default function CarpoolHub({ event, user, isAttendee = false, community,
     reserveCarpoolSeat, 
     cancelCarpoolSeat, 
     deleteCarpoolOffer,
-    rsvpToEvent
+    rsvpToEvent,
+    events = [],
+    eventRsvps = {}
   } = useAppContext();
+
+  // Safety & Trust Gate: Only members who have attended at least 1 past in-person meetup (or checked in, or Leaders/Co-Leaders/Admins) can offer a lift
+  const isVerifiedInPersonMember = React.useMemo(() => {
+    if (typeof canOfferRide === 'boolean') return canOfferRide;
+    if (!user?.id) return false;
+    if (user?.isAdmin) return true;
+    const commIds = [event?.communityId, ...(Array.isArray(event?.collabCommunityIds) ? event.collabCommunityIds : [])].filter(Boolean);
+    if (commIds.some(cid => user?.ledCommunities?.includes(cid))) return true;
+
+    const todayIso = new Date().toISOString().split('T')[0];
+    return Object.entries(eventRsvps || {}).some(([evId, rList]) => {
+      const myRsvp = (rList || []).find(r => (r.userId || r.user_id) === user.id);
+      if (!myRsvp) return false;
+      if (myRsvp.checkedIn || myRsvp.checked_in || myRsvp.status === 'checked_in') return true;
+      if (myRsvp.status === 'going') {
+        const ev = (events || []).find(e => e.id === evId);
+        if (ev?.date && ev.date < todayIso) return true;
+      }
+      return false;
+    });
+  }, [canOfferRide, user, event, eventRsvps, events]);
 
   // Local state initialized synchronously from localStorage for instant display
   const [localCarpools, setLocalCarpools] = useState(() => {
@@ -47,9 +70,31 @@ export default function CarpoolHub({ event, user, isAttendee = false, community,
 
   useEffect(() => {
     if (openOfferSignal > 0 && user?.id) {
+      if (!isVerifiedInPersonMember) {
+        toast.info(
+          'In-Person Meetup Required 🛡️',
+          'For community safety, offering a carpool lift unlocks after you have attended your first in-person meetup.'
+        );
+        return;
+      }
       setShowOfferModal(true);
     }
-  }, [openOfferSignal, user?.id]);
+  }, [openOfferSignal, user?.id, isVerifiedInPersonMember]);
+
+  const handleOpenOfferModal = () => {
+    if (!user?.id) {
+      toast.info('Please sign in', 'Sign in to coordinate carpools with fellow attendees.');
+      return;
+    }
+    if (!isVerifiedInPersonMember) {
+      toast.info(
+        'In-Person Meetup Required 🛡️',
+        'For community safety, offering a carpool lift unlocks after you have attended your first in-person meetup.'
+      );
+      return;
+    }
+    setShowOfferModal(true);
+  };
 
   // Derived state
   const myCarpoolOffer = eventCarpools.find(c => c.driverId === user?.id);
@@ -59,6 +104,13 @@ export default function CarpoolHub({ event, user, isAttendee = false, community,
     e.preventDefault();
     if (!user?.id) {
       toast.info('Sign in required', 'Please sign in to offer a carpool ride.');
+      return;
+    }
+    if (!isVerifiedInPersonMember) {
+      toast.error(
+        'In-Person Verification Required',
+        'Attend your first in-person meetup before offering a ride share.'
+      );
       return;
     }
     if (!origin.trim()) {
@@ -218,25 +270,37 @@ export default function CarpoolHub({ event, user, isAttendee = false, community,
 
         {/* Action Button */}
         {!myCarpoolOffer && (
-          <button
-            onClick={() => {
-              if (!user?.id) {
-                toast.info('Please sign in', 'Sign in to offer a carpool ride.');
-                return;
-              }
-              setShowOfferModal(true);
-            }}
-            className="interactive-press"
-            style={{
-              padding: '9px 16px', borderRadius: '12px',
-              background: 'linear-gradient(135deg, #10b981 0%, #EB5738 100%)',
-              color: '#FFFFFF', fontWeight: 700, fontSize: '0.86rem',
-              border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px',
-              boxShadow: '0 4px 16px rgba(16, 185, 129, 0.3)'
-            }}
-          >
-            <Plus size={16} /> Offer a Lift
-          </button>
+          isVerifiedInPersonMember ? (
+            <button
+              onClick={handleOpenOfferModal}
+              className="interactive-press"
+              style={{
+                padding: '9px 16px', borderRadius: '12px',
+                background: 'linear-gradient(135deg, #10b981 0%, #EB5738 100%)',
+                color: '#FFFFFF', fontWeight: 700, fontSize: '0.86rem',
+                border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px',
+                boxShadow: '0 4px 16px rgba(16, 185, 129, 0.3)'
+              }}
+            >
+              <Plus size={16} /> Offer a Lift
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={handleOpenOfferModal}
+              className="interactive-press"
+              title="Attend 1 in-person meetup to unlock offering lifts"
+              style={{
+                padding: '8px 13px', borderRadius: '12px',
+                background: 'rgba(255, 255, 255, 0.05)',
+                border: '1px solid rgba(255, 255, 255, 0.14)',
+                color: 'var(--slate-300)', fontWeight: 600, fontSize: '0.76rem',
+                cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px'
+              }}
+            >
+              <Shield size={14} color="var(--teal-400)" /> Unlocks after 1st meetup
+            </button>
+          )
         )}
       </div>
 
@@ -249,7 +313,7 @@ export default function CarpoolHub({ event, user, isAttendee = false, community,
       }}>
         <Shield size={16} color="var(--teal-400)" style={{ flexShrink: 0 }} />
         <span>
-          <strong style={{ color: 'var(--white)' }}>Friendly & Local:</strong> Drivers share their general neighbourhood or landmark. Exact meeting spots are arranged directly in community chat.
+          <strong style={{ color: 'var(--white)' }}>Verified In-Person Drivers:</strong> Only members who have attended at least one in-person meetup (or community leaders) can offer lifts. Exact pickup spots are coordinated in chat.
         </span>
       </div>
 
@@ -266,19 +330,32 @@ export default function CarpoolHub({ event, user, isAttendee = false, community,
               No lifts offered yet
             </div>
             <p style={{ margin: '0 0 14px', fontSize: '0.82rem', color: 'var(--slate-400)' }}>
-              Driving to this gathering? Offer a couple of spare seats to help fellow members get there.
+              {isVerifiedInPersonMember
+                ? 'Driving to this gathering? Offer a couple of spare seats to help fellow members get there.'
+                : 'Verified members who have attended an in-person meetup can post spare seats here.'}
             </p>
-            <button
-              onClick={() => setShowOfferModal(true)}
-              className="interactive-press"
-              style={{
-                padding: '8px 16px', borderRadius: '10px',
-                background: 'rgba(235, 87, 56, 0.15)', border: '1px solid rgba(235, 87, 56, 0.35)',
-                color: 'var(--teal-300)', fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer'
-              }}
-            >
-              + Offer a Lift
-            </button>
+            {isVerifiedInPersonMember ? (
+              <button
+                onClick={handleOpenOfferModal}
+                className="interactive-press"
+                style={{
+                  padding: '8px 16px', borderRadius: '10px',
+                  background: 'rgba(235, 87, 56, 0.15)', border: '1px solid rgba(235, 87, 56, 0.35)',
+                  color: 'var(--teal-300)', fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer'
+                }}
+              >
+                + Offer a Lift
+              </button>
+            ) : (
+              <div style={{
+                display: 'inline-flex', alignItems: 'center', gap: '6px',
+                padding: '7px 14px', borderRadius: '999px',
+                background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.12)',
+                color: 'var(--slate-300)', fontSize: '0.76rem', fontWeight: 600
+              }}>
+                <Shield size={13} color="var(--teal-400)" /> Attend your first in-person meetup to offer a ride
+              </div>
+            )}
           </div>
         ) : (
           eventCarpools.map(carpool => {

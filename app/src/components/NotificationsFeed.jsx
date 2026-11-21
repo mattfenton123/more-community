@@ -1,9 +1,9 @@
 "use client";
 import { useState, useRef, useEffect } from 'react';
-import { 
-  Bell, Check, CheckCheck, Calendar, Users, Megaphone, MessageCircle, 
-  Ticket, Star, UserPlus, Trash2, Zap, Map, Sparkles, Lightbulb, Car, 
-  ChevronRight, X, ArrowLeft 
+import {
+  Bell, Check, CheckCheck, Calendar, Users, Megaphone, MessageCircle,
+  Ticket, Star, UserPlus, Zap, Map, Sparkles, Lightbulb, Car,
+  ChevronRight, X, ArrowLeft, Clock
 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { useRouter as useNavigate } from 'next/navigation';
@@ -11,9 +11,13 @@ import { useRouter as useNavigate } from 'next/navigation';
 const TYPE_CONFIG = {
   alert: { icon: Zap, color: '#f59e0b', label: 'Alert' },
   broadcast: { icon: Megaphone, color: '#f59e0b', label: 'Announcement' },
+  reminder: { icon: Clock, color: '#EB5738', label: 'Reminder' },
   event: { icon: Calendar, color: '#EB5738', label: 'Event' },
+  event_proposal: { icon: Lightbulb, color: '#f59e0b', label: 'Event Proposal' },
+  event_proposal_approved: { icon: Sparkles, color: '#10b981', label: 'Approved' },
   community: { icon: Users, color: '#3b82f6', label: 'Community' },
   message: { icon: MessageCircle, color: '#22c55e', label: 'Message' },
+  comment: { icon: MessageCircle, color: '#3A8E76', label: 'Comment' },
   rsvp: { icon: Ticket, color: '#8b5cf6', label: 'RSVP' },
   badge: { icon: Star, color: '#f59e0b', label: 'Badge' },
   member: { icon: UserPlus, color: '#ec4899', label: 'Member' },
@@ -24,18 +28,50 @@ const TYPE_CONFIG = {
   default: { icon: Bell, color: '#EB5738', label: 'Notification' }
 };
 
+export function normalizeNotificationLink(rawLink, notification = null) {
+  const link = String(rawLink || '').trim();
+  if (!link || link === '/') {
+    return '/app';
+  }
+  // Legacy /community/:id/admin route -> Leader Dashboard Overview for that community
+  const legacyAdminMatch = link.match(/^\/community\/([^/?#]+)\/admin/i);
+  if (legacyAdminMatch) {
+    return `/dashboard?tab=overview&community=${legacyAdminMatch[1]}`;
+  }
+  // Normalize consolidated Leader Dashboard tab query params
+  if (link.startsWith('/dashboard')) {
+    let normalized = link
+      .replace(/([?&])tab=members\b/gi, '$1tab=people')
+      .replace(/([?&])tab=network\b/gi, '$1tab=events')
+      .replace(/([?&])tab=experiences\b/gi, '$1tab=events')
+      .replace(/([?&])tab=pitches\b/gi, '$1tab=overview')
+      .replace(/([?&])tab=chapters\b/gi, '$1tab=settings');
+    // If it's a chapter application alert with /dashboard?community=..., route directly to settings tab where Pending Chapter Applications live
+    const title = String(notification?.title || '').toLowerCase();
+    if (!/[?&]tab=/i.test(normalized) && title.includes('chapter application')) {
+      normalized += (normalized.includes('?') ? '&' : '?') + 'tab=settings';
+    }
+    return normalized;
+  }
+  return link;
+}
+
 function getNotificationType(n) {
   const t = (n.type || '').toLowerCase();
   if (TYPE_CONFIG[t]) return t;
   const title = (n.title || '').toLowerCase();
   const msg = (n.message || '').toLowerCase();
+  if (t === 'event_proposal' || title.includes('event proposal')) return 'event_proposal';
+  if (t === 'event_proposal_approved' || title.includes('event idea was published')) return 'event_proposal_approved';
+  if (t === 'reminder' || title.includes('reminder') || title.includes('⏰')) return 'reminder';
   if (t === 'alert' || title.includes('alert') || title.includes('urgent') || title.includes('warning')) return 'alert';
   if (t === 'broadcast' || title.includes('broadcast') || title.includes('📢') || title.includes('announcement')) return 'broadcast';
   if (t === 'chapter' || title.includes('chapter')) return 'chapter';
-  if (t === 'pitch' || title.includes('pitch')) return 'pitch';
+  if (t === 'pitch' || title.includes('pitch') || title.includes('sponsor') || title.includes('guest session')) return 'pitch';
   if (t === 'idea' || title.includes('idea') || title.includes('suggestion')) return 'idea';
   if (t === 'carpool' || title.includes('carpool') || title.includes('ride') || title.includes('lift')) return 'carpool';
-  if (t === 'rsvp' || title.includes('rsvp') || title.includes('ticket') || msg.includes('rsvp')) return 'rsvp';
+  if (t === 'rsvp' || title.includes('rsvp') || title.includes('ticket') || title.includes('spot approved') || msg.includes('rsvp')) return 'rsvp';
+  if (t === 'comment' || title.includes('comment') || title.includes('q&a') || title.includes('replied')) return 'comment';
   if (t === 'event' || title.includes('event') || msg.includes('event') || title.includes('walk')) return 'event';
   if (t === 'message' || title.includes('message') || msg.includes('message')) return 'message';
   if (t === 'badge' || title.includes('badge') || msg.includes('badge')) return 'badge';
@@ -59,7 +95,7 @@ function timeAgo(dateStr) {
   return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
 }
 
-function SwipeableNotificationItem({ n, type, config, isAlertItem, isLight, onClick, onMarkRead }) {
+function SwipeableNotificationItem({ n, config, isAlertItem, isLight, onClick, onOpenLink, onMarkRead }) {
   const [dragOffset, setDragOffset] = useState(0);
   const [isSwiping, setIsSwiping] = useState(false);
   const touchStartX = useRef(0);
@@ -67,6 +103,7 @@ function SwipeableNotificationItem({ n, type, config, isAlertItem, isLight, onCl
   const isHorizontal = useRef(null);
 
   const Icon = config.icon;
+  const resolvedLink = n.link ? normalizeNotificationLink(n.link, n) : null;
 
   const handleTouchStart = (e) => {
     touchStartX.current = e.touches[0].clientX;
@@ -78,7 +115,7 @@ function SwipeableNotificationItem({ n, type, config, isAlertItem, isLight, onCl
   const handleTouchMove = (e) => {
     const currentX = e.touches[0].clientX;
     const currentY = e.touches[0].clientY;
-    const deltaX = touchStartX.current - currentX; // positive when swiped left
+    const deltaX = touchStartX.current - currentX;
     const deltaY = touchStartY.current - currentY;
 
     if (isHorizontal.current === null) {
@@ -121,23 +158,23 @@ function SwipeableNotificationItem({ n, type, config, isAlertItem, isLight, onCl
   };
 
   return (
-    <div 
-      style={{ 
-        position: 'relative', 
+    <div
+      style={{
+        position: 'relative',
         overflow: 'hidden',
-        borderBottom: isLight ? '1px solid rgba(0, 0, 0, 0.06)' : '1px solid rgba(255, 255, 255, 0.06)',
-        background: isLight ? '#ffffff' : '#1B1B1B'
+        borderBottom: isLight ? '1px solid rgba(28, 25, 21, 0.08)' : '1px solid rgba(244, 241, 234, 0.08)',
+        background: isLight ? '#FFFFFF' : '#1B1B1B'
       }}
     >
       {/* Background action revealed on swipe */}
-      <div 
+      <div
         style={{
           position: 'absolute',
           top: 0,
           bottom: 0,
           right: 0,
           width: '112px',
-          background: n.is_read ? (isLight ? '#64748b' : '#334155') : '#C85A32',
+          background: n.is_read ? (isLight ? '#6E655A' : '#3A3632') : '#C85A32',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -168,10 +205,10 @@ function SwipeableNotificationItem({ n, type, config, isAlertItem, isLight, onCl
           transform: `translateX(-${dragOffset}px)`,
           transition: isSwiping ? 'none' : 'transform 0.22s cubic-bezier(0.16, 1, 0.3, 1)',
           padding: '13px 15px',
-          background: isLight 
-            ? (n.is_read ? '#ffffff' : (isAlertItem ? '#fffbeb' : '#FBF3EF'))
-            : (n.is_read ? '#1B1B1B' : (isAlertItem ? '#1e1912' : '#10242c')),
-          borderLeft: !n.is_read 
+          background: isLight
+            ? (n.is_read ? '#FFFFFF' : (isAlertItem ? '#FFFBEB' : '#FBF3EF'))
+            : (n.is_read ? '#1B1B1B' : (isAlertItem ? '#241E14' : '#261C18')),
+          borderLeft: !n.is_read
             ? (isAlertItem ? '4px solid #f59e0b' : `4px solid ${config.color}`)
             : '4px solid transparent',
           cursor: 'pointer',
@@ -181,37 +218,37 @@ function SwipeableNotificationItem({ n, type, config, isAlertItem, isLight, onCl
         }}
       >
         {/* Type Icon */}
-        <div style={{ 
+        <div style={{
           width: '36px', height: '36px', borderRadius: '10px', flexShrink: 0,
-          background: `${config.color}18`, 
+          background: `${config.color}18`,
           display: 'flex', alignItems: 'center', justifyContent: 'center'
         }}>
           <Icon size={18} color={config.color} />
         </div>
-        
+
         {/* Content */}
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '3px' }}>
-            <span style={{ 
-              fontSize: '0.62rem', 
-              fontWeight: 800, 
-              padding: '1px 6px', 
-              borderRadius: '4px', 
-              background: `${config.color}22`, 
-              color: isLight ? (isAlertItem ? '#b45309' : config.color) : config.color, 
+            <span style={{
+              fontSize: '0.62rem',
+              fontWeight: 800,
+              padding: '1px 6px',
+              borderRadius: '4px',
+              background: `${config.color}22`,
+              color: isLight ? (isAlertItem ? '#b45309' : config.color) : config.color,
               textTransform: 'uppercase',
               letterSpacing: '0.02em'
             }}>
               {config.label}
             </span>
-            <div style={{ 
-              fontWeight: n.is_read ? 600 : 700, 
-              color: isLight ? (n.is_read ? '#334155' : '#1B1B1B') : (n.is_read ? 'var(--slate-300)' : '#ffffff'), 
-              fontSize: '0.86rem', 
-              flex: 1, 
-              whiteSpace: 'nowrap', 
-              overflow: 'hidden', 
-              textOverflow: 'ellipsis' 
+            <div style={{
+              fontWeight: n.is_read ? 600 : 700,
+              color: isLight ? (n.is_read ? '#4A443C' : '#1C1915') : (n.is_read ? '#C8C4BC' : '#F4F1EA'),
+              fontSize: '0.86rem',
+              flex: 1,
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis'
             }}>
               {n.title}
             </div>
@@ -220,47 +257,75 @@ function SwipeableNotificationItem({ n, type, config, isAlertItem, isLight, onCl
             )}
           </div>
 
-          <div style={{ 
-            color: isLight ? '#475569' : 'var(--slate-400)', 
-            fontSize: '0.79rem', 
-            lineHeight: 1.42, 
-            display: '-webkit-box', 
-            WebkitLineClamp: 2, 
-            WebkitBoxOrient: 'vertical', 
-            overflow: 'hidden' 
+          <div style={{
+            color: isLight ? '#4A443C' : '#C8C4BC',
+            fontSize: '0.79rem',
+            lineHeight: 1.42,
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden'
           }}>
             {n.message}
           </div>
 
-          <div style={{ 
-            color: isLight ? '#64748b' : 'var(--slate-500)', 
-            fontSize: '0.69rem', 
-            marginTop: '5px',
+          <div style={{
+            color: isLight ? '#6E655A' : '#9E9B95',
+            fontSize: '0.69rem',
+            marginTop: '6px',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'space-between'
+            justifyContent: 'space-between',
+            gap: '8px'
           }}>
             <span>{timeAgo(n.created_at)}</span>
-            {n.is_read ? (
-              <span style={{
-                fontSize: '0.66rem',
-                fontWeight: 600,
-                color: isLight ? '#64748b' : '#94a3b8',
-                background: isLight ? '#EFE9DE' : '#252525',
-                padding: '1px 7px',
-                borderRadius: '999px'
-              }}>
-                Already read
-              </span>
-            ) : (
-              <span style={{ fontSize: '0.66rem', fontWeight: 600, color: isLight ? '#C85A32' : '#F27257' }}>
-                Unread
-              </span>
-            )}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {resolvedLink && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onOpenLink(n, resolvedLink);
+                  }}
+                  className="interactive-press"
+                  style={{
+                    background: isLight ? 'rgba(200, 90, 50, 0.12)' : 'rgba(235, 87, 56, 0.16)',
+                    border: isLight ? '1px solid rgba(200, 90, 50, 0.28)' : '1px solid rgba(235, 87, 56, 0.32)',
+                    color: isLight ? '#A33F1B' : '#F27257',
+                    fontSize: '0.68rem',
+                    fontWeight: 700,
+                    padding: '2px 8px',
+                    borderRadius: '999px',
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '2px'
+                  }}
+                >
+                  Open <ChevronRight size={11} />
+                </button>
+              )}
+              {n.is_read ? (
+                <span style={{
+                  fontSize: '0.65rem',
+                  fontWeight: 600,
+                  color: isLight ? '#6E655A' : '#9E9B95',
+                  background: isLight ? '#EFE9DE' : '#252525',
+                  padding: '1px 7px',
+                  borderRadius: '999px'
+                }}>
+                  Read
+                </span>
+              ) : (
+                <span style={{ fontSize: '0.66rem', fontWeight: 700, color: isLight ? '#C85A32' : '#F27257' }}>
+                  Unread
+                </span>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* 1-Click Desktop action button */}
+        {/* 1-Click Mark as Read button */}
         {!n.is_read && (
           <button
             type="button"
@@ -273,8 +338,8 @@ function SwipeableNotificationItem({ n, type, config, isAlertItem, isLight, onCl
             style={{
               padding: '6px',
               borderRadius: '6px',
-              border: isLight ? '1px solid rgba(0,0,0,0.1)' : '1px solid rgba(255,255,255,0.1)',
-              background: isLight ? 'rgba(0,0,0,0.03)' : 'rgba(255,255,255,0.06)',
+              border: isLight ? '1px solid rgba(28, 25, 21, 0.12)' : '1px solid rgba(244, 241, 234, 0.12)',
+              background: isLight ? 'rgba(28, 25, 21, 0.04)' : 'rgba(244, 241, 234, 0.06)',
               color: isLight ? '#C85A32' : '#F27257',
               cursor: 'pointer',
               display: 'flex',
@@ -294,7 +359,7 @@ function SwipeableNotificationItem({ n, type, config, isAlertItem, isLight, onCl
 }
 
 export default function NotificationsFeed({ onClose, isModal = false }) {
-  const { notifications, markNotificationRead, theme } = useAppContext();
+  const { notifications, markNotificationRead, markAllNotificationsRead, theme } = useAppContext();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('inbox'); // 'inbox' | 'alerts' | 'history'
   const [selectedNotification, setSelectedNotification] = useState(null);
@@ -315,16 +380,29 @@ export default function NotificationsFeed({ onClose, isModal = false }) {
 
   const inboxList = notifications.filter(n => !n.is_read || (Date.now() - new Date(n.created_at).getTime()) < THIRTY_DAYS);
   const alertsList = notifications.filter(n => {
-    const t = (n.type || '').toLowerCase();
+    const type = getNotificationType(n);
     const title = (n.title || '').toLowerCase();
-    return t === 'alert' || t === 'broadcast' || t === 'chapter' || t === 'pitch' || t === 'idea' ||
-           title.includes('alert') || title.includes('📢') || title.includes('urgent') || title.includes('approved') || title.includes('chapter');
+    return (
+      type === 'alert' ||
+      type === 'broadcast' ||
+      type === 'chapter' ||
+      type === 'pitch' ||
+      type === 'idea' ||
+      type === 'event_proposal' ||
+      type === 'event_proposal_approved' ||
+      type === 'reminder' ||
+      title.includes('alert') ||
+      title.includes('📢') ||
+      title.includes('urgent') ||
+      title.includes('approved') ||
+      title.includes('chapter')
+    );
   });
   const historyList = notifications.filter(n => n.is_read && (Date.now() - new Date(n.created_at).getTime()) >= THIRTY_DAYS);
 
   const unreadCount = notifications.filter(n => !n.is_read).length;
   const unreadAlertsCount = alertsList.filter(n => !n.is_read).length;
-  
+
   let currentList = inboxList;
   if (activeTab === 'alerts') currentList = alertsList;
   if (activeTab === 'history') currentList = historyList;
@@ -332,61 +410,78 @@ export default function NotificationsFeed({ onClose, isModal = false }) {
   const sorted = [...currentList].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
   const handleNotificationClick = (n) => {
-    markNotificationRead(n.id);
+    if (!n.is_read) markNotificationRead(n.id);
     setSelectedNotification(n);
   };
 
+  const handleOpenLink = (n, targetLink) => {
+    if (!n.is_read) markNotificationRead(n.id);
+    const resolved = targetLink || normalizeNotificationLink(n.link, n);
+    if (!resolved) return;
+    if (isModal && onClose) {
+      onClose();
+    }
+    navigate.push(resolved);
+  };
+
   const handleMarkAllRead = () => {
-    notifications.filter(n => !n.is_read).forEach(n => markNotificationRead(n.id));
+    if (typeof markAllNotificationsRead === 'function') {
+      markAllNotificationsRead();
+    } else {
+      notifications.filter(n => !n.is_read).forEach(n => markNotificationRead(n.id));
+    }
   };
 
   if (selectedNotification) {
     const type = getNotificationType(selectedNotification);
     const config = TYPE_CONFIG[type] || TYPE_CONFIG.default;
     const Icon = config.icon;
+    const resolvedDetailLink = selectedNotification.link
+      ? normalizeNotificationLink(selectedNotification.link, selectedNotification)
+      : null;
 
     return (
-      <div 
-        style={{ 
-          width: '100%', 
-          maxWidth: '440px', 
-          minHeight: '340px', 
+      <div
+        style={{
+          width: '100%',
+          maxWidth: isModal ? '440px' : '520px',
+          minHeight: '340px',
           maxHeight: isModal ? 'calc(100dvh - 96px)' : 'none',
           borderRadius: '16px',
-          padding: 0, 
-          overflow: 'hidden', 
-          border: isLight ? '1px solid rgba(27, 27, 27, 0.12)' : '1px solid rgba(255, 255, 255, 0.14)', 
-          background: isLight ? '#ffffff' : '#1B1B1B',
-          boxShadow: isLight ? '0 10px 30px rgba(0,0,0,0.12)' : '0 20px 40px rgba(0,0,0,0.6)',
-          display: 'flex', 
-          flexDirection: 'column' 
+          padding: 0,
+          overflow: 'hidden',
+          border: isLight ? '1px solid rgba(28, 25, 21, 0.12)' : '1px solid rgba(244, 241, 234, 0.14)',
+          background: isLight ? '#FFFFFF' : '#1B1B1B',
+          boxShadow: isLight ? '0 10px 30px rgba(28, 25, 21, 0.08)' : '0 20px 40px rgba(0,0,0,0.6)',
+          display: 'flex',
+          flexDirection: 'column'
         }}
       >
         {/* Header */}
-        <div style={{ 
-          padding: '14px 16px', 
-          borderBottom: isLight ? '1px solid rgba(28, 25, 21, 0.10)' : '1px solid #252525', 
-          display: 'flex', 
-          alignItems: 'center', 
+        <div style={{
+          padding: '14px 16px',
+          borderBottom: isLight ? '1px solid rgba(28, 25, 21, 0.10)' : '1px solid #252525',
+          display: 'flex',
+          alignItems: 'center',
           justifyContent: 'space-between',
-          background: isLight ? '#F7F3EC' : '#252525' 
+          background: isLight ? '#F7F3EC' : '#252525'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <button 
-              onClick={() => setSelectedNotification(null)} 
-              className="interactive-press" 
-              style={{ background: 'transparent', border: 'none', color: isLight ? '#475569' : 'var(--slate-400)', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 0 }}
+            <button
+              onClick={() => setSelectedNotification(null)}
+              className="interactive-press"
+              style={{ background: 'transparent', border: 'none', color: isLight ? '#4A443C' : '#C8C4BC', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 0 }}
               title="Back to list"
             >
               <ArrowLeft size={18} />
             </button>
-            <h3 style={{ margin: 0, color: isLight ? '#1C1915' : 'var(--white)', fontSize: '0.98rem', fontFamily: 'var(--font-heading)' }}>Notification Details</h3>
+            <h3 style={{ margin: 0, color: isLight ? '#1C1915' : '#F4F1EA', fontSize: '0.98rem', fontFamily: 'var(--font-heading)' }}>Notification Details</h3>
           </div>
-          {onClose && (
+          {isModal && onClose && (
             <button
               onClick={onClose}
               className="interactive-press"
-              style={{ background: 'transparent', border: 'none', color: isLight ? '#64748b' : 'var(--slate-400)', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '4px' }}
+              style={{ background: 'transparent', border: 'none', color: isLight ? '#6E655A' : '#9E9B95', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '4px' }}
               title="Close"
             >
               <X size={18} />
@@ -404,32 +499,32 @@ export default function NotificationsFeed({ onClose, isModal = false }) {
                 <span style={{ fontSize: '0.64rem', fontWeight: 800, padding: '2px 6px', borderRadius: '4px', background: `${config.color}20`, color: config.color, textTransform: 'uppercase' }}>
                   {config.label}
                 </span>
-                <span style={{ fontSize: '0.72rem', color: isLight ? '#64748b' : 'var(--slate-500)' }}>{timeAgo(selectedNotification.created_at)}</span>
+                <span style={{ fontSize: '0.72rem', color: isLight ? '#6E655A' : '#9E9B95' }}>{timeAgo(selectedNotification.created_at)}</span>
               </div>
-              <h2 style={{ margin: '4px 0 0', fontSize: '1.02rem', color: isLight ? '#1C1915' : 'var(--white)', fontWeight: 700 }}>{selectedNotification.title}</h2>
+              <h2 style={{ margin: '4px 0 0', fontSize: '1.02rem', color: isLight ? '#1C1915' : '#F4F1EA', fontWeight: 700 }}>{selectedNotification.title}</h2>
             </div>
           </div>
-          
-          <div style={{ 
-            color: isLight ? '#252525' : 'var(--slate-300)', 
-            fontSize: '0.9rem', 
-            lineHeight: 1.6, 
-            padding: '16px', 
-            background: isLight ? '#F7F3EC' : 'rgba(255,255,255,0.03)', 
-            borderRadius: '12px', 
-            border: isLight ? '1px solid rgba(28, 25, 21, 0.10)' : '1px solid rgba(255,255,255,0.05)', 
-            whiteSpace: 'pre-wrap' 
+
+          <div style={{
+            color: isLight ? '#1C1915' : '#C8C4BC',
+            fontSize: '0.9rem',
+            lineHeight: 1.6,
+            padding: '16px',
+            background: isLight ? '#F7F3EC' : '#252525',
+            borderRadius: '12px',
+            border: isLight ? '1px solid rgba(28, 25, 21, 0.10)' : '1px solid rgba(244, 241, 234, 0.08)',
+            whiteSpace: 'pre-wrap'
           }}>
             {selectedNotification.message}
           </div>
         </div>
 
-        {selectedNotification.link && (
-          <div style={{ padding: '14px 16px', borderTop: isLight ? '1px solid rgba(0,0,0,0.06)' : '1px solid rgba(255,255,255,0.05)', background: isLight ? '#F7F3EC' : 'rgba(255,255,255,0.02)' }}>
-            <button 
-              onClick={() => { navigate.push(selectedNotification.link); if (onClose) onClose(); }}
-              className="btn btn-primary interactive-press" 
-              style={{ width: '100%', padding: '11px', borderRadius: '8px', background: '#C85A32', border: 'none', color: '#ffffff', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', cursor: 'pointer' }}
+        {resolvedDetailLink && (
+          <div style={{ padding: '14px 16px', borderTop: isLight ? '1px solid rgba(28, 25, 21, 0.08)' : '1px solid rgba(244, 241, 234, 0.08)', background: isLight ? '#F7F3EC' : '#252525' }}>
+            <button
+              onClick={() => handleOpenLink(selectedNotification, resolvedDetailLink)}
+              className="btn btn-primary interactive-press"
+              style={{ width: '100%', padding: '11px', borderRadius: '10px', background: 'var(--brand-accent)', border: 'none', color: '#ffffff', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', cursor: 'pointer' }}
             >
               Open Details <ChevronRight size={16} />
             </button>
@@ -440,40 +535,40 @@ export default function NotificationsFeed({ onClose, isModal = false }) {
   }
 
   return (
-    <div 
-      style={{ 
-        width: '100%', 
-        maxWidth: '440px', 
+    <div
+      style={{
+        width: '100%',
+        maxWidth: isModal ? '440px' : '520px',
         borderRadius: '16px',
-        padding: 0, 
-        overflow: 'hidden', 
-        border: isLight ? '1px solid rgba(27, 27, 27, 0.12)' : '1px solid rgba(255, 255, 255, 0.14)',
-        background: isLight ? '#ffffff' : '#1B1B1B',
-        boxShadow: isLight ? '0 10px 30px rgba(0,0,0,0.12)' : '0 20px 40px rgba(0,0,0,0.6)'
+        padding: 0,
+        overflow: 'hidden',
+        border: isLight ? '1px solid rgba(28, 25, 21, 0.12)' : '1px solid rgba(244, 241, 234, 0.14)',
+        background: isLight ? '#FFFFFF' : '#1B1B1B',
+        boxShadow: isLight ? '0 10px 30px rgba(28, 25, 21, 0.08)' : '0 20px 40px rgba(0,0,0,0.6)'
       }}
     >
       {/* Header */}
-      <div style={{ 
-        padding: '14px 16px', 
-        borderBottom: isLight ? '1px solid rgba(28, 25, 21, 0.10)' : '1px solid #252525', 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'space-between', 
-        background: isLight ? '#F7F3EC' : '#252525' 
+      <div style={{
+        padding: '14px 16px',
+        borderBottom: isLight ? '1px solid rgba(28, 25, 21, 0.10)' : '1px solid #252525',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        background: isLight ? '#F7F3EC' : '#252525'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <h3 style={{ margin: 0, color: isLight ? '#1C1915' : 'var(--white)', fontSize: '0.98rem', fontFamily: 'var(--font-heading)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Bell size={18} color={isLight ? '#C85A32' : 'var(--teal-400)'} /> Notifications
+          <h3 style={{ margin: 0, color: isLight ? '#1C1915' : '#F4F1EA', fontSize: '0.98rem', fontFamily: 'var(--font-heading)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Bell size={18} color={isLight ? '#C85A32' : '#EB5738'} /> Notifications
           </h3>
           {unreadCount > 0 && (
-            <span 
+            <span
               className="notification-badge"
-              style={{ 
-                fontSize: '0.64rem', 
-                fontWeight: 800, 
-                padding: '2px 7px', 
-                borderRadius: '99px', 
-                background: '#ef4444', 
+              style={{
+                fontSize: '0.64rem',
+                fontWeight: 800,
+                padding: '2px 7px',
+                borderRadius: '99px',
+                background: '#ef4444',
                 color: '#ffffff',
                 lineHeight: 1
               }}
@@ -482,41 +577,41 @@ export default function NotificationsFeed({ onClose, isModal = false }) {
             </span>
           )}
         </div>
-        
+
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           {unreadCount > 0 && (
-            <button 
-              onClick={handleMarkAllRead} 
+            <button
+              onClick={handleMarkAllRead}
               className="interactive-press"
-              style={{ 
-                background: isLight ? 'rgba(217, 70, 40,0.1)' : 'rgba(235, 87, 56,0.1)', 
-                border: isLight ? '1px solid rgba(217, 70, 40,0.25)' : '1px solid rgba(235, 87, 56,0.2)', 
-                borderRadius: '8px', 
-                padding: '5px 9px', 
-                color: isLight ? '#C85A32' : 'var(--teal-400)', 
-                fontSize: '0.69rem', 
-                fontWeight: 700, 
-                cursor: 'pointer', 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '4px' 
+              style={{
+                background: isLight ? 'rgba(200, 90, 50, 0.10)' : 'rgba(235, 87, 56, 0.14)',
+                border: isLight ? '1px solid rgba(200, 90, 50, 0.25)' : '1px solid rgba(235, 87, 56, 0.28)',
+                borderRadius: '8px',
+                padding: '5px 9px',
+                color: isLight ? '#A33F1B' : '#F27257',
+                fontSize: '0.69rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
               }}
             >
               <CheckCheck size={12} /> Mark all as read
             </button>
           )}
-          {onClose && (
+          {isModal && onClose && (
             <button
               onClick={onClose}
               className="interactive-press"
-              style={{ 
-                background: 'transparent', 
-                border: 'none', 
-                color: isLight ? '#64748b' : 'var(--slate-400)', 
-                cursor: 'pointer', 
-                display: 'flex', 
-                alignItems: 'center', 
-                padding: '4px' 
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: isLight ? '#6E655A' : '#9E9B95',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                padding: '4px'
               }}
               title="Close"
             >
@@ -527,27 +622,27 @@ export default function NotificationsFeed({ onClose, isModal = false }) {
       </div>
 
       {/* 3 Tabs: Inbox, Alerts, History */}
-      <div style={{ 
-        display: 'flex', 
-        borderBottom: isLight ? '1px solid rgba(28, 25, 21, 0.10)' : '1px solid #252525', 
-        background: isLight ? '#EFE9DE' : '#0b1222' 
+      <div style={{
+        display: 'flex',
+        borderBottom: isLight ? '1px solid rgba(28, 25, 21, 0.10)' : '1px solid #252525',
+        background: isLight ? '#EFE9DE' : '#252525'
       }}>
-        <button 
+        <button
           onClick={() => setActiveTab('inbox')}
           style={{
             flex: 1, padding: '10px 8px', background: 'transparent', border: 'none',
-            borderBottom: activeTab === 'inbox' ? (isLight ? '2px solid #C85A32' : '2px solid var(--teal-400)') : '2px solid transparent',
-            color: activeTab === 'inbox' ? (isLight ? '#C85A32' : 'var(--teal-400)') : (isLight ? '#64748b' : 'var(--slate-400)'),
+            borderBottom: activeTab === 'inbox' ? (isLight ? '2px solid #C85A32' : '2px solid #EB5738') : '2px solid transparent',
+            color: activeTab === 'inbox' ? (isLight ? '#A33F1B' : '#F27257') : (isLight ? '#6E655A' : '#9E9B95'),
             fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px'
           }}
         >
           Inbox {unreadCount > 0 && (
-            <span style={{ 
-              fontSize: '0.62rem', 
-              padding: '1px 5px', 
-              borderRadius: '99px', 
-              background: isLight ? '#C85A32' : 'rgba(235, 87, 56,0.25)', 
+            <span style={{
+              fontSize: '0.62rem',
+              padding: '1px 5px',
+              borderRadius: '99px',
+              background: isLight ? '#C85A32' : '#EB5738',
               color: '#ffffff',
               fontWeight: 800
             }}>
@@ -555,64 +650,64 @@ export default function NotificationsFeed({ onClose, isModal = false }) {
             </span>
           )}
         </button>
-        <button 
+        <button
           onClick={() => setActiveTab('alerts')}
           style={{
             flex: 1, padding: '10px 8px', background: 'transparent', border: 'none',
             borderBottom: activeTab === 'alerts' ? '2px solid #f59e0b' : '2px solid transparent',
-            color: activeTab === 'alerts' ? (isLight ? '#b45309' : '#fbbf24') : (isLight ? '#64748b' : 'var(--slate-400)'),
+            color: activeTab === 'alerts' ? (isLight ? '#b45309' : '#fbbf24') : (isLight ? '#6E655A' : '#9E9B95'),
             fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px'
           }}
         >
-          <Zap size={13} color={activeTab === 'alerts' ? (isLight ? '#b45309' : '#fbbf24') : (isLight ? '#64748b' : 'var(--slate-400)')} /> Alerts
+          <Zap size={13} color={activeTab === 'alerts' ? (isLight ? '#b45309' : '#fbbf24') : (isLight ? '#6E655A' : '#9E9B95')} /> Alerts
           {unreadAlertsCount > 0 && (
-            <span style={{ 
-              fontSize: '0.62rem', 
-              padding: '1px 5px', 
-              borderRadius: '99px', 
-              background: isLight ? '#d97706' : 'rgba(245,158,11,0.25)', 
-              color: '#ffffff', 
-              fontWeight: 800 
+            <span style={{
+              fontSize: '0.62rem',
+              padding: '1px 5px',
+              borderRadius: '99px',
+              background: isLight ? '#d97706' : 'rgba(245,158,11,0.28)',
+              color: '#ffffff',
+              fontWeight: 800
             }}>
               {unreadAlertsCount}
             </span>
           )}
         </button>
-        <button 
+        <button
           onClick={() => setActiveTab('history')}
           style={{
             flex: 1, padding: '10px 8px', background: 'transparent', border: 'none',
-            borderBottom: activeTab === 'history' ? (isLight ? '2px solid #C85A32' : '2px solid var(--teal-400)') : '2px solid transparent',
-            color: activeTab === 'history' ? (isLight ? '#C85A32' : 'var(--teal-400)') : (isLight ? '#64748b' : 'var(--slate-400)'),
+            borderBottom: activeTab === 'history' ? (isLight ? '2px solid #C85A32' : '2px solid #EB5738') : '2px solid transparent',
+            color: activeTab === 'history' ? (isLight ? '#A33F1B' : '#F27257') : (isLight ? '#6E655A' : '#9E9B95'),
             fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer'
           }}
         >
           History
         </button>
       </div>
-      
+
       {/* List */}
-      <div style={{ maxHeight: isModal ? 'min(430px, calc(100dvh - 230px))' : '480px', overflowY: 'auto', background: isLight ? '#ffffff' : '#1B1B1B' }}>
+      <div style={{ maxHeight: isModal ? 'min(430px, calc(100dvh - 230px))' : '560px', overflowY: 'auto', background: isLight ? '#FFFFFF' : '#1B1B1B' }}>
         {sorted.length === 0 ? (
-          <div style={{ padding: '38px 16px', textAlign: 'center', color: isLight ? '#64748b' : 'var(--slate-400)' }}>
+          <div style={{ padding: '38px 16px', textAlign: 'center', color: isLight ? '#6E655A' : '#9E9B95' }}>
             {activeTab === 'alerts' ? (
               <>
                 <Zap size={34} color="#f59e0b" style={{ opacity: 0.35, marginBottom: '10px' }} />
-                <p style={{ margin: '0 0 4px', fontSize: '0.92rem', fontWeight: 700, color: isLight ? '#1C1915' : 'var(--slate-300)' }}>No active alerts</p>
-                <p style={{ margin: 0, fontSize: '0.78rem', color: isLight ? '#64748b' : 'var(--slate-500)' }}>Announcements, urgent notices, and leadership alerts appear here.</p>
+                <p style={{ margin: '0 0 4px', fontSize: '0.92rem', fontWeight: 700, color: isLight ? '#1C1915' : '#F4F1EA' }}>No active alerts</p>
+                <p style={{ margin: 0, fontSize: '0.78rem', color: isLight ? '#6E655A' : '#9E9B95' }}>Announcements, event proposals, reminders, and leadership alerts appear here.</p>
               </>
             ) : activeTab === 'inbox' ? (
               <>
                 <Bell size={34} style={{ opacity: 0.25, marginBottom: '10px', color: isLight ? '#C85A32' : 'inherit' }} />
-                <p style={{ margin: '0 0 4px', fontSize: '0.92rem', fontWeight: 700, color: isLight ? '#1C1915' : 'var(--slate-300)' }}>You're all caught up!</p>
-                <p style={{ margin: 0, fontSize: '0.78rem', color: isLight ? '#64748b' : 'var(--slate-500)' }}>New event RSVPs, reminders, and community updates appear here.</p>
+                <p style={{ margin: '0 0 4px', fontSize: '0.92rem', fontWeight: 700, color: isLight ? '#1C1915' : '#F4F1EA' }}>You&apos;re all caught up!</p>
+                <p style={{ margin: 0, fontSize: '0.78rem', color: isLight ? '#6E655A' : '#9E9B95' }}>New event RSVPs, reminders, and community updates appear here.</p>
               </>
             ) : (
               <>
                 <Bell size={34} style={{ opacity: 0.2, marginBottom: '10px' }} />
-                <p style={{ margin: '0 0 4px', fontSize: '0.92rem', fontWeight: 700, color: isLight ? '#1C1915' : 'var(--slate-300)' }}>No history available</p>
-                <p style={{ margin: 0, fontSize: '0.78rem', color: isLight ? '#64748b' : 'var(--slate-500)' }}>Previously read notifications older than 30 days appear here.</p>
+                <p style={{ margin: '0 0 4px', fontSize: '0.92rem', fontWeight: 700, color: isLight ? '#1C1915' : '#F4F1EA' }}>No history available</p>
+                <p style={{ margin: 0, fontSize: '0.78rem', color: isLight ? '#6E655A' : '#9E9B95' }}>Previously read notifications older than 30 days appear here.</p>
               </>
             )}
           </div>
@@ -621,10 +716,10 @@ export default function NotificationsFeed({ onClose, isModal = false }) {
             {sorted.map(n => {
               const type = getNotificationType(n);
               const config = TYPE_CONFIG[type] || TYPE_CONFIG.default;
-              const isAlertItem = type === 'alert' || type === 'broadcast';
+              const isAlertItem = type === 'alert' || type === 'broadcast' || type === 'event_proposal';
 
               return (
-                <SwipeableNotificationItem 
+                <SwipeableNotificationItem
                   key={n.id}
                   n={n}
                   type={type}
@@ -632,6 +727,7 @@ export default function NotificationsFeed({ onClose, isModal = false }) {
                   isAlertItem={isAlertItem}
                   isLight={isLight}
                   onClick={handleNotificationClick}
+                  onOpenLink={handleOpenLink}
                   onMarkRead={markNotificationRead}
                 />
               );

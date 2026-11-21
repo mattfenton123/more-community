@@ -54,7 +54,7 @@ export default function CreateIdeaModal({ isOpen, onClose, communityId: initialC
           `💡 New Idea: ${title.trim()}`, 
           `${user?.name || 'A member'} suggested "${title.trim()}". Check it out and vote!`,
           null,
-          `/app`
+          `/community/${targetCommunityId}`
         );
       }
       

@@ -365,7 +365,11 @@ export default function EventClient({ id }) {
     }
   }, [heroImageUrl]);
 
-  const isLeader = user?.ledCommunities?.includes(event?.communityId) || user?.isAdmin;
+  const isLeader = Boolean(
+    user?.isAdmin ||
+    user?.ledCommunities?.includes(event?.communityId) ||
+    (Array.isArray(event?.collabCommunityIds) && event.collabCommunityIds.some(cid => user?.ledCommunities?.includes(cid)))
+  );
 
   const handleScan = async (payload) => {
     let scannedUserId = payload;
@@ -666,8 +670,9 @@ export default function EventClient({ id }) {
   const isLive = Boolean(event && (isEventToday(event) || searchParams?.get('live') === 'true'));
   const isUserCheckedIn = Boolean(
     hasCheckedInLocally || 
-    (event && user?.id && (rsvps || []).some(r => r.userId === user.id && (r.checkedIn || r.checked_in)))
+    (event && user?.id && (rsvps || []).some(r => r.userId === user.id && (r.checkedIn || r.checked_in || r.status === 'checked_in')))
   );
+  const canAccessEventPhotos = Boolean(user?.id && (isGoing || isUserCheckedIn || isLeader));
 
   const handleLiveCheckIn = async () => {
     if (!user?.id) {
@@ -961,23 +966,22 @@ export default function EventClient({ id }) {
               </div>
             </div>
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-              <button
-                onClick={() => {
-                  if (!user?.id) router.push(`/login?redirect=/events/${id}`);
-                  else photoInputRef.current?.click();
-                }}
-                disabled={isUploadingPhoto}
-                className="interactive-press"
-                style={{
-                  display: 'inline-flex', alignItems: 'center', gap: '6px',
-                  padding: '8px 14px', borderRadius: '99px',
-                  background: 'rgba(235, 87, 56,0.16)', border: '1px solid rgba(235, 87, 56,0.35)',
-                  color: 'var(--teal-300)', fontSize: '0.8rem', fontWeight: 700,
-                  cursor: isUploadingPhoto ? 'wait' : 'pointer'
-                }}
-              >
-                <Camera size={14} /> {isUploadingPhoto ? 'Uploading...' : `+ Add Photo${event.galleryImages?.length ? ` (${event.galleryImages.length})` : ''}`}
-              </button>
+              {canAccessEventPhotos && (
+                <button
+                  onClick={() => photoInputRef.current?.click()}
+                  disabled={isUploadingPhoto}
+                  className="interactive-press"
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: '6px',
+                    padding: '8px 14px', borderRadius: '99px',
+                    background: 'rgba(235, 87, 56,0.16)', border: '1px solid rgba(235, 87, 56,0.35)',
+                    color: 'var(--teal-300)', fontSize: '0.8rem', fontWeight: 700,
+                    cursor: isUploadingPhoto ? 'wait' : 'pointer'
+                  }}
+                >
+                  <Camera size={14} /> {isUploadingPhoto ? 'Uploading...' : `+ Add Photo${event.galleryImages?.length ? ` (${event.galleryImages.length})` : ''}`}
+                </button>
+              )}
               {isLeader && (
                 <button
                   onClick={() => router.push(`/dashboard?community=${event.communityId}&duplicateEvent=${event.id}`)}
@@ -1430,7 +1434,7 @@ export default function EventClient({ id }) {
           </div>
         )}
 
-        {/* Communal Photo Dump & Memories (Lu.ma style) */}
+        {/* Communal Photo Dump & Memories (Only visible to confirmed attendees, leaders, co-leaders, and admins) */}
         <div style={{ marginBottom: '32px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
             <div>
@@ -1438,39 +1442,74 @@ export default function EventClient({ id }) {
                 <Camera size={20} color="var(--teal-400)" /> Event Memories & Photos
               </h3>
               <div style={{ fontSize: '0.78rem', color: 'var(--slate-400)', marginTop: '2px' }}>
-                Shared communal camera roll for attendees and leaders
+                Private communal camera roll for event attendees and community leaders
               </div>
             </div>
             
-            <div>
-              <input
-                type="file"
-                accept="image/*"
-                ref={photoInputRef}
-                onChange={handlePhotoUpload}
-                style={{ display: 'none' }}
-              />
-              <button
-                onClick={() => {
-                  if (!user?.id) router.push(`/login?redirect=/events/${id}`);
-                  else photoInputRef.current?.click();
-                }}
-                disabled={isUploadingPhoto}
-                className="interactive-press"
-                style={{
-                  display: 'flex', alignItems: 'center', gap: '6px',
-                  padding: '8px 16px', borderRadius: '99px',
-                  background: 'rgba(235, 87, 56,0.15)', border: '1px solid rgba(235, 87, 56,0.3)',
-                  color: 'var(--teal-300)', fontSize: '0.82rem', fontWeight: 600,
-                  cursor: isUploadingPhoto ? 'wait' : 'pointer'
-                }}
-              >
-                <Camera size={14} /> {isUploadingPhoto ? 'Uploading...' : '+ Add Photo'}
-              </button>
-            </div>
+            {canAccessEventPhotos && (
+              <div>
+                <input
+                  type="file"
+                  accept="image/*"
+                  ref={photoInputRef}
+                  onChange={handlePhotoUpload}
+                  style={{ display: 'none' }}
+                />
+                <button
+                  onClick={() => photoInputRef.current?.click()}
+                  disabled={isUploadingPhoto}
+                  className="interactive-press"
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '6px',
+                    padding: '8px 16px', borderRadius: '99px',
+                    background: 'rgba(235, 87, 56,0.15)', border: '1px solid rgba(235, 87, 56,0.3)',
+                    color: 'var(--teal-300)', fontSize: '0.82rem', fontWeight: 600,
+                    cursor: isUploadingPhoto ? 'wait' : 'pointer'
+                  }}
+                >
+                  <Camera size={14} /> {isUploadingPhoto ? 'Uploading...' : '+ Add Photo'}
+                </button>
+              </div>
+            )}
           </div>
 
-          {(event.galleryImages && event.galleryImages.length > 0) ? (
+          {!canAccessEventPhotos ? (
+            <div style={{
+              background: 'var(--surface-card)',
+              border: '1px dashed var(--hairline-border-strong)',
+              borderRadius: '16px',
+              padding: '22px 20px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '14px',
+            }}>
+              <div style={{
+                width: '40px',
+                height: '40px',
+                borderRadius: '12px',
+                background: 'var(--surface-elevated)',
+                border: '1px solid var(--hairline-border-strong)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+                color: 'var(--teal-400)',
+              }}>
+                <Lock size={18} />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--white)', marginBottom: '2px' }}>
+                  Attendee &amp; Leader Only Gallery
+                  {event.galleryImages?.length > 0 ? ` • ${event.galleryImages.length} photo${event.galleryImages.length === 1 ? '' : 's'} shared` : ''}
+                </div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)', lineHeight: 1.45 }}>
+                  {isEventPast(event)
+                    ? 'Only members who attended this event and community leaders can view or add event photos.'
+                    : 'RSVP as Going to view and share photos in this event gallery.'}
+                </div>
+              </div>
+            </div>
+          ) : (event.galleryImages && event.galleryImages.length > 0) ? (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '10px' }}>
               {event.galleryImages.map((imgUrl, pIdx) => (
                 <div
@@ -1520,10 +1559,7 @@ export default function EventClient({ id }) {
                 No photos shared yet. Snap moments during or after the event and drop them here for the group!
               </div>
               <button
-                onClick={() => {
-                  if (!user?.id) router.push(`/login?redirect=/events/${id}`);
-                  else photoInputRef.current?.click();
-                }}
+                onClick={() => photoInputRef.current?.click()}
                 className="interactive-press"
                 style={{
                   display: 'inline-flex', alignItems: 'center', gap: '6px',

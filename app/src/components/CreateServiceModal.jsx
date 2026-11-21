@@ -46,7 +46,7 @@ export default function CreateServiceModal({ isOpen, onClose, communityId }) {
       });
       
       if (notifyCommunityLeaders) {
-        notifyCommunityLeaders(communityId, '🛍️ New Service Pitch', `${user?.name || 'A member'} has pitched a new service: ${title}`, `/community/${communityId}/admin`);
+        notifyCommunityLeaders(communityId, '🛍️ New Service Pitch', `${user?.name || 'A member'} has pitched a new service: ${title}`, `/dashboard?tab=overview&community=${communityId}`);
       }
       
       setIsSubmitting(false);

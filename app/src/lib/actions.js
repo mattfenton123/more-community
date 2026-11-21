@@ -281,6 +281,37 @@ export async function joinCommunityAction(userId, communityId, token) {
       }
       return { error: error.message };
     }
+
+    // Server-side notification to community leaders & co-leaders
+    try {
+      const [{ data: comm }, { data: memberUser }, { data: managers }] = await Promise.all([
+        supabaseAdmin.from('communities').select('id, name, leader_id').eq('id', communityId).maybeSingle(),
+        supabaseAdmin.from('users').select('name').eq('id', userId).maybeSingle(),
+        supabaseAdmin.from('community_memberships').select('user_id, role').eq('community_id', communityId).in('role', ['Leader', 'Co-Leader']),
+      ]);
+      if (comm && communityId !== 'more-leaders-network') {
+        const recipientIds = new Set();
+        if (comm.leader_id) recipientIds.add(comm.leader_id);
+        (managers || []).forEach(m => { if (m?.user_id) recipientIds.add(m.user_id); });
+        recipientIds.delete(userId);
+
+        if (recipientIds.size > 0) {
+          const memberName = memberUser?.name || 'A new member';
+          const notifs = Array.from(recipientIds).map(lid => ({
+            user_id: lid,
+            type: 'member',
+            title: `👋 New Member in ${comm.name}`,
+            message: `${memberName} has joined ${comm.name}!`,
+            link: `/dashboard?tab=people&community=${communityId}`,
+            is_read: false,
+          }));
+          await supabaseAdmin.from('notifications').insert(notifs);
+        }
+      }
+    } catch (notifErr) {
+      console.warn('Could not notify leaders on member join:', notifErr?.message || notifErr);
+    }
+
     return { data };
   } catch (err) {
     return { error: err.message };
@@ -596,23 +627,92 @@ export async function rsvpToEventAction(userId, eventId, status, ticketType, ref
     } else if (error) {
       throw new Error(error.message);
     }
+
+    // Server-side notification to event community leaders on positive RSVP / approval request
+    try {
+      const [{ data: ev }, { data: rsvpUser }] = await Promise.all([
+        supabaseAdmin.from('events').select('id, title, community_id').eq('id', eventId).maybeSingle(),
+        supabaseAdmin.from('users').select('name').eq('id', userId).maybeSingle(),
+      ]);
+      if (ev?.community_id) {
+        const [{ data: comm }, { data: managers }] = await Promise.all([
+          supabaseAdmin.from('communities').select('leader_id').eq('id', ev.community_id).maybeSingle(),
+          supabaseAdmin.from('community_memberships').select('user_id, role').eq('community_id', ev.community_id).in('role', ['Leader', 'Co-Leader']),
+        ]);
+        const recipientIds = new Set();
+        if (comm?.leader_id) recipientIds.add(comm.leader_id);
+        (managers || []).forEach(m => { if (m?.user_id) recipientIds.add(m.user_id); });
+        recipientIds.delete(userId);
+
+        if (recipientIds.size > 0) {
+          const attendeeName = rsvpUser?.name || 'A member';
+          const guestNote = metadata?.guestName ? ` (with guest ${metadata.guestName})` : '';
+          const isApprovalReq = status === 'pending_approval';
+          const isWaitlist = status === 'waitlist';
+          const notifTitle = isApprovalReq
+            ? `⏳ Approval Request: ${ev.title}`
+            : isWaitlist
+            ? `📋 Waitlist Joined: ${ev.title}`
+            : `🎫 New RSVP for ${ev.title}`;
+          const notifMsg = isApprovalReq
+            ? `${attendeeName} requested approval to join "${ev.title}"${guestNote}. Review on the event page.`
+            : isWaitlist
+            ? `${attendeeName} joined the waitlist for "${ev.title}"${guestNote}.`
+            : `${attendeeName} booked a spot for "${ev.title}"${guestNote}!`;
+
+          const notifs = Array.from(recipientIds).map(lid => ({
+            user_id: lid,
+            type: 'rsvp',
+            title: notifTitle,
+            message: notifMsg,
+            link: `/events/${eventId}`,
+            is_read: false,
+          }));
+          await supabaseAdmin.from('notifications').insert(notifs);
+        }
+      }
+    } catch (notifErr) {
+      console.warn('Could not notify leaders on RSVP:', notifErr?.message || notifErr);
+    }
   }
   return true;
 }
 
 export async function addEventPhotoAction(eventId, photoUrl, token) {
   if (!eventId || !photoUrl) throw new Error("Missing parameters");
-  await verifyUser(token);
+  const authUser = await verifyUser(token);
   const db = hasValidServiceKey ? supabaseAdmin : getSupabaseClient(token);
 
   const { data: event, error: fetchErr } = await db
     .from('events')
-    .select('gallery_images')
+    .select('gallery_images, community_id, cohost_community_ids')
     .eq('id', eventId)
     .maybeSingle();
 
   if (fetchErr) throw new Error(fetchErr.message);
   if (!event) throw new Error("Event not found");
+
+  // Enforce: Only confirmed attendees (going / checked_in) or Leaders / Co-Leaders / Admins can upload event photos
+  if (!isAdminUser(authUser)) {
+    const commIds = [
+      event.community_id,
+      ...(Array.isArray(event.cohost_community_ids) ? event.cohost_community_ids : []),
+    ].filter(Boolean);
+    const roles = await Promise.all(commIds.map(cid => getCommunityRole(authUser.id, cid, db)));
+    const isManager = roles.some(r => r === 'Leader' || r === 'Co-Leader');
+
+    if (!isManager) {
+      const { data: rsvp } = await db
+        .from('event_rsvps')
+        .select('status, checked_in')
+        .match({ event_id: eventId, user_id: authUser.id })
+        .maybeSingle();
+      const didAttend = Boolean(rsvp && (rsvp.status === 'going' || rsvp.status === 'checked_in' || rsvp.checked_in));
+      if (!didAttend) {
+        throw new Error("Only confirmed event attendees and community leaders can add photos to this event.");
+      }
+    }
+  }
 
   const currentGallery = Array.isArray(event.gallery_images) ? event.gallery_images : [];
   const updatedGallery = [...currentGallery, photoUrl];
@@ -630,7 +730,7 @@ export async function updateAttendeeStatusAction(eventId, attendeeUserId, newSta
   if (!eventId || !attendeeUserId || !newStatus) throw new Error("Missing parameters");
   const hostUser = await verifyUser(token);
 
-  const { data: event } = await supabaseAdmin.from('events').select('community_id, host_id').eq('id', eventId).maybeSingle();
+  const { data: event } = await supabaseAdmin.from('events').select('id, title, community_id, host_id').eq('id', eventId).maybeSingle();
   if (event) {
     const role = await getCommunityRole(hostUser.id, event.community_id, supabaseAdmin);
     const isAllowed = role === 'Leader' || role === 'Co-Leader' || event.host_id === hostUser.id || isAdminUser(hostUser);
@@ -646,6 +746,40 @@ export async function updateAttendeeStatusAction(eventId, attendeeUserId, newSta
     }], { onConflict: 'event_id,user_id' });
 
   if (error) throw new Error(error.message);
+
+  // Notify attendee when their request is approved or declined
+  if (event && attendeeUserId !== hostUser.id && (newStatus === 'going' || newStatus === 'declined')) {
+    try {
+      const isApproved = newStatus === 'going';
+      const notifTitle = isApproved
+        ? `✅ Spot Approved: ${event.title || 'Community Event'}`
+        : `RSVP Update: ${event.title || 'Community Event'}`;
+      const notifMsg = isApproved
+        ? `Your request to join "${event.title}" has been approved by the host! Tap to view your pass and exact meeting point.`
+        : `The host was unable to approve your request for "${event.title}" this time.`;
+      const link = `/events/${eventId}`;
+
+      await supabaseAdmin.from('notifications').insert({
+        user_id: attendeeUserId,
+        type: 'rsvp',
+        title: notifTitle,
+        message: notifMsg,
+        link,
+        is_read: false,
+      });
+
+      if (isApproved) {
+        await sendPushNotificationAction(attendeeUserId, {
+          title: notifTitle,
+          body: notifMsg,
+          url: link,
+        }).catch(() => {});
+      }
+    } catch (e) {
+      console.warn('Could not notify attendee of status update:', e?.message || e);
+    }
+  }
+
   return true;
 }
 
@@ -894,6 +1028,18 @@ export async function markNotificationReadAction(notificationId, token) {
   return true;
 }
 
+export async function markAllNotificationsReadAction(token) {
+  const user = await verifyUser(token);
+
+  const { error } = await supabaseAdmin
+    .from('notifications')
+    .update({ is_read: true })
+    .eq('user_id', user.id)
+    .eq('is_read', false);
+  if (error) throw new Error(error.message);
+  return true;
+}
+
 export async function updateUserAction(userId, updates, token) {
   const user = await verifyUser(token);
   const isAdmin = user.email && ADMIN_EMAILS.includes(user.email.toLowerCase());
@@ -904,9 +1050,25 @@ export async function updateUserAction(userId, updates, token) {
   const sanitized = { ...updates };
   delete sanitized.banner;
   delete sanitized.affinityProfile;
+  delete sanitized.headline;
+  delete sanitized.location;
+  delete sanitized.vibes;
+  delete sanitized.instagram;
+  delete sanitized.website;
 
-  const { error } = await supabaseAdmin.from('users').update(sanitized).eq('id', userId);
-  if (error) {
+  let payload = { ...sanitized };
+  for (let attempt = 0; attempt < 5; attempt++) {
+    if (Object.keys(payload).length === 0) return true;
+    const { error } = await supabaseAdmin.from('users').update(payload).eq('id', userId);
+    if (!error) return true;
+
+    const colMatch =
+      error.message?.match(/column ["']?(?:users\.)?([a-zA-Z0-9_]+)["']? does not exist/i) ||
+      error.message?.match(/Could not find the ['"]([a-zA-Z0-9_]+)['"] column/i);
+    if (colMatch && colMatch[1] && payload[colMatch[1]] !== undefined) {
+      delete payload[colMatch[1]];
+      continue;
+    }
     console.error('User update failed:', error);
     throw new Error(error.message);
   }
@@ -921,17 +1083,76 @@ export async function adminVerifyCommunityAction(communityId, verified, token) {
   return true;
 }
 
+export async function notifyCommunityLeadersAction(communityId, { title, message, link, type = 'alert' } = {}, token) {
+  const caller = await verifyUser(token);
+  if (!communityId || !title) throw new Error("Missing community notification details");
+
+  const [{ data: comm }, { data: managers }] = await Promise.all([
+    supabaseAdmin.from('communities').select('id, name, leader_id').eq('id', communityId).maybeSingle(),
+    supabaseAdmin
+      .from('community_memberships')
+      .select('user_id, role')
+      .eq('community_id', communityId)
+      .in('role', ['Leader', 'Co-Leader']),
+  ]);
+
+  if (!comm) throw new Error("Community not found");
+
+  const recipientIds = new Set();
+  if (comm.leader_id) recipientIds.add(comm.leader_id);
+  (managers || []).forEach(m => { if (m?.user_id) recipientIds.add(m.user_id); });
+  if (recipientIds.size > 1) recipientIds.delete(caller.id);
+
+  if (recipientIds.size === 0) return true;
+
+  const targetLink = link || `/dashboard?tab=overview&community=${communityId}`;
+  const rows = Array.from(recipientIds).map(uid => ({
+    user_id: uid,
+    type,
+    title,
+    message: message || '',
+    link: targetLink,
+    is_read: false,
+  }));
+
+  const { error } = await supabaseAdmin.from('notifications').insert(rows);
+  if (error) throw new Error(error.message);
+  return true;
+}
+
 export async function broadcastNotificationAction(notifications, token, communityId = null) {
   const user = await verifyUser(token);
+  if (!Array.isArray(notifications) || notifications.length === 0) return true;
+
   if (!isAdminUser(user)) {
     let targetCommId = communityId;
-    if (!targetCommId && notifications?.[0]?.link) {
-      const match = notifications[0].link.match(/\/community\/([^/?#]+)/);
-      if (match) targetCommId = match[1];
+    const firstLink = notifications?.[0]?.link || '';
+    if (!targetCommId && firstLink) {
+      const commPathMatch = firstLink.match(/\/community\/([^/?#]+)/);
+      const commQueryMatch = firstLink.match(/[?&]community=([^&#]+)/);
+      if (commPathMatch) targetCommId = commPathMatch[1];
+      else if (commQueryMatch) targetCommId = commQueryMatch[1];
     }
+
     if (targetCommId) {
       const role = await getCommunityRole(user.id, targetCommId);
-      if (role !== 'Leader' && role !== 'Co-Leader') {
+      const isManager = role === 'Leader' || role === 'Co-Leader';
+      const isMemberIdea = role === 'Member' && notifications.every(n => n.type === 'idea' || String(n.title || '').includes('💡'));
+
+      // Also allow a parent community's Leader to notify a child chapter's leader (e.g. chapter approval/decline)
+      let isParentLeaderOfChapter = false;
+      if (!isManager && !isMemberIdea) {
+        const { data: targetComm } = await supabaseAdmin.from('communities').select('tags, external_links').eq('id', targetCommId).maybeSingle();
+        const cfgTag = (targetComm?.tags || []).find(t => typeof t === 'string' && t.startsWith('__cfg:'));
+        const parentMatch = cfgTag?.match(/parent=([^,]+)/);
+        const parentId = parentMatch?.[1] || (targetComm?.external_links || []).find(x => x?.__type === 'community_settings')?.parent_community_id;
+        if (parentId) {
+          const parentRole = await getCommunityRole(user.id, parentId);
+          isParentLeaderOfChapter = parentRole === 'Leader' || parentRole === 'Co-Leader';
+        }
+      }
+
+      if (!isManager && !isMemberIdea && !isParentLeaderOfChapter) {
         throw new Error("Forbidden: Only community leaders or admins can broadcast");
       }
     } else {
@@ -1161,16 +1382,31 @@ export async function createFeedPostCommentAction(postId, communityId, authorId,
       return { error: error.message };
     }
     
-    const { data: post } = await supabaseAdmin.from('feed_posts').select('comments, author_id').eq('id', postId).single();
+    const { data: post } = await supabaseAdmin.from('feed_posts').select('comments, author_id, community_id').eq('id', postId).single();
     if (post) {
       await supabaseAdmin.from('feed_posts').update({ comments: (post.comments || 0) + 1 }).eq('id', postId);
       
-      if (post.author_id !== authorId) {
+      if (post.author_id && post.author_id !== authorId) {
         const { data: author } = await supabaseAdmin.from('users').select('name').eq('id', authorId).single();
+        const targetCommId = communityId || post.community_id;
+        const targetUrl = targetCommId ? `/community/${targetCommId}` : '/app';
+        const authorName = author?.name || 'A member';
+
+        try {
+          await supabaseAdmin.from('notifications').insert({
+            user_id: post.author_id,
+            type: 'comment',
+            title: `💬 New comment from ${authorName}`,
+            message: text,
+            link: targetUrl,
+            is_read: false,
+          });
+        } catch (e) {}
+
         await sendPushNotificationAction(post.author_id, {
-          title: `New comment from ${author?.name || 'someone'}`,
+          title: `New comment from ${authorName}`,
           body: text,
-          url: `/`
+          url: targetUrl
         });
       }
     }
@@ -1500,6 +1736,42 @@ const isMissingCarpoolRelation = isMissingOptionalTable;
 export async function offerCarpoolAction(eventId, offerData, token) {
   const authUser = await verifyUser(token);
   const db = getSupabaseClient(token);
+
+  // Safety & Trust Gate: Only members who have attended at least 1 in-person meetup (or Leaders/Co-Leaders/Admins) can offer a ride share
+  if (!isAdminUser(authUser)) {
+    const { data: ev } = await supabaseAdmin.from('events').select('community_id, cohost_community_ids').eq('id', eventId).maybeSingle();
+    const commIds = [ev?.community_id, ...(Array.isArray(ev?.cohost_community_ids) ? ev.cohost_community_ids : [])].filter(Boolean);
+    const roles = await Promise.all(commIds.map(cid => getCommunityRole(authUser.id, cid, supabaseAdmin)));
+    const isManager = roles.some(r => r === 'Leader' || r === 'Co-Leader');
+
+    if (!isManager) {
+      const todayIso = new Date().toISOString().split('T')[0];
+      const { data: myRsvps } = await supabaseAdmin
+        .from('event_rsvps')
+        .select('event_id, status, checked_in')
+        .eq('user_id', authUser.id);
+      const goingEventIds = (myRsvps || [])
+        .filter(r => r.status === 'going' || r.status === 'checked_in' || r.checked_in)
+        .map(r => r.event_id);
+      const hasCheckedInAny = (myRsvps || []).some(r => r.checked_in || r.status === 'checked_in');
+      let hasAttendedPastMeetup = hasCheckedInAny;
+
+      if (!hasAttendedPastMeetup && goingEventIds.length > 0) {
+        const { data: pastEvents } = await supabaseAdmin
+          .from('events')
+          .select('id, date')
+          .in('id', goingEventIds)
+          .lt('date', todayIso)
+          .limit(1);
+        hasAttendedPastMeetup = Boolean(pastEvents && pastEvents.length > 0);
+      }
+
+      if (!hasAttendedPastMeetup) {
+        throw new Error('For community safety, offering a carpool ride unlocks after you have attended your first in-person meetup.');
+      }
+    }
+  }
+
   const payload = {
     id: offerData.id || `cp_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
     event_id: eventId,
@@ -1536,7 +1808,7 @@ export async function reserveCarpoolSeatAction(eventId, carpoolId, token) {
   const db = getSupabaseClient(token);
 
   const { data: pool, error: poolErr } = await db.from('event_carpools')
-    .select('id, seats_total')
+    .select('id, seats_total, driver_id, origin')
     .eq('id', carpoolId)
     .maybeSingle();
 
@@ -1575,6 +1847,33 @@ export async function reserveCarpoolSeatAction(eventId, carpoolId, token) {
     if (isMissingCarpoolRelation(insErr)) return { localOnly: true };
     throw new Error(insErr.message);
   }
+
+  // Notify carpool driver when a seat is reserved
+  if (pool.driver_id && pool.driver_id !== authUser.id) {
+    try {
+      const [{ data: passenger }, { data: ev }] = await Promise.all([
+        supabaseAdmin.from('users').select('name').eq('id', authUser.id).maybeSingle(),
+        supabaseAdmin.from('events').select('title').eq('id', eventId).maybeSingle(),
+      ]);
+      const passengerName = passenger?.name || 'A member';
+      const eventTitle = ev?.title || 'the event';
+      const link = `/events/${eventId}#carpool`;
+      await supabaseAdmin.from('notifications').insert({
+        user_id: pool.driver_id,
+        type: 'carpool',
+        title: `🚗 Carpool Seat Reserved`,
+        message: `${passengerName} reserved a seat in your lift${pool.origin ? ` from ${pool.origin}` : ''} for "${eventTitle}".`,
+        link,
+        is_read: false,
+      });
+      await sendPushNotificationAction(pool.driver_id, {
+        title: '🚗 Carpool Seat Reserved',
+        body: `${passengerName} reserved a seat in your lift for "${eventTitle}".`,
+        url: link,
+      }).catch(() => {});
+    } catch (e) {}
+  }
+
   return { reserved: true };
 }
 

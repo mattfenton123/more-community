@@ -251,7 +251,7 @@ export default function CommunityPartnerModal({
             commId,
             'New Guest Session Proposal',
             (sessionForm.hostName || 'An instructor') + ' proposed: ' + sessionForm.title + ' (Min ' + sessionForm.minCapacity + ' - Max ' + sessionForm.maxCapacity + ')',
-            '/community/' + commId
+            `/dashboard?tab=overview&community=${commId}`
           );
         }
         setSubmittedType('session');
@@ -287,7 +287,7 @@ export default function CommunityPartnerModal({
             commId,
             sponsorForm.perk ? 'New Sponsor & Perk Offer' : 'New Community Sponsor',
             sponsorForm.businessName + (sponsorForm.perk ? ' offered perk: "' + sponsorForm.perk + '"' : ' joined as a brand supporter') + ' (' + (sponsorForm.tier === 'headline' ? '£49 Headline Sponsor' : '£15 Directory Sponsor') + ')',
-            '/community/' + commId
+            `/dashboard?tab=overview&community=${commId}`
           );
         }
         setSubmittedType('sponsor');

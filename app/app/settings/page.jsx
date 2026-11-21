@@ -64,8 +64,16 @@ export default function SettingsScreen() {
   const [selectedInterests, setSelectedInterests] = useState(() => user?.interests || []);
   const [isSavingInterests, setIsSavingInterests] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [showInstallModal, setShowInstallModal] = useState(false);
+  const [installGuidePlatform, setInstallGuidePlatform] = useState(() => {
+    if (typeof window === 'undefined') return 'ios';
+    const ua = window.navigator.userAgent.toLowerCase();
+    if (/iphone|ipad|ipod/.test(ua)) return 'ios';
+    if (/android/.test(ua)) return 'android';
+    return 'desktop';
+  });
   const [isInstalled, setIsInstalled] = useState(() => {
-    return typeof window !== 'undefined' && window.matchMedia('(display-mode: standalone)').matches;
+    return typeof window !== 'undefined' && (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true);
   });
 
   useEffect(() => {
@@ -104,10 +112,7 @@ export default function SettingsScreen() {
       if (typeof window !== 'undefined') window.deferredPrompt = null;
       setDeferredPrompt(null);
     } else {
-      toast.info(
-        'Add to Home Screen',
-        'Use your browser\'s "Add to Home Screen" option to install More Community.'
-      );
+      setShowInstallModal(true);
     }
   };
 
@@ -594,13 +599,13 @@ export default function SettingsScreen() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <MenuItem
               icon={isInstalled ? <Smartphone size={18} /> : <Download size={18} />}
-              label={isInstalled ? 'App Installed' : 'Install App'}
-              subtext={isInstalled ? 'Running from your home screen' : 'Add to your home screen'}
+              label={isInstalled ? 'App Installed ✓' : 'Install App to Home Screen'}
+              subtext={isInstalled ? 'Running as an installed app on your device' : 'Tap to install or view 3-step setup for iPhone & Android'}
               color="var(--brand-accent)"
               onClick={handleInstallApp}
             />
 
-            <PushNotificationManager />
+            <PushNotificationManager onOpenInstallGuide={() => setShowInstallModal(true)} />
           </div>
         </section>
 
@@ -676,6 +681,172 @@ export default function SettingsScreen() {
           </button>
         )}
       </div>
+
+      {/* Interactive Install App Guide Modal */}
+      {showInstallModal && (
+        <div
+          onClick={() => setShowInstallModal(false)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 10000,
+            background: 'rgba(18, 18, 18, 0.72)',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '16px',
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: '100%',
+              maxWidth: '440px',
+              background: 'var(--surface-card)',
+              border: '1px solid var(--hairline-border-strong)',
+              borderRadius: '20px',
+              padding: '22px 20px',
+              boxShadow: '0 24px 48px rgba(0, 0, 0, 0.4)',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', marginBottom: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <img src="/logo.png" alt="More." style={{ width: '36px', height: '36px', borderRadius: '10px' }} className="theme-invert" />
+                <div>
+                  <h3 style={{ margin: 0, fontFamily: 'var(--font-heading)', fontSize: '1.15rem', color: 'var(--ink-primary)' }}>
+                    Install More Community
+                  </h3>
+                  <div style={{ fontSize: '0.76rem', color: 'var(--ink-muted)' }}>
+                    Full-screen app + instant push notifications
+                  </div>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowInstallModal(false)}
+                style={{
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '50%',
+                  background: 'var(--surface-elevated)',
+                  border: '1px solid var(--hairline-border)',
+                  color: 'var(--ink-secondary)',
+                  cursor: 'pointer',
+                  fontSize: '1.1rem',
+                  lineHeight: 1,
+                }}
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Platform Switcher Pills */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px', background: 'var(--surface-elevated)', padding: '4px', borderRadius: '12px', marginBottom: '16px' }}>
+              {[
+                { id: 'ios', label: 'iPhone / iPad' },
+                { id: 'android', label: 'Android' },
+                { id: 'desktop', label: 'Desktop' },
+              ].map((tab) => {
+                const active = installGuidePlatform === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setInstallGuidePlatform(tab.id)}
+                    style={{
+                      padding: '7px 8px',
+                      borderRadius: '9px',
+                      border: 'none',
+                      background: active ? 'var(--brand-accent)' : 'transparent',
+                      color: active ? '#FFFFFF' : 'var(--ink-secondary)',
+                      fontSize: '0.78rem',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            {installGuidePlatform === 'ios' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '18px' }}>
+                <div style={{ padding: '12px 14px', borderRadius: '12px', background: 'var(--surface-elevated)', border: '1px solid var(--hairline-border)' }}>
+                  <div style={{ fontSize: '0.74rem', fontWeight: 800, color: 'var(--teal-300)', textTransform: 'uppercase', marginBottom: '2px' }}>Step 1</div>
+                  <div style={{ fontSize: '0.86rem', color: 'var(--ink-primary)', lineHeight: 1.45 }}>
+                    Tap the <strong>Share</strong> button <span style={{ display: 'inline-block', padding: '1px 6px', borderRadius: '5px', background: 'var(--surface-card)', border: '1px solid var(--hairline-border-strong)', fontWeight: 700 }}>↑</span> at the bottom of Safari (or top-right in Chrome).
+                  </div>
+                </div>
+                <div style={{ padding: '12px 14px', borderRadius: '12px', background: 'var(--surface-elevated)', border: '1px solid var(--hairline-border)' }}>
+                  <div style={{ fontSize: '0.74rem', fontWeight: 800, color: 'var(--teal-300)', textTransform: 'uppercase', marginBottom: '2px' }}>Step 2</div>
+                  <div style={{ fontSize: '0.86rem', color: 'var(--ink-primary)', lineHeight: 1.45 }}>
+                    Scroll down the share sheet and tap <strong>&ldquo;Add to Home Screen&rdquo;</strong> <span style={{ display: 'inline-block', padding: '1px 6px', borderRadius: '5px', background: 'var(--surface-card)', border: '1px solid var(--hairline-border-strong)', fontWeight: 700 }}>＋</span>.
+                  </div>
+                </div>
+                <div style={{ padding: '12px 14px', borderRadius: '12px', background: 'var(--surface-elevated)', border: '1px solid var(--hairline-border)' }}>
+                  <div style={{ fontSize: '0.74rem', fontWeight: 800, color: 'var(--teal-300)', textTransform: 'uppercase', marginBottom: '2px' }}>Step 3</div>
+                  <div style={{ fontSize: '0.86rem', color: 'var(--ink-primary)', lineHeight: 1.45 }}>
+                    Tap <strong>Add</strong> in the top-right corner, then open <strong>More.</strong> from your Home Screen to enable push notifications.
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {installGuidePlatform === 'android' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '18px' }}>
+                <div style={{ padding: '12px 14px', borderRadius: '12px', background: 'var(--surface-elevated)', border: '1px solid var(--hairline-border)' }}>
+                  <div style={{ fontSize: '0.74rem', fontWeight: 800, color: 'var(--teal-300)', textTransform: 'uppercase', marginBottom: '2px' }}>Step 1</div>
+                  <div style={{ fontSize: '0.86rem', color: 'var(--ink-primary)', lineHeight: 1.45 }}>
+                    Tap the <strong>browser menu</strong> <span style={{ display: 'inline-block', padding: '1px 6px', borderRadius: '5px', background: 'var(--surface-card)', border: '1px solid var(--hairline-border-strong)', fontWeight: 700 }}>⋮</span> in the top-right corner of Chrome.
+                  </div>
+                </div>
+                <div style={{ padding: '12px 14px', borderRadius: '12px', background: 'var(--surface-elevated)', border: '1px solid var(--hairline-border)' }}>
+                  <div style={{ fontSize: '0.74rem', fontWeight: 800, color: 'var(--teal-300)', textTransform: 'uppercase', marginBottom: '2px' }}>Step 2</div>
+                  <div style={{ fontSize: '0.86rem', color: 'var(--ink-primary)', lineHeight: 1.45 }}>
+                    Tap <strong>&ldquo;Install app&rdquo;</strong> or <strong>&ldquo;Add to Home screen&rdquo;</strong> and confirm.
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {installGuidePlatform === 'desktop' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '18px' }}>
+                <div style={{ padding: '12px 14px', borderRadius: '12px', background: 'var(--surface-elevated)', border: '1px solid var(--hairline-border)' }}>
+                  <div style={{ fontSize: '0.74rem', fontWeight: 800, color: 'var(--teal-300)', textTransform: 'uppercase', marginBottom: '2px' }}>Chrome / Edge / Brave</div>
+                  <div style={{ fontSize: '0.86rem', color: 'var(--ink-primary)', lineHeight: 1.45 }}>
+                    Click the <strong>Install icon</strong> (monitor with downward arrow) on the right side of your address bar.
+                  </div>
+                </div>
+                <div style={{ padding: '12px 14px', borderRadius: '12px', background: 'var(--surface-elevated)', border: '1px solid var(--hairline-border)' }}>
+                  <div style={{ fontSize: '0.74rem', fontWeight: 800, color: 'var(--teal-300)', textTransform: 'uppercase', marginBottom: '2px' }}>Mac Safari</div>
+                  <div style={{ fontSize: '0.86rem', color: 'var(--ink-primary)', lineHeight: 1.45 }}>
+                    Click <strong>File → Add to Dock</strong> from the Safari menu bar.
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={() => setShowInstallModal(false)}
+              className="btn btn-primary interactive-press"
+              style={{
+                width: '100%',
+                padding: '12px',
+                borderRadius: '12px',
+                fontWeight: 700,
+                fontSize: '0.9rem',
+                color: '#FFFFFF',
+              }}
+            >
+              Got It
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

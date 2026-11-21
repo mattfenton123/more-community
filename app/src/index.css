@@ -629,12 +629,12 @@ html, body {
 }
 
 .toast {
-  background: var(--slate-800);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--surface-card);
+  border: 1px solid var(--hairline-border-strong);
   border-radius: var(--radius-md);
   padding: 14px 16px;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.3);
   animation: slideInUp 400ms var(--ease-spring) both;
@@ -681,18 +681,19 @@ html, body {
 }
 
 .toast-title {
-  font-weight: 600;
+  font-weight: 700;
   font-size: 0.9rem;
-  color: var(--white);
-  margin-bottom: 2px;
+  color: var(--ink-primary);
+  margin-bottom: 3px;
+  line-height: 1.3;
 }
 
 .toast-message {
-  font-size: 0.8rem;
-  color: var(--slate-400);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-size: 0.81rem;
+  color: var(--ink-secondary);
+  white-space: normal;
+  line-height: 1.45;
+  word-break: break-word;
 }
 
 .toast-dismiss {
@@ -716,7 +717,7 @@ html, body {
   left: 0;
   height: 2px;
   border-radius: 0 0 var(--radius-md) var(--radius-md);
-  animation: toastProgress 3s linear forwards;
+  animation: toastProgress 4.5s linear forwards;
 }
 
 .toast-progress.success {

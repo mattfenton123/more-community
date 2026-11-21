@@ -37,6 +37,57 @@ import { getCommunityLocation } from '../../../src/lib/location';
 import { parseEventDateTime } from '../../../src/lib/calendar';
 import { resolveUserAvatar } from '../../../src/lib/avatar';
 
+
+const BANNER_PRESETS = [
+  { label: 'Woodland Trail', url: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1200&q=80' },
+  { label: 'Weald Sunrise', url: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80' },
+  { label: 'Campfire Circle', url: 'https://images.unsplash.com/photo-1510312305653-8ed496efae75?auto=format&fit=crop&w=1200&q=80' },
+  { label: 'Wild Swim Lake', url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80' },
+  { label: 'Ridgeway Horizon', url: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80' },
+  { label: 'Coffee & Social', url: 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&w=1200&q=80' },
+];
+
+const LOCAL_TOWNS = [
+  'Tunbridge Wells',
+  'Tonbridge',
+  'Sevenoaks',
+  'Crowborough',
+  'Heathfield',
+  'Wadhurst',
+  'Mayfield',
+  'Paddock Wood',
+  'East Grinstead',
+];
+
+const MEETUP_VIBES = [
+  '👋 Happy to buddy with first-timers',
+  '🚗 Open to carpooling',
+  '🐕 Brings a friendly dog',
+  '🌱 New to the area',
+  '☕ Up for post-event coffee',
+  '🥾 Gentle / social pace',
+  '🏃 Active / brisk pace',
+];
+
+const CURATED_INTERESTS = [
+  'Hiking & Outdoors',
+  'Running',
+  'Wild Swimming',
+  "Men's Circles",
+  "Women's Circles",
+  'Mindfulness',
+  'Coffee & Social',
+  'Dog Walking',
+  'Cycling',
+  'Cold Plunge',
+  'Yoga & Movement',
+  'Book Clubs',
+  'Live Music',
+  'Arts & Crafts',
+  'Volunteering',
+  'Food & Drink',
+];
+
 function formatReadableDate(dateStr, timeStr) {
   const dt = parseEventDateTime(dateStr, timeStr);
   if (dt && !isNaN(dt.getTime())) {
@@ -77,11 +128,16 @@ export default function UserProfile() {
   const { level, streak, earnedBadges, xp } = useGamification(targetId);
 
   const [isEditing, setIsEditing] = useState(false);
+  const [customInterestInput, setCustomInterestInput] = useState('');
   const [editForm, setEditForm] = useState({
     name: '',
+    headline: '',
+    location: '',
     bio: '',
-    role: '',
+    vibes: [],
     interests: [],
+    instagram: '',
+    website: '',
     banner: FALLBACK_IMAGES.general,
   });
   const [isUploading, setIsUploading] = useState(false);
@@ -144,13 +200,21 @@ export default function UserProfile() {
 
   const openEditMode = () => {
     if (!profileUser) return;
+    const initialHeadline =
+      profileUser.headline ||
+      (profileUser.role && profileUser.role !== 'Member' && profileUser.role !== 'Leader' ? profileUser.role : '');
     setEditForm({
       name: profileUser.name || '',
-      bio: profileUser.bio || '',
-      role: profileUser.role || '',
+      headline: initialHeadline,
+      location: profileUser.location || '',
+      bio: profileUser.bio === 'New here.' ? '' : (profileUser.bio || ''),
+      vibes: Array.isArray(profileUser.vibes) ? profileUser.vibes : [],
       interests: Array.isArray(profileUser.interests) ? profileUser.interests : [],
+      instagram: profileUser.instagram || '',
+      website: profileUser.website || '',
       banner: profileUser.banner || FALLBACK_IMAGES.general,
     });
+    setCustomInterestInput('');
     setIsEditing(true);
   };
 
@@ -261,16 +325,24 @@ export default function UserProfile() {
   };
 
   const handleSave = async () => {
+    if (!editForm.name.trim()) {
+      toast.error('Name required', 'Please enter your display name.');
+      return;
+    }
     try {
       await updateUser(targetId, {
-        name: editForm.name,
-        bio: editForm.bio,
-        role: editForm.role,
+        name: editForm.name.trim(),
+        headline: editForm.headline.trim(),
+        location: editForm.location.trim(),
+        bio: editForm.bio.trim(),
+        vibes: editForm.vibes,
         interests: editForm.interests,
+        instagram: editForm.instagram.trim().replace(/^@/, ''),
+        website: editForm.website.trim(),
         banner: editForm.banner,
       });
       setIsEditing(false);
-      toast.success('Profile saved');
+      toast.success('Profile Updated ✓', 'Your member profile has been saved.');
     } catch {
       toast.error('Failed to save profile');
     }
@@ -592,59 +664,321 @@ export default function UserProfile() {
               </div>
 
               {isEditing ? (
-                <div style={{ width: '100%', maxWidth: '380px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  <input
-                    type="text"
-                    value={editForm.name}
-                    onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                    className="input"
-                    placeholder="Your Name"
-                    style={{ textAlign: 'center', fontSize: '1.1rem', fontWeight: 700 }}
-                  />
-                  <input
-                    type="text"
-                    value={editForm.role}
-                    onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
-                    className="input"
-                    placeholder="Job Title / Role"
-                    style={{ textAlign: 'center' }}
-                  />
-                  <textarea
-                    value={editForm.bio}
-                    onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })}
-                    className="input"
-                    placeholder="Write a short bio..."
-                    style={{ textAlign: 'center', minHeight: '84px', resize: 'none' }}
-                  />
-                  <input
-                    type="text"
-                    placeholder="Interests (comma separated)..."
-                    className="input"
-                    value={editForm.interests.join(', ')}
-                    onChange={(e) =>
-                      setEditForm({
-                        ...editForm,
-                        interests: e.target.value
-                          .split(',')
-                          .map((s) => s.trim())
-                          .filter(Boolean),
-                      })
-                    }
-                    style={{ textAlign: 'center' }}
-                  />
-                  <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
+                <div style={{ width: '100%', maxWidth: '580px', textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '18px', marginTop: '6px' }}>
+                  {/* Photo & Cover Presets */}
+                  <div style={{ padding: '14px 16px', borderRadius: '14px', background: 'var(--surface-elevated)', border: '1px solid var(--hairline-border)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px', marginBottom: '10px' }}>
+                      <span style={{ fontSize: '0.76rem', fontWeight: 800, color: 'var(--ink-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                        Photos &amp; Cover Theme
+                      </span>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button
+                          type="button"
+                          onClick={() => fileInputRef.current?.click()}
+                          className="interactive-press"
+                          style={{ padding: '5px 11px', borderRadius: '999px', background: 'var(--surface-card)', border: '1px solid var(--hairline-border-strong)', color: 'var(--ink-primary)', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '5px' }}
+                        >
+                          <Camera size={12} /> Upload Avatar
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => bannerInputRef.current?.click()}
+                          className="interactive-press"
+                          style={{ padding: '5px 11px', borderRadius: '999px', background: 'var(--surface-card)', border: '1px solid var(--hairline-border-strong)', color: 'var(--ink-primary)', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '5px' }}
+                        >
+                          <Camera size={12} /> Upload Cover
+                        </button>
+                      </div>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(84px, 1fr))', gap: '8px' }}>
+                      {BANNER_PRESETS.map((preset) => {
+                        const isSelected = editForm.banner === preset.url;
+                        return (
+                          <button
+                            key={preset.label}
+                            type="button"
+                            onClick={() => setEditForm((prev) => ({ ...prev, banner: preset.url }))}
+                            className="interactive-press"
+                            style={{
+                              height: '46px',
+                              borderRadius: '10px',
+                              background: `url(${preset.url}) center/cover no-repeat`,
+                              border: isSelected ? '2.5px solid var(--brand-accent)' : '1px solid var(--hairline-border-strong)',
+                              position: 'relative',
+                              overflow: 'hidden',
+                              cursor: 'pointer',
+                              padding: 0,
+                            }}
+                            title={preset.label}
+                          >
+                            <span style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.68), rgba(0,0,0,0.1))', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', padding: '4px', color: '#FFFFFF', fontSize: '0.63rem', fontWeight: 700, lineHeight: 1.1 }}>
+                              {preset.label}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Identity &Headline */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.76rem', fontWeight: 700, color: 'var(--ink-secondary)', marginBottom: '5px' }}>
+                        Display Name *
+                      </label>
+                      <input
+                        type="text"
+                        value={editForm.name}
+                        onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                        className="input"
+                        placeholder="e.g. Matt Fenton"
+                        style={{ width: '100%' }}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.76rem', fontWeight: 700, color: 'var(--ink-secondary)', marginBottom: '5px' }}>
+                        Headline / Tagline
+                      </label>
+                      <input
+                        type="text"
+                        value={editForm.headline}
+                        onChange={(e) => setEditForm({ ...editForm, headline: e.target.value })}
+                        className="input"
+                        placeholder="e.g. Trail walker, founder & weekend coffee fan"
+                        maxLength={80}
+                        style={{ width: '100%' }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Local Town / Base */}
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.76rem', fontWeight: 700, color: 'var(--ink-secondary)', marginBottom: '5px' }}>
+                      Local Base / Home Town
+                    </label>
+                    <input
+                      type="text"
+                      value={editForm.location}
+                      onChange={(e) => setEditForm({ ...editForm, location: e.target.value })}
+                      className="input"
+                      placeholder="e.g. Tunbridge Wells, Kent"
+                      style={{ width: '100%', marginBottom: '8px' }}
+                    />
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                      {LOCAL_TOWNS.map((town) => {
+                        const active = editForm.location.toLowerCase() === town.toLowerCase();
+                        return (
+                          <button
+                            key={town}
+                            type="button"
+                            onClick={() => setEditForm((prev) => ({ ...prev, location: active ? '' : town }))}
+                            style={{
+                              padding: '4px 10px',
+                              borderRadius: '999px',
+                              fontSize: '0.74rem',
+                              fontWeight: 600,
+                              background: active ? 'var(--brand-accent)' : 'var(--surface-elevated)',
+                              color: active ? '#FFFFFF' : 'var(--ink-secondary)',
+                              border: active ? '1px solid var(--brand-accent)' : '1px solid var(--hairline-border)',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            📍 {town}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Bio */}
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
+                      <label style={{ fontSize: '0.76rem', fontWeight: 700, color: 'var(--ink-secondary)' }}>
+                        About You
+                      </label>
+                      <span style={{ fontSize: '0.72rem', color: 'var(--ink-muted)' }}>
+                        {(editForm.bio || '').length}/280
+                      </span>
+                    </div>
+                    <textarea
+                      value={editForm.bio}
+                      onChange={(e) => setEditForm({ ...editForm, bio: e.target.value.slice(0, 280) })}
+                      className="input"
+                      placeholder="Share what brings you to local meetups, your favourite trails or activities, or what you enjoy chatting about..."
+                      style={{ width: '100%', minHeight: '92px', resize: 'vertical', lineHeight: 1.5 }}
+                    />
+                  </div>
+
+                  {/* Meetup Vibes & Icebreakers */}
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.76rem', fontWeight: 700, color: 'var(--ink-secondary)', marginBottom: '4px' }}>
+                      Meetup Vibe &amp; Preferences
+                    </label>
+                    <div style={{ fontSize: '0.74rem', color: 'var(--ink-muted)', marginBottom: '8px' }}>
+                      Let fellow members know how you like to connect at events:
+                    </div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '7px' }}>
+                      {MEETUP_VIBES.map((vibe) => {
+                        const selected = (editForm.vibes || []).includes(vibe);
+                        return (
+                          <button
+                            key={vibe}
+                            type="button"
+                            onClick={() =>
+                              setEditForm((prev) => ({
+                                ...prev,
+                                vibes: selected
+                                  ? prev.vibes.filter((v) => v !== vibe)
+                                  : [...(prev.vibes || []), vibe],
+                              }))
+                            }
+                            style={{
+                              padding: '6px 12px',
+                              borderRadius: '999px',
+                              fontSize: '0.77rem',
+                              fontWeight: selected ? 700 : 500,
+                              background: selected ? 'var(--brand-secondary-soft)' : 'var(--surface-elevated)',
+                              color: selected ? 'var(--brand-secondary)' : 'var(--ink-secondary)',
+                              border: selected ? '1.5px solid var(--brand-secondary)' : '1px solid var(--hairline-border)',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            {vibe}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Interactive Interests Picker */}
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.76rem', fontWeight: 700, color: 'var(--ink-secondary)', marginBottom: '4px' }}>
+                      Your Interests ({editForm.interests.length} selected)
+                    </label>
+                    <div style={{ fontSize: '0.74rem', color: 'var(--ink-muted)', marginBottom: '8px' }}>
+                      Tap topics to personalise your event matches and connect with like-minded members:
+                    </div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '7px', marginBottom: '10px' }}>
+                      {Array.from(new Set([...CURATED_INTERESTS, ...(editForm.interests || [])])).map((interest) => {
+                        const active = (editForm.interests || []).includes(interest);
+                        return (
+                          <button
+                            key={interest}
+                            type="button"
+                            onClick={() =>
+                              setEditForm((prev) => ({
+                                ...prev,
+                                interests: active
+                                  ? prev.interests.filter((i) => i !== interest)
+                                  : [...(prev.interests || []), interest],
+                              }))
+                            }
+                            style={{
+                              padding: '6px 12px',
+                              borderRadius: '999px',
+                              fontSize: '0.78rem',
+                              fontWeight: active ? 700 : 500,
+                              background: active ? 'var(--brand-accent)' : 'var(--surface-elevated)',
+                              color: active ? '#FFFFFF' : 'var(--ink-secondary)',
+                              border: active ? '1.5px solid var(--brand-accent)' : '1px solid var(--hairline-border)',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            {active ? '✓ ' : '+ '}{interest}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <input
+                        type="text"
+                        value={customInterestInput}
+                        onChange={(e) => setCustomInterestInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && customInterestInput.trim()) {
+                            e.preventDefault();
+                            const tag = customInterestInput.trim();
+                            if (!editForm.interests.includes(tag)) {
+                              setEditForm((prev) => ({ ...prev, interests: [...prev.interests, tag] }));
+                            }
+                            setCustomInterestInput('');
+                          }
+                        }}
+                        className="input"
+                        placeholder="Add custom interest (e.g. Trail Photography, Padel)..."
+                        style={{ flex: 1, fontSize: '0.82rem' }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const tag = customInterestInput.trim();
+                          if (!tag) return;
+                          if (!editForm.interests.includes(tag)) {
+                            setEditForm((prev) => ({ ...prev, interests: [...prev.interests, tag] }));
+                          }
+                          setCustomInterestInput('');
+                        }}
+                        className="interactive-press"
+                        style={{
+                          padding: '0 14px',
+                          borderRadius: '10px',
+                          background: 'var(--surface-elevated)',
+                          border: '1px solid var(--hairline-border-strong)',
+                          color: 'var(--ink-primary)',
+                          fontWeight: 700,
+                          fontSize: '0.8rem',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        + Add
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Optional Social Links */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.76rem', fontWeight: 700, color: 'var(--ink-secondary)', marginBottom: '5px' }}>
+                        Instagram Handle (optional)
+                      </label>
+                      <input
+                        type="text"
+                        value={editForm.instagram}
+                        onChange={(e) => setEditForm({ ...editForm, instagram: e.target.value })}
+                        className="input"
+                        placeholder="@yourhandle"
+                        style={{ width: '100%' }}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.76rem', fontWeight: 700, color: 'var(--ink-secondary)', marginBottom: '5px' }}>
+                        Website or LinkedIn (optional)
+                      </label>
+                      <input
+                        type="text"
+                        value={editForm.website}
+                        onChange={(e) => setEditForm({ ...editForm, website: e.target.value })}
+                        className="input"
+                        placeholder="https://..."
+                        style={{ width: '100%' }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Save / Cancel Footer */}
+                  <div style={{ display: 'flex', gap: '10px', paddingTop: '6px' }}>
                     <button
                       type="button"
                       onClick={() => setIsEditing(false)}
                       className="interactive-press"
                       style={{
                         flex: 1,
-                        padding: '11px',
-                        borderRadius: '10px',
+                        padding: '12px',
+                        borderRadius: '12px',
                         background: 'var(--surface-elevated)',
                         border: '1px solid var(--hairline-border-strong)',
                         color: 'var(--ink-secondary)',
-                        fontWeight: 600,
+                        fontWeight: 700,
                         cursor: 'pointer',
                         fontSize: '0.88rem',
                       }}
@@ -657,18 +991,18 @@ export default function UserProfile() {
                       className="btn btn-primary interactive-press"
                       style={{
                         flex: 2,
-                        padding: '11px',
-                        borderRadius: '10px',
+                        padding: '12px',
+                        borderRadius: '12px',
                         display: 'inline-flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         gap: '6px',
                         fontWeight: 700,
-                        fontSize: '0.9rem',
+                        fontSize: '0.92rem',
                         color: '#FFFFFF',
                       }}
                     >
-                      <Check size={16} strokeWidth={2.5} /> Save Changes
+                      <Check size={16} strokeWidth={2.5} /> Save Profile
                     </button>
                   </div>
                 </div>
@@ -685,14 +1019,50 @@ export default function UserProfile() {
                   >
                     {profileUser.name}
                   </h1>
-                  {profileUser.role && (
-                    <div style={{ color: 'var(--teal-300)', fontSize: '0.88rem', fontWeight: 600, marginBottom: '8px' }}>
-                      {profileUser.role}
+                  {(profileUser.headline || (profileUser.role && profileUser.role !== 'Member')) && (
+                    <div style={{ color: 'var(--teal-300)', fontSize: '0.9rem', fontWeight: 600, marginBottom: '10px', maxWidth: '480px' }}>
+                      {profileUser.headline || profileUser.role}
                     </div>
                   )}
 
-                  {/* Level + XP + Streak Pills */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '8px' }}>
+                  {/* Trust, Location & Activity Pills */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '10px' }}>
+                    {profileUser.location && (
+                      <span
+                        style={{
+                          fontSize: '0.75rem',
+                          fontWeight: 600,
+                          color: 'var(--ink-primary)',
+                          background: 'var(--surface-elevated)',
+                          border: '1px solid var(--hairline-border-strong)',
+                          padding: '4px 10px',
+                          borderRadius: '99px',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                        }}
+                      >
+                        <MapPin size={12} color="var(--brand-accent)" /> {profileUser.location}
+                      </span>
+                    )}
+                    {eventsAttended > 0 && (
+                      <span
+                        style={{
+                          fontSize: '0.74rem',
+                          fontWeight: 700,
+                          color: 'var(--brand-secondary)',
+                          background: 'var(--brand-secondary-soft)',
+                          border: '1px solid rgba(58, 142, 118, 0.28)',
+                          padding: '4px 10px',
+                          borderRadius: '99px',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '5px',
+                        }}
+                      >
+                        <Shield size={12} color="var(--brand-secondary)" /> Verified In-Person ({eventsAttended} {eventsAttended === 1 ? 'meetup' : 'meetups'})
+                      </span>
+                    )}
                     <span
                       style={{
                         fontSize: '0.74rem',
@@ -754,11 +1124,46 @@ export default function UserProfile() {
                       color: 'var(--ink-secondary)',
                       fontSize: '0.92rem',
                       lineHeight: 1.55,
-                      maxWidth: '480px',
+                      maxWidth: '500px',
                     }}
                   >
-                    {profileUser.bio || 'No bio yet.'}
+                    {profileUser.bio && profileUser.bio !== 'New here.'
+                      ? profileUser.bio
+                      : isOwnProfile
+                      ? 'Tap Edit to add a short bio, your local town, and your meetup preferences.'
+                      : 'No bio yet.'}
                   </p>
+
+                  {/* Meetup Vibe Chips */}
+                  {Array.isArray(profileUser.vibes) && profileUser.vibes.length > 0 && (
+                    <div
+                      style={{
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        gap: '6px',
+                        justifyContent: 'center',
+                        marginBottom: '12px',
+                        maxWidth: '540px',
+                      }}
+                    >
+                      {profileUser.vibes.map((vibe) => (
+                        <span
+                          key={vibe}
+                          style={{
+                            fontSize: '0.73rem',
+                            fontWeight: 600,
+                            background: 'var(--surface-elevated)',
+                            color: 'var(--ink-primary)',
+                            padding: '4px 10px',
+                            borderRadius: '99px',
+                            border: '1px solid var(--hairline-border-strong)',
+                          }}
+                        >
+                          {vibe}
+                        </span>
+                      ))}
+                    </div>
+                  )}
 
                   <BadgeRow userId={targetId} maxShow={6} />
 
@@ -788,6 +1193,52 @@ export default function UserProfile() {
                           {interest}
                         </span>
                       ))}
+                    </div>
+                  )}
+
+                  {/* Social Links if provided */}
+                  {(profileUser.instagram || profileUser.website) && (
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center', marginTop: '12px' }}>
+                      {profileUser.instagram && (
+                        <a
+                          href={`https://instagram.com/${profileUser.instagram.replace(/^@/, '')}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="interactive-press"
+                          style={{
+                            fontSize: '0.75rem',
+                            fontWeight: 600,
+                            color: 'var(--ink-secondary)',
+                            background: 'var(--surface-elevated)',
+                            border: '1px solid var(--hairline-border)',
+                            padding: '4px 11px',
+                            borderRadius: '99px',
+                            textDecoration: 'none',
+                          }}
+                        >
+                          📸 @{profileUser.instagram.replace(/^@/, '')}
+                        </a>
+                      )}
+                      {profileUser.website && (
+                        <a
+                          href={profileUser.website.startsWith('http') ? profileUser.website : `https://${profileUser.website}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="interactive-press"
+                          style={{
+                            fontSize: '0.75rem',
+                            fontWeight: 600,
+                            color: 'var(--ink-secondary)',
+                            background: 'var(--surface-elevated)',
+                            border: '1px solid var(--hairline-border)',
+                            padding: '4px 11px',
+                            borderRadius: '99px',
+                            textDecoration: 'none',
+                          }}
+                        >
+                          🔗 Website
+                        </a>
+                      )}
                     </div>
                   )}
                 </>

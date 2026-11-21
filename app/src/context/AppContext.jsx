@@ -4,12 +4,55 @@ import { supabase } from '../lib/supabaseClient';
 import { useAuth } from './AuthContext';
 import { initialExperiences } from '../lib/constants';
 import imageCompression from 'browser-image-compression';
-import { createEventAction, proposeEventAction, createEventsBatchAction, joinCommunityAction, leaveCommunityAction, rsvpToEventAction, updateAttendeeStatusAction, addEventPhotoAction, createCommunityAction, uploadImageAction, updateEventAction, updateCommunityAction, deleteCommunityAction, createChannelAction, markNotificationReadAction, updateUserAction, adminVerifyCommunityAction, broadcastNotificationAction, promoteMemberAction, removeMemberAction, subscribeToPushNotificationsAction, ensureLeadersNetworkAction, sendEventReminderAction, createSelfNotificationAction, offerCarpoolAction, reserveCarpoolSeatAction, cancelCarpoolSeatAction, deleteCarpoolOfferAction, createEventCommentAction, deleteEventCommentAction } from '../lib/actions';
+import { createEventAction, proposeEventAction, createEventsBatchAction, joinCommunityAction, leaveCommunityAction, rsvpToEventAction, updateAttendeeStatusAction, addEventPhotoAction, createCommunityAction, uploadImageAction, updateEventAction, updateCommunityAction, deleteCommunityAction, createChannelAction, markNotificationReadAction, markAllNotificationsReadAction, notifyCommunityLeadersAction, updateUserAction, adminVerifyCommunityAction, broadcastNotificationAction, promoteMemberAction, removeMemberAction, subscribeToPushNotificationsAction, ensureLeadersNetworkAction, sendEventReminderAction, createSelfNotificationAction, offerCarpoolAction, reserveCarpoolSeatAction, cancelCarpoolSeatAction, deleteCarpoolOfferAction, createEventCommentAction, deleteEventCommentAction } from '../lib/actions';
 import { Capacitor } from '@capacitor/core';
 import { cleanLocationName } from '../lib/location';
 import { resolveUserAvatar, getDefaultAvatar, isPlaceholderAvatar } from '../lib/avatar';
 import { buildCarpoolsByEvent } from '../lib/carpool';
 import { buildEventCommentsByEvent } from '../lib/eventCollaboration';
+
+const PROFILE_META_PREFIX = '__profile_meta:';
+
+function unpackUserWithProfileMeta(u) {
+  if (!u) return u;
+  const rawInterests = Array.isArray(u.interests) ? u.interests : [];
+  let meta = {};
+  const cleanInterests = [];
+
+  rawInterests.forEach(item => {
+    if (typeof item === 'string' && item.startsWith(PROFILE_META_PREFIX)) {
+      try {
+        const parsed = JSON.parse(item.slice(PROFILE_META_PREFIX.length));
+        if (parsed && typeof parsed === 'object') meta = { ...meta, ...parsed };
+      } catch (e) {}
+    } else if (typeof item === 'string' && item.trim()) {
+      cleanInterests.push(item.trim());
+    }
+  });
+
+  if (typeof window !== 'undefined' && u.id) {
+    try {
+      const localRaw = localStorage.getItem(`more_user_profile_meta_${u.id}`);
+      if (localRaw) {
+        const localMeta = JSON.parse(localRaw);
+        if (localMeta && typeof localMeta === 'object') {
+          meta = { ...localMeta, ...meta };
+        }
+      }
+    } catch (e) {}
+  }
+
+  return {
+    ...u,
+    interests: cleanInterests,
+    headline: u.headline ?? meta.headline ?? '',
+    location: u.location ?? meta.location ?? '',
+    banner: u.banner || meta.banner || '',
+    vibes: Array.isArray(u.vibes) ? u.vibes : (Array.isArray(meta.vibes) ? meta.vibes : []),
+    instagram: u.instagram ?? meta.instagram ?? '',
+    website: u.website ?? meta.website ?? '',
+  };
+}
 
 const AppContext = createContext();
 
@@ -34,7 +77,17 @@ export function AppProvider({ children }) {
       flushOfflineCheckinQueue();
     }
 
-    return () => window.removeEventListener('online', handleSignalRestored);
+    // Capture PWA beforeinstallprompt globally so Settings / Home can trigger native install any time
+    const handleBeforeInstallPrompt = (e) => {
+      e.preventDefault();
+      window.deferredPrompt = e;
+    };
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    return () => {
+      window.removeEventListener('online', handleSignalRestored);
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
   }, []);
 
   // Accessibility & Theme State
@@ -474,7 +527,8 @@ export function AppProvider({ children }) {
       // Process results
       if (usersRes.data) {
         const ALEX_ID = 'a31edbf0-db87-4a32-b108-c13d365adbf8';
-        const processedUsers = usersRes.data.map(u => {
+        const processedUsers = usersRes.data.map(rawU => {
+          const u = unpackUserWithProfileMeta(rawU);
           if (u.id === ALEX_ID) {
             const alexName = (u.name === 'alex@morecommunity.app' || !u.name) ? 'Alex' : u.name;
             return {
@@ -1105,25 +1159,6 @@ export function AppProvider({ children }) {
       const token = freshSession?.access_token || session?.access_token;
       const result = await joinCommunityAction(user.id, communityId, token);
       if (result && result.error) throw new Error(result.error);
-      
-      // Notify community leaders
-      const targetComm = communities.find(c => c.id === communityId);
-      const leaderIds = (communityMemberships[communityId] || [])
-        .filter(m => m.role === 'Leader' || m.role === 'Co-Leader')
-        .map(m => m.userId || m.user_id)
-        .concat(targetComm?.leader_id, targetComm?.creator_id)
-        .filter(Boolean);
-      const uniqueLeaderIds = [...new Set(leaderIds)].filter(id => id !== user.id);
-      if (uniqueLeaderIds.length > 0 && targetComm) {
-        const notifs = uniqueLeaderIds.map(lid => ({
-          user_id: lid,
-          title: `👋 New Member in ${targetComm.name}`,
-          message: `${user.name || 'A new member'} has joined ${targetComm.name}!`,
-          type: 'member',
-          link: `/community/${communityId}`
-        }));
-        await broadcastNotificationAction(notifs, token).catch(e => console.error("Failed to notify leader", e));
-      }
     } catch (err) {
       console.error(err);
       // Revert on failure
@@ -1442,29 +1477,6 @@ export function AppProvider({ children }) {
         token = sessionData?.session?.access_token;
       }
       await rsvpToEventAction(user.id, eventId, status, ticketType, referredBy, token, metadata);
-      
-      // Notify community leaders on positive RSVP
-      if (status !== 'not_going') {
-        const ev = events.find(e => e.id === eventId);
-        const comm = communities.find(c => c.id === ev?.communityId);
-        const leaderIds = (communityMemberships[comm?.id] || [])
-          .filter(m => m.role === 'Leader' || m.role === 'Co-Leader')
-          .map(m => m.userId || m.user_id)
-          .concat(comm?.leader_id, comm?.creator_id)
-          .filter(Boolean);
-        const uniqueLeaderIds = [...new Set(leaderIds)].filter(id => id !== user.id);
-        if (uniqueLeaderIds.length > 0 && ev) {
-          const guestNote = metadata.guestName ? ` (with guest ${metadata.guestName})` : '';
-          const notifs = uniqueLeaderIds.map(lid => ({
-            user_id: lid,
-            type: 'rsvp',
-            title: `🎫 New RSVP for ${ev.title}`,
-            message: `${user.name || 'A member'} booked a spot for "${ev.title}"${guestNote}!`,
-            link: `/events/${eventId}`
-          }));
-          broadcastNotificationAction(notifs, token).catch(e => console.warn('Leader RSVP notif failed', e));
-        }
-      }
     } catch (err) {
       console.error('RSVP error:', err);
     }
@@ -1545,23 +1557,13 @@ export function AppProvider({ children }) {
     }
   };
 
-  const notifyCommunityLeaders = async (communityId, title, message, link = `/community/${communityId}`) => {
-    const leaders = (communityMemberships[communityId] || []).filter(m => m.role === 'Leader' || m.role === 'Co-Leader');
-    const notifications = leaders.map(l => ({
-      user_id: l.userId,
-      type: 'alert',
-      title: title,
-      message: message,
-      link: link,
-      is_read: false
-    }));
-    
-    if (notifications.length === 0) return;
-    
+  const notifyCommunityLeaders = async (communityId, title, message, link = `/dashboard?tab=overview&community=${communityId}`, type = 'alert') => {
     try {
-      await broadcastNotificationAction(notifications, session?.access_token);
+      const token = await getActiveToken();
+      if (!token) return;
+      await notifyCommunityLeadersAction(communityId, { title, message, link, type }, token);
     } catch (err) {
-      console.error(err);
+      console.error('notifyCommunityLeaders failed:', err);
     }
   };
 
@@ -1571,7 +1573,7 @@ export function AppProvider({ children }) {
       type: 'broadcast',
       title: title,
       message: message,
-      link: '/',
+      link: '/app',
       is_read: false
     }));
 
@@ -2135,7 +2137,16 @@ export function AppProvider({ children }) {
   const markNotificationRead = async (id) => {
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
     try {
-      await markNotificationReadAction(id, session?.access_token);
+      const token = await getActiveToken();
+      await markNotificationReadAction(id, token);
+    } catch (err) { console.error(err); }
+  };
+
+  const markAllNotificationsRead = async () => {
+    setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+    try {
+      const token = await getActiveToken();
+      await markAllNotificationsReadAction(token);
     } catch (err) { console.error(err); }
   };
 
@@ -2283,15 +2294,19 @@ export function AppProvider({ children }) {
       
       if (parentId) {
         const parentComm = communities.find(c => c.id === parentId);
-        if (parentComm?.leader_id) {
+        if (parentComm) {
           try {
-            await broadcastNotificationAction([{
-              user_id: parentComm.leader_id,
-              title: 'New Chapter Application 🏛️',
-              message: `${user?.name || 'A local leader'} applied to launch a chapter of "${parentComm.name}" in ${cleanLocationName(communityData.location_name) || 'their town'}. Review and approve in your dashboard.`,
-              type: 'alert',
-              link: `/dashboard?community=${parentId}`
-            }], session?.access_token).catch(() => {});
+            const token = await getActiveToken();
+            await notifyCommunityLeadersAction(
+              parentId,
+              {
+                title: 'New Chapter Application 🏛️',
+                message: `${user?.name || 'A local leader'} applied to launch a chapter of "${parentComm.name}" in ${cleanLocationName(communityData.location_name) || 'their town'}. Review and approve in your dashboard.`,
+                type: 'chapter',
+                link: `/dashboard?tab=settings&community=${parentId}`,
+              },
+              token
+            ).catch(() => {});
           } catch (e) {}
         }
       }
@@ -2476,22 +2491,66 @@ export function AppProvider({ children }) {
     if (cleanUpdates.avatar !== undefined && isPlaceholderAvatar(cleanUpdates.avatar)) {
       cleanUpdates.avatar = '';
     }
+    const existingUser = users.find(u => u.id === userId) || (user?.id === userId ? user : {});
+    const mergedUser = { ...existingUser, ...cleanUpdates };
+
+    // Persist extended profile metadata locally and inside interests (__profile_meta:{...}) for Supabase persistence
+    const profileMeta = {
+      headline: mergedUser.headline || '',
+      location: mergedUser.location || '',
+      banner: mergedUser.banner || '',
+      vibes: Array.isArray(mergedUser.vibes) ? mergedUser.vibes : [],
+      instagram: mergedUser.instagram || '',
+      website: mergedUser.website || '',
+    };
+    const hasAnyProfileMeta = Boolean(
+      profileMeta.headline ||
+      profileMeta.location ||
+      profileMeta.banner ||
+      profileMeta.vibes.length > 0 ||
+      profileMeta.instagram ||
+      profileMeta.website
+    );
+
+    if (typeof window !== 'undefined' && userId) {
+      try {
+        localStorage.setItem(`more_user_profile_meta_${userId}`, JSON.stringify(profileMeta));
+      } catch (e) {}
+    }
+
     // Optimistic UI update with live resolved initials fallback
     setUsers(prev => {
       const exists = prev.find(u => u.id === userId);
       if (exists) {
         return prev.map(u => {
           if (u.id !== userId) return u;
-          const merged = { ...u, ...cleanUpdates };
+          const merged = { ...u, ...cleanUpdates, ...profileMeta };
           return { ...merged, avatar: resolveUserAvatar(merged) };
         });
       }
-      const created = { id: userId, ...cleanUpdates };
+      const created = { id: userId, ...cleanUpdates, ...profileMeta };
       return [...prev, { ...created, avatar: resolveUserAvatar(created) }];
     });
     
-    // Strip frontend-only mock fields before sending to db
-    const { affinityProfile, banner, ...dbUpdates } = cleanUpdates;
+    // Strip frontend-only mock fields and pack extended profile metadata into interests array for Supabase
+    const { affinityProfile, banner, headline, location, vibes, instagram, website, ...dbUpdates } = cleanUpdates;
+    const touchesExtendedMeta =
+      cleanUpdates.interests !== undefined ||
+      cleanUpdates.banner !== undefined ||
+      cleanUpdates.headline !== undefined ||
+      cleanUpdates.location !== undefined ||
+      cleanUpdates.vibes !== undefined ||
+      cleanUpdates.instagram !== undefined ||
+      cleanUpdates.website !== undefined;
+
+    if (touchesExtendedMeta) {
+      const baseInterests = Array.isArray(mergedUser.interests)
+        ? mergedUser.interests.filter(t => !(typeof t === 'string' && t.startsWith(PROFILE_META_PREFIX)))
+        : [];
+      dbUpdates.interests = hasAnyProfileMeta
+        ? [...baseInterests, `${PROFILE_META_PREFIX}${JSON.stringify(profileMeta)}`]
+        : baseInterests;
+    }
     
     try {
       let token = session?.access_token;
@@ -2778,13 +2837,14 @@ export function AppProvider({ children }) {
         const targetComm = communities.find(c => c.id === chapterId);
         if (targetComm?.leader_id) {
           try {
+            const token = await getActiveToken();
             await broadcastNotificationAction([{
               user_id: targetComm.leader_id,
               title: 'Chapter Approved! 🎉',
               message: `Your chapter "${targetComm.name}" has been approved by the founding leader and is now active across the network!`,
-              type: 'alert',
-              link: `/community/${chapterId}`
-            }], session?.access_token).catch(() => {});
+              type: 'chapter',
+              link: `/dashboard?tab=overview&community=${chapterId}`
+            }], token, chapterId).catch(() => {});
           } catch (e) {}
         }
       },
@@ -2793,13 +2853,14 @@ export function AppProvider({ children }) {
         const targetComm = communities.find(c => c.id === chapterId);
         if (targetComm?.leader_id) {
           try {
+            const token = await getActiveToken();
             await broadcastNotificationAction([{
               user_id: targetComm.leader_id,
               title: 'Chapter Application Update',
               message: `Your chapter application for "${targetComm.name}" was not approved at this time.`,
-              type: 'alert',
+              type: 'chapter',
               link: `/community/${chapterId}`
-            }], session?.access_token).catch(() => {});
+            }], token, chapterId).catch(() => {});
           } catch (e) {}
         }
       },
@@ -2808,6 +2869,7 @@ export function AppProvider({ children }) {
       removeMember,
       subscribeToPushNotifications,
       markNotificationRead,
+      markAllNotificationsRead,
       feedPosts,
       experiences,
       setExperiences,

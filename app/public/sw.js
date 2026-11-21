@@ -116,13 +116,14 @@ self.addEventListener('fetch', (event) => {
 self.addEventListener('push', (event) => {
   const data = event.data ? event.data.json() : {};
   const title = data.title || 'More Community';
+  const targetUrl = data.url || data.link || '/app';
   const options = {
-    body: data.body || 'You have a new notification',
+    body: data.body || data.message || 'You have a new notification',
     icon: '/logo.png',
     badge: '/logo.png',
     vibrate: [100, 50, 100],
     data: {
-      url: data.url || '/'
+      url: targetUrl
     }
   };
 
@@ -134,16 +135,21 @@ self.addEventListener('push', (event) => {
 // Notification click handler
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  const url = event.notification.data?.url || '/';
+  const rawUrl = event.notification.data?.url || event.notification.data?.link || '/app';
+  const targetUrl = rawUrl === '/' ? '/app' : rawUrl;
   event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
-      // Focus existing window or open new one
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(async (windowClients) => {
       for (const client of windowClients) {
-        if (client.url.includes('/') && 'focus' in client) {
+        if ('focus' in client) {
+          try {
+            if ('navigate' in client && targetUrl) {
+              await client.navigate(targetUrl);
+            }
+          } catch (e) {}
           return client.focus();
         }
       }
-      return clients.openWindow(url);
+      return clients.openWindow(targetUrl);
     })
   );
 });
