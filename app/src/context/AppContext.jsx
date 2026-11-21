@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabaseClient';
 import { useAuth } from './AuthContext';
 import { initialExperiences } from '../lib/constants';
 import imageCompression from 'browser-image-compression';
-import { createEventAction, proposeEventAction, createEventsBatchAction, joinCommunityAction, leaveCommunityAction, rsvpToEventAction, updateAttendeeStatusAction, addEventPhotoAction, createCommunityAction, uploadImageAction, updateEventAction, updateCommunityAction, deleteCommunityAction, createChannelAction, markNotificationReadAction, markAllNotificationsReadAction, notifyCommunityLeadersAction, updateUserAction, adminVerifyCommunityAction, broadcastNotificationAction, promoteMemberAction, removeMemberAction, subscribeToPushNotificationsAction, ensureLeadersNetworkAction, sendEventReminderAction, createSelfNotificationAction, offerCarpoolAction, reserveCarpoolSeatAction, cancelCarpoolSeatAction, deleteCarpoolOfferAction, createEventCommentAction, deleteEventCommentAction } from '../lib/actions';
+import { createEventAction, proposeEventAction, createEventsBatchAction, joinCommunityAction, leaveCommunityAction, rsvpToEventAction, updateAttendeeStatusAction, addEventPhotoAction, createCommunityAction, uploadImageAction, updateEventAction, updateCommunityAction, deleteCommunityAction, deleteUserAction, createChannelAction, markNotificationReadAction, markAllNotificationsReadAction, notifyCommunityLeadersAction, updateUserAction, adminVerifyCommunityAction, broadcastNotificationAction, promoteMemberAction, removeMemberAction, subscribeToPushNotificationsAction, ensureLeadersNetworkAction, sendEventReminderAction, createSelfNotificationAction, offerCarpoolAction, reserveCarpoolSeatAction, cancelCarpoolSeatAction, deleteCarpoolOfferAction, createEventCommentAction, deleteEventCommentAction } from '../lib/actions';
 import { Capacitor } from '@capacitor/core';
 import { cleanLocationName } from '../lib/location';
 import { resolveUserAvatar, getDefaultAvatar, isPlaceholderAvatar } from '../lib/avatar';
@@ -51,6 +51,7 @@ function unpackUserWithProfileMeta(u) {
     vibes: Array.isArray(u.vibes) ? u.vibes : (Array.isArray(meta.vibes) ? meta.vibes : []),
     instagram: u.instagram ?? meta.instagram ?? '',
     website: u.website ?? meta.website ?? '',
+    is_suspended: Boolean(u.is_suspended ?? meta.is_suspended ?? u.role === 'Suspended'),
   };
 }
 
@@ -1610,9 +1611,14 @@ export function AppProvider({ children }) {
 
       for (const item of queue) {
         try {
+          const checkedVal = item.checkedIn !== undefined ? Boolean(item.checkedIn) : true;
           const { error } = await supabase.from('event_rsvps')
-            .update({ checked_in: true })
-            .match({ event_id: item.eventId, user_id: item.userId });
+            .upsert([{
+              event_id: item.eventId,
+              user_id: item.userId,
+              status: 'going',
+              checked_in: checkedVal
+            }], { onConflict: 'event_id,user_id' });
           if (!error) {
             syncedCount++;
           } else {
@@ -1631,34 +1637,55 @@ export function AppProvider({ children }) {
     }
   };
 
-  const checkInMember = async (eventId, userId) => {
-    // 1. Instant optimistic in-memory check-in
-    setEventRsvps(prev => ({
-      ...prev,
-      [eventId]: (prev[eventId] || []).map(r => 
-        r.userId === userId ? { ...r, checkedIn: true } : r
-      )
-    }));
+  const checkInMember = async (eventId, userId, targetCheckedIn = null) => {
+    let nextCheckedState = true;
+    // 1. Instant optimistic in-memory check-in (also registers walk-ins who hadn't RSVP'd in advance!)
+    setEventRsvps(prev => {
+      const currentList = prev[eventId] || [];
+      const existing = currentList.find(r => r.userId === userId);
+      if (existing) {
+        nextCheckedState = targetCheckedIn !== null ? Boolean(targetCheckedIn) : !existing.checkedIn;
+        return {
+          ...prev,
+          [eventId]: currentList.map(r =>
+            r.userId === userId
+              ? { ...r, status: r.status === 'declined' ? 'going' : (r.status || 'going'), checkedIn: nextCheckedState, checked_in: nextCheckedState }
+              : r
+          )
+        };
+      } else {
+        nextCheckedState = targetCheckedIn !== null ? Boolean(targetCheckedIn) : true;
+        return {
+          ...prev,
+          [eventId]: [
+            ...currentList,
+            { userId, status: 'going', ticketType: 'free', checkedIn: nextCheckedState, checked_in: nextCheckedState }
+          ]
+        };
+      }
+    });
 
     // 2. Queue locally for zero-signal trail reliability
     if (typeof window !== 'undefined') {
       try {
         const raw = localStorage.getItem('more_offline_checkin_queue');
         const queue = raw ? JSON.parse(raw) : [];
-        const exists = queue.some(q => q.eventId === eventId && q.userId === userId);
-        if (!exists) {
-          queue.push({ eventId, userId, scannedAt: Date.now() });
-          localStorage.setItem('more_offline_checkin_queue', JSON.stringify(queue));
-        }
+        const filtered = queue.filter(q => !(q.eventId === eventId && q.userId === userId));
+        filtered.push({ eventId, userId, checkedIn: nextCheckedState, scannedAt: Date.now() });
+        localStorage.setItem('more_offline_checkin_queue', JSON.stringify(filtered));
       } catch (e) {}
     }
 
-    // 3. Attempt direct network sync if online
+    // 3. Attempt direct network sync if online (upserts so unregistered walk-ins are registered + checked in)
     if (typeof navigator !== 'undefined' && navigator.onLine) {
       try {
         const { error } = await supabase.from('event_rsvps')
-          .update({ checked_in: true })
-          .match({ event_id: eventId, user_id: userId });
+          .upsert([{
+            event_id: eventId,
+            user_id: userId,
+            status: 'going',
+            checked_in: nextCheckedState
+          }], { onConflict: 'event_id,user_id' });
         if (!error && typeof window !== 'undefined') {
           // Remove synced item from offline queue
           try {
@@ -2502,6 +2529,7 @@ export function AppProvider({ children }) {
       vibes: Array.isArray(mergedUser.vibes) ? mergedUser.vibes : [],
       instagram: mergedUser.instagram || '',
       website: mergedUser.website || '',
+      is_suspended: Boolean(mergedUser.is_suspended),
     };
     const hasAnyProfileMeta = Boolean(
       profileMeta.headline ||
@@ -2509,7 +2537,9 @@ export function AppProvider({ children }) {
       profileMeta.banner ||
       profileMeta.vibes.length > 0 ||
       profileMeta.instagram ||
-      profileMeta.website
+      profileMeta.website ||
+      cleanUpdates.is_suspended !== undefined ||
+      mergedUser.is_suspended
     );
 
     if (typeof window !== 'undefined' && userId) {
@@ -2541,7 +2571,8 @@ export function AppProvider({ children }) {
       cleanUpdates.location !== undefined ||
       cleanUpdates.vibes !== undefined ||
       cleanUpdates.instagram !== undefined ||
-      cleanUpdates.website !== undefined;
+      cleanUpdates.website !== undefined ||
+      cleanUpdates.is_suspended !== undefined;
 
     if (touchesExtendedMeta) {
       const baseInterests = Array.isArray(mergedUser.interests)
@@ -2560,7 +2591,58 @@ export function AppProvider({ children }) {
       }
       await updateUserAction(userId, dbUpdates, token);
     } catch (err) {
-      console.error('User update failed (ignoring for prototype):', err);
+      console.error('User update failed:', err);
+      if (cleanUpdates.is_suspended !== undefined) {
+        setUsers(prev => prev.map(u => u.id === userId ? existingUser : u));
+        throw err;
+      }
+    }
+  };
+
+  const adminDeleteUser = async (targetUserId) => {
+    if (!targetUserId) throw new Error("Missing user ID");
+    const prevUsers = [...users];
+    const prevMemberships = { ...communityMemberships };
+    const prevRsvps = { ...eventRsvps };
+
+    // Optimistic removal across state
+    setUsers(prev => prev.filter(u => u.id !== targetUserId));
+    setCommunityMemberships(prev => {
+      const next = {};
+      Object.entries(prev).forEach(([cid, list]) => {
+        next[cid] = (list || []).filter(m => m.userId !== targetUserId && m.user_id !== targetUserId);
+      });
+      return next;
+    });
+    setEventRsvps(prev => {
+      const next = {};
+      Object.entries(prev).forEach(([eid, list]) => {
+        next[eid] = (list || []).filter(r => r.userId !== targetUserId);
+      });
+      return next;
+    });
+
+    try {
+      let token = session?.access_token;
+      if (!token) {
+        const { data: sessionData } = await supabase.auth.getSession();
+        token = sessionData?.session?.access_token;
+      }
+      const res = await deleteUserAction(targetUserId, token);
+      if (res && res.error) {
+        throw new Error(res.error);
+      }
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.removeItem(`more_user_profile_meta_${targetUserId}`);
+        } catch (e) {}
+      }
+      return { success: true };
+    } catch (err) {
+      setUsers(prevUsers);
+      setCommunityMemberships(prevMemberships);
+      setEventRsvps(prevRsvps);
+      throw err;
     }
   };
 
@@ -2830,6 +2912,7 @@ export function AppProvider({ children }) {
       uploadImage,
       addCommunityHighlight,
       updateUser,
+      adminDeleteUser,
       updateCommunity,
       deleteCommunity,
       approveChapter: async (chapterId) => {

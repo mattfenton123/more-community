@@ -3126,6 +3126,41 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 </div>
               )}
 
+              {/* Pending Partner & Sponsor Pitches Alert on Overview */}
+              {pendingPitchesCount > 0 && (
+                <div style={{ padding: '0 20px', marginBottom: '16px' }}>
+                  <div style={{
+                    background: 'var(--surface-card)',
+                    border: '1.5px solid rgba(245, 158, 11, 0.45)',
+                    borderRadius: '16px',
+                    padding: '14px 18px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: '12px',
+                    flexWrap: 'wrap'
+                  }}>
+                    <div>
+                      <div style={{ fontWeight: 700, fontSize: '0.94rem', color: 'var(--ink-primary)', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                        <span>{pendingPitchesCount} Local Partner / Sponsor Pitch{pendingPitchesCount > 1 ? 'es' : ''} Awaiting Review</span>
+                        <span style={{ fontSize: '0.68rem', background: '#D97706', color: '#FFFFFF', padding: '2px 8px', borderRadius: '99px', fontWeight: 700 }}>80% Revenue Share</span>
+                      </div>
+                      <div style={{ fontSize: '0.8rem', color: 'var(--ink-secondary)', marginTop: '2px' }}>
+                        Review guest workshop hosts or local business perks pitched to {community?.name}.
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setModalType('pitches-review')}
+                      className="btn btn-primary interactive-press"
+                      style={{ padding: '8px 14px', borderRadius: '10px', fontSize: '0.8rem', fontWeight: 700, color: '#FFFFFF' }}
+                    >
+                      Review Pitches →
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {/* Leader Setup & Launch Checklist */}
               <div style={{ padding: '0 20px', marginBottom: '16px' }}>
                 <LeaderSetupChecklist
@@ -3648,6 +3683,30 @@ export default function LeaderDashboard({ initialCommunityId }) {
                         <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}><MapPin size={11} /> {cleanLocationName(stats.nextEvent.location)}</span>
                       </div>
                     </div>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setRollCallEvent(stats.nextEvent);
+                      }}
+                      className="interactive-press"
+                      style={{
+                        padding: '8px 12px',
+                        borderRadius: '10px',
+                        background: 'rgba(16, 185, 129, 0.16)',
+                        border: '1px solid rgba(16, 185, 129, 0.35)',
+                        color: '#10b981',
+                        fontSize: '0.76rem',
+                        fontWeight: 800,
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '5px',
+                        flexShrink: 0
+                      }}
+                    >
+                      <UserCheck size={14} /> Check-In
+                    </button>
                     <ChevronRight size={18} color="var(--teal-400)" />
                   </div>
                 </div>
@@ -3680,7 +3739,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr', gap: '8px' }}>
                   {[
                     { label: 'New Event', icon: Plus, color: '#EB5738', action: () => openEventWizard() },
-                    { label: 'Broadcast', icon: Megaphone, color: '#f59e0b', action: () => setActiveTab('people') },
+                    { label: 'Broadcast', icon: Megaphone, color: '#f59e0b', action: () => setActiveTab('social hub') },
                     { label: 'Scan QR', icon: QrCode, color: '#3b82f6', action: () => setShowScanner(true) },
                     { label: 'People', icon: Users, color: '#a78bfa', action: () => setActiveTab('people') },
                     { label: 'Microsite', icon: Globe, color: '#f43f5e', action: () => router.push(`/community/${community.id}`) },
@@ -4176,6 +4235,14 @@ export default function LeaderDashboard({ initialCommunityId }) {
                                     <span style={{ fontSize: '0.75rem', color: 'var(--slate-400)', display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '4px 10px', background: 'rgba(255,255,255,0.03)', borderRadius: '6px' }}>
                                       <Archive size={12} /> Event Ended (Archived)
                                     </span>
+                                    <button 
+                                      onClick={() => setRollCallEvent(event)} 
+                                      className="btn btn-outline interactive-press" 
+                                      style={{ padding: '6px 12px', fontSize: '0.75rem', color: '#10b981', borderColor: 'rgba(16,185,129,0.35)', fontWeight: 700 }}
+                                      title="Check in attendees or register walk-ins after the event"
+                                    >
+                                      <UserCheck size={12} style={{ marginRight: '4px' }} /> Check-In / Walk-Ins
+                                    </button>
                                     <button 
                                       onClick={() => handleDuplicateEvent(event)} 
                                       className="btn btn-outline interactive-press" 
@@ -5168,10 +5235,22 @@ export default function LeaderDashboard({ initialCommunityId }) {
                     if (!memberUser) return null;
                     if (memberSearch.trim() && !(memberUser.name || '').toLowerCase().includes(memberSearch.trim().toLowerCase())) return null;
                     const score = getEngagementScore(membership, events, eventRsvps, communityMessages, community.id);
+                    const memberMeetupCount = (communityEvents || []).filter(ev =>
+                      (eventRsvps?.[ev.id] || []).some(r => r.userId === memberUser.id && (r.checkedIn || r.checked_in || (r.status === 'going' && isEventPast(ev))))
+                    ).length;
+                    const isMemberLeader = membership.role === 'Leader' || membership.role === 'Co-Leader';
+                    const standingTier = isMemberLeader
+                      ? { label: '🧭 Community Pillar', color: '#a78bfa', bg: 'rgba(167,139,250,0.14)' }
+                      : memberMeetupCount >= 3
+                      ? { label: '🔥 Community Regular', color: '#f59e0b', bg: 'rgba(245,158,11,0.14)' }
+                      : memberMeetupCount >= 1
+                      ? { label: '🛡️ Verified Local', color: '#10b981', bg: 'rgba(16,185,129,0.14)' }
+                      : { label: '🌱 Newcomer', color: 'var(--ink-muted)', bg: 'var(--surface-elevated)' };
+
                     return (
-                      <div key={memberUser.id} className="stagger-item" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--hairline-border)', borderRadius: '12px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                          <div style={{ position: 'relative' }}>
+                      <div key={memberUser.id} className="stagger-item" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px', padding: '12px 14px', background: 'var(--surface-card)', border: '1px solid var(--hairline-border)', borderRadius: '12px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
+                          <div style={{ position: 'relative', flexShrink: 0 }}>
                             <img 
                               onClick={() => setSelectedProfileImage({
                                 imageUrl: resolveUserAvatar(memberUser),
@@ -5183,29 +5262,46 @@ export default function LeaderDashboard({ initialCommunityId }) {
                               title="Click to view full photo"
                               style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', cursor: 'pointer' }} 
                             />
-                            <div style={{ position: 'absolute', bottom: 0, right: 0, width: '12px', height: '12px', borderRadius: '50%', background: score >= 60 ? '#22c55e' : score >= 30 ? '#f59e0b' : '#6b7280', border: '2px solid var(--slate-900)' }} />
+                            <div style={{ position: 'absolute', bottom: 0, right: 0, width: '12px', height: '12px', borderRadius: '50%', background: memberMeetupCount >= 1 || isMemberLeader ? '#22c55e' : score >= 30 ? '#f59e0b' : '#6b7280', border: '2px solid var(--surface-card)' }} />
                           </div>
-                          <div>
-                            <div onClick={() => router.push(`/profile/${memberUser.id}`)} style={{ fontWeight: 600, color: 'var(--white)', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '0.9rem' }}>
-                              {memberUser.name}
-                              {membership.role === 'Leader' && <span style={{ fontSize: '0.65rem', background: 'var(--teal-500)', padding: '2px 6px', borderRadius: '4px' }}>Leader</span>}
-                              {membership.role === 'Co-Leader' && <span style={{ fontSize: '0.65rem', background: 'rgba(139,92,246,0.3)', color: '#a78bfa', padding: '2px 6px', borderRadius: '4px' }}>Co-Leader</span>}
+                          <div style={{ minWidth: 0 }}>
+                            <div onClick={() => router.push(`/profile/${memberUser.id}`)} style={{ fontWeight: 700, color: 'var(--ink-primary)', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', cursor: 'pointer', fontSize: '0.9rem' }}>
+                              <span>{memberUser.name}</span>
+                              {membership.role === 'Leader' && <span style={{ fontSize: '0.65rem', background: 'var(--teal-500)', color: '#fff', padding: '2px 6px', borderRadius: '4px' }}>Leader</span>}
+                              {membership.role === 'Co-Leader' && <span style={{ fontSize: '0.65rem', background: 'rgba(139,92,246,0.25)', color: '#a78bfa', padding: '2px 6px', borderRadius: '4px' }}>Co-Leader</span>}
+                              <span style={{ fontSize: '0.68rem', fontWeight: 700, padding: '2px 7px', borderRadius: '99px', background: standingTier.bg, color: standingTier.color }}>
+                                {standingTier.label}
+                              </span>
                             </div>
-                            <div style={{ fontSize: '0.75rem', color: 'var(--slate-500)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                              <span style={{ color: score >= 60 ? '#22c55e' : score >= 30 ? '#f59e0b' : 'var(--slate-500)', fontWeight: 600 }}>{score}%</span> engagement
+                            <div style={{ fontSize: '0.75rem', color: 'var(--ink-muted)', display: 'flex', alignItems: 'center', gap: '8px', marginTop: '2px', flexWrap: 'wrap' }}>
+                              <span><strong>{memberMeetupCount}</strong> meetup{memberMeetupCount === 1 ? '' : 's'} attended</span>
+                              <span>•</span>
+                              <span style={{ color: score >= 60 ? '#22c55e' : score >= 30 ? '#f59e0b' : 'var(--ink-muted)', fontWeight: 600 }}>{score}% activity</span>
                             </div>
                           </div>
                         </div>
-                        {membership.role !== 'Leader' && (
-                          <div style={{ display: 'flex', gap: '6px' }}>
-                            {membership.role === 'Co-Leader' ? (
-                              <button onClick={() => handleDemote(memberUser)} className="btn btn-outline interactive-press" style={{ padding: '5px 10px', fontSize: '0.75rem' }}>Demote</button>
-                            ) : (
-                              <button onClick={() => handlePromote(memberUser)} className="btn btn-outline interactive-press" style={{ padding: '5px 10px', fontSize: '0.75rem' }}>Promote</button>
-                            )}
-                            <button onClick={() => handleRemove(memberUser)} className="btn btn-danger interactive-press" style={{ padding: '5px 10px', fontSize: '0.75rem' }}>Remove</button>
-                          </div>
-                        )}
+                        <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
+                          {memberUser.id !== user?.id && (
+                            <button
+                              type="button"
+                              onClick={() => router.push(`/chat/dm/${memberUser.id}`)}
+                              className="btn btn-outline interactive-press"
+                              style={{ padding: '5px 10px', fontSize: '0.75rem', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                            >
+                              <MessageSquare size={12} /> Message
+                            </button>
+                          )}
+                          {membership.role !== 'Leader' && (
+                            <>
+                              {membership.role === 'Co-Leader' ? (
+                                <button onClick={() => handleDemote(memberUser)} className="btn btn-outline interactive-press" style={{ padding: '5px 10px', fontSize: '0.75rem' }}>Demote</button>
+                              ) : (
+                                <button onClick={() => handlePromote(memberUser)} className="btn btn-outline interactive-press" style={{ padding: '5px 10px', fontSize: '0.75rem' }}>Promote</button>
+                              )}
+                              <button onClick={() => handleRemove(memberUser)} className="btn btn-danger interactive-press" style={{ padding: '5px 10px', fontSize: '0.75rem' }}>Remove</button>
+                            </>
+                          )}
+                        </div>
                       </div>
                     );
                   })}

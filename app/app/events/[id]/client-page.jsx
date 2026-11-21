@@ -9,7 +9,8 @@ import DigitalTicket from '../../../src/components/DigitalTicket';
 import GuestRsvpModal from '../../../src/components/GuestRsvpModal';
 import CarpoolHub from '../../../src/components/CarpoolHub';
 import QRScanner from '../../../src/components/QRScanner';
-import { isEventPast, isEventUpcoming, isEventToday, downloadIcs, getGoogleCalendarEventUrl, getWhatsAppShareUrl } from '../../../src/lib/calendar';
+import RollCallModal from '../../../src/components/RollCallModal';
+import { isEventPast, isEventUpcoming, isEventToday, parseEventDateTime, downloadIcs, getGoogleCalendarEventUrl, getWhatsAppShareUrl } from '../../../src/lib/calendar';
 import { formatEventDate } from '../../../src/lib/recurrence';
 import {
   findKnownLocation,
@@ -316,6 +317,7 @@ export default function EventClient({ id }) {
   const [checkoutState, setCheckoutState] = useState('idle');
   const [showTicket, setShowTicket] = useState(null);
   const [showScanner, setShowScanner] = useState(false);
+  const [showRollCallModal, setShowRollCallModal] = useState(false);
   const [showPaymentChoiceModal, setShowPaymentChoiceModal] = useState(false);
   const [showRsvpSuccessModal, setShowRsvpSuccessModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
@@ -668,6 +670,15 @@ export default function EventClient({ id }) {
 
 
   const isLive = Boolean(event && (isEventToday(event) || searchParams?.get('live') === 'true'));
+  // 36-hour post-start grace window so attendees who had zero signal on the trail can register & check in once they reach the pub or home
+  const isWithinCheckInGraceWindow = useMemo(() => {
+    if (!event) return false;
+    if (isEventToday(event)) return true;
+    const startDt = parseEventDateTime(event.date, event.time);
+    if (!startDt) return false;
+    const elapsedMs = Date.now() - startDt.getTime();
+    return elapsedMs >= 0 && elapsedMs <= 36 * 60 * 60 * 1000;
+  }, [event]);
   const isUserCheckedIn = Boolean(
     hasCheckedInLocally || 
     (event && user?.id && (rsvps || []).some(r => r.userId === user.id && (r.checkedIn || r.checked_in || r.status === 'checked_in')))
@@ -681,8 +692,13 @@ export default function EventClient({ id }) {
     }
     try {
       setHasCheckedInLocally(true);
-      await checkInMember(event.id, user.id);
-      toast.success("You're Checked In!", "Welcome! Look out for the leader and fellow members.");
+      if (!isMember && event?.communityId) {
+        try {
+          await joinCommunity(event.communityId);
+        } catch {}
+      }
+      await checkInMember(event.id, user.id, true);
+      toast.success("You're Registered & Checked In! 🎉", "Your attendance is recorded and counts toward your Verified Local standing.");
     } catch (err) {
       console.error('Check-in error:', err);
       toast.error('Check-in Failed', 'Could not record your arrival. Please try again.');
@@ -856,8 +872,8 @@ export default function EventClient({ id }) {
       {/* Content Body */}
       <div className="desktop-event-layout">
         <div className="desktop-event-main">
-          {/* Live Meetup Day Radar */}
-          {isLive && !isEventPast(event) && (
+          {/* Live Meetup Day & 36-Hour Post-Trail Pub Check-In Radar */}
+          {(isLive || isWithinCheckInGraceWindow) && (
             <div style={{
               background: 'var(--surface-card)',
               border: '1.5px solid rgba(34, 197, 94, 0.4)',
@@ -870,7 +886,7 @@ export default function EventClient({ id }) {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <span className="live-radar-dot" />
                   <span style={{ fontSize: '0.82rem', fontWeight: 800, color: '#4ade80', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-                    Live Meetup Radar • Happening Today
+                    {isEventPast(event) ? 'Post-Meetup Pub & Late Check-In Open (36h Window)' : 'Live Meetup Radar • Happening Today'}
                   </span>
                   {searchParams?.get('live') === 'true' && (
                     <span style={{ fontSize: '0.68rem', background: 'rgba(255,255,255,0.1)', color: 'var(--slate-300)', padding: '2px 8px', borderRadius: '4px', fontWeight: 600 }}>
@@ -879,7 +895,7 @@ export default function EventClient({ id }) {
                   )}
                 </div>
                 <div style={{ fontSize: '0.82rem', color: '#86efac', fontWeight: 700 }}>
-                  ⏰ Gathering at {event.time || '10:00 AM'}
+                  ⏰ {isEventPast(event) ? 'Had no signal on the trail? Check in below!' : `Gathering at ${event.time || '10:00 AM'}`}
                 </div>
               </div>
 
@@ -899,7 +915,11 @@ export default function EventClient({ id }) {
                   borderRadius: '10px', padding: '10px 14px', color: 'var(--brand-secondary)', fontSize: '0.84rem'
                 }}>
                   <span>🤝</span>
-                  <span><strong>First-timer friendly:</strong> Warmly greeted upon arrival by the leader. Zero pressure, participate at your own pace!</span>
+                  <span>
+                    {isEventPast(event)
+                      ? 'Didn’t have signal to download a ticket or register at the start? Tap below to register & verify your attendance now.'
+                      : 'First-timer friendly: Warmly greeted upon arrival by the leader. Zero pressure, participate at your own pace!'}
+                  </span>
                 </div>
               </div>
 
@@ -911,7 +931,7 @@ export default function EventClient({ id }) {
                     color: '#86efac', fontWeight: 700, fontSize: '0.9rem',
                     padding: '11px 20px', borderRadius: '12px'
                   }}>
-                    <CheckCircle2 size={18} color="#22c55e" /> You are Checked In! Welcome to the meetup.
+                    <CheckCircle2 size={18} color="#22c55e" /> You are Checked In! Attendance verified.
                   </div>
                 ) : (
                   <button
@@ -925,7 +945,23 @@ export default function EventClient({ id }) {
                       boxShadow: '0 4px 16px rgba(34, 197, 94, 0.3)'
                     }}
                   >
-                    <span>👋</span> I am Here! (Check In)
+                    <span>👋</span> {isEventPast(event) ? 'I Attended Today! (Register & Check In)' : 'I am Here! (Check In)'}
+                  </button>
+                )}
+
+                {isLeader && (
+                  <button
+                    type="button"
+                    onClick={() => setShowRollCallModal(true)}
+                    className="interactive-press"
+                    style={{
+                      display: 'inline-flex', alignItems: 'center', gap: '8px',
+                      background: 'rgba(235, 87, 56, 0.16)', border: '1px solid rgba(235, 87, 56, 0.4)',
+                      color: 'var(--teal-300)', fontWeight: 800, fontSize: '0.88rem',
+                      padding: '11px 18px', borderRadius: '12px', cursor: 'pointer'
+                    }}
+                  >
+                    <UserCheck size={16} /> Leader Roll Call &amp; Walk-Ins
                   </button>
                 )}
 
@@ -983,18 +1019,32 @@ export default function EventClient({ id }) {
                 </button>
               )}
               {isLeader && (
-                <button
-                  onClick={() => router.push(`/dashboard?community=${event.communityId}&duplicateEvent=${event.id}`)}
-                  className="interactive-press"
-                  style={{
-                    display: 'inline-flex', alignItems: 'center', gap: '6px',
-                    padding: '8px 14px', borderRadius: '99px',
-                    background: 'rgba(56,189,248,0.14)', border: '1px solid rgba(56,189,248,0.35)',
-                    color: '#7dd3fc', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer'
-                  }}
-                >
-                  <Copy size={14} /> Duplicate Event
-                </button>
+                <>
+                  <button
+                    onClick={() => setShowRollCallModal(true)}
+                    className="interactive-press"
+                    style={{
+                      display: 'inline-flex', alignItems: 'center', gap: '6px',
+                      padding: '8px 14px', borderRadius: '99px',
+                      background: 'rgba(16,185,129,0.16)', border: '1px solid rgba(16,185,129,0.35)',
+                      color: '#34d399', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer'
+                    }}
+                  >
+                    <UserCheck size={14} /> Roll Call &amp; Walk-Ins
+                  </button>
+                  <button
+                    onClick={() => router.push(`/dashboard?community=${event.communityId}&duplicateEvent=${event.id}`)}
+                    className="interactive-press"
+                    style={{
+                      display: 'inline-flex', alignItems: 'center', gap: '6px',
+                      padding: '8px 14px', borderRadius: '99px',
+                      background: 'rgba(56,189,248,0.14)', border: '1px solid rgba(56,189,248,0.35)',
+                      color: '#7dd3fc', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer'
+                    }}
+                  >
+                    <Copy size={14} /> Duplicate Event
+                  </button>
+                </>
               )}
             </div>
           </div>
@@ -1817,13 +1867,74 @@ export default function EventClient({ id }) {
           {/* Booking Action */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
             {isEventPast(event) ? (
-              <div style={{
-                background: 'var(--surface-elevated)',
-                border: '1px solid var(--hairline-border-strong)',
-                padding: '14px', borderRadius: '14px', textAlign: 'center',
-                color: 'var(--slate-400)', fontWeight: 600, fontSize: '0.9rem'
-              }}>
-                <Archive size={16} style={{ display: 'inline', marginRight: '6px' }} /> This event has ended
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {isWithinCheckInGraceWindow && !isUserCheckedIn ? (
+                  <button
+                    type="button"
+                    onClick={handleLiveCheckIn}
+                    className="interactive-press"
+                    style={{
+                      width: '100%',
+                      padding: '14px 18px',
+                      borderRadius: '14px',
+                      background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+                      color: '#052e16',
+                      border: 'none',
+                      fontWeight: 800,
+                      fontSize: '0.94rem',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                      boxShadow: '0 4px 16px rgba(34, 197, 94, 0.25)'
+                    }}
+                  >
+                    <span>👋</span> I Attended Today! (Register &amp; Check In)
+                  </button>
+                ) : isUserCheckedIn ? (
+                  <div style={{
+                    background: 'rgba(34, 197, 94, 0.14)',
+                    border: '1px solid rgba(34, 197, 94, 0.35)',
+                    padding: '13px', borderRadius: '14px', textAlign: 'center',
+                    color: '#22c55e', fontWeight: 800, fontSize: '0.9rem'
+                  }}>
+                    <CheckCircle2 size={16} style={{ display: 'inline', marginRight: '6px' }} /> Attendance Verified
+                  </div>
+                ) : (
+                  <div style={{
+                    background: 'var(--surface-elevated)',
+                    border: '1px solid var(--hairline-border-strong)',
+                    padding: '14px', borderRadius: '14px', textAlign: 'center',
+                    color: 'var(--slate-400)', fontWeight: 600, fontSize: '0.9rem'
+                  }}>
+                    <Archive size={16} style={{ display: 'inline', marginRight: '6px' }} /> This event has ended
+                  </div>
+                )}
+                {isLeader && (
+                  <button
+                    type="button"
+                    onClick={() => setShowRollCallModal(true)}
+                    className="interactive-press"
+                    style={{
+                      width: '100%',
+                      padding: '11px 16px',
+                      borderRadius: '12px',
+                      background: 'var(--surface-elevated)',
+                      border: '1px solid var(--hairline-border-strong)',
+                      color: 'var(--ink-primary)',
+                      fontWeight: 700,
+                      fontSize: '0.86rem',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px'
+                    }}
+                  >
+                    <UserCheck size={15} color="#10b981" /> Open Roll Call &amp; Walk-Ins
+                  </button>
+                )}
               </div>
             ) : (
               <>
@@ -2000,23 +2111,53 @@ export default function EventClient({ id }) {
           </div>
           <div style={{ display: 'flex', gap: '8px' }}>
             {isLeader && (
-              <button 
-                onClick={() => setShowScanner(true)}
-                className="interactive-press"
-                style={{ 
-                  background: 'rgba(255,255,255,0.1)', 
-                  color: 'var(--white)', 
-                  border: '1px solid rgba(255,255,255,0.2)',
-                  padding: '12px 16px', borderRadius: '99px', fontSize: '1rem', fontWeight: 700, 
-                  cursor: 'pointer',
-                  display: 'flex', alignItems: 'center', gap: '8px',
-                }}
-              >
-                <ScanLine size={18} /> Scan
-              </button>
+              <>
+                <button 
+                  onClick={() => setShowRollCallModal(true)}
+                  className="interactive-press"
+                  style={{ 
+                    background: 'rgba(16,185,129,0.16)', 
+                    color: '#34d399', 
+                    border: '1px solid rgba(16,185,129,0.35)',
+                    padding: '12px 14px', borderRadius: '99px', fontSize: '0.9rem', fontWeight: 700, 
+                    cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', gap: '6px',
+                  }}
+                >
+                  <UserCheck size={16} /> Roll Call
+                </button>
+                <button 
+                  onClick={() => setShowScanner(true)}
+                  className="interactive-press"
+                  style={{ 
+                    background: 'rgba(255,255,255,0.1)', 
+                    color: 'var(--white)', 
+                    border: '1px solid rgba(255,255,255,0.2)',
+                    padding: '12px 14px', borderRadius: '99px', fontSize: '0.9rem', fontWeight: 700, 
+                    cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', gap: '6px',
+                  }}
+                >
+                  <ScanLine size={16} /> Scan
+                </button>
+              </>
             )}
             {isEventPast(event) ? (
-              isGoing ? (
+              isWithinCheckInGraceWindow && !isUserCheckedIn ? (
+                <button
+                  onClick={handleLiveCheckIn}
+                  className="interactive-press"
+                  style={{
+                    background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+                    color: '#052e16',
+                    border: 'none',
+                    padding: '12px 18px', borderRadius: '99px', fontSize: '0.9rem', fontWeight: 800,
+                    display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer'
+                  }}
+                >
+                  👋 Check In
+                </button>
+              ) : isGoing || isUserCheckedIn ? (
                 <button
                   onClick={() => setShowTicket(event)}
                   className="interactive-press"
@@ -2877,6 +3018,13 @@ export default function EventClient({ id }) {
           event={event}
           isOpen={showGuestRsvpModal}
           onClose={() => setShowGuestRsvpModal(false)}
+        />
+      )}
+
+      {showRollCallModal && (
+        <RollCallModal
+          event={event}
+          onClose={() => setShowRollCallModal(false)}
         />
       )}
 

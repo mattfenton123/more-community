@@ -152,6 +152,154 @@ export async function POST(request) {
     let lastApiError = null;
 
     // ==============================================================
+    // Specialized Mode: Multi-Turn Conversational Leader Co-Pilot
+    // ==============================================================
+    if (mode === 'copilot-chat') {
+      const loc = formatShareLocation(communityLocation, 'Tunbridge Wells');
+      const memberCount = Number(body.memberCount) || 12;
+      const verifiedCount = Number(body.verifiedCount) || Math.max(1, Math.round(memberCount * 0.6));
+      const upcomingEvents = Array.isArray(body.upcomingEvents) ? body.upcomingEvents.slice(0, 6) : [];
+      const history = Array.isArray(body.history) ? body.history.slice(-8) : [];
+      const today = new Date().toISOString().split('T')[0];
+
+      const fallbackReply = buildConversationalCoPilotFallback({
+        prompt,
+        history,
+        communityName,
+        loc,
+        communityTags,
+        memberCount,
+        verifiedCount,
+        upcomingEvents,
+      });
+
+      if (!apiKey) {
+        return NextResponse.json({
+          success: true,
+          fallback: true,
+          mode: 'smart-template',
+          ...fallbackReply,
+        });
+      }
+
+      const systemDirective = `You are "More AI", a warm, sharp, conversational Community Co-Pilot helping the leader of "${communityName}" in ${loc}.
+Today's date is ${today}.
+
+LIVE COMMUNITY SNAPSHOT:
+- Community Name: ${communityName}
+- Town / Location: ${loc}
+- Activity Tags: ${communityTags.join(', ') || 'Local community, social, outdoors'}
+- Total Members: ${memberCount} (${verifiedCount} Verified In-Person Locals who have attended 1+ meetup)
+- Upcoming Scheduled Events: ${upcomingEvents.length > 0 ? JSON.stringify(upcomingEvents) : 'None scheduled yet'}
+- Platform Trust Model: Newcomers (0 meetups) unlock "Verified Local 🛡️" status after attending their 1st in-person meetup (which unlocks offering carpool lifts, 1:1 member DMs, and proposing events). 5+ meetups unlocks "Community Regular 🔥" (local sponsor perks & Co-Leader eligibility).
+
+HOW TO RESPOND:
+1. Be genuinely conversational, collaborative, and specific to ${loc} and "${communityName}". Ask a brief clarifying question or offer to tweak details if helpful. Keep your conversational "reply" natural, concise (2-4 short paragraphs max), and easy to read in a chat bubble.
+2. Whenever the leader asks to create/plan an event (or a multi-week schedule), tweak an event just discussed, write a broadcast/WhatsApp/Instagram message, or generate a UK Risk Assessment (RAMS) / Local Sponsor Pitch / Council Grant Pitch, attach an executable "actionCard" in your JSON response so they can publish, copy, or download it with 1 tap right inside the chat!
+3. If the leader is just asking for advice, strategy, or brainstorming (e.g. "How do I get quiet members to attend?", "What are good rainy day meetup ideas in ${loc}?"), give practical, empathetic advice and set "actionCard": null.
+4. Always provide 3 short, natural "suggestedReplies" (under 8 words each) that the leader might want to tap next to continue the conversation (e.g. "Turn Idea #1 into an event draft", "Change the start time to 09:30", "Also draft a WhatsApp invite for this", "Create a RAMS risk assessment for this").
+
+RETURN FORMAT:
+Return ONLY a valid JSON object matching this exact structure:
+{
+  "reply": "Your conversational response to the leader (markdown allowed for bold/bullets)...",
+  "actionCard": null OR one of:
+    - {
+        "type": "events",
+        "title": "Draft Event Schedule",
+        "events": [
+          {
+            "weekLabel": "This Weekend",
+            "title": "Event Title",
+            "date": "YYYY-MM-DD",
+            "time": "HH:MM",
+            "location": "Specific venue/landmark in ${loc}",
+            "description": "Warm event description with Meeting Point, What to Expect, and Afterwards",
+            "maxCapacity": 25,
+            "ticketPrice": 0
+          }
+        ]
+      }
+    - {
+        "type": "broadcast",
+        "announcementTitle": "Short title with emoji",
+        "inAppAnnouncement": "2-3 sentence in-app announcement",
+        "whatsappCopy": "WhatsApp message with *bold* highlights and emojis",
+        "instagramCopy": "Instagram caption with local hashtags"
+      }
+    - {
+        "type": "document",
+        "docType": "rams" | "sponsor" | "grant",
+        "title": "Document Title",
+        "document": "Full markdown document..."
+      },
+  "suggestedReplies": ["Follow-up prompt 1", "Follow-up prompt 2", "Follow-up prompt 3"]
+}`;
+
+      const contents = [
+        ...history
+          .filter((m) => m && typeof m.text === 'string' && m.text.trim())
+          .map((m) => ({
+            role: m.role === 'assistant' ? 'model' : 'user',
+            parts: [{ text: m.text.slice(0, 1200) }],
+          })),
+        { role: 'user', parts: [{ text: prompt }] },
+      ];
+
+      for (const model of models) {
+        try {
+          const response = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                systemInstruction: { parts: [{ text: systemDirective }] },
+                contents,
+                generationConfig: {
+                  temperature: 0.7,
+                  maxOutputTokens: 1800,
+                  responseMimeType: 'application/json',
+                },
+              }),
+            }
+          );
+          if (response.ok) {
+            const geminiData = await response.json();
+            const text = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (text) {
+              const cleaned = text.replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim();
+              const parsed = JSON.parse(cleaned);
+              if (parsed?.reply) {
+                return NextResponse.json({
+                  success: true,
+                  fallback: false,
+                  mode: 'gemini',
+                  modelUsed: model,
+                  reply: parsed.reply,
+                  actionCard: parsed.actionCard || null,
+                  suggestedReplies:
+                    Array.isArray(parsed.suggestedReplies) && parsed.suggestedReplies.length > 0
+                      ? parsed.suggestedReplies.slice(0, 3)
+                      : fallbackReply.suggestedReplies,
+                });
+              }
+            }
+          }
+        } catch (err) {
+          lastApiError = err.message;
+        }
+      }
+
+      return NextResponse.json({
+        success: true,
+        fallback: true,
+        mode: 'smart-template',
+        ...fallbackReply,
+      });
+    }
+
+    // ==============================================================
     // Specialized Mode: 4-Week Calendar Planner (AI Co-Pilot Layer A)
     // ==============================================================
     if (mode === 'plan-month') {
@@ -1265,5 +1413,206 @@ https://www.morecommunity.app
 
 Warm regards,
 Leader, **${communityName}**`,
+  };
+}
+
+function buildConversationalCoPilotFallback({
+  prompt,
+  history = [],
+  communityName,
+  loc,
+  communityTags = [],
+  memberCount = 12,
+  verifiedCount = 6,
+  upcomingEvents = [],
+}) {
+  const lower = String(prompt || '').toLowerCase();
+  const nextEv = upcomingEvents[0] || null;
+  const lastAssistantMsg = [...(history || [])].reverse().find((m) => m?.role === 'assistant');
+
+  // 1. Follow-up tweak on a previously drafted event
+  if (
+    lastAssistantMsg?.actionCard?.type === 'events' &&
+    (lower.includes('change') ||
+      lower.includes('tweak') ||
+      lower.includes('instead') ||
+      lower.includes('time') ||
+      lower.includes('9:') ||
+      lower.includes('10:') ||
+      lower.includes('11:') ||
+      lower.includes('dog') ||
+      lower.includes('coffee') ||
+      lower.includes('shorter'))
+  ) {
+    const prevEvents = lastAssistantMsg.actionCard.events || [];
+    const newTime = resolveEventTime(prompt);
+    const updatedEvents = prevEvents.map((ev, idx) => {
+      const touchesTime = /\b\d{1,2}(:\d{2})?\s*(am|pm)\b|morning|evening|sunset/i.test(prompt);
+      const touchesDog = lower.includes('dog');
+      return {
+        ...ev,
+        time: touchesTime ? newTime : ev.time,
+        title: touchesDog && !ev.title.toLowerCase().includes('dog') ? `${ev.title} (Dog-Friendly)` : ev.title,
+        description:
+          touchesDog && !ev.description.toLowerCase().includes('dog')
+            ? `${ev.description}\n\n🐕 **Dogs Welcome:** Friendly dogs on leads are very welcome on this route!`
+            : ev.description,
+      };
+    });
+
+    return {
+      reply: `I've updated the draft schedule for **${communityName}** with your changes! Take a look at the revised card below — if that feels right, you can publish it straight to your calendar or tell me anything else you'd like to adjust.`,
+      actionCard: {
+        type: 'events',
+        title: `Updated Draft for ${communityName}`,
+        events: updatedEvents,
+      },
+      suggestedReplies: [
+        'Draft a WhatsApp invite for this event',
+        'Generate a UK RAMS risk assessment for this',
+        'Add a post-meetup café stop',
+      ],
+    };
+  }
+
+  // 2. 4-Week / Monthly Calendar Planning
+  if (lower.includes('4 week') || lower.includes('4-week') || lower.includes('month') || lower.includes('schedule') || lower.includes('plan')) {
+    const plan = buildFallbackFourWeekPlan(communityName, loc, communityTags, prompt);
+    return {
+      reply: `Here is a balanced 4-week schedule tailored for **${communityName}** in **${loc}**. I've mixed a flagship weekend gathering, a mid-week evening reset, an explorer session, and an end-of-month newcomer social so members with different routines can make their first meetup.\n\nWant me to tweak any of the times, locations, or themes before you publish them?`,
+      actionCard: {
+        type: 'events',
+        title: `4-Week Proposed Schedule (${loc})`,
+        events: plan,
+      },
+      suggestedReplies: [
+        'Make Week 1 dog-friendly at 09:30',
+        'Draft a WhatsApp message announcing this schedule',
+        'Generate a RAMS risk assessment for Week 1',
+      ],
+    };
+  }
+
+  // 3. Single Event Creation / Brainstorming an Event
+  if (lower.includes('create an event') || lower.includes('draft an event') || lower.includes('saturday') || lower.includes('sunday') || lower.includes('walk') || lower.includes('meetup idea')) {
+    const singleEv = generateRichLocalEvent(prompt, communityName, loc, communityTags);
+    return {
+      reply: `I've put together a draft for **"${singleEv.title}"** in **${loc}** on **${singleEv.date} at ${singleEv.time}**, including a warm first-timer reassurance note and meeting point details.\n\nWould you like to change the meeting spot, time, or capacity, or publish it straight to your calendar?`,
+      actionCard: {
+        type: 'events',
+        title: 'Ready-to-Publish Event Draft',
+        events: [
+          {
+            weekLabel: 'Draft Meetup',
+            title: singleEv.title,
+            date: singleEv.date,
+            time: singleEv.time,
+            location: singleEv.location,
+            description: singleEv.description,
+            maxCapacity: Number(singleEv.maxCapacity) || 25,
+            ticketPrice: Number(singleEv.ticketPrice) || 0,
+          },
+        ],
+      },
+      suggestedReplies: [
+        'Change start time to 09:30',
+        'Also write a WhatsApp invite for this',
+        'Create a RAMS risk assessment for this event',
+      ],
+    };
+  }
+
+  // 4. RAMS / Risk Assessment
+  if (lower.includes('rams') || lower.includes('risk') || lower.includes('safety') || lower.includes('hazard')) {
+    const doc = buildFallbackProDocument({
+      docType: 'rams',
+      communityName,
+      loc,
+      memberCount,
+      verifiedCount,
+      eventsHosted: Math.max(1, upcomingEvents.length),
+      eventTitle: nextEv?.title || `${communityName} Meetup`,
+      eventLocation: nextEv?.location || loc,
+      notes: prompt,
+    });
+    return {
+      reply: `I've prepared a UK Council & Venue-compliant **Risk Assessment (RAMS)** for **${nextEv?.title || communityName}** in **${loc}**. It covers terrain, weather, road crossings, first aid, and our 1st-Meetup Carpool & DM Safeguarding gate.\n\nLet me know if you want to add any specific site hazards (like water, dogs, or night walking)!`,
+      actionCard: {
+        type: 'document',
+        docType: 'rams',
+        title: doc.title,
+        document: doc.document,
+      },
+      suggestedReplies: [
+        'Add a water / lakeside hazard section',
+        'Add dog walking etiquette controls',
+        'Now draft a local café sponsor pitch',
+      ],
+    };
+  }
+
+  // 5. Sponsor Pitch or Council Grant
+  if (lower.includes('sponsor') || lower.includes('cafe') || lower.includes('café') || lower.includes('business') || lower.includes('grant') || lower.includes('funding') || lower.includes('council')) {
+    const isGrant = lower.includes('grant') || lower.includes('funding') || lower.includes('council') || lower.includes('lottery');
+    const doc = buildFallbackProDocument({
+      docType: isGrant ? 'grant' : 'sponsor',
+      communityName,
+      loc,
+      memberCount,
+      verifiedCount,
+      eventsHosted: Math.max(2, upcomingEvents.length),
+      eventTitle: nextEv?.title || `${communityName} Meetup`,
+      eventLocation: loc,
+      notes: prompt,
+    });
+    return {
+      reply: isGrant
+        ? `Here is a **UK Community Wellbeing & Social Prescribing Grant Statement** for **${communityName}** using your live group metrics (**${memberCount} members**, **${verifiedCount} Verified In-Person Locals** in **${loc}**).\n\nWant me to tailor the budget section toward venue hire, equipment, or leader First Aid training?`
+        : `Here is a warm outreach pitch to a local business in **${loc}** highlighting that **${communityName}** has **${memberCount} local members (${verifiedCount} Verified In-Person Locals)** who gather regularly and offering your £15/mo Directory or £49/mo Headline Sponsor tier.\n\nTell me the name of a specific local café, pub, or shop in ${loc} and I'll personalise it for them!`,
+      actionCard: {
+        type: 'document',
+        docType: isGrant ? 'grant' : 'sponsor',
+        title: doc.title,
+        document: doc.document,
+      },
+      suggestedReplies: isGrant
+        ? ['Focus budget on winter indoor venue hire', 'Focus on Mental Health First Aid training', 'Also draft a local business sponsor pitch']
+        : ['Personalise this for a local independent café', 'Personalise this for a local gym / wellness studio', 'Also draft a UK Council micro-grant pitch'],
+    };
+  }
+
+  // 6. Broadcast / WhatsApp / Social / Welcoming Newcomers
+  if (lower.includes('whatsapp') || lower.includes('broadcast') || lower.includes('announce') || lower.includes('welcome') || lower.includes('instagram') || lower.includes('message')) {
+    const copy = buildFallbackBroadcastCopy(
+      prompt,
+      communityName,
+      loc,
+      memberCount,
+      nextEv?.title || 'our next weekend gathering',
+      nextEv?.date ? `${nextEv.date}${nextEv.time ? ' at ' + nextEv.time : ''}` : 'this weekend'
+    );
+    return {
+      reply: `I've drafted a matching **In-App Announcement**, **WhatsApp Group message**, and **Instagram caption** for **${communityName}**. You can post the in-app announcement with 1 tap below, or tell me if you'd like the tone more casual or shorter!`,
+      actionCard: {
+        type: 'broadcast',
+        ...copy,
+      },
+      suggestedReplies: [
+        'Make the WhatsApp message shorter & punchier',
+        'Focus on welcoming nervous first-timers',
+        'Plan our next 4 weeks of events',
+      ],
+    };
+  }
+
+  // 7. General Community Growth / Engagement / First-Timer Advice
+  return {
+    reply: `Here are three high-impact ways we can grow **${communityName}** in **${loc}** right now (currently **${memberCount} members**, **${verifiedCount} Verified In-Person**):\n\n1. **Turn Newcomers into 1st-Time Attendees:** The biggest hurdle for any local member is walking up to their first gathering solo. Naming a **"First-Timer Welcome Point"** (meeting 10 minutes early with a designated buddy) typically doubles first-event turnout.\n2. **Keep a Consistent Rhythm on the Calendar:** Having at least 2–3 upcoming dates visible at all times lets members plan around family and work — even if one is a simple 45-minute mid-week coffee or stroll.\n3. **Remind Members of Their 1st-Meetup Unlock:** Let new signups know that attending their first meetup unlocks **Verified Local 🛡️** status (carpool driver offers, 1:1 member DMs, and proposing events).\n\nWhich of these should we tackle right now?`,
+    actionCard: null,
+    suggestedReplies: [
+      'Plan our next 4 weeks of events',
+      'Draft a warm welcome message for newcomers',
+      'Write a pitch to a local café sponsor',
+    ],
   };
 }

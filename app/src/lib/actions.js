@@ -71,7 +71,23 @@ const ADMIN_EMAILS = [
   'alex@morecommunity.app'
 ];
 
-async function verifyUser(token, expectedUserId) {
+function isUserRecordSuspended(row) {
+  if (!row) return false;
+  if (row.is_suspended === true || row.role === 'Suspended') return true;
+  if (Array.isArray(row.interests)) {
+    for (const item of row.interests) {
+      if (typeof item === 'string' && item.startsWith('__profile_meta:')) {
+        try {
+          const parsed = JSON.parse(item.slice('__profile_meta:'.length));
+          if (parsed && parsed.is_suspended === true) return true;
+        } catch (e) {}
+      }
+    }
+  }
+  return false;
+}
+
+async function verifyUser(token, expectedUserId, { allowSuspended = false } = {}) {
   if (!token) throw new Error("Missing authentication token");
   const authClient = hasValidServiceKey
     ? supabaseAdmin
@@ -79,6 +95,21 @@ async function verifyUser(token, expectedUserId) {
   const { data: { user }, error } = await authClient.auth.getUser(token);
   if (error || !user) throw new Error("Invalid or expired token");
   if (expectedUserId && user.id !== expectedUserId) throw new Error("Unauthorized: User ID mismatch");
+
+  if (!allowSuspended && !isAdminUser(user)) {
+    try {
+      const { data: dbRow } = await supabaseAdmin
+        .from('users')
+        .select('role, interests')
+        .eq('id', user.id)
+        .maybeSingle();
+      if (isUserRecordSuspended(dbRow)) {
+        throw new Error("Account Suspended: Your account has been suspended by a platform administrator.");
+      }
+    } catch (suspErr) {
+      if (suspErr?.message?.startsWith('Account Suspended:')) throw suspErr;
+    }
+  }
   return user;
 }
 
@@ -1041,11 +1072,12 @@ export async function markAllNotificationsReadAction(token) {
 }
 
 export async function updateUserAction(userId, updates, token) {
-  const user = await verifyUser(token);
+  const user = await verifyUser(token, undefined, { allowSuspended: true });
   const isAdmin = user.email && ADMIN_EMAILS.includes(user.email.toLowerCase());
   if (user.id !== userId && !isAdmin) {
     throw new Error("Unauthorized: User ID mismatch");
   }
+  const db = getSupabaseClient(token);
   
   const sanitized = { ...updates };
   delete sanitized.banner;
@@ -1056,10 +1088,48 @@ export async function updateUserAction(userId, updates, token) {
   delete sanitized.instagram;
   delete sanitized.website;
 
+  // Persist admin user suspension in both is_suspended column, role, and __profile_meta
+  if (sanitized.is_suspended !== undefined) {
+    if (!isAdmin) {
+      throw new Error("Forbidden: Only administrators can suspend or unsuspend users");
+    }
+    const targetSuspended = Boolean(sanitized.is_suspended);
+    sanitized.is_suspended = targetSuspended;
+
+    const { data: existingRow } = await db
+      .from('users')
+      .select('role, interests')
+      .eq('id', userId)
+      .maybeSingle();
+
+    const baseInterests = Array.isArray(sanitized.interests ?? existingRow?.interests)
+      ? (sanitized.interests ?? existingRow?.interests)
+      : [];
+    let existingMeta = {};
+    const cleanInterests = [];
+    baseInterests.forEach(item => {
+      if (typeof item === 'string' && item.startsWith('__profile_meta:')) {
+        try {
+          const parsed = JSON.parse(item.slice('__profile_meta:'.length));
+          if (parsed && typeof parsed === 'object') existingMeta = { ...existingMeta, ...parsed };
+        } catch (e) {}
+      } else if (typeof item === 'string' && item.trim()) {
+        cleanInterests.push(item.trim());
+      }
+    });
+
+    const nextMeta = { ...existingMeta, is_suspended: targetSuspended };
+    sanitized.interests = [...cleanInterests, `__profile_meta:${JSON.stringify(nextMeta)}`];
+    const prevRole = existingRow?.role || 'Member';
+    sanitized.role = targetSuspended
+      ? 'Suspended'
+      : (prevRole === 'Suspended' ? (existingMeta.previous_role || 'Member') : prevRole);
+  }
+
   let payload = { ...sanitized };
   for (let attempt = 0; attempt < 5; attempt++) {
     if (Object.keys(payload).length === 0) return true;
-    const { error } = await supabaseAdmin.from('users').update(payload).eq('id', userId);
+    const { error } = await db.from('users').update(payload).eq('id', userId);
     if (!error) return true;
 
     const colMatch =
@@ -1077,8 +1147,8 @@ export async function updateUserAction(userId, updates, token) {
 
 export async function adminVerifyCommunityAction(communityId, verified, token) {
   await verifyAdmin(token);
-  
-  const { error } = await supabaseAdmin.from('communities').update({ verified }).eq('id', communityId);
+  const db = getSupabaseClient(token);
+  const { error } = await db.from('communities').update({ verified }).eq('id', communityId);
   if (error) throw new Error(error.message);
   return true;
 }
@@ -1604,22 +1674,55 @@ export async function deleteCommunityAction(communityId, token, confirmName) {
 
 export async function deleteUserAction(userId, token) {
   try {
-    const caller = await verifyUser(token);
-    // Users may delete only their own account; platform admins may delete any.
+    const caller = await verifyUser(token, undefined, { allowSuspended: true });
+    // Users may delete only their own account; platform admins may delete any non-admin account.
     if (caller.id !== userId && !isAdminUser(caller)) {
       throw new Error("Unauthorized: You can only delete your own account");
     }
-    
-    // Delete all related records
-    await supabaseAdmin.from('community_memberships').delete().eq('user_id', userId);
-    await supabaseAdmin.from('feed_posts').delete().eq('author_id', userId);
-    
-    const { error: dbError } = await supabaseAdmin.from('users').delete().eq('id', userId);
+    const db = getSupabaseClient(token);
+
+    if (caller.id !== userId) {
+      const { data: targetRow } = await db
+        .from('users')
+        .select('id, name')
+        .eq('id', userId)
+        .maybeSingle();
+      if (targetRow?.name && ADMIN_EMAILS.includes(targetRow.name.toLowerCase())) {
+        throw new Error("Protected account: Platform administrator accounts cannot be removed.");
+      }
+    }
+
+    // Clean up all related records across child tables safely
+    const safeCleanup = async (promise) => {
+      try { await promise; } catch (e) {}
+    };
+
+    await Promise.all([
+      safeCleanup(db.from('community_memberships').delete().eq('user_id', userId)),
+      safeCleanup(db.from('event_rsvps').delete().eq('user_id', userId)),
+      safeCleanup(db.from('notifications').delete().eq('user_id', userId)),
+      safeCleanup(db.from('chat_read_receipts').delete().eq('user_id', userId)),
+      safeCleanup(db.from('event_carpool_passengers').delete().eq('user_id', userId)),
+      safeCleanup(db.from('event_carpools').delete().eq('driver_id', userId)),
+      safeCleanup(db.from('event_comments').delete().eq('author_id', userId)),
+      safeCleanup(db.from('poll_votes').delete().eq('user_id', userId)),
+      safeCleanup(db.from('feed_posts').delete().eq('author_id', userId)),
+      safeCleanup(db.from('messages').delete().eq('author_id', userId)),
+      safeCleanup(db.from('direct_messages').delete().or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)),
+      safeCleanup(db.from('communities').update({ leader_id: null }).eq('leader_id', userId)),
+    ]);
+
+    const { error: dbError } = await db.from('users').delete().eq('id', userId);
     if (dbError) throw new Error(dbError.message);
-    
-    const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(userId);
-    if (authError) throw new Error(authError.message);
-    
+
+    if (hasValidServiceKey) {
+      try {
+        await supabaseAdmin.auth.admin.deleteUser(userId);
+      } catch (authErr) {
+        console.warn('Auth user delete notice (public profile already removed):', authErr?.message || authErr);
+      }
+    }
+
     return { success: true };
   } catch (err) {
     return { error: err.message };

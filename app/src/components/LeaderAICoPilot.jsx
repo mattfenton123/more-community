@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import {
   Sparkles,
   Calendar,
@@ -14,9 +14,10 @@ import {
   Plus,
   Send,
   X,
-  ChevronRight,
+  RotateCcw,
   MapPin,
   Clock,
+  MessageSquare,
 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { useToast } from './Toast';
@@ -33,46 +34,65 @@ export default function LeaderAICoPilot({
   onJumpToUpgrade,
   onClose,
 }) {
-  const { user, createEvent, createEventsBatch, createPost } = useAppContext();
+  const { user, createEvent, createEventsBatch, createPost, createFeedPost } = useAppContext();
   const { toast } = useToast();
 
   const [hasConsented, setHasConsented] = useState(() => {
     if (typeof window === 'undefined') return false;
     return localStorage.getItem(CONSENT_STORAGE_KEY) === 'true';
   });
-  const [activeTool, setActiveTool] = useState('planner'); // 'planner' | 'broadcast' | 'rams' | 'sponsor'
 
-  // Tool 1: 4-Week Calendar Planner
-  const [plannerFocus, setPlannerFocus] = useState('');
-  const [isPlanning, setIsPlanning] = useState(false);
-  const [plannedEvents, setPlannedEvents] = useState([]);
-  const [publishedWeeks, setPublishedWeeks] = useState({});
-  const [isPublishingBatch, setIsPublishingBatch] = useState(false);
-
-  // Tool 2: Broadcast & Social Copywriter
-  const [broadcastGoal, setBroadcastGoal] = useState('Welcome newcomers & explain 1st-meetup Verified Local unlocks');
-  const [isGeneratingCopy, setIsGeneratingCopy] = useState(false);
-  const [generatedCopy, setGeneratedCopy] = useState(null);
-  const [isSendingBroadcast, setIsSendingBroadcast] = useState(false);
-
-  // Tool 3 & 4: Leader Pro RAMS & Sponsor/Grant Docs
-  const [selectedEventId, setSelectedEventId] = useState(communityEvents[0]?.id || '');
-  const [ramsNotes, setRamsNotes] = useState('');
-  const [pitchType, setPitchType] = useState('sponsor'); // 'sponsor' | 'grant'
-  const [pitchNotes, setPitchNotes] = useState('');
-  const [isGeneratingDoc, setIsGeneratingDoc] = useState(false);
-  const [generatedDoc, setGeneratedDoc] = useState(null);
-
-  const hasProAccess = Boolean(isPro || user?.isAdmin || community?.is_insured || community?.insurance_tier === 'pro');
+  const hasProAccess = Boolean(
+    isPro || user?.isAdmin || community?.is_insured || community?.insurance_tier === 'pro'
+  );
   const communityLoc = cleanLocationName(community?.location_name) || 'Tunbridge Wells';
 
-  const nextUpcomingEvent = useMemo(() => {
+  const upcomingEvents = useMemo(() => {
     const today = new Date().toISOString().split('T')[0];
-    const upcoming = (communityEvents || [])
+    return (communityEvents || [])
       .filter((e) => e.status !== 'cancelled' && e.status !== 'proposed' && (!e.date || e.date >= today))
       .sort((a, b) => String(a.date || '').localeCompare(String(b.date || '')));
-    return upcoming[0] || communityEvents[0] || null;
   }, [communityEvents]);
+
+  const nextUpcomingEvent = upcomingEvents[0] || communityEvents[0] || null;
+
+  const buildInitialMessages = () => {
+    const commName = community?.name || 'your community';
+    const nextNote = nextUpcomingEvent
+      ? `Your next meetup on the calendar is "${nextUpcomingEvent.title}" (${nextUpcomingEvent.date || 'soon'} at ${nextUpcomingEvent.time || '10:00'}).`
+      : `You don't have an upcoming meetup scheduled on the calendar yet — we can sketch out your next few weeks whenever you're ready.`;
+
+    return [
+      {
+        id: 'welcome-msg',
+        role: 'assistant',
+        reply: `Hi ${user?.name?.split(' ')[0] || 'there'}! I'm your **${commName}** Co-Pilot.\n\nI can see you have **${memberCount} member${memberCount === 1 ? '' : 's'}** (${verifiedMemberCount} Verified Local${verifiedMemberCount === 1 ? '' : 's'} who have attended in person). ${nextNote}\n\nTalk to me like a co-organiser — tell me what you're thinking of planning, ask how to re-engage quiet newcomers, or ask me to draft your next 4 weeks of events, a WhatsApp message, a UK Council RAMS, or a local sponsor pitch. You can always reply to tweak anything I draft.`,
+        actionCard: null,
+        suggestedReplies: [
+          '🗓️ Plan our next 4 weeks of meetups',
+          '👋 Draft a warm WhatsApp message for newcomers',
+          '💡 How do I get quiet members to attend their first meetup?',
+          '🛡️ Draft a UK Council Risk Assessment (RAMS)',
+        ],
+      },
+    ];
+  };
+
+  const [messages, setMessages] = useState(() => buildInitialMessages());
+  const [inputValue, setInputValue] = useState('');
+  const [isThinking, setIsThinking] = useState(false);
+
+  // Track published / copied action states per message ID
+  const [publishedEventsMap, setPublishedEventsMap] = useState({});
+  const [publishingBatchMap, setPublishingBatchMap] = useState({});
+  const [sendingBroadcastMap, setSendingBroadcastMap] = useState({});
+  const [sentBroadcastMap, setSentBroadcastMap] = useState({});
+
+  const chatEndRef = useRef(null);
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+  }, [messages, isThinking]);
 
   const handleAcceptConsent = () => {
     setHasConsented(true);
@@ -83,37 +103,92 @@ export default function LeaderAICoPilot({
     }
   };
 
-  const handleGenerateFourWeekPlan = async () => {
-    setIsPlanning(true);
-    setPublishedWeeks({});
+  const handleResetChat = () => {
+    setMessages(buildInitialMessages());
+    setInputValue('');
+  };
+
+  const handleSendMessage = async (textOverride = null) => {
+    const text = (textOverride !== null ? textOverride : inputValue).trim();
+    if (!text || isThinking) return;
+
+    const userMsg = {
+      id: `user-${Date.now()}`,
+      role: 'user',
+      reply: text,
+    };
+
+    const nextHistory = [...messages, userMsg];
+    setMessages(nextHistory);
+    if (textOverride === null) setInputValue('');
+    setIsThinking(true);
+
     try {
+      const compactHistory = nextHistory.slice(-10).map((m) => ({
+        role: m.role,
+        content:
+          m.role === 'assistant' && m.actionCard
+            ? `${m.reply}\n[Generated ${m.actionCard.type}: ${m.actionCard.title || ''}]`
+            : m.reply,
+      }));
+
       const res = await fetch('/api/ai/generate-event', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          mode: 'plan-month',
-          prompt: plannerFocus.trim() || 'Balanced 4-week schedule of welcoming local meetups',
+          mode: 'copilot-chat',
+          prompt: text,
+          history: compactHistory,
           communityName: community?.name || 'Local Community',
           communityLocation: communityLoc,
           communityTags: community?.tags || [],
+          memberCount,
+          verifiedCount: verifiedMemberCount,
+          upcomingEvents: upcomingEvents.slice(0, 5).map((e) => ({
+            title: e.title,
+            date: e.date,
+            time: e.time,
+            location: cleanLocationName(e.location) || communityLoc,
+          })),
         }),
       });
+
       const data = await res.json();
-      if (Array.isArray(data?.events) && data.events.length > 0) {
-        setPlannedEvents(data.events);
-        toast.success('4-Week Plan Ready! ✨', 'Review each week below and publish with one tap.');
-      } else {
-        toast.error('Could not generate plan', data?.error || 'Please try again.');
-      }
+      const assistantMsg = {
+        id: `ai-${Date.now()}`,
+        role: 'assistant',
+        reply:
+          data?.reply ||
+          "I've put together a recommendation for you below. Tell me if you'd like to adjust the tone, dates, or format!",
+        actionCard: data?.actionCard && data.actionCard.type ? data.actionCard : null,
+        suggestedReplies: Array.isArray(data?.suggestedReplies) ? data.suggestedReplies : [],
+      };
+      setMessages((prev) => [...prev, assistantMsg]);
     } catch (err) {
-      toast.error('Planner Error', err?.message || 'Failed to generate 4-week plan.');
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `ai-err-${Date.now()}`,
+          role: 'assistant',
+          reply:
+            "I hit a brief connection snag while thinking that through. Try sending that again or tap one of the quick options below!",
+          actionCard: null,
+          suggestedReplies: [
+            '🗓️ Plan our next 4 weeks of meetups',
+            '👋 Draft a warm WhatsApp message for newcomers',
+          ],
+        },
+      ]);
+      toast.error('Co-Pilot connection error', err?.message || 'Please try again.');
     } finally {
-      setIsPlanning(false);
+      setIsThinking(false);
     }
   };
 
-  const handlePublishSinglePlannedEvent = async (ev, idx) => {
-    if (!community?.id || publishedWeeks[idx]) return;
+  const handlePublishSingleEvent = async (msgId, ev, idx) => {
+    if (!community?.id) return;
+    const key = `${msgId}-${idx}`;
+    if (publishedEventsMap[key]) return;
     try {
       await createEvent(community.id, {
         title: ev.title,
@@ -123,1060 +198,1187 @@ export default function LeaderAICoPilot({
         location: ev.location || communityLoc,
         maxCapacity: Number(ev.maxCapacity) || 25,
         ticketPrice: Number(ev.ticketPrice) || 0,
-        image: community?.image || community?.cover_image || null,
         status: 'published',
       });
-      setPublishedWeeks((prev) => ({ ...prev, [idx]: true }));
-      toast.success('Event Published! 🗓️', `"${ev.title}" is now live on your community calendar.`);
+      setPublishedEventsMap((prev) => ({ ...prev, [key]: true }));
+      toast.success('Event Published! 🎉', `"${ev.title}" is now live on your community calendar.`);
     } catch (err) {
-      toast.error('Publish Failed', err?.message || 'Could not publish event.');
+      toast.error('Could not publish event', err?.message || 'Please try again.');
     }
   };
 
-  const handlePublishAllPlannedEvents = async () => {
-    const remaining = plannedEvents.filter((_, idx) => !publishedWeeks[idx]);
-    if (!community?.id || remaining.length === 0) return;
-    setIsPublishingBatch(true);
-    try {
-      await createEventsBatch(
-        community.id,
-        remaining.map((ev) => ({
-          title: ev.title,
-          description: ev.description,
-          date: ev.date,
-          time: ev.time || '10:00',
-          location: ev.location || communityLoc,
-          maxCapacity: Number(ev.maxCapacity) || 25,
-          ticketPrice: Number(ev.ticketPrice) || 0,
-          image: community?.image || community?.cover_image || null,
-        }))
-      );
-      const allMarked = {};
-      plannedEvents.forEach((_, i) => {
-        allMarked[i] = true;
-      });
-      setPublishedWeeks(allMarked);
-      toast.success('4-Week Calendar Published! 🎉', `Added ${remaining.length} events to ${community.name}.`);
-    } catch (err) {
-      toast.error('Batch Publish Failed', err?.message || 'Could not publish batch.');
-    } finally {
-      setIsPublishingBatch(false);
-    }
-  };
+  const handlePublishAllEventsInCard = async (msgId, eventsList) => {
+    if (!community?.id || !Array.isArray(eventsList) || eventsList.length === 0) return;
+    const unpub = eventsList
+      .map((ev, idx) => ({ ev, idx }))
+      .filter(({ idx }) => !publishedEventsMap[`${msgId}-${idx}`]);
+    if (unpub.length === 0) return;
 
-  const handleGenerateBroadcastCopy = async (customGoal) => {
-    const goalToUse = customGoal || broadcastGoal;
-    setIsGeneratingCopy(true);
+    setPublishingBatchMap((prev) => ({ ...prev, [msgId]: true }));
     try {
-      const res = await fetch('/api/ai/generate-event', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          mode: 'copilot-broadcast',
-          prompt: goalToUse,
-          communityName: community?.name || 'Local Community',
-          communityLocation: communityLoc,
-          memberCount,
-          nextEventTitle: nextUpcomingEvent?.title || 'our next weekend meetup',
-          nextEventDate: nextUpcomingEvent?.date
-            ? `${nextUpcomingEvent.date}${nextUpcomingEvent.time ? ' at ' + nextUpcomingEvent.time : ''}`
-            : 'this weekend',
-        }),
-      });
-      const data = await res.json();
-      if (data?.inAppAnnouncement) {
-        setGeneratedCopy(data);
+      const payloads = unpub.map(({ ev }) => ({
+        title: ev.title,
+        description: ev.description,
+        date: ev.date,
+        time: ev.time || '10:00',
+        location: ev.location || communityLoc,
+        maxCapacity: Number(ev.maxCapacity) || 25,
+        ticketPrice: Number(ev.ticketPrice) || 0,
+        status: 'published',
+      }));
+
+      if (typeof createEventsBatch === 'function') {
+        await createEventsBatch(community.id, payloads);
       } else {
-        toast.error('Copy Generation Failed', data?.error || 'Please try again.');
-      }
-    } catch (err) {
-      toast.error('Error', err?.message || 'Could not draft copy.');
-    } finally {
-      setIsGeneratingCopy(false);
-    }
-  };
-
-  const handleSendInAppAnnouncement = async () => {
-    if (!generatedCopy?.inAppAnnouncement || !community?.id) return;
-    setIsSendingBroadcast(true);
-    try {
-      await createPost(
-        community.id,
-        generatedCopy.inAppAnnouncement,
-        null,
-        { app: true },
-        {
-          title: generatedCopy.announcementTitle || `📢 ${community.name} Update`,
-          link: `/community/${community.id}`,
+        for (const p of payloads) {
+          await createEvent(community.id, p);
         }
-      );
-      toast.success('Announcement Published! 📢', `Posted to ${community.name} feed and notified members.`);
-    } catch (err) {
-      toast.error('Broadcast Failed', err?.message || 'Could not post announcement.');
-    } finally {
-      setIsSendingBroadcast(false);
-    }
-  };
-
-  const handleGenerateProDocument = async (docTypeOverride) => {
-    const type = docTypeOverride || (activeTool === 'rams' ? 'rams' : pitchType);
-    const chosenEvent =
-      communityEvents.find((e) => e.id === selectedEventId) || nextUpcomingEvent || communityEvents[0];
-    setIsGeneratingDoc(true);
-    setGeneratedDoc(null);
-    try {
-      const res = await fetch('/api/ai/generate-event', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          mode: 'copilot-pro-doc',
-          docType: type,
-          prompt:
-            type === 'rams'
-              ? ramsNotes.trim() || 'Standard outdoor/venue community gathering'
-              : pitchNotes.trim() || 'Local community partnership',
-          communityName: community?.name || 'Local Community',
-          communityLocation: communityLoc,
-          memberCount,
-          verifiedCount: verifiedMemberCount,
-          eventsHosted: Math.max(1, communityEvents.length),
-          eventTitle: chosenEvent?.title || `${community?.name || 'Community'} Meetup`,
-          eventLocation: chosenEvent?.location || communityLoc,
-        }),
-      });
-      const data = await res.json();
-      if (data?.document) {
-        setGeneratedDoc(data);
-        toast.success('Document Generated ✨', data.title || 'Ready to review below.');
-      } else {
-        toast.error('Generation Failed', data?.error || 'Please try again.');
       }
+
+      const nextPublished = { ...publishedEventsMap };
+      unpub.forEach(({ idx }) => {
+        nextPublished[`${msgId}-${idx}`] = true;
+      });
+      setPublishedEventsMap(nextPublished);
+      toast.success('Schedule Published! 🚀', `Added ${unpub.length} events to your community calendar.`);
     } catch (err) {
-      toast.error('Error', err?.message || 'Could not generate document.');
+      toast.error('Batch publish error', err?.message || 'Could not publish all events.');
     } finally {
-      setIsGeneratingDoc(false);
+      setPublishingBatchMap((prev) => ({ ...prev, [msgId]: false }));
     }
   };
 
-  const copyToClipboard = async (text, label) => {
+  const handlePublishBroadcastCard = async (msgId, broadcastData) => {
+    if (!community?.id || !broadcastData?.inAppBody) return;
+    setSendingBroadcastMap((prev) => ({ ...prev, [msgId]: true }));
     try {
-      await navigator.clipboard.writeText(text);
-      toast.success(`${label} Copied! ✓`, 'Ready to paste.');
-    } catch {
-      toast.error('Copy failed', 'Please select and copy manually.');
+      const fullText = broadcastData.inAppTitle
+        ? `📣 **${broadcastData.inAppTitle}**\n\n${broadcastData.inAppBody}`
+        : broadcastData.inAppBody;
+      if (typeof createPost === 'function') {
+        await createPost(community.id, fullText, null, ['in-app']);
+      } else if (typeof createFeedPost === 'function') {
+        await createFeedPost(community.id, fullText, null, true, false);
+      }
+      setSentBroadcastMap((prev) => ({ ...prev, [msgId]: true }));
+      toast.success(
+        'Announcement Published! 📣',
+        'Posted to your community feed and notified members.'
+      );
+    } catch (err) {
+      toast.error('Broadcast Error', err?.message || 'Could not publish announcement.');
+    } finally {
+      setSendingBroadcastMap((prev) => ({ ...prev, [msgId]: false }));
     }
   };
 
-  const downloadTextFile = (filename, content) => {
-    const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' });
+  const handleCopyText = (text, label) => {
+    if (!text) return;
+    navigator.clipboard.writeText(text);
+    toast.success(`${label} Copied! 📋`, 'Ready to paste.');
+  };
+
+  const handleDownloadMarkdown = (title, content) => {
+    if (!content) return;
+    const blob = new Blob([content], { type: 'text/markdown;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
+    const slug = String(title || 'community-document')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
+    a.download = `${slug}.md`;
     a.click();
-    document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    toast.success('Downloaded! 📄', `${filename} saved to your device.`);
+    toast.success('Document Downloaded! 📄', 'Saved to your device.');
+  };
+
+  const renderFormattedReply = (text) => {
+    if (!text) return null;
+    const lines = String(text).split('\n');
+    return lines.map((line, i) => {
+      const trimmed = line.trim();
+      if (!trimmed) return <div key={i} style={{ height: '8px' }} />;
+      // Render bold **segments** inline
+      const parts = line.split(/(\*\*[^*]+\*\*)/g);
+      return (
+        <div
+          key={i}
+          style={{
+            marginBottom: '4px',
+            paddingLeft: trimmed.startsWith('•') || trimmed.startsWith('- ') ? '8px' : 0,
+          }}
+        >
+          {parts.map((part, pIdx) => {
+            if (part.startsWith('**') && part.endsWith('**')) {
+              return (
+                <strong key={pIdx} style={{ fontWeight: 800 }}>
+                  {part.slice(2, -2)}
+                </strong>
+              );
+            }
+            return <span key={pIdx}>{part}</span>;
+          })}
+        </div>
+      );
+    });
   };
 
   return (
     <div
       style={{
         background: 'var(--surface-card)',
-        border: '1.5px solid var(--hairline-border-strong)',
-        borderRadius: '20px',
+        border: '1px solid var(--hairline-border)',
+        borderRadius: '22px',
         padding: '20px',
-        marginBottom: '22px',
-        boxShadow: '0 14px 36px rgba(0, 0, 0, 0.14)',
+        marginBottom: '24px',
+        boxShadow: '0 14px 36px rgba(0, 0, 0, 0.08)',
+        position: 'relative',
       }}
     >
-      {/* Top Bar */}
+      {/* Top Header */}
       <div
         style={{
           display: 'flex',
-          alignItems: 'center',
           justifyContent: 'space-between',
+          alignItems: 'center',
           gap: '12px',
           flexWrap: 'wrap',
+          paddingBottom: '14px',
+          borderBottom: '1px solid var(--hairline-border)',
           marginBottom: '16px',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <div
             style={{
-              width: '42px',
-              height: '42px',
+              width: '38px',
+              height: '38px',
               borderRadius: '12px',
-              background: 'var(--brand-accent)',
+              background: 'linear-gradient(135deg, #EB5738, #f59e0b)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: '#FFFFFF',
+              color: '#fff',
+              boxShadow: '0 6px 16px rgba(235, 87, 56, 0.25)',
               flexShrink: 0,
             }}
           >
-            <Sparkles size={20} />
+            <Sparkles size={19} />
           </div>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
               <h3
                 style={{
                   margin: 0,
+                  fontSize: '1.12rem',
                   fontFamily: 'var(--font-heading)',
-                  fontSize: '1.15rem',
                   color: 'var(--ink-primary)',
                 }}
               >
-                More AI Community Co-Pilot
+                More. AI Leader Co-Pilot
               </h3>
               <span
                 style={{
+                  padding: '2px 9px',
+                  borderRadius: '99px',
                   fontSize: '0.68rem',
                   fontWeight: 800,
-                  padding: '2px 8px',
-                  borderRadius: '999px',
-                  background: 'var(--brand-secondary-soft)',
-                  color: 'var(--brand-secondary)',
-                  border: '1px solid rgba(58, 142, 118, 0.3)',
+                  background: 'rgba(16, 185, 129, 0.14)',
+                  color: '#10b981',
+                  border: '1px solid rgba(16, 185, 129, 0.28)',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.04em',
                 }}
               >
-                LEADER STUDIO
+                Conversational Assistant
               </span>
             </div>
-            <p style={{ margin: '2px 0 0', fontSize: '0.79rem', color: 'var(--ink-secondary)' }}>
-              Plan 4 weeks of events, draft broadcasts, and generate UK RAMS &amp; sponsor pitches for{' '}
-              <strong>{community?.name}</strong>.
-            </p>
+            <div style={{ fontSize: '0.78rem', color: 'var(--ink-muted)', marginTop: '2px' }}>
+              Brainstorm ideas, tweak event schedules, draft WhatsApp messages &amp; create UK Council RAMS in natural conversation
+            </div>
           </div>
         </div>
 
-        {onClose && (
-          <button
-            type="button"
-            onClick={onClose}
-            className="interactive-press"
-            style={{
-              width: '32px',
-              height: '32px',
-              borderRadius: '50%',
-              background: 'var(--surface-elevated)',
-              border: '1px solid var(--hairline-border)',
-              color: 'var(--ink-secondary)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-            }}
-            aria-label="Close AI Co-Pilot"
-          >
-            <X size={16} />
-          </button>
-        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {hasConsented && messages.length > 1 && (
+            <button
+              type="button"
+              onClick={handleResetChat}
+              className="interactive-press"
+              title="Start a fresh conversation"
+              style={{
+                background: 'var(--surface-elevated)',
+                border: '1px solid var(--hairline-border)',
+                color: 'var(--ink-secondary)',
+                borderRadius: '10px',
+                padding: '7px 11px',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '5px',
+                fontSize: '0.76rem',
+                fontWeight: 700,
+              }}
+            >
+              <RotateCcw size={13} /> New Chat
+            </button>
+          )}
+          {onClose && (
+            <button
+              type="button"
+              onClick={onClose}
+              className="interactive-press"
+              style={{
+                background: 'var(--surface-elevated)',
+                border: '1px solid var(--hairline-border)',
+                color: 'var(--ink-secondary)',
+                borderRadius: '10px',
+                padding: '7px 10px',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+                fontSize: '0.78rem',
+                fontWeight: 600,
+              }}
+            >
+              <X size={15} /> Close
+            </button>
+          )}
+        </div>
       </div>
 
-      {/* Apple App Store 5.1.1(i) & GDPR First-Time Consent Disclosure */}
+      {/* Apple Guideline 5.1.2(i) & UK GDPR One-Time Consent Gate */}
       {!hasConsented ? (
         <div
           style={{
-            padding: '18px',
-            borderRadius: '16px',
             background: 'var(--surface-elevated)',
-            border: '1px solid var(--hairline-border-strong)',
+            border: '1px solid rgba(235, 87, 56, 0.28)',
+            borderRadius: '16px',
+            padding: '18px',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-            <Shield size={18} color="var(--brand-secondary)" />
-            <span style={{ fontWeight: 700, fontSize: '0.92rem', color: 'var(--ink-primary)' }}>
-              Privacy &amp; AI Transparency Notice
-            </span>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+            <Shield size={22} color="#EB5738" style={{ flexShrink: 0, marginTop: '2px' }} />
+            <div style={{ flex: 1 }}>
+              <div
+                style={{
+                  fontWeight: 800,
+                  fontSize: '0.95rem',
+                  color: 'var(--ink-primary)',
+                  marginBottom: '6px',
+                }}
+              >
+                Privacy-First AI Disclosure
+              </div>
+              <p
+                style={{
+                  margin: '0 0 12px 0',
+                  fontSize: '0.84rem',
+                  color: 'var(--ink-secondary)',
+                  lineHeight: 1.5,
+                }}
+              >
+                To help you plan events, write announcements, and prepare safety documents, More. AI Co-Pilot sends{' '}
+                <strong>only your community&apos;s public title, town, category tags, and your chat messages</strong>{' '}
+                to Google Gemini API.
+              </p>
+              <div
+                style={{
+                  fontSize: '0.78rem',
+                  color: 'var(--ink-muted)',
+                  background: 'var(--surface-card)',
+                  padding: '10px 12px',
+                  borderRadius: '10px',
+                  border: '1px solid var(--hairline-border)',
+                  marginBottom: '14px',
+                }}
+              >
+                🔒 <strong>Never shared:</strong> Member names, private DMs, email addresses, phone numbers, or attendee
+                rosters are strictly excluded from AI prompts. You always review and approve every draft before it goes
+                live.
+              </div>
+              <button
+                type="button"
+                onClick={handleAcceptConsent}
+                className="btn btn-primary interactive-press"
+                style={{
+                  padding: '10px 18px',
+                  borderRadius: '11px',
+                  fontSize: '0.85rem',
+                  fontWeight: 800,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                }}
+              >
+                <Check size={16} /> Enable Conversational Co-Pilot
+              </button>
+            </div>
           </div>
-          <p style={{ margin: '0 0 14px', fontSize: '0.82rem', color: 'var(--ink-secondary)', lineHeight: 1.55 }}>
-            More AI Co-Pilot uses <strong>Google Gemini</strong> to help you draft event schedules, community
-            announcements, risk assessments, and sponsorship proposals.
-            <br />• <strong>What is shared:</strong> Only your community&apos;s public title ({community?.name}), town (
-            {communityLoc}), activity tags, and aggregate member count ({memberCount}).
-            <br />• <strong>What is NEVER shared:</strong> Private member names, emails, phone numbers, or 1:1 direct
-            messages are never sent to third-party AI.
-            <br />• <strong>You are in control:</strong> Nothing is ever published or sent to members until you review
-            and tap Publish.
-          </p>
-          <button
-            type="button"
-            onClick={handleAcceptConsent}
-            className="btn btn-primary interactive-press"
-            style={{
-              padding: '10px 18px',
-              borderRadius: '12px',
-              fontWeight: 700,
-              fontSize: '0.86rem',
-              color: '#FFFFFF',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-            }}
-          >
-            <Sparkles size={15} /> Agree &amp; Open AI Co-Pilot
-          </button>
         </div>
       ) : (
         <>
-          {/* 4 Tool Tabs (2 Free Growth Tools + 2 Leader Pro Concierge Tools) */}
+          {/* Quick Topic Bar */}
           <div
             style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(155px, 1fr))',
-              gap: '8px',
-              marginBottom: '18px',
+              display: 'flex',
+              gap: '6px',
+              overflowX: 'auto',
+              paddingBottom: '10px',
+              marginBottom: '12px',
             }}
+            className="no-scrollbar"
           >
             {[
-              { id: 'planner', icon: Calendar, label: '4-Week Planner', badge: 'Free' },
-              { id: 'broadcast', icon: Megaphone, label: 'Social & Broadcast', badge: 'Free' },
-              { id: 'rams', icon: Shield, label: 'UK Council RAMS', badge: 'Pro' },
-              { id: 'sponsor', icon: Briefcase, label: 'Sponsor & Grant Pitch', badge: 'Pro' },
-            ].map((t) => {
-              const Icon = t.icon;
-              const active = activeTool === t.id;
-              const isProBadge = t.badge === 'Pro';
-              return (
-                <button
-                  key={t.id}
-                  type="button"
-                  onClick={() => {
-                    setActiveTool(t.id);
-                    setGeneratedDoc(null);
-                  }}
-                  className="interactive-press"
-                  style={{
-                    padding: '10px 12px',
-                    borderRadius: '12px',
-                    background: active ? 'var(--brand-accent)' : 'var(--surface-elevated)',
-                    border: active ? '1.5px solid var(--brand-accent)' : '1px solid var(--hairline-border)',
-                    color: active ? '#FFFFFF' : 'var(--ink-primary)',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    gap: '6px',
-                    textAlign: 'left',
-                  }}
-                >
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '7px', fontWeight: 700, fontSize: '0.8rem' }}>
-                    <Icon size={15} />
-                    <span>{t.label}</span>
-                  </span>
-                  <span
-                    style={{
-                      fontSize: '0.62rem',
-                      fontWeight: 800,
-                      padding: '2px 6px',
-                      borderRadius: '999px',
-                      background: active
-                        ? 'rgba(255,255,255,0.22)'
-                        : isProBadge
-                        ? 'rgba(217, 119, 6, 0.16)'
-                        : 'var(--brand-secondary-soft)',
-                      color: active ? '#FFFFFF' : isProBadge ? '#D97706' : 'var(--brand-secondary)',
-                      textTransform: 'uppercase',
-                    }}
-                  >
-                    {t.badge}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* TOOL 1: 4-WEEK CALENDAR PLANNER (FREE) */}
-          {activeTool === 'planner' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              <div
+              {
+                label: '🗓️ Plan Next 4 Weeks',
+                prompt: `Can you plan our next 4 weeks of meetups in ${communityLoc} with a mix of beginner-friendly and regular sessions?`,
+              },
+              {
+                label: '👋 Newcomer WhatsApp Welcome',
+                prompt:
+                  'Draft a warm WhatsApp group message welcoming newcomers and explaining how attending their first in-person meetup unlocks Verified Local standing.',
+              },
+              {
+                label: '💡 Activate Quiet Members',
+                prompt:
+                  'What is the best way to get our quiet members who joined online to actually show up to their first in-person meetup?',
+              },
+              {
+                label: '🛡️ UK Council RAMS',
+                prompt: nextUpcomingEvent
+                  ? `Draft a UK Council Risk Assessment & Method Statement (RAMS) for our upcoming meetup "${nextUpcomingEvent.title}" at ${cleanLocationName(nextUpcomingEvent.location) || communityLoc}.`
+                  : `Draft a UK Council Risk Assessment & Method Statement (RAMS) for our next community meetup in ${communityLoc}.`,
+              },
+              {
+                label: '🤝 Local Café Sponsor Pitch',
+                prompt: `Write a friendly sponsorship outreach email to an independent café or local business in ${communityLoc} to partner with ${community?.name || 'our community'}.`,
+              },
+              {
+                label: '🏛️ UK Council Grant Application',
+                prompt: `Draft a UK Local Council & National Lottery Awards for All community grant funding application for ${community?.name || 'our community'}.`,
+              },
+            ].map((chip, idx) => (
+              <button
+                key={idx}
+                type="button"
+                disabled={isThinking}
+                onClick={() => handleSendMessage(chip.prompt)}
+                className="interactive-press"
                 style={{
-                  display: 'flex',
-                  gap: '8px',
-                  flexWrap: 'wrap',
+                  padding: '7px 12px',
+                  borderRadius: '99px',
+                  fontSize: '0.76rem',
+                  fontWeight: 700,
+                  whiteSpace: 'nowrap',
+                  cursor: isThinking ? 'not-allowed' : 'pointer',
+                  background: 'var(--surface-elevated)',
+                  color: 'var(--ink-secondary)',
+                  border: '1px solid var(--hairline-border)',
+                  flexShrink: 0,
                 }}
               >
-                <input
-                  type="text"
-                  value={plannerFocus}
-                  onChange={(e) => setPlannerFocus(e.target.value)}
-                  className="input"
-                  placeholder={`Optional theme (e.g. "Saturday morning walks & mid-week coffee in ${communityLoc}")...`}
-                  style={{ flex: 1, minWidth: '220px', fontSize: '0.85rem' }}
-                />
-                <button
-                  type="button"
-                  onClick={handleGenerateFourWeekPlan}
-                  disabled={isPlanning}
-                  className="btn btn-primary interactive-press"
+                {chip.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Chat Conversation Stream */}
+          <div
+            style={{
+              maxHeight: '520px',
+              overflowY: 'auto',
+              padding: '12px',
+              borderRadius: '16px',
+              background: 'var(--surface-elevated)',
+              border: '1px solid var(--hairline-border)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '14px',
+              marginBottom: '12px',
+            }}
+          >
+            {messages.map((msg, msgIdx) => {
+              const isUser = msg.role === 'user';
+              const isLastAssistant = !isUser && msgIdx === messages.length - 1;
+
+              return (
+                <div
+                  key={msg.id}
                   style={{
-                    padding: '10px 18px',
-                    borderRadius: '12px',
-                    fontWeight: 700,
-                    fontSize: '0.85rem',
-                    color: '#FFFFFF',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '7px',
-                    cursor: isPlanning ? 'wait' : 'pointer',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: isUser ? 'flex-end' : 'flex-start',
+                    gap: '8px',
                   }}
                 >
-                  {isPlanning ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
-                  {isPlanning ? 'Planning 4 Weeks...' : 'Auto-Plan Next 4 Weeks'}
-                </button>
-              </div>
-
-              {plannedEvents.length > 0 && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {/* Bubble */}
                   <div
                     style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      flexWrap: 'wrap',
-                      gap: '8px',
+                      maxWidth: isUser ? '84%' : '96%',
+                      width: msg.actionCard ? '100%' : 'auto',
+                      padding: isUser ? '11px 15px' : '14px 16px',
+                      borderRadius: isUser ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
+                      background: isUser
+                        ? 'linear-gradient(135deg, #EB5738, #d94627)'
+                        : 'var(--surface-card)',
+                      color: isUser ? '#ffffff' : 'var(--ink-primary)',
+                      border: isUser ? 'none' : '1px solid var(--hairline-border)',
+                      boxShadow: isUser
+                        ? '0 4px 14px rgba(235, 87, 56, 0.25)'
+                        : '0 2px 10px rgba(0, 0, 0, 0.04)',
+                      fontSize: '0.88rem',
+                      lineHeight: 1.55,
                     }}
                   >
-                    <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--ink-secondary)' }}>
-                      4-Week Draft Schedule for {community?.name}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={handlePublishAllPlannedEvents}
-                      disabled={isPublishingBatch || plannedEvents.every((_, i) => publishedWeeks[i])}
-                      className="btn btn-primary interactive-press"
-                      style={{
-                        padding: '7px 14px',
-                        borderRadius: '999px',
-                        fontSize: '0.78rem',
-                        fontWeight: 700,
-                        color: '#FFFFFF',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                      }}
-                    >
-                      {isPublishingBatch ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
-                      {plannedEvents.every((_, i) => publishedWeeks[i])
-                        ? 'All 4 Published ✓'
-                        : 'Publish All 4 Events to Calendar'}
-                    </button>
-                  </div>
+                    {!isUser && (
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          marginBottom: '6px',
+                          fontSize: '0.72rem',
+                          fontWeight: 800,
+                          color: '#EB5738',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.04em',
+                        }}
+                      >
+                        <Sparkles size={12} /> More. Co-Pilot
+                      </div>
+                    )}
 
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '10px' }}>
-                    {plannedEvents.map((ev, idx) => {
-                      const isPublished = Boolean(publishedWeeks[idx]);
-                      return (
+                    <div>{renderFormattedReply(msg.reply)}</div>
+
+                    {/* Embedded Executable Action Card: 4-Week / Multi-Event Schedule */}
+                    {!isUser &&
+                      msg.actionCard?.type === 'events' &&
+                      Array.isArray(msg.actionCard?.data?.events) &&
+                      msg.actionCard.data.events.length > 0 && (
                         <div
-                          key={idx}
                           style={{
+                            marginTop: '14px',
                             padding: '14px',
                             borderRadius: '14px',
                             background: 'var(--surface-elevated)',
-                            border: isPublished
-                              ? '1.5px solid var(--brand-secondary)'
-                              : '1px solid var(--hairline-border-strong)',
+                            border: '1px solid rgba(235, 87, 56, 0.25)',
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              gap: '10px',
+                              flexWrap: 'wrap',
+                              marginBottom: '12px',
+                            }}
+                          >
+                            <div
+                              style={{
+                                fontWeight: 800,
+                                fontSize: '0.86rem',
+                                color: 'var(--ink-primary)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                              }}
+                            >
+                              <Calendar size={15} color="#EB5738" />
+                              {msg.actionCard.title || 'Drafted Meetup Schedule'}
+                            </div>
+                            <button
+                              type="button"
+                              disabled={
+                                publishingBatchMap[msg.id] ||
+                                msg.actionCard.data.events.every(
+                                  (_, idx) => publishedEventsMap[`${msg.id}-${idx}`]
+                                )
+                              }
+                              onClick={() =>
+                                handlePublishAllEventsInCard(msg.id, msg.actionCard.data.events)
+                              }
+                              className="btn btn-primary interactive-press"
+                              style={{
+                                padding: '6px 12px',
+                                borderRadius: '9px',
+                                fontSize: '0.76rem',
+                                fontWeight: 800,
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '5px',
+                              }}
+                            >
+                              {publishingBatchMap[msg.id] ? (
+                                <Loader2 size={13} className="spin" />
+                              ) : (
+                                <Check size={13} />
+                              )}
+                              Publish All ({msg.actionCard.data.events.length})
+                            </button>
+                          </div>
+
+                          <div
+                            style={{
+                              display: 'grid',
+                              gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+                              gap: '10px',
+                            }}
+                          >
+                            {msg.actionCard.data.events.map((ev, idx) => {
+                              const isPublished = Boolean(publishedEventsMap[`${msg.id}-${idx}`]);
+                              return (
+                                <div
+                                  key={idx}
+                                  style={{
+                                    background: 'var(--surface-card)',
+                                    border: isPublished
+                                      ? '1px solid rgba(16, 185, 129, 0.45)'
+                                      : '1px solid var(--hairline-border)',
+                                    borderRadius: '12px',
+                                    padding: '12px',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    justifyContent: 'space-between',
+                                    gap: '8px',
+                                  }}
+                                >
+                                  <div>
+                                    <div
+                                      style={{
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
+                                        marginBottom: '4px',
+                                      }}
+                                    >
+                                      <span
+                                        style={{
+                                          fontSize: '0.66rem',
+                                          fontWeight: 800,
+                                          textTransform: 'uppercase',
+                                          padding: '2px 7px',
+                                          borderRadius: '99px',
+                                          background: 'rgba(235, 87, 56, 0.12)',
+                                          color: '#EB5738',
+                                        }}
+                                      >
+                                        {ev.themeBadge || `Week ${ev.week || idx + 1}`}
+                                      </span>
+                                      <span
+                                        style={{
+                                          fontSize: '0.72rem',
+                                          fontWeight: 700,
+                                          color: 'var(--ink-muted)',
+                                        }}
+                                      >
+                                        {ev.date} • {ev.time}
+                                      </span>
+                                    </div>
+                                    <div
+                                      style={{
+                                        fontWeight: 800,
+                                        fontSize: '0.88rem',
+                                        color: 'var(--ink-primary)',
+                                        marginBottom: '4px',
+                                      }}
+                                    >
+                                      {ev.title}
+                                    </div>
+                                    <div
+                                      style={{
+                                        fontSize: '0.75rem',
+                                        color: 'var(--ink-secondary)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '4px',
+                                        marginBottom: '6px',
+                                      }}
+                                    >
+                                      <MapPin size={12} color="#EB5738" /> {ev.location}
+                                    </div>
+                                    <p
+                                      style={{
+                                        margin: 0,
+                                        fontSize: '0.76rem',
+                                        color: 'var(--ink-secondary)',
+                                        lineHeight: 1.4,
+                                      }}
+                                    >
+                                      {ev.description}
+                                    </p>
+                                  </div>
+
+                                  <button
+                                    type="button"
+                                    disabled={isPublished}
+                                    onClick={() => handlePublishSingleEvent(msg.id, ev, idx)}
+                                    className="interactive-press"
+                                    style={{
+                                      width: '100%',
+                                      padding: '7px 10px',
+                                      borderRadius: '8px',
+                                      border: isPublished
+                                        ? '1px solid rgba(16, 185, 129, 0.4)'
+                                        : '1px solid rgba(235, 87, 56, 0.35)',
+                                      background: isPublished
+                                        ? 'rgba(16, 185, 129, 0.12)'
+                                        : 'rgba(235, 87, 56, 0.1)',
+                                      color: isPublished ? '#10b981' : '#EB5738',
+                                      fontSize: '0.76rem',
+                                      fontWeight: 800,
+                                      cursor: isPublished ? 'default' : 'pointer',
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      gap: '5px',
+                                    }}
+                                  >
+                                    {isPublished ? (
+                                      <>
+                                        <Check size={13} /> Published to Calendar
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Plus size={13} /> Publish Week {ev.week || idx + 1}
+                                      </>
+                                    )}
+                                  </button>
+                                </div>
+                              );
+                            })}
+                          </div>
+                          <div
+                            style={{
+                              marginTop: '10px',
+                              fontSize: '0.74rem',
+                              color: 'var(--ink-muted)',
+                            }}
+                          >
+                            💬 Want to change days, times, or venues? Just reply in the chat below (e.g.{' '}
+                            <em>&ldquo;Move these to Sunday mornings at 10:30&rdquo;</em>).
+                          </div>
+                        </div>
+                      )}
+
+                    {/* Embedded Executable Action Card: Broadcast & Social Copy */}
+                    {!isUser &&
+                      msg.actionCard?.type === 'broadcast' &&
+                      msg.actionCard?.data && (
+                        <div
+                          style={{
+                            marginTop: '14px',
+                            padding: '14px',
+                            borderRadius: '14px',
+                            background: 'var(--surface-elevated)',
+                            border: '1px solid rgba(16, 185, 129, 0.3)',
                             display: 'flex',
                             flexDirection: 'column',
-                            justifyContent: 'space-between',
                             gap: '10px',
                           }}
                         >
-                          <div>
-                            <div
-                              style={{
-                                fontSize: '0.68rem',
-                                fontWeight: 800,
-                                color: 'var(--teal-300)',
-                                textTransform: 'uppercase',
-                                letterSpacing: '0.04em',
-                                marginBottom: '4px',
-                              }}
-                            >
-                              {ev.weekLabel || `Week ${idx + 1}`}
-                            </div>
-                            <div style={{ fontWeight: 700, fontSize: '0.94rem', color: 'var(--ink-primary)', marginBottom: '6px' }}>
-                              {ev.title}
-                            </div>
-                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', fontSize: '0.75rem', color: 'var(--ink-secondary)', marginBottom: '8px' }}>
-                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                                <Calendar size={12} color="var(--brand-accent)" /> {ev.date}
-                              </span>
-                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                                <Clock size={12} color="var(--brand-accent)" /> {ev.time || '10:00'}
-                              </span>
-                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                                <MapPin size={12} color="var(--brand-secondary)" /> {ev.location}
-                              </span>
-                            </div>
-                            <div
-                              style={{
-                                fontSize: '0.77rem',
-                                color: 'var(--ink-secondary)',
-                                lineHeight: 1.45,
-                                display: '-webkit-box',
-                                WebkitLineClamp: 3,
-                                WebkitBoxOrient: 'vertical',
-                                overflow: 'hidden',
-                              }}
-                            >
-                              {ev.description}
-                            </div>
-                          </div>
-
-                          <button
-                            type="button"
-                            disabled={isPublished}
-                            onClick={() => handlePublishSinglePlannedEvent(ev, idx)}
-                            className="interactive-press"
+                          <div
                             style={{
-                              width: '100%',
-                              padding: '8px 12px',
-                              borderRadius: '10px',
-                              background: isPublished ? 'var(--brand-secondary-soft)' : 'var(--surface-card)',
-                              border: isPublished
-                                ? '1px solid rgba(58, 142, 118, 0.35)'
-                                : '1px solid var(--hairline-border-strong)',
-                              color: isPublished ? 'var(--brand-secondary)' : 'var(--ink-primary)',
-                              fontWeight: 700,
-                              fontSize: '0.78rem',
-                              cursor: isPublished ? 'default' : 'pointer',
-                              display: 'inline-flex',
+                              fontWeight: 800,
+                              fontSize: '0.86rem',
+                              color: 'var(--ink-primary)',
+                              display: 'flex',
                               alignItems: 'center',
-                              justifyContent: 'center',
-                              gap: '5px',
+                              gap: '6px',
                             }}
                           >
-                            {isPublished ? (
-                              <>
-                                <Check size={14} /> Published to Calendar
-                              </>
-                            ) : (
-                              <>
-                                <Plus size={14} /> Publish Week {idx + 1}
-                              </>
-                            )}
-                          </button>
+                            <Megaphone size={15} color="#10b981" />
+                            {msg.actionCard.title || 'Ready-to-Send Community Copy'}
+                          </div>
+
+                          {/* In-App Feed & Push */}
+                          {msg.actionCard.data.inAppBody && (
+                            <div
+                              style={{
+                                background: 'var(--surface-card)',
+                                borderRadius: '11px',
+                                padding: '12px',
+                                border: '1px solid var(--hairline-border)',
+                              }}
+                            >
+                              <div
+                                style={{
+                                  display: 'flex',
+                                  justifyContent: 'space-between',
+                                  alignItems: 'center',
+                                  gap: '8px',
+                                  flexWrap: 'wrap',
+                                  marginBottom: '6px',
+                                }}
+                              >
+                                <span
+                                  style={{
+                                    fontSize: '0.72rem',
+                                    fontWeight: 800,
+                                    color: '#EB5738',
+                                    textTransform: 'uppercase',
+                                  }}
+                                >
+                                  📣 In-App Feed &amp; Push Notification
+                                </span>
+                                <button
+                                  type="button"
+                                  disabled={
+                                    sendingBroadcastMap[msg.id] || sentBroadcastMap[msg.id]
+                                  }
+                                  onClick={() =>
+                                    handlePublishBroadcastCard(msg.id, msg.actionCard.data)
+                                  }
+                                  className="btn btn-primary interactive-press"
+                                  style={{
+                                    padding: '5px 11px',
+                                    borderRadius: '8px',
+                                    fontSize: '0.74rem',
+                                    fontWeight: 800,
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '5px',
+                                  }}
+                                >
+                                  {sentBroadcastMap[msg.id] ? (
+                                    <>
+                                      <Check size={12} /> Posted to Feed
+                                    </>
+                                  ) : sendingBroadcastMap[msg.id] ? (
+                                    <>
+                                      <Loader2 size={12} className="spin" /> Posting...
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Send size={12} /> Publish to Feed &amp; Notify
+                                    </>
+                                  )}
+                                </button>
+                              </div>
+                              {msg.actionCard.data.inAppTitle && (
+                                <div
+                                  style={{
+                                    fontWeight: 800,
+                                    fontSize: '0.86rem',
+                                    color: 'var(--ink-primary)',
+                                    marginBottom: '4px',
+                                  }}
+                                >
+                                  {msg.actionCard.data.inAppTitle}
+                                </div>
+                              )}
+                              <div
+                                style={{
+                                  fontSize: '0.8rem',
+                                  color: 'var(--ink-secondary)',
+                                  whiteSpace: 'pre-wrap',
+                                }}
+                              >
+                                {msg.actionCard.data.inAppBody}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* WhatsApp Copy */}
+                          {msg.actionCard.data.whatsappCopy && (
+                            <div
+                              style={{
+                                background: 'var(--surface-card)',
+                                borderRadius: '11px',
+                                padding: '12px',
+                                border: '1px solid var(--hairline-border)',
+                              }}
+                            >
+                              <div
+                                style={{
+                                  display: 'flex',
+                                  justifyContent: 'space-between',
+                                  alignItems: 'center',
+                                  gap: '8px',
+                                  marginBottom: '6px',
+                                }}
+                              >
+                                <span
+                                  style={{
+                                    fontSize: '0.72rem',
+                                    fontWeight: 800,
+                                    color: '#10b981',
+                                    textTransform: 'uppercase',
+                                  }}
+                                >
+                                  💬 WhatsApp Group Copy
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleCopyText(
+                                      msg.actionCard.data.whatsappCopy,
+                                      'WhatsApp Message'
+                                    )
+                                  }
+                                  className="interactive-press"
+                                  style={{
+                                    padding: '4px 10px',
+                                    borderRadius: '7px',
+                                    border: '1px solid var(--hairline-border)',
+                                    background: 'var(--surface-elevated)',
+                                    color: 'var(--ink-primary)',
+                                    fontSize: '0.73rem',
+                                    fontWeight: 700,
+                                    cursor: 'pointer',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '4px',
+                                  }}
+                                >
+                                  <Copy size={12} /> Copy WhatsApp
+                                </button>
+                              </div>
+                              <div
+                                style={{
+                                  fontSize: '0.8rem',
+                                  color: 'var(--ink-secondary)',
+                                  whiteSpace: 'pre-wrap',
+                                }}
+                              >
+                                {msg.actionCard.data.whatsappCopy}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Instagram Copy */}
+                          {msg.actionCard.data.instagramCopy && (
+                            <div
+                              style={{
+                                background: 'var(--surface-card)',
+                                borderRadius: '11px',
+                                padding: '12px',
+                                border: '1px solid var(--hairline-border)',
+                              }}
+                            >
+                              <div
+                                style={{
+                                  display: 'flex',
+                                  justifyContent: 'space-between',
+                                  alignItems: 'center',
+                                  gap: '8px',
+                                  marginBottom: '6px',
+                                }}
+                              >
+                                <span
+                                  style={{
+                                    fontSize: '0.72rem',
+                                    fontWeight: 800,
+                                    color: '#ec4899',
+                                    textTransform: 'uppercase',
+                                  }}
+                                >
+                                  📸 Instagram Caption
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleCopyText(
+                                      msg.actionCard.data.instagramCopy,
+                                      'Instagram Caption'
+                                    )
+                                  }
+                                  className="interactive-press"
+                                  style={{
+                                    padding: '4px 10px',
+                                    borderRadius: '7px',
+                                    border: '1px solid var(--hairline-border)',
+                                    background: 'var(--surface-elevated)',
+                                    color: 'var(--ink-primary)',
+                                    fontSize: '0.73rem',
+                                    fontWeight: 700,
+                                    cursor: 'pointer',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '4px',
+                                  }}
+                                >
+                                  <Copy size={12} /> Copy Caption
+                                </button>
+                              </div>
+                              <div
+                                style={{
+                                  fontSize: '0.8rem',
+                                  color: 'var(--ink-secondary)',
+                                  whiteSpace: 'pre-wrap',
+                                }}
+                              >
+                                {msg.actionCard.data.instagramCopy}
+                              </div>
+                            </div>
+                          )}
                         </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
+                      )}
 
-          {/* TOOL 2: BROADCAST & WHATSAPP COPYWRITER (FREE) */}
-          {activeTool === 'broadcast' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                {[
-                  {
-                    label: '👋 Welcome Newcomers & Explain 1st-Meetup Unlocks',
-                    goal: 'Welcome newcomers & explain 1st-meetup Verified Local unlocks',
-                  },
-                  {
-                    label: '🗓️ Rally RSVPs for Next Meetup',
-                    goal: 'Rally RSVPs and carpool coordination for our next meetup',
-                  },
-                  {
-                    label: '📸 Post-Meetup Thank You & Photo Prompt',
-                    goal: 'Thank attendees after a meetup and ask them to upload photos to the private attendee gallery',
-                  },
-                ].map((preset) => (
-                  <button
-                    key={preset.label}
-                    type="button"
-                    onClick={() => {
-                      setBroadcastGoal(preset.goal);
-                      handleGenerateBroadcastCopy(preset.goal);
-                    }}
-                    className="interactive-press"
-                    style={{
-                      padding: '6px 12px',
-                      borderRadius: '999px',
-                      background: broadcastGoal === preset.goal ? 'var(--brand-accent-soft)' : 'var(--surface-elevated)',
-                      border:
-                        broadcastGoal === preset.goal
-                          ? '1px solid var(--brand-accent)'
-                          : '1px solid var(--hairline-border)',
-                      color: broadcastGoal === preset.goal ? 'var(--teal-300)' : 'var(--ink-secondary)',
-                      fontSize: '0.76rem',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                    }}
-                  >
-                    {preset.label}
-                  </button>
-                ))}
-              </div>
+                    {/* Embedded Executable Action Card: RAMS / Sponsor / Grant Document */}
+                    {!isUser &&
+                      msg.actionCard?.type === 'document' &&
+                      msg.actionCard?.data?.content && (
+                        <div
+                          style={{
+                            marginTop: '14px',
+                            padding: '14px',
+                            borderRadius: '14px',
+                            background: 'var(--surface-elevated)',
+                            border: '1px solid rgba(245, 158, 11, 0.35)',
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              gap: '10px',
+                              flexWrap: 'wrap',
+                              marginBottom: '10px',
+                            }}
+                          >
+                            <div
+                              style={{
+                                fontWeight: 800,
+                                fontSize: '0.86rem',
+                                color: 'var(--ink-primary)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                              }}
+                            >
+                              <Shield size={15} color="#f59e0b" />
+                              {msg.actionCard.title || 'Generated Community Document'}
+                            </div>
 
-              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                <input
-                  type="text"
-                  value={broadcastGoal}
-                  onChange={(e) => setBroadcastGoal(e.target.value)}
-                  className="input"
-                  placeholder="What would you like to announce?"
-                  style={{ flex: 1, minWidth: '220px', fontSize: '0.85rem' }}
-                />
-                <button
-                  type="button"
-                  onClick={() => handleGenerateBroadcastCopy()}
-                  disabled={isGeneratingCopy}
-                  className="btn btn-primary interactive-press"
-                  style={{
-                    padding: '10px 18px',
-                    borderRadius: '12px',
-                    fontWeight: 700,
-                    fontSize: '0.85rem',
-                    color: '#FFFFFF',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                  }}
-                >
-                  {isGeneratingCopy ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
-                  {isGeneratingCopy ? 'Drafting...' : 'Draft Multi-Channel Copy'}
-                </button>
-              </div>
+                            {hasProAccess ? (
+                              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleCopyText(
+                                      msg.actionCard.data.content,
+                                      msg.actionCard.title || 'Document'
+                                    )
+                                  }
+                                  className="interactive-press"
+                                  style={{
+                                    padding: '5px 10px',
+                                    borderRadius: '8px',
+                                    border: '1px solid var(--hairline-border)',
+                                    background: 'var(--surface-card)',
+                                    color: 'var(--ink-primary)',
+                                    fontSize: '0.74rem',
+                                    fontWeight: 700,
+                                    cursor: 'pointer',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '4px',
+                                  }}
+                                >
+                                  <Copy size={12} /> Copy Text
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleDownloadMarkdown(
+                                      msg.actionCard.title,
+                                      msg.actionCard.data.content
+                                    )
+                                  }
+                                  className="interactive-press"
+                                  style={{
+                                    padding: '5px 10px',
+                                    borderRadius: '8px',
+                                    border: '1px solid rgba(235, 87, 56, 0.35)',
+                                    background: 'rgba(235, 87, 56, 0.12)',
+                                    color: '#EB5738',
+                                    fontSize: '0.74rem',
+                                    fontWeight: 800,
+                                    cursor: 'pointer',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '4px',
+                                  }}
+                                >
+                                  <Download size={12} /> Download (.md)
+                                </button>
+                              </div>
+                            ) : (
+                              onJumpToUpgrade && (
+                                <button
+                                  type="button"
+                                  onClick={onJumpToUpgrade}
+                                  className="btn btn-primary interactive-press"
+                                  style={{
+                                    padding: '5px 11px',
+                                    borderRadius: '8px',
+                                    fontSize: '0.73rem',
+                                    fontWeight: 800,
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '4px',
+                                  }}
+                                >
+                                  <Lock size={12} /> Unlock Full Export with Leader Pro
+                                </button>
+                              )
+                            )}
+                          </div>
 
-              {generatedCopy && (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '12px' }}>
-                  {/* In-App Broadcast */}
-                  <div
-                    style={{
-                      padding: '14px',
-                      borderRadius: '14px',
-                      background: 'var(--surface-elevated)',
-                      border: '1px solid var(--hairline-border-strong)',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'space-between',
-                      gap: '10px',
-                    }}
-                  >
-                    <div>
-                      <div style={{ fontSize: '0.72rem', fontWeight: 800, color: 'var(--teal-300)', textTransform: 'uppercase', marginBottom: '4px' }}>
-                        📢 In-App Feed &amp; Push Alert
-                      </div>
-                      <div style={{ fontWeight: 700, fontSize: '0.86rem', color: 'var(--ink-primary)', marginBottom: '6px' }}>
-                        {generatedCopy.announcementTitle}
-                      </div>
-                      <div style={{ fontSize: '0.8rem', color: 'var(--ink-secondary)', lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>
-                        {generatedCopy.inAppAnnouncement}
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={handleSendInAppAnnouncement}
-                      disabled={isSendingBroadcast}
-                      className="btn btn-primary interactive-press"
-                      style={{
-                        width: '100%',
-                        padding: '9px 12px',
-                        borderRadius: '10px',
-                        fontSize: '0.8rem',
-                        fontWeight: 700,
-                        color: '#FFFFFF',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '6px',
-                      }}
-                    >
-                      {isSendingBroadcast ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
-                      Publish to Community Feed &amp; Notify
-                    </button>
-                  </div>
-
-                  {/* WhatsApp Copy */}
-                  <div
-                    style={{
-                      padding: '14px',
-                      borderRadius: '14px',
-                      background: 'var(--surface-elevated)',
-                      border: '1px solid var(--hairline-border-strong)',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'space-between',
-                      gap: '10px',
-                    }}
-                  >
-                    <div>
-                      <div style={{ fontSize: '0.72rem', fontWeight: 800, color: '#15803D', textTransform: 'uppercase', marginBottom: '6px' }}>
-                        💬 WhatsApp Group Broadcast
-                      </div>
-                      <div style={{ fontSize: '0.79rem', color: 'var(--ink-secondary)', lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>
-                        {generatedCopy.whatsappCopy}
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => copyToClipboard(generatedCopy.whatsappCopy, 'WhatsApp message')}
-                      className="interactive-press"
-                      style={{
-                        width: '100%',
-                        padding: '9px 12px',
-                        borderRadius: '10px',
-                        background: 'var(--surface-card)',
-                        border: '1px solid var(--hairline-border-strong)',
-                        color: 'var(--ink-primary)',
-                        fontSize: '0.8rem',
-                        fontWeight: 700,
-                        cursor: 'pointer',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '6px',
-                      }}
-                    >
-                      <Copy size={14} /> Copy for WhatsApp
-                    </button>
+                          <div
+                            style={{
+                              maxHeight: hasProAccess ? '280px' : '160px',
+                              overflowY: 'auto',
+                              background: 'var(--surface-card)',
+                              padding: '12px',
+                              borderRadius: '10px',
+                              border: '1px solid var(--hairline-border)',
+                              fontSize: '0.79rem',
+                              color: 'var(--ink-secondary)',
+                              whiteSpace: 'pre-wrap',
+                              lineHeight: 1.55,
+                            }}
+                          >
+                            {hasProAccess
+                              ? msg.actionCard.data.content
+                              : `${String(msg.actionCard.data.content).slice(0, 420)}...\n\n[Leader Pro (£20/mo) unlocks full UK Council RAMS & Sponsor/Grant export alongside £5M Public Liability Insurance]`}
+                          </div>
+                        </div>
+                      )}
                   </div>
 
-                  {/* Instagram Copy */}
-                  <div
-                    style={{
-                      padding: '14px',
-                      borderRadius: '14px',
-                      background: 'var(--surface-elevated)',
-                      border: '1px solid var(--hairline-border-strong)',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'space-between',
-                      gap: '10px',
-                    }}
-                  >
-                    <div>
-                      <div style={{ fontSize: '0.72rem', fontWeight: 800, color: '#D97706', textTransform: 'uppercase', marginBottom: '6px' }}>
-                        📸 Instagram Caption
-                      </div>
-                      <div style={{ fontSize: '0.79rem', color: 'var(--ink-secondary)', lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>
-                        {generatedCopy.instagramCopy}
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => copyToClipboard(generatedCopy.instagramCopy, 'Instagram caption')}
-                      className="interactive-press"
-                      style={{
-                        width: '100%',
-                        padding: '9px 12px',
-                        borderRadius: '10px',
-                        background: 'var(--surface-card)',
-                        border: '1px solid var(--hairline-border-strong)',
-                        color: 'var(--ink-primary)',
-                        fontSize: '0.8rem',
-                        fontWeight: 700,
-                        cursor: 'pointer',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '6px',
-                      }}
-                    >
-                      <Copy size={14} /> Copy Instagram Caption
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* TOOL 3: UK COUNCIL RAMS & RISK ASSESSMENT GENERATOR (LEADER PRO) */}
-          {activeTool === 'rams' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              <div
-                style={{
-                  padding: '12px 14px',
-                  borderRadius: '12px',
-                  background: hasProAccess ? 'var(--brand-secondary-soft)' : 'rgba(217, 119, 6, 0.10)',
-                  border: hasProAccess ? '1px solid rgba(58, 142, 118, 0.3)' : '1px solid rgba(217, 119, 6, 0.3)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  gap: '12px',
-                  flexWrap: 'wrap',
-                }}
-              >
-                <div style={{ fontSize: '0.8rem', color: 'var(--ink-primary)', lineHeight: 1.45 }}>
-                  <strong>🛡️ UK Council &amp; Venue RAMS Generator:</strong>{' '}
-                  {hasProAccess
-                    ? 'Active with your Leader Pro plan. Generate and download full Venue & Trail Risk Assessments for any event.'
-                    : 'Preview a bespoke Risk Assessment below. Full export & unlimited custom RAMS are included in Leader Pro (£15/mo along with 2% ticket fees).'}
-                </div>
-                {!hasProAccess && onJumpToUpgrade && (
-                  <button
-                    type="button"
-                    onClick={onJumpToUpgrade}
-                    className="interactive-press"
-                    style={{
-                      padding: '6px 12px',
-                      borderRadius: '999px',
-                      background: 'var(--brand-accent)',
-                      border: 'none',
-                      color: '#FFFFFF',
-                      fontSize: '0.75rem',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                    }}
-                  >
-                    View Leader Pro →
-                  </button>
-                )}
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '10px' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 700, color: 'var(--ink-secondary)', marginBottom: '4px' }}>
-                    Select Event
-                  </label>
-                  <select
-                    value={selectedEventId}
-                    onChange={(e) => setSelectedEventId(e.target.value)}
-                    className="input"
-                    style={{ width: '100%', fontSize: '0.84rem' }}
-                  >
-                    {communityEvents.length === 0 ? (
-                      <option value="">General {community?.name} Meetup</option>
-                    ) : (
-                      communityEvents.map((ev) => (
-                        <option key={ev.id} value={ev.id}>
-                          {ev.title} ({ev.date || 'Upcoming'})
-                        </option>
-                      ))
-                    )}
-                  </select>
-                </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 700, color: 'var(--ink-secondary)', marginBottom: '4px' }}>
-                    Specific Hazards / Terrain Notes (optional)
-                  </label>
-                  <input
-                    type="text"
-                    value={ramsNotes}
-                    onChange={(e) => setRamsNotes(e.target.value)}
-                    className="input"
-                    placeholder="e.g. Woodland path, dogs on leads, lakeside..."
-                    style={{ width: '100%', fontSize: '0.84rem' }}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <button
-                  type="button"
-                  onClick={() => handleGenerateProDocument('rams')}
-                  disabled={isGeneratingDoc}
-                  className="btn btn-primary interactive-press"
-                  style={{
-                    padding: '10px 18px',
-                    borderRadius: '12px',
-                    fontWeight: 700,
-                    fontSize: '0.85rem',
-                    color: '#FFFFFF',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '7px',
-                  }}
-                >
-                  {isGeneratingDoc ? <Loader2 size={16} className="animate-spin" /> : <Shield size={16} />}
-                  {isGeneratingDoc ? 'Generating RAMS Assessment...' : 'Generate UK Council RAMS'}
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* TOOL 4: LOCAL SPONSOR & GRANT PITCH WRITER (LEADER PRO) */}
-          {activeTool === 'sponsor' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                {[
-                  { id: 'sponsor', label: '☕ Local Business Sponsorship Pitch (£15 / £49 tier)' },
-                  { id: 'grant', label: '🏛️ UK Council / National Lottery Micro-Grant Pitch' },
-                ].map((opt) => (
-                  <button
-                    key={opt.id}
-                    type="button"
-                    onClick={() => {
-                      setPitchType(opt.id);
-                      setGeneratedDoc(null);
-                    }}
-                    className="interactive-press"
-                    style={{
-                      padding: '8px 14px',
-                      borderRadius: '999px',
-                      background: pitchType === opt.id ? 'var(--brand-accent-soft)' : 'var(--surface-elevated)',
-                      border:
-                        pitchType === opt.id
-                          ? '1.5px solid var(--brand-accent)'
-                          : '1px solid var(--hairline-border)',
-                      color: pitchType === opt.id ? 'var(--teal-300)' : 'var(--ink-secondary)',
-                      fontSize: '0.78rem',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                    }}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-
-              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                <input
-                  type="text"
-                  value={pitchNotes}
-                  onChange={(e) => setPitchNotes(e.target.value)}
-                  className="input"
-                  placeholder={
-                    pitchType === 'sponsor'
-                      ? `Optional target business (e.g. "The Black Dog Café in ${communityLoc}")...`
-                      : 'Optional grant focus (e.g. "Winter indoor venue hire & mental health first aid")...'
-                  }
-                  style={{ flex: 1, minWidth: '220px', fontSize: '0.84rem' }}
-                />
-                <button
-                  type="button"
-                  onClick={() => handleGenerateProDocument(pitchType)}
-                  disabled={isGeneratingDoc}
-                  className="btn btn-primary interactive-press"
-                  style={{
-                    padding: '10px 18px',
-                    borderRadius: '12px',
-                    fontWeight: 700,
-                    fontSize: '0.85rem',
-                    color: '#FFFFFF',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '7px',
-                  }}
-                >
-                  {isGeneratingDoc ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
-                  {isGeneratingDoc
-                    ? 'Drafting Pitch...'
-                    : pitchType === 'sponsor'
-                    ? 'Draft Sponsor Proposal'
-                    : 'Draft Grant Statement'}
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* GENERATED PRO DOCUMENT VIEWER (FOR RAMS / SPONSOR / GRANT) */}
-          {(activeTool === 'rams' || activeTool === 'sponsor') && generatedDoc && (
-            <div
-              style={{
-                marginTop: '14px',
-                padding: '16px',
-                borderRadius: '14px',
-                background: 'var(--surface-elevated)',
-                border: '1px solid var(--hairline-border-strong)',
-              }}
-            >
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  gap: '10px',
-                  flexWrap: 'wrap',
-                  marginBottom: '10px',
-                }}
-              >
-                <div style={{ fontWeight: 700, fontSize: '0.94rem', color: 'var(--ink-primary)' }}>
-                  {generatedDoc.title}
-                </div>
-                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                  <button
-                    type="button"
-                    onClick={() => copyToClipboard(generatedDoc.document, generatedDoc.title)}
-                    className="interactive-press"
-                    style={{
-                      padding: '6px 12px',
-                      borderRadius: '9px',
-                      background: 'var(--surface-card)',
-                      border: '1px solid var(--hairline-border-strong)',
-                      color: 'var(--ink-primary)',
-                      fontSize: '0.78rem',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '5px',
-                    }}
-                  >
-                    <Copy size={13} /> Copy Full Text
-                  </button>
-                  {hasProAccess ? (
-                    <button
-                      type="button"
-                      onClick={() =>
-                        downloadTextFile(
-                          `${(community?.id || 'community')}-${activeTool}-${new Date().toISOString().split('T')[0]}.md`,
-                          generatedDoc.document
-                        )
-                      }
-                      className="btn btn-primary interactive-press"
-                      style={{
-                        padding: '6px 12px',
-                        borderRadius: '9px',
-                        fontSize: '0.78rem',
-                        fontWeight: 700,
-                        color: '#FFFFFF',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '5px',
-                      }}
-                    >
-                      <Download size={13} /> Download (.md)
-                    </button>
-                  ) : (
-                    onJumpToUpgrade && (
-                      <button
-                        type="button"
-                        onClick={onJumpToUpgrade}
-                        className="interactive-press"
+                  {/* Follow-up Suggestion Chips under the latest assistant message */}
+                  {isLastAssistant &&
+                    Array.isArray(msg.suggestedReplies) &&
+                    msg.suggestedReplies.length > 0 && (
+                      <div
                         style={{
-                          padding: '6px 12px',
-                          borderRadius: '9px',
-                          background: 'rgba(217, 119, 6, 0.16)',
-                          border: '1px solid rgba(217, 119, 6, 0.35)',
-                          color: '#D97706',
-                          fontSize: '0.76rem',
-                          fontWeight: 700,
-                          cursor: 'pointer',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '5px',
+                          display: 'flex',
+                          flexWrap: 'wrap',
+                          gap: '6px',
+                          marginTop: '2px',
                         }}
                       >
-                        <Lock size={12} /> Export with Leader Pro
-                      </button>
-                    )
-                  )}
+                        {msg.suggestedReplies.map((suggestion, sIdx) => (
+                          <button
+                            key={sIdx}
+                            type="button"
+                            disabled={isThinking}
+                            onClick={() => handleSendMessage(suggestion)}
+                            className="interactive-press"
+                            style={{
+                              padding: '6px 12px',
+                              borderRadius: '99px',
+                              fontSize: '0.75rem',
+                              fontWeight: 700,
+                              background: 'rgba(235, 87, 56, 0.1)',
+                              color: '#EB5738',
+                              border: '1px solid rgba(235, 87, 56, 0.28)',
+                              cursor: isThinking ? 'not-allowed' : 'pointer',
+                            }}
+                          >
+                            {suggestion}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                 </div>
-              </div>
+              );
+            })}
+
+            {isThinking && (
               <div
                 style={{
-                  padding: '14px',
-                  borderRadius: '10px',
+                  alignSelf: 'flex-start',
+                  padding: '12px 16px',
+                  borderRadius: '18px 18px 18px 4px',
                   background: 'var(--surface-card)',
                   border: '1px solid var(--hairline-border)',
-                  fontSize: '0.81rem',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  fontSize: '0.83rem',
                   color: 'var(--ink-secondary)',
-                  lineHeight: 1.55,
-                  whiteSpace: 'pre-wrap',
-                  maxHeight: '360px',
-                  overflowY: 'auto',
+                  fontWeight: 600,
                 }}
               >
-                {generatedDoc.document}
+                <Loader2 size={15} className="spin" color="#EB5738" />
+                More. Co-Pilot is thinking...
               </div>
-            </div>
-          )}
+            )}
+
+            <div ref={chatEndRef} />
+          </div>
+
+          {/* Conversational Input Bar */}
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSendMessage();
+            }}
+            style={{
+              display: 'flex',
+              gap: '8px',
+              alignItems: 'flex-end',
+              background: 'var(--surface-elevated)',
+              border: '1px solid var(--hairline-border-strong)',
+              borderRadius: '14px',
+              padding: '8px 10px',
+            }}
+          >
+            <textarea
+              rows={1}
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSendMessage();
+                }
+              }}
+              placeholder={`Chat with your ${community?.name || 'Community'} Co-Pilot... (e.g. "Make the schedule Sunday mornings" or "How do I welcome shy newcomers?")`}
+              style={{
+                flex: 1,
+                background: 'transparent',
+                border: 'none',
+                outline: 'none',
+                resize: 'none',
+                color: 'var(--ink-primary)',
+                fontSize: '0.88rem',
+                fontFamily: 'inherit',
+                padding: '6px 4px',
+                minHeight: '34px',
+                maxHeight: '110px',
+                lineHeight: 1.45,
+              }}
+            />
+            <button
+              type="submit"
+              disabled={!inputValue.trim() || isThinking}
+              className="btn btn-primary interactive-press"
+              style={{
+                padding: '9px 15px',
+                borderRadius: '10px',
+                fontSize: '0.82rem',
+                fontWeight: 800,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                opacity: !inputValue.trim() || isThinking ? 0.5 : 1,
+                cursor: !inputValue.trim() || isThinking ? 'not-allowed' : 'pointer',
+                flexShrink: 0,
+              }}
+            >
+              {isThinking ? <Loader2 size={15} className="spin" /> : <Send size={15} />}
+              Send
+            </button>
+          </form>
         </>
       )}
     </div>

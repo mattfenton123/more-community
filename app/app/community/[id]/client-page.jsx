@@ -837,9 +837,9 @@ export default function CommunityProfile() {
         {/* Responsive Layout Grid (2 Columns on Desktop) */}
         <div className="community-layout-grid">
           {/* Main Left Content Column */}
-          <div className="community-main-column">
+          <div className="community-main-column" style={{ minWidth: 0, maxWidth: '100%' }}>
 {/* ===== TAB NAVIGATION ===== */}
-      <div style={{ padding: '0 20px', marginBottom: '24px', overflow: 'hidden', maxWidth: '100%' }}>
+      <div style={{ padding: 0, marginBottom: '20px', overflow: 'hidden', maxWidth: '100%' }}>
         <div style={{ 
           display: 'flex', 
           gap: '8px', 
@@ -848,8 +848,7 @@ export default function CommunityProfile() {
           scrollbarWidth: 'none', // Firefox
           msOverflowStyle: 'none', // IE and Edge
           paddingBottom: '8px',
-          margin: '0 -20px', // allow scroll to edge
-          padding: '4px 20px 8px 20px', // restore padding including edges
+          paddingTop: '4px',
         }} className="no-scrollbar">
           {[
             { id: 'overview', label: 'Overview', Icon: Compass },
@@ -923,69 +922,71 @@ export default function CommunityProfile() {
         </div>
       )}
 
-      <div style={{ padding: '0 20px' }}>
+      <div style={{ padding: 0, minWidth: 0, maxWidth: '100%' }}>
 
-        {/* ===== FEED TAB ===== */}
+        {/* ===== FEED & PHOTOS TAB ===== */}
         {(activeTab === 'feed' || activeTab === 'photos') && (
           <>
             {(isMember || isLeader) && (
-              <div style={{ background: 'var(--surface-card)', border: '1px solid var(--hairline-border)', borderRadius: '16px', padding: '16px', marginBottom: '16px' }}>
-                <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                  <img src={resolveUserAvatar(user)} alt="You" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
-                  <div style={{ flex: 1 }}>
+              <div style={{ background: 'var(--surface-card)', border: '1px solid var(--hairline-border)', borderRadius: '16px', padding: '14px', marginBottom: '16px', maxWidth: '100%', boxSizing: 'border-box' }}>
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+                  <img src={resolveUserAvatar(user)} alt="You" style={{ width: '38px', height: '38px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
                     <textarea 
                       placeholder="Share something with the community..." 
                       value={newPostText}
                       onChange={e => setNewPostText(e.target.value)}
-                      style={{ width: '100%', background: 'transparent', border: 'none', color: 'var(--white)', resize: 'none', outline: 'none', minHeight: '60px', fontFamily: 'inherit', fontSize: '0.95rem' }}
+                      style={{ width: '100%', background: 'transparent', border: 'none', color: 'var(--ink-primary)', resize: 'none', outline: 'none', minHeight: '58px', fontFamily: 'inherit', fontSize: '0.94rem', boxSizing: 'border-box' }}
                     />
-                    <div style={{ fontSize: '0.7rem', color: 'var(--slate-500)', marginBottom: '12px' }}>Supports **bold**, *italics*, and [links](http...)</div>
-                    {newPostImage && (
-                      <div style={{ position: 'relative', marginTop: '8px', display: 'inline-block' }}>
-                        {newPostImage.type.startsWith('video/') ? (
-                          <video src={URL.createObjectURL(newPostImage)} style={{ height: '80px', borderRadius: '8px', objectFit: 'cover' }} />
-                        ) : (
-                          <img src={URL.createObjectURL(newPostImage)} alt="Preview" style={{ height: '80px', borderRadius: '8px' }} />
-                        )}
-                        <button onClick={() => setNewPostImage(null)} style={{ position: 'absolute', top: '-8px', right: '-8px', background: 'var(--slate-800)', border: 'none', color: 'var(--white)', width: '20px', height: '20px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
-                      </div>
-                    )}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                      <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-                        <label style={{ cursor: 'pointer', color: 'var(--slate-400)', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem' }}>
-                          <input type="file" accept="image/*,video/*" style={{ display: 'none' }} onChange={e => setNewPostImage(e.target.files[0])} />
-                          <ImageIcon size={16} /> Add Media
-                        </label>
-                        <div style={{ position: 'relative', display: 'flex' }}>
-                          <button onClick={() => setShowPostEmojiPicker(!showPostEmojiPicker)} className="interactive-press" style={{ background: 'none', border: 'none', color: showPostEmojiPicker ? 'var(--teal-400)' : 'var(--slate-400)', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', cursor: 'pointer' }}>
-                            <Smile size={16} /> Emojis
-                          </button>
-                          {showPostEmojiPicker && (
-                            <div style={{ position: 'absolute', top: '100%', left: '0', zIndex: 100, paddingTop: '8px' }}>
-                              <EmojiPicker onEmojiClick={(e) => { setNewPostText(prev => prev + e.emoji); setShowPostEmojiPicker(false); }} theme={theme === 'light' ? 'light' : 'dark'} width={300} height={400} />
-                            </div>
-                          )}
-                        </div>
-                        {isLeader && (
-                          <>
-                            <label style={{ cursor: 'pointer', color: isAnnouncement ? 'var(--amber-400)' : 'var(--slate-400)', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', transition: 'color 0.2s' }}>
-                              <input type="checkbox" checked={isAnnouncement} onChange={e => setIsAnnouncement(e.target.checked)} style={{ display: 'none' }} />
-                              <Megaphone size={16} /> Announcement
-                            </label>
-                            {isAnnouncement && (
-                              <label style={{ cursor: 'pointer', color: isPinned ? 'var(--teal-400)' : 'var(--slate-400)', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', transition: 'color 0.2s' }}>
-                                <input type="checkbox" checked={isPinned} onChange={e => setIsPinned(e.target.checked)} style={{ display: 'none' }} />
-                                <MapPin size={16} style={{ transform: 'rotate(45deg)' }} /> Pin
-                              </label>
-                            )}
-                          </>
-                        )}
-                      </div>
-                      <button onClick={() => handleCreatePost()} disabled={!newPostText.trim() && !newPostImage} className="btn btn-primary" style={{ padding: '6px 16px', fontSize: '0.85rem', borderRadius: '20px' }}>
-                        Post
-                      </button>
-                    </div>
+                    <div style={{ fontSize: '0.7rem', color: 'var(--ink-muted)', marginBottom: '4px' }}>Supports **bold**, *italics*, and [links](http...)</div>
                   </div>
+                </div>
+
+                {newPostImage && (
+                  <div style={{ position: 'relative', marginTop: '8px', display: 'inline-block' }}>
+                    {newPostImage.type.startsWith('video/') ? (
+                      <video src={URL.createObjectURL(newPostImage)} style={{ height: '80px', borderRadius: '8px', objectFit: 'cover' }} />
+                    ) : (
+                      <img src={URL.createObjectURL(newPostImage)} alt="Preview" style={{ height: '80px', borderRadius: '8px' }} />
+                    )}
+                    <button onClick={() => setNewPostImage(null)} style={{ position: 'absolute', top: '-8px', right: '-8px', background: 'var(--surface-elevated)', border: '1px solid var(--hairline-border)', color: 'var(--ink-primary)', width: '22px', height: '22px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
+                  </div>
+                )}
+
+                <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '8px', marginTop: '10px', paddingTop: '10px', borderTop: '1px solid var(--hairline-border)' }}>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', alignItems: 'center', minWidth: 0, flex: '1 1 auto' }}>
+                    <label className="interactive-press" style={{ cursor: 'pointer', color: 'var(--ink-secondary)', background: 'var(--surface-elevated)', border: '1px solid var(--hairline-border)', padding: '6px 10px', borderRadius: '99px', display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '0.78rem', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                      <input type="file" accept="image/*,video/*" style={{ display: 'none' }} onChange={e => setNewPostImage(e.target.files[0])} />
+                      <ImageIcon size={14} /> Media
+                    </label>
+                    <div style={{ position: 'relative', display: 'inline-flex' }}>
+                      <button type="button" onClick={() => setShowPostEmojiPicker(!showPostEmojiPicker)} className="interactive-press" style={{ background: 'var(--surface-elevated)', border: '1px solid var(--hairline-border)', padding: '6px 10px', borderRadius: '99px', color: showPostEmojiPicker ? 'var(--brand-accent)' : 'var(--ink-secondary)', display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                        <Smile size={14} /> Emoji
+                      </button>
+                      {showPostEmojiPicker && (
+                        <div style={{ position: 'absolute', top: '100%', left: '0', zIndex: 100, paddingTop: '8px', maxWidth: 'calc(100vw - 48px)' }}>
+                          <EmojiPicker onEmojiClick={(e) => { setNewPostText(prev => prev + e.emoji); setShowPostEmojiPicker(false); }} theme={theme === 'light' ? 'light' : 'dark'} width={280} height={360} />
+                        </div>
+                      )}
+                    </div>
+                    {isLeader && (
+                      <>
+                        <label className="interactive-press" style={{ cursor: 'pointer', color: isAnnouncement ? '#f59e0b' : 'var(--ink-secondary)', background: isAnnouncement ? 'rgba(245, 158, 11, 0.12)' : 'var(--surface-elevated)', border: isAnnouncement ? '1px solid rgba(245, 158, 11, 0.35)' : '1px solid var(--hairline-border)', padding: '6px 10px', borderRadius: '99px', display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '0.78rem', fontWeight: 600, transition: 'all 0.2s', whiteSpace: 'nowrap' }}>
+                          <input type="checkbox" checked={isAnnouncement} onChange={e => setIsAnnouncement(e.target.checked)} style={{ display: 'none' }} />
+                          <Megaphone size={14} /> Announce
+                        </label>
+                        {isAnnouncement && (
+                          <label className="interactive-press" style={{ cursor: 'pointer', color: isPinned ? 'var(--brand-accent)' : 'var(--ink-secondary)', background: isPinned ? 'rgba(235, 87, 56, 0.12)' : 'var(--surface-elevated)', border: isPinned ? '1px solid rgba(235, 87, 56, 0.35)' : '1px solid var(--hairline-border)', padding: '6px 10px', borderRadius: '99px', display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '0.78rem', fontWeight: 600, transition: 'all 0.2s', whiteSpace: 'nowrap' }}>
+                            <input type="checkbox" checked={isPinned} onChange={e => setIsPinned(e.target.checked)} style={{ display: 'none' }} />
+                            <MapPin size={14} style={{ transform: 'rotate(45deg)' }} /> Pin
+                          </label>
+                        )}
+                      </>
+                    )}
+                  </div>
+                  <button onClick={() => handleCreatePost()} disabled={!newPostText.trim() && !newPostImage} className="btn btn-primary" style={{ padding: '7px 18px', fontSize: '0.82rem', fontWeight: 700, borderRadius: '99px', marginLeft: 'auto', flexShrink: 0 }}>
+                    Post
+                  </button>
                 </div>
               </div>
             )}
@@ -2391,17 +2392,27 @@ export default function CommunityProfile() {
           </>
         )}
 
-        {/* ===== PHOTOS TAB ===== */}
-        {activeTab === 'photos' && (
-          <>
-            <h3 style={{ fontSize: '1.3rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: '0 0 16px 0' }}>
-              Photos & Moments
-            </h3>
+        {/* ===== PHOTOS SECTION (SHOWN ON FEED & PHOTOS TAB) ===== */}
+        {(activeTab === 'feed' || activeTab === 'photos') && (
+          <div style={{ marginTop: '24px', background: 'var(--surface-card)', border: '1px solid var(--hairline-border)', borderRadius: '18px', padding: '16px', maxWidth: '100%', boxSizing: 'border-box' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', flexWrap: 'wrap', marginBottom: '14px' }}>
+              <h3 style={{ fontSize: '1.15rem', fontFamily: 'var(--font-heading)', color: 'var(--ink-primary)', margin: 0 }}>
+                📸 Photos &amp; Moments
+              </h3>
+              {(isMember || isLeader) && (
+                <>
+                  <input type="file" ref={fileInputRef} accept="image/*" style={{ display: 'none' }} onChange={handleUploadPhoto} />
+                  <button onClick={() => !isUploadingPhoto && fileInputRef.current?.click()} disabled={isUploadingPhoto} className="btn btn-outline interactive-press" style={{ padding: '7px 12px', borderRadius: '99px', fontSize: '0.78rem', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                    <Camera size={14} /> {isUploadingPhoto ? 'Uploading...' : '+ Upload Photo'}
+                  </button>
+                </>
+              )}
+            </div>
             {galleryPhotos.length > 0 ? (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '8px', width: '100%' }}>
                 {galleryPhotos.map((photo, idx) => (
-                  <div key={idx} style={{ borderRadius: '12px', overflow: 'hidden', aspectRatio: idx === 0 ? '16/12' : '1/1', gridColumn: idx === 0 ? 'span 2' : 'span 1', position: 'relative' }}>
-                    <img src={photo.url} alt={`Gallery ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <div key={idx} style={{ borderRadius: '12px', overflow: 'hidden', aspectRatio: idx === 0 ? '16/10' : '1/1', gridColumn: idx === 0 ? 'span 2' : 'span 1', position: 'relative', minWidth: 0 }}>
+                    <img src={photo.url} alt={`Gallery ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                     {photo.uploaderId !== 'stock' && (isLeader || photo.uploaderId === user?.id) && (
                       <button 
                         onClick={(e) => handleDeletePhoto(idx, e)}
@@ -2414,21 +2425,13 @@ export default function CommunityProfile() {
                 ))}
               </div>
             ) : (
-              <div style={{ padding: '40px 20px', textAlign: 'center', background: 'rgba(255,255,255,0.02)', borderRadius: '16px', border: '1px dashed rgba(255,255,255,0.1)', marginBottom: '16px' }}>
-                <div style={{ fontSize: '2rem', marginBottom: '10px' }}>📸</div>
-                <div style={{ color: 'var(--white)', fontWeight: 600, marginBottom: '6px' }}>No photos yet</div>
-                <p style={{ color: 'var(--slate-400)', fontSize: '0.85rem', margin: 0 }}>Photos from meetups and events will appear here once uploaded.</p>
+              <div style={{ padding: '28px 16px', textAlign: 'center', background: 'var(--surface-elevated)', borderRadius: '14px', border: '1px dashed var(--hairline-border)' }}>
+                <div style={{ fontSize: '1.75rem', marginBottom: '8px' }}>📸</div>
+                <div style={{ color: 'var(--ink-primary)', fontWeight: 700, fontSize: '0.92rem', marginBottom: '4px' }}>No community photos yet</div>
+                <p style={{ color: 'var(--ink-muted)', fontSize: '0.82rem', margin: 0 }}>Photos from meetups and events will appear here once uploaded.</p>
               </div>
             )}
-            {isMember && (
-              <>
-                <input type="file" ref={fileInputRef} accept="image/*" style={{ display: 'none' }} onChange={handleUploadPhoto} />
-                <button onClick={() => !isUploadingPhoto && fileInputRef.current?.click()} disabled={isUploadingPhoto} className="btn btn-outline interactive-press" style={{ width: '100%', marginTop: '16px', padding: '14px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                  <Camera size={18} /> {isUploadingPhoto ? 'Uploading...' : 'Upload a Photo'}
-                </button>
-              </>
-            )}
-          </>
+          </div>
         )}
 
         {/* ===== MEMBERS TAB ===== */}

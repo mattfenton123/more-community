@@ -5,7 +5,7 @@ import {
   TrendingUp, DollarSign, Calendar, Eye, Ban, Crown, ChevronDown, ChevronUp, 
   MessageCircle, Bell, Download, Settings, Database, Megaphone, Flag,
   BarChart3, UserCheck, Zap, Star, Globe, Lock, Mail, Clock, AlertTriangle,
-  ChevronRight, ScanLine, Ticket, Copy, Store, Sparkles, Coffee, Compass, ExternalLink, RefreshCw, Radio
+  ChevronRight, ScanLine, Ticket, Copy, Store, Sparkles, Coffee, Compass, ExternalLink, RefreshCw, Radio, Trash2
 } from 'lucide-react';
 import { useAppContext } from '../../src/context/AppContext';
 import { useFeed } from '../../src/context/FeedContext';
@@ -130,6 +130,7 @@ export default function AdminDashboard() {
     eventRsvps, 
     adminVerifyCommunity, 
     updateUser, 
+    adminDeleteUser,
     notifications, 
     broadcastNotification, 
     platformBroadcast, 
@@ -158,6 +159,8 @@ export default function AdminDashboard() {
   const [isSending, setIsSending] = useState(false);
   const [verifyingCommunityId, setVerifyingCommunityId] = useState(null);
   const [updatingEventId, setUpdatingEventId] = useState(null);
+  const [confirmDeleteUserId, setConfirmDeleteUserId] = useState(null);
+  const [deletingUserId, setDeletingUserId] = useState(null);
   const [simulatedCommunityId, setSimulatedCommunityId] = useState(null);
 
   React.useEffect(() => {
@@ -1652,27 +1655,128 @@ const ADMIN_EMAILS = [
                             )}
 
                             {!ADMIN_EMAILS.includes(u.email?.toLowerCase()) && (
-                              <button 
-                                onClick={async (e) => { 
-                                  e.stopPropagation(); 
-                                  try {
-                                    await updateUser(u.id, { is_suspended: !u.is_suspended });
-                                    toast.success(u.is_suspended ? 'User unsuspended' : 'User suspended', `${u.name} status updated.`);
-                                  } catch (err) {
-                                    toast.error('Action Failed', err.message || 'Could not update user status.');
-                                  }
-                                }} 
-                                className="interactive-press" 
-                                style={{ 
-                                  padding: '8px 12px', borderRadius: '8px', fontSize: '0.78rem', 
-                                  background: u.is_suspended ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)', 
-                                  border: `1px solid ${u.is_suspended ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)'}`, 
-                                  color: u.is_suspended ? '#22c55e' : '#ef4444', 
-                                  cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' 
-                                }}
-                              >
-                                {u.is_suspended ? <CheckCircle size={13} /> : <Ban size={13} />} {u.is_suspended ? 'Unsuspend' : 'Suspend'}
-                              </button>
+                              <>
+                                <button 
+                                  onClick={async (e) => { 
+                                    e.stopPropagation(); 
+                                    try {
+                                      const nextSuspended = !u.is_suspended;
+                                      await updateUser(u.id, { is_suspended: nextSuspended });
+                                      toast.success(
+                                        nextSuspended ? 'User Suspended' : 'User Unsuspended',
+                                        `${u.name} is now ${nextSuspended ? 'suspended from platform activity' : 'active again'}.`
+                                      );
+                                    } catch (err) {
+                                      toast.error('Action Failed', err.message || 'Could not update user status.');
+                                    }
+                                  }} 
+                                  className="interactive-press" 
+                                  style={{ 
+                                    padding: '8px 12px', borderRadius: '8px', fontSize: '0.78rem', 
+                                    background: u.is_suspended ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)', 
+                                    border: `1px solid ${u.is_suspended ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)'}`, 
+                                    color: u.is_suspended ? '#22c55e' : '#ef4444', 
+                                    cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 600
+                                  }}
+                                >
+                                  {u.is_suspended ? <CheckCircle size={13} /> : <Ban size={13} />} {u.is_suspended ? 'Unsuspend' : 'Suspend'}
+                                </button>
+
+                                {confirmDeleteUserId === u.id ? (
+                                  <div
+                                    onClick={(e) => e.stopPropagation()}
+                                    style={{
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      gap: '6px',
+                                      padding: '5px 10px',
+                                      borderRadius: '8px',
+                                      background: 'rgba(239, 68, 68, 0.16)',
+                                      border: '1px solid rgba(239, 68, 68, 0.4)'
+                                    }}
+                                  >
+                                    <span style={{ fontSize: '0.74rem', fontWeight: 700, color: '#ef4444' }}>
+                                      Remove permanently?
+                                    </span>
+                                    <button
+                                      type="button"
+                                      disabled={deletingUserId === u.id}
+                                      onClick={async (e) => {
+                                        e.stopPropagation();
+                                        setDeletingUserId(u.id);
+                                        try {
+                                          await adminDeleteUser(u.id);
+                                          setConfirmDeleteUserId(null);
+                                          setExpandedId(null);
+                                          toast.success('User Removed', `${u.name} has been permanently removed from the platform.`);
+                                        } catch (err) {
+                                          toast.error('Remove Failed', err?.message || 'Could not remove user.');
+                                        } finally {
+                                          setDeletingUserId(null);
+                                        }
+                                      }}
+                                      className="interactive-press"
+                                      style={{
+                                        padding: '4px 10px',
+                                        borderRadius: '6px',
+                                        background: '#ef4444',
+                                        color: '#ffffff',
+                                        border: 'none',
+                                        fontSize: '0.73rem',
+                                        fontWeight: 800,
+                                        cursor: deletingUserId === u.id ? 'wait' : 'pointer'
+                                      }}
+                                    >
+                                      {deletingUserId === u.id ? 'Removing...' : 'Confirm Remove'}
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setConfirmDeleteUserId(null);
+                                      }}
+                                      className="interactive-press"
+                                      style={{
+                                        padding: '4px 8px',
+                                        borderRadius: '6px',
+                                        background: 'rgba(255,255,255,0.08)',
+                                        color: 'var(--slate-300)',
+                                        border: 'none',
+                                        fontSize: '0.73rem',
+                                        fontWeight: 600,
+                                        cursor: 'pointer'
+                                      }}
+                                    >
+                                      Cancel
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setConfirmDeleteUserId(u.id);
+                                    }}
+                                    className="interactive-press"
+                                    style={{
+                                      padding: '8px 12px',
+                                      borderRadius: '8px',
+                                      fontSize: '0.78rem',
+                                      background: 'rgba(239, 68, 68, 0.14)',
+                                      border: '1px solid rgba(239, 68, 68, 0.32)',
+                                      color: '#f87171',
+                                      cursor: 'pointer',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      gap: '5px',
+                                      fontWeight: 700
+                                    }}
+                                    title="Permanently remove this user account and their memberships/RSVPs"
+                                  >
+                                    <Trash2 size={13} /> Remove User
+                                  </button>
+                                )}
+                              </>
                             )}
                           </div>
                         </div>

@@ -140,6 +140,130 @@ function GlobalSimulatorBar() {
   );
 }
 
+function SuspendedAccountBanner() {
+  const { user, isSimulating, exitSimulator } = useAppContext();
+  const { signOut } = useAuth();
+  const router = useRouter();
+  const currentPath = usePathname();
+
+  if (!user?.is_suspended || currentPath === '/login' || currentPath === '/admin') return null;
+
+  return (
+    <div style={{
+      position: 'fixed',
+      inset: 0,
+      zIndex: 999998,
+      background: 'rgba(18, 18, 18, 0.92)',
+      backdropFilter: 'blur(14px)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '20px'
+    }}>
+      <div style={{
+        width: '100%',
+        maxWidth: '440px',
+        background: 'var(--surface-card)',
+        border: '1.5px solid rgba(239, 68, 68, 0.45)',
+        borderRadius: '24px',
+        padding: '28px 24px',
+        textAlign: 'center',
+        boxShadow: '0 24px 60px rgba(0,0,0,0.6)'
+      }}>
+        <div style={{
+          width: '60px',
+          height: '60px',
+          borderRadius: '50%',
+          background: 'rgba(239, 68, 68, 0.14)',
+          border: '1px solid rgba(239, 68, 68, 0.35)',
+          color: '#ef4444',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          margin: '0 auto 16px',
+          fontSize: '1.6rem',
+          fontWeight: 800
+        }}>
+          🚫
+        </div>
+        <h2 style={{ margin: '0 0 8px 0', fontSize: '1.35rem', fontFamily: 'var(--font-heading)', color: 'var(--ink-primary)' }}>
+          Account Suspended
+        </h2>
+        <p style={{ margin: '0 0 20px 0', fontSize: '0.88rem', color: 'var(--ink-secondary)', lineHeight: 1.55 }}>
+          <strong>{user.name || 'This account'}</strong> has been suspended by a More. Community administrator and cannot access communities, messages, or events.
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          {isSimulating ? (
+            <button
+              type="button"
+              onClick={() => {
+                exitSimulator();
+                router.push('/admin');
+              }}
+              className="btn btn-primary interactive-press"
+              style={{
+                width: '100%',
+                padding: '12px 18px',
+                borderRadius: '12px',
+                fontWeight: 800,
+                fontSize: '0.9rem',
+                background: '#f59e0b',
+                color: '#090d16',
+                border: 'none',
+                cursor: 'pointer'
+              }}
+            >
+              Exit Impersonation &amp; Return to Admin
+            </button>
+          ) : (
+            <>
+              <a
+                href="mailto:support@morecommunity.app?subject=Account%20Suspension%20Appeal"
+                className="btn btn-outline interactive-press"
+                style={{
+                  width: '100%',
+                  padding: '11px 18px',
+                  borderRadius: '12px',
+                  fontWeight: 700,
+                  fontSize: '0.88rem',
+                  textDecoration: 'none',
+                  display: 'inline-block',
+                  boxSizing: 'border-box'
+                }}
+              >
+                Contact Support
+              </a>
+              <button
+                type="button"
+                onClick={async () => {
+                  try {
+                    if (typeof signOut === 'function') await signOut();
+                  } catch {}
+                  router.push('/login');
+                }}
+                className="interactive-press"
+                style={{
+                  width: '100%',
+                  padding: '11px 18px',
+                  borderRadius: '12px',
+                  background: 'rgba(239, 68, 68, 0.14)',
+                  border: '1px solid rgba(239, 68, 68, 0.35)',
+                  color: '#ef4444',
+                  fontWeight: 800,
+                  fontSize: '0.88rem',
+                  cursor: 'pointer'
+                }}
+              >
+                Sign Out
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function MainLayout({ children }) {
   const currentPath = usePathname();
   const router = useRouter();
@@ -199,6 +323,7 @@ function MainLayout({ children }) {
         <FeedProvider user={user}>
           <div className="app-content" style={hideTabBar ? { paddingBottom: 0 } : {}}>
             <GlobalSimulatorBar />
+            <SuspendedAccountBanner />
             {children}
           </div>
           {!hideTabBar && <SafeBottomNav />}
