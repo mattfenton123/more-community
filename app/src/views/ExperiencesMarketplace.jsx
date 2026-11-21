@@ -169,9 +169,9 @@ export default function ExperiencesMarketplace() {
               fontFamily: "'Syne', sans-serif", fontSize: '0.68rem', fontWeight: 700,
               padding: '0.35rem 0.85rem', borderRadius: '100px', whiteSpace: 'nowrap',
               border: '1px solid',
-              borderColor: activePill === p ? 'var(--teal-400)' : 'rgba(255,255,255,0.08)',
-              background: activePill === p ? 'rgba(242, 114, 87,0.12)' : 'rgba(255,255,255,0.03)',
-              color: activePill === p ? 'var(--teal-300)' : 'var(--slate-400)',
+              borderColor: activePill === p ? 'var(--brand-accent)' : 'var(--hairline-border-strong)',
+              background: activePill === p ? 'var(--brand-accent-soft)' : 'var(--surface-card)',
+              color: activePill === p ? 'var(--teal-300)' : 'var(--ink-secondary)',
               cursor: 'pointer', transition: 'all 0.2s', letterSpacing: '0.02em'
             }}>
               {p}

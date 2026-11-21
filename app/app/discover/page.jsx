@@ -316,7 +316,7 @@ export default function Discover() {
           )}
           <button
             className="interactive-press"
-            style={{ background: 'var(--teal-500)', border: 'none', color: '#1B1B1B', cursor: 'pointer', padding: '6px 16px', borderRadius: '99px', fontSize: '0.8rem', fontWeight: 700, marginLeft: '4px' }}
+            style={{ background: 'var(--teal-500)', border: 'none', color: '#FFFFFF', cursor: 'pointer', padding: '6px 16px', borderRadius: '99px', fontSize: '0.8rem', fontWeight: 700, marginLeft: '4px' }}
           >
             Go
           </button>
@@ -353,9 +353,9 @@ export default function Discover() {
               whiteSpace: 'nowrap', 
               padding: '8px 16px', 
               borderRadius: '999px',
-              border: activePill === pill ? 'none' : '1px solid rgba(255,255,255,0.08)',
-              background: activePill === pill ? 'var(--white)' : 'rgba(255,255,255,0.02)',
-              color: activePill === pill ? 'var(--slate-900)' : 'var(--slate-300)',
+              border: activePill === pill ? '1px solid var(--ink-primary)' : '1px solid var(--hairline-border-strong)',
+              background: activePill === pill ? 'var(--ink-primary)' : 'var(--surface-card)',
+              color: activePill === pill ? 'var(--surface-canvas)' : 'var(--ink-secondary)',
               fontWeight: 600,
               fontSize: '0.85rem',
               cursor: 'pointer',
@@ -402,7 +402,7 @@ export default function Discover() {
               />
               <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.2) 50%, transparent 100%)' }}></div>
               <div style={{ position: 'absolute', top: '16px', left: '16px' }}>
-                <span style={{ background: 'var(--teal-500)', color: 'var(--white)', padding: '6px 14px', borderRadius: '99px', fontSize: '0.75rem', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                <span style={{ background: 'var(--teal-500)', color: '#FFFFFF', padding: '6px 14px', borderRadius: '99px', fontSize: '0.75rem', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                   <Sparkles size={12} /> Featured Community
                 </span>
               </div>
@@ -461,7 +461,7 @@ export default function Discover() {
                           <button 
                             onClick={(e) => { e.stopPropagation(); navigate.push(getEventPath(event, events)); }} 
                             className="btn btn-primary interactive-press"
-                            style={{ padding: '6px 16px', fontSize: '0.85rem', borderRadius: '8px', background: 'var(--teal-500)', color: '#1B1B1B', fontWeight: 700, border: 'none', cursor: 'pointer' }}
+                            style={{ padding: '6px 16px', fontSize: '0.85rem', borderRadius: '8px', background: 'var(--teal-500)', color: '#FFFFFF', fontWeight: 700, border: 'none', cursor: 'pointer' }}
                           >
                             Join Event
                           </button>

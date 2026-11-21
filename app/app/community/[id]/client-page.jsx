@@ -1053,7 +1053,7 @@ export default function CommunityProfile() {
                             <span style={{ fontSize: '0.65rem', background: 'rgba(234,179,8,0.2)', color: 'var(--yellow-400)', padding: '2px 6px', borderRadius: '6px', fontWeight: 700, textTransform: 'uppercase' }}>Idea</span>
                           )}
                           {community.leader_id === author?.id && (
-                            <span style={{ fontSize: '0.65rem', background: 'var(--teal-500)', color: 'var(--white)', padding: '2px 6px', borderRadius: '6px', fontWeight: 700, textTransform: 'uppercase' }}>Leader</span>
+                            <span style={{ fontSize: '0.65rem', background: 'var(--teal-500)', color: '#FFFFFF', padding: '2px 6px', borderRadius: '6px', fontWeight: 700, textTransform: 'uppercase' }}>Leader</span>
                           )}
                         </div>
                         <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>
@@ -1369,7 +1369,7 @@ export default function CommunityProfile() {
                         <div>
                           <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
                             {author?.name}
-                            {isCampaign && <span style={{ fontSize: '0.65rem', background: 'var(--teal-500)', color: 'var(--white)', padding: '2px 6px', borderRadius: '6px', fontWeight: 700, textTransform: 'uppercase' }}>Campaign</span>}
+                            {isCampaign && <span style={{ fontSize: '0.65rem', background: 'var(--teal-500)', color: '#FFFFFF', padding: '2px 6px', borderRadius: '6px', fontWeight: 700, textTransform: 'uppercase' }}>Campaign</span>}
                           </div>
                           <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>
                             {(post.timestamp || post.createdAt || post.created_at) && !isNaN(new Date(post.timestamp || post.createdAt || post.created_at).getTime())
@@ -1894,7 +1894,7 @@ export default function CommunityProfile() {
                         </div>
                         <div style={{ fontWeight: 700, fontSize: '1.05rem', color: 'var(--white)', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                           {evt.title}
-                          {evt.communityId !== communityId && <span style={{ fontSize: '0.65rem', background: 'var(--teal-500)', color: 'var(--white)', padding: '2px 6px', borderRadius: '6px', fontWeight: 700, textTransform: 'uppercase' }}>Collab</span>}
+                          {evt.communityId !== communityId && <span style={{ fontSize: '0.65rem', background: 'var(--teal-500)', color: '#FFFFFF', padding: '2px 6px', borderRadius: '6px', fontWeight: 700, textTransform: 'uppercase' }}>Collab</span>}
                         </div>
                         <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)', display: 'flex', alignItems: 'center', gap: '4px' }}><MapPin size={14} /> {cleanLocationName(evt.location)}</div>
                       </div>
@@ -2299,7 +2299,7 @@ export default function CommunityProfile() {
                       <div style={{ padding: '16px' }}>
                         <div style={{ fontWeight: 700, fontSize: '1.05rem', color: 'var(--white)', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                           {event.title}
-                          {event.communityId !== communityId && <span style={{ fontSize: '0.65rem', background: 'var(--teal-500)', color: 'var(--white)', padding: '2px 6px', borderRadius: '6px', fontWeight: 700, textTransform: 'uppercase' }}>Collab</span>}
+                          {event.communityId !== communityId && <span style={{ fontSize: '0.65rem', background: 'var(--teal-500)', color: '#FFFFFF', padding: '2px 6px', borderRadius: '6px', fontWeight: 700, textTransform: 'uppercase' }}>Collab</span>}
                         </div>
                         <div style={{ display: 'flex', gap: '16px', fontSize: '0.8rem', color: 'var(--slate-400)', marginBottom: '8px' }}>
                           <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={14} /> {event.time}</span>
@@ -2662,7 +2662,7 @@ export default function CommunityProfile() {
                     Community Pass
                   </span>
                 </div>
-                <span style={{ fontSize: '0.75rem', fontWeight: 700, padding: '2px 8px', borderRadius: '99px', background: 'rgba(235, 87, 56,0.15)', color: '#F27257' }}>
+                <span style={{ fontSize: '0.75rem', fontWeight: 700, padding: '2px 8px', borderRadius: '99px', background: 'var(--brand-accent-soft)', color: 'var(--teal-300)' }}>
                   {Number(community.subscription_price || 0) > 0 ? `£${community.subscription_price}/mo` : 'Free to Join'}
                 </span>
               </div>
@@ -2677,7 +2677,7 @@ export default function CommunityProfile() {
               {/* Main Action Button */}
               {isMember ? (
                 <div style={{ marginBottom: '12px' }}>
-                  <div className="community-member-status-badge" style={{ width: '100%', padding: '12px', fontSize: '0.92rem', fontWeight: 700, borderRadius: '12px', border: '1px solid rgba(242, 114, 87,0.3)', color: '#F27257', background: 'rgba(235, 87, 56,0.1)', textAlign: 'center', marginBottom: '8px' }}>
+                  <div className="community-member-status-badge" style={{ width: '100%', padding: '12px', fontSize: '0.92rem', fontWeight: 700, borderRadius: '12px', border: '1px solid rgba(242, 114, 87,0.3)', color: 'var(--teal-300)', background: 'var(--brand-accent-soft)', textAlign: 'center', marginBottom: '8px' }}>
                     ✓ You're a Member
                   </div>
                   {community.whatsapp_group && (

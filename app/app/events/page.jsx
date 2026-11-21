@@ -445,7 +445,7 @@ const { events, communities, user, users, eventRsvps, rsvpToEvent, createEvent, 
         className="interactive-press stagger-item" 
         style={{ 
           cursor: 'pointer', marginBottom: '20px', borderRadius: '20px', overflow: 'hidden', 
-          background: isArchived ? 'rgba(255,255,255,0.015)' : 'rgba(255,255,255,0.02)', 
+          background: isArchived ? 'rgba(255,255,255,0.015)' : 'var(--surface-card)', 
           border: isArchived ? '1px solid rgba(255,255,255,0.04)' : '1px solid rgba(255,255,255,0.06)', 
           opacity: isArchived ? 0.85 : 1,
           transition: 'all 0.3s', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' 
@@ -460,7 +460,7 @@ const { events, communities, user, users, eventRsvps, rsvpToEvent, createEvent, 
             {/* Calendar Leaf Overlay */}
             <div style={{ 
               position: 'absolute', top: '12px', left: '12px', background: 'rgba(27, 27, 27,0.85)', backdropFilter: 'blur(8px)', 
-              borderRadius: '10px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)',
+              borderRadius: '10px', overflow: 'hidden', border: '1px solid var(--hairline-border-strong)',
               display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: '42px', boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
             }}>
               <div style={{ background: isArchived ? 'var(--slate-600)' : 'var(--teal-500)', color: 'white', width: '100%', textAlign: 'center', fontSize: '0.65rem', fontWeight: 800, padding: '2px 0', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
@@ -473,16 +473,16 @@ const { events, communities, user, users, eventRsvps, rsvpToEvent, createEvent, 
 
             <div style={{ position: 'absolute', top: '12px', right: '12px', display: 'flex', gap: '6px', alignItems: 'center' }}>
               {isArchived && (
-                <div style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--slate-300)', background: 'rgba(51,65,85,0.85)', backdropFilter: 'blur(6px)', padding: '4px 8px', borderRadius: '99px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                <div style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--slate-300)', background: 'rgba(51,65,85,0.85)', backdropFilter: 'blur(6px)', padding: '4px 8px', borderRadius: '99px', border: '1px solid var(--hairline-border-strong)' }}>
                   ARCHIVED
                 </div>
               )}
-              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: price > 0 ? 'var(--amber-400)' : 'var(--teal-300)', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)', padding: '6px 12px', borderRadius: '99px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}>
+              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: price > 0 ? '#FDE68A' : '#FFFFFF', background: 'rgba(18,18,18,0.78)', backdropFilter: 'blur(6px)', padding: '6px 12px', borderRadius: '99px', border: '1px solid var(--hairline-border-strong)', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}>
                 {price > 0 ? `£${price}` : 'FREE'}
               </div>
             </div>
             {hasRsvp && (
-              <div style={{ position: 'absolute', bottom: '12px', right: '12px', fontSize: '0.7rem', fontWeight: 700, color: isArchived ? 'var(--slate-300)' : 'var(--teal-300)', background: isArchived ? 'rgba(51,65,85,0.7)' : 'rgba(235, 87, 56,0.2)', backdropFilter: 'blur(6px)', padding: '4px 10px', borderRadius: '99px', border: isArchived ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(235, 87, 56,0.4)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <div style={{ position: 'absolute', bottom: '12px', right: '12px', fontSize: '0.7rem', fontWeight: 700, color: '#FFFFFF', background: isArchived ? 'rgba(27,27,27,0.82)' : 'rgba(200, 90, 50, 0.92)', backdropFilter: 'blur(6px)', padding: '4px 10px', borderRadius: '99px', border: isArchived ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(235, 87, 56,0.4)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                 <Check size={12} /> {isArchived ? 'Attended' : 'Going'}
               </div>
             )}
@@ -499,7 +499,7 @@ const { events, communities, user, users, eventRsvps, rsvpToEvent, createEvent, 
               )}
             </div>
             {sponsor && (
-              <div style={{ fontSize: '0.65rem', color: 'var(--slate-400)', background: 'rgba(255,255,255,0.05)', padding: '2px 6px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.1)' }}>
+              <div style={{ fontSize: '0.65rem', color: 'var(--slate-400)', background: 'rgba(255,255,255,0.05)', padding: '2px 6px', borderRadius: '4px', border: '1px solid var(--hairline-border-strong)' }}>
                 Supported by {sponsor.name}
               </div>
             )}
@@ -530,7 +530,7 @@ const { events, communities, user, users, eventRsvps, rsvpToEvent, createEvent, 
             style={{
               width: '100%', padding: searchQuery ? '12px 80px 12px 42px' : '12px 44px 12px 42px',
               background: 'rgba(255,255,255,0.04)',
-              border: '1px solid rgba(255,255,255,0.08)',
+              border: '1px solid var(--hairline-border-strong)',
               borderRadius: '14px', color: 'var(--white)',
               fontSize: '0.9rem', outline: 'none',
               fontFamily: 'inherit',
@@ -599,7 +599,7 @@ const { events, communities, user, users, eventRsvps, rsvpToEvent, createEvent, 
               onKeyDown={e => { if (e.key === 'Enter') handleAiSearch(); }}
               style={{
                 flex: 1, padding: '10px 40px 10px 12px', borderRadius: '12px',
-                background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)',
+                background: 'rgba(0,0,0,0.3)', border: '1px solid var(--hairline-border-strong)',
                 color: 'var(--white)', fontSize: '0.85rem', outline: 'none'
               }}
             />
@@ -650,7 +650,7 @@ const { events, communities, user, users, eventRsvps, rsvpToEvent, createEvent, 
                 }}
                 style={{
                   padding: '3px 8px', borderRadius: '99px',
-                  background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)',
+                  background: 'rgba(255,255,255,0.05)', border: '1px solid var(--hairline-border-strong)',
                   color: 'var(--slate-300)', fontSize: '0.72rem', whiteSpace: 'nowrap', cursor: 'pointer'
                 }}
               >
@@ -749,8 +749,8 @@ const { events, communities, user, users, eventRsvps, rsvpToEvent, createEvent, 
               style={{
                 padding: '6px 12px',
                 borderRadius: '20px',
-                border: dateFilter === filter.id ? '1px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.1)',
-                background: dateFilter === filter.id ? 'rgba(235, 87, 56,0.12)' : 'rgba(255,255,255,0.02)',
+                border: dateFilter === filter.id ? '1px solid var(--teal-500)' : '1px solid var(--hairline-border-strong)',
+                background: dateFilter === filter.id ? 'rgba(235, 87, 56,0.12)' : 'var(--surface-card)',
                 color: dateFilter === filter.id ? 'var(--teal-400)' : 'var(--slate-300)',
                 fontSize: '0.8rem',
                 fontWeight: 600,
@@ -769,8 +769,8 @@ const { events, communities, user, users, eventRsvps, rsvpToEvent, createEvent, 
             style={{
               padding: '6px 12px',
               borderRadius: '20px',
-              border: priceFilter === 'free' ? '1px solid #10b981' : '1px solid rgba(255,255,255,0.1)',
-              background: priceFilter === 'free' ? 'rgba(16,185,129,0.15)' : 'rgba(255,255,255,0.02)',
+              border: priceFilter === 'free' ? '1px solid #10b981' : '1px solid var(--hairline-border-strong)',
+              background: priceFilter === 'free' ? 'rgba(16,185,129,0.15)' : 'var(--surface-card)',
               color: priceFilter === 'free' ? '#34d399' : 'var(--slate-300)',
               fontSize: '0.8rem',
               fontWeight: 600,
@@ -787,8 +787,8 @@ const { events, communities, user, users, eventRsvps, rsvpToEvent, createEvent, 
             style={{
               padding: '6px 12px',
               borderRadius: '20px',
-              border: priceFilter === 'paid' ? '1px solid #38bdf8' : '1px solid rgba(255,255,255,0.1)',
-              background: priceFilter === 'paid' ? 'rgba(56,189,248,0.15)' : 'rgba(255,255,255,0.02)',
+              border: priceFilter === 'paid' ? '1px solid #38bdf8' : '1px solid var(--hairline-border-strong)',
+              background: priceFilter === 'paid' ? 'rgba(56,189,248,0.15)' : 'var(--surface-card)',
               color: priceFilter === 'paid' ? '#38bdf8' : 'var(--slate-300)',
               fontSize: '0.8rem',
               fontWeight: 600,
@@ -806,8 +806,8 @@ const { events, communities, user, users, eventRsvps, rsvpToEvent, createEvent, 
             style={{
               padding: '6px 12px',
               borderRadius: '20px',
-              border: (showAdvancedFilters || timeOfDayFilter !== 'all' || categoryFilter !== 'all') ? '1px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.1)',
-              background: (showAdvancedFilters || timeOfDayFilter !== 'all' || categoryFilter !== 'all') ? 'rgba(235, 87, 56,0.12)' : 'rgba(255,255,255,0.02)',
+              border: (showAdvancedFilters || timeOfDayFilter !== 'all' || categoryFilter !== 'all') ? '1px solid var(--teal-500)' : '1px solid var(--hairline-border-strong)',
+              background: (showAdvancedFilters || timeOfDayFilter !== 'all' || categoryFilter !== 'all') ? 'rgba(235, 87, 56,0.12)' : 'var(--surface-card)',
               color: (showAdvancedFilters || timeOfDayFilter !== 'all' || categoryFilter !== 'all') ? 'var(--teal-400)' : 'var(--slate-300)',
               fontSize: '0.8rem',
               fontWeight: 600,
@@ -856,8 +856,8 @@ const { events, communities, user, users, eventRsvps, rsvpToEvent, createEvent, 
               style={{
                 padding: '4px 12px',
                 borderRadius: '20px',
-                border: (!['all', 'today', 'this_week', 'this_weekend'].includes(dateFilter)) ? '1px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.1)',
-                background: (!['all', 'today', 'this_week', 'this_weekend'].includes(dateFilter)) ? 'rgba(235, 87, 56,0.1)' : 'rgba(255,255,255,0.02)',
+                border: (!['all', 'today', 'this_week', 'this_weekend'].includes(dateFilter)) ? '1px solid var(--teal-500)' : '1px solid var(--hairline-border-strong)',
+                background: (!['all', 'today', 'this_week', 'this_weekend'].includes(dateFilter)) ? 'rgba(235, 87, 56,0.1)' : 'var(--surface-card)',
                 color: (!['all', 'today', 'this_week', 'this_weekend'].includes(dateFilter)) ? 'var(--teal-400)' : 'var(--slate-300)',
                 fontSize: '0.8rem',
                 fontWeight: 600,
@@ -873,7 +873,7 @@ const { events, communities, user, users, eventRsvps, rsvpToEvent, createEvent, 
         {/* Row 2: Expandable Time of Day & Category Chips */}
         {showAdvancedFilters && (
           <div style={{
-            background: 'rgba(255,255,255,0.02)',
+            background: 'var(--surface-card)',
             border: '1px solid rgba(255,255,255,0.06)',
             borderRadius: '14px',
             padding: '10px 12px',
@@ -898,7 +898,7 @@ const { events, communities, user, users, eventRsvps, rsvpToEvent, createEvent, 
                   style={{
                     padding: '4px 10px',
                     borderRadius: '12px',
-                    border: timeOfDayFilter === tod.id ? '1px solid var(--teal-400)' : '1px solid rgba(255,255,255,0.08)',
+                    border: timeOfDayFilter === tod.id ? '1px solid var(--teal-400)' : '1px solid var(--hairline-border-strong)',
                     background: timeOfDayFilter === tod.id ? 'rgba(235, 87, 56,0.15)' : 'transparent',
                     color: timeOfDayFilter === tod.id ? 'var(--teal-300)' : 'var(--slate-400)',
                     fontSize: '0.75rem',
@@ -924,7 +924,7 @@ const { events, communities, user, users, eventRsvps, rsvpToEvent, createEvent, 
                   style={{
                     padding: '4px 10px',
                     borderRadius: '12px',
-                    border: categoryFilter === cat ? '1px solid #a855f7' : '1px solid rgba(255,255,255,0.08)',
+                    border: categoryFilter === cat ? '1px solid #a855f7' : '1px solid var(--hairline-border-strong)',
                     background: categoryFilter === cat ? 'rgba(168,85,247,0.15)' : 'transparent',
                     color: categoryFilter === cat ? '#d8b4fe' : 'var(--slate-400)',
                     fontSize: '0.75rem',
@@ -997,7 +997,7 @@ const { events, communities, user, users, eventRsvps, rsvpToEvent, createEvent, 
             {isLoading ? (
               <SkeletonList count={3} Component={SkeletonEvent} />
             ) : upcomingUserEvents.length > 0 ? upcomingUserEvents.map((e, i) => renderEvent(e, i, false)) : (
-              <div style={{ textAlign: 'center', padding: '50px 20px', background: 'rgba(255,255,255,0.02)', borderRadius: '24px', border: '1px dashed rgba(255,255,255,0.1)', marginTop: '20px' }}>
+              <div style={{ textAlign: 'center', padding: '50px 20px', background: 'var(--surface-card)', borderRadius: '24px', border: '1px dashed rgba(255,255,255,0.1)', marginTop: '20px' }}>
                 <div style={{ width: '80px', height: '80px', background: 'rgba(235, 87, 56,0.1)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', color: 'var(--teal-400)' }}>
                   <CalIcon size={36} />
                 </div>
@@ -1277,7 +1277,7 @@ const { events, communities, user, users, eventRsvps, rsvpToEvent, createEvent, 
                   onChange={e => setProposeLocation(e.target.value)}
                   style={{
                     width: '100%', padding: '10px 14px', borderRadius: '10px',
-                    background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)',
+                    background: 'rgba(0,0,0,0.3)', border: '1px solid var(--hairline-border-strong)',
                     color: 'var(--white)', fontSize: '0.88rem', outline: 'none'
                   }}
                 />
@@ -1294,7 +1294,7 @@ const { events, communities, user, users, eventRsvps, rsvpToEvent, createEvent, 
                   onChange={e => setProposeNotes(e.target.value)}
                   style={{
                     width: '100%', padding: '10px 14px', borderRadius: '10px',
-                    background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)',
+                    background: 'rgba(0,0,0,0.3)', border: '1px solid var(--hairline-border-strong)',
                     color: 'var(--white)', fontSize: '0.88rem', outline: 'none', resize: 'none'
                   }}
                 />

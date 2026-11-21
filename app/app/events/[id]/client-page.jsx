@@ -2726,7 +2726,7 @@ export default function EventClient({ id }) {
                 target="_blank"
                 rel="noreferrer"
                 className="interactive-press"
-                style={{ padding: '8px 16px', borderRadius: '99px', background: 'var(--teal-500)', color: '#1B1B1B', fontWeight: 700, fontSize: '0.85rem', textDecoration: 'none' }}
+                style={{ padding: '8px 16px', borderRadius: '99px', background: 'var(--teal-500)', color: '#FFFFFF', fontWeight: 700, fontSize: '0.85rem', textDecoration: 'none' }}
               >
                 Download Photo
               </a>

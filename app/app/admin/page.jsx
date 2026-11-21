@@ -82,13 +82,13 @@ const FilterPills = ({ options, active, onChange }) => (
         style={{ 
           padding: '7px 14px', 
           borderRadius: '99px', 
-          border: 'none', 
+          border: active === opt.value ? '1px solid var(--ink-primary)' : '1px solid var(--hairline-border-strong)', 
           fontSize: '0.75rem', 
           fontWeight: 600, 
           whiteSpace: 'nowrap',
           cursor: 'pointer',
-          background: active === opt.value ? 'white' : 'rgba(255,255,255,0.05)',
-          color: active === opt.value ? 'black' : 'var(--slate-400)',
+          background: active === opt.value ? 'var(--ink-primary)' : 'var(--surface-card)',
+          color: active === opt.value ? 'var(--surface-canvas)' : 'var(--ink-secondary)',
           transition: 'all 0.15s ease'
         }}
       >

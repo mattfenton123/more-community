@@ -110,11 +110,11 @@
   --slate-50: #12100D;
   --white: #1C1915;
 
-  --teal-700: #9E4220;
-  --teal-600: #B54E28;
+  --teal-700: #7D2D12;
+  --teal-600: #9A3B19;
   --teal-500: #C85A32;
-  --teal-400: #C85A32;
-  --teal-300: #D96B43;
+  --teal-400: #A33F1B;
+  --teal-300: #8F3414;
 
   accent-color: var(--brand-accent);
 }
@@ -2672,4 +2672,89 @@ button:disabled, [role="button"][aria-disabled="true"] {
   height: 4px;
   border-radius: 50%;
   background: var(--brand-accent);
+}
+
+/* ============================================================
+   LIGHT MODE PILL, BADGE & CONTRAST VISIBILITY GUARANTEES
+   ============================================================ */
+
+/* Community Page title & meta live BELOW the cover card — keep Espresso ink in Light Mode */
+[data-theme="light"] .community-hero-title {
+  color: #1C1915 !important;
+  text-shadow: none !important;
+}
+
+[data-theme="light"] .community-hero-meta {
+  color: #4A443C !important;
+}
+
+/* Crisp borders on pills/chips that used white-alpha borders for Dark Mode */
+[data-theme="light"] button[style*="rgba(255, 255, 255, 0."],
+[data-theme="light"] button[style*="rgba(255,255,255,0."],
+[data-theme="light"] span[style*="border-radius: 99"][style*="rgba(255, 255, 255, 0."],
+[data-theme="light"] span[style*="border-radius: 99"][style*="rgba(255,255,255,0."] {
+  border-color: rgba(28, 25, 21, 0.16) !important;
+}
+
+/* Keep solid terracotta / accent pills crisp white text (never remapped espresso --white) */
+[data-theme="light"] [style*="background: var(--teal-500)"],
+[data-theme="light"] [style*="background:var(--teal-500)"],
+[data-theme="light"] [style*="background: var(--brand-accent)"],
+[data-theme="light"] [style*="background:var(--brand-accent)"] {
+  color: #FFFFFF !important;
+}
+
+/* Preserve bright text on dark photo-overlay pills inside cover images */
+[data-theme="light"] .community-cover-card span,
+[data-theme="light"] .community-cover-card div {
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+/* Darken pastel dark-mode text colors inside pills/badges for WCAG AA contrast on Light Paper */
+[data-theme="light"] [style*="color: #fef08a"],
+[data-theme="light"] [style*="color: rgb(254, 240, 138)"],
+[data-theme="light"] [style*="color: #fde047"],
+[data-theme="light"] [style*="color: rgb(253, 224, 71)"] {
+  color: #854D0E !important;
+}
+
+[data-theme="light"] [style*="color: #d8b4fe"],
+[data-theme="light"] [style*="color: rgb(216, 180, 254)"] {
+  color: #6B21A8 !important;
+}
+
+[data-theme="light"] [style*="color: #86efac"],
+[data-theme="light"] [style*="color: rgb(134, 239, 172)"],
+[data-theme="light"] [style*="color: #34d399"],
+[data-theme="light"] [style*="color: rgb(52, 211, 153)"],
+[data-theme="light"] [style*="color: #4ade80"],
+[data-theme="light"] [style*="color: rgb(74, 222, 128)"] {
+  color: #1F634D !important;
+}
+
+[data-theme="light"] [style*="color: #93c5fd"],
+[data-theme="light"] [style*="color: rgb(147, 197, 253)"],
+[data-theme="light"] [style*="color: #7dd3fc"],
+[data-theme="light"] [style*="color: rgb(125, 211, 252)"],
+[data-theme="light"] [style*="color: #38bdf8"],
+[data-theme="light"] [style*="color: rgb(56, 189, 248)"] {
+  color: #1D4ED8 !important;
+}
+
+[data-theme="light"] [style*="color: #fb7185"],
+[data-theme="light"] [style*="color: rgb(251, 113, 133)"] {
+  color: #BE123C !important;
+}
+
+/* High-contrast Community Tab Pills in Light Mode */
+[data-theme="light"] .community-tab-pill {
+  background: #FFFFFF !important;
+  border: 1px solid rgba(28, 25, 21, 0.16) !important;
+  color: #4A443C !important;
+}
+
+[data-theme="light"] .community-tab-pill.active {
+  background: rgba(200, 90, 50, 0.14) !important;
+  border: 1.5px solid #C85A32 !important;
+  color: #8F3414 !important;
 }

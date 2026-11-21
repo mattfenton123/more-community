@@ -431,9 +431,9 @@ export default function HomeFeed() {
                   fontSize: '0.75rem',
                   fontWeight: isSelected ? 700 : 500,
                   whiteSpace: 'nowrap',
-                  background: isSelected ? 'rgba(235, 87, 56,0.2)' : 'rgba(255,255,255,0.04)',
-                  color: isSelected ? 'var(--teal-300)' : 'var(--slate-400)',
-                  border: isSelected ? '1px solid var(--teal-400)' : '1px solid rgba(255,255,255,0.08)',
+                  background: isSelected ? 'var(--brand-accent-soft)' : 'var(--surface-card)',
+                  color: isSelected ? 'var(--teal-300)' : 'var(--ink-secondary)',
+                  border: isSelected ? '1px solid var(--brand-accent)' : '1px solid var(--hairline-border-strong)',
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
@@ -949,7 +949,7 @@ export default function HomeFeed() {
                       {!isUpcoming && (
                         <span style={{ fontSize: '0.65rem', background: 'rgba(148,163,184,0.2)', color: 'var(--slate-300)', padding: '3px 8px', borderRadius: '6px', fontWeight: 700, textTransform: 'uppercase' }}>Archived</span>
                       )}
-                      {event.collabCommunityIds?.length > 0 && <span style={{ fontSize: '0.65rem', background: 'var(--teal-500)', color: 'var(--white)', padding: '4px 8px', borderRadius: '6px', fontWeight: 800, textTransform: 'uppercase' }}>Collab</span>}
+                      {event.collabCommunityIds?.length > 0 && <span style={{ fontSize: '0.65rem', background: 'var(--teal-500)', color: '#FFFFFF', padding: '4px 8px', borderRadius: '6px', fontWeight: 800, textTransform: 'uppercase' }}>Collab</span>}
                     </div>
                     <div style={{ display: 'flex', gap: '20px', fontSize: '0.85rem', color: 'var(--slate-300)', marginBottom: '12px', fontWeight: 500 }}>
                       <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Clock size={16} color="var(--slate-400)" /> {event.time}</span>

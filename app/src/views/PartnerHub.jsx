@@ -169,9 +169,9 @@ export default function PartnerHub() {
                 style={{
                   padding: '5px 12px',
                   borderRadius: '99px',
-                  background: isSelected ? 'rgba(56, 189, 248, 0.2)' : 'rgba(255, 255, 255, 0.04)',
-                  border: isSelected ? '1px solid #38bdf8' : '1px solid rgba(255, 255, 255, 0.08)',
-                  color: isSelected ? '#38bdf8' : 'var(--slate-300)',
+                  background: isSelected ? 'var(--brand-accent-soft)' : 'var(--surface-card)',
+                  border: isSelected ? '1px solid var(--brand-accent)' : '1px solid var(--hairline-border-strong)',
+                  color: isSelected ? 'var(--teal-300)' : 'var(--ink-secondary)',
                   fontSize: '0.78rem',
                   fontWeight: isSelected ? 700 : 500,
                   whiteSpace: 'nowrap',
@@ -182,7 +182,7 @@ export default function PartnerHub() {
                 }}
               >
                 <span>{reg}</span>
-                <span style={{ fontSize: '0.7rem', opacity: 0.7, background: 'rgba(255,255,255,0.08)', padding: '1px 6px', borderRadius: '10px' }}>
+                <span style={{ fontSize: '0.7rem', opacity: 0.85, background: 'var(--surface-elevated)', padding: '1px 6px', borderRadius: '10px' }}>
                   {matchCount}
                 </span>
               </button>
@@ -210,9 +210,9 @@ export default function PartnerHub() {
                 style={{
                   padding: '8px 14px',
                   borderRadius: '99px',
-                  border: isSelected ? '1px solid var(--teal-500)' : '1px solid rgba(255, 255, 255, 0.08)',
-                  background: isSelected ? 'rgba(235, 87, 56, 0.2)' : 'rgba(255, 255, 255, 0.03)',
-                  color: isSelected ? 'var(--teal-300)' : 'var(--slate-300)',
+                  border: isSelected ? '1px solid var(--brand-accent)' : '1px solid var(--hairline-border-strong)',
+                  background: isSelected ? 'var(--brand-accent-soft)' : 'var(--surface-card)',
+                  color: isSelected ? 'var(--teal-300)' : 'var(--ink-secondary)',
                   fontSize: '0.82rem',
                   fontWeight: isSelected ? 700 : 500,
                   whiteSpace: 'nowrap',
