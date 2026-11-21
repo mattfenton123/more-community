@@ -1853,9 +1853,35 @@ button:disabled, [role="button"][aria-disabled="true"] {
 .view-chat {
   padding-bottom: 80px;
 }
+.chat-room-shell {
+  height: calc(100dvh - 70px);
+  padding-bottom: 0 !important;
+}
+.chat-thread-drawer {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  background: var(--surface-card);
+  display: flex;
+  flex-direction: column;
+  z-index: 60;
+}
+@media (min-width: 900px) {
+  .chat-thread-drawer {
+    position: relative;
+    inset: auto;
+    width: 340px;
+    flex-shrink: 0;
+    border-left: 1px solid var(--hairline-border);
+    z-index: 20;
+  }
+}
 @media (min-width: 1024px) {
   .view-chat {
     padding-bottom: 0;
+  }
+  .chat-room-shell {
+    height: 100dvh;
   }
 }
 

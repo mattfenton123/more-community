@@ -344,6 +344,7 @@ export default function EventClient({ id }) {
     };
   }, []);
   const [activePhotoModal, setActivePhotoModal] = useState(null);
+  const [showEarlierSeries, setShowEarlierSeries] = useState(false);
   const photoInputRef = useRef(null);
   const heroImgRef = useRef(null);
   const [heroImgNeedsContain, setHeroImgNeedsContain] = useState(false);
@@ -1079,48 +1080,72 @@ export default function EventClient({ id }) {
             </div>
           </div>
 
-          {/* Other dates in recurring series */}
-          {seriesEvents.length > 1 && (
-            <div style={{ marginTop: '16px', background: 'var(--surface-card)', border: '1px solid var(--hairline-border)', borderRadius: '14px', padding: '14px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.82rem', fontWeight: 600, color: 'var(--teal-300)' }}>
-                  <Repeat size={14} /> Other Dates in this Series ({seriesEvents.length} sessions)
-                </div>
-              </div>
-              <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
-                {seriesEvents.map((se, sIdx) => {
-                  const isCurrent = se.id === event.id;
-                  const isPast = isEventPast(se);
-                  return (
+          {/* Other dates in recurring series — starts at current event by default */}
+          {seriesEvents.length > 1 && (() => {
+            const startIndex = !showEarlierSeries && currentSeriesIndex > 0 ? currentSeriesIndex : 0;
+            const visibleSeries = seriesEvents.slice(startIndex);
+            return (
+              <div style={{ marginTop: '16px', background: 'var(--surface-card)', border: '1px solid var(--hairline-border)', borderRadius: '14px', padding: '14px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap', marginBottom: '10px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.82rem', fontWeight: 700, color: 'var(--teal-300)' }}>
+                    <Repeat size={14} /> Other Dates in this Series ({seriesEvents.length} sessions)
+                  </div>
+                  {currentSeriesIndex > 0 && (
                     <button
-                      key={se.id}
-                      onClick={() => { if (!isCurrent) router.push(getEventPath(se, events)); }}
+                      type="button"
+                      onClick={() => setShowEarlierSeries(prev => !prev)}
+                      className="interactive-press"
                       style={{
-                        padding: '8px 12px',
-                        borderRadius: '10px',
-                        border: isCurrent ? '1px solid var(--teal-400)' : '1px solid rgba(255,255,255,0.08)',
-                        background: isCurrent ? 'rgba(235, 87, 56,0.15)' : 'rgba(255,255,255,0.03)',
-                        color: isCurrent ? 'var(--white)' : isPast ? 'var(--slate-500)' : 'var(--slate-300)',
-                        cursor: isCurrent ? 'default' : 'pointer',
-                        textAlign: 'left',
-                        flexShrink: 0,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '2px',
-                        opacity: isPast && !isCurrent ? 0.6 : 1
+                        background: 'var(--surface-elevated)',
+                        border: '1px solid var(--hairline-border-strong)',
+                        borderRadius: '999px',
+                        padding: '3px 10px',
+                        fontSize: '0.72rem',
+                        fontWeight: 600,
+                        color: 'var(--ink-secondary)',
+                        cursor: 'pointer'
                       }}
                     >
-                      <div style={{ fontSize: '0.68rem', fontWeight: 700, color: isCurrent ? 'var(--teal-400)' : 'var(--slate-400)' }}>
-                        #{sIdx + 1} {isCurrent ? '• CURRENT' : isPast ? '• PAST' : ''}
-                      </div>
-                      <div style={{ fontSize: '0.8rem', fontWeight: 600 }}>{formatEventDate(se.date)}</div>
-                      <div style={{ fontSize: '0.7rem', color: 'var(--slate-400)' }}>{se.time || '10:00'}</div>
+                      {showEarlierSeries ? 'Start from current' : `Show ${currentSeriesIndex} earlier`}
                     </button>
-                  );
-                })}
+                  )}
+                </div>
+                <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
+                  {visibleSeries.map((se, offsetIdx) => {
+                    const sIdx = startIndex + offsetIdx;
+                    const isCurrent = se.id === event.id;
+                    const isPast = isEventPast(se);
+                    return (
+                      <button
+                        key={se.id}
+                        onClick={() => { if (!isCurrent) router.push(getEventPath(se, events)); }}
+                        style={{
+                          padding: '8px 12px',
+                          borderRadius: '10px',
+                          border: isCurrent ? '1px solid var(--brand-accent)' : '1px solid var(--hairline-border-strong)',
+                          background: isCurrent ? 'var(--brand-accent-soft)' : 'var(--surface-elevated)',
+                          color: isCurrent ? 'var(--ink-primary)' : isPast ? 'var(--ink-muted)' : 'var(--ink-secondary)',
+                          cursor: isCurrent ? 'default' : 'pointer',
+                          textAlign: 'left',
+                          flexShrink: 0,
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '2px',
+                          opacity: isPast && !isCurrent ? 0.65 : 1
+                        }}
+                      >
+                        <div style={{ fontSize: '0.68rem', fontWeight: 700, color: isCurrent ? 'var(--teal-300)' : 'var(--ink-muted)' }}>
+                          #{sIdx + 1} {isCurrent ? '• CURRENT' : isPast ? '• PAST' : ''}
+                        </div>
+                        <div style={{ fontSize: '0.8rem', fontWeight: 600, color: isCurrent ? 'var(--ink-primary)' : undefined }}>{formatEventDate(se.date)}</div>
+                        <div style={{ fontSize: '0.7rem', color: 'var(--ink-muted)' }}>{se.time || '10:00'}</div>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
         </div>
 
         {/* Lu.ma Style: Who's Going Attendee Facepile */}
