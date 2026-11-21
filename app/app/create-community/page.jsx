@@ -8,7 +8,7 @@ export default function CreateCommunityPage() {
   const router = useRouter();
 
   return (
-    <div style={{ minHeight: '100dvh', background: 'var(--slate-950)', color: 'var(--white)' }}>
+    <div style={{ minHeight: '100dvh', background: 'var(--surface-canvas)', color: 'var(--ink-primary)' }}>
       <AppHeader 
         title="Start a Community" 
         showBack={true} 

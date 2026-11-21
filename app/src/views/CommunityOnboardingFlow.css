@@ -2,7 +2,7 @@
   position: fixed;
   inset: 0;
   z-index: 9999;
-  background: var(--slate-950);
+  background: var(--surface-canvas);
   display: flex;
   flex-direction: column;
 }
@@ -39,7 +39,7 @@
 }
 
 .progress-bar-segment.inactive {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--hairline-border-strong);
 }
 
 .progress-info {
@@ -83,7 +83,8 @@
 .footer-actions {
   padding: 16px 24px 32px;
   flex-shrink: 0;
-  background: var(--slate-950);
+  background: var(--surface-canvas);
+  border-top: 1px solid var(--hairline-border);
 }
 
 .btn-continue {
@@ -164,10 +165,10 @@
 .text-input, .textarea-input {
   width: 100%;
   padding: 16px;
-  background: var(--slate-800);
-  border: 1px solid var(--slate-700);
+  background: var(--surface-card);
+  border: 1px solid var(--hairline-border-strong);
   border-radius: 12px;
-  color: var(--white);
+  color: var(--ink-primary);
   font-size: 1.05rem;
   transition: border-color 0.2s;
 }
@@ -215,9 +216,9 @@
 }
 
 .image-upload-empty {
-  background: rgba(255, 255, 255, 0.04);
-  border: 2px dashed rgba(255, 255, 255, 0.15);
-  color: var(--slate-400);
+  background: var(--surface-card);
+  border: 2px dashed var(--hairline-border-strong);
+  color: var(--ink-secondary);
 }
 
 .image-upload-filled {

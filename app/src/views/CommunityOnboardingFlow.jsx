@@ -166,7 +166,7 @@ function StepDetails({ targetAudience, setTargetAudience, cost, setCost, activit
           value={activityLevel}
           onChange={e => setActivityLevel(e.target.value)}
           className="text-input"
-          style={{ appearance: 'none', backgroundColor: 'var(--slate-800)' }}
+          style={{ appearance: 'none', backgroundColor: 'var(--surface-card)' }}
         >
           <option value="Very Active">Very Active (Weekly)</option>
           <option value="Active">Active (Fortnightly)</option>
@@ -202,8 +202,8 @@ function StepDetails({ targetAudience, setTargetAudience, cost, setCost, activit
             type="button"
             onClick={() => setAllowChapters(!allowChapters)}
             style={{
-              width: '46px', height: '26px', borderRadius: '99px', border: 'none',
-              background: allowChapters ? 'var(--teal-500)' : 'rgba(255,255,255,0.12)',
+              width: '46px', height: '26px', borderRadius: '99px', border: allowChapters ? 'none' : '1px solid var(--hairline-border-strong)',
+              background: allowChapters ? 'var(--brand-accent)' : 'var(--surface-elevated)',
               position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0
             }}
           >
@@ -227,8 +227,8 @@ function StepDetails({ targetAudience, setTargetAudience, cost, setCost, activit
             type="button"
             onClick={() => setAllowCarpool(!allowCarpool)}
             style={{
-              width: '46px', height: '26px', borderRadius: '99px', border: 'none',
-              background: allowCarpool ? 'var(--teal-500)' : 'rgba(255,255,255,0.12)',
+              width: '46px', height: '26px', borderRadius: '99px', border: allowCarpool ? 'none' : '1px solid var(--hairline-border-strong)',
+              background: allowCarpool ? 'var(--brand-accent)' : 'var(--surface-elevated)',
               position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0
             }}
           >
@@ -682,22 +682,7 @@ function StepVerification({ instagram, setInstagram, whatsapp, setWhatsapp }) {
         </div>
       </div>
 
-      <div style={{
-        width: '100%',
-        aspectRatio: '16 / 9',
-        borderRadius: '16px',
-        overflow: 'hidden',
-        border: '1px solid rgba(255,255,255,0.12)',
-        marginBottom: '1.25rem',
-        background: '#FAF8F5',
-        boxShadow: '0 8px 28px rgba(0,0,0,0.22)'
-      }}>
-        <iframe
-          src="/explainer-leader.html"
-          title="How More Community works for Leaders"
-          style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
-        />
-      </div>
+
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         <div className="input-group">

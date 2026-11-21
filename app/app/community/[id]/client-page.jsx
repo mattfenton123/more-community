@@ -90,7 +90,7 @@ function getGalleryType(tags) {
 export default function CommunityProfile() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user, communities, events, communityMemberships, users, eventRsvps, uploadImage, addEventPhoto, joinCommunity, leaveCommunity, experiences, services, updateServiceStatus, reviews, updateCommunity, approveChapter, declineChapter, sponsors, sponsorshipAssignments, addCommunityHighlight } = useAppContext();
+  const { user, communities, events, communityMemberships, users, eventRsvps, uploadImage, addEventPhoto, joinCommunity, leaveCommunity, experiences, services, updateServiceStatus, reviews, updateCommunity, approveChapter, declineChapter, sponsors, sponsorshipAssignments, addCommunityHighlight, theme } = useAppContext();
   const { feedPosts, createFeedPost, likeFeedPost, deleteFeedPost } = useFeed();
   const { toast } = useToast();
   const [showRules, setShowRules] = useState(false);
@@ -172,10 +172,10 @@ export default function CommunityProfile() {
   );
   const communityEvents = events.filter(e => e.communityId === communityId || e.collabCommunityIds?.includes(communityId));
   const upcomingEvents = communityEvents
-    .filter(e => isEventUpcoming(e) && e.status !== 'cancelled')
+    .filter(e => isEventUpcoming(e) && e.status !== 'cancelled' && e.status !== 'proposed')
     .sort((a, b) => (parseEventDateTime(a.date, a.time) || 0) - (parseEventDateTime(b.date, b.time) || 0));
   const pastEvents = communityEvents
-    .filter(e => isEventPast(e) && e.status !== 'cancelled')
+    .filter(e => isEventPast(e) && e.status !== 'cancelled' && e.status !== 'proposed')
     .sort((a, b) => (parseEventDateTime(b.date, b.time) || 0) - (parseEventDateTime(a.date, a.time) || 0));
   const leaderUser = users.find(u => u.id === community.leader_id);
   const memberList = (communityMemberships[communityId] || []).map(m => users.find(u => u.id === m.userId || u.id === m.user_id)).filter(Boolean);
@@ -495,7 +495,7 @@ export default function CommunityProfile() {
   }
 
   return (
-    <div className="view-profile" style={{ background: 'var(--slate-950)', minHeight: '100dvh', paddingBottom: '80px', width: '100%' }}>
+    <div className="view-profile" style={{ background: 'var(--surface-canvas)', minHeight: '100dvh', paddingBottom: '80px', width: '100%' }}>
       {/* Pending / Declined Chapter Preview Banner for Applicant & Founding Leader */}
       {(isPendingChapter || isDeclinedChapter) && canPreviewUnpublishedChapter && (
         <div style={{
@@ -735,7 +735,7 @@ export default function CommunityProfile() {
                   fontWeight: 700,
                   border: '1px solid rgba(244, 241, 234, 0.2)'
                 }}>
-                  <Shield size={12} color="#F4F1EA" /> Insured &amp; Verified
+                  <Shield size={12} color="#F4F1EA" /> Leader Pro · Verified
                 </div>
               )}
             </div>
@@ -815,7 +815,7 @@ export default function CommunityProfile() {
                 )}
                 {isLeader && (
                   <span
-                    onClick={() => navigate.push(`/dashboard?community=${community.id}&tab=members`)}
+                    onClick={() => navigate.push(`/dashboard?community=${community.id}&tab=people`)}
                     style={{ marginLeft: '10px', fontSize: '0.76rem', color: 'var(--teal-300)', cursor: 'pointer', fontWeight: 600, textDecoration: 'underline' }}
                   >
                     + Add Co-Host
@@ -868,9 +868,9 @@ export default function CommunityProfile() {
                 padding: '10px 16px', 
                 borderRadius: '100px', 
                 border: '1px solid',
-                borderColor: activeTab === tab.id ? 'rgba(235, 87, 56,0.3)' : 'rgba(255,255,255,0.06)',
-                background: activeTab === tab.id ? 'rgba(235, 87, 56,0.15)' : 'rgba(255,255,255,0.03)',
-                color: activeTab === tab.id ? 'var(--teal-300)' : 'var(--slate-300)',
+                borderColor: activeTab === tab.id ? 'var(--brand-accent)' : 'var(--hairline-border-strong)',
+                background: activeTab === tab.id ? 'var(--brand-accent)' : 'var(--surface-card)',
+                color: activeTab === tab.id ? '#FFFFFF' : 'var(--ink-secondary)',
                 fontWeight: 600, 
                 fontSize: '0.85rem', 
                 cursor: 'pointer', 
@@ -929,7 +929,7 @@ export default function CommunityProfile() {
         {(activeTab === 'feed' || activeTab === 'photos') && (
           <>
             {(isMember || isLeader) && (
-              <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '16px', marginBottom: '16px' }}>
+              <div style={{ background: 'var(--surface-card)', border: '1px solid var(--hairline-border)', borderRadius: '16px', padding: '16px', marginBottom: '16px' }}>
                 <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
                   <img src={resolveUserAvatar(user)} alt="You" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
                   <div style={{ flex: 1 }}>
@@ -962,7 +962,7 @@ export default function CommunityProfile() {
                           </button>
                           {showPostEmojiPicker && (
                             <div style={{ position: 'absolute', top: '100%', left: '0', zIndex: 100, paddingTop: '8px' }}>
-                              <EmojiPicker onEmojiClick={(e) => { setNewPostText(prev => prev + e.emoji); setShowPostEmojiPicker(false); }} theme="dark" width={300} height={400} />
+                              <EmojiPicker onEmojiClick={(e) => { setNewPostText(prev => prev + e.emoji); setShowPostEmojiPicker(false); }} theme={theme === 'light' ? 'light' : 'dark'} width={300} height={400} />
                             </div>
                           )}
                         </div>
@@ -1000,7 +1000,7 @@ export default function CommunityProfile() {
                 const isSuggestion = post.text?.includes('💡 **SUGGESTION:**');
                 const isReview = post.text?.startsWith('⭐️⭐️⭐️⭐️⭐️');
                 
-                let wrapperStyle = { background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', overflow: 'hidden' };
+                let wrapperStyle = { background: 'var(--surface-card)', border: '1px solid var(--hairline-border)', borderRadius: '16px', overflow: 'hidden' };
                 if (isCampaign) {
                   wrapperStyle = { background: 'var(--slate-900)', border: '1px solid rgba(235, 87, 56,0.3)', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 4px 20px rgba(235, 87, 56,0.05)' };
                 } else if (isSuggestion) {
@@ -2037,20 +2037,20 @@ export default function CommunityProfile() {
                 className="interactive-press"
                 style={{
                   width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  padding: '14px 16px', background: 'rgba(255,255,255,0.03)',
-                  border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px',
-                  color: 'var(--white)', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600,
+                  padding: '14px 16px', background: 'var(--surface-card)',
+                  border: '1px solid var(--hairline-border)', borderRadius: '14px',
+                  color: 'var(--ink-primary)', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600,
                 }}
               >
                 <span>📋 Community Guidelines</span>
-                {showRules ? <ChevronUp size={18} color="var(--slate-400)" /> : <ChevronDown size={18} color="var(--slate-400)" />}
+                {showRules ? <ChevronUp size={18} color="var(--ink-muted)" /> : <ChevronDown size={18} color="var(--ink-muted)" />}
               </button>
               {showRules && (
                 <div style={{
                   padding: '16px', marginTop: '8px',
-                  background: 'rgba(255,255,255,0.02)', borderRadius: '14px',
-                  border: '1px solid rgba(255,255,255,0.05)',
-                  fontSize: '0.9rem', color: 'var(--slate-300)', lineHeight: 1.6,
+                  background: 'var(--surface-card)', borderRadius: '14px',
+                  border: '1px solid var(--hairline-border)',
+                  fontSize: '0.9rem', color: 'var(--ink-secondary)', lineHeight: 1.6,
                 }}>
                   {/* Display guidelines */}
                   {!editingGuidelines ? (
@@ -2224,7 +2224,7 @@ export default function CommunityProfile() {
                 {upcomingEvents.map(event => {
                   const rsvps = eventRsvps[event.id] || [];
                   return (
-                    <div key={event.id} onClick={() => navigate.push(getEventPath(event, events))} className="interactive-press community-event-card" style={{ borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)', cursor: 'pointer' }}>
+                    <div key={event.id} onClick={() => navigate.push(getEventPath(event, events))} className="interactive-press community-event-card" style={{ borderRadius: '16px', overflow: 'hidden', border: '1px solid var(--hairline-border)', background: 'var(--surface-card)', cursor: 'pointer' }}>
                       {event.image && (
                         <div style={{ height: '140px', background: `url(${event.image})`, backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative' }}>
                           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.6))' }}></div>

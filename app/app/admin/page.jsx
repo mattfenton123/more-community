@@ -34,7 +34,7 @@ const StatCard = ({ value, label, icon: Icon, color, accent, onClick, descriptio
     }}
   >
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
-      <div style={{ fontSize: '1.75rem', fontFamily: 'var(--font-heading)', fontWeight: 700, color: color || 'white' }}>{value}</div>
+      <div style={{ fontSize: '1.75rem', fontFamily: 'var(--font-heading)', fontWeight: 700, color: color || 'var(--ink-primary)' }}>{value}</div>
       {Icon && (
         <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: `${color || 'var(--slate-500)'}15`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <Icon size={18} color={color || 'var(--slate-500)'} />
@@ -61,11 +61,11 @@ const SearchBar = ({ placeholder, value, onChange }) => (
       onChange={onChange}
       style={{ 
         width: '100%', 
-        background: 'rgba(255,255,255,0.04)', 
-        border: '1px solid rgba(255,255,255,0.08)', 
+        background: 'var(--surface-card)', 
+        border: '1px solid var(--hairline-border-strong)', 
         borderRadius: '12px', 
         padding: '12px 12px 12px 42px', 
-        color: 'var(--white)', 
+        color: 'var(--ink-primary)', 
         fontSize: '0.88rem' 
       }} 
     />
@@ -194,14 +194,15 @@ const ADMIN_EMAILS = [
     const totalUsers = users.length;
     const totalCommunities = communities.length;
     const verifiedCommunities = communities.filter(c => c.verified).length;
-    const totalEvents = events.length;
-    const activeEvents = events.filter(e => e.status !== 'cancelled').length;
+    const publishedEventsList = events.filter(e => e.status !== 'proposed');
+    const totalEvents = publishedEventsList.length;
+    const activeEvents = publishedEventsList.filter(e => e.status !== 'cancelled').length;
 
     // Revenue
     let totalRevenue = 0;
     let monthRevenue = 0;
     const now = new Date();
-    events.forEach(event => {
+    publishedEventsList.forEach(event => {
       const price = event.ticketPrice || 0;
       const rsvps = (eventRsvps[event.id] || []).filter(r => r.status === 'going');
       const rev = price * rsvps.length;
@@ -223,7 +224,7 @@ const ADMIN_EMAILS = [
     // Community health
     const communityHealth = communities.map(c => {
       const members = (communityMemberships[c.id] || []).length;
-      const cEvents = events.filter(e => e.communityId === c.id && e.status !== 'cancelled').length;
+      const cEvents = events.filter(e => e.communityId === c.id && e.status !== 'cancelled' && e.status !== 'proposed').length;
       const cMessages = messages.filter(m => m.communityId === c.id).length;
       const activityScore = members * 2 + cEvents * 10 + cMessages;
       const health = activityScore >= 30 ? 'active' : activityScore >= 10 ? 'moderate' : 'dormant';
@@ -276,7 +277,7 @@ const ADMIN_EMAILS = [
       const revenue = (e.ticketPrice || 0) * rsvps.length;
       return { ...e, communityName: community?.name || 'Unknown', rsvpCount: rsvps.length, checkins, revenue, rsvpsList: rsvps };
     });
-    if (eventFilter === 'upcoming') list = list.filter(e => e.status !== 'cancelled' && new Date(e.date + 'T00:00:00') >= new Date());
+    if (eventFilter === 'upcoming') list = list.filter(e => e.status !== 'cancelled' && e.status !== 'proposed' && new Date(e.date + 'T00:00:00') >= new Date());
     if (eventFilter === 'past') list = list.filter(e => new Date(e.date + 'T00:00:00') < new Date());
     if (eventFilter === 'cancelled') list = list.filter(e => e.status === 'cancelled');
     if (searchTerm) list = list.filter(e => e.title?.toLowerCase().includes(searchTerm.toLowerCase()) || e.communityName?.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -362,13 +363,22 @@ const ADMIN_EMAILS = [
     return acts.slice(0, 10);
   }, [users, communities, events]);
 
-  // ─── Growth data (8 weeks) ────────────────────────────────
+  // ─── Growth data (8 weeks, deterministic from user timestamps) ───
   const growthData = useMemo(() => {
     const weeks = [];
+    const nowMs = Date.now();
     for (let i = 7; i >= 0; i--) {
-      const count = Math.max(1, Math.floor(users.length * (8 - i) / 8) + Math.floor(Math.random() * 2));
-      const d = new Date();
-      d.setDate(d.getDate() - i * 7);
+      const cutoffMs = nowMs - i * 7 * 24 * 60 * 60 * 1000;
+      const datedCount = users.filter(u => {
+        const ts = u.created_at || u.createdAt || u.joined;
+        if (!ts) return false;
+        const ms = new Date(ts).getTime();
+        return !Number.isNaN(ms) && ms <= cutoffMs;
+      }).length;
+      const undatedCount = users.filter(u => !(u.created_at || u.createdAt || u.joined)).length;
+      const baseline = Math.floor(undatedCount * (8 - i) / 8);
+      const count = Math.max(1, datedCount + baseline);
+      const d = new Date(cutoffMs);
       weeks.push({ count, label: d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) });
     }
     const max = Math.max(...weeks.map(w => w.count), 1);
@@ -405,8 +415,8 @@ const ADMIN_EMAILS = [
         `"${e.title}","${e.communityName}","${e.date}",${e.rsvpCount},${e.checkins},${e.revenue}`
       ).join('\n');
     } else if (type === 'revenue') {
-      csv = 'Community,Events,Members,Gross Revenue,Platform Take (15%),Leader Net (85%)\n' + revenueByComm.map(c =>
-        `"${c.name}",${c.cEvents},${c.members},${c.cRevenue},${Math.round(c.cRevenue * 0.15)},${Math.round(c.cRevenue * 0.85)}`
+      csv = 'Community,Events,Members,Gross Revenue,Platform Take (5%),Leader Net (95%)\n' + revenueByComm.map(c =>
+        `"${c.name}",${c.cEvents},${c.members},${c.cRevenue},${(c.cRevenue * 0.05).toFixed(2)},${(c.cRevenue * 0.95).toFixed(2)}`
       ).join('\n');
     }
     const blob = new Blob([csv], { type: 'text/csv' });
@@ -752,8 +762,9 @@ const ADMIN_EMAILS = [
             className="interactive-press"
             style={{
               padding: '8px 16px', borderRadius: '99px', border: 'none',
-              background: activeTab === tab.key ? 'white' : 'rgba(255,255,255,0.04)',
-              color: activeTab === tab.key ? 'black' : 'var(--slate-400)',
+              background: activeTab === tab.key ? 'var(--brand-accent)' : 'var(--surface-card)',
+              color: activeTab === tab.key ? '#FFFFFF' : 'var(--ink-secondary)',
+              border: activeTab === tab.key ? '1px solid var(--brand-accent)' : '1px solid var(--hairline-border)',
               fontWeight: 600, fontSize: '0.78rem', whiteSpace: 'nowrap', transition: 'all 0.15s ease',
               display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer'
             }}
@@ -817,9 +828,9 @@ const ADMIN_EMAILS = [
                   <div style={{ fontSize: '0.7rem', color: 'var(--slate-400)', marginTop: '4px' }}>1 session, 1 sponsor perk</div>
                 </div>
                 <div style={{ background: 'rgba(255,255,255,0.04)', padding: '14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                  <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', textTransform: 'uppercase' }}>Leader Shield Pro</div>
-                  <div style={{ fontSize: '1rem', fontWeight: 800, color: '#38bdf8', marginTop: '4px' }}>£5M Organiser Insured</div>
-                  <div style={{ fontSize: '0.7rem', color: '#38bdf8', marginTop: '4px' }}>Council Safety Packs + 2% fees</div>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', textTransform: 'uppercase' }}>Leader Pro Tier</div>
+                  <div style={{ fontSize: '1rem', fontWeight: 800, color: '#38bdf8', marginTop: '4px' }}>2% Reduced Ticket Fees</div>
+                  <div style={{ fontSize: '0.7rem', color: '#38bdf8', marginTop: '4px' }}>Venue Safety Packs (RAMS) &amp; Waivers</div>
                 </div>
               </div>
             </div>
@@ -1029,7 +1040,7 @@ const ADMIN_EMAILS = [
                   value={platformStats.totalUsers} 
                   label="Total Users" 
                   icon={Users} 
-                  color="white" 
+                  color="var(--ink-primary)" 
                   onClick={() => setActiveTab('users')}
                   description="Registered community members"
                 />
@@ -1066,7 +1077,7 @@ const ADMIN_EMAILS = [
                   color="#f59e0b" 
                   accent="#f59e0b" 
                   onClick={() => setActiveTab('revenue')}
-                  description="15% platform take-rate"
+                  description="5% standard / 2% Pro take-rate"
                 />
                 <StatCard 
                   value={platformStats.avgAttendance} 
@@ -1297,7 +1308,7 @@ const ADMIN_EMAILS = [
                           ) : (
                             <span style={{ background: 'rgba(255,255,255,0.06)', color: 'var(--slate-400)', padding: '1px 6px', borderRadius: '4px', fontSize: '0.68rem' }}>FREE TIER</span>
                           )}
-                          {c.stripe_account_id ? (
+                          {(c.stripe_account_id && !String(c.stripe_account_id).startsWith('acct_payout_')) ? (
                             <span style={{ background: 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.3)', color: '#60a5fa', padding: '1px 6px', borderRadius: '4px', fontSize: '0.68rem', fontWeight: 600 }}>STRIPE LINKED</span>
                           ) : (c.cRevenue > 0 || (events.filter(e => e.communityId === c.id && (e.ticketPrice || 0) > 0).length > 0)) ? (
                             <span style={{ background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)', color: '#f87171', padding: '1px 6px', borderRadius: '4px', fontSize: '0.68rem', fontWeight: 700 }}>⚠️ PAYOUT BANK NEEDED</span>
@@ -1368,8 +1379,8 @@ const ADMIN_EMAILS = [
                             <div style={{ fontSize: '0.65rem', color: 'var(--slate-400)', textTransform: 'uppercase' }}>Gross Sales</div>
                           </div>
                           <div style={{ textAlign: 'center', padding: '12px 8px', background: 'rgba(255,255,255,0.02)', borderRadius: '10px' }}>
-                            <div style={{ fontSize: '1.2rem', fontWeight: 700, color: '#60a5fa' }}>£{Math.round(c.cRevenue * 0.15)}</div>
-                            <div style={{ fontSize: '0.65rem', color: 'var(--slate-400)', textTransform: 'uppercase' }}>Take (15%)</div>
+                            <div style={{ fontSize: '1.2rem', fontWeight: 700, color: '#60a5fa' }}>£{(c.cRevenue * 0.05).toFixed(2)}</div>
+                            <div style={{ fontSize: '0.65rem', color: 'var(--slate-400)', textTransform: 'uppercase' }}>Take (5%)</div>
                           </div>
                         </div>
 
