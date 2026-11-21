@@ -70,9 +70,9 @@ export default function SpecialistVaultModal({ isOpen, onClose, specialist, mode
           display: 'flex',
           flexDirection: 'column',
           borderRadius: '24px',
-          border: '1px solid rgba(45, 212, 191, 0.25)',
-          background: 'linear-gradient(180deg, rgba(15, 23, 42, 0.98) 0%, rgba(10, 16, 30, 0.98) 100%)',
-          boxShadow: '0 25px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(20, 184, 166, 0.15)',
+          border: '1px solid rgba(242, 114, 87, 0.25)',
+          background: 'linear-gradient(180deg, rgba(27, 27, 27, 0.98) 0%, rgba(10, 16, 30, 0.98) 100%)',
+          boxShadow: '0 25px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(235, 87, 56, 0.15)',
           overflow: 'hidden'
         }}
       >
@@ -90,8 +90,8 @@ export default function SpecialistVaultModal({ isOpen, onClose, specialist, mode
               width: '42px',
               height: '42px',
               borderRadius: '12px',
-              background: 'linear-gradient(135deg, rgba(20, 184, 166, 0.2) 0%, rgba(13, 148, 136, 0.1) 100%)',
-              border: '1px solid rgba(45, 212, 191, 0.3)',
+              background: 'linear-gradient(135deg, rgba(235, 87, 56, 0.2) 0%, rgba(217, 70, 40, 0.1) 100%)',
+              border: '1px solid rgba(242, 114, 87, 0.3)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -108,9 +108,9 @@ export default function SpecialistVaultModal({ isOpen, onClose, specialist, mode
                   fontSize: '0.7rem',
                   fontWeight: 700,
                   textTransform: 'uppercase',
-                  background: 'rgba(20, 184, 166, 0.15)',
+                  background: 'rgba(235, 87, 56, 0.15)',
                   color: 'var(--teal-300)',
-                  border: '1px solid rgba(20, 184, 166, 0.3)',
+                  border: '1px solid rgba(235, 87, 56, 0.3)',
                   padding: '2px 8px',
                   borderRadius: '12px'
                 }}>
@@ -190,15 +190,15 @@ export default function SpecialistVaultModal({ isOpen, onClose, specialist, mode
                     alignItems: 'flex-start',
                     gap: '12px',
                     padding: '12px 14px',
-                    background: 'rgba(20, 184, 166, 0.05)',
-                    border: '1px solid rgba(45, 212, 191, 0.2)',
+                    background: 'rgba(235, 87, 56, 0.05)',
+                    border: '1px solid rgba(242, 114, 87, 0.2)',
                     borderRadius: '12px'
                   }}>
                     <Award size={18} color="var(--teal-400)" style={{ marginTop: '2px', flexShrink: 0 }} />
                     <div style={{ flex: 1 }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                         <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--white)' }}>National Governing Body (NGB) Accreditation</span>
-                        <span style={{ fontSize: '0.72rem', background: 'rgba(20, 184, 166, 0.2)', color: 'var(--teal-300)', padding: '2px 8px', borderRadius: '10px', fontWeight: 600 }}>
+                        <span style={{ fontSize: '0.72rem', background: 'rgba(235, 87, 56, 0.2)', color: 'var(--teal-300)', padding: '2px 8px', borderRadius: '10px', fontWeight: 600 }}>
                           Checked Active
                         </span>
                       </div>
@@ -214,15 +214,15 @@ export default function SpecialistVaultModal({ isOpen, onClose, specialist, mode
                     alignItems: 'flex-start',
                     gap: '12px',
                     padding: '12px 14px',
-                    background: 'rgba(20, 184, 166, 0.05)',
-                    border: '1px solid rgba(45, 212, 191, 0.2)',
+                    background: 'rgba(235, 87, 56, 0.05)',
+                    border: '1px solid rgba(242, 114, 87, 0.2)',
                     borderRadius: '12px'
                   }}>
                     <Shield size={18} color="var(--teal-400)" style={{ marginTop: '2px', flexShrink: 0 }} />
                     <div style={{ flex: 1 }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                         <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--white)' }}>Commercial Instructor Liability & Legal Cover</span>
-                        <span style={{ fontSize: '0.72rem', background: 'rgba(20, 184, 166, 0.2)', color: 'var(--teal-300)', padding: '2px 8px', borderRadius: '10px', fontWeight: 600 }}>
+                        <span style={{ fontSize: '0.72rem', background: 'rgba(235, 87, 56, 0.2)', color: 'var(--teal-300)', padding: '2px 8px', borderRadius: '10px', fontWeight: 600 }}>
                           {specialist.credentials?.insuranceCover?.split(' ')[0] || '£5M'} Cover
                         </span>
                       </div>
@@ -288,8 +288,8 @@ export default function SpecialistVaultModal({ isOpen, onClose, specialist, mode
               <div style={{
                 padding: '16px',
                 borderRadius: '14px',
-                background: 'linear-gradient(135deg, rgba(20, 184, 166, 0.1) 0%, rgba(15, 23, 42, 0.4) 100%)',
-                border: '1px solid rgba(45, 212, 191, 0.3)',
+                background: 'linear-gradient(135deg, rgba(235, 87, 56, 0.1) 0%, rgba(27, 27, 27, 0.4) 100%)',
+                border: '1px solid rgba(242, 114, 87, 0.3)',
                 display: 'flex',
                 gap: '12px'
               }}>
@@ -315,7 +315,7 @@ export default function SpecialistVaultModal({ isOpen, onClose, specialist, mode
                     width: '64px',
                     height: '64px',
                     borderRadius: '50%',
-                    background: 'rgba(20, 184, 166, 0.2)',
+                    background: 'rgba(235, 87, 56, 0.2)',
                     border: '2px solid var(--teal-400)',
                     display: 'flex',
                     alignItems: 'center',
@@ -364,7 +364,7 @@ export default function SpecialistVaultModal({ isOpen, onClose, specialist, mode
                           padding: '8px 12px',
                           borderRadius: '10px',
                           border: step === s.num ? '1px solid var(--teal-500)' : '1px solid rgba(255, 255, 255, 0.05)',
-                          background: step === s.num ? 'rgba(20, 184, 166, 0.15)' : 'rgba(255, 255, 255, 0.02)',
+                          background: step === s.num ? 'rgba(235, 87, 56, 0.15)' : 'rgba(255, 255, 255, 0.02)',
                           color: step === s.num ? 'var(--teal-300)' : 'var(--slate-400)',
                           fontSize: '0.8rem',
                           fontWeight: 600,
@@ -470,7 +470,7 @@ export default function SpecialistVaultModal({ isOpen, onClose, specialist, mode
                   {/* Step 2: Background, Qualifications & Safety */}
                   {step === 2 && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                      <div style={{ background: 'rgba(20, 184, 166, 0.05)', border: '1px solid rgba(45, 212, 191, 0.2)', padding: '12px 14px', borderRadius: '12px', fontSize: '0.82rem', color: 'var(--teal-200)', lineHeight: 1.4 }}>
+                      <div style={{ background: 'rgba(235, 87, 56, 0.05)', border: '1px solid rgba(242, 114, 87, 0.2)', padding: '12px 14px', borderRadius: '12px', fontSize: '0.82rem', color: 'var(--teal-200)', lineHeight: 1.4 }}>
                         ✨ <strong>Leader Autonomy:</strong> Community leaders review all proposals directly. Tell them about your background, any qualifications or experience you hold, and how you keep sessions safe.
                       </div>
 
@@ -603,7 +603,7 @@ export default function SpecialistVaultModal({ isOpen, onClose, specialist, mode
                             type="number"
                             value={formData.communityPrice}
                             onChange={(e) => setFormData({ ...formData, communityPrice: e.target.value })}
-                            style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', background: 'rgba(20, 184, 166, 0.1)', border: '1px solid var(--teal-500)', color: 'var(--white)', fontSize: '0.9rem', fontWeight: 700 }}
+                            style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', background: 'rgba(235, 87, 56, 0.1)', border: '1px solid var(--teal-500)', color: 'var(--white)', fontSize: '0.9rem', fontWeight: 700 }}
                           />
                         </div>
                         <div>

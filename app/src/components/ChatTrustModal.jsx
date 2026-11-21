@@ -55,7 +55,7 @@ export default function ChatTrustModal({ isOpen, onClose, targetUser, communityI
         position: 'fixed',
         inset: 0,
         zIndex: 99999,
-        background: 'rgba(2, 6, 23, 0.88)',
+        background: 'rgba(18, 18, 18, 0.88)',
         backdropFilter: 'blur(8px)',
         display: 'flex',
         alignItems: 'center',
@@ -67,7 +67,7 @@ export default function ChatTrustModal({ isOpen, onClose, targetUser, communityI
         onClick={e => e.stopPropagation()}
         className="modal-content"
         style={{
-          background: '#0f172a',
+          background: '#1B1B1B',
           border: '1px solid rgba(255,255,255,0.12)',
           borderRadius: '24px',
           maxWidth: '500px',
@@ -131,7 +131,7 @@ export default function ChatTrustModal({ isOpen, onClose, targetUser, communityI
               style={{
                 width: '100%',
                 padding: '10px 12px',
-                background: '#1e293b',
+                background: '#252525',
                 border: '1px solid #334155',
                 borderRadius: '10px',
                 color: '#fff',

@@ -145,8 +145,8 @@ export default function DirectMessage() {
 
       {/* First-Contact Safety Notice / Shield Harbor */}
       <div style={{
-        background: 'linear-gradient(90deg, rgba(20,184,166,0.12) 0%, rgba(59,130,246,0.08) 100%)',
-        borderBottom: '1px solid rgba(20,184,166,0.2)',
+        background: 'linear-gradient(90deg, rgba(235, 87, 56, 0.12) 0%, rgba(235, 87, 56, 0.03) 100%)',
+        borderBottom: '1px solid rgba(235, 87, 56,0.2)',
         padding: '10px 16px',
         display: 'flex',
         alignItems: 'center',
@@ -242,7 +242,7 @@ export default function DirectMessage() {
                         {Object.entries(reactionMap).map(([emoji, rUsers]) => {
                           const hasReacted = rUsers.includes(user?.id);
                           return (
-                            <button key={emoji} onClick={() => reactToMessage(msg.id, emoji, true)} className="interactive-press" style={{ background: hasReacted ? 'rgba(20,184,166,0.2)' : 'rgba(255,255,255,0.05)', border: `1px solid ${hasReacted ? 'var(--teal-500)' : 'rgba(255,255,255,0.1)'}`, borderRadius: '99px', padding: '2px 6px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px', color: hasReacted ? 'var(--teal-300)' : 'var(--slate-400)', cursor: 'pointer' }}>
+                            <button key={emoji} onClick={() => reactToMessage(msg.id, emoji, true)} className="interactive-press" style={{ background: hasReacted ? 'rgba(235, 87, 56,0.2)' : 'rgba(255,255,255,0.05)', border: `1px solid ${hasReacted ? 'var(--teal-500)' : 'rgba(255,255,255,0.1)'}`, borderRadius: '99px', padding: '2px 6px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px', color: hasReacted ? 'var(--teal-300)' : 'var(--slate-400)', cursor: 'pointer' }}>
                               <span>{emoji}</span><span>{rUsers.length}</span>
                             </button>
                           );
@@ -271,7 +271,7 @@ export default function DirectMessage() {
           </div>
 
           {/* Quick Emoji Bar */}
-          <div style={{ padding: '6px 14px', background: 'rgba(15,23,42,0.85)', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: '6px', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+          <div style={{ padding: '6px 14px', background: 'rgba(27, 27, 27,0.85)', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: '6px', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
             <span style={{ fontSize: '0.65rem', color: 'var(--slate-500)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700, flexShrink: 0, marginRight: '4px' }}>Quick</span>
             {QUICK_EMOJIS.map(em => (
               <button 
@@ -322,7 +322,7 @@ export default function DirectMessage() {
               style={{ flex: 1, padding: '10px 16px', borderRadius: '20px', border: '1px solid var(--slate-700)', background: 'var(--slate-800)', color: 'var(--slate-200)', fontSize: '0.9rem', outline: 'none' }}
             />
             {imageFile && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(20,184,166,0.1)', padding: '4px 8px', borderRadius: '8px', fontSize: '0.75rem', color: 'var(--teal-300)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(235, 87, 56,0.1)', padding: '4px 8px', borderRadius: '8px', fontSize: '0.75rem', color: 'var(--teal-300)' }}>
                 📷 {imageFile.name.substring(0, 10)}...
                 <button onClick={() => setImageFile(null)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 }}><X size={12} color="var(--teal-300)" /></button>
               </div>
@@ -415,7 +415,7 @@ export default function DirectMessage() {
                   }}
                   placeholder="Reply in thread..."
                   style={{ flex: 1, background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '999px', padding: '10px 16px', color: 'var(--white)', fontSize: '0.9rem', outline: 'none' }}
-                  onFocus={e => e.target.style.borderColor = 'rgba(20,184,166,0.4)'}
+                  onFocus={e => e.target.style.borderColor = 'rgba(235, 87, 56,0.4)'}
                   onBlur={e => e.target.style.borderColor = 'var(--slate-700)'}
                 />
                 <button disabled={!threadInputText.trim()} onClick={() => {

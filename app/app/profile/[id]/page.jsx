@@ -159,7 +159,7 @@ export default function UserProfile() {
                 <button className="interactive-press" onClick={() => setIsEditing(true)} style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(236,72,153,0.2)', border: '1px solid rgba(236,72,153,0.4)', color: 'var(--pink-400)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
                   <Edit3 size={16} />
                 </button>
-                <button className="interactive-press" onClick={() => navigate.push('/settings')} style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(20,184,166,0.2)', border: '1px solid rgba(20,184,166,0.4)', color: 'var(--teal-400)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                <button className="interactive-press" onClick={() => navigate.push('/settings')} style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(235, 87, 56,0.2)', border: '1px solid rgba(235, 87, 56,0.4)', color: 'var(--teal-400)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
                   <Settings size={16} />
                 </button>
               </>
@@ -387,7 +387,7 @@ export default function UserProfile() {
               {profileUser.interests && profileUser.interests.length > 0 && (
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', justifyContent: 'center', marginTop: '10px' }}>
                   {profileUser.interests.map(interest => (
-                    <span key={interest} style={{ fontSize: '0.75rem', background: 'rgba(20,184,166,0.1)', color: 'var(--teal-300)', padding: '3px 10px', borderRadius: '99px', border: '1px solid rgba(20,184,166,0.2)' }}>{interest}</span>
+                    <span key={interest} style={{ fontSize: '0.75rem', background: 'rgba(235, 87, 56,0.1)', color: 'var(--teal-300)', padding: '3px 10px', borderRadius: '99px', border: '1px solid rgba(235, 87, 56,0.2)' }}>{interest}</span>
                   ))}
                 </div>
               )}
@@ -496,7 +496,7 @@ export default function UserProfile() {
           {['badges', 'communities', ...(isOwnProfile ? ['saved'] : [])].map(tab => (
             <button key={tab} onClick={() => setActiveTab(tab)} style={{
               flex: 1, padding: '8px', borderRadius: '8px', border: 'none',
-              background: activeTab === tab ? 'rgba(20,184,166,0.15)' : 'transparent',
+              background: activeTab === tab ? 'rgba(235, 87, 56,0.15)' : 'transparent',
               color: activeTab === tab ? 'var(--teal-300)' : 'var(--slate-400)',
               fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer', textTransform: 'capitalize'
             }}>

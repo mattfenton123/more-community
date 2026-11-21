@@ -99,7 +99,7 @@ export default function RollCallModal({ event, onClose }) {
           overflow: 'hidden',
           display: 'flex',
           flexDirection: 'column',
-          background: isLight ? '#ffffff' : '#0f172a',
+          background: isLight ? '#ffffff' : '#1B1B1B',
           border: isLight ? '1px solid rgba(0,0,0,0.1)' : '1px solid rgba(255,255,255,0.1)',
           boxShadow: '0 25px 60px rgba(0,0,0,0.4)',
           animation: 'slideDownFade 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
@@ -110,7 +110,7 @@ export default function RollCallModal({ event, onClose }) {
         <div style={{
           padding: '18px 20px',
           borderBottom: isLight ? '1px solid rgba(0,0,0,0.08)' : '1px solid rgba(255,255,255,0.06)',
-          background: isLight ? '#f8fafc' : 'rgba(0,0,0,0.25)',
+          background: isLight ? '#F7F3EC' : 'rgba(0,0,0,0.25)',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'flex-start'
@@ -135,7 +135,7 @@ export default function RollCallModal({ event, onClose }) {
                 {event.date} • {event.time}
               </span>
             </div>
-            <h2 style={{ margin: 0, fontSize: '1.2rem', fontFamily: 'var(--font-heading)', color: isLight ? '#0f172a' : '#ffffff' }}>
+            <h2 style={{ margin: 0, fontSize: '1.2rem', fontFamily: 'var(--font-heading)', color: isLight ? '#1B1B1B' : '#ffffff' }}>
               {event.title}
             </h2>
           </div>
@@ -157,11 +157,11 @@ export default function RollCallModal({ event, onClose }) {
         {/* Progress & Quick Actions Bar */}
         <div style={{
           padding: '16px 20px',
-          background: isLight ? '#ffffff' : 'rgba(15,23,42,0.6)',
+          background: isLight ? '#ffffff' : 'rgba(27, 27, 27,0.6)',
           borderBottom: isLight ? '1px solid rgba(0,0,0,0.06)' : '1px solid rgba(255,255,255,0.04)'
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-            <div style={{ fontSize: '0.85rem', fontWeight: 700, color: isLight ? '#0f172a' : '#ffffff' }}>
+            <div style={{ fontSize: '0.85rem', fontWeight: 700, color: isLight ? '#1B1B1B' : '#ffffff' }}>
               Checked In: <span style={{ color: '#10b981' }}>{checkedInCount}</span> / {totalCount} ({percentCheckedIn}%)
             </div>
             {checkedInCount < totalCount && totalCount > 0 && (
@@ -187,14 +187,14 @@ export default function RollCallModal({ event, onClose }) {
           {/* Progress track */}
           <div style={{
             height: '6px',
-            background: isLight ? '#e2e8f0' : 'rgba(255,255,255,0.08)',
+            background: isLight ? 'rgba(28, 25, 21, 0.10)' : 'rgba(255,255,255,0.08)',
             borderRadius: '99px',
             overflow: 'hidden'
           }}>
             <div style={{
               height: '100%',
               width: `${percentCheckedIn}%`,
-              background: 'linear-gradient(90deg, #10b981, #06b6d4)',
+              background: 'linear-gradient(90deg, var(--brand-secondary), #52A88F)',
               borderRadius: '99px',
               transition: 'width 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
             }} />
@@ -213,8 +213,8 @@ export default function RollCallModal({ event, onClose }) {
                 padding: '9px 12px 9px 34px',
                 borderRadius: '10px',
                 border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255,255,255,0.1)',
-                background: isLight ? '#f8fafc' : 'rgba(0,0,0,0.2)',
-                color: isLight ? '#0f172a' : '#ffffff',
+                background: isLight ? '#F7F3EC' : 'rgba(0,0,0,0.2)',
+                color: isLight ? '#1B1B1B' : '#ffffff',
                 fontSize: '0.85rem',
                 outline: 'none'
               }}
@@ -257,7 +257,7 @@ export default function RollCallModal({ event, onClose }) {
                   />
                   <div style={{ minWidth: 0, flex: 1 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span style={{ fontSize: '0.92rem', fontWeight: 700, color: isLight ? '#0f172a' : '#ffffff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <span style={{ fontSize: '0.92rem', fontWeight: 700, color: isLight ? '#1B1B1B' : '#ffffff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {att.name}
                       </span>
                       {att.guestName && (
@@ -297,9 +297,9 @@ export default function RollCallModal({ event, onClose }) {
                           boxShadow: '0 2px 8px rgba(16,185,129,0.3)'
                         } 
                       : {
-                          background: isLight ? '#f0fdfa' : 'rgba(20,184,166,0.15)',
-                          color: isLight ? '#0d9488' : 'var(--teal-300)',
-                          border: isLight ? '1px solid #99f6e4' : '1px solid rgba(20,184,166,0.4)'
+                          background: isLight ? '#FBF3EF' : 'rgba(235, 87, 56,0.15)',
+                          color: isLight ? '#D94628' : 'var(--teal-300)',
+                          border: isLight ? '1px solid #99f6e4' : '1px solid rgba(235, 87, 56,0.4)'
                         }
                     )
                   }}
@@ -323,7 +323,7 @@ export default function RollCallModal({ event, onClose }) {
         <div style={{
           padding: '14px 20px',
           borderTop: isLight ? '1px solid rgba(0,0,0,0.06)' : '1px solid rgba(255,255,255,0.05)',
-          background: isLight ? '#f8fafc' : 'rgba(0,0,0,0.2)',
+          background: isLight ? '#F7F3EC' : 'rgba(0,0,0,0.2)',
           display: 'flex',
           justifyContent: 'flex-end'
         }}>
@@ -336,7 +336,7 @@ export default function RollCallModal({ event, onClose }) {
               borderRadius: '10px',
               fontWeight: 700,
               fontSize: '0.88rem',
-              background: '#0d9488',
+              background: '#D94628',
               color: '#ffffff',
               border: 'none',
               cursor: 'pointer'

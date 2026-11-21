@@ -282,7 +282,7 @@ export default function RecurringSchedulePicker({
               padding: '10px 8px',
               borderRadius: '9px',
               border: 'none',
-              background: scheduleMode === 'recurring' ? 'linear-gradient(135deg, var(--teal-600), #3b82f6)' : 'transparent',
+              background: scheduleMode === 'recurring' ? 'linear-gradient(135deg, var(--brand-accent), var(--brand-accent-pressed))' : 'transparent',
               color: scheduleMode === 'recurring' ? '#ffffff' : 'var(--slate-400)',
               fontWeight: 600,
               fontSize: '0.8rem',
@@ -416,7 +416,7 @@ export default function RecurringSchedulePicker({
                       fontSize: '0.76rem',
                       fontWeight: active ? 700 : 500,
                       border: active ? '1px solid var(--teal-400)' : '1px solid rgba(255,255,255,0.1)',
-                      background: active ? 'rgba(20,184,166,0.18)' : 'rgba(255,255,255,0.03)',
+                      background: active ? 'rgba(235, 87, 56,0.18)' : 'rgba(255,255,255,0.03)',
                       color: active ? 'var(--teal-300)' : 'var(--slate-300)',
                       cursor: 'pointer'
                     }}
@@ -459,8 +459,8 @@ export default function RecurringSchedulePicker({
                   fontSize: '0.74rem',
                   padding: '4px 10px',
                   borderRadius: '99px',
-                  background: 'rgba(20,184,166,0.12)',
-                  border: '1px solid rgba(20,184,166,0.28)',
+                  background: 'rgba(235, 87, 56,0.12)',
+                  border: '1px solid rgba(235, 87, 56,0.28)',
                   color: 'var(--teal-300)',
                   fontWeight: 600
                 }}>
@@ -480,8 +480,8 @@ export default function RecurringSchedulePicker({
          ───────────────────────────────────────────────────────────── */}
       {scheduleMode === 'recurring' && (
         <div style={{
-          background: 'rgba(20,184,166,0.04)',
-          border: '1px solid rgba(20,184,166,0.2)',
+          background: 'rgba(235, 87, 56,0.04)',
+          border: '1px solid rgba(235, 87, 56,0.2)',
           borderRadius: '14px',
           padding: '16px',
           display: 'flex',
@@ -502,7 +502,7 @@ export default function RecurringSchedulePicker({
                   borderRadius: '10px',
                   textAlign: 'left',
                   border: frequency === 'weekly' ? '1px solid var(--teal-400)' : '1px solid rgba(255,255,255,0.08)',
-                  background: frequency === 'weekly' ? 'rgba(20,184,166,0.15)' : 'rgba(255,255,255,0.02)',
+                  background: frequency === 'weekly' ? 'rgba(235, 87, 56,0.15)' : 'rgba(255,255,255,0.02)',
                   color: 'var(--white)',
                   cursor: 'pointer'
                 }}
@@ -522,7 +522,7 @@ export default function RecurringSchedulePicker({
                   borderRadius: '10px',
                   textAlign: 'left',
                   border: frequency === 'biweekly' ? '1px solid var(--teal-400)' : '1px solid rgba(255,255,255,0.08)',
-                  background: frequency === 'biweekly' ? 'rgba(20,184,166,0.15)' : 'rgba(255,255,255,0.02)',
+                  background: frequency === 'biweekly' ? 'rgba(235, 87, 56,0.15)' : 'rgba(255,255,255,0.02)',
                   color: 'var(--white)',
                   cursor: 'pointer'
                 }}
@@ -542,7 +542,7 @@ export default function RecurringSchedulePicker({
                   borderRadius: '10px',
                   textAlign: 'left',
                   border: frequency === 'monthly_weekday' ? '1px solid var(--teal-400)' : '1px solid rgba(255,255,255,0.08)',
-                  background: frequency === 'monthly_weekday' ? 'rgba(20,184,166,0.15)' : 'rgba(255,255,255,0.02)',
+                  background: frequency === 'monthly_weekday' ? 'rgba(235, 87, 56,0.15)' : 'rgba(255,255,255,0.02)',
                   color: 'var(--white)',
                   cursor: 'pointer'
                 }}
@@ -562,7 +562,7 @@ export default function RecurringSchedulePicker({
                   borderRadius: '10px',
                   textAlign: 'left',
                   border: frequency === 'monthly_date' ? '1px solid var(--teal-400)' : '1px solid rgba(255,255,255,0.08)',
-                  background: frequency === 'monthly_date' ? 'rgba(20,184,166,0.15)' : 'rgba(255,255,255,0.02)',
+                  background: frequency === 'monthly_date' ? 'rgba(235, 87, 56,0.15)' : 'rgba(255,255,255,0.02)',
                   color: 'var(--white)',
                   cursor: 'pointer'
                 }}
@@ -589,7 +589,7 @@ export default function RecurringSchedulePicker({
                     border: 'none',
                     fontSize: '0.72rem',
                     fontWeight: 600,
-                    background: endType === 'count' ? 'rgba(20,184,166,0.2)' : 'transparent',
+                    background: endType === 'count' ? 'rgba(235, 87, 56,0.2)' : 'transparent',
                     color: endType === 'count' ? 'var(--teal-300)' : 'var(--slate-400)',
                     cursor: 'pointer'
                   }}
@@ -605,7 +605,7 @@ export default function RecurringSchedulePicker({
                     border: 'none',
                     fontSize: '0.72rem',
                     fontWeight: 600,
-                    background: endType === 'until' ? 'rgba(20,184,166,0.2)' : 'transparent',
+                    background: endType === 'until' ? 'rgba(235, 87, 56,0.2)' : 'transparent',
                     color: endType === 'until' ? 'var(--teal-300)' : 'var(--slate-400)',
                     cursor: 'pointer'
                   }}
@@ -732,7 +732,7 @@ export default function RecurringSchedulePicker({
          ───────────────────────────────────────────────────────────── */}
       {scheduleMode !== 'single' && resolvedDates.length > 0 && (
         <div style={{
-          background: 'rgba(15,23,42,0.6)',
+          background: 'rgba(27, 27, 27,0.6)',
           border: '1px solid rgba(255,255,255,0.08)',
           borderRadius: '14px',
           padding: '14px',
@@ -747,7 +747,7 @@ export default function RecurringSchedulePicker({
                 {resolvedDates.length} Events will be published
               </span>
             </div>
-            <span style={{ fontSize: '0.72rem', color: 'var(--teal-300)', background: 'rgba(20,184,166,0.12)', padding: '2px 8px', borderRadius: '99px', fontWeight: 600 }}>
+            <span style={{ fontSize: '0.72rem', color: 'var(--teal-300)', background: 'rgba(235, 87, 56,0.12)', padding: '2px 8px', borderRadius: '99px', fontWeight: 600 }}>
               {recurrenceSummary}
             </span>
           </div>

@@ -70,7 +70,7 @@ export default function PitchExperienceModal({ experience, communities, user, on
     <div style={{
       position: 'fixed', inset: 0, zIndex: 1000,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      background: 'rgba(2,6,23,0.85)', backdropFilter: 'blur(8px)',
+      background: 'rgba(18, 18, 18,0.85)', backdropFilter: 'blur(8px)',
       padding: '16px'
     }}>
       <div style={{
@@ -216,7 +216,7 @@ export default function PitchExperienceModal({ experience, communities, user, on
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', textAlign: 'center', padding: '10px 0' }}>
             <div style={{
               width: '56px', height: '56px', borderRadius: '50%',
-              background: 'rgba(20,184,166,0.15)', border: '1px solid rgba(20,184,166,0.3)',
+              background: 'rgba(235, 87, 56,0.15)', border: '1px solid rgba(235, 87, 56,0.3)',
               color: 'var(--teal-300)', display: 'flex', alignItems: 'center', justifyContent: 'center',
               margin: '0 auto'
             }}>

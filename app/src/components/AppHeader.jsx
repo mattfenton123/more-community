@@ -84,8 +84,8 @@ export default function AppHeader({ title, subtitle, rightElement, showBack = fa
           gap: '4px',
           padding: '5px 10px',
           borderRadius: '999px',
-          background: 'rgba(20, 184, 166, 0.15)',
-          border: '1px solid rgba(20, 184, 166, 0.4)',
+          background: 'rgba(235, 87, 56, 0.15)',
+          border: '1px solid rgba(235, 87, 56, 0.4)',
           color: 'var(--teal-300)',
           fontSize: '0.78rem',
           fontWeight: 700,
@@ -113,7 +113,7 @@ export default function AppHeader({ title, subtitle, rightElement, showBack = fa
         title="Notifications"
         aria-label="Notifications"
       >
-        <Bell size={20} color={theme === 'light' ? '#334155' : 'var(--slate-300)'} />
+        <Bell size={20} color={theme === 'light' ? '#4A433B' : 'var(--slate-300)'} />
         {unreadCount > 0 && (
           <div 
             className="notification-badge"
@@ -272,10 +272,10 @@ export default function AppHeader({ title, subtitle, rightElement, showBack = fa
               maxHeight: 'calc(100dvh - 92px)',
               borderRadius: '16px',
               overflow: 'hidden',
-              background: theme === 'light' ? '#ffffff' : '#0f172a',
-              border: theme === 'light' ? '1px solid rgba(15, 23, 42, 0.12)' : '1px solid rgba(255, 255, 255, 0.14)',
+              background: theme === 'light' ? '#ffffff' : '#1B1B1B',
+              border: theme === 'light' ? '1px solid rgba(27, 27, 27, 0.12)' : '1px solid rgba(255, 255, 255, 0.14)',
               boxShadow: theme === 'light'
-                ? '0 25px 60px -15px rgba(15, 23, 42, 0.25)'
+                ? '0 25px 60px -15px rgba(27, 27, 27, 0.25)'
                 : '0 25px 60px -15px rgba(0, 0, 0, 0.7)',
               animation: 'slideDownFade 0.2s cubic-bezier(0.16, 1, 0.3, 1)'
             }}

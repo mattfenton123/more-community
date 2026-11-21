@@ -246,10 +246,10 @@ export default function HomeFeed() {
       {/* Leader & Community Creation Callout */}
       <div style={{ padding: '0 20px', margin: '14px 0 18px' }}>
         <div style={{
-          background: 'linear-gradient(135deg, rgba(20,184,166,0.14) 0%, rgba(59,130,246,0.1) 100%)',
+          background: 'linear-gradient(135deg, rgba(235, 87, 56, 0.14) 0%, rgba(235, 87, 56, 0.03) 100%)',
           borderRadius: '16px',
           padding: '16px 18px',
-          border: '1px solid rgba(20,184,166,0.3)',
+          border: '1px solid rgba(235, 87, 56,0.3)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
@@ -280,7 +280,7 @@ export default function HomeFeed() {
               fontWeight: 700,
               whiteSpace: 'nowrap',
               background: 'linear-gradient(135deg, var(--teal-500), #2563eb)',
-              boxShadow: '0 4px 12px rgba(20,184,166,0.3)',
+              boxShadow: '0 4px 12px rgba(235, 87, 56,0.3)',
               display: 'flex',
               alignItems: 'center',
               gap: '6px'
@@ -325,7 +325,7 @@ export default function HomeFeed() {
                   backgroundPosition: 'center',
                   position: 'relative',
                 }}>
-                  <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 30%, rgba(15,23,42,0.9))' }} />
+                  <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 30%, rgba(27, 27, 27,0.9))' }} />
                 </div>
                 <div style={{ padding: '10px 12px' }}>
                   <div style={{
@@ -371,7 +371,7 @@ export default function HomeFeed() {
               <div key={c.id} onClick={() => router.push(`/community/${getCommunitySlug(c, communities)}`)} className="interactive-press"
                 style={{ flex: '0 0 140px', borderRadius: '12px', overflow: 'hidden', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', cursor: 'pointer' }}>
                 <div style={{ height: '75px', background: `url(${c.image || c.cover_image}) center/cover`, position: 'relative' }}>
-                  <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 40%, rgba(15,23,42,0.9))' }} />
+                  <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 40%, rgba(27, 27, 27,0.9))' }} />
                 </div>
                 <div style={{ padding: '8px 10px' }}>
                   <div style={{
@@ -431,7 +431,7 @@ export default function HomeFeed() {
                   fontSize: '0.75rem',
                   fontWeight: isSelected ? 700 : 500,
                   whiteSpace: 'nowrap',
-                  background: isSelected ? 'rgba(20,184,166,0.2)' : 'rgba(255,255,255,0.04)',
+                  background: isSelected ? 'rgba(235, 87, 56,0.2)' : 'rgba(255,255,255,0.04)',
                   color: isSelected ? 'var(--teal-300)' : 'var(--slate-400)',
                   border: isSelected ? '1px solid var(--teal-400)' : '1px solid rgba(255,255,255,0.08)',
                   cursor: 'pointer',
@@ -527,7 +527,7 @@ export default function HomeFeed() {
                     </div>
                   </div>
                   {isMember ? (
-                    <span style={{ fontSize: '0.68rem', color: 'var(--teal-400)', background: 'rgba(20,184,166,0.12)', padding: '3px 7px', borderRadius: '99px', fontWeight: 600, flexShrink: 0 }}>Joined</span>
+                    <span style={{ fontSize: '0.68rem', color: 'var(--teal-400)', background: 'rgba(235, 87, 56,0.12)', padding: '3px 7px', borderRadius: '99px', fontWeight: 600, flexShrink: 0 }}>Joined</span>
                   ) : (
                     <span style={{ fontSize: '0.75rem', color: 'var(--slate-400)', flexShrink: 0 }}>→</span>
                   )}
@@ -540,7 +540,7 @@ export default function HomeFeed() {
 
       {/* PWA Install Banner */}
       {installPrompt && showInstallBanner && (
-        <div style={{ margin: '0 20px 0', padding: '14px 16px', background: 'linear-gradient(135deg, rgba(20,184,166,0.12) 0%, rgba(59,130,246,0.08) 100%)', border: '1px solid rgba(20,184,166,0.2)', borderRadius: '14px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div style={{ margin: '0 20px 0', padding: '14px 16px', background: 'linear-gradient(135deg, rgba(235, 87, 56, 0.12) 0%, rgba(235, 87, 56, 0.03) 100%)', border: '1px solid rgba(235, 87, 56,0.2)', borderRadius: '14px', display: 'flex', alignItems: 'center', gap: '12px' }}>
           <img src="/logo.png" alt="More Community" style={{ width: '36px', height: '36px', borderRadius: '10px' }} className="theme-invert" />
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--white)' }}>Install More Community</div>
@@ -557,7 +557,7 @@ export default function HomeFeed() {
 
       {/* iOS Install Guide Banner */}
       {showIOSInstallBanner && (
-        <div style={{ margin: '0 20px 0', padding: '14px 16px', background: 'linear-gradient(135deg, rgba(20,184,166,0.12) 0%, rgba(59,130,246,0.08) 100%)', border: '1px solid rgba(20,184,166,0.2)', borderRadius: '14px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div style={{ margin: '0 20px 0', padding: '14px 16px', background: 'linear-gradient(135deg, rgba(235, 87, 56, 0.12) 0%, rgba(235, 87, 56, 0.03) 100%)', border: '1px solid rgba(235, 87, 56,0.2)', borderRadius: '14px', display: 'flex', alignItems: 'center', gap: '12px' }}>
           <img src="/logo.png" alt="More Community" style={{ width: '36px', height: '36px', borderRadius: '10px' }} className="theme-invert" />
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--white)' }}>Install More Community on iOS</div>
@@ -624,7 +624,7 @@ export default function HomeFeed() {
       {activeFeedTab === 'Ideas' && (
         <div style={{ padding: '0 20px', marginTop: '16px' }}>
           <div style={{
-            background: 'linear-gradient(135deg, rgba(251,191,36,0.1) 0%, rgba(20,184,166,0.08) 100%)',
+            background: 'linear-gradient(135deg, rgba(251,191,36,0.1) 0%, rgba(235, 87, 56,0.08) 100%)',
             border: '1px solid rgba(251,191,36,0.25)',
             borderRadius: '16px',
             padding: '16px 18px',
@@ -676,7 +676,7 @@ export default function HomeFeed() {
             const post = item.data;
             const sponsor = item.sponsor;
             return (
-              <div key={item.id} style={{ background: 'linear-gradient(to bottom right, rgba(234,179,8,0.05), rgba(15,23,42,1))', border: '1px solid rgba(234,179,8,0.3)', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 8px 24px rgba(234,179,8,0.05)', position: 'relative', marginBottom: '8px' }}>
+              <div key={item.id} style={{ background: 'linear-gradient(to bottom right, rgba(234,179,8,0.05), rgba(27, 27, 27,1))', border: '1px solid rgba(234,179,8,0.3)', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 8px 24px rgba(234,179,8,0.05)', position: 'relative', marginBottom: '8px' }}>
                 <div style={{ position: 'absolute', top: '12px', right: '12px', background: 'rgba(234,179,8,0.2)', backdropFilter: 'blur(8px)', border: '1px solid rgba(234,179,8,0.5)', padding: '4px 10px', borderRadius: '99px', fontSize: '0.7rem', fontWeight: 700, color: '#fde047', zIndex: 10 }}>Sponsored</div>
                 <div style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <img src={sponsor.logo} alt={sponsor.name} loading="lazy" style={{ width: '48px', height: '48px', borderRadius: '12px', objectFit: 'contain', background: 'white', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.1)' }} onClick={() => router.push(`/sponsors/${sponsor.id}`)} />
@@ -803,7 +803,7 @@ export default function HomeFeed() {
             const author = users?.find(u => u.id === idea.authorId);
             const community = communities?.find(c => c.id === idea.communityId);
             return (
-              <div key={item.id} style={{ background: 'linear-gradient(to bottom right, rgba(20,184,166,0.05), rgba(255,255,255,0.02))', backdropFilter: 'blur(10px)', border: '1px solid rgba(20,184,166,0.3)', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 8px 24px rgba(0,0,0,0.2)', display: 'flex' }}>
+              <div key={item.id} style={{ background: 'linear-gradient(to bottom right, rgba(235, 87, 56,0.05), rgba(255,255,255,0.02))', backdropFilter: 'blur(10px)', border: '1px solid rgba(235, 87, 56,0.3)', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 8px 24px rgba(0,0,0,0.2)', display: 'flex' }}>
                 <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(0,0,0,0.2)', borderRight: '1px solid rgba(255,255,255,0.05)', minWidth: '70px' }}>
                   <button onClick={() => likeFeedPost(idea.id)} className="interactive-press" style={{ background: idea.liked ? 'var(--teal-500)' : 'rgba(255,255,255,0.1)', width: '40px', height: '40px', borderRadius: '12px', border: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: idea.liked ? 'white' : 'var(--slate-300)', cursor: 'pointer', fontWeight: 800 }}>
                     <ChevronUp size={20} strokeWidth={3} />
@@ -813,7 +813,7 @@ export default function HomeFeed() {
                 </div>
                 <div style={{ flex: 1, padding: '16px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                     <span style={{ fontSize: '0.7rem', background: 'rgba(20,184,166,0.2)', color: 'var(--teal-300)', padding: '4px 8px', borderRadius: '6px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Suggestion</span>
+                     <span style={{ fontSize: '0.7rem', background: 'rgba(235, 87, 56,0.2)', color: 'var(--teal-300)', padding: '4px 8px', borderRadius: '6px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Suggestion</span>
                      <span style={{ fontSize: '0.8rem', color: 'var(--slate-400)' }}>by {author?.name || 'Member'} in {community?.name}</span>
                   </div>
                   <div style={{ fontWeight: 800, color: 'var(--white)', fontSize: '1.2rem', marginBottom: '8px', lineHeight: 1.3 }}>{ideaData.title || idea.text}</div>
@@ -893,7 +893,7 @@ export default function HomeFeed() {
               <div key={item.id} style={{
                 background: isUpcoming ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.015)',
                 backdropFilter: 'blur(10px)',
-                border: isUpcoming ? '1px solid rgba(20,184,166,0.4)' : '1px solid rgba(255,255,255,0.08)',
+                border: isUpcoming ? '1px solid rgba(235, 87, 56,0.4)' : '1px solid rgba(255,255,255,0.08)',
                 borderRadius: '16px',
                 overflow: 'hidden',
                 boxShadow: isUpcoming ? '0 8px 24px rgba(0,0,0,0.2)' : '0 4px 16px rgba(0,0,0,0.1)',
@@ -907,7 +907,7 @@ export default function HomeFeed() {
                   className="interactive-press"
                   style={{
                     padding: '12px 16px',
-                    background: isUpcoming ? 'linear-gradient(to right, rgba(20,184,166,0.15), transparent)' : 'linear-gradient(to right, rgba(148,163,184,0.1), transparent)',
+                    background: isUpcoming ? 'linear-gradient(to right, rgba(235, 87, 56,0.15), transparent)' : 'linear-gradient(to right, rgba(148,163,184,0.1), transparent)',
                     display: 'flex', alignItems: 'center', gap: '8px',
                     fontSize: '0.85rem',
                     color: isUpcoming ? 'var(--teal-400)' : 'var(--slate-400)',
@@ -930,10 +930,10 @@ export default function HomeFeed() {
                 <div onClick={() => router.push(getEventPath(event, events))} className="interactive-press" style={{ cursor: 'pointer' }}>
                   {event.image && (
                     <div style={{ height: '160px', background: `url(${event.image})`, backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative' }}>
-                      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 40%, rgba(15,23,42,0.9))' }}></div>
+                      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 40%, rgba(27, 27, 27,0.9))' }}></div>
                       <div style={{
                         position: 'absolute', bottom: '16px', left: '16px',
-                        background: isUpcoming ? 'rgba(20,184,166,1)' : 'rgba(71,85,105,0.9)',
+                        background: isUpcoming ? 'rgba(235, 87, 56,1)' : 'rgba(71,85,105,0.9)',
                         padding: '6px 12px', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 800, color: 'var(--white)',
                         boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
                         display: 'flex', alignItems: 'center', gap: '6px'
@@ -1028,7 +1028,7 @@ export default function HomeFeed() {
               >
                 <div style={{
                   width: '42px', height: '42px', borderRadius: '10px',
-                  background: 'rgba(20,184,166,0.15)', border: '1px solid rgba(20,184,166,0.3)',
+                  background: 'rgba(235, 87, 56,0.15)', border: '1px solid rgba(235, 87, 56,0.3)',
                   display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                   flexShrink: 0
                 }}>
@@ -1095,7 +1095,7 @@ export default function HomeFeed() {
       </div>
 
       {/* Start a Community Hub Card */}
-      <div style={{ background: 'linear-gradient(135deg, rgba(20,184,166,0.12), rgba(59,130,246,0.08))', border: '1px solid rgba(20,184,166,0.25)', borderRadius: '16px', padding: '18px 16px' }}>
+      <div style={{ background: 'linear-gradient(135deg, rgba(235, 87, 56, 0.12) 0%, rgba(235, 87, 56, 0.03) 100%)', border: '1px solid rgba(235, 87, 56,0.25)', borderRadius: '16px', padding: '18px 16px' }}>
         <div style={{ fontFamily: 'var(--font-heading)', fontSize: '0.95rem', fontWeight: 700, color: 'var(--white)', marginBottom: '4px' }}>
           Start Your Own Community
         </div>

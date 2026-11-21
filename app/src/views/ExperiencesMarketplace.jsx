@@ -70,7 +70,7 @@ export default function ExperiencesMarketplace() {
       {/* Header */}
       <div style={{
         position: 'sticky', top: 0, zIndex: 50,
-        background: 'rgba(2,6,23,0.92)', backdropFilter: 'blur(20px)',
+        background: 'rgba(18, 18, 18,0.92)', backdropFilter: 'blur(20px)',
         borderBottom: '1px solid rgba(255,255,255,0.06)',
         padding: '1rem 1.25rem'
       }}>
@@ -90,8 +90,8 @@ export default function ExperiencesMarketplace() {
                 Experiences
               </h1>
               <span style={{
-                background: 'rgba(20,184,166,0.15)',
-                border: '1px solid rgba(20,184,166,0.3)',
+                background: 'rgba(235, 87, 56,0.15)',
+                border: '1px solid rgba(235, 87, 56,0.3)',
                 color: 'var(--teal-300)',
                 fontSize: '0.62rem',
                 fontWeight: 700,
@@ -170,7 +170,7 @@ export default function ExperiencesMarketplace() {
               padding: '0.35rem 0.85rem', borderRadius: '100px', whiteSpace: 'nowrap',
               border: '1px solid',
               borderColor: activePill === p ? 'var(--teal-400)' : 'rgba(255,255,255,0.08)',
-              background: activePill === p ? 'rgba(45,212,191,0.12)' : 'rgba(255,255,255,0.03)',
+              background: activePill === p ? 'rgba(242, 114, 87,0.12)' : 'rgba(255,255,255,0.03)',
               color: activePill === p ? 'var(--teal-300)' : 'var(--slate-400)',
               cursor: 'pointer', transition: 'all 0.2s', letterSpacing: '0.02em'
             }}>
@@ -205,8 +205,8 @@ export default function ExperiencesMarketplace() {
               transition: 'all 0.3s', cursor: 'pointer'
             }}
             onMouseEnter={e => {
-              e.currentTarget.style.background = 'rgba(45,212,191,0.04)';
-              e.currentTarget.style.borderColor = 'rgba(45,212,191,0.18)';
+              e.currentTarget.style.background = 'rgba(242, 114, 87,0.04)';
+              e.currentTarget.style.borderColor = 'rgba(242, 114, 87,0.18)';
               e.currentTarget.style.transform = 'translateY(-2px)';
             }}
             onMouseLeave={e => {
@@ -221,7 +221,7 @@ export default function ExperiencesMarketplace() {
                 }} />
                 <div style={{
                   position: 'absolute', top: '0.6rem', left: '0.6rem',
-                  background: 'rgba(2,6,23,0.8)', backdropFilter: 'blur(8px)',
+                  background: 'rgba(18, 18, 18,0.8)', backdropFilter: 'blur(8px)',
                   borderRadius: '100px', padding: '0.25rem 0.65rem',
                   fontSize: '0.65rem', fontWeight: 700, color: 'var(--teal-300)',
                   fontFamily: "'Syne', sans-serif", letterSpacing: '0.03em'
@@ -231,7 +231,7 @@ export default function ExperiencesMarketplace() {
                 {exp.provider && (
                   <div style={{
                     position: 'absolute', top: '0.6rem', right: '0.6rem',
-                    background: 'rgba(15,23,42,0.85)', backdropFilter: 'blur(8px)',
+                    background: 'rgba(27, 27, 27,0.85)', backdropFilter: 'blur(8px)',
                     border: '1px solid rgba(255,255,255,0.1)',
                     borderRadius: '100px', padding: '0.25rem 0.65rem',
                     fontSize: '0.62rem', fontWeight: 700, color: 'var(--slate-300)',
@@ -242,7 +242,7 @@ export default function ExperiencesMarketplace() {
                 )}
                 <div style={{
                   position: 'absolute', bottom: 0, left: 0, right: 0, height: '60px',
-                  background: 'linear-gradient(transparent, rgba(2,6,23,0.9))'
+                  background: 'linear-gradient(transparent, rgba(18, 18, 18,0.9))'
                 }} />
               </div>
 

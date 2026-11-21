@@ -168,18 +168,18 @@ function createCommunityIcon(emoji) {
   return L.divIcon({
     html: `<div style="
       width: 44px; height: 44px; border-radius: 14px;
-      background: rgba(15, 23, 42, 0.95);
+      background: rgba(27, 27, 27, 0.95);
       backdrop-filter: blur(8px);
-      border: 2px solid rgba(20, 184, 166, 0.85);
+      border: 2px solid rgba(235, 87, 56, 0.85);
       display: flex; align-items: center; justify-content: center;
       font-size: 1.35rem;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.6), 0 0 14px rgba(20,184,166,0.35);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.6), 0 0 14px rgba(235, 87, 56,0.35);
       cursor: pointer;
       position: relative;
       transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
     " onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'">
       ${emoji || '📍'}
-      <div style="position: absolute; bottom: -3px; right: -3px; width: 10px; height: 10px; border-radius: 50%; background: #14b8a6; border: 2px solid #0f172a;"></div>
+      <div style="position: absolute; bottom: -3px; right: -3px; width: 10px; height: 10px; border-radius: 50%; background: #EB5738; border: 2px solid #1B1B1B;"></div>
     </div>`,
     iconSize: [44, 44],
     iconAnchor: [22, 22],
@@ -192,7 +192,7 @@ function createEventIcon(emoji = '📅') {
   return L.divIcon({
     html: `<div style="
       width: 44px; height: 44px; border-radius: 14px;
-      background: rgba(15, 23, 42, 0.95);
+      background: rgba(27, 27, 27, 0.95);
       backdrop-filter: blur(8px);
       border: 2px solid #a855f7;
       display: flex; align-items: center; justify-content: center;
@@ -203,7 +203,7 @@ function createEventIcon(emoji = '📅') {
       transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
     " onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'">
       ${emoji}
-      <div style="position: absolute; top: -3px; right: -3px; width: 11px; height: 11px; border-radius: 50%; background: #f43f5e; border: 2px solid #0f172a;"></div>
+      <div style="position: absolute; top: -3px; right: -3px; width: 11px; height: 11px; border-radius: 50%; background: #f43f5e; border: 2px solid #1B1B1B;"></div>
     </div>`,
     iconSize: [44, 44],
     iconAnchor: [22, 22],
@@ -300,18 +300,18 @@ export default function MapView({ communities = [], events = [], onSelect }) {
         // Render soft semi-transparent glowing coverage circle for the group's region
         const circle = L.circle([lat, lng], {
           radius: radiusKm * 1000,
-          color: '#0d9488',
-          fillColor: '#14b8a6',
+          color: '#D94628',
+          fillColor: '#EB5738',
           fillOpacity: 0.15,
           weight: 1.8,
           dashArray: '6, 6'
         }).addTo(markersGroup);
 
         circle.on('mouseover', () => {
-          circle.setStyle({ fillOpacity: 0.28, weight: 2.5, color: '#2dd4bf' });
+          circle.setStyle({ fillOpacity: 0.28, weight: 2.5, color: '#F27257' });
         });
         circle.on('mouseout', () => {
-          circle.setStyle({ fillOpacity: 0.15, weight: 1.8, color: '#0d9488' });
+          circle.setStyle({ fillOpacity: 0.15, weight: 1.8, color: '#D94628' });
         });
 
         const emoji = comm.category?.split(' ')[0] || comm.tags?.[0]?.split(' ')[0] || (comm.name?.toLowerCase().includes('golden') ? '🐶' : comm.name?.toLowerCase().includes('walk') ? '🚶' : '🧘');
@@ -329,8 +329,8 @@ export default function MapView({ communities = [], events = [], onSelect }) {
 
         const popupHtml = `
           <div style="
-            background: #0f172a;
-            border: 1px solid rgba(20,184,166,0.35);
+            background: #1B1B1B;
+            border: 1px solid rgba(235, 87, 56,0.35);
             border-radius: 14px;
             padding: 14px 16px;
             min-width: 220px;
@@ -338,7 +338,7 @@ export default function MapView({ communities = [], events = [], onSelect }) {
             color: white;
             box-shadow: 0 12px 30px rgba(0,0,0,0.6);
           ">
-            <div style="display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 99px; background: rgba(20,184,166,0.15); color: #2dd4bf; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; margin-bottom: 8px;">
+            <div style="display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 99px; background: rgba(235, 87, 56,0.15); color: #F27257; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; margin-bottom: 8px;">
               <span>Community Area • ~${radiusKm}km radius</span>
             </div>
             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
@@ -351,13 +351,13 @@ export default function MapView({ communities = [], events = [], onSelect }) {
               📍 ${locationText}
             </div>
             <div style="color: #cbd5e1; font-size: 0.78rem; margin-bottom: 12px;">
-              👥 ${memberCount} member${memberCount !== 1 ? 's' : ''} • <span style="color: #2dd4bf; font-weight: 600;">${costBadge}</span>
+              👥 ${memberCount} member${memberCount !== 1 ? 's' : ''} • <span style="color: #F27257; font-weight: 600;">${costBadge}</span>
             </div>
             <button 
               onclick="window.__moreNavigateCommunity('${comm.id}')"
               style="
                 width: 100%;
-                background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
+                background: linear-gradient(135deg, #D94628 0%, #B83D22 100%);
                 color: white;
                 padding: 9px 12px;
                 border: none;
@@ -400,7 +400,7 @@ export default function MapView({ communities = [], events = [], onSelect }) {
 
         const popupHtml = `
           <div style="
-            background: #0f172a;
+            background: #1B1B1B;
             border: 1px solid rgba(168,85,247,0.35);
             border-radius: 14px;
             padding: 14px 16px;
@@ -514,7 +514,7 @@ export default function MapView({ communities = [], events = [], onSelect }) {
           margin: 0 !important;
         }
         .custom-leaflet-popup .leaflet-popup-tip {
-          background: #0f172a !important;
+          background: #1B1B1B !important;
           border: 1px solid rgba(255,255,255,0.15) !important;
         }
       `}</style>
@@ -527,7 +527,7 @@ export default function MapView({ communities = [], events = [], onSelect }) {
         zIndex: 1000,
         display: 'flex',
         gap: '6px',
-        background: 'rgba(15, 23, 42, 0.85)',
+        background: 'rgba(27, 27, 27, 0.85)',
         backdropFilter: 'blur(12px)',
         padding: '5px',
         borderRadius: '12px',
@@ -538,9 +538,9 @@ export default function MapView({ communities = [], events = [], onSelect }) {
           onClick={() => setFilterType('all')}
           className="interactive-press"
           style={{
-            background: filterType === 'all' ? 'rgba(20,184,166,0.2)' : 'transparent',
-            border: filterType === 'all' ? '1px solid rgba(20,184,166,0.4)' : '1px solid transparent',
-            color: filterType === 'all' ? '#2dd4bf' : 'var(--slate-400)',
+            background: filterType === 'all' ? 'rgba(235, 87, 56,0.2)' : 'transparent',
+            border: filterType === 'all' ? '1px solid rgba(235, 87, 56,0.4)' : '1px solid transparent',
+            color: filterType === 'all' ? '#F27257' : 'var(--slate-400)',
             padding: '6px 12px',
             borderRadius: '8px',
             fontSize: '0.75rem',
@@ -554,9 +554,9 @@ export default function MapView({ communities = [], events = [], onSelect }) {
           onClick={() => setFilterType('communities')}
           className="interactive-press"
           style={{
-            background: filterType === 'communities' ? 'rgba(20,184,166,0.2)' : 'transparent',
-            border: filterType === 'communities' ? '1px solid rgba(20,184,166,0.4)' : '1px solid transparent',
-            color: filterType === 'communities' ? '#2dd4bf' : 'var(--slate-400)',
+            background: filterType === 'communities' ? 'rgba(235, 87, 56,0.2)' : 'transparent',
+            border: filterType === 'communities' ? '1px solid rgba(235, 87, 56,0.4)' : '1px solid transparent',
+            color: filterType === 'communities' ? '#F27257' : 'var(--slate-400)',
             padding: '6px 12px',
             borderRadius: '8px',
             fontSize: '0.75rem',
@@ -591,7 +591,7 @@ export default function MapView({ communities = [], events = [], onSelect }) {
           width: '100%',
           height: '100%',
           minHeight: '350px',
-          backgroundColor: '#020617'
+          backgroundColor: '#121212'
         }}
       />
       <style>{`

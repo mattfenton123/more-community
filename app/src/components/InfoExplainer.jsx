@@ -174,7 +174,7 @@ export function ExplainerModal({ isOpen, onClose, badge, title, summary, steps =
         position: 'fixed',
         inset: 0,
         zIndex: 10050,
-        background: 'rgba(2, 6, 23, 0.78)',
+        background: 'rgba(18, 18, 18, 0.78)',
         backdropFilter: 'blur(8px)',
         WebkitBackdropFilter: 'blur(8px)',
         display: 'flex',
@@ -188,8 +188,8 @@ export function ExplainerModal({ isOpen, onClose, badge, title, summary, steps =
         style={{
           width: '100%',
           maxWidth: '440px',
-          background: 'linear-gradient(165deg, #0f172a 0%, #1e293b 100%)',
-          border: '1px solid rgba(45, 212, 191, 0.35)',
+          background: 'linear-gradient(165deg, #1B1B1B 0%, #252525 100%)',
+          border: '1px solid rgba(242, 114, 87, 0.35)',
           borderRadius: '20px',
           padding: '22px',
           boxShadow: '0 24px 60px rgba(0, 0, 0, 0.55)',
@@ -229,9 +229,9 @@ export function ExplainerModal({ isOpen, onClose, badge, title, summary, steps =
             fontWeight: 700,
             letterSpacing: '0.06em',
             textTransform: 'uppercase',
-            color: '#5eead4',
-            background: 'rgba(20, 184, 166, 0.14)',
-            border: '1px solid rgba(45, 212, 191, 0.3)',
+            color: '#F79984',
+            background: 'rgba(235, 87, 56, 0.14)',
+            border: '1px solid rgba(242, 114, 87, 0.3)',
             borderRadius: '999px',
             padding: '4px 10px',
             marginBottom: '10px'
@@ -262,7 +262,7 @@ export function ExplainerModal({ isOpen, onClose, badge, title, summary, steps =
                 background: 'rgba(255, 255, 255, 0.04)',
                 border: '1px solid rgba(255, 255, 255, 0.07)'
               }}>
-                <CheckCircle2 size={16} color="#2dd4bf" style={{ flexShrink: 0, marginTop: '2px' }} />
+                <CheckCircle2 size={16} color="#F27257" style={{ flexShrink: 0, marginTop: '2px' }} />
                 <span style={{ fontSize: '0.84rem', lineHeight: 1.45, color: '#e2e8f0' }}>{s}</span>
               </div>
             ))}
@@ -273,8 +273,8 @@ export function ExplainerModal({ isOpen, onClose, badge, title, summary, steps =
           <div style={{
             padding: '10px 12px',
             borderRadius: '12px',
-            background: 'rgba(20, 184, 166, 0.1)',
-            border: '1px solid rgba(20, 184, 166, 0.25)',
+            background: 'rgba(235, 87, 56, 0.1)',
+            border: '1px solid rgba(235, 87, 56, 0.25)',
             fontSize: '0.8rem',
             lineHeight: 1.45,
             color: '#99f6e4',
@@ -292,9 +292,9 @@ export function ExplainerModal({ isOpen, onClose, badge, title, summary, steps =
               style={{
                 padding: '10px 16px',
                 borderRadius: '10px',
-                border: '1px solid rgba(45, 212, 191, 0.4)',
-                background: 'rgba(20, 184, 166, 0.15)',
-                color: '#5eead4',
+                border: '1px solid rgba(242, 114, 87, 0.4)',
+                background: 'rgba(235, 87, 56, 0.15)',
+                color: '#F79984',
                 fontWeight: 600,
                 fontSize: '0.85rem',
                 cursor: 'pointer'
@@ -310,7 +310,7 @@ export function ExplainerModal({ isOpen, onClose, badge, title, summary, steps =
               padding: '10px 18px',
               borderRadius: '10px',
               border: 'none',
-              background: 'linear-gradient(135deg, #14b8a6, #0d9488)',
+              background: 'linear-gradient(135deg, #EB5738, #D94628)',
               color: '#ffffff',
               fontWeight: 700,
               fontSize: '0.86rem',
@@ -356,9 +356,9 @@ export default function InfoExplainer({ explainerKey, badge, title, summary, ste
           height: `${size + 8}px`,
           padding: label ? '0 8px' : '0',
           borderRadius: '999px',
-          border: '1px solid rgba(45, 212, 191, 0.35)',
-          background: 'rgba(20, 184, 166, 0.12)',
-          color: '#5eead4',
+          border: '1px solid rgba(242, 114, 87, 0.35)',
+          background: 'rgba(235, 87, 56, 0.12)',
+          color: '#F79984',
           cursor: 'pointer',
           verticalAlign: 'middle',
           flexShrink: 0,

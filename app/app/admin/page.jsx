@@ -352,7 +352,7 @@ const ADMIN_EMAILS = [
         id: e.id,
         text: `${e.title} scheduled in ${comm?.name || 'Community'}`, 
         icon: Calendar, 
-        color: '#14b8a6', 
+        color: '#EB5738', 
         timestamp: ts ? new Date(ts).getTime() : (e.date ? new Date(`${e.date}T${e.time || '10:00'}`).getTime() : 0),
         time: formatActivityDateTime(ts, e.date, e.time), 
         link: `/events/${e.id}` 
@@ -522,7 +522,7 @@ const ADMIN_EMAILS = [
               className="interactive-press"
               style={{ 
                 flex: 1, padding: '7px 8px', borderRadius: '8px', fontSize: '0.72rem', 
-                background: 'rgba(20,184,166,0.12)', border: '1px solid rgba(20,184,166,0.3)', 
+                background: 'rgba(235, 87, 56,0.12)', border: '1px solid rgba(235, 87, 56,0.3)', 
                 color: 'var(--teal-300)', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', cursor: 'pointer' 
               }}
             >
@@ -641,7 +641,7 @@ const ADMIN_EMAILS = [
             <button 
               onClick={() => navigate.push('/dashboard')}
               className="btn interactive-press"
-              style={{ padding: '8px 14px', borderRadius: '10px', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', background: 'rgba(20,184,166,0.15)', border: '1px solid rgba(20,184,166,0.3)', color: 'var(--teal-300)', fontWeight: 600 }}
+              style={{ padding: '8px 14px', borderRadius: '10px', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', background: 'rgba(235, 87, 56,0.15)', border: '1px solid rgba(235, 87, 56,0.3)', color: 'var(--teal-300)', fontWeight: 600 }}
             >
               <Crown size={14} color="var(--teal-400)" /> Leader View →
             </button>
@@ -654,7 +654,7 @@ const ADMIN_EMAILS = [
       {/* ROLE & PERSPECTIVE SIMULATOR BAR */}
       <div style={{
         padding: '12px 24px',
-        background: 'linear-gradient(90deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.95) 100%)',
+        background: 'linear-gradient(90deg, rgba(37, 37, 37, 0.95) 0%, rgba(27, 27, 27, 0.95) 100%)',
         borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
         display: 'flex',
         alignItems: 'center',
@@ -671,7 +671,7 @@ const ADMIN_EMAILS = [
             { key: 'leader', label: 'Leader View', icon: Crown, color: '#f59e0b' },
             { key: 'member', label: 'Community User', icon: Users, color: '#10b981' },
             { key: 'sponsor', label: 'Local Sponsor', icon: Store, color: '#fbbf24' },
-            { key: 'partner', label: 'Experience Host', icon: Calendar, color: '#06b6d4' }
+            { key: 'partner', label: 'Experience Host', icon: Calendar, color: '#3A8E76' }
           ].map(p => (
             <button
               key={p.key}
@@ -770,7 +770,7 @@ const ADMIN_EMAILS = [
         {simulatedPersona === 'leader' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             <div style={{
-              background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(15, 23, 42, 0.6) 100%)',
+              background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(27, 27, 27, 0.6) 100%)',
               border: '1px solid rgba(245, 158, 11, 0.3)',
               borderRadius: '18px',
               padding: '24px'
@@ -829,7 +829,7 @@ const ADMIN_EMAILS = [
         {simulatedPersona === 'member' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             <div style={{
-              background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(15, 23, 42, 0.6) 100%)',
+              background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(27, 27, 27, 0.6) 100%)',
               border: '1px solid rgba(16, 185, 129, 0.3)',
               borderRadius: '18px',
               padding: '24px'
@@ -898,7 +898,7 @@ const ADMIN_EMAILS = [
         {simulatedPersona === 'sponsor' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             <div style={{
-              background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(15, 23, 42, 0.6) 100%)',
+              background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(27, 27, 27, 0.6) 100%)',
               border: '1px solid rgba(245, 158, 11, 0.3)',
               borderRadius: '18px',
               padding: '24px'
@@ -957,14 +957,14 @@ const ADMIN_EMAILS = [
         {simulatedPersona === 'partner' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             <div style={{
-              background: 'linear-gradient(135deg, rgba(6, 182, 212, 0.12) 0%, rgba(15, 23, 42, 0.6) 100%)',
+              background: 'linear-gradient(135deg, rgba(6, 182, 212, 0.12) 0%, rgba(27, 27, 27, 0.6) 100%)',
               border: '1px solid rgba(6, 182, 212, 0.3)',
               borderRadius: '18px',
               padding: '24px'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', marginBottom: '16px' }}>
                 <div>
-                  <span style={{ fontSize: '0.74rem', fontWeight: 700, color: '#22d3ee', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  <span style={{ fontSize: '0.74rem', fontWeight: 700, color: '#4FA88E', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                     Experience Host / Specialist Perspective Preview
                   </span>
                   <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#fff', margin: '4px 0 0', fontFamily: 'var(--font-heading)' }}>
@@ -990,7 +990,7 @@ const ADMIN_EMAILS = [
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px', marginBottom: '18px' }}>
                 <div style={{ background: 'rgba(255,255,255,0.04)', padding: '14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
                   <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', textTransform: 'uppercase' }}>Bookings & Capacity</div>
-                  <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#22d3ee', marginTop: '2px' }}>9 / 14</div>
+                  <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#4FA88E', marginTop: '2px' }}>9 / 14</div>
                   <div style={{ fontSize: '0.7rem', color: '#34d399', marginTop: '4px' }}>Min threshold reached (Session Confirmed)</div>
                 </div>
                 <div style={{ background: 'rgba(255,255,255,0.04)', padding: '14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
@@ -1091,7 +1091,7 @@ const ADMIN_EMAILS = [
                 <button 
                   onClick={() => setActiveTab('analytics')}
                   className="interactive-press"
-                  style={{ background: 'none', border: 'none', color: '#06b6d4', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                  style={{ background: 'none', border: 'none', color: '#3A8E76', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
                 >
                   <TrendingUp size={13} /> Full Investor Grade Analytics →
                 </button>
@@ -1293,7 +1293,7 @@ const ADMIN_EMAILS = [
                           <span>{c.cEvents} events</span>
                           {c.cRevenue > 0 && <span style={{ color: '#f59e0b', fontWeight: 600 }}>£{c.cRevenue} Gross</span>}
                           {Boolean(c.is_insured || c.insurance_tier === 'pro') ? (
-                            <span style={{ background: 'rgba(20,184,166,0.15)', border: '1px solid rgba(20,184,166,0.3)', color: '#2dd4bf', padding: '1px 6px', borderRadius: '4px', fontSize: '0.68rem', fontWeight: 700 }}>LEADER PRO</span>
+                            <span style={{ background: 'rgba(235, 87, 56,0.15)', border: '1px solid rgba(235, 87, 56,0.3)', color: '#F27257', padding: '1px 6px', borderRadius: '4px', fontSize: '0.68rem', fontWeight: 700 }}>LEADER PRO</span>
                           ) : (
                             <span style={{ background: 'rgba(255,255,255,0.06)', color: 'var(--slate-400)', padding: '1px 6px', borderRadius: '4px', fontSize: '0.68rem' }}>FREE TIER</span>
                           )}
@@ -1338,7 +1338,7 @@ const ADMIN_EMAILS = [
                               <button 
                                 onClick={() => navigate.push(`/chat/dm/${leaderUser.id}`)}
                                 className="btn interactive-press"
-                                style={{ padding: '6px 12px', borderRadius: '8px', fontSize: '0.75rem', background: 'rgba(20,184,166,0.15)', color: 'var(--teal-300)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                                style={{ padding: '6px 12px', borderRadius: '8px', fontSize: '0.75rem', background: 'rgba(235, 87, 56,0.15)', color: 'var(--teal-300)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
                               >
                                 <MessageCircle size={13} /> Message Leader
                               </button>
@@ -1716,7 +1716,7 @@ const ADMIN_EMAILS = [
                       className="interactive-hover"
                       style={{ display: 'flex', gap: '14px', padding: '14px 16px', cursor: 'pointer', alignItems: 'center' }}
                     >
-                      <div style={{ width: '46px', height: '50px', background: 'rgba(20,184,166,0.1)', borderRadius: '10px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: '1px solid rgba(20,184,166,0.2)' }}>
+                      <div style={{ width: '46px', height: '50px', background: 'rgba(235, 87, 56,0.1)', borderRadius: '10px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: '1px solid rgba(235, 87, 56,0.2)' }}>
                         <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--white)', lineHeight: 1 }}>{e.date ? new Date(e.date + 'T00:00:00').getDate() : ' - '}</div>
                         <div style={{ fontSize: '0.6rem', color: 'var(--teal-400)', fontWeight: 600, textTransform: 'uppercase', marginTop: '2px' }}>{e.date ? new Date(e.date + 'T00:00:00').toLocaleDateString('en-GB', { month: 'short' }) : ''}</div>
                       </div>
@@ -1830,7 +1830,7 @@ const ADMIN_EMAILS = [
                               }
                             }}
                             className="btn interactive-press"
-                            style={{ flex: 1, minWidth: '140px', padding: '9px', borderRadius: '8px', fontSize: '0.78rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', cursor: 'pointer', background: 'rgba(20,184,166,0.15)', border: 'none', color: 'var(--teal-300)', fontWeight: 600 }}
+                            style={{ flex: 1, minWidth: '140px', padding: '9px', borderRadius: '8px', fontSize: '0.78rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', cursor: 'pointer', background: 'rgba(235, 87, 56,0.15)', border: 'none', color: 'var(--teal-300)', fontWeight: 600 }}
                           >
                             <Bell size={13} /> Send Reminder ({rsvps.length})
                           </button>

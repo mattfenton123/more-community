@@ -21,7 +21,7 @@ export default function CouncilImpactMetrics({ community, events = [], members =
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       {/* Header Banner */}
       <div style={{
-        background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(15, 23, 42, 0.6) 100%)',
+        background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(27, 27, 27, 0.6) 100%)',
         border: '1px solid rgba(96, 165, 250, 0.3)',
         borderRadius: '20px',
         padding: '24px',

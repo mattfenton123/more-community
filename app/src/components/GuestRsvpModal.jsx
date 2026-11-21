@@ -116,7 +116,7 @@ export default function GuestRsvpModal({ event, isOpen, onClose, onSuccess }) {
           overflow: 'hidden',
           display: 'flex',
           flexDirection: 'column',
-          background: isLight ? '#ffffff' : '#0f172a',
+          background: isLight ? '#ffffff' : '#1B1B1B',
           border: isLight ? '1px solid rgba(0,0,0,0.1)' : '1px solid rgba(255,255,255,0.1)',
           boxShadow: '0 25px 60px rgba(0,0,0,0.5)',
           animation: 'slideDownFade 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
@@ -127,7 +127,7 @@ export default function GuestRsvpModal({ event, isOpen, onClose, onSuccess }) {
         <div style={{
           padding: '16px 20px',
           borderBottom: isLight ? '1px solid rgba(0,0,0,0.06)' : '1px solid rgba(255,255,255,0.06)',
-          background: isLight ? '#f8fafc' : 'rgba(0,0,0,0.2)',
+          background: isLight ? '#F7F3EC' : 'rgba(0,0,0,0.2)',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center'
@@ -137,15 +137,15 @@ export default function GuestRsvpModal({ event, isOpen, onClose, onSuccess }) {
               width: '28px',
               height: '28px',
               borderRadius: '8px',
-              background: 'rgba(13, 148, 136, 0.15)',
-              color: '#0d9488',
+              background: 'rgba(217, 70, 40, 0.15)',
+              color: '#D94628',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center'
             }}>
               <Ticket size={16} />
             </div>
-            <span style={{ fontSize: '0.9rem', fontWeight: 800, color: isLight ? '#0f172a' : '#ffffff' }}>
+            <span style={{ fontSize: '0.9rem', fontWeight: 800, color: isLight ? '#1B1B1B' : '#ffffff' }}>
               {confirmedData ? 'Ticket Confirmed' : 'Reserve Spot & Meeting Point'}
             </span>
           </div>
@@ -178,29 +178,29 @@ export default function GuestRsvpModal({ event, isOpen, onClose, onSuccess }) {
                 }}>
                   <Check size={32} strokeWidth={3} />
                 </div>
-                <h2 style={{ margin: '0 0 4px', fontSize: '1.25rem', color: isLight ? '#0f172a' : '#ffffff' }}>
+                <h2 style={{ margin: '0 0 4px', fontSize: '1.25rem', color: isLight ? '#1B1B1B' : '#ffffff' }}>
                   You're going!
                 </h2>
                 <p style={{ margin: 0, fontSize: '0.85rem', color: isLight ? '#64748b' : 'var(--slate-400)' }}>
                   A confirmation ticket has been sent to <strong>{confirmedData.attendeeEmail}</strong>.
                 </p>
-                <div style={{ display: 'inline-block', marginTop: '8px', padding: '3px 10px', borderRadius: '6px', background: isLight ? '#f1f5f9' : 'rgba(255,255,255,0.06)', fontSize: '0.75rem', fontWeight: 700, color: '#0d9488' }}>
+                <div style={{ display: 'inline-block', marginTop: '8px', padding: '3px 10px', borderRadius: '6px', background: isLight ? '#EFE9DE' : 'rgba(255,255,255,0.06)', fontSize: '0.75rem', fontWeight: 700, color: '#D94628' }}>
                   {confirmedData.ticketNumber}
                 </div>
               </div>
 
               {/* Meeting Point Box */}
               <div style={{
-                background: isLight ? '#f0fdfa' : 'rgba(13, 148, 136, 0.1)',
-                border: isLight ? '1px solid #99f6e4' : '1px solid rgba(13, 148, 136, 0.3)',
+                background: isLight ? '#FBF3EF' : 'rgba(217, 70, 40, 0.1)',
+                border: isLight ? '1px solid #99f6e4' : '1px solid rgba(217, 70, 40, 0.3)',
                 borderRadius: '12px',
                 padding: '14px',
                 marginBottom: '16px'
               }}>
-                <div style={{ fontSize: '0.72rem', fontWeight: 800, color: '#0d9488', textTransform: 'uppercase', marginBottom: '2px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <div style={{ fontSize: '0.72rem', fontWeight: 800, color: '#D94628', textTransform: 'uppercase', marginBottom: '2px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                   <MapPin size={12} /> Meeting Point
                 </div>
-                <div style={{ fontSize: '0.92rem', fontWeight: 700, color: isLight ? '#0f172a' : '#ffffff', marginBottom: '6px' }}>
+                <div style={{ fontSize: '0.92rem', fontWeight: 700, color: isLight ? '#1B1B1B' : '#ffffff', marginBottom: '6px' }}>
                   {formatShareLocation(event.location, 'Location on event page')}
                 </div>
                 <div style={{ fontSize: '0.78rem', color: isLight ? '#64748b' : 'var(--slate-300)' }}>
@@ -219,7 +219,7 @@ export default function GuestRsvpModal({ event, isOpen, onClose, onSuccess }) {
                     flex: 1,
                     padding: '10px 12px',
                     borderRadius: '10px',
-                    background: '#0d9488',
+                    background: '#D94628',
                     color: '#ffffff',
                     fontWeight: 700,
                     fontSize: '0.82rem',
@@ -241,8 +241,8 @@ export default function GuestRsvpModal({ event, isOpen, onClose, onSuccess }) {
                     flex: 1,
                     padding: '10px 12px',
                     borderRadius: '10px',
-                    background: isLight ? '#f1f5f9' : 'rgba(255,255,255,0.06)',
-                    color: isLight ? '#0f172a' : '#ffffff',
+                    background: isLight ? '#EFE9DE' : 'rgba(255,255,255,0.06)',
+                    color: isLight ? '#1B1B1B' : '#ffffff',
                     border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255,255,255,0.1)',
                     fontWeight: 700,
                     fontSize: '0.82rem',
@@ -300,7 +300,7 @@ export default function GuestRsvpModal({ event, isOpen, onClose, onSuccess }) {
                     className="interactive-press"
                     style={{
                       background: isLight ? '#ffffff' : 'rgba(255,255,255,0.08)',
-                      color: isLight ? '#0f172a' : '#ffffff',
+                      color: isLight ? '#1B1B1B' : '#ffffff',
                       border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255,255,255,0.1)',
                       padding: '8px 14px',
                       borderRadius: '999px',
@@ -330,7 +330,7 @@ export default function GuestRsvpModal({ event, isOpen, onClose, onSuccess }) {
             /* STEP 1: GUEST RSVP INPUT FORM */
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               <div>
-                <h3 style={{ margin: '0 0 4px', fontSize: '1.15rem', color: isLight ? '#0f172a' : '#ffffff' }}>
+                <h3 style={{ margin: '0 0 4px', fontSize: '1.15rem', color: isLight ? '#1B1B1B' : '#ffffff' }}>
                   {event.title}
                 </h3>
                 <p style={{ margin: 0, fontSize: '0.8rem', color: isLight ? '#64748b' : 'var(--slate-400)' }}>
@@ -359,8 +359,8 @@ export default function GuestRsvpModal({ event, isOpen, onClose, onSuccess }) {
                     padding: '10px 12px',
                     borderRadius: '10px',
                     border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255,255,255,0.1)',
-                    background: isLight ? '#f8fafc' : 'rgba(0,0,0,0.2)',
-                    color: isLight ? '#0f172a' : '#ffffff',
+                    background: isLight ? '#F7F3EC' : 'rgba(0,0,0,0.2)',
+                    color: isLight ? '#1B1B1B' : '#ffffff',
                     fontSize: '0.88rem'
                   }}
                 />
@@ -381,8 +381,8 @@ export default function GuestRsvpModal({ event, isOpen, onClose, onSuccess }) {
                     padding: '10px 12px',
                     borderRadius: '10px',
                     border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255,255,255,0.1)',
-                    background: isLight ? '#f8fafc' : 'rgba(0,0,0,0.2)',
-                    color: isLight ? '#0f172a' : '#ffffff',
+                    background: isLight ? '#F7F3EC' : 'rgba(0,0,0,0.2)',
+                    color: isLight ? '#1B1B1B' : '#ffffff',
                     fontSize: '0.88rem'
                   }}
                 />
@@ -393,15 +393,15 @@ export default function GuestRsvpModal({ event, isOpen, onClose, onSuccess }) {
 
               {/* +1 Guest Pass */}
               <div style={{
-                background: isLight ? '#f8fafc' : 'rgba(255,255,255,0.03)',
+                background: isLight ? '#F7F3EC' : 'rgba(255,255,255,0.03)',
                 border: isLight ? '1px solid #e2e8f0' : '1px solid rgba(255,255,255,0.06)',
                 borderRadius: '12px',
                 padding: '12px'
               }}>
                 <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Users size={16} color="#0d9488" />
-                    <span style={{ fontSize: '0.82rem', fontWeight: 700, color: isLight ? '#0f172a' : '#ffffff' }}>
+                    <Users size={16} color="#D94628" />
+                    <span style={{ fontSize: '0.82rem', fontWeight: 700, color: isLight ? '#1B1B1B' : '#ffffff' }}>
                       Bring a friend (+1 Guest Pass)?
                     </span>
                   </div>
@@ -409,7 +409,7 @@ export default function GuestRsvpModal({ event, isOpen, onClose, onSuccess }) {
                     type="checkbox"
                     checked={hasPlusOne}
                     onChange={e => setHasPlusOne(e.target.checked)}
-                    style={{ width: '16px', height: '16px', accentColor: '#0d9488', cursor: 'pointer' }}
+                    style={{ width: '16px', height: '16px', accentColor: '#D94628', cursor: 'pointer' }}
                   />
                 </label>
 
@@ -426,7 +426,7 @@ export default function GuestRsvpModal({ event, isOpen, onClose, onSuccess }) {
                         borderRadius: '8px',
                         border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255,255,255,0.1)',
                         background: isLight ? '#ffffff' : 'rgba(0,0,0,0.2)',
-                        color: isLight ? '#0f172a' : '#ffffff',
+                        color: isLight ? '#1B1B1B' : '#ffffff',
                         fontSize: '0.82rem'
                       }}
                     />
@@ -441,7 +441,7 @@ export default function GuestRsvpModal({ event, isOpen, onClose, onSuccess }) {
                         borderRadius: '8px',
                         border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255,255,255,0.1)',
                         background: isLight ? '#ffffff' : 'rgba(0,0,0,0.2)',
-                        color: isLight ? '#0f172a' : '#ffffff',
+                        color: isLight ? '#1B1B1B' : '#ffffff',
                         fontSize: '0.82rem'
                       }}
                     />
@@ -465,8 +465,8 @@ export default function GuestRsvpModal({ event, isOpen, onClose, onSuccess }) {
                       padding: '8px 10px',
                       borderRadius: '8px',
                       border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255,255,255,0.1)',
-                      background: isLight ? '#f8fafc' : 'rgba(0,0,0,0.2)',
-                      color: isLight ? '#0f172a' : '#ffffff',
+                      background: isLight ? '#F7F3EC' : 'rgba(0,0,0,0.2)',
+                      color: isLight ? '#1B1B1B' : '#ffffff',
                       fontSize: '0.82rem'
                     }}
                   />
@@ -481,7 +481,7 @@ export default function GuestRsvpModal({ event, isOpen, onClose, onSuccess }) {
                   width: '100%',
                   padding: '12px',
                   borderRadius: '12px',
-                  background: '#0d9488',
+                  background: '#D94628',
                   color: '#ffffff',
                   fontWeight: 800,
                   fontSize: '0.92rem',
@@ -492,7 +492,7 @@ export default function GuestRsvpModal({ event, isOpen, onClose, onSuccess }) {
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: '6px',
-                  boxShadow: '0 4px 15px rgba(13, 148, 136, 0.4)'
+                  boxShadow: '0 4px 15px rgba(217, 70, 40, 0.4)'
                 }}
               >
                 {isLoading ? 'Reserving...' : 'Confirm Spot & Get Meeting Point →'}

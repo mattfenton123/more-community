@@ -149,7 +149,7 @@ export function analyzeLink(rawUrl) {
       status: 'verified',
       riskScore: 0,
       badge: 'More Community Official',
-      color: '#14b8a6',
+      color: '#EB5738',
       isHttps: true,
       reasons: ['Official More Community platform destination.']
     };
@@ -280,7 +280,7 @@ export function calculateUserTrustLevel(targetUser, memberships = {}, events = [
     return {
       level: 'Community Leader',
       badge: '👑 Leader Pro Protected',
-      badgeColor: '#14b8a6',
+      badgeColor: '#EB5738',
       isVerified: true,
       description: 'Verified community leader covered by Leader Shield insurance.',
       score: 100

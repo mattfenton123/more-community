@@ -31,7 +31,7 @@ export default function SponsorProfile() {
           background: `url(${sponsor.heroImage || 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=1200&q=80'})`, 
           backgroundSize: 'cover', backgroundPosition: 'center' 
         }}>
-          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(2,6,23,0.3) 0%, rgba(2,6,23,0.95) 100%)' }}></div>
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(18, 18, 18,0.3) 0%, rgba(18, 18, 18,0.95) 100%)' }}></div>
         </div>
         
         <button 
@@ -77,7 +77,7 @@ export default function SponsorProfile() {
         </div>
 
         {/* Community Commitment */}
-        <div style={{ background: 'rgba(20,184,166,0.05)', border: '1px solid rgba(20,184,166,0.2)', borderRadius: '20px', padding: '20px' }}>
+        <div style={{ background: 'rgba(235, 87, 56,0.05)', border: '1px solid rgba(235, 87, 56,0.2)', borderRadius: '20px', padding: '20px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', color: 'var(--teal-400)' }}>
             <ShieldCheck size={20} />
             <h3 style={{ fontSize: '1.1rem', fontWeight: 700, margin: 0 }}>Community Commitment</h3>

@@ -109,11 +109,11 @@ export default function GettingStarted() {
       <div style={{
         padding: '48px 24px 32px',
         textAlign: 'center',
-        background: 'linear-gradient(to bottom, rgba(20,184,166,0.08), transparent)',
+        background: 'linear-gradient(to bottom, rgba(235, 87, 56,0.08), transparent)',
       }}>
         <div style={{
           width: '64px', height: '64px', borderRadius: '50%',
-          background: 'rgba(20,184,166,0.12)', border: '1px solid rgba(20,184,166,0.25)',
+          background: 'rgba(235, 87, 56,0.12)', border: '1px solid rgba(235, 87, 56,0.25)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           margin: '0 auto 20px', fontSize: '1.8rem',
         }}>
@@ -147,8 +147,8 @@ export default function GettingStarted() {
             {user.interests.map(interest => (
               <span key={interest} style={{
                 padding: '6px 14px', borderRadius: '999px',
-                background: 'rgba(20,184,166,0.1)',
-                border: '1px solid rgba(20,184,166,0.2)',
+                background: 'rgba(235, 87, 56,0.1)',
+                border: '1px solid rgba(235, 87, 56,0.2)',
                 color: 'var(--teal-300)', fontSize: '0.8rem', fontWeight: 500,
               }}>
                 {interest}
@@ -164,10 +164,10 @@ export default function GettingStarted() {
           onClick={() => router.push('/create-community')}
           className="interactive-press"
           style={{
-            background: 'linear-gradient(135deg, rgba(20,184,166,0.14) 0%, rgba(59,130,246,0.1) 100%)',
+            background: 'linear-gradient(135deg, rgba(235, 87, 56, 0.14) 0%, rgba(235, 87, 56, 0.03) 100%)',
             borderRadius: '16px',
             padding: '16px 20px',
-            border: '1px solid rgba(20,184,166,0.3)',
+            border: '1px solid rgba(235, 87, 56,0.3)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
@@ -233,10 +233,10 @@ export default function GettingStarted() {
                 key={comm.id}
                 style={{
                   background: isJoined
-                    ? 'rgba(20,184,166,0.06)'
+                    ? 'rgba(235, 87, 56,0.06)'
                     : 'rgba(255,255,255,0.03)',
                   border: isJoined
-                    ? '1px solid rgba(20,184,166,0.25)'
+                    ? '1px solid rgba(235, 87, 56,0.25)'
                     : '1px solid rgba(255,255,255,0.08)',
                   borderRadius: '16px',
                   overflow: 'hidden',
@@ -256,13 +256,13 @@ export default function GettingStarted() {
                 >
                   <div style={{
                     position: 'absolute', inset: 0,
-                    background: 'linear-gradient(to bottom, transparent 30%, rgba(15,23,42,0.95))',
+                    background: 'linear-gradient(to bottom, transparent 30%, rgba(27, 27, 27,0.95))',
                   }} />
                   {/* Score badge */}
                   {comm.score > 0 && (
                     <div style={{
                       position: 'absolute', top: '12px', right: '12px',
-                      background: 'rgba(20,184,166,0.85)', backdropFilter: 'blur(8px)',
+                      background: 'rgba(235, 87, 56,0.85)', backdropFilter: 'blur(8px)',
                       padding: '4px 10px', borderRadius: '99px',
                       fontSize: '0.7rem', fontWeight: 700, color: 'var(--white)',
                       display: 'flex', alignItems: 'center', gap: '4px',
@@ -332,8 +332,8 @@ export default function GettingStarted() {
                   {isJoined ? (
                     <div style={{
                       width: '100%', padding: '12px', borderRadius: '12px',
-                      background: 'rgba(20,184,166,0.1)',
-                      border: '1px solid rgba(20,184,166,0.2)',
+                      background: 'rgba(235, 87, 56,0.1)',
+                      border: '1px solid rgba(235, 87, 56,0.2)',
                       color: 'var(--teal-400)', fontWeight: 600, fontSize: '0.9rem',
                       display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
                     }}>
@@ -391,9 +391,9 @@ export default function GettingStarted() {
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '10px',
-                boxShadow: '0 10px 25px rgba(20,184,166,0.4)',
+                boxShadow: '0 10px 25px rgba(235, 87, 56,0.4)',
                 background: 'var(--teal-500)',
-                color: '#0f172a',
+                color: '#1B1B1B',
                 border: 'none',
                 cursor: 'pointer',
               }}

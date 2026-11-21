@@ -91,7 +91,7 @@ export default function VideoUploader({ onUploadComplete, onCancel, user, token 
   };
 
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 10000, background: 'rgba(2,6,23,0.9)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 10000, background: 'rgba(18, 18, 18,0.9)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
       <div style={{ background: 'var(--slate-900)', borderRadius: '24px', padding: '32px', width: '100%', maxWidth: '400px', border: '1px solid rgba(255,255,255,0.1)', textAlign: 'center', position: 'relative' }}>
         
         <button 
@@ -102,7 +102,7 @@ export default function VideoUploader({ onUploadComplete, onCancel, user, token 
           <X size={18} />
         </button>
 
-        <div style={{ width: '64px', height: '64px', background: 'rgba(20,184,166,0.1)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px', color: 'var(--teal-400)' }}>
+        <div style={{ width: '64px', height: '64px', background: 'rgba(235, 87, 56,0.1)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px', color: 'var(--teal-400)' }}>
           <Video size={32} />
         </div>
         

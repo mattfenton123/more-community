@@ -46,8 +46,8 @@ export default function EventRecapShareCard({ event, community, attendeeCount = 
 
   return (
     <div className="event-recap-share-card" style={{
-      background: 'linear-gradient(135deg, rgba(20,184,166,0.12) 0%, rgba(15,23,42,0.7) 100%)',
-      border: '1px solid rgba(45,212,191,0.3)',
+      background: 'linear-gradient(135deg, rgba(235, 87, 56,0.12) 0%, rgba(27, 27, 27,0.7) 100%)',
+      border: '1px solid rgba(242, 114, 87,0.3)',
       borderRadius: '18px',
       padding: '20px',
       marginBottom: '24px',
@@ -61,7 +61,7 @@ export default function EventRecapShareCard({ event, community, attendeeCount = 
         right: '-15px',
         width: '90px',
         height: '90px',
-        background: 'radial-gradient(circle, rgba(45,212,191,0.2) 0%, transparent 70%)',
+        background: 'radial-gradient(circle, rgba(242, 114, 87,0.2) 0%, transparent 70%)',
         borderRadius: '50%'
       }} />
 
@@ -69,7 +69,7 @@ export default function EventRecapShareCard({ event, community, attendeeCount = 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <div style={{
             width: '28px', height: '28px', borderRadius: '8px',
-            background: 'rgba(45,212,191,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#2dd4bf'
+            background: 'rgba(242, 114, 87,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#F27257'
           }}>
             <Share2 size={16} />
           </div>
@@ -87,7 +87,7 @@ export default function EventRecapShareCard({ event, community, attendeeCount = 
 
       {/* Mini Event Summary Card */}
       <div className="event-recap-mini-card" style={{
-        background: 'rgba(2,6,23,0.7)',
+        background: 'rgba(18, 18, 18,0.7)',
         border: '1px solid rgba(255,255,255,0.08)',
         borderRadius: '12px',
         padding: '12px 14px',
@@ -105,7 +105,7 @@ export default function EventRecapShareCard({ event, community, attendeeCount = 
             <span>{communityName}</span>
             <span>•</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-              <Users size={12} color="#2dd4bf" /> {isPast ? (count > 0 ? `${count} attended` : 'Completed event') : (count > 0 ? `${count} going` : 'Be the first to RSVP')}
+              <Users size={12} color="#F27257" /> {isPast ? (count > 0 ? `${count} attended` : 'Completed event') : (count > 0 ? `${count} going` : 'Be the first to RSVP')}
             </span>
           </div>
         </div>
@@ -152,7 +152,7 @@ export default function EventRecapShareCard({ event, community, attendeeCount = 
             cursor: 'pointer'
           }}
         >
-          {copied ? <Check size={16} color="#2dd4bf" /> : <Copy size={16} />}
+          {copied ? <Check size={16} color="#F27257" /> : <Copy size={16} />}
           {copied ? 'Copied!' : 'Copy'}
         </button>
       </div>

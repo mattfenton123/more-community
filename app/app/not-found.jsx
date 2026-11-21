@@ -6,7 +6,7 @@ export default function NotFound() {
   return (
     <div style={{
       minHeight: '100dvh',
-      background: 'radial-gradient(ellipse at top, #0f172a 0%, #020617 100%)',
+      background: 'radial-gradient(ellipse at top, #1B1B1B 0%, #121212 100%)',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
@@ -17,7 +17,7 @@ export default function NotFound() {
     }}>
       <div style={{
         width: '72px', height: '72px', borderRadius: '50%',
-        background: 'rgba(20,184,166,0.1)', border: '1px solid rgba(20,184,166,0.3)',
+        background: 'rgba(235, 87, 56,0.1)', border: '1px solid rgba(235, 87, 56,0.3)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         margin: '0 auto 20px', color: 'var(--teal-400)'
       }}>

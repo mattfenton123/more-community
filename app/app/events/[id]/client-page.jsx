@@ -86,7 +86,7 @@ function EventLocationMap({ location, event, isLocationShielded = false }) {
           <MapPin size={20} color="#fbbf24" /> Event Start Location
         </h3>
         <div style={{
-          background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.95) 100%)',
+          background: 'linear-gradient(135deg, rgba(37, 37, 37, 0.7) 0%, rgba(27, 27, 27, 0.95) 100%)',
           border: '1px dashed rgba(245, 158, 11, 0.4)',
           borderRadius: '20px',
           padding: '32px 24px',
@@ -145,8 +145,8 @@ function EventLocationMap({ location, event, isLocationShielded = false }) {
             type="button"
             onClick={() => setMapType('m')}
             style={{
-              background: mapType === 'm' ? '#2dd4bf' : 'transparent',
-              color: mapType === 'm' ? '#0f172a' : 'var(--slate-300)',
+              background: mapType === 'm' ? '#F27257' : 'transparent',
+              color: mapType === 'm' ? '#1B1B1B' : 'var(--slate-300)',
               border: 'none',
               borderRadius: '6px',
               padding: '3px 8px',
@@ -162,8 +162,8 @@ function EventLocationMap({ location, event, isLocationShielded = false }) {
             type="button"
             onClick={() => setMapType('k')}
             style={{
-              background: mapType === 'k' ? '#2dd4bf' : 'transparent',
-              color: mapType === 'k' ? '#0f172a' : 'var(--slate-300)',
+              background: mapType === 'k' ? '#F27257' : 'transparent',
+              color: mapType === 'k' ? '#1B1B1B' : 'var(--slate-300)',
               border: 'none',
               borderRadius: '6px',
               padding: '3px 8px',
@@ -201,9 +201,9 @@ function EventLocationMap({ location, event, isLocationShielded = false }) {
         {coords && (
           <div style={{
             position: 'absolute', bottom: '10px', left: '10px', zIndex: 10,
-            background: 'rgba(15, 23, 42, 0.88)', backdropFilter: 'blur(8px)',
+            background: 'rgba(27, 27, 27, 0.88)', backdropFilter: 'blur(8px)',
             padding: '4px 10px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.12)',
-            fontSize: '0.72rem', color: '#2dd4bf', fontFamily: 'monospace',
+            fontSize: '0.72rem', color: '#F27257', fontFamily: 'monospace',
             display: 'flex', alignItems: 'center', gap: '6px'
           }}>
             <span>📍 Google Maps</span>
@@ -275,8 +275,8 @@ function EventLocationMap({ location, event, isLocationShielded = false }) {
             style={{
               display: 'flex', alignItems: 'center', gap: '6px',
               padding: '9px 14px', borderRadius: '10px',
-              background: 'rgba(20,184,166,0.12)',
-              border: '1px solid rgba(20,184,166,0.3)',
+              background: 'rgba(235, 87, 56,0.12)',
+              border: '1px solid rgba(235, 87, 56,0.3)',
               color: 'var(--teal-400)', fontSize: '0.82rem', fontWeight: 600,
               textDecoration: 'none', cursor: 'pointer',
             }}
@@ -741,7 +741,7 @@ export default function EventClient({ id }) {
               height: '40px',
               padding: '0 14px',
               borderRadius: '99px',
-              background: 'rgba(15, 23, 42, 0.72)',
+              background: 'rgba(27, 27, 27, 0.72)',
               backdropFilter: 'blur(12px)',
               border: '1px solid rgba(255,255,255,0.22)',
               display: 'inline-flex',
@@ -754,7 +754,7 @@ export default function EventClient({ id }) {
               boxShadow: '0 4px 14px rgba(0,0,0,0.35)'
             }}
           >
-            <Share2 size={16} color="#2dd4bf" />
+            <Share2 size={16} color="#F27257" />
             <span>Share</span>
           </button>
         </div>
@@ -766,7 +766,7 @@ export default function EventClient({ id }) {
             </div>
           )}
           {seriesEvents.length > 1 && (
-            <div style={{ background: 'rgba(20,184,166,0.9)', color: 'white', padding: '6px 12px', borderRadius: '99px', fontSize: '0.8rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px', backdropFilter: 'blur(8px)', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}>
+            <div style={{ background: 'rgba(235, 87, 56,0.9)', color: 'white', padding: '6px 12px', borderRadius: '99px', fontSize: '0.8rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px', backdropFilter: 'blur(8px)', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}>
               <Repeat size={13} /> {currentSeriesIndex >= 0 ? `SESSION ${currentSeriesIndex + 1} OF ${seriesEvents.length}` : `${seriesEvents.length} SESSIONS`}
             </div>
           )}
@@ -784,7 +784,7 @@ export default function EventClient({ id }) {
           {/* Live Meetup Day Radar */}
           {isLive && !isEventPast(event) && (
             <div style={{
-              background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.12) 0%, rgba(15, 23, 42, 0.95) 100%)',
+              background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.12) 0%, rgba(27, 27, 27, 0.95) 100%)',
               border: '1.5px solid rgba(34, 197, 94, 0.4)',
               borderRadius: '20px',
               padding: '20px 22px',
@@ -901,7 +901,7 @@ export default function EventClient({ id }) {
                 style={{
                   display: 'inline-flex', alignItems: 'center', gap: '6px',
                   padding: '8px 14px', borderRadius: '99px',
-                  background: 'rgba(20,184,166,0.16)', border: '1px solid rgba(20,184,166,0.35)',
+                  background: 'rgba(235, 87, 56,0.16)', border: '1px solid rgba(235, 87, 56,0.35)',
                   color: 'var(--teal-300)', fontSize: '0.8rem', fontWeight: 700,
                   cursor: isUploadingPhoto ? 'wait' : 'pointer'
                 }}
@@ -972,8 +972,8 @@ export default function EventClient({ id }) {
             {(community?.is_insured || community?.insurance_tier === 'pro') && (
               <>
                 <span style={{ color: 'var(--slate-600)', fontSize: '0.85rem' }}>•</span>
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '3px 10px', background: 'rgba(20,184,166,0.1)', border: '1px solid rgba(20,184,166,0.25)', borderRadius: '99px', fontSize: '0.75rem', color: '#2dd4bf', fontWeight: 600 }}>
-                  <Shield size={12} color="#2dd4bf" /> Verified Leader • Council Safety & Organiser Insured
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '3px 10px', background: 'rgba(235, 87, 56,0.1)', border: '1px solid rgba(235, 87, 56,0.25)', borderRadius: '99px', fontSize: '0.75rem', color: '#F27257', fontWeight: 600 }}>
+                  <Shield size={12} color="#F27257" /> Verified Leader • Council Safety & Organiser Insured
                 </div>
               </>
             )}
@@ -1030,7 +1030,7 @@ export default function EventClient({ id }) {
                         padding: '8px 12px',
                         borderRadius: '10px',
                         border: isCurrent ? '1px solid var(--teal-400)' : '1px solid rgba(255,255,255,0.08)',
-                        background: isCurrent ? 'rgba(20,184,166,0.15)' : 'rgba(255,255,255,0.03)',
+                        background: isCurrent ? 'rgba(235, 87, 56,0.15)' : 'rgba(255,255,255,0.03)',
                         color: isCurrent ? 'var(--white)' : isPast ? 'var(--slate-500)' : 'var(--slate-300)',
                         cursor: isCurrent ? 'default' : 'pointer',
                         textAlign: 'left',
@@ -1085,10 +1085,10 @@ export default function EventClient({ id }) {
                       width: '30px',
                       height: '30px',
                       borderRadius: '50%',
-                      border: '2px solid #0f172a',
+                      border: '2px solid #1B1B1B',
                       marginLeft: idx === 0 ? 0 : '-10px',
                       objectFit: 'cover',
-                      background: '#1e293b'
+                      background: '#252525'
                     }}
                   />
                 );
@@ -1105,8 +1105,8 @@ export default function EventClient({ id }) {
         {/* Familiar Faces Social Proof Nudge */}
         {familiarFaces.length > 0 && !isGoing && (
           <div style={{
-            background: 'linear-gradient(135deg, rgba(20, 184, 166, 0.12) 0%, rgba(56, 189, 248, 0.08) 100%)',
-            border: '1px solid rgba(45, 212, 191, 0.3)',
+            background: 'linear-gradient(135deg, rgba(235, 87, 56, 0.12) 0%, rgba(235, 87, 56, 0.03) 100%)',
+            border: '1px solid rgba(242, 114, 87, 0.3)',
             borderRadius: '14px',
             padding: '10px 14px',
             marginTop: '12px',
@@ -1126,7 +1126,7 @@ export default function EventClient({ id }) {
                     alt={u?.name}
                     style={{
                       width: '28px', height: '28px', borderRadius: '50%',
-                      border: '2px solid #0f172a', marginLeft: i === 0 ? 0 : '-8px',
+                      border: '2px solid #1B1B1B', marginLeft: i === 0 ? 0 : '-8px',
                       objectFit: 'cover'
                     }}
                   />
@@ -1224,8 +1224,8 @@ export default function EventClient({ id }) {
             marginBottom: '28px',
             padding: '18px 20px',
             borderRadius: '16px',
-            background: 'linear-gradient(135deg, rgba(20,184,166,0.12) 0%, rgba(56,189,248,0.08) 100%)',
-            border: '1px solid rgba(45,212,191,0.3)'
+            background: 'linear-gradient(135deg, rgba(235, 87, 56, 0.12) 0%, rgba(235, 87, 56, 0.03) 100%)',
+            border: '1px solid rgba(242, 114, 87,0.3)'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px', marginBottom: '10px' }}>
               <div style={{ fontSize: '0.82rem', fontWeight: 800, color: 'var(--teal-300)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
@@ -1236,11 +1236,11 @@ export default function EventClient({ id }) {
               </span>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '10px', fontSize: '0.83rem', color: 'var(--slate-200)', lineHeight: 1.45 }}>
-              <div style={{ padding: '10px 12px', borderRadius: '12px', background: 'rgba(15,23,42,0.55)', border: '1px solid rgba(45,212,191,0.2)' }}>
+              <div style={{ padding: '10px 12px', borderRadius: '12px', background: 'rgba(27, 27, 27,0.55)', border: '1px solid rgba(242, 114, 87,0.2)' }}>
                 <div style={{ fontWeight: 700, color: 'var(--teal-300)', marginBottom: '3px' }}>Step 1: More Group Host Pass (£{(event.ticketPrice || 0).toFixed(2)})</div>
                 <div style={{ color: 'var(--slate-300)', fontSize: '0.78rem' }}>Reserves your group spot, covers hosting &amp; leader ticket share. Refundable if under {minTripGroup} commit.</div>
               </div>
-              <div style={{ padding: '10px 12px', borderRadius: '12px', background: 'rgba(15,23,42,0.55)', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <div style={{ padding: '10px 12px', borderRadius: '12px', background: 'rgba(27, 27, 27,0.55)', border: '1px solid rgba(255,255,255,0.08)' }}>
                 <div style={{ fontWeight: 700, color: '#fff', marginBottom: '3px' }}>Step 2: Own Ticket (~£{supplierEstimate} on {tripProvider})</div>
                 <div style={{ color: 'var(--slate-300)', fontSize: '0.78rem' }}>Paid directly to {tripProvider} via our tracked group link once {minTripGroup}+ people join.</div>
               </div>
@@ -1318,7 +1318,7 @@ export default function EventClient({ id }) {
             <h3 style={{ fontSize: '1.2rem', margin: '0 0 12px 0', color: 'var(--white)', fontFamily: 'var(--font-heading)', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Users size={20} color="var(--teal-400)" /> Who is this for?
             </h3>
-            <div style={{ background: 'rgba(20,184,166,0.06)', border: '1px solid rgba(20,184,166,0.15)', borderRadius: '14px', padding: '16px' }}>
+            <div style={{ background: 'rgba(235, 87, 56,0.06)', border: '1px solid rgba(235, 87, 56,0.15)', borderRadius: '14px', padding: '16px' }}>
               <p style={{ color: 'var(--slate-200)', fontSize: '0.95rem', lineHeight: 1.6, margin: 0 }}>{event.suitableFor}</p>
             </div>
           </div>
@@ -1366,7 +1366,7 @@ export default function EventClient({ id }) {
                 style={{
                   display: 'flex', alignItems: 'center', gap: '6px',
                   padding: '8px 16px', borderRadius: '99px',
-                  background: 'rgba(20,184,166,0.15)', border: '1px solid rgba(20,184,166,0.3)',
+                  background: 'rgba(235, 87, 56,0.15)', border: '1px solid rgba(235, 87, 56,0.3)',
                   color: 'var(--teal-300)', fontSize: '0.82rem', fontWeight: 600,
                   cursor: isUploadingPhoto ? 'wait' : 'pointer'
                 }}
@@ -1385,7 +1385,7 @@ export default function EventClient({ id }) {
                   className="interactive-press"
                   style={{
                     position: 'relative', borderRadius: '12px', overflow: 'hidden', aspectRatio: '1/1',
-                    border: '1px solid rgba(255,255,255,0.08)', cursor: 'pointer', background: '#0f172a'
+                    border: '1px solid rgba(255,255,255,0.08)', cursor: 'pointer', background: '#1B1B1B'
                   }}
                 >
                   <img src={imgUrl} alt={`Event photo ${pIdx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -1407,7 +1407,7 @@ export default function EventClient({ id }) {
                       style={{
                         position: 'absolute', top: '6px', right: '6px',
                         width: '24px', height: '24px', borderRadius: '50%',
-                        background: 'rgba(15,23,42,0.75)', border: '1px solid rgba(255,255,255,0.2)',
+                        background: 'rgba(27, 27, 27,0.75)', border: '1px solid rgba(255,255,255,0.2)',
                         color: '#fca5a5', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer'
                       }}
                     >
@@ -1483,7 +1483,7 @@ export default function EventClient({ id }) {
         {/* Joint Co-Hosting & Partner Community Discovery */}
         {partnerCommunities.length > 0 && (
           <div style={{
-            background: 'linear-gradient(135deg, rgba(56,189,248,0.08) 0%, rgba(20,184,166,0.08) 100%)',
+            background: 'linear-gradient(135deg, rgba(235, 87, 56, 0.10) 0%, rgba(58, 142, 118, 0.08) 100%)',
             border: '1px solid rgba(56,189,248,0.2)',
             borderRadius: '16px',
             padding: '18px 20px',
@@ -1523,8 +1523,8 @@ export default function EventClient({ id }) {
                 style={{
                   display: 'inline-flex', alignItems: 'center', gap: '6px',
                   padding: '8px 14px', borderRadius: '12px',
-                  background: 'rgba(20,184,166,0.14)', border: '1px solid rgba(45,212,191,0.35)',
-                  color: '#5eead4', fontSize: '0.82rem', fontWeight: 700, cursor: 'pointer'
+                  background: 'rgba(235, 87, 56,0.14)', border: '1px solid rgba(242, 114, 87,0.35)',
+                  color: '#F79984', fontSize: '0.82rem', fontWeight: 700, cursor: 'pointer'
                 }}
               >
                 <MessageSquare size={14} /> Open Event Discussion ↓
@@ -1633,15 +1633,15 @@ export default function EventClient({ id }) {
                   {/* Structured Expectation Highlights */}
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '10px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8rem', color: 'var(--slate-300)' }}>
-                      <CheckCircle2 size={15} color="#2dd4bf" />
+                      <CheckCircle2 size={15} color="#F27257" />
                       <span><strong>Atmosphere:</strong> {isPeerSupport ? 'Confidential & casual' : 'Friendly & social'}</span>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8rem', color: 'var(--slate-300)' }}>
-                      <CheckCircle2 size={15} color="#2dd4bf" />
+                      <CheckCircle2 size={15} color="#F27257" />
                       <span><strong>Pressure:</strong> Zero pressure • Go at your pace</span>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8rem', color: 'var(--slate-300)' }}>
-                      <CheckCircle2 size={15} color="#2dd4bf" />
+                      <CheckCircle2 size={15} color="#F27257" />
                       <span><strong>First-Timers:</strong> Very welcome & supported</span>
                     </div>
                   </div>
@@ -1655,7 +1655,7 @@ export default function EventClient({ id }) {
       {/* Desktop Sticky Booking & Calendar Sidebar */}
       <aside className="desktop-event-sidebar">
         <div style={{
-          background: 'linear-gradient(180deg, rgba(15, 23, 42, 0.95) 0%, rgba(10, 15, 29, 0.98) 100%)',
+          background: 'linear-gradient(180deg, rgba(27, 27, 27, 0.95) 0%, rgba(10, 15, 29, 0.98) 100%)',
           border: '1px solid rgba(255, 255, 255, 0.1)',
           borderRadius: '24px',
           padding: '24px',
@@ -1674,8 +1674,8 @@ export default function EventClient({ id }) {
             {spotsLeft !== null && (
               <div style={{
                 padding: '6px 12px', borderRadius: '99px',
-                background: spotsLeft === 0 ? 'rgba(239, 68, 68, 0.15)' : spotsLeft < 5 ? 'rgba(244, 63, 94, 0.15)' : 'rgba(20, 184, 166, 0.15)',
-                border: spotsLeft === 0 ? '1px solid rgba(239, 68, 68, 0.3)' : spotsLeft < 5 ? '1px solid rgba(244, 63, 94, 0.3)' : '1px solid rgba(20, 184, 166, 0.3)',
+                background: spotsLeft === 0 ? 'rgba(239, 68, 68, 0.15)' : spotsLeft < 5 ? 'rgba(244, 63, 94, 0.15)' : 'rgba(235, 87, 56, 0.15)',
+                border: spotsLeft === 0 ? '1px solid rgba(239, 68, 68, 0.3)' : spotsLeft < 5 ? '1px solid rgba(244, 63, 94, 0.3)' : '1px solid rgba(235, 87, 56, 0.3)',
                 color: spotsLeft === 0 ? '#f87171' : spotsLeft < 5 ? '#fb7185' : 'var(--teal-300)',
                 fontSize: '0.8rem', fontWeight: 700
               }}>
@@ -1704,13 +1704,13 @@ export default function EventClient({ id }) {
                   style={{
                     width: '100%',
                     background: isGoing ? 'rgba(255,255,255,0.1)' : isPendingApproval ? 'rgba(245,158,11,0.18)' : 'var(--teal-500)',
-                    color: isGoing ? 'var(--white)' : isPendingApproval ? '#fbbf24' : '#0f172a',
+                    color: isGoing ? 'var(--white)' : isPendingApproval ? '#fbbf24' : '#1B1B1B',
                     border: isGoing ? '1px solid rgba(255,255,255,0.2)' : isPendingApproval ? '1px solid rgba(245,158,11,0.35)' : 'none',
                     padding: '14px 20px', borderRadius: '14px', fontSize: '1rem', fontWeight: 800,
                     cursor: (checkoutState === 'processing' || (spotsLeft === 0 && !isGoing && !isPendingApproval && Boolean(user?.id))) ? 'not-allowed' : 'pointer',
                     opacity: (checkoutState === 'processing' || (spotsLeft === 0 && !isGoing && !isPendingApproval && Boolean(user?.id))) ? 0.7 : 1,
                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                    boxShadow: isGoing ? 'none' : isPendingApproval ? 'none' : '0 4px 20px rgba(20, 184, 166, 0.35)'
+                    boxShadow: isGoing ? 'none' : isPendingApproval ? 'none' : '0 4px 20px rgba(235, 87, 56, 0.35)'
                   }}
                 >
                   {!user?.id ? (event.ticketPrice > 0 ? 'Sign In to Buy Ticket' : requiresHostApproval ? 'Sign In to Request to Join' : 'Sign In to RSVP') :
@@ -1730,9 +1730,9 @@ export default function EventClient({ id }) {
                     className="interactive-press"
                     style={{
                       width: '100%',
-                      background: 'rgba(20,184,166,0.15)',
+                      background: 'rgba(235, 87, 56,0.15)',
                       color: 'var(--teal-300)',
-                      border: '1px solid rgba(20,184,166,0.35)',
+                      border: '1px solid rgba(235, 87, 56,0.35)',
                       padding: '12px 16px', borderRadius: '14px', fontSize: '0.92rem', fontWeight: 700,
                       display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', cursor: 'pointer'
                     }}
@@ -1830,7 +1830,7 @@ export default function EventClient({ id }) {
       {/* Sticky RSVP Footer (Mobile only, hidden on desktop >= 1024px) */}
       <div style={{ 
         position: 'fixed', bottom: 0, left: 0, right: 0, 
-        padding: '16px 20px', background: 'rgba(2, 6, 23, 0.65)', 
+        padding: '16px 20px', background: 'rgba(18, 18, 18, 0.65)', 
         backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', borderTop: '1px solid rgba(255,255,255,0.1)', 
         boxShadow: '0 -8px 32px rgba(0,0,0,0.4)',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -1891,9 +1891,9 @@ export default function EventClient({ id }) {
                   onClick={() => setShowTicket(event)}
                   className="interactive-press"
                   style={{
-                    background: 'rgba(20,184,166,0.15)',
+                    background: 'rgba(235, 87, 56,0.15)',
                     color: 'var(--teal-300)',
-                    border: '1px solid rgba(20,184,166,0.3)',
+                    border: '1px solid rgba(235, 87, 56,0.3)',
                     padding: '12px 24px', borderRadius: '99px', fontSize: '0.95rem', fontWeight: 700,
                     display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer'
                   }}
@@ -1920,9 +1920,9 @@ export default function EventClient({ id }) {
                     onClick={() => setShowTicket({ ...event, isCashOnArrival: isCashAttendee, ticketType: isCashAttendee ? 'cash_on_arrival' : 'paid' })}
                     className="interactive-press"
                     style={{
-                      background: 'rgba(20,184,166,0.18)',
+                      background: 'rgba(235, 87, 56,0.18)',
                       color: 'var(--teal-300)',
-                      border: '1px solid rgba(20,184,166,0.35)',
+                      border: '1px solid rgba(235, 87, 56,0.35)',
                       padding: '12px 18px', borderRadius: '99px', fontSize: '0.95rem', fontWeight: 700,
                       display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer'
                     }}
@@ -1936,7 +1936,7 @@ export default function EventClient({ id }) {
                   className="interactive-press"
                   style={{ 
                     background: isGoing ? 'rgba(255,255,255,0.1)' : isPendingApproval ? 'rgba(245,158,11,0.18)' : 'var(--teal-500)', 
-                    color: isGoing ? 'var(--white)' : isPendingApproval ? '#fbbf24' : '#0f172a', 
+                    color: isGoing ? 'var(--white)' : isPendingApproval ? '#fbbf24' : '#1B1B1B', 
                     border: isGoing ? '1px solid rgba(255,255,255,0.2)' : isPendingApproval ? '1px solid rgba(245,158,11,0.35)' : 'none',
                     padding: '12px 32px', borderRadius: '99px', fontSize: '1rem', fontWeight: 700, 
                     cursor: (checkoutState === 'processing' || (spotsLeft === 0 && !isGoing && !isPendingApproval && Boolean(user?.id))) ? 'not-allowed' : 'pointer',
@@ -1964,15 +1964,15 @@ export default function EventClient({ id }) {
       {showPaymentChoiceModal && (
         <div style={{
           position: 'fixed', inset: 0, zIndex: 100000,
-          background: 'rgba(2, 6, 23, 0.85)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+          background: 'rgba(18, 18, 18, 0.85)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
           display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px'
         }}>
           <div style={{
             width: '100%', maxWidth: '440px',
-            background: 'linear-gradient(180deg, #0f172a 0%, #090d16 100%)',
-            border: '1px solid rgba(45, 212, 191, 0.35)',
+            background: 'linear-gradient(180deg, #1B1B1B 0%, #090d16 100%)',
+            border: '1px solid rgba(242, 114, 87, 0.35)',
             borderRadius: '24px', padding: '24px',
-            boxShadow: '0 20px 50px rgba(0,0,0,0.7), 0 0 40px rgba(20, 184, 166, 0.15)',
+            boxShadow: '0 20px 50px rgba(0,0,0,0.7), 0 0 40px rgba(235, 87, 56, 0.15)',
             position: 'relative'
           }}>
             <button
@@ -1990,7 +1990,7 @@ export default function EventClient({ id }) {
             <div style={{ textAlign: 'center', marginBottom: '20px' }}>
               <div style={{
                 width: '54px', height: '54px', borderRadius: '50%',
-                background: 'rgba(20, 184, 166, 0.15)', border: '1px solid rgba(20, 184, 166, 0.35)',
+                background: 'rgba(235, 87, 56, 0.15)', border: '1px solid rgba(235, 87, 56, 0.35)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 margin: '0 auto 12px', color: 'var(--teal-400)'
               }}>
@@ -2018,8 +2018,8 @@ export default function EventClient({ id }) {
                   width: '100%',
                   padding: '16px',
                   borderRadius: '16px',
-                  background: 'rgba(20, 184, 166, 0.08)',
-                  border: '1.5px solid rgba(45, 212, 191, 0.4)',
+                  background: 'rgba(235, 87, 56, 0.08)',
+                  border: '1.5px solid rgba(242, 114, 87, 0.4)',
                   textAlign: 'left',
                   cursor: 'pointer',
                   display: 'flex',
@@ -2030,7 +2030,7 @@ export default function EventClient({ id }) {
               >
                 <div style={{
                   width: '40px', height: '40px', borderRadius: '12px',
-                  background: 'rgba(20, 184, 166, 0.2)', color: 'var(--teal-300)',
+                  background: 'rgba(235, 87, 56, 0.2)', color: 'var(--teal-300)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
                 }}>
                   <CreditCard size={20} />
@@ -2096,28 +2096,28 @@ export default function EventClient({ id }) {
       {showRsvpSuccessModal && (
         <div style={{
           position: 'fixed', inset: 0, zIndex: 1100,
-          background: 'rgba(2, 6, 23, 0.85)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+          background: 'rgba(18, 18, 18, 0.85)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
           display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px'
         }}>
           <div style={{
             width: '100%', maxWidth: '480px',
-            background: 'linear-gradient(180deg, #0f172a 0%, #090d16 100%)',
-            border: '1px solid rgba(45, 212, 191, 0.35)',
+            background: 'linear-gradient(180deg, #1B1B1B 0%, #090d16 100%)',
+            border: '1px solid rgba(242, 114, 87, 0.35)',
             borderRadius: '24px', padding: '24px',
-            boxShadow: '0 20px 50px rgba(0,0,0,0.7), 0 0 40px rgba(20, 184, 166, 0.18)',
+            boxShadow: '0 20px 50px rgba(0,0,0,0.7), 0 0 40px rgba(235, 87, 56, 0.18)',
             position: 'relative', overflow: 'hidden'
           }}>
             {/* Ambient teal glow */}
             <div style={{
               position: 'absolute', top: '-60px', right: '-60px', width: '180px', height: '180px',
-              borderRadius: '50%', background: 'radial-gradient(circle, rgba(20,184,166,0.3) 0%, transparent 70%)', pointerEvents: 'none'
+              borderRadius: '50%', background: 'radial-gradient(circle, rgba(235, 87, 56,0.3) 0%, transparent 70%)', pointerEvents: 'none'
             }} />
 
             {/* Success Badge */}
             <div style={{ textAlign: 'center', marginBottom: '20px' }}>
               <div style={{
                 width: '64px', height: '64px', borderRadius: '50%',
-                background: 'linear-gradient(135deg, #10b981 0%, #14b8a6 100%)',
+                background: 'linear-gradient(135deg, #10b981 0%, #EB5738 100%)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 margin: '0 auto 14px', color: '#090d16',
                 boxShadow: '0 8px 24px rgba(16, 185, 129, 0.35)'
@@ -2168,7 +2168,7 @@ export default function EventClient({ id }) {
                 style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
                   width: '100%', padding: '12px 14px', borderRadius: '12px', marginBottom: '14px',
-                  background: 'rgba(20,184,166,0.18)', border: '1px solid rgba(45,212,191,0.45)',
+                  background: 'rgba(235, 87, 56,0.18)', border: '1px solid rgba(242, 114, 87,0.45)',
                   color: 'var(--teal-300)', fontWeight: 700, fontSize: '0.88rem', textDecoration: 'none'
                 }}
               >
@@ -2178,8 +2178,8 @@ export default function EventClient({ id }) {
             {/* Payment Summary Banner */}
             {event.ticketPrice > 0 && (
               <div style={{
-                background: isCashAttendee ? 'rgba(245,158,11,0.1)' : 'rgba(20,184,166,0.1)',
-                border: isCashAttendee ? '1px solid rgba(245,158,11,0.35)' : '1px solid rgba(20,184,166,0.35)',
+                background: isCashAttendee ? 'rgba(245,158,11,0.1)' : 'rgba(235, 87, 56,0.1)',
+                border: isCashAttendee ? '1px solid rgba(245,158,11,0.35)' : '1px solid rgba(235, 87, 56,0.35)',
                 borderRadius: '14px', padding: '12px 14px', marginBottom: '16px',
                 display: 'flex', alignItems: 'center', gap: '10px'
               }}>
@@ -2197,9 +2197,9 @@ export default function EventClient({ id }) {
                   </>
                 ) : (
                   <>
-                    <CheckCircle2 size={20} color="#2dd4bf" style={{ flexShrink: 0 }} />
+                    <CheckCircle2 size={20} color="#F27257" style={{ flexShrink: 0 }} />
                     <div>
-                      <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#2dd4bf' }}>
+                      <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#F27257' }}>
                         {isAffiliateGroupTrip ? `Host Pass Confirmed: £${event.ticketPrice.toFixed(2)}` : `Ticket Paid Online: £${event.ticketPrice.toFixed(2)}`}
                       </div>
                       <div style={{ fontSize: '0.75rem', color: 'var(--slate-300)', marginTop: '2px' }}>
@@ -2282,8 +2282,8 @@ export default function EventClient({ id }) {
 
                     if (myReservedLift) {
                       return (
-                        <div style={{ background: 'rgba(20,184,166,0.12)', border: '1px solid rgba(45,212,191,0.35)', borderRadius: '12px', padding: '12px' }}>
-                          <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#5eead4', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <div style={{ background: 'rgba(235, 87, 56,0.12)', border: '1px solid rgba(242, 114, 87,0.35)', borderRadius: '12px', padding: '12px' }}>
+                          <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#F79984', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                             <Car size={15} /> Seat Reserved with {myReservedLift.driverName}
                           </div>
                           <div style={{ fontSize: '0.75rem', color: 'var(--slate-300)', marginBottom: '10px' }}>
@@ -2310,7 +2310,7 @@ export default function EventClient({ id }) {
                     if (availableLifts.length > 0) {
                       return (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                          <div style={{ fontSize: '0.76rem', fontWeight: 700, color: '#5eead4', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <div style={{ fontSize: '0.76rem', fontWeight: 700, color: '#F79984', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                             <span>🚗 {availableLifts.length} {availableLifts.length === 1 ? 'Lift Already Offered' : 'Lifts Already Offered'}</span>
                             <button
                               type="button"
@@ -2324,7 +2324,7 @@ export default function EventClient({ id }) {
                           {availableLifts.slice(0, 3).map((lift) => {
                             const seatsLeft = Number(lift.seatsAvailable ?? Math.max(0, (lift.seatsTotal || 0) - (lift.passengers || []).length));
                             return (
-                              <div key={lift.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', background: 'rgba(15,23,42,0.55)', border: '1px solid rgba(45,212,191,0.25)', borderRadius: '10px', padding: '9px 10px' }}>
+                              <div key={lift.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', background: 'rgba(27, 27, 27,0.55)', border: '1px solid rgba(242, 114, 87,0.25)', borderRadius: '10px', padding: '9px 10px' }}>
                                 <div style={{ minWidth: 0 }}>
                                   <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                     {lift.driverName} • {seatsLeft} {seatsLeft === 1 ? 'seat' : 'seats'} left
@@ -2340,8 +2340,8 @@ export default function EventClient({ id }) {
                                   className="interactive-press"
                                   style={{
                                     flexShrink: 0, padding: '7px 11px', borderRadius: '9px',
-                                    background: 'linear-gradient(135deg, #10b981 0%, #14b8a6 100%)',
-                                    color: '#0f172a', fontWeight: 800, fontSize: '0.76rem',
+                                    background: 'linear-gradient(135deg, #10b981 0%, #EB5738 100%)',
+                                    color: '#1B1B1B', fontWeight: 800, fontSize: '0.76rem',
                                     border: 'none', cursor: 'pointer'
                                   }}
                                 >
@@ -2355,7 +2355,7 @@ export default function EventClient({ id }) {
                             <button
                               type="button"
                               onClick={() => openCarpoolSection(false)}
-                              style={{ background: 'none', border: 'none', color: '#5eead4', fontSize: '0.74rem', fontWeight: 600, cursor: 'pointer', padding: 0 }}
+                              style={{ background: 'none', border: 'none', color: '#F79984', fontSize: '0.74rem', fontWeight: 600, cursor: 'pointer', padding: 0 }}
                             >
                               View all lift details ↓
                             </button>
@@ -2375,7 +2375,7 @@ export default function EventClient({ id }) {
                     return (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                         {myOfferedLift && (
-                          <div style={{ fontSize: '0.76rem', color: '#5eead4', fontWeight: 600, padding: '6px 10px', borderRadius: '8px', background: 'rgba(20,184,166,0.12)' }}>
+                          <div style={{ fontSize: '0.76rem', color: '#F79984', fontWeight: 600, padding: '6px 10px', borderRadius: '8px', background: 'rgba(235, 87, 56,0.12)' }}>
                             🚗 Your lift from {myOfferedLift.origin} is live ({myOfferedLift.seatsAvailable} seats left)
                           </div>
                         )}
@@ -2386,8 +2386,8 @@ export default function EventClient({ id }) {
                             className="interactive-press"
                             style={{
                               padding: '9px 10px', borderRadius: '10px',
-                              background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(45,212,191,0.3)',
-                              color: '#5eead4', fontSize: '0.78rem', fontWeight: 700,
+                              background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(242, 114, 87,0.3)',
+                              color: '#F79984', fontSize: '0.78rem', fontWeight: 700,
                               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', cursor: 'pointer'
                             }}
                           >
@@ -2470,7 +2470,7 @@ export default function EventClient({ id }) {
                 className="interactive-press"
                 style={{
                   flex: 1, padding: '12px', borderRadius: '12px',
-                  background: 'rgba(20,184,166,0.15)', border: '1px solid rgba(20,184,166,0.3)',
+                  background: 'rgba(235, 87, 56,0.15)', border: '1px solid rgba(235, 87, 56,0.3)',
                   color: 'var(--teal-300)', fontSize: '0.9rem', fontWeight: 700,
                   cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px'
                 }}
@@ -2517,12 +2517,12 @@ export default function EventClient({ id }) {
       {showAttendeesModal && (
         <div style={{
           position: 'fixed', inset: 0, zIndex: 100000,
-          background: 'rgba(2, 6, 23, 0.85)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+          background: 'rgba(18, 18, 18, 0.85)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
           display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px'
         }}>
           <div style={{
             width: '100%', maxWidth: '440px', maxHeight: '80vh',
-            background: 'linear-gradient(180deg, #0f172a 0%, #090d16 100%)',
+            background: 'linear-gradient(180deg, #1B1B1B 0%, #090d16 100%)',
             border: '1px solid rgba(255,255,255,0.12)',
             borderRadius: '24px', padding: '24px',
             boxShadow: '0 20px 50px rgba(0,0,0,0.7)',
@@ -2554,11 +2554,11 @@ export default function EventClient({ id }) {
                 return (
                   <div key={att.userId} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '14px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <img src={avatar} alt={u?.name || 'Member'} style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', background: '#1e293b' }} />
+                      <img src={avatar} alt={u?.name || 'Member'} style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', background: '#252525' }} />
                       <div>
                         <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.92rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
                           {u?.name || 'Community Member'}
-                          {isHost && <span style={{ fontSize: '0.65rem', padding: '2px 6px', borderRadius: '6px', background: 'rgba(20,184,166,0.2)', color: 'var(--teal-300)', fontWeight: 700 }}>HOST</span>}
+                          {isHost && <span style={{ fontSize: '0.65rem', padding: '2px 6px', borderRadius: '6px', background: 'rgba(235, 87, 56,0.2)', color: 'var(--teal-300)', fontWeight: 700 }}>HOST</span>}
                           {att.guestName && (
                             <span style={{ fontSize: '0.7rem', padding: '2px 6px', borderRadius: '6px', background: 'rgba(56,189,248,0.2)', color: '#7dd3fc', fontWeight: 600 }}>
                               +1 {att.guestName}
@@ -2586,13 +2586,13 @@ export default function EventClient({ id }) {
       {showRsvpPromptModal && (
         <div style={{
           position: 'fixed', inset: 0, zIndex: 100000,
-          background: 'rgba(2, 6, 23, 0.85)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+          background: 'rgba(18, 18, 18, 0.85)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
           display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px'
         }}>
           <div style={{
             width: '100%', maxWidth: '440px',
-            background: 'linear-gradient(180deg, #0f172a 0%, #090d16 100%)',
-            border: '1px solid rgba(45, 212, 191, 0.35)',
+            background: 'linear-gradient(180deg, #1B1B1B 0%, #090d16 100%)',
+            border: '1px solid rgba(242, 114, 87, 0.35)',
             borderRadius: '24px', padding: '24px',
             boxShadow: '0 20px 50px rgba(0,0,0,0.7)',
             position: 'relative'
@@ -2617,7 +2617,7 @@ export default function EventClient({ id }) {
 
             {/* Host Micro-Question */}
             {event.rsvpQuestion && (
-              <div style={{ marginBottom: '18px', background: 'rgba(20,184,166,0.08)', border: '1px solid rgba(20,184,166,0.25)', borderRadius: '14px', padding: '14px' }}>
+              <div style={{ marginBottom: '18px', background: 'rgba(235, 87, 56,0.08)', border: '1px solid rgba(235, 87, 56,0.25)', borderRadius: '14px', padding: '14px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.78rem', fontWeight: 700, color: 'var(--teal-300)', textTransform: 'uppercase', marginBottom: '6px' }}>
                   <HelpCircle size={14} /> Host Question
                 </div>
@@ -2667,7 +2667,7 @@ export default function EventClient({ id }) {
                       onChange={e => setRsvpGuestName(e.target.value)}
                       style={{
                         width: '100%', padding: '10px 14px', borderRadius: '10px',
-                        background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(45,212,191,0.3)',
+                        background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(242, 114, 87,0.3)',
                         color: 'var(--white)', fontSize: '0.88rem', outline: 'none'
                       }}
                     />
@@ -2678,7 +2678,7 @@ export default function EventClient({ id }) {
                       onChange={e => setRsvpGuestEmail(e.target.value)}
                       style={{
                         width: '100%', padding: '10px 14px', borderRadius: '10px',
-                        background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(45,212,191,0.3)',
+                        background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(242, 114, 87,0.3)',
                         color: 'var(--white)', fontSize: '0.88rem', outline: 'none'
                       }}
                     />
@@ -2696,8 +2696,8 @@ export default function EventClient({ id }) {
               className="interactive-press"
               style={{
                 width: '100%', padding: '14px', borderRadius: '12px',
-                background: 'linear-gradient(135deg, var(--teal-500), #3b82f6)',
-                color: '#0f172a', fontWeight: 700, fontSize: '0.98rem', border: 'none',
+                background: 'linear-gradient(135deg, var(--brand-accent), var(--brand-accent-pressed))',
+                color: '#1B1B1B', fontWeight: 700, fontSize: '0.98rem', border: 'none',
                 cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
               }}
             >
@@ -2726,7 +2726,7 @@ export default function EventClient({ id }) {
                 target="_blank"
                 rel="noreferrer"
                 className="interactive-press"
-                style={{ padding: '8px 16px', borderRadius: '99px', background: 'var(--teal-500)', color: '#0f172a', fontWeight: 700, fontSize: '0.85rem', textDecoration: 'none' }}
+                style={{ padding: '8px 16px', borderRadius: '99px', background: 'var(--teal-500)', color: '#1B1B1B', fontWeight: 700, fontSize: '0.85rem', textDecoration: 'none' }}
               >
                 Download Photo
               </a>

@@ -176,9 +176,9 @@ export default function Commercials({ platformStats, handleExportCSV, revenueByC
 
       {/* ─── Executive Financial Snapshot Cards ─── */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
-        <div className="glass-panel" style={{ padding: '16px', border: '1px solid rgba(20,184,166,0.2)', background: 'linear-gradient(135deg, rgba(20,184,166,0.08) 0%, rgba(20,184,166,0.01) 100%)' }}>
+        <div className="glass-panel" style={{ padding: '16px', border: '1px solid rgba(235, 87, 56,0.2)', background: 'linear-gradient(135deg, rgba(235, 87, 56,0.08) 0%, rgba(235, 87, 56,0.01) 100%)' }}>
           <div style={{ fontSize: '0.7rem', color: 'var(--slate-400)', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px' }}>Gross Platform Volume</div>
-          <div style={{ fontSize: '1.7rem', fontWeight: 700, color: '#2dd4bf', fontFamily: 'var(--font-heading)' }}>£{totalGrossTicketRevenue}</div>
+          <div style={{ fontSize: '1.7rem', fontWeight: 700, color: '#F27257', fontFamily: 'var(--font-heading)' }}>£{totalGrossTicketRevenue}</div>
           <div style={{ fontSize: '0.7rem', color: 'var(--slate-500)', marginTop: '4px' }}>Across all community events</div>
         </div>
 
@@ -274,14 +274,14 @@ export default function Commercials({ platformStats, handleExportCSV, revenueByC
                 <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <defs>
                     <linearGradient id="colorTickets" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#14b8a6" stopOpacity={0.35}/>
-                      <stop offset="95%" stopColor="#14b8a6" stopOpacity={0}/>
+                      <stop offset="5%" stopColor="#EB5738" stopOpacity={0.35}/>
+                      <stop offset="95%" stopColor="#EB5738" stopOpacity={0}/>
                     </linearGradient>
                   </defs>
                   <XAxis dataKey="month" stroke="rgba(255,255,255,0.2)" fontSize={12} tickLine={false} axisLine={false} />
                   <YAxis stroke="rgba(255,255,255,0.2)" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `£${value}`} />
-                  <Tooltip contentStyle={{ background: '#09090b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px' }} itemStyle={{ color: '#2dd4bf' }} />
-                  <Area type="monotone" dataKey="ticketRevenue" stroke="#14b8a6" strokeWidth={3} fillOpacity={1} fill="url(#colorTickets)" name="Ticket Sales" />
+                  <Tooltip contentStyle={{ background: '#09090b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px' }} itemStyle={{ color: '#F27257' }} />
+                  <Area type="monotone" dataKey="ticketRevenue" stroke="#EB5738" strokeWidth={3} fillOpacity={1} fill="url(#colorTickets)" name="Ticket Sales" />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
@@ -310,7 +310,7 @@ export default function Commercials({ platformStats, handleExportCSV, revenueByC
                       </div>
                     </div>
                     <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: '1.2rem', fontWeight: 700, color: '#2dd4bf' }}>£{c.cRevenue}</div>
+                      <div style={{ fontSize: '1.2rem', fontWeight: 700, color: '#F27257' }}>£{c.cRevenue}</div>
                       <div style={{ fontSize: '0.65rem', color: 'var(--slate-500)', textTransform: 'uppercase' }}>Gross</div>
                     </div>
                   </div>
@@ -343,8 +343,8 @@ export default function Commercials({ platformStats, handleExportCSV, revenueByC
               <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', lineHeight: 1.4 }}>Product sampling at 2x monthly events, in-chat sponsor badge, newsletter shoutout.</div>
             </div>
 
-            <div className="glass-panel" style={{ padding: '16px', borderRadius: '12px', border: '1px solid rgba(20,184,166,0.2)' }}>
-              <div style={{ fontSize: '0.68rem', fontWeight: 700, color: '#14b8a6', textTransform: 'uppercase' }}>Tier 3 • Event Supporter</div>
+            <div className="glass-panel" style={{ padding: '16px', borderRadius: '12px', border: '1px solid rgba(235, 87, 56,0.2)' }}>
+              <div style={{ fontSize: '0.68rem', fontWeight: 700, color: '#EB5738', textTransform: 'uppercase' }}>Tier 3 • Event Supporter</div>
               <div style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--white)', margin: '4px 0' }}>£150 <span style={{ fontSize: '0.75rem', color: 'var(--slate-400)', fontWeight: 400 }}>/ activation</span></div>
               <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', lineHeight: 1.4 }}>Per-event refreshment/merch sponsor, ticket raffle perks for community attendees.</div>
             </div>
@@ -486,7 +486,7 @@ export default function Commercials({ platformStats, handleExportCSV, revenueByC
       {/* ─── MODAL: Log New Sponsor Deal ─── */}
       {isAddSponsorOpen && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '20px' }}>
-          <div className="glass-panel" style={{ width: '100%', maxWidth: '480px', padding: '24px', borderRadius: '16px', background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)' }}>
+          <div className="glass-panel" style={{ width: '100%', maxWidth: '480px', padding: '24px', borderRadius: '16px', background: '#1B1B1B', border: '1px solid rgba(255,255,255,0.1)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
               <h3 style={{ margin: 0, fontSize: '1.1rem', color: 'var(--white)' }}>Log Sponsorship Deal</h3>
               <button onClick={() => setIsAddSponsorOpen(false)} style={{ background: 'none', border: 'none', color: 'var(--slate-400)', cursor: 'pointer' }}>
@@ -513,7 +513,7 @@ export default function Commercials({ platformStats, handleExportCSV, revenueByC
                   <select 
                     value={newSponsor.tier}
                     onChange={e => setNewSponsor({ ...newSponsor, tier: e.target.value, monthlyFee: e.target.value === 'Headline Partner' ? 500 : e.target.value === 'Community Partner' ? 250 : 150 })}
-                    style={{ width: '100%', padding: '10px 12px', background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: '#fff', fontSize: '0.85rem' }}
+                    style={{ width: '100%', padding: '10px 12px', background: '#252525', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: '#fff', fontSize: '0.85rem' }}
                   >
                     <option value="Headline Partner">Headline Partner (£500/mo)</option>
                     <option value="Community Partner">Community Partner (£250/mo)</option>

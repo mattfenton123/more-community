@@ -77,7 +77,7 @@ export default function ShareOptions({
       icon: copied
         ? <Check size={layout === 'inline' ? 18 : 24} color="white" />
         : <Copy size={layout === 'inline' ? 18 : 24} color="white" />,
-      color: copied ? '#0d9488' : '#334155',
+      color: copied ? '#D94628' : '#334155',
       onClick: handleCopyLink,
     },
     {
@@ -91,7 +91,7 @@ export default function ShareOptions({
       id: 'x',
       name: 'X (Twitter)',
       icon: <Twitter size={layout === 'inline' ? 18 : 24} color="white" />,
-      color: '#0f172a',
+      color: '#1B1B1B',
       border: '1px solid rgba(255,255,255,0.22)',
       href: `https://twitter.com/intent/tweet?text=${encodedText}`,
     },
@@ -200,9 +200,9 @@ export default function ShareOptions({
                 gap: '8px',
                 padding: '10px 12px',
                 borderRadius: '12px',
-                background: 'rgba(20, 184, 166, 0.16)',
-                border: '1px solid rgba(45, 212, 191, 0.4)',
-                color: '#5eead4',
+                background: 'rgba(235, 87, 56, 0.16)',
+                border: '1px solid rgba(242, 114, 87, 0.4)',
+                color: '#F79984',
                 fontSize: '0.84rem',
                 fontWeight: 700,
                 cursor: 'pointer',

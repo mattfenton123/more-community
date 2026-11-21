@@ -319,10 +319,10 @@ ${postText}
                 </p>
               </div>
               <div style={{ 
-                background: 'rgba(20, 184, 166, 0.12)', 
-                border: '1px solid rgba(20, 184, 166, 0.25)', 
+                background: 'rgba(235, 87, 56, 0.12)', 
+                border: '1px solid rgba(235, 87, 56, 0.25)', 
                 padding: '6px 14px', borderRadius: '99px',
-                fontSize: '0.78rem', color: '#2dd4bf', fontWeight: 600,
+                fontSize: '0.78rem', color: '#F27257', fontWeight: 600,
                 display: 'flex', alignItems: 'center', gap: '6px'
               }}>
                 <Users size={14} /> {audienceSummary.label}
@@ -377,7 +377,7 @@ ${postText}
                         textAlign: 'left',
                         cursor: 'pointer',
                         border: `1.5px solid ${isSelected ? 'var(--teal-400)' : 'rgba(255,255,255,0.08)'}`,
-                        background: isSelected ? 'rgba(20, 184, 166, 0.12)' : 'rgba(255,255,255,0.03)',
+                        background: isSelected ? 'rgba(235, 87, 56, 0.12)' : 'rgba(255,255,255,0.03)',
                         transition: 'all 0.2s',
                         display: 'flex',
                         alignItems: 'center',
@@ -525,7 +525,7 @@ ${postText}
                               padding: '6px 10px',
                               borderRadius: '6px',
                               cursor: 'pointer',
-                              background: isChecked ? 'rgba(20, 184, 166, 0.12)' : 'transparent',
+                              background: isChecked ? 'rgba(235, 87, 56, 0.12)' : 'transparent',
                               transition: 'background 0.15s'
                             }}
                           >
@@ -553,7 +553,7 @@ ${postText}
                                 {m.name}
                               </span>
                               {m.role === 'leader' && (
-                                <span style={{ fontSize: '0.62rem', padding: '1px 5px', borderRadius: '4px', background: 'rgba(20,184,166,0.2)', color: 'var(--teal-300)', fontWeight: 700 }}>
+                                <span style={{ fontSize: '0.62rem', padding: '1px 5px', borderRadius: '4px', background: 'rgba(235, 87, 56,0.2)', color: 'var(--teal-300)', fontWeight: 700 }}>
                                   LEADER
                                 </span>
                               )}
@@ -800,7 +800,7 @@ ${postText}
                       </div>
                     </div>
                   </div>
-                  <span style={{ fontSize: '0.65rem', padding: '2px 8px', borderRadius: '99px', background: 'rgba(20, 184, 166, 0.15)', color: 'var(--teal-400)', fontWeight: 700 }}>
+                  <span style={{ fontSize: '0.65rem', padding: '2px 8px', borderRadius: '99px', background: 'rgba(235, 87, 56, 0.15)', color: 'var(--teal-400)', fontWeight: 700 }}>
                     {audienceType === 'event' ? 'EVENT NOTICE' : audienceType === 'members' ? 'TARGETED' : 'PINNED'}
                   </span>
                 </div>
@@ -866,7 +866,7 @@ ${postText}
             <p style={{ color: 'var(--slate-400)', fontSize: '0.85rem', margin: 0 }}>View your published announcements across the app feed and WhatsApp.</p>
           </div>
           
-          <div style={{ background: 'rgba(20,184,166,0.05)', border: '1px solid rgba(20,184,166,0.2)', padding: '14px 16px', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '14px' }}>
+          <div style={{ background: 'rgba(235, 87, 56,0.05)', border: '1px solid rgba(235, 87, 56,0.2)', padding: '14px 16px', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '14px' }}>
             <CheckCircle2 color="var(--teal-400)" size={24} style={{ flexShrink: 0 }} />
             <div>
               <div style={{ color: 'var(--white)', fontWeight: 600, fontSize: '0.9rem' }}>Broadcaster Active</div>
@@ -886,7 +886,7 @@ ${postText}
                 <div key={item.id || idx} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '16px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', flexWrap: 'wrap', gap: '8px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontSize: '0.75rem', padding: '3px 8px', borderRadius: '99px', background: 'rgba(20,184,166,0.15)', color: 'var(--teal-300)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <span style={{ fontSize: '0.75rem', padding: '3px 8px', borderRadius: '99px', background: 'rgba(235, 87, 56,0.15)', color: 'var(--teal-300)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
                         <CheckCircle2 size={12} /> Published
                       </span>
                       <span style={{ fontSize: '0.8rem', color: 'var(--slate-400)', display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -894,7 +894,7 @@ ${postText}
                       </span>
                     </div>
                     <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                      <span style={{ fontSize: '0.7rem', padding: '2px 8px', borderRadius: '99px', background: 'rgba(20,184,166,0.1)', color: 'var(--teal-300)', border: '1px solid rgba(20,184,166,0.2)' }}>
+                      <span style={{ fontSize: '0.7rem', padding: '2px 8px', borderRadius: '99px', background: 'rgba(235, 87, 56,0.1)', color: 'var(--teal-300)', border: '1px solid rgba(235, 87, 56,0.2)' }}>
                         App Feed & Alerts
                       </span>
                     </div>

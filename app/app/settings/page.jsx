@@ -170,8 +170,8 @@ export default function SettingsScreen() {
                       className="interactive-press"
                       style={{
                         padding: '8px 14px', borderRadius: '99px', fontSize: '0.85rem',
-                        background: isSelected ? 'rgba(20,184,166,0.15)' : 'rgba(255,255,255,0.04)',
-                        border: `1px solid ${isSelected ? 'rgba(20,184,166,0.4)' : 'rgba(255,255,255,0.08)'}`,
+                        background: isSelected ? 'rgba(235, 87, 56,0.15)' : 'rgba(255,255,255,0.04)',
+                        border: `1px solid ${isSelected ? 'rgba(235, 87, 56,0.4)' : 'rgba(255,255,255,0.08)'}`,
                         color: isSelected ? 'var(--teal-400)' : 'var(--slate-300)',
                         cursor: 'pointer', transition: 'all 0.2s',
                       }}

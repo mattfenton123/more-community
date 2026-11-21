@@ -184,7 +184,7 @@
 
 .text-input:focus, .textarea-input:focus {
   outline: none;
-  border-color: rgba(20, 184, 166, 0.4);
+  border-color: rgba(235, 87, 56, 0.4);
 }
 
 .helper-text {
@@ -256,7 +256,7 @@
 
 .tag-btn.selected {
   border: 1px solid var(--teal-500);
-  background: rgba(20, 184, 166, 0.12);
+  background: rgba(235, 87, 56, 0.12);
   color: var(--teal-300);
   font-weight: 600;
 }
@@ -278,8 +278,8 @@
 }
 
 .info-box {
-  background: rgba(20, 184, 166, 0.1);
-  border: 1px solid rgba(20, 184, 166, 0.2);
+  background: rgba(235, 87, 56, 0.1);
+  border: 1px solid rgba(235, 87, 56, 0.2);
   border-radius: 12px;
   padding: 16px;
   display: flex;
@@ -313,29 +313,29 @@
    ============================================================ */
 
 [data-theme="light"] .onboarding-overlay {
-  background: #f8fafc !important;
+  background: #F7F3EC !important;
 }
 
 [data-theme="light"] .footer-actions {
-  background: #f8fafc !important;
+  background: #F7F3EC !important;
   border-top: 1px solid rgba(0, 0, 0, 0.08) !important;
 }
 
 [data-theme="light"] .step-title {
-  color: #0f172a !important;
+  color: #1C1915 !important;
 }
 
 [data-theme="light"] .step-subtitle {
-  color: #475569 !important;
+  color: #574F46 !important;
 }
 
 [data-theme="light"] .input-label {
-  color: #1e293b !important;
+  color: #2E2A24 !important;
   font-weight: 600 !important;
 }
 
 [data-theme="light"] .helper-text:not(.error) {
-  color: #64748b !important;
+  color: #6E655A !important;
 }
 
 [data-theme="light"] .progress-bar-segment.inactive {
@@ -343,91 +343,91 @@
 }
 
 [data-theme="light"] .step-indicator {
-  color: #64748b !important;
+  color: #6E655A !important;
 }
 
 [data-theme="light"] .btn-cancel,
 [data-theme="light"] .btn-back {
-  color: #64748b !important;
+  color: #6E655A !important;
 }
 
 [data-theme="light"] .btn-cancel:hover,
 [data-theme="light"] .btn-back:hover {
-  color: #0f172a !important;
+  color: #1C1915 !important;
 }
 
 [data-theme="light"] .text-input,
 [data-theme="light"] .textarea-input {
   background: #ffffff !important;
-  border: 1.5px solid #cbd5e1 !important;
-  color: #0f172a !important;
+  border: 1.5px solid rgba(28, 25, 21, 0.16) !important;
+  color: #1C1915 !important;
 }
 
 [data-theme="light"] .text-input:focus,
 [data-theme="light"] .textarea-input:focus {
-  border-color: #0d9488 !important;
-  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15) !important;
+  border-color: #C85A32 !important;
+  box-shadow: 0 0 0 3px rgba(200, 90, 50, 0.15) !important;
 }
 
 [data-theme="light"] .text-input::placeholder,
 [data-theme="light"] .textarea-input::placeholder {
-  color: #94a3b8 !important;
+  color: #877E71 !important;
 }
 
 [data-theme="light"] .tag-btn.unselected {
-  border: 1px solid #cbd5e1 !important;
+  border: 1px solid rgba(28, 25, 21, 0.16) !important;
   background: #ffffff !important;
-  color: #334155 !important;
+  color: #4A433B !important;
 }
 
 [data-theme="light"] .tag-btn.unselected:hover {
-  background: #f1f5f9 !important;
-  color: #0f172a !important;
+  background: #EFE9DE !important;
+  color: #1C1915 !important;
 }
 
 [data-theme="light"] .image-upload-empty {
   background: #ffffff !important;
-  border: 2px dashed #cbd5e1 !important;
-  color: #64748b !important;
+  border: 2px dashed rgba(28, 25, 21, 0.16) !important;
+  color: #6E655A !important;
 }
 
 [data-theme="light"] .info-box {
-  background: rgba(20, 184, 166, 0.08) !important;
-  border: 1px solid rgba(13, 148, 136, 0.25) !important;
+  background: rgba(200, 90, 50, 0.08) !important;
+  border: 1px solid rgba(200, 90, 50, 0.25) !important;
 }
 
 [data-theme="light"] .info-box-text {
-  color: #1e293b !important;
+  color: #2E2A24 !important;
 }
 
 [data-theme="light"] .plan-card-unselected {
   background: #ffffff !important;
-  border: 1.5px solid #cbd5e1 !important;
+  border: 1.5px solid rgba(28, 25, 21, 0.16) !important;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
 }
 
 [data-theme="light"] .plan-card-selected {
-  background: rgba(20, 184, 166, 0.08) !important;
-  border: 2px solid #0d9488 !important;
+  background: rgba(200, 90, 50, 0.08) !important;
+  border: 2px solid #C85A32 !important;
 }
 
 [data-theme="light"] .plan-card-desc,
 [data-theme="light"] .plan-card-features {
-  color: #334155 !important;
+  color: #4A433B !important;
 }
 
 [data-theme="light"] .tier-guidance-card {
   background: #ffffff !important;
-  border: 1px solid #e2e8f0 !important;
+  border: 1px solid rgba(28, 25, 21, 0.10) !important;
 }
 
 [data-theme="light"] .segment-pill-btn:not(.active) {
   background: #ffffff !important;
-  border: 1px solid #cbd5e1 !important;
-  color: #334155 !important;
+  border: 1px solid rgba(28, 25, 21, 0.16) !important;
+  color: #4A433B !important;
 }
 
 [data-theme="light"] .onboarding-tip-box {
   background: #ffffff !important;
-  border: 1px solid #e2e8f0 !important;
+  border: 1px solid rgba(28, 25, 21, 0.10) !important;
 }

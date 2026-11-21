@@ -24,7 +24,7 @@ export default function LinkSafetyModal({ isOpen, onClose, linkAnalysis }) {
         position: 'fixed',
         inset: 0,
         zIndex: 99999,
-        background: 'rgba(2, 6, 23, 0.88)',
+        background: 'rgba(18, 18, 18, 0.88)',
         backdropFilter: 'blur(10px)',
         display: 'flex',
         alignItems: 'center',
@@ -36,7 +36,7 @@ export default function LinkSafetyModal({ isOpen, onClose, linkAnalysis }) {
         onClick={e => e.stopPropagation()}
         className="modal-content"
         style={{
-          background: '#0f172a',
+          background: '#1B1B1B',
           border: `1px solid ${isHighRisk ? '#ef4444' : isCaution ? 'rgba(245,158,11,0.4)' : isVerified ? 'rgba(16,185,129,0.3)' : 'rgba(255,255,255,0.12)'}`,
           borderRadius: '24px',
           maxWidth: '540px',
@@ -108,7 +108,7 @@ export default function LinkSafetyModal({ isOpen, onClose, linkAnalysis }) {
 
           {/* Full URL Box */}
           <div style={{
-            background: 'rgba(2, 6, 23, 0.7)',
+            background: 'rgba(18, 18, 18, 0.7)',
             border: '1px solid rgba(255,255,255,0.08)',
             borderRadius: '12px',
             padding: '12px 14px'

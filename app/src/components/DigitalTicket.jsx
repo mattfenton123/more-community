@@ -162,7 +162,7 @@ export default function DigitalTicket({ event, community, user, onClose }) {
         className="fade-in"
         style={{ 
           width: '100%', maxWidth: '380px',
-          background: 'linear-gradient(150deg, #1e293b 0%, #0f172a 100%)',
+          background: 'linear-gradient(150deg, #252525 0%, #1B1B1B 100%)',
           borderRadius: '26px',
           overflow: 'hidden',
           border: '1px solid rgba(255,255,255,0.12)',
@@ -173,14 +173,14 @@ export default function DigitalTicket({ event, community, user, onClose }) {
         {/* Zero-Signal Offline Ready Banner */}
         <div style={{
           padding: '8px 16px',
-          background: isOffline ? 'rgba(239, 68, 68, 0.2)' : 'rgba(13, 148, 136, 0.2)',
+          background: isOffline ? 'rgba(239, 68, 68, 0.2)' : 'rgba(217, 70, 40, 0.2)',
           borderBottom: '1px solid rgba(255,255,255,0.06)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
           fontSize: '0.72rem',
           fontWeight: 600,
-          color: isOffline ? '#fca5a5' : '#5eead4'
+          color: isOffline ? '#fca5a5' : '#F79984'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             {isOffline ? <WifiOff size={13} /> : <CheckCircle2 size={13} />}
@@ -295,8 +295,8 @@ export default function DigitalTicket({ event, community, user, onClose }) {
                 <div style={{
                   display: 'inline-flex', alignItems: 'center', gap: '6px',
                   padding: '6px 12px', borderRadius: '99px',
-                  background: 'rgba(20,184,166,0.15)', border: '1px solid rgba(20,184,166,0.35)',
-                  color: '#2dd4bf', fontSize: '0.78rem', fontWeight: 700
+                  background: 'rgba(235, 87, 56,0.15)', border: '1px solid rgba(235, 87, 56,0.35)',
+                  color: '#F27257', fontSize: '0.78rem', fontWeight: 700
                 }}>
                   <CheckCircle2 size={14} /> Paid Online &bull; £{event.ticketPrice.toFixed(2)}
                 </div>
@@ -343,9 +343,9 @@ export default function DigitalTicket({ event, community, user, onClose }) {
               style={{
                 width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
                 padding: '10px 14px', borderRadius: '12px',
-                background: 'linear-gradient(135deg, rgba(20,184,166,0.2) 0%, rgba(56,189,248,0.15) 100%)',
-                border: '1px solid rgba(45,212,191,0.35)',
-                color: '#2dd4bf', cursor: 'pointer', fontSize: '0.82rem', fontWeight: 700
+                background: 'linear-gradient(135deg, rgba(235, 87, 56, 0.2) 0%, rgba(235, 87, 56, 0.03) 100%)',
+                border: '1px solid rgba(242, 114, 87,0.35)',
+                color: '#F27257', cursor: 'pointer', fontSize: '0.82rem', fontWeight: 700
               }}
             >
               <Download size={14} /> Save Pass to Wallet (Offline Ready)

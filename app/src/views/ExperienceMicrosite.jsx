@@ -161,7 +161,7 @@ export default function ExperienceMicrosite() {
         </div>
 
         {/* Category Pill */}
-        <div style={{ position: 'absolute', bottom: '20px', left: '20px', background: 'rgba(45,212,191,0.2)', border: '1px solid rgba(45,212,191,0.4)', color: 'var(--teal-300)', padding: '6px 14px', borderRadius: '99px', fontSize: '0.8rem', fontWeight: 700 }}>
+        <div style={{ position: 'absolute', bottom: '20px', left: '20px', background: 'rgba(242, 114, 87,0.2)', border: '1px solid rgba(242, 114, 87,0.4)', color: 'var(--teal-300)', padding: '6px 14px', borderRadius: '99px', fontSize: '0.8rem', fontWeight: 700 }}>
           {experience.category}
         </div>
       </div>
@@ -231,7 +231,7 @@ export default function ExperienceMicrosite() {
 
         {/* LEADER VIEW: Transparent Pricing Breakdown & 2-Step Actions */}
         {isLeader && (
-          <div style={{ padding: '24px', background: 'linear-gradient(to right, rgba(45,212,191,0.05), rgba(59,130,246,0.05))', borderRadius: '16px', border: '1px solid rgba(45,212,191,0.2)', marginBottom: '24px' }}>
+          <div style={{ padding: '24px', background: 'linear-gradient(to right, rgba(235, 87, 56, 0.05) 0%, rgba(235, 87, 56, 0.03) 100%)', borderRadius: '16px', border: '1px solid rgba(242, 114, 87,0.2)', marginBottom: '24px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
               <Sparkles size={18} color="var(--teal-400)" />
               <span style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--teal-300)' }}>
@@ -287,7 +287,7 @@ export default function ExperienceMicrosite() {
             )}
 
             {/* Quick 2-Step Leader Actions */}
-            <div style={{ marginTop: '16px', paddingTop: '14px', borderTop: '1px solid rgba(45,212,191,0.2)', display: 'flex', gap: '10px' }}>
+            <div style={{ marginTop: '16px', paddingTop: '14px', borderTop: '1px solid rgba(242, 114, 87,0.2)', display: 'flex', gap: '10px' }}>
               <button 
                 onClick={() => setShowPitchModal(true)} 
                 className="btn btn-outline interactive-press" 
@@ -330,7 +330,7 @@ export default function ExperienceMicrosite() {
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px', flexWrap: 'wrap' }}>
                           <span style={{ fontSize: '0.76rem', color: 'var(--slate-400)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Hosted By</span>
                           {isAffTrip && (
-                            <span style={{ fontSize: '0.68rem', padding: '2px 8px', borderRadius: '99px', background: 'rgba(20,184,166,0.16)', color: 'var(--teal-300)', fontWeight: 700 }}>
+                            <span style={{ fontSize: '0.68rem', padding: '2px 8px', borderRadius: '99px', background: 'rgba(235, 87, 56,0.16)', color: 'var(--teal-300)', fontWeight: 700 }}>
                               2-Step Group Trip • Min {minGroup}
                             </span>
                           )}
@@ -345,7 +345,7 @@ export default function ExperienceMicrosite() {
                     
                     {isAffTrip ? (
                       <div style={{ display: 'flex', gap: '12px', marginTop: '4px', flexWrap: 'wrap' }}>
-                        <div style={{ flex: '1 1 180px', padding: '12px', background: 'rgba(20,184,166,0.06)', borderRadius: '8px', border: '1px solid rgba(20,184,166,0.22)' }}>
+                        <div style={{ flex: '1 1 180px', padding: '12px', background: 'rgba(235, 87, 56,0.06)', borderRadius: '8px', border: '1px solid rgba(235, 87, 56,0.22)' }}>
                           <div style={{ fontSize: '0.73rem', color: 'var(--teal-400)', marginBottom: '4px', fontWeight: 700 }}>Step 1: More Group Host Pass</div>
                           <div style={{ fontSize: '1.1rem', color: 'var(--teal-300)', fontWeight: 700 }}>£{ev.ticketPrice} <span style={{ fontSize: '0.74rem', color: 'var(--slate-400)', fontWeight: 500 }}>(£{nonMemberPrice} non-members)</span></div>
                           <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', marginTop: '3px' }}>Refunded if min {minGroup} don&apos;t join</div>
@@ -362,7 +362,7 @@ export default function ExperienceMicrosite() {
                           <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', marginBottom: '4px' }}>Non-Member</div>
                           <div style={{ fontSize: '1.1rem', color: 'var(--white)', fontWeight: 600 }}>£{nonMemberPrice}</div>
                         </div>
-                        <div style={{ flex: 1, padding: '12px', background: 'rgba(20,184,166,0.05)', borderRadius: '8px', border: '1px solid rgba(20,184,166,0.2)' }}>
+                        <div style={{ flex: 1, padding: '12px', background: 'rgba(235, 87, 56,0.05)', borderRadius: '8px', border: '1px solid rgba(235, 87, 56,0.2)' }}>
                           <div style={{ fontSize: '0.75rem', color: 'var(--teal-400)', marginBottom: '4px', fontWeight: 700 }}>Member Price</div>
                           <div style={{ fontSize: '1.1rem', color: 'var(--teal-300)', fontWeight: 700 }}>£{ev.ticketPrice}</div>
                         </div>
@@ -379,7 +379,7 @@ export default function ExperienceMicrosite() {
       {/* Sticky Bottom Booking Bar */}
       <div style={{
         position: 'fixed', bottom: 'calc(80px + env(safe-area-inset-bottom))', left: 0, right: 0,
-        background: 'rgba(2,6,23,0.95)', backdropFilter: 'blur(20px)',
+        background: 'rgba(18, 18, 18,0.95)', backdropFilter: 'blur(20px)',
         borderTop: '1px solid rgba(255,255,255,0.1)',
         padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', zIndex: 90
       }}>
@@ -474,11 +474,11 @@ export default function ExperienceMicrosite() {
       {showGroupExplainer && (
         <div
           onClick={() => setShowGroupExplainer(false)}
-          style={{ position: 'fixed', inset: 0, zIndex: 1050, background: 'rgba(2,6,23,0.85)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
+          style={{ position: 'fixed', inset: 0, zIndex: 1050, background: 'rgba(18, 18, 18,0.85)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
         >
           <div
             onClick={e => e.stopPropagation()}
-            style={{ background: 'var(--slate-900)', border: '1px solid rgba(45,212,191,0.3)', borderRadius: '20px', maxWidth: '460px', width: '100%', padding: '24px', color: 'var(--white)' }}
+            style={{ background: 'var(--slate-900)', border: '1px solid rgba(242, 114, 87,0.3)', borderRadius: '20px', maxWidth: '460px', width: '100%', padding: '24px', color: 'var(--white)' }}
           >
             <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--teal-400)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '6px' }}>
               How More Group Trips Work
@@ -487,7 +487,7 @@ export default function ExperienceMicrosite() {
               2-Step Booking with Your Community
             </h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '0.86rem', color: 'var(--slate-300)', lineHeight: 1.5, marginBottom: '18px' }}>
-              <div style={{ padding: '12px', borderRadius: '12px', background: 'rgba(20,184,166,0.08)', border: '1px solid rgba(20,184,166,0.2)' }}>
+              <div style={{ padding: '12px', borderRadius: '12px', background: 'rgba(235, 87, 56,0.08)', border: '1px solid rgba(235, 87, 56,0.2)' }}>
                 <strong style={{ color: 'var(--teal-300)' }}>1. Group Host Pass (~£{hostPassDefault})</strong>
                 <div>A community leader proposes a date &amp; minimum group size (e.g. 6). Your Host Pass funds hosting and helps pay for the leader&apos;s own ticket — 100% refunded if numbers aren&apos;t met.</div>
               </div>

@@ -392,7 +392,7 @@ Strong community density in Tunbridge Wells. High leader engagement driving recu
     const data = payload[0].payload;
     return (
       <div style={{
-        background: 'rgba(15, 23, 42, 0.96)',
+        background: 'rgba(27, 27, 27, 0.96)',
         backdropFilter: 'blur(12px)',
         border: '1px solid rgba(255, 255, 255, 0.12)',
         borderRadius: '12px',
@@ -405,8 +405,8 @@ Strong community density in Tunbridge Wells. High leader engagement driving recu
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
-            <span style={{ fontSize: '0.8rem', color: '#06b6d4', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#06b6d4' }}></span>
+            <span style={{ fontSize: '0.8rem', color: '#3A8E76', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#3A8E76' }}></span>
               New Signups:
             </span>
             <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--white)' }}>+{data.newUsers}</span>
@@ -616,7 +616,7 @@ Strong community density in Tunbridge Wells. High leader engagement driving recu
         <div className="glass-panel interactive-hover" style={{ padding: '16px', border: '1px solid rgba(6,182,212,0.2)', background: 'linear-gradient(135deg, rgba(6,182,212,0.08) 0%, transparent 100%)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
             <span style={{ fontSize: '0.7rem', color: 'var(--slate-400)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Daily Signups Run-Rate</span>
-            <TrendingUp size={16} color="#06b6d4" />
+            <TrendingUp size={16} color="#3A8E76" />
           </div>
           <div style={{ fontSize: '1.9rem', fontWeight: 700, fontFamily: 'var(--font-heading)', color: 'white' }}>
             {analyticsData.avgDailySignups}
@@ -743,8 +743,8 @@ Strong community density in Tunbridge Wells. High leader engagement driving recu
                     <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0.0} />
                   </linearGradient>
                   <linearGradient id="newSignupsGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.5} />
-                    <stop offset="95%" stopColor="#06b6d4" stopOpacity={0.0} />
+                    <stop offset="5%" stopColor="#3A8E76" stopOpacity={0.5} />
+                    <stop offset="95%" stopColor="#3A8E76" stopOpacity={0.0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
@@ -792,7 +792,7 @@ Strong community density in Tunbridge Wells. High leader engagement driving recu
                   type="monotone" 
                   dataKey="newUsers" 
                   name="Daily New Signups"
-                  stroke="#06b6d4" 
+                  stroke="#3A8E76" 
                   strokeWidth={2} 
                   fillOpacity={1} 
                   fill="url(#newSignupsGrad)" 
@@ -875,7 +875,7 @@ Strong community density in Tunbridge Wells. High leader engagement driving recu
                   formatter={(value) => <span style={{ color: 'var(--slate-300)', fontSize: '0.75rem', fontWeight: 600 }}>{value}</span>}
                 />
                 <Bar dataKey="messagesSent" name="Chat Messages" stackId="a" fill="#3b82f6" radius={[0, 0, 0, 0]} />
-                <Bar dataKey="eventRsvps" name="Event RSVPs" stackId="a" fill="#14b8a6" radius={[0, 0, 0, 0]} />
+                <Bar dataKey="eventRsvps" name="Event RSVPs" stackId="a" fill="#EB5738" radius={[0, 0, 0, 0]} />
                 <Bar dataKey="communityJoins" name="Community Joins" stackId="a" fill="#a855f7" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
@@ -910,10 +910,10 @@ Strong community density in Tunbridge Wells. High leader engagement driving recu
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginBottom: '4px' }}>
                 <span style={{ color: 'var(--slate-400)' }}>Day 7 Retention (Weekly Active Habit)</span>
-                <span style={{ color: '#06b6d4', fontWeight: 700 }}>{analyticsData.d7Retention}%</span>
+                <span style={{ color: '#3A8E76', fontWeight: 700 }}>{analyticsData.d7Retention}%</span>
               </div>
               <div style={{ height: '6px', background: 'rgba(255,255,255,0.06)', borderRadius: '99px', overflow: 'hidden' }}>
-                <div style={{ height: '100%', width: `${analyticsData.d7Retention}%`, background: '#06b6d4', borderRadius: '99px' }}></div>
+                <div style={{ height: '100%', width: `${analyticsData.d7Retention}%`, background: '#3A8E76', borderRadius: '99px' }}></div>
               </div>
             </div>
 
@@ -1032,7 +1032,7 @@ Strong community density in Tunbridge Wells. High leader engagement driving recu
                       display: 'inline-flex', 
                       alignItems: 'center', 
                       gap: '4px',
-                      color: row.newUsers > 0 ? '#06b6d4' : 'var(--slate-600)',
+                      color: row.newUsers > 0 ? '#3A8E76' : 'var(--slate-600)',
                       fontWeight: row.newUsers > 0 ? 700 : 400 
                     }}>
                       +{row.newUsers}

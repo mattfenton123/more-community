@@ -53,7 +53,7 @@ export default function MyCommunities() {
               </button>
               <button 
                 onClick={() => setShowCreateModal(true)}
-                style={{ background: 'transparent', border: '1px solid rgba(20,184,166,0.3)', color: 'var(--teal-400)', padding: '12px 24px', borderRadius: '99px', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer' }}
+                style={{ background: 'transparent', border: '1px solid rgba(235, 87, 56,0.3)', color: 'var(--teal-400)', padding: '12px 24px', borderRadius: '99px', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer' }}
               >
                 Create a Community
               </button>
@@ -72,7 +72,7 @@ export default function MyCommunities() {
                 <div style={{ padding: '16px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
                     <h3 style={{ margin: 0, fontFamily: 'var(--font-heading)', fontSize: '1.2rem', color: 'var(--white)' }}>{comm.name}</h3>
-                    <div style={{ fontSize: '0.75rem', background: 'rgba(20,184,166,0.1)', color: 'var(--teal-400)', padding: '4px 8px', borderRadius: '4px', fontWeight: 600 }}>
+                    <div style={{ fontSize: '0.75rem', background: 'rgba(235, 87, 56,0.1)', color: 'var(--teal-400)', padding: '4px 8px', borderRadius: '4px', fontWeight: 600 }}>
                       {comm.category}
                     </div>
                   </div>
@@ -106,11 +106,11 @@ export default function MyCommunities() {
               <button 
                 onClick={() => setShowCreateModal(true)}
                 className="interactive-press"
-                style={{ padding: '20px', border: '1px dashed rgba(20,184,166,0.3)', background: 'rgba(20,184,166,0.05)', borderRadius: '16px', color: 'var(--teal-400)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', cursor: 'pointer', transition: 'background 0.2s' }}
-                onMouseOver={e => e.currentTarget.style.background = 'rgba(20,184,166,0.1)'}
-                onMouseOut={e => e.currentTarget.style.background = 'rgba(20,184,166,0.05)'}
+                style={{ padding: '20px', border: '1px dashed rgba(235, 87, 56,0.3)', background: 'rgba(235, 87, 56,0.05)', borderRadius: '16px', color: 'var(--teal-400)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', cursor: 'pointer', transition: 'background 0.2s' }}
+                onMouseOver={e => e.currentTarget.style.background = 'rgba(235, 87, 56,0.1)'}
+                onMouseOut={e => e.currentTarget.style.background = 'rgba(235, 87, 56,0.05)'}
               >
-                <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(20,184,166,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(235, 87, 56,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <Plus size={20} color="var(--teal-400)" />
                 </div>
                 <span style={{ fontWeight: 500 }}>Create new</span>

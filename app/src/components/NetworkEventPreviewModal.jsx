@@ -47,7 +47,7 @@ export default function NetworkEventPreviewModal({
           maxWidth: '560px',
           maxHeight: '90vh',
           borderRadius: '24px',
-          border: '1px solid rgba(20, 184, 166, 0.3)',
+          border: '1px solid rgba(235, 87, 56, 0.3)',
           overflow: 'hidden',
           display: 'flex',
           flexDirection: 'column',
@@ -61,11 +61,11 @@ export default function NetworkEventPreviewModal({
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          background: 'rgba(20, 184, 166, 0.04)'
+          background: 'rgba(235, 87, 56, 0.04)'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <span style={{
-              background: 'rgba(20, 184, 166, 0.15)',
+              background: 'rgba(235, 87, 56, 0.15)',
               color: 'var(--teal-400)',
               padding: '4px 10px',
               borderRadius: '99px',
@@ -112,7 +112,7 @@ export default function NetworkEventPreviewModal({
               <div style={{
                 position: 'absolute',
                 inset: 0,
-                background: 'linear-gradient(to top, rgba(15, 23, 42, 0.9) 0%, transparent 60%)'
+                background: 'linear-gradient(to top, rgba(27, 27, 27, 0.9) 0%, transparent 60%)'
               }} />
             </div>
           )}
@@ -268,8 +268,8 @@ export default function NetworkEventPreviewModal({
 
           {/* Co-hosting Benefit Callout */}
           <div style={{
-            background: 'linear-gradient(135deg, rgba(20, 184, 166, 0.08) 0%, rgba(56, 189, 248, 0.05) 100%)',
-            border: '1px dashed rgba(20, 184, 166, 0.3)',
+            background: 'linear-gradient(135deg, rgba(235, 87, 56, 0.08) 0%, rgba(235, 87, 56, 0.03) 100%)',
+            border: '1px dashed rgba(235, 87, 56, 0.3)',
             borderRadius: '14px',
             padding: '12px 14px',
             display: 'flex',
@@ -334,8 +334,8 @@ export default function NetworkEventPreviewModal({
                 display: 'flex',
                 alignItems: 'center',
                 gap: '6px',
-                background: 'linear-gradient(135deg, #0d9488 0%, #0f766e 100%)',
-                borderColor: '#0d9488'
+                background: 'linear-gradient(135deg, #D94628 0%, #B83D22 100%)',
+                borderColor: '#D94628'
               }}
             >
               <Plus size={15} />

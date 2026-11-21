@@ -35,8 +35,8 @@ function StepBasics({ name, setName, description, setDescription, parentCommunit
 
       {parentCommunity && (
         <div style={{
-          background: 'linear-gradient(135deg, rgba(20, 184, 166, 0.12) 0%, rgba(15, 23, 42, 0.95) 100%)',
-          border: '1.5px solid rgba(45, 212, 191, 0.35)',
+          background: 'linear-gradient(135deg, rgba(235, 87, 56, 0.12) 0%, rgba(27, 27, 27, 0.95) 100%)',
+          border: '1.5px solid rgba(242, 114, 87, 0.35)',
           borderRadius: '16px',
           padding: '16px 18px',
           marginBottom: '20px',
@@ -285,9 +285,9 @@ function StepTags({ tags, toggleTag, addCustomTag, removeTag }) {
           )}
         </div>
         {tags.length > 0 ? (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', padding: '10px 12px', background: 'rgba(20,184,166,0.06)', borderRadius: '14px', border: '1px solid rgba(20,184,166,0.2)' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', padding: '10px 12px', background: 'rgba(235, 87, 56,0.06)', borderRadius: '14px', border: '1px solid rgba(235, 87, 56,0.2)' }}>
             {tags.map((tag, idx) => (
-              <span key={idx} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '5px 10px', borderRadius: '8px', background: 'rgba(20,184,166,0.18)', color: 'var(--teal-300)', fontSize: '0.8rem', fontWeight: 600 }}>
+              <span key={idx} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '5px 10px', borderRadius: '8px', background: 'rgba(235, 87, 56,0.18)', color: 'var(--teal-300)', fontSize: '0.8rem', fontWeight: 600 }}>
                 {idx === 0 && <span style={{ fontSize: '0.65rem', background: 'var(--teal-500)', color: 'white', padding: '1px 5px', borderRadius: '4px', textTransform: 'uppercase' }}>Primary</span>}
                 {tag}
                 <button type="button" onClick={() => removeTag(tag)} style={{ background: 'none', border: 'none', color: 'var(--teal-400)', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center' }}>
@@ -343,7 +343,7 @@ function StepTags({ tags, toggleTag, addCustomTag, removeTag }) {
                     padding: '10px 12px',
                     borderRadius: '12px',
                     border: isActive ? '1px solid var(--teal-500)' : undefined,
-                    background: isActive ? 'rgba(20,184,166,0.15)' : undefined,
+                    background: isActive ? 'rgba(235, 87, 56,0.15)' : undefined,
                     color: isActive ? 'var(--teal-200)' : undefined,
                     fontSize: '0.82rem',
                     fontWeight: isActive ? 700 : 500,
@@ -618,7 +618,7 @@ function StepEvent({ eventTitle, setEventTitle, eventDate, setEventDate, eventTi
                       fontSize: '0.75rem',
                       fontWeight: approxDuration === preset ? 700 : 500,
                       border: approxDuration === preset ? '1px solid var(--teal-400)' : '1px solid rgba(255,255,255,0.1)',
-                      background: approxDuration === preset ? 'rgba(20,184,166,0.18)' : 'rgba(255,255,255,0.03)',
+                      background: approxDuration === preset ? 'rgba(235, 87, 56,0.18)' : 'rgba(255,255,255,0.03)',
                       color: approxDuration === preset ? 'var(--teal-300)' : 'var(--slate-300)',
                       cursor: 'pointer'
                     }}
@@ -775,12 +775,12 @@ function StepPlan({ selectedTier, setSelectedTier, billingInterval, setBillingIn
             position: 'relative'
           }}
         >
-          <div style={{ position: 'absolute', top: '-10px', right: '16px', background: 'linear-gradient(135deg, #2dd4bf, #0284c7)', color: '#0f172a', fontSize: '0.68rem', fontWeight: 800, padding: '2px 8px', borderRadius: '99px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          <div style={{ position: 'absolute', top: '-10px', right: '16px', background: 'linear-gradient(135deg, #F27257, #0284c7)', color: '#1B1B1B', fontSize: '0.68rem', fontWeight: 800, padding: '2px 8px', borderRadius: '99px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
             Recommended
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-            <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#2dd4bf', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Leader Pro</span>
-            {selectedTier === 'pro' && <CheckCircle2 size={18} color="#2dd4bf" />}
+            <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#F27257', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Leader Pro</span>
+            {selectedTier === 'pro' && <CheckCircle2 size={18} color="#F27257" />}
           </div>
           <div style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--white)', marginBottom: '4px' }}>
             {billingInterval === 'annual' ? '£165' : '£16.50'}
@@ -806,7 +806,7 @@ function StepPlan({ selectedTier, setSelectedTier, billingInterval, setBillingIn
                 style={{
                   flex: 1, padding: '6px', fontSize: '0.75rem', fontWeight: 600, borderRadius: '8px',
                   background: billingInterval === 'annual' ? 'var(--teal-500)' : 'rgba(255,255,255,0.06)',
-                  color: billingInterval === 'annual' ? '#0f172a' : 'var(--slate-300)',
+                  color: billingInterval === 'annual' ? '#1B1B1B' : 'var(--slate-300)',
                   border: 'none', cursor: 'pointer'
                 }}
               >
@@ -818,7 +818,7 @@ function StepPlan({ selectedTier, setSelectedTier, billingInterval, setBillingIn
                 style={{
                   flex: 1, padding: '6px', fontSize: '0.75rem', fontWeight: 600, borderRadius: '8px',
                   background: billingInterval === 'monthly' ? 'var(--teal-500)' : 'rgba(255,255,255,0.06)',
-                  color: billingInterval === 'monthly' ? '#0f172a' : 'var(--slate-300)',
+                  color: billingInterval === 'monthly' ? '#1B1B1B' : 'var(--slate-300)',
                   border: 'none', cursor: 'pointer'
                 }}
               >
@@ -835,10 +835,10 @@ function StepPlan({ selectedTier, setSelectedTier, billingInterval, setBillingIn
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '0.75rem', lineHeight: 1.45 }}>
           <div style={{ background: 'rgba(255,255,255,0.02)', padding: '10px 12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.05)' }}>
-            <strong style={{ color: '#2dd4bf', display: 'block', marginBottom: '3px' }}>✓ Free Tier is 100% fine for:</strong>
+            <strong style={{ color: '#F27257', display: 'block', marginBottom: '3px' }}>✓ Free Tier is 100% fine for:</strong>
             <span style={{ color: 'var(--slate-300)' }}>Book clubs, coffee meetups, casual walking groups, board games, pub socials. Venue insurance covers cafes/pubs, and UK law protects volunteer leaders in public spaces.</span>
           </div>
-          <div style={{ background: 'rgba(20,184,166,0.05)', padding: '10px 12px', borderRadius: '10px', border: '1px solid rgba(45,212,191,0.2)' }}>
+          <div style={{ background: 'rgba(235, 87, 56,0.05)', padding: '10px 12px', borderRadius: '10px', border: '1px solid rgba(242, 114, 87,0.2)' }}>
             <strong style={{ color: '#fbbf24', display: 'block', marginBottom: '3px' }}>⭐ Upgrade to Pro when you:</strong>
             <span style={{ color: 'var(--slate-300)' }}>Hire council community halls or schools (includes safety documents & member check-ins), run paid coaching/fitness, have a local sponsor, or sell £550+/mo in tickets (saves cash at 2% fees).</span>
           </div>

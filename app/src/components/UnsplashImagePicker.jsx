@@ -124,19 +124,19 @@ export default function UnsplashImagePicker({
           width: '100%',
           maxWidth: '720px',
           maxHeight: '90vh',
-          background: 'linear-gradient(180deg, #0f172a 0%, #090d16 100%)',
-          border: '1.5px solid rgba(45, 212, 191, 0.35)',
+          background: 'linear-gradient(180deg, #1B1B1B 0%, #090d16 100%)',
+          border: '1.5px solid rgba(242, 114, 87, 0.35)',
           borderRadius: '24px',
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
-          boxShadow: '0 25px 70px rgba(0, 0, 0, 0.85), 0 0 40px rgba(20, 184, 166, 0.12)'
+          boxShadow: '0 25px 70px rgba(0, 0, 0, 0.85), 0 0 40px rgba(235, 87, 56, 0.12)'
         }}
       >
         {/* Header */}
         <div style={{ padding: '20px 24px 16px', borderBottom: '1px solid rgba(255, 255, 255, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(20, 184, 166, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--teal-400)', border: '1px solid rgba(45, 212, 191, 0.3)' }}>
+            <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(235, 87, 56, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--teal-400)', border: '1px solid rgba(242, 114, 87, 0.3)' }}>
               <ImageIcon size={20} />
             </div>
             <div>
@@ -183,7 +183,7 @@ export default function UnsplashImagePicker({
                 padding: '11px 40px 11px 40px',
                 borderRadius: '12px',
                 background: 'rgba(255, 255, 255, 0.05)',
-                border: '1.5px solid rgba(45, 212, 191, 0.35)',
+                border: '1.5px solid rgba(242, 114, 87, 0.35)',
                 color: '#fff',
                 fontSize: '0.9rem',
                 outline: 'none',
@@ -228,7 +228,7 @@ export default function UnsplashImagePicker({
                   borderRadius: '99px',
                   border: 'none',
                   background: activeCategory === cat ? 'var(--teal-500)' : 'rgba(255, 255, 255, 0.05)',
-                  color: activeCategory === cat ? '#0f172a' : 'var(--slate-300)',
+                  color: activeCategory === cat ? '#1B1B1B' : 'var(--slate-300)',
                   fontSize: '0.74rem',
                   fontWeight: activeCategory === cat ? 800 : 500,
                   cursor: 'pointer',
@@ -286,7 +286,7 @@ export default function UnsplashImagePicker({
                     padding: '10px 12px'
                   }}>
                     <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                      <span style={{ fontSize: '0.62rem', fontWeight: 700, padding: '2px 7px', borderRadius: '99px', background: 'rgba(15, 23, 42, 0.8)', backdropFilter: 'blur(6px)', color: 'var(--teal-300)', border: '1px solid rgba(45,212,191,0.3)' }}>
+                      <span style={{ fontSize: '0.62rem', fontWeight: 700, padding: '2px 7px', borderRadius: '99px', background: 'rgba(27, 27, 27, 0.8)', backdropFilter: 'blur(6px)', color: 'var(--teal-300)', border: '1px solid rgba(242, 114, 87,0.3)' }}>
                         {img.source || 'Free'}
                       </span>
                     </div>

@@ -350,7 +350,7 @@ export default function OnboardingFlow({ onComplete }) {
       {/* Hero video strip */}
       <div style={{ borderRadius: '16px', overflow: 'hidden', height: '120px', marginBottom: '8px', position: 'relative' }}>
         <video src={STEP_VIDEOS[1]} autoPlay loop muted playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent, rgba(2,6,23,0.8))' }}></div>
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent, rgba(18, 18, 18,0.8))' }}></div>
         <div style={{ position: 'absolute', bottom: '12px', left: '16px', fontSize: '0.8rem', color: 'var(--teal-300)', fontWeight: 600 }}>We'll match you to the right groups ✨</div>
       </div>
 
@@ -367,7 +367,7 @@ export default function OnboardingFlow({ onComplete }) {
                 padding: '8px 16px',
                 borderRadius: '12px',
                 border: gender === g ? '1px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.1)',
-                background: gender === g ? 'rgba(20,184,166,0.12)' : 'var(--slate-800)',
+                background: gender === g ? 'rgba(235, 87, 56,0.12)' : 'var(--slate-800)',
                 color: gender === g ? 'var(--teal-300)' : 'var(--slate-400)',
                 fontSize: '0.85rem',
                 cursor: 'pointer'
@@ -394,7 +394,7 @@ export default function OnboardingFlow({ onComplete }) {
                 padding: '10px 18px',
                 borderRadius: '999px',
                 border: selected ? '1px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.1)',
-                background: selected ? 'rgba(20,184,166,0.12)' : 'transparent',
+                background: selected ? 'rgba(235, 87, 56,0.12)' : 'transparent',
                 color: selected ? 'var(--teal-300)' : 'var(--slate-300)',
                 fontWeight: selected ? 600 : 400,
                 fontSize: '0.9rem',
@@ -494,7 +494,7 @@ export default function OnboardingFlow({ onComplete }) {
                   position: 'relative',
                 }}
               >
-                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 30%, rgba(15,23,42,0.95))' }} />
+                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 30%, rgba(27, 27, 27,0.95))' }} />
 
                 {/* LIKE indicator */}
                 <div
@@ -573,7 +573,7 @@ export default function OnboardingFlow({ onComplete }) {
                       style={{
                         padding: '3px 10px',
                         borderRadius: '99px',
-                        background: 'rgba(20,184,166,0.12)',
+                        background: 'rgba(235, 87, 56,0.12)',
                         color: 'var(--teal-300)',
                         fontSize: '0.7rem',
                         fontWeight: 600,
@@ -639,8 +639,8 @@ export default function OnboardingFlow({ onComplete }) {
                 width: '64px',
                 height: '64px',
                 borderRadius: '50%',
-                background: 'rgba(20,184,166,0.12)',
-                border: '1px solid rgba(20,184,166,0.25)',
+                background: 'rgba(235, 87, 56,0.12)',
+                border: '1px solid rgba(235, 87, 56,0.25)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -665,7 +665,7 @@ export default function OnboardingFlow({ onComplete }) {
                     style={{
                       padding: '4px 10px',
                       borderRadius: '99px',
-                      background: 'rgba(20,184,166,0.15)',
+                      background: 'rgba(235, 87, 56,0.15)',
                       color: 'var(--teal-300)',
                       fontSize: '0.75rem',
                       fontWeight: 600,
@@ -699,7 +699,7 @@ export default function OnboardingFlow({ onComplete }) {
       {/* Hero video strip */}
       <div style={{ borderRadius: '16px', overflow: 'hidden', height: '120px', marginBottom: '8px', position: 'relative' }}>
         <video src={STEP_VIDEOS[0]} autoPlay loop muted playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent, rgba(2,6,23,0.8))' }}></div>
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent, rgba(18, 18, 18,0.8))' }}></div>
         <div style={{ position: 'absolute', bottom: '12px', left: '16px', fontSize: '0.8rem', color: 'var(--teal-300)', fontWeight: 600 }}>Join your local community 🤝</div>
       </div>
 
@@ -710,7 +710,7 @@ export default function OnboardingFlow({ onComplete }) {
           className="interactive-press"
           style={{
             width: '100px', height: '100px', borderRadius: '50%',
-            border: avatarPreview ? '3px solid var(--teal-500)' : '2px solid rgba(45,212,191,0.45)',
+            border: avatarPreview ? '3px solid var(--teal-500)' : '2px solid rgba(242, 114, 87,0.45)',
             margin: '0 auto 12px', cursor: 'pointer', transition: 'border-color 0.2s',
             position: 'relative',
           }}
@@ -754,7 +754,7 @@ export default function OnboardingFlow({ onComplete }) {
             borderRadius: '12px', color: 'var(--white)', fontSize: '1rem',
             transition: 'border-color 0.2s',
           }}
-          onFocus={e => e.target.style.borderColor = 'rgba(20,184,166,0.4)'}
+          onFocus={e => e.target.style.borderColor = 'rgba(235, 87, 56,0.4)'}
           onBlur={e => e.target.style.borderColor = 'var(--slate-700)'}
         />
       </div>
@@ -772,7 +772,7 @@ export default function OnboardingFlow({ onComplete }) {
             minHeight: '80px', resize: 'none', fontFamily: 'inherit',
             transition: 'border-color 0.2s', marginBottom: '16px'
           }}
-          onFocus={e => e.target.style.borderColor = 'rgba(20,184,166,0.4)'}
+          onFocus={e => e.target.style.borderColor = 'rgba(235, 87, 56,0.4)'}
           onBlur={e => e.target.style.borderColor = 'var(--slate-700)'}
         />
       </div>
@@ -791,7 +791,7 @@ export default function OnboardingFlow({ onComplete }) {
               borderRadius: '12px', color: 'var(--white)', fontSize: '1rem',
               transition: 'border-color 0.2s',
             }}
-            onFocus={e => e.target.style.borderColor = 'rgba(20,184,166,0.4)'}
+            onFocus={e => e.target.style.borderColor = 'rgba(235, 87, 56,0.4)'}
             onBlur={e => e.target.style.borderColor = 'var(--slate-700)'}
           />
         </div>
@@ -807,7 +807,7 @@ export default function OnboardingFlow({ onComplete }) {
               borderRadius: '12px', color: 'var(--white)', fontSize: '1rem',
               transition: 'border-color 0.2s', fontFamily: 'inherit'
             }}
-            onFocus={e => e.target.style.borderColor = 'rgba(20,184,166,0.4)'}
+            onFocus={e => e.target.style.borderColor = 'rgba(235, 87, 56,0.4)'}
             onBlur={e => e.target.style.borderColor = 'var(--slate-700)'}
           />
         </div>
@@ -825,13 +825,13 @@ export default function OnboardingFlow({ onComplete }) {
         <div>
           <label style={{ display: 'block', marginBottom: '8px', color: 'var(--slate-300)', fontSize: '0.85rem', fontWeight: 500 }}>Theme</label>
           <div style={{ display: 'flex', gap: '8px' }}>
-            <button onClick={() => setTheme('light')} className="interactive-press" style={{ flex: 1, padding: '12px', borderRadius: '12px', border: theme === 'light' ? '1px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.1)', background: theme === 'light' ? 'rgba(20,184,166,0.12)' : 'var(--slate-800)', color: theme === 'light' ? 'var(--teal-300)' : 'var(--slate-400)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+            <button onClick={() => setTheme('light')} className="interactive-press" style={{ flex: 1, padding: '12px', borderRadius: '12px', border: theme === 'light' ? '1px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.1)', background: theme === 'light' ? 'rgba(235, 87, 56,0.12)' : 'var(--slate-800)', color: theme === 'light' ? 'var(--teal-300)' : 'var(--slate-400)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
               <Sun size={20} /> <span style={{ fontSize: '0.8rem' }}>Light</span>
             </button>
-            <button onClick={() => setTheme('dark')} className="interactive-press" style={{ flex: 1, padding: '12px', borderRadius: '12px', border: theme === 'dark' ? '1px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.1)', background: theme === 'dark' ? 'rgba(20,184,166,0.12)' : 'var(--slate-800)', color: theme === 'dark' ? 'var(--teal-300)' : 'var(--slate-400)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+            <button onClick={() => setTheme('dark')} className="interactive-press" style={{ flex: 1, padding: '12px', borderRadius: '12px', border: theme === 'dark' ? '1px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.1)', background: theme === 'dark' ? 'rgba(235, 87, 56,0.12)' : 'var(--slate-800)', color: theme === 'dark' ? 'var(--teal-300)' : 'var(--slate-400)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
               <Moon size={20} /> <span style={{ fontSize: '0.8rem' }}>Dark</span>
             </button>
-            <button onClick={() => setTheme('system')} className="interactive-press" style={{ flex: 1, padding: '12px', borderRadius: '12px', border: theme === 'system' ? '1px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.1)', background: theme === 'system' ? 'rgba(20,184,166,0.12)' : 'var(--slate-800)', color: theme === 'system' ? 'var(--teal-300)' : 'var(--slate-400)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+            <button onClick={() => setTheme('system')} className="interactive-press" style={{ flex: 1, padding: '12px', borderRadius: '12px', border: theme === 'system' ? '1px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.1)', background: theme === 'system' ? 'rgba(235, 87, 56,0.12)' : 'var(--slate-800)', color: theme === 'system' ? 'var(--teal-300)' : 'var(--slate-400)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
               <Monitor size={20} /> <span style={{ fontSize: '0.8rem' }}>Auto</span>
             </button>
           </div>

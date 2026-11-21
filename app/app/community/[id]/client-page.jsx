@@ -455,8 +455,8 @@ export default function CommunityProfile() {
           position: 'sticky',
           top: 0,
           zIndex: 9999,
-          background: 'linear-gradient(90deg, #0f172a 0%, #0d9488 100%)',
-          borderBottom: '1.5px solid rgba(45,212,191,0.5)',
+          background: 'linear-gradient(90deg, #1B1B1B 0%, #D94628 100%)',
+          borderBottom: '1.5px solid rgba(242, 114, 87,0.5)',
           boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
           padding: '10px 18px',
           display: 'flex',
@@ -482,7 +482,7 @@ export default function CommunityProfile() {
               className="interactive-press"
               style={{
                 background: '#ffffff',
-                color: '#0f172a',
+                color: '#1B1B1B',
                 border: 'none',
                 padding: '7px 14px',
                 borderRadius: '8px',
@@ -534,7 +534,7 @@ export default function CommunityProfile() {
             className="interactive-press community-nav-btn" 
             style={{ 
               width: '42px', height: '42px', borderRadius: '50%', 
-              background: 'rgba(15, 23, 42, 0.85)', 
+              background: 'rgba(27, 27, 27, 0.85)', 
               backdropFilter: 'blur(12px)', 
               border: '1px solid rgba(255,255,255,0.2)', 
               color: '#ffffff', 
@@ -578,7 +578,7 @@ export default function CommunityProfile() {
               className="interactive-press"
               style={{
                 width: '42px', height: '42px', borderRadius: '50%',
-                background: 'rgba(15, 23, 42, 0.85)',
+                background: 'rgba(27, 27, 27, 0.85)',
                 border: '1px solid rgba(255,255,255,0.2)',
                 backdropFilter: 'blur(12px)',
                 color: '#ffffff',
@@ -616,7 +616,7 @@ export default function CommunityProfile() {
               className="interactive-press" 
               style={{ 
                 width: '42px', height: '42px', borderRadius: '50%', 
-                background: 'rgba(15, 23, 42, 0.85)', 
+                background: 'rgba(27, 27, 27, 0.85)', 
                 border: '1px solid rgba(244,63,94,0.4)', 
                 backdropFilter: 'blur(12px)', 
                 color: 'var(--rose-400)', 
@@ -636,8 +636,8 @@ export default function CommunityProfile() {
                 className="interactive-press" 
                 style={{ 
                   width: '42px', height: '42px', borderRadius: '50%', 
-                  background: 'rgba(15, 23, 42, 0.85)', 
-                  border: '1px solid rgba(20,184,166,0.6)', 
+                  background: 'rgba(27, 27, 27, 0.85)', 
+                  border: '1px solid rgba(235, 87, 56,0.6)', 
                   backdropFilter: 'blur(12px)', 
                   color: 'var(--teal-300)', 
                   display: 'flex', alignItems: 'center', justifyContent: 'center', 
@@ -661,13 +661,13 @@ export default function CommunityProfile() {
           <div 
             className="community-cover-card"
             style={{
-              backgroundImage: community.image ? `url(${community.image})` : `linear-gradient(135deg, #0d9488 0%, #0f172a 100%)`,
+              backgroundImage: community.image ? `url(${community.image})` : `linear-gradient(135deg, #D94628 0%, #1B1B1B 100%)`,
             }}
           >
             {/* Subtle atmospheric vignette */}
             <div style={{
               position: 'absolute', inset: 0,
-              background: 'linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(15,23,42,0.15) 50%, rgba(15,23,42,0.7) 100%)'
+              background: 'linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(27, 27, 27,0.15) 50%, rgba(27, 27, 27,0.7) 100%)'
             }} />
 
             {/* Overlaid Top Badges */}
@@ -677,7 +677,7 @@ export default function CommunityProfile() {
                 <span style={{
                   fontSize: '0.74rem',
                   fontWeight: 700,
-                  background: 'rgba(15, 23, 42, 0.8)',
+                  background: 'rgba(27, 27, 27, 0.8)',
                   backdropFilter: 'blur(8px)',
                   color: '#ffffff',
                   padding: '5px 12px',
@@ -691,7 +691,7 @@ export default function CommunityProfile() {
                   <span key={tag} style={{
                     fontSize: '0.74rem',
                     fontWeight: 600,
-                    background: 'rgba(15, 23, 42, 0.65)',
+                    background: 'rgba(27, 27, 27, 0.65)',
                     backdropFilter: 'blur(8px)',
                     color: '#e2e8f0',
                     padding: '5px 10px',
@@ -709,15 +709,15 @@ export default function CommunityProfile() {
                   display: 'flex',
                   alignItems: 'center',
                   gap: '5px',
-                  background: 'rgba(13, 148, 136, 0.9)',
+                  background: 'rgba(217, 70, 40, 0.9)',
                   backdropFilter: 'blur(8px)',
                   color: '#ffffff',
                   padding: '5px 11px',
                   borderRadius: '99px',
                   fontSize: '0.74rem',
                   fontWeight: 700,
-                  border: '1px solid rgba(45,212,191,0.5)',
-                  boxShadow: '0 2px 8px rgba(13,148,136,0.3)'
+                  border: '1px solid rgba(242, 114, 87,0.5)',
+                  boxShadow: '0 2px 8px rgba(217, 70, 40,0.3)'
                 }}>
                   <Shield size={12} color="#ffffff" /> Insured &amp; Verified
                 </div>
@@ -733,7 +733,7 @@ export default function CommunityProfile() {
                 fontSize: '0.78rem',
                 fontWeight: 600,
                 color: '#ffffff',
-                background: 'rgba(15, 23, 42, 0.75)',
+                background: 'rgba(27, 27, 27, 0.75)',
                 backdropFilter: 'blur(8px)',
                 padding: '5px 12px',
                 borderRadius: '99px',
@@ -749,7 +749,7 @@ export default function CommunityProfile() {
                 fontSize: '0.78rem',
                 fontWeight: 600,
                 color: '#ffffff',
-                background: 'rgba(15, 23, 42, 0.75)',
+                background: 'rgba(27, 27, 27, 0.75)',
                 backdropFilter: 'blur(8px)',
                 padding: '5px 12px',
                 borderRadius: '99px',
@@ -809,7 +809,7 @@ export default function CommunityProfile() {
             <div style={{ flex: 1 }}>
               <div className="organiser-label" style={{ fontSize: '0.74rem', color: 'var(--teal-400)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 Organised by
-                <span className="leader-pill" style={{ background: 'rgba(20,184,166,0.15)', color: '#2dd4bf', padding: '1px 6px', borderRadius: '4px', fontSize: '0.65rem' }}>Leader &amp; Co-Hosts</span>
+                <span className="leader-pill" style={{ background: 'rgba(235, 87, 56,0.15)', color: '#F27257', padding: '1px 6px', borderRadius: '4px', fontSize: '0.65rem' }}>Leader &amp; Co-Hosts</span>
               </div>
               <div style={{ fontWeight: 700, color: 'var(--white)', fontSize: '0.98rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span>{leaderUser?.name || 'Community Team'}</span>
@@ -893,15 +893,15 @@ export default function CommunityProfile() {
                 padding: '10px 16px', 
                 borderRadius: '100px', 
                 border: '1px solid',
-                borderColor: activeTab === tab.id ? 'rgba(20,184,166,0.3)' : 'rgba(255,255,255,0.06)',
-                background: activeTab === tab.id ? 'rgba(20,184,166,0.15)' : 'rgba(255,255,255,0.03)',
+                borderColor: activeTab === tab.id ? 'rgba(235, 87, 56,0.3)' : 'rgba(255,255,255,0.06)',
+                background: activeTab === tab.id ? 'rgba(235, 87, 56,0.15)' : 'rgba(255,255,255,0.03)',
                 color: activeTab === tab.id ? 'var(--teal-300)' : 'var(--slate-300)',
                 fontWeight: 600, 
                 fontSize: '0.85rem', 
                 cursor: 'pointer', 
                 whiteSpace: 'nowrap',
                 transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-                boxShadow: activeTab === tab.id ? '0 4px 12px rgba(20,184,166,0.1)' : 'none'
+                boxShadow: activeTab === tab.id ? '0 4px 12px rgba(235, 87, 56,0.1)' : 'none'
               }}
             >
               <tab.Icon size={16} style={{ opacity: activeTab === tab.id ? 1 : 0.7 }} />
@@ -922,7 +922,7 @@ export default function CommunityProfile() {
           {/* Upload Button */}
           {isLeader && (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', cursor: 'pointer', flexShrink: 0 }} onClick={() => setShowUploader(true)}>
-              <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', border: '2px dashed rgba(20,184,166,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+              <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', border: '2px dashed rgba(235, 87, 56,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
                 <Plus size={24} color="var(--teal-400)" />
                 <div style={{ position: 'absolute', bottom: '-4px', right: '-4px', background: 'var(--teal-500)', borderRadius: '50%', padding: '4px', border: '2px solid var(--slate-950)' }}>
                   <Video size={10} color="#000" />
@@ -1027,11 +1027,11 @@ export default function CommunityProfile() {
                 
                 let wrapperStyle = { background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', overflow: 'hidden' };
                 if (isCampaign) {
-                  wrapperStyle = { background: 'var(--slate-900)', border: '1px solid rgba(20,184,166,0.3)', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 4px 20px rgba(20,184,166,0.05)' };
+                  wrapperStyle = { background: 'var(--slate-900)', border: '1px solid rgba(235, 87, 56,0.3)', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 4px 20px rgba(235, 87, 56,0.05)' };
                 } else if (isSuggestion) {
                   wrapperStyle = { background: 'var(--slate-900)', border: '1px solid rgba(245,158,11,0.2)', borderLeft: '4px solid var(--amber-500)', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 4px 20px rgba(245,158,11,0.05)' };
                 } else if (isReview) {
-                  wrapperStyle = { background: 'linear-gradient(135deg, rgba(20,184,166,0.1), rgba(15,23,42,1))', border: '1px solid rgba(20,184,166,0.2)', borderRadius: '16px', overflow: 'hidden' };
+                  wrapperStyle = { background: 'linear-gradient(135deg, rgba(235, 87, 56,0.1), rgba(27, 27, 27,1))', border: '1px solid rgba(235, 87, 56,0.2)', borderRadius: '16px', overflow: 'hidden' };
                 } else if (post.is_announcement || post.isAnnouncement) {
                   wrapperStyle = { background: 'var(--slate-900)', border: '1px solid rgba(245,158,11,0.4)', borderRadius: '16px', overflow: 'hidden', position: 'relative' };
                 }
@@ -1109,7 +1109,7 @@ export default function CommunityProfile() {
                                 </div>
                               </div>
                               <div style={{ marginTop: '16px' }}>
-                                <button onClick={() => navigate.push(`/experiences/${campaignExp.id}`)} className="interactive-press" style={{ width: '100%', marginBottom: '16px', padding: '8px', borderRadius: '8px', fontSize: '0.85rem', color: 'var(--teal-400)', background: 'rgba(20,184,166,0.1)', border: '1px solid rgba(20,184,166,0.3)', cursor: 'pointer', fontWeight: 600 }}>
+                                <button onClick={() => navigate.push(`/experiences/${campaignExp.id}`)} className="interactive-press" style={{ width: '100%', marginBottom: '16px', padding: '8px', borderRadius: '8px', fontSize: '0.85rem', color: 'var(--teal-400)', background: 'rgba(235, 87, 56,0.1)', border: '1px solid rgba(235, 87, 56,0.3)', cursor: 'pointer', fontWeight: 600 }}>
                                   View Experience Details
                                 </button>
                                 <p style={{ color: 'var(--slate-200)', fontSize: '0.95rem', lineHeight: 1.5, margin: '0 0 12px 0' }}>{campaignText}</p>
@@ -1238,7 +1238,7 @@ export default function CommunityProfile() {
                             <button 
                               onClick={() => likeFeedPost(post.id)}
                               className="interactive-press" 
-                              style={{ background: post.liked ? 'rgba(20,184,166,0.15)' : 'rgba(255,255,255,0.05)', padding: '6px 12px', borderRadius: '20px', border: '1px solid', borderColor: post.liked ? 'rgba(20,184,166,0.3)' : 'transparent', display: 'flex', alignItems: 'center', gap: '6px', color: post.liked ? 'var(--teal-400)' : 'white', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}
+                              style={{ background: post.liked ? 'rgba(235, 87, 56,0.15)' : 'rgba(255,255,255,0.05)', padding: '6px 12px', borderRadius: '20px', border: '1px solid', borderColor: post.liked ? 'rgba(235, 87, 56,0.3)' : 'transparent', display: 'flex', alignItems: 'center', gap: '6px', color: post.liked ? 'var(--teal-400)' : 'white', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}
                             >
                               <Heart size={16} fill={post.liked ? 'var(--teal-400)' : 'none'} />
                               {isCampaign ? "I'm Interested" : "Upvote"} ({post.likes || 0})
@@ -1380,7 +1380,7 @@ export default function CommunityProfile() {
                       </div>
                       
                       {isCampaign && campaignExp && (
-                        <div style={{ background: 'var(--slate-900)', borderRadius: '12px', padding: '12px', marginBottom: '16px', border: '1px solid rgba(20,184,166,0.2)' }}>
+                        <div style={{ background: 'var(--slate-900)', borderRadius: '12px', padding: '12px', marginBottom: '16px', border: '1px solid rgba(235, 87, 56,0.2)' }}>
                           <div style={{ display: 'flex', gap: '12px' }}>
                             <img src={campaignExp.image} alt="" style={{ width: '60px', height: '60px', borderRadius: '8px', objectFit: 'cover' }} />
                             <div>
@@ -1392,7 +1392,7 @@ export default function CommunityProfile() {
                           </div>
                           
                           <div style={{ marginTop: '16px' }}>
-                            <button onClick={() => navigate.push(`/experiences/${campaignExp.id}`)} className="interactive-press" style={{ width: '100%', marginBottom: '16px', padding: '8px', borderRadius: '8px', fontSize: '0.85rem', color: 'var(--teal-400)', background: 'rgba(20,184,166,0.1)', border: '1px solid rgba(20,184,166,0.3)', cursor: 'pointer', fontWeight: 600 }}>
+                            <button onClick={() => navigate.push(`/experiences/${campaignExp.id}`)} className="interactive-press" style={{ width: '100%', marginBottom: '16px', padding: '8px', borderRadius: '8px', fontSize: '0.85rem', color: 'var(--teal-400)', background: 'rgba(235, 87, 56,0.1)', border: '1px solid rgba(235, 87, 56,0.3)', cursor: 'pointer', fontWeight: 600 }}>
                               View Experience Details
                             </button>
                             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--slate-300)', marginBottom: '6px', fontWeight: 600 }}>
@@ -1440,7 +1440,7 @@ export default function CommunityProfile() {
                             }
                           }}
                           className="interactive-press" 
-                          style={{ background: post.liked ? 'rgba(20,184,166,0.15)' : 'rgba(255,255,255,0.05)', padding: '6px 12px', borderRadius: '20px', border: '1px solid', borderColor: post.liked ? 'rgba(20,184,166,0.3)' : 'transparent', display: 'flex', alignItems: 'center', gap: '6px', color: post.liked ? 'var(--teal-400)' : 'white', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}
+                          style={{ background: post.liked ? 'rgba(235, 87, 56,0.15)' : 'rgba(255,255,255,0.05)', padding: '6px 12px', borderRadius: '20px', border: '1px solid', borderColor: post.liked ? 'rgba(235, 87, 56,0.3)' : 'transparent', display: 'flex', alignItems: 'center', gap: '6px', color: post.liked ? 'var(--teal-400)' : 'white', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}
                         >
                           <Heart size={16} fill={post.liked ? 'var(--teal-400)' : 'none'} />
                           {isCampaign ? "I'm Interested" : "Upvote"} ({votes})
@@ -1490,7 +1490,7 @@ export default function CommunityProfile() {
                   <span style={{ fontSize: '0.72rem', fontWeight: 800, color: 'var(--teal-400)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <Calendar size={13} /> Next Upcoming Event
                   </span>
-                  <span style={{ fontSize: '0.72rem', fontWeight: 700, padding: '3px 8px', borderRadius: '6px', background: 'rgba(20,184,166,0.15)', color: '#2dd4bf', border: '1px solid rgba(45,212,191,0.3)' }}>
+                  <span style={{ fontSize: '0.72rem', fontWeight: 700, padding: '3px 8px', borderRadius: '6px', background: 'rgba(235, 87, 56,0.15)', color: '#F27257', border: '1px solid rgba(242, 114, 87,0.3)' }}>
                     {nextEvent.price && Number(nextEvent.price) > 0 ? `£${nextEvent.price}` : 'Free RSVP'}
                   </span>
                 </div>
@@ -1523,7 +1523,7 @@ export default function CommunityProfile() {
                     style={{
                       flex: 1, minWidth: '160px', padding: '12px 18px', borderRadius: '12px',
                       fontWeight: 700, fontSize: '0.9rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                      boxShadow: '0 4px 14px rgba(20,184,166,0.3)'
+                      boxShadow: '0 4px 14px rgba(235, 87, 56,0.3)'
                     }}
                   >
                     RSVP &amp; View Event Details <ChevronRight size={16} />
@@ -1545,7 +1545,7 @@ export default function CommunityProfile() {
             )}
             {/* Leader Editing Prompt */}
             {isLeader && (
-              <div style={{ marginBottom: '24px', padding: '16px', background: 'rgba(20,184,166,0.1)', border: '1px dashed var(--teal-500)', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ marginBottom: '24px', padding: '16px', background: 'rgba(235, 87, 56,0.1)', border: '1px dashed var(--teal-500)', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                   <Sparkles size={20} color="var(--teal-400)" />
                   <div>
@@ -1560,12 +1560,12 @@ export default function CommunityProfile() {
             )}
 
             {/* Organizer Spotlight */}
-            <div className="community-spotlight-card" style={{ marginBottom: '32px', background: 'linear-gradient(135deg, rgba(20,184,166,0.05), rgba(15,23,42,1))', border: '1px solid rgba(20,184,166,0.2)', borderRadius: '16px', padding: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }}>
+            <div className="community-spotlight-card" style={{ marginBottom: '32px', background: 'linear-gradient(135deg, rgba(235, 87, 56,0.05), rgba(27, 27, 27,1))', border: '1px solid rgba(235, 87, 56,0.2)', borderRadius: '16px', padding: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }}>
               <img 
                 src={resolveUserAvatar(leaderUser, community.name)} 
                 alt="Organiser" 
                 onClick={() => leaderUser && navigate.push(`/profile/${leaderUser.id}`)}
-                style={{ width: '88px', height: '88px', borderRadius: '50%', objectFit: 'cover', border: '3px solid var(--teal-500)', cursor: leaderUser ? 'pointer' : 'default', marginBottom: '16px', boxShadow: '0 4px 12px rgba(20,184,166,0.2)' }} 
+                style={{ width: '88px', height: '88px', borderRadius: '50%', objectFit: 'cover', border: '3px solid var(--teal-500)', cursor: leaderUser ? 'pointer' : 'default', marginBottom: '16px', boxShadow: '0 4px 12px rgba(235, 87, 56,0.2)' }} 
               />
               <div className="spotlight-role" style={{ fontSize: '0.75rem', color: 'var(--teal-400)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '4px' }}>Community Leader</div>
               <div className="spotlight-leader-name" style={{ fontWeight: 800, color: 'var(--white)', fontSize: '1.4rem', fontFamily: 'var(--font-heading)', marginBottom: '8px' }}>{leaderUser?.name || 'Community Team'}</div>
@@ -1597,7 +1597,7 @@ export default function CommunityProfile() {
                           src={resolveUserAvatar(coHost, 'Co-Host')} 
                           alt={coHost.name}
                           onClick={() => navigate.push(`/profile/${coHost.id}`)}
-                          style={{ width: '56px', height: '56px', borderRadius: '50%', objectFit: 'cover', border: '2px solid rgba(45,212,191,0.5)', marginBottom: '8px', cursor: 'pointer' }}
+                          style={{ width: '56px', height: '56px', borderRadius: '50%', objectFit: 'cover', border: '2px solid rgba(242, 114, 87,0.5)', marginBottom: '8px', cursor: 'pointer' }}
                         />
                         <div 
                           onClick={() => navigate.push(`/profile/${coHost.id}`)}
@@ -1684,7 +1684,7 @@ export default function CommunityProfile() {
               {/* Tags & Community Focus */}
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '16px' }}>
                 {community.category && (
-                  <span style={{ padding: '6px 12px', borderRadius: '8px', background: 'rgba(20,184,166,0.12)', color: 'var(--teal-300)', fontSize: '0.8rem', fontWeight: 600, border: '1px solid rgba(20,184,166,0.2)' }}>
+                  <span style={{ padding: '6px 12px', borderRadius: '8px', background: 'rgba(235, 87, 56,0.12)', color: 'var(--teal-300)', fontSize: '0.8rem', fontWeight: 600, border: '1px solid rgba(235, 87, 56,0.2)' }}>
                     🎯 {community.category}
                   </span>
                 )}
@@ -1762,28 +1762,28 @@ export default function CommunityProfile() {
             {/* Key Info Cards */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '32px' }}>
               <div className="community-key-info-card" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '16px' }}>
-                <div className="info-icon-box" style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(20,184,166,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px', color: 'var(--teal-400)' }}>
+                <div className="info-icon-box" style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(235, 87, 56,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px', color: 'var(--teal-400)' }}>
                   <Users size={20} />
                 </div>
                 <div className="info-title" style={{ fontSize: '0.75rem', color: 'var(--slate-400)', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px', letterSpacing: '0.05em' }}>Who It's For</div>
                 <div className="info-value" style={{ fontSize: '0.9rem', color: 'var(--white)', fontWeight: 500, lineHeight: 1.4 }}>{community.target_audience || 'All ages & abilities welcome. No experience needed.'}</div>
               </div>
               <div className="community-key-info-card" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '16px' }}>
-                <div className="info-icon-box" style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(20,184,166,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px', color: 'var(--teal-400)' }}>
+                <div className="info-icon-box" style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(235, 87, 56,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px', color: 'var(--teal-400)' }}>
                   <span style={{ fontSize: '1.2rem', fontWeight: 600 }}>£</span>
                 </div>
                 <div className="info-title" style={{ fontSize: '0.75rem', color: 'var(--slate-400)', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px', letterSpacing: '0.05em' }}>Cost</div>
                 <div className="info-value" style={{ fontSize: '0.9rem', color: 'var(--white)', fontWeight: 500, lineHeight: 1.4 }}>{community.cost || community.metrics?.cost || 'Free to join'}</div>
               </div>
               <div className="community-key-info-card" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '16px' }}>
-                <div className="info-icon-box" style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(20,184,166,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px', color: 'var(--teal-400)' }}>
+                <div className="info-icon-box" style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(235, 87, 56,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px', color: 'var(--teal-400)' }}>
                   <Calendar size={20} />
                 </div>
                 <div className="info-title" style={{ fontSize: '0.75rem', color: 'var(--slate-400)', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px', letterSpacing: '0.05em' }}>How Often</div>
                 <div className="info-value" style={{ fontSize: '0.9rem', color: 'var(--white)', fontWeight: 500, lineHeight: 1.4 }}>{community.activity_level === 'Very Active' ? 'Weekly meetups' : community.activity_level === 'Active' ? 'Fortnightly' : 'Monthly'}</div>
               </div>
               <div className="community-key-info-card" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '16px' }}>
-                <div className="info-icon-box" style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(20,184,166,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px', color: 'var(--teal-400)' }}>
+                <div className="info-icon-box" style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(235, 87, 56,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px', color: 'var(--teal-400)' }}>
                   <MapPin size={20} />
                 </div>
                 <div className="info-title" style={{ fontSize: '0.75rem', color: 'var(--slate-400)', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px', letterSpacing: '0.05em' }}>Location</div>
@@ -1854,7 +1854,7 @@ export default function CommunityProfile() {
 
                      return (
                         <a key={idx} href={link.url} target="_blank" rel="noopener noreferrer" className="interactive-press" style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', textDecoration: 'none', color: 'var(--white)' }}>
-                          <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: 'rgba(20,184,166,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--teal-400)', flexShrink: 0 }}>
+                          <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: 'rgba(235, 87, 56,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--teal-400)', flexShrink: 0 }}>
                             <IconComponent size={20} />
                           </div>
                           <div style={{ flex: 1 }}>
@@ -1907,7 +1907,7 @@ export default function CommunityProfile() {
 
             {/* Get In Touch */}
             {leaderUser && (
-              <div style={{ marginBottom: '32px', padding: '20px', background: 'rgba(20,184,166,0.05)', borderRadius: '16px', border: '1px solid rgba(20,184,166,0.2)' }}>
+              <div style={{ marginBottom: '32px', padding: '20px', background: 'rgba(235, 87, 56,0.05)', borderRadius: '16px', border: '1px solid rgba(235, 87, 56,0.2)' }}>
                 <h3 style={{ fontSize: '1.2rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: '0 0 16px 0' }}>Get in Touch</h3>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                   <img src={resolveUserAvatar(leaderUser)} alt="" style={{ width: '56px', height: '56px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--slate-800)' }} />
@@ -1974,8 +1974,8 @@ export default function CommunityProfile() {
                 marginBottom: '32px',
                 padding: '20px',
                 borderRadius: '18px',
-                background: 'linear-gradient(135deg, rgba(20, 184, 166, 0.1) 0%, rgba(15, 23, 42, 0.6) 100%)',
-                border: '1px solid rgba(45, 212, 191, 0.3)',
+                background: 'linear-gradient(135deg, rgba(235, 87, 56, 0.1) 0%, rgba(27, 27, 27, 0.6) 100%)',
+                border: '1px solid rgba(242, 114, 87, 0.3)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
@@ -2009,7 +2009,7 @@ export default function CommunityProfile() {
                       padding: '9px 16px',
                       borderRadius: '10px',
                       background: 'rgba(255, 255, 255, 0.04)',
-                      border: '1px solid rgba(45, 212, 191, 0.35)',
+                      border: '1px solid rgba(242, 114, 87, 0.35)',
                       color: 'var(--teal-300)',
                       fontWeight: 700,
                       display: 'flex',
@@ -2184,7 +2184,7 @@ export default function CommunityProfile() {
                             setEditingGuidelines(true);
                           }}
                           className="interactive-press"
-                          style={{ marginTop: '14px', padding: '8px 16px', background: 'rgba(20,184,166,0.1)', border: '1px solid rgba(20,184,166,0.3)', borderRadius: '8px', color: 'var(--teal-400)', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer' }}
+                          style={{ marginTop: '14px', padding: '8px 16px', background: 'rgba(235, 87, 56,0.1)', border: '1px solid rgba(235, 87, 56,0.3)', borderRadius: '8px', color: 'var(--teal-400)', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer' }}
                         >
                           ✏️ Edit Guidelines
                         </button>
@@ -2216,7 +2216,7 @@ export default function CommunityProfile() {
                         />
                         <button
                           onClick={() => { if (newGuideline.trim()) { setGuidelinesDraft(prev => [...prev, newGuideline.trim()]); setNewGuideline(''); } }}
-                          style={{ padding: '8px 12px', background: 'rgba(20,184,166,0.15)', border: '1px solid rgba(20,184,166,0.3)', borderRadius: '8px', color: 'var(--teal-400)', fontWeight: 700, cursor: 'pointer', fontSize: '0.85rem' }}
+                          style={{ padding: '8px 12px', background: 'rgba(235, 87, 56,0.15)', border: '1px solid rgba(235, 87, 56,0.3)', borderRadius: '8px', color: 'var(--teal-400)', fontWeight: 700, cursor: 'pointer', fontSize: '0.85rem' }}
                         >+ Add</button>
                       </div>
                       <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
@@ -2273,7 +2273,7 @@ export default function CommunityProfile() {
                   className="interactive-press"
                   style={{
                     display: 'flex', alignItems: 'center', gap: '6px',
-                    background: 'rgba(20,184,166,0.1)', border: '1px solid rgba(20,184,166,0.3)',
+                    background: 'rgba(235, 87, 56,0.1)', border: '1px solid rgba(235, 87, 56,0.3)',
                     color: 'var(--teal-400)', padding: '6px 14px', borderRadius: '99px',
                     fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer'
                   }}
@@ -2291,7 +2291,7 @@ export default function CommunityProfile() {
                       {event.image && (
                         <div style={{ height: '140px', background: `url(${event.image})`, backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative' }}>
                           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.6))' }}></div>
-                          <div style={{ position: 'absolute', bottom: '10px', left: '12px', background: 'rgba(20,184,166,0.9)', padding: '4px 10px', borderRadius: '6px', fontSize: '0.7rem', fontWeight: 700, color: 'var(--white)' }}>
+                          <div style={{ position: 'absolute', bottom: '10px', left: '12px', background: 'rgba(235, 87, 56,0.9)', padding: '4px 10px', borderRadius: '6px', fontSize: '0.7rem', fontWeight: 700, color: 'var(--white)' }}>
                             {event.date}
                           </div>
                         </div>
@@ -2366,7 +2366,7 @@ export default function CommunityProfile() {
                       <div key={event.id} onClick={() => navigate.push(getEventPath(event, events))} className="interactive-press community-event-card" style={{ borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)', background: 'rgba(255,255,255,0.015)', opacity: 0.85, cursor: 'pointer' }}>
                         {event.image && (
                           <div style={{ height: '120px', background: `url(${event.image})`, backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative', filter: 'saturate(0.8)' }}>
-                            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 40%, rgba(15,23,42,0.8))' }}></div>
+                            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 40%, rgba(27, 27, 27,0.8))' }}></div>
                             <div style={{ position: 'absolute', top: '10px', right: '10px', background: 'rgba(51,65,85,0.85)', backdropFilter: 'blur(6px)', border: '1px solid rgba(255,255,255,0.1)', padding: '3px 8px', borderRadius: '6px', fontSize: '0.65rem', fontWeight: 700, color: 'var(--slate-300)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                               Archived
                             </div>
@@ -2379,7 +2379,7 @@ export default function CommunityProfile() {
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '6px' }}>
                             <div style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--slate-200)', display: 'flex', alignItems: 'center', gap: '8px' }}>
                               {event.title}
-                              {event.communityId !== communityId && <span style={{ fontSize: '0.65rem', background: 'rgba(20,184,166,0.3)', color: 'var(--teal-300)', padding: '2px 6px', borderRadius: '6px', fontWeight: 700, textTransform: 'uppercase' }}>Collab</span>}
+                              {event.communityId !== communityId && <span style={{ fontSize: '0.65rem', background: 'rgba(235, 87, 56,0.3)', color: 'var(--teal-300)', padding: '2px 6px', borderRadius: '6px', fontWeight: 700, textTransform: 'uppercase' }}>Collab</span>}
                             </div>
                             {!event.image && (
                               <span style={{ fontSize: '0.65rem', background: 'rgba(51,65,85,0.6)', color: 'var(--slate-400)', padding: '2px 6px', borderRadius: '4px', fontWeight: 600, textTransform: 'uppercase' }}>Past Event</span>
@@ -2418,7 +2418,7 @@ export default function CommunityProfile() {
                                 }}
                                 disabled={uploadingPastEventId === event.id}
                                 className="btn btn-outline interactive-press"
-                                style={{ flex: 1, minWidth: '120px', padding: '9px 12px', borderRadius: '10px', fontSize: '0.82rem', display: 'flex', gap: '6px', justifyContent: 'center', alignItems: 'center', color: 'var(--teal-300)', borderColor: 'rgba(20,184,166,0.35)' }}
+                                style={{ flex: 1, minWidth: '120px', padding: '9px 12px', borderRadius: '10px', fontSize: '0.82rem', display: 'flex', gap: '6px', justifyContent: 'center', alignItems: 'center', color: 'var(--teal-300)', borderColor: 'rgba(235, 87, 56,0.35)' }}
                               >
                                 <Camera size={14} /> {uploadingPastEventId === event.id ? 'Uploading...' : `Add Photo${event.galleryImages?.length ? ` (${event.galleryImages.length})` : ''}`}
                               </button>
@@ -2567,7 +2567,7 @@ export default function CommunityProfile() {
                             </div>
                           </div>
                           <div style={{ display: 'flex', gap: '8px' }}>
-                            <button onClick={() => updateServiceStatus(srv.id, 'approved')} className="btn interactive-press" style={{ flex: 1, padding: '9px', borderRadius: '10px', background: srv.isPremium ? 'linear-gradient(135deg, #10b981 0%, #14b8a6 100%)' : 'var(--teal-500)', color: '#090d16', border: 'none', fontWeight: 700, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px' }}>
+                            <button onClick={() => updateServiceStatus(srv.id, 'approved')} className="btn interactive-press" style={{ flex: 1, padding: '9px', borderRadius: '10px', background: srv.isPremium ? 'linear-gradient(135deg, #10b981 0%, #EB5738 100%)' : 'var(--teal-500)', color: '#090d16', border: 'none', fontWeight: 700, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px' }}>
                               <Check size={16} /> {srv.isPremium ? 'Accept Sponsor (£12/mo)' : 'Approve Perk'}
                             </button>
                             <button onClick={() => updateServiceStatus(srv.id, 'rejected')} className="btn interactive-press" style={{ flex: 1, padding: '9px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', color: 'var(--slate-300)', border: '1px solid rgba(255,255,255,0.1)', fontWeight: 600, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px' }}>
@@ -2640,7 +2640,7 @@ export default function CommunityProfile() {
                   setShowPartnerModal(true);
                 }}
                 className="btn btn-primary interactive-press" 
-                style={{ width: '100%', marginTop: '24px', padding: '16px', borderRadius: '14px', fontSize: '1.05rem', fontWeight: 700, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', boxShadow: '0 8px 24px rgba(20,184,166,0.2)' }}
+                style={{ width: '100%', marginTop: '24px', padding: '16px', borderRadius: '14px', fontSize: '1.05rem', fontWeight: 700, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', boxShadow: '0 8px 24px rgba(235, 87, 56,0.2)' }}
               >
                 <Store size={18} /> Offer a Member Perk or Sponsor (£15/mo)
               </button>
@@ -2662,7 +2662,7 @@ export default function CommunityProfile() {
                     Community Pass
                   </span>
                 </div>
-                <span style={{ fontSize: '0.75rem', fontWeight: 700, padding: '2px 8px', borderRadius: '99px', background: 'rgba(20,184,166,0.15)', color: '#2dd4bf' }}>
+                <span style={{ fontSize: '0.75rem', fontWeight: 700, padding: '2px 8px', borderRadius: '99px', background: 'rgba(235, 87, 56,0.15)', color: '#F27257' }}>
                   {Number(community.subscription_price || 0) > 0 ? `£${community.subscription_price}/mo` : 'Free to Join'}
                 </span>
               </div>
@@ -2677,7 +2677,7 @@ export default function CommunityProfile() {
               {/* Main Action Button */}
               {isMember ? (
                 <div style={{ marginBottom: '12px' }}>
-                  <div className="community-member-status-badge" style={{ width: '100%', padding: '12px', fontSize: '0.92rem', fontWeight: 700, borderRadius: '12px', border: '1px solid rgba(45,212,191,0.3)', color: '#2dd4bf', background: 'rgba(20,184,166,0.1)', textAlign: 'center', marginBottom: '8px' }}>
+                  <div className="community-member-status-badge" style={{ width: '100%', padding: '12px', fontSize: '0.92rem', fontWeight: 700, borderRadius: '12px', border: '1px solid rgba(242, 114, 87,0.3)', color: '#F27257', background: 'rgba(235, 87, 56,0.1)', textAlign: 'center', marginBottom: '8px' }}>
                     ✓ You're a Member
                   </div>
                   {community.whatsapp_group && (
@@ -2708,7 +2708,7 @@ export default function CommunityProfile() {
                   <button
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleJoinLeave(); }}
                     className="btn btn-primary interactive-press"
-                    style={{ width: '100%', padding: '14px', borderRadius: '12px', fontSize: '1rem', fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 6px 20px rgba(20,184,166,0.3)' }}
+                    style={{ width: '100%', padding: '14px', borderRadius: '12px', fontSize: '1rem', fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 6px 20px rgba(235, 87, 56,0.3)' }}
                   >
                     {!user?.id ? 'Sign In to Join (Free)' : 'Join Community  -  it\'s free'}
                   </button>
@@ -2782,11 +2782,11 @@ export default function CommunityProfile() {
 
       {/* Join Community Guidelines Agreement Modal */}
       {showJoinGuidelinesModal && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(2,6,23,0.85)', backdropFilter: 'blur(12px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(18, 18, 18,0.85)', backdropFilter: 'blur(12px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
           <div style={{ background: 'var(--slate-900)', borderRadius: '24px', padding: '28px 24px', width: '100%', maxWidth: '440px', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', flexDirection: 'column', gap: '16px', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 20px 50px rgba(0,0,0,0.5)' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(20,184,166,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--teal-400)' }}>
+                <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(235, 87, 56,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--teal-400)' }}>
                   <Shield size={22} />
                 </div>
                 <div>
@@ -2819,7 +2819,7 @@ export default function CommunityProfile() {
                 'Respect member privacy and keep private group conversations confidential.'
               ]).map((rule, idx) => (
                 <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
-                  <span style={{ fontSize: '0.72rem', fontWeight: 700, padding: '2px 6px', borderRadius: '6px', background: 'rgba(20,184,166,0.15)', color: 'var(--teal-300)', marginTop: '2px', flexShrink: 0 }}>
+                  <span style={{ fontSize: '0.72rem', fontWeight: 700, padding: '2px 6px', borderRadius: '6px', background: 'rgba(235, 87, 56,0.15)', color: 'var(--teal-300)', marginTop: '2px', flexShrink: 0 }}>
                     #{idx + 1}
                   </span>
                   <span style={{ fontSize: '0.82rem', color: 'var(--slate-200)', lineHeight: 1.45, flex: 1 }}>
@@ -2872,7 +2872,7 @@ export default function CommunityProfile() {
       )}
 
       {showLeaveModal && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(2,6,23,0.85)', backdropFilter: 'blur(10px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(18, 18, 18,0.85)', backdropFilter: 'blur(10px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
           <div style={{ background: 'var(--slate-900)', borderRadius: '24px', padding: '32px 24px', width: '100%', maxWidth: '400px', border: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>
             <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(244,63,94,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px auto' }}>
               <Heart size={32} color="var(--rose-400)" style={{ animation: 'pulse 2s infinite' }} />
@@ -2885,7 +2885,7 @@ export default function CommunityProfile() {
               <button 
                 onClick={() => setShowLeaveModal(false)}
                 className="btn btn-primary interactive-press" 
-                style={{ padding: '14px', borderRadius: '14px', fontSize: '1rem', fontWeight: 600, boxShadow: '0 8px 24px rgba(20,184,166,0.2)' }}
+                style={{ padding: '14px', borderRadius: '14px', fontSize: '1rem', fontWeight: 600, boxShadow: '0 8px 24px rgba(235, 87, 56,0.2)' }}
               >
                 Actually, I'll stay
               </button>
@@ -3001,7 +3001,7 @@ export default function CommunityProfile() {
                     className="interactive-press"
                     style={{
                       display: 'flex', alignItems: 'center', gap: '12px',
-                      background: 'rgba(20,184,166,0.08)', border: '1px solid rgba(20,184,166,0.25)',
+                      background: 'rgba(235, 87, 56,0.08)', border: '1px solid rgba(235, 87, 56,0.25)',
                       padding: '14px 16px', borderRadius: '14px', color: 'var(--teal-400)',
                       cursor: 'pointer', textAlign: 'left', width: '100%'
                     }}
@@ -3048,7 +3048,7 @@ export default function CommunityProfile() {
                 <MessageCircle size={16} /> WhatsApp Chat
               </a>
             ) : (
-              <span className="community-member-status-badge" style={{ padding: '8px 14px', borderRadius: '10px', fontSize: '0.82rem', fontWeight: 700, background: 'rgba(20,184,166,0.15)', color: '#2dd4bf', border: '1px solid rgba(45,212,191,0.3)' }}>
+              <span className="community-member-status-badge" style={{ padding: '8px 14px', borderRadius: '10px', fontSize: '0.82rem', fontWeight: 700, background: 'rgba(235, 87, 56,0.15)', color: '#F27257', border: '1px solid rgba(242, 114, 87,0.3)' }}>
                 ✓ Joined
               </span>
             )
@@ -3058,7 +3058,7 @@ export default function CommunityProfile() {
               className="btn btn-primary interactive-press"
               style={{
                 padding: '11px 20px', borderRadius: '12px', fontSize: '0.92rem', fontWeight: 800,
-                boxShadow: '0 4px 16px rgba(20,184,166,0.3)'
+                boxShadow: '0 4px 16px rgba(235, 87, 56,0.3)'
               }}
             >
               Join Community

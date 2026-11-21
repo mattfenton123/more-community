@@ -56,7 +56,7 @@ export default function TownAlertCard({ town = 'your area', style = {} }) {
         <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', borderRadius: '50%', background: '#10b981', color: '#fff', marginBottom: '8px' }}>
           <Check size={20} strokeWidth={3} />
         </div>
-        <div style={{ fontSize: '0.95rem', fontWeight: 700, color: isLight ? '#0f172a' : '#ffffff', marginBottom: '4px' }}>
+        <div style={{ fontSize: '0.95rem', fontWeight: 700, color: isLight ? '#1B1B1B' : '#ffffff', marginBottom: '4px' }}>
           You're on the list for {town}!
         </div>
         <p style={{ margin: 0, fontSize: '0.8rem', color: isLight ? '#475569' : 'var(--slate-400)' }}>
@@ -72,20 +72,20 @@ export default function TownAlertCard({ town = 'your area', style = {} }) {
       style={{ 
         padding: '20px', 
         borderRadius: '16px',
-        background: isLight ? '#ffffff' : 'rgba(15, 23, 42, 0.8)',
+        background: isLight ? '#ffffff' : 'rgba(27, 27, 27, 0.8)',
         border: isLight ? '1px solid rgba(0,0,0,0.1)' : '1px solid rgba(255,255,255,0.08)',
         boxShadow: isLight ? '0 4px 20px rgba(0,0,0,0.04)' : '0 10px 30px rgba(0,0,0,0.2)',
         ...style 
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-        <BellRing size={16} color="#0d9488" />
-        <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#0d9488', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+        <BellRing size={16} color="#D94628" />
+        <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#D94628', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
           Expansion Alerts
         </span>
       </div>
 
-      <h3 style={{ margin: '0 0 6px', fontSize: '1.05rem', color: isLight ? '#0f172a' : '#ffffff', fontWeight: 800 }}>
+      <h3 style={{ margin: '0 0 6px', fontSize: '1.05rem', color: isLight ? '#1B1B1B' : '#ffffff', fontWeight: 800 }}>
         Want to know when groups meet in {town}?
       </h3>
       <p style={{ margin: '0 0 14px', fontSize: '0.82rem', color: isLight ? '#64748b' : 'var(--slate-400)', lineHeight: 1.45 }}>
@@ -110,8 +110,8 @@ export default function TownAlertCard({ town = 'your area', style = {} }) {
             padding: '10px 14px',
             borderRadius: '10px',
             border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255,255,255,0.12)',
-            background: isLight ? '#f8fafc' : 'rgba(0,0,0,0.25)',
-            color: isLight ? '#0f172a' : '#ffffff',
+            background: isLight ? '#F7F3EC' : 'rgba(0,0,0,0.25)',
+            color: isLight ? '#1B1B1B' : '#ffffff',
             fontSize: '0.85rem'
           }}
         />
@@ -122,7 +122,7 @@ export default function TownAlertCard({ town = 'your area', style = {} }) {
           style={{
             padding: '10px 18px',
             borderRadius: '10px',
-            background: '#0d9488',
+            background: '#D94628',
             color: '#ffffff',
             fontWeight: 700,
             fontSize: '0.85rem',

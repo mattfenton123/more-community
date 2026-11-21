@@ -69,7 +69,7 @@ export default function SwipeDiscovery({ events, communities, onClose, onSave, i
   if (!currentEvent) {
     return inline ? (
       <div style={{ width: '100%', maxWidth: '440px', margin: '0 auto', display: 'flex', flexDirection: 'column', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '24px', overflow: 'hidden', padding: '40px 20px', textAlign: 'center', marginBottom: '24px' }}>
-        <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(20,184,166,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+        <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(235, 87, 56,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
           <Sparkles size={32} color="var(--teal-400)" />
         </div>
         <h2 style={{ color: 'var(--white)', fontFamily: 'var(--font-heading)', fontSize: '1.5rem', marginBottom: '12px' }}>You're all caught up!</h2>
@@ -82,7 +82,7 @@ export default function SwipeDiscovery({ events, communities, onClose, onSave, i
             <X size={20} />
           </button>
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px', textAlign: 'center' }}>
-            <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(20,184,166,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '24px' }}>
+            <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(235, 87, 56,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '24px' }}>
               <Sparkles size={40} color="var(--teal-400)" />
             </div>
             <h2 style={{ color: 'var(--white)', fontFamily: 'var(--font-heading)', fontSize: '2rem', marginBottom: '16px' }}>You're all caught up!</h2>
@@ -123,7 +123,7 @@ export default function SwipeDiscovery({ events, communities, onClose, onSave, i
               position: 'absolute', 
               width: 'calc(100% - 40px)', 
               height: 'calc(100% - 40px)', 
-              background: 'rgba(15, 23, 42, 0.4)',
+              background: 'rgba(27, 27, 27, 0.4)',
               backdropFilter: 'blur(10px)',
               borderRadius: '24px', 
               transform: 'scale(0.95) translateY(20px)', 
@@ -145,7 +145,7 @@ export default function SwipeDiscovery({ events, communities, onClose, onSave, i
               position: 'absolute',
               width: 'calc(100% - 40px)',
               height: 'calc(100% - 40px)',
-              background: 'rgba(15, 23, 42, 0.75)',
+              background: 'rgba(27, 27, 27, 0.75)',
               backdropFilter: 'blur(20px)',
               borderRadius: '24px',
               boxShadow: '0 20px 40px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1)',
@@ -175,7 +175,7 @@ export default function SwipeDiscovery({ events, communities, onClose, onSave, i
               position: 'relative',
               pointerEvents: 'none'
             }}>
-              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 50%, rgba(15, 23, 42, 0.95) 100%)' }}></div>
+              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 50%, rgba(27, 27, 27, 0.95) 100%)' }}></div>
               <div style={{ position: 'absolute', top: '16px', right: '16px', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', color: 'var(--white)', padding: '6px 12px', borderRadius: '99px', fontSize: '0.8rem', fontWeight: 700 }}>
                 {currentEvent.ticketPrice > 0 ? `£${currentEvent.ticketPrice}` : 'FREE'}
               </div>
@@ -233,7 +233,7 @@ export default function SwipeDiscovery({ events, communities, onClose, onSave, i
           <button 
             onClick={() => handleSwipe('right')}
             className="interactive-press"
-            style={{ width: '72px', height: '72px', borderRadius: '50%', background: 'var(--teal-500)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--white)', cursor: 'pointer', boxShadow: '0 8px 32px rgba(20,184,166,0.4)' }}
+            style={{ width: '72px', height: '72px', borderRadius: '50%', background: 'var(--teal-500)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--white)', cursor: 'pointer', boxShadow: '0 8px 32px rgba(235, 87, 56,0.4)' }}
           >
             <Heart size={36} fill="currentColor" />
           </button>

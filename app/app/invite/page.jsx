@@ -70,13 +70,13 @@ function InvitePage() {
         background: `url(${community.image || FALLBACK_IMAGES.walking})`,
         backgroundSize: 'cover', backgroundPosition: 'center', opacity: 0.4
       }}>
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(2,6,23,0.3) 0%, rgba(2,6,23,0.8) 50%, rgba(2,6,23,1) 100%)' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(18, 18, 18,0.3) 0%, rgba(18, 18, 18,0.8) 50%, rgba(18, 18, 18,1) 100%)' }} />
       </div>
 
       <div style={{ position: 'relative', zIndex: 1, maxWidth: '600px', margin: '0 auto', padding: '60px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
         
         <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '24px', padding: '40px 32px', backdropFilter: 'blur(12px)', width: '100%', marginTop: '40px' }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(20,184,166,0.15)', border: '1px solid rgba(20,184,166,0.3)', padding: '6px 16px', borderRadius: '20px', color: 'var(--teal-300)', fontSize: '0.85rem', fontWeight: 600, marginBottom: '24px' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(235, 87, 56,0.15)', border: '1px solid rgba(235, 87, 56,0.3)', padding: '6px 16px', borderRadius: '20px', color: 'var(--teal-300)', fontSize: '0.85rem', fontWeight: 600, marginBottom: '24px' }}>
             <HeartPulse size={16} /> NHS Social Prescription
           </div>
           

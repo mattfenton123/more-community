@@ -40,7 +40,7 @@ export default function TownCrossPollination({ currentCommunity, currentCommunit
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
         <div>
           <div style={{ fontSize: '0.92rem', fontWeight: 700, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Compass size={16} color="#2dd4bf" /> More in {displayLocation}
+            <Compass size={16} color="#F27257" /> More in {displayLocation}
           </div>
           <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', marginTop: '2px' }}>
             Discover other local groups and gatherings nearby
@@ -48,7 +48,7 @@ export default function TownCrossPollination({ currentCommunity, currentCommunit
         </div>
         <button
           onClick={() => router.push('/discover')}
-          style={{ background: 'none', border: 'none', color: '#2dd4bf', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+          style={{ background: 'none', border: 'none', color: '#F27257', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
         >
           Explore All <ArrowRight size={12} />
         </button>
@@ -67,7 +67,7 @@ export default function TownCrossPollination({ currentCommunity, currentCommunit
               onClick={() => router.push(`/community/${slug}`)}
               className="interactive-press"
               style={{
-                background: 'rgba(2,6,23,0.6)',
+                background: 'rgba(18, 18, 18,0.6)',
                 border: '1px solid rgba(255,255,255,0.06)',
                 borderRadius: '14px',
                 padding: '12px 14px',
@@ -89,11 +89,11 @@ export default function TownCrossPollination({ currentCommunity, currentCommunit
                   width: '40px',
                   height: '40px',
                   borderRadius: '10px',
-                  background: 'rgba(20,184,166,0.15)',
+                  background: 'rgba(235, 87, 56,0.15)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  color: '#2dd4bf',
+                  color: '#F27257',
                   fontWeight: 800,
                   fontSize: '1rem',
                   flexShrink: 0
@@ -106,7 +106,7 @@ export default function TownCrossPollination({ currentCommunity, currentCommunit
                   {c.name}
                 </div>
                 <div style={{ fontSize: '0.7rem', color: 'var(--slate-400)', marginTop: '2px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <Users size={11} color="#2dd4bf" /> {realCount} {realCount === 1 ? 'member' : 'members'}
+                  <Users size={11} color="#F27257" /> {realCount} {realCount === 1 ? 'member' : 'members'}
                 </div>
               </div>
             </div>

@@ -123,7 +123,7 @@ export default function ExperienceCheckout() {
     <div style={{ minHeight: '100dvh', background: 'var(--slate-950)', color: 'var(--white)', paddingBottom: '60px' }}>
       
       {/* Top Header */}
-      <div style={{ position: 'sticky', top: 0, zIndex: 50, background: 'rgba(2,6,23,0.92)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.08)', padding: '1rem 1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div style={{ position: 'sticky', top: 0, zIndex: 50, background: 'rgba(18, 18, 18,0.92)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.08)', padding: '1rem 1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <button onClick={() => router.back()} style={{ background: 'none', border: 'none', color: 'var(--slate-400)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.9rem' }}>
           <ArrowLeft size={18} /> Back
         </button>
@@ -137,12 +137,12 @@ export default function ExperienceCheckout() {
         /* CONFIRMATION SCREEN                                    */
         /* ══════════════════════════════════════════════════════ */
         <div style={{ maxWidth: '560px', margin: '2rem auto', padding: '0 20px', animation: 'fadeIn 0.4s ease-out' }}>
-          <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(20,184,166,0.3)', borderRadius: '24px', padding: '28px 24px', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
-            <div style={{ width: '70px', height: '70px', borderRadius: '50%', background: 'rgba(20, 184, 166, 0.15)', border: '2px solid var(--teal-400)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', color: 'var(--teal-400)' }}>
+          <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(235, 87, 56,0.3)', borderRadius: '24px', padding: '28px 24px', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
+            <div style={{ width: '70px', height: '70px', borderRadius: '50%', background: 'rgba(235, 87, 56, 0.15)', border: '2px solid var(--teal-400)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', color: 'var(--teal-400)' }}>
               <CheckCircle2 size={36} />
             </div>
 
-            <span style={{ fontSize: '0.75rem', padding: '3px 10px', borderRadius: '99px', background: 'rgba(20,184,166,0.2)', color: 'var(--teal-300)', fontWeight: 700 }}>
+            <span style={{ fontSize: '0.75rem', padding: '3px 10px', borderRadius: '99px', background: 'rgba(235, 87, 56,0.2)', color: 'var(--teal-300)', fontWeight: 700 }}>
               RESERVATION CONFIRMED
             </span>
 
@@ -239,9 +239,9 @@ export default function ExperienceCheckout() {
           <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '20px', overflow: 'hidden', marginBottom: '20px' }}>
             <div style={{ height: '180px', position: 'relative' }}>
               <img src={exp.image} alt={exp.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(2,6,23,0.9) 0%, transparent 60%)' }} />
+              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(18, 18, 18,0.9) 0%, transparent 60%)' }} />
               <div style={{ position: 'absolute', bottom: '12px', left: '16px', right: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                <span style={{ fontSize: '0.72rem', padding: '3px 8px', borderRadius: '99px', background: 'rgba(20, 184, 166, 0.25)', color: 'var(--teal-300)', fontWeight: 700, backdropFilter: 'blur(6px)', border: '1px solid rgba(20, 184, 166, 0.4)' }}>
+                <span style={{ fontSize: '0.72rem', padding: '3px 8px', borderRadius: '99px', background: 'rgba(235, 87, 56, 0.25)', color: 'var(--teal-300)', fontWeight: 700, backdropFilter: 'blur(6px)', border: '1px solid rgba(235, 87, 56, 0.4)' }}>
                   {exp.category || 'Curated Experience'}
                 </span>
                 <span style={{ fontSize: '0.72rem', color: 'var(--slate-300)', background: 'rgba(0,0,0,0.6)', padding: '3px 8px', borderRadius: '8px' }}>
@@ -293,7 +293,7 @@ export default function ExperienceCheckout() {
                         cursor: 'pointer',
                         textAlign: 'center',
                         border: `1.5px solid ${isSelected ? 'var(--teal-400)' : 'rgba(255,255,255,0.08)'}`,
-                        background: isSelected ? 'rgba(20, 184, 166, 0.15)' : 'rgba(255,255,255,0.02)',
+                        background: isSelected ? 'rgba(235, 87, 56, 0.15)' : 'rgba(255,255,255,0.02)',
                         color: isSelected ? '#fff' : 'var(--slate-300)',
                         transition: 'all 0.15s'
                       }}
@@ -345,7 +345,7 @@ export default function ExperienceCheckout() {
                         cursor: 'pointer',
                         textAlign: 'left',
                         border: `1.5px solid ${isSelected ? 'var(--teal-400)' : 'rgba(255,255,255,0.08)'}`,
-                        background: isSelected ? 'rgba(20, 184, 166, 0.15)' : 'rgba(255,255,255,0.02)',
+                        background: isSelected ? 'rgba(235, 87, 56, 0.15)' : 'rgba(255,255,255,0.02)',
                         color: isSelected ? '#fff' : 'var(--slate-300)',
                         fontSize: '0.82rem',
                         fontWeight: isSelected ? 700 : 500
@@ -469,7 +469,7 @@ export default function ExperienceCheckout() {
 
             {/* Payment Selector */}
             <div style={{ marginBottom: '16px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(20,184,166,0.08)', border: '1px solid rgba(20,184,166,0.3)', borderRadius: '12px', padding: '12px 14px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(235, 87, 56,0.08)', border: '1px solid rgba(235, 87, 56,0.3)', borderRadius: '12px', padding: '12px 14px' }}>
                 <CreditCard size={22} color="var(--teal-400)" />
                 <div style={{ flex: 1 }}>
                   <div style={{ fontWeight: 700, fontSize: '0.9rem', color: '#fff' }}>Apple Pay / Google Pay / Card</div>

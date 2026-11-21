@@ -87,8 +87,8 @@ export default function LeaderProposalsInbox({
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       {/* Asymmetric Pitch Overview Banner */}
       <div style={{
-        background: 'linear-gradient(135deg, rgba(20, 184, 166, 0.12) 0%, rgba(15, 23, 42, 0.6) 100%)',
-        border: '1px solid rgba(45, 212, 191, 0.3)',
+        background: 'linear-gradient(135deg, rgba(235, 87, 56, 0.12) 0%, rgba(27, 27, 27, 0.6) 100%)',
+        border: '1px solid rgba(242, 114, 87, 0.3)',
         borderRadius: '20px',
         padding: '24px',
         display: 'flex',
@@ -99,9 +99,9 @@ export default function LeaderProposalsInbox({
           <div style={{ maxWidth: '640px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
               <span style={{
-                background: 'rgba(20, 184, 166, 0.2)',
+                background: 'rgba(235, 87, 56, 0.2)',
                 color: 'var(--teal-300)',
-                border: '1px solid rgba(20, 184, 166, 0.4)',
+                border: '1px solid rgba(235, 87, 56, 0.4)',
                 padding: '2px 10px',
                 borderRadius: '12px',
                 fontSize: '0.72rem',
@@ -184,7 +184,7 @@ export default function LeaderProposalsInbox({
           >
             New Proposals
             <span style={{
-              background: activeTab === 'pending' ? '#000' : 'rgba(20, 184, 166, 0.2)',
+              background: activeTab === 'pending' ? '#000' : 'rgba(235, 87, 56, 0.2)',
               color: activeTab === 'pending' ? '#fff' : 'var(--teal-300)',
               padding: '1px 6px',
               borderRadius: '10px',
@@ -274,7 +274,7 @@ export default function LeaderProposalsInbox({
                   borderRadius: '20px',
                   border: '1px solid rgba(255, 255, 255, 0.08)',
                   overflow: 'hidden',
-                  background: 'linear-gradient(180deg, rgba(30, 41, 59, 0.4) 0%, rgba(15, 23, 42, 0.6) 100%)'
+                  background: 'linear-gradient(180deg, rgba(37, 37, 37, 0.4) 0%, rgba(27, 27, 27, 0.6) 100%)'
                 }}
               >
                 {/* Specialist Header Strip */}
@@ -298,9 +298,9 @@ export default function LeaderProposalsInbox({
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <span style={{ fontWeight: 700, color: 'var(--white)', fontSize: '0.95rem' }}>{spec.name}</span>
                         <span style={{
-                          background: 'rgba(20, 184, 166, 0.2)',
+                          background: 'rgba(235, 87, 56, 0.2)',
                           color: 'var(--teal-300)',
-                          border: '1px solid rgba(20, 184, 166, 0.4)',
+                          border: '1px solid rgba(235, 87, 56, 0.4)',
                           fontSize: '0.68rem',
                           fontWeight: 700,
                           padding: '1px 8px',
@@ -323,8 +323,8 @@ export default function LeaderProposalsInbox({
                     onClick={() => onInspectSpecialist(spec)}
                     className="interactive-press"
                     style={{
-                      background: 'rgba(20, 184, 166, 0.1)',
-                      border: '1px solid rgba(45, 212, 191, 0.25)',
+                      background: 'rgba(235, 87, 56, 0.1)',
+                      border: '1px solid rgba(242, 114, 87, 0.25)',
                       borderRadius: '10px',
                       padding: '6px 12px',
                       fontSize: '0.78rem',
@@ -390,7 +390,7 @@ export default function LeaderProposalsInbox({
                           </div>
                         </div>
                         <span style={{
-                          background: 'rgba(20, 184, 166, 0.15)',
+                          background: 'rgba(235, 87, 56, 0.15)',
                           color: 'var(--teal-300)',
                           padding: '4px 10px',
                           borderRadius: '10px',
@@ -446,7 +446,7 @@ export default function LeaderProposalsInbox({
                           width: '100%',
                           padding: '10px',
                           borderRadius: '12px',
-                          background: 'rgba(20, 184, 166, 0.15)',
+                          background: 'rgba(235, 87, 56, 0.15)',
                           color: 'var(--teal-300)',
                           fontSize: '0.85rem',
                           fontWeight: 700,
@@ -499,7 +499,7 @@ export default function LeaderProposalsInbox({
             width: '100%',
             maxWidth: '500px',
             borderRadius: '20px',
-            border: '1px solid rgba(45, 212, 191, 0.3)',
+            border: '1px solid rgba(242, 114, 87, 0.3)',
             background: 'var(--slate-900)',
             padding: '24px',
             boxShadow: '0 25px 50px rgba(0,0,0,0.5)'
@@ -532,7 +532,7 @@ export default function LeaderProposalsInbox({
                 />
               </div>
 
-              <div style={{ background: 'rgba(20, 184, 166, 0.08)', padding: '12px', borderRadius: '12px', border: '1px solid rgba(45, 212, 191, 0.2)', fontSize: '0.8rem', color: 'var(--teal-200)' }}>
+              <div style={{ background: 'rgba(235, 87, 56, 0.08)', padding: '12px', borderRadius: '12px', border: '1px solid rgba(242, 114, 87, 0.2)', fontSize: '0.8rem', color: 'var(--teal-200)' }}>
                 ✨ <strong>Automatic Setup:</strong> Digital ticketing will be activated at £{schedulingProposal.communityPrice}, the specialist will be assigned as verified on-site instructor, and your members will receive an instant push/email invitation.
               </div>
             </div>

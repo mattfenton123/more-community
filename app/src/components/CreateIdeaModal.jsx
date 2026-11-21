@@ -110,7 +110,7 @@ export default function CreateIdeaModal({ isOpen, onClose, communityId: initialC
                   }}
                 >
                   {(joinedCommunities.length > 0 ? joinedCommunities : (communities || [])).map(c => (
-                    <option key={c.id} value={c.id} style={{ background: '#0f172a', color: 'white' }}>
+                    <option key={c.id} value={c.id} style={{ background: '#1B1B1B', color: 'white' }}>
                       {c.name}
                     </option>
                   ))}

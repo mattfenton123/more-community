@@ -8,7 +8,7 @@ export default function AboutPage() {
       
       <div style={{ padding: '24px 20px', color: 'var(--slate-300)', lineHeight: 1.6 }}>
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '24px' }}>
-          <div style={{ padding: '18px 28px', background: 'rgba(20,184,166,0.1)', borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ padding: '18px 28px', background: 'rgba(235, 87, 56,0.1)', borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <img src="/logo.png" alt="More Community" className="theme-invert" style={{ height: '32px', display: 'block' }} />
           </div>
         </div>

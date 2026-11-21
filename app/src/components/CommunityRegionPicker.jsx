@@ -38,14 +38,14 @@ function createRegionCenterIcon() {
   return L.divIcon({
     html: `<div style="
       width: 44px; height: 44px; border-radius: 14px;
-      background: #0f172a; border: 2.5px solid #14b8a6;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.6), 0 0 16px rgba(20,184,166,0.5);
+      background: #1B1B1B; border: 2.5px solid #EB5738;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.6), 0 0 16px rgba(235, 87, 56,0.5);
       display: flex; align-items: center; justify-content: center;
       color: white; font-size: 22px; cursor: grab;
       position: relative;
     ">
       <span>👥</span>
-      <div style="position: absolute; bottom: -4px; right: -4px; width: 12px; height: 12px; border-radius: 50%; background: #2dd4bf; border: 2px solid #0f172a;"></div>
+      <div style="position: absolute; bottom: -4px; right: -4px; width: 12px; height: 12px; border-radius: 50%; background: #F27257; border: 2px solid #1B1B1B;"></div>
     </div>`,
     className: '',
     iconSize: [44, 44],
@@ -155,10 +155,10 @@ export default function CommunityRegionPicker({
           });
 
           const circle = new maps.Circle({
-            strokeColor: '#0d9488',
+            strokeColor: '#D94628',
             strokeOpacity: 0.85,
             strokeWeight: 2,
-            fillColor: '#14b8a6',
+            fillColor: '#EB5738',
             fillOpacity: 0.16,
             map: map,
             center: { lat: coords[0], lng: coords[1] },
@@ -338,8 +338,8 @@ export default function CommunityRegionPicker({
       {/* Header Explainer */}
       <div style={{
         padding: '12px 14px',
-        background: 'rgba(20, 184, 166, 0.08)',
-        border: '1px solid rgba(20, 184, 166, 0.2)',
+        background: 'rgba(235, 87, 56, 0.08)',
+        border: '1px solid rgba(235, 87, 56, 0.2)',
         borderRadius: '12px',
         display: 'flex',
         alignItems: 'center',
@@ -398,7 +398,7 @@ export default function CommunityRegionPicker({
           className="btn interactive-press"
           style={{
             padding: '0 18px', borderRadius: '12px',
-            background: '#0d9488', color: 'white',
+            background: '#D94628', color: 'white',
             border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center'
           }}
         >
@@ -409,7 +409,7 @@ export default function CommunityRegionPicker({
       {/* Autocomplete Address Options */}
       {searchResults.length > 0 && (
         <div className="places-dropdown" style={{
-          background: 'var(--slate-900)', border: '1px solid rgba(45,212,191,0.3)',
+          background: 'var(--slate-900)', border: '1px solid rgba(242, 114, 87,0.3)',
           borderRadius: '12px', overflow: 'hidden', maxHeight: '240px', overflowY: 'auto',
           boxShadow: '0 8px 24px rgba(0,0,0,0.35)', zIndex: 15
         }}>
@@ -494,7 +494,7 @@ export default function CommunityRegionPicker({
                 padding: '8px 6px',
                 borderRadius: '8px',
                 border: radiusKm === opt.km ? '1.5px solid var(--teal-400)' : '1px solid rgba(255,255,255,0.1)',
-                background: radiusKm === opt.km ? 'rgba(20, 184, 166, 0.18)' : 'rgba(255,255,255,0.03)',
+                background: radiusKm === opt.km ? 'rgba(235, 87, 56, 0.18)' : 'rgba(255,255,255,0.03)',
                 color: radiusKm === opt.km ? 'var(--white)' : 'var(--slate-300)',
                 fontSize: '0.75rem',
                 fontWeight: radiusKm === opt.km ? 700 : 500,
@@ -512,7 +512,7 @@ export default function CommunityRegionPicker({
       <div style={{
         borderRadius: '14px', overflow: 'hidden',
         border: '1px solid rgba(255,255,255,0.12)',
-        background: '#020617', zIndex: 0,
+        background: '#121212', zIndex: 0,
         boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
         position: 'relative'
       }}>
@@ -520,13 +520,13 @@ export default function CommunityRegionPicker({
           {!useLeafletFallback ? (
             <div 
               ref={googleMapContainerRef} 
-              style={{ height: '100%', width: '100%', background: '#020617' }} 
+              style={{ height: '100%', width: '100%', background: '#121212' }} 
             />
           ) : (
             <MapContainer 
               center={coords} 
               zoom={12} 
-              style={{ height: '100%', width: '100%', backgroundColor: '#020617' }} 
+              style={{ height: '100%', width: '100%', backgroundColor: '#121212' }} 
               zoomControl={true}
               attributionControl={false}
             >
@@ -539,8 +539,8 @@ export default function CommunityRegionPicker({
                 center={coords}
                 radius={radiusKm * 1000}
                 pathOptions={{
-                  color: '#0d9488',
-                  fillColor: '#14b8a6',
+                  color: '#D94628',
+                  fillColor: '#EB5738',
                   fillOpacity: 0.16,
                   weight: 2,
                   dashArray: '6, 6'
@@ -571,24 +571,24 @@ export default function CommunityRegionPicker({
           {/* Quick helper badge overlay */}
           <div style={{
             position: 'absolute', top: '10px', right: '10px', zIndex: 10,
-            background: 'rgba(15, 23, 42, 0.88)', backdropFilter: 'blur(8px)',
+            background: 'rgba(27, 27, 27, 0.88)', backdropFilter: 'blur(8px)',
             padding: '5px 11px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.18)',
-            fontSize: '0.72rem', color: '#2dd4bf', display: 'flex', alignItems: 'center', gap: '5px',
+            fontSize: '0.72rem', color: '#F27257', display: 'flex', alignItems: 'center', gap: '5px',
             pointerEvents: 'none'
           }}>
-            <Compass size={12} color="#2dd4bf" />
+            <Compass size={12} color="#F27257" />
             <span>Google Maps • Catchment Area</span>
           </div>
         </div>
 
         {/* Map Footer status */}
         <div style={{ 
-          background: '#0f172a', padding: '10px 14px', fontSize: '0.8rem', 
+          background: '#1B1B1B', padding: '10px 14px', fontSize: '0.8rem', 
           color: 'var(--slate-300)', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           borderTop: '1px solid rgba(255,255,255,0.08)'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', overflow: 'hidden' }}>
-            <Check size={15} color="#2dd4bf" style={{ flexShrink: 0 }} />
+            <Check size={15} color="#F27257" style={{ flexShrink: 0 }} />
             <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               <span style={{ fontWeight: 600, color: 'var(--white)' }}>
                 {cleanLocationName(searchQuery) || 'Local Region'}

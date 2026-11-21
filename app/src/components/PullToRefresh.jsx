@@ -88,7 +88,7 @@ export default function PullToRefresh({ onRefresh, children }) {
           zIndex: 999,
           pointerEvents: 'none',
           transition: isPulling.current ? 'none' : 'height 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
-          background: isLight ? 'rgba(255, 255, 255, 0.95)' : 'rgba(15, 23, 42, 0.92)',
+          background: isLight ? 'rgba(255, 255, 255, 0.95)' : 'rgba(27, 27, 27, 0.92)',
           borderBottom: pullY > 0 ? (isLight ? '1px solid rgba(0,0,0,0.06)' : '1px solid rgba(255,255,255,0.05)') : 'none'
         }}
       >
@@ -96,7 +96,7 @@ export default function PullToRefresh({ onRefresh, children }) {
           display: 'flex',
           alignItems: 'center',
           gap: '8px',
-          color: isLight ? '#0d9488' : 'var(--teal-400)',
+          color: isLight ? '#D94628' : 'var(--teal-400)',
           fontSize: '0.8rem',
           fontWeight: 700
         }}>

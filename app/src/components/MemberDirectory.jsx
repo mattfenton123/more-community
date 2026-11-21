@@ -43,7 +43,7 @@ function MemberRow({ member, communityId, isCurrentUserLeader, onUpgradeClick })
         <button 
           onClick={(e) => { e.stopPropagation(); onUpgradeClick(member); }}
           className="btn interactive-press"
-          style={{ background: 'rgba(20,184,166,0.1)', color: 'var(--teal-400)', border: '1px solid rgba(20,184,166,0.2)', padding: '6px 10px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 600 }}
+          style={{ background: 'rgba(235, 87, 56,0.1)', color: 'var(--teal-400)', border: '1px solid rgba(235, 87, 56,0.2)', padding: '6px 10px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 600 }}
         >
           Upgrade Role
         </button>
@@ -137,7 +137,7 @@ export default function MemberDirectory({ communityId, onClose }) {
 
       {/* Upgrade Modal */}
       {upgradeMember && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(2,6,23,0.85)', backdropFilter: 'blur(10px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(18, 18, 18,0.85)', backdropFilter: 'blur(10px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
           <div style={{ background: 'var(--slate-900)', borderRadius: '24px', padding: '24px', width: '100%', maxWidth: '400px', border: '1px solid rgba(255,255,255,0.1)' }}>
             <h3 style={{ fontSize: '1.3rem', color: 'var(--white)', margin: '0 0 16px 0', fontFamily: 'var(--font-heading)' }}>Upgrade Role</h3>
             <p style={{ color: 'var(--slate-300)', fontSize: '0.9rem', marginBottom: '24px', lineHeight: 1.5 }}>

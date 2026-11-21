@@ -28,7 +28,8 @@ export default function RootLayout({ children }) {
         <meta name="twitter:description" content="Discover local groups, join in-person meetups, and build genuine community where you live. Free tools for community leaders." />
         <meta name="twitter:image" content="https://www.morecommunity.app/images/og-share.png" />
         <meta name="twitter:image:alt" content="More Community Logo" />
-        <meta name="theme-color" content="#020617" />
+        <meta name="color-scheme" content="dark light" />
+        <meta name="theme-color" content="#121212" />
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />

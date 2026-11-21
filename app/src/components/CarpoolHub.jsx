@@ -176,8 +176,8 @@ export default function CarpoolHub({ event, user, isAttendee = false, community,
 
   return (
     <div id="carpool" className="carpool-hub-card" style={{
-      background: 'linear-gradient(135deg, rgba(20, 184, 166, 0.08) 0%, rgba(15, 23, 42, 0.7) 100%)',
-      border: '1px solid rgba(20, 184, 166, 0.25)',
+      background: 'linear-gradient(135deg, rgba(235, 87, 56, 0.08) 0%, rgba(27, 27, 27, 0.7) 100%)',
+      border: '1px solid rgba(235, 87, 56, 0.25)',
       borderRadius: '20px',
       padding: '22px',
       marginBottom: '32px',
@@ -190,9 +190,9 @@ export default function CarpoolHub({ event, user, isAttendee = false, community,
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div style={{
             width: '44px', height: '44px', borderRadius: '14px',
-            background: 'linear-gradient(135deg, #10b981 0%, #14b8a6 100%)',
+            background: 'linear-gradient(135deg, #10b981 0%, #EB5738 100%)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: '#ffffff', boxShadow: '0 4px 14px rgba(20, 184, 166, 0.35)'
+            color: '#ffffff', boxShadow: '0 4px 14px rgba(235, 87, 56, 0.35)'
           }}>
             <Car size={22} />
           </div>
@@ -203,8 +203,8 @@ export default function CarpoolHub({ event, user, isAttendee = false, community,
               </h3>
               <span style={{
                 fontSize: '0.68rem', padding: '2px 8px', borderRadius: '99px',
-                background: 'rgba(20, 184, 166, 0.2)', border: '1px solid rgba(20, 184, 166, 0.4)',
-                color: '#2dd4bf', fontWeight: 700
+                background: 'rgba(235, 87, 56, 0.2)', border: '1px solid rgba(235, 87, 56, 0.4)',
+                color: '#F27257', fontWeight: 700
               }}>
                 COMMUNITY CARPOOL
               </span>
@@ -229,8 +229,8 @@ export default function CarpoolHub({ event, user, isAttendee = false, community,
             className="interactive-press"
             style={{
               padding: '9px 16px', borderRadius: '12px',
-              background: 'linear-gradient(135deg, #10b981 0%, #14b8a6 100%)',
-              color: '#0f172a', fontWeight: 700, fontSize: '0.86rem',
+              background: 'linear-gradient(135deg, #10b981 0%, #EB5738 100%)',
+              color: '#1B1B1B', fontWeight: 700, fontSize: '0.86rem',
               border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px',
               boxShadow: '0 4px 16px rgba(16, 185, 129, 0.3)'
             }}
@@ -273,7 +273,7 @@ export default function CarpoolHub({ event, user, isAttendee = false, community,
               className="interactive-press"
               style={{
                 padding: '8px 16px', borderRadius: '10px',
-                background: 'rgba(20, 184, 166, 0.15)', border: '1px solid rgba(20, 184, 166, 0.35)',
+                background: 'rgba(235, 87, 56, 0.15)', border: '1px solid rgba(235, 87, 56, 0.35)',
                 color: 'var(--teal-300)', fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer'
               }}
             >
@@ -292,7 +292,7 @@ export default function CarpoolHub({ event, user, isAttendee = false, community,
                 className={`carpool-card-item ${hasReserved ? "reserved" : ""}`}
                 style={{
                   background: hasReserved 
-                    ? 'linear-gradient(135deg, rgba(37, 211, 102, 0.12) 0%, rgba(15, 23, 42, 0.8) 100%)'
+                    ? 'linear-gradient(135deg, rgba(37, 211, 102, 0.12) 0%, rgba(27, 27, 27, 0.8) 100%)'
                     : 'rgba(255, 255, 255, 0.03)',
                   border: hasReserved ? '1.5px solid rgba(37, 211, 102, 0.45)' : '1px solid rgba(255, 255, 255, 0.08)',
                   borderRadius: '16px',
@@ -314,7 +314,7 @@ export default function CarpoolHub({ event, user, isAttendee = false, community,
                       <div className="driver-name" style={{ fontWeight: 700, color: 'var(--white)', fontSize: '0.98rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
                         {carpool.driverName}
                         {isMyOffer && (
-                          <span style={{ fontSize: '0.65rem', padding: '1px 6px', borderRadius: '4px', background: 'rgba(20, 184, 166, 0.25)', color: '#2dd4bf', fontWeight: 700 }}>
+                          <span style={{ fontSize: '0.65rem', padding: '1px 6px', borderRadius: '4px', background: 'rgba(235, 87, 56, 0.25)', color: '#F27257', fontWeight: 700 }}>
                             YOU
                           </span>
                         )}
@@ -451,8 +451,8 @@ export default function CarpoolHub({ event, user, isAttendee = false, community,
                       className="interactive-press"
                       style={{
                         padding: '8px 16px', borderRadius: '10px',
-                        background: isFull ? 'rgba(255,255,255,0.06)' : 'linear-gradient(135deg, #10b981 0%, #14b8a6 100%)',
-                        color: isFull ? 'var(--slate-500)' : '#0f172a',
+                        background: isFull ? 'rgba(255,255,255,0.06)' : 'linear-gradient(135deg, #10b981 0%, #EB5738 100%)',
+                        color: isFull ? 'var(--slate-500)' : '#1B1B1B',
                         fontWeight: 700, fontSize: '0.84rem',
                         border: 'none', cursor: isFull ? 'not-allowed' : 'pointer',
                         display: 'flex', alignItems: 'center', gap: '6px'
@@ -472,13 +472,13 @@ export default function CarpoolHub({ event, user, isAttendee = false, community,
       {showOfferModal && (
         <div style={{
           position: 'fixed', inset: 0, zIndex: 100000,
-          background: 'rgba(2, 6, 23, 0.85)', backdropFilter: 'blur(16px)',
+          background: 'rgba(18, 18, 18, 0.85)', backdropFilter: 'blur(16px)',
           display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px'
         }}>
           <div style={{
             width: '100%', maxWidth: '460px',
-            background: 'linear-gradient(180deg, #0f172a 0%, #090d16 100%)',
-            border: '1px solid rgba(20, 184, 166, 0.35)',
+            background: 'linear-gradient(180deg, #1B1B1B 0%, #090d16 100%)',
+            border: '1px solid rgba(235, 87, 56, 0.35)',
             borderRadius: '24px', padding: '24px',
             boxShadow: '0 20px 50px rgba(0,0,0,0.7)',
             position: 'relative'
@@ -522,7 +522,7 @@ export default function CarpoolHub({ event, user, isAttendee = false, community,
                 
                 {/* Privacy Tip */}
                 <div style={{ fontSize: '0.72rem', color: '#94a3b8', marginTop: '6px', lineHeight: 1.4, display: 'flex', alignItems: 'center', gap: '5px' }}>
-                  <Shield size={12} color="#2dd4bf" />
+                  <Shield size={12} color="#F27257" />
                   <span>Privacy tip: Use your road or neighborhood rather than full house door number.</span>
                 </div>
 
@@ -577,10 +577,10 @@ export default function CarpoolHub({ event, user, isAttendee = false, community,
                       color: 'var(--white)', fontSize: '0.88rem', outline: 'none'
                     }}
                   >
-                    <option value={1} style={{ background: '#0f172a' }}>1 Seat</option>
-                    <option value={2} style={{ background: '#0f172a' }}>2 Seats</option>
-                    <option value={3} style={{ background: '#0f172a' }}>3 Seats</option>
-                    <option value={4} style={{ background: '#0f172a' }}>4 Seats</option>
+                    <option value={1} style={{ background: '#1B1B1B' }}>1 Seat</option>
+                    <option value={2} style={{ background: '#1B1B1B' }}>2 Seats</option>
+                    <option value={3} style={{ background: '#1B1B1B' }}>3 Seats</option>
+                    <option value={4} style={{ background: '#1B1B1B' }}>4 Seats</option>
                   </select>
                 </div>
               </div>
@@ -621,7 +621,7 @@ export default function CarpoolHub({ event, user, isAttendee = false, community,
                       onClick={() => setChipIn(val)}
                       style={{
                         padding: '8px', borderRadius: '8px',
-                        background: chipIn === val ? 'rgba(20, 184, 166, 0.25)' : 'rgba(255,255,255,0.05)',
+                        background: chipIn === val ? 'rgba(235, 87, 56, 0.25)' : 'rgba(255,255,255,0.05)',
                         border: `1px solid ${chipIn === val ? 'var(--teal-400)' : 'rgba(255,255,255,0.1)'}`,
                         color: chipIn === val ? 'var(--teal-300)' : 'var(--slate-300)',
                         fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer'
@@ -657,8 +657,8 @@ export default function CarpoolHub({ event, user, isAttendee = false, community,
                 className="interactive-press"
                 style={{
                   width: '100%', padding: '14px', borderRadius: '12px',
-                  background: 'linear-gradient(135deg, #10b981 0%, #14b8a6 100%)',
-                  color: '#0f172a', fontWeight: 800, fontSize: '0.98rem', border: 'none',
+                  background: 'linear-gradient(135deg, #10b981 0%, #EB5738 100%)',
+                  color: '#1B1B1B', fontWeight: 800, fontSize: '0.98rem', border: 'none',
                   cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
                 }}
               >

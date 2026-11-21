@@ -35,13 +35,13 @@ export async function sendTicketConfirmationEmail({ to, name, event, community, 
   <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #090d16; padding: 32px 16px;">
     <tr>
       <td align="center">
-        <table role="presentation" width="100%" style="max-width: 560px; background: #0f172a; border-radius: 20px; overflow: hidden; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 20px 40px rgba(0,0,0,0.5);" cellspacing="0" cellpadding="0">
+        <table role="presentation" width="100%" style="max-width: 560px; background: #1B1B1B; border-radius: 20px; overflow: hidden; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 20px 40px rgba(0,0,0,0.5);" cellspacing="0" cellpadding="0">
           
           <!-- Header Bar -->
           <tr>
             <td style="padding: 24px 28px; background: linear-gradient(135deg, #134e4a 0%, #042f2e 100%); border-bottom: 1px solid rgba(255,255,255,0.1);">
               <div style="font-size: 1.4rem; font-weight: 800; color: #ffffff; letter-spacing: -0.5px;">More Community</div>
-              <div style="font-size: 0.8rem; color: #5eead4; margin-top: 4px; font-weight: 600;">COMMUNITY TICKET CONFIRMATION</div>
+              <div style="font-size: 0.8rem; color: #F79984; margin-top: 4px; font-weight: 600;">COMMUNITY TICKET CONFIRMATION</div>
             </td>
           </tr>
 
@@ -60,14 +60,14 @@ export async function sendTicketConfirmationEmail({ to, name, event, community, 
                 <tr>
                   <td>
                     <div style="margin-bottom: 14px;">
-                      <div style="font-size: 0.72rem; color: #14b8a6; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">📅 Date & Time</div>
+                      <div style="font-size: 0.72rem; color: #EB5738; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">📅 Date & Time</div>
                       <div style="font-size: 1rem; color: #ffffff; font-weight: 700; margin-top: 2px;">
                         ${event.date} at ${event.time}
                       </div>
                     </div>
 
                     <div style="margin-bottom: 14px;">
-                      <div style="font-size: 0.72rem; color: #14b8a6; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">📍 Meeting Point</div>
+                      <div style="font-size: 0.72rem; color: #EB5738; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">📍 Meeting Point</div>
                       <div style="font-size: 0.95rem; color: #ffffff; font-weight: 600; margin-top: 2px;">
                         ${emailLocText}
                       </div>
@@ -94,7 +94,7 @@ export async function sendTicketConfirmationEmail({ to, name, event, community, 
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom: 24px;">
                 <tr>
                   <td align="center">
-                    <a href="${googleCalUrl}" target="_blank" style="display: block; background: #0d9488; color: #ffffff; font-weight: 700; font-size: 0.95rem; text-decoration: none; padding: 14px 24px; border-radius: 12px; text-align: center; box-shadow: 0 4px 14px rgba(13,148,136,0.4);">
+                    <a href="${googleCalUrl}" target="_blank" style="display: block; background: #D94628; color: #ffffff; font-weight: 700; font-size: 0.95rem; text-decoration: none; padding: 14px 24px; border-radius: 12px; text-align: center; box-shadow: 0 4px 14px rgba(217, 70, 40,0.4);">
                       🗓️ Add to Google Calendar
                     </a>
                   </td>
@@ -165,8 +165,8 @@ export async function sendTownAlertConfirmationEmail({ to, name, town }) {
 
   const subject = `📍 You're on the list for ${town}!`;
   const html = `
-    <div style="font-family: sans-serif; background: #0f172a; color: #ffffff; padding: 32px; border-radius: 12px; max-width: 500px; margin: 0 auto;">
-      <h2 style="color: #14b8a6;">More Community</h2>
+    <div style="font-family: sans-serif; background: #1B1B1B; color: #ffffff; padding: 32px; border-radius: 12px; max-width: 500px; margin: 0 auto;">
+      <h2 style="color: #EB5738;">More Community</h2>
       <h3>You're on the list, ${name || 'there'}!</h3>
       <p style="color: #94a3b8; line-height: 1.5;">
         We have added you to our notification alert for <strong>${town}</strong>.

@@ -12,7 +12,7 @@ const FONT_OPTIONS = [
   { name: 'Instrument Serif', category: 'Serif' },
   { name: 'Plus Jakarta Sans', category: 'Sans' },
   { name: 'Inter', category: 'Sans' },
-  { name: 'Outfit', category: 'Sans' },
+  { name: 'Fraunces', category: 'Sans' },
   { name: 'Space Grotesk', category: 'Sans' },
   { name: 'DM Sans', category: 'Sans' },
   { name: 'Poppins', category: 'Sans' },
@@ -43,7 +43,7 @@ function loadFont(fontName) {
 
 // ─── Colour Presets ─────────────────────────────────────────────
 const COLOUR_PRESETS = [
-  { name: 'Teal', value: '#14b8a6' },
+  { name: 'Teal', value: '#EB5738' },
   { name: 'Blue', value: '#3b82f6' },
   { name: 'Purple', value: '#8b5cf6' },
   { name: 'Rose', value: '#f43f5e' },
@@ -70,7 +70,7 @@ const TEMPLATES = {
   minimal: {
     name: 'Minimal',
     description: 'Clean, typography-focused',
-    overlay: () => 'linear-gradient(180deg, rgba(15,23,42,0.95) 0%, rgba(15,23,42,0.98) 100%)',
+    overlay: () => 'linear-gradient(180deg, rgba(27, 27, 27,0.95) 0%, rgba(27, 27, 27,0.98) 100%)',
     titleSize: '2.8rem',
     titleWeight: 700,
     bodyOpacity: 0.7,
@@ -97,8 +97,8 @@ export default function EventFlyerGenerator({ event, community, onClose, uploadI
   // Customisation state
   const [template, setTemplate] = useState('bold');
   const [font, setFont] = useState('Syne');
-  const [accent, setAccent] = useState('#14b8a6');
-  const [customColour, setCustomColour] = useState('#14b8a6');
+  const [accent, setAccent] = useState('#EB5738');
+  const [customColour, setCustomColour] = useState('#EB5738');
   const [titleText, setTitleText] = useState(event.title || 'Event Title');
   const [subtitleText, setSubtitleText] = useState(community?.name || 'Community Name');
   const [bodyText, setBodyText] = useState(event.description || '');
@@ -121,7 +121,7 @@ export default function EventFlyerGenerator({ event, community, onClose, uploadI
     QRCode.toDataURL(url, {
       width: 320,
       margin: 1,
-      color: { dark: '#0f172a', light: '#ffffff' }
+      color: { dark: '#1B1B1B', light: '#ffffff' }
     })
       .then(res => setQrCodeDataUrl(res))
       .catch(err => console.error('QR code generation failed:', err));
@@ -218,7 +218,7 @@ export default function EventFlyerGenerator({ event, community, onClose, uploadI
       grad.addColorStop(1, 'rgba(0,0,0,0.85)');
       ctx.fillStyle = grad;
     } else if (template === 'minimal') {
-      ctx.fillStyle = 'rgba(15,23,42,0.96)';
+      ctx.fillStyle = 'rgba(27, 27, 27,0.96)';
     } else {
       const grad = ctx.createLinearGradient(0, 0, 0, height);
       grad.addColorStop(0, 'rgba(0,0,0,0)');
@@ -393,8 +393,8 @@ export default function EventFlyerGenerator({ event, community, onClose, uploadI
       className="interactive-press"
       style={{
         display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 14px',
-        background: activePanel === id ? 'rgba(20,184,166,0.1)' : 'rgba(255,255,255,0.03)',
-        border: activePanel === id ? '1px solid rgba(20,184,166,0.3)' : '1px solid rgba(255,255,255,0.06)',
+        background: activePanel === id ? 'rgba(235, 87, 56,0.1)' : 'rgba(255,255,255,0.03)',
+        border: activePanel === id ? '1px solid rgba(235, 87, 56,0.3)' : '1px solid rgba(255,255,255,0.06)',
         borderRadius: '10px', color: activePanel === id ? 'var(--teal-300)' : 'var(--slate-300)',
         cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600, flex: 1, justifyContent: 'center',
         transition: 'all 0.2s',
@@ -449,7 +449,7 @@ export default function EventFlyerGenerator({ event, community, onClose, uploadI
             {/* Background */}
             <div style={{
               position: 'absolute', inset: 0,
-              background: bgImage ? `url(${bgImage})` : `linear-gradient(135deg, ${accent}40 0%, #0f172a 100%)`,
+              background: bgImage ? `url(${bgImage})` : `linear-gradient(135deg, ${accent}40 0%, #1B1B1B 100%)`,
               backgroundSize: 'cover', backgroundPosition: 'center',
             }} />
             
@@ -568,8 +568,8 @@ export default function EventFlyerGenerator({ event, community, onClose, uploadI
               {Object.entries(TEMPLATES).map(([key, t]) => (
                 <button key={key} onClick={() => setTemplate(key)} className="interactive-press" style={{
                   flex: 1, padding: '14px 10px', borderRadius: '12px',
-                  background: template === key ? 'rgba(20,184,166,0.12)' : 'rgba(255,255,255,0.03)',
-                  border: template === key ? '1px solid rgba(20,184,166,0.4)' : '1px solid rgba(255,255,255,0.06)',
+                  background: template === key ? 'rgba(235, 87, 56,0.12)' : 'rgba(255,255,255,0.03)',
+                  border: template === key ? '1px solid rgba(235, 87, 56,0.4)' : '1px solid rgba(255,255,255,0.06)',
                   color: template === key ? 'var(--teal-300)' : 'var(--slate-400)',
                   cursor: 'pointer', textAlign: 'center', transition: 'all 0.2s',
                 }}>
@@ -597,7 +597,7 @@ export default function EventFlyerGenerator({ event, community, onClose, uploadI
                 <div style={{
                   position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 100,
                   marginTop: '4px', maxHeight: '240px', overflowY: 'auto',
-                  background: 'rgba(15,23,42,0.98)', border: '1px solid rgba(255,255,255,0.1)',
+                  background: 'rgba(27, 27, 27,0.98)', border: '1px solid rgba(255,255,255,0.1)',
                   borderRadius: '12px', backdropFilter: 'blur(16px)',
                   boxShadow: '0 12px 40px rgba(0,0,0,0.5)',
                 }}>
@@ -608,13 +608,13 @@ export default function EventFlyerGenerator({ event, community, onClose, uploadI
                       style={{
                         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                         width: '100%', padding: '10px 16px', border: 'none',
-                        background: font === f.name ? 'rgba(20,184,166,0.1)' : 'transparent',
+                        background: font === f.name ? 'rgba(235, 87, 56,0.1)' : 'transparent',
                         color: font === f.name ? 'var(--teal-300)' : 'white',
                         cursor: 'pointer', fontSize: '0.85rem', fontWeight: 500,
                         fontFamily: `"${f.name}", sans-serif`, transition: 'background 0.15s',
                       }}
-                      onMouseOver={(e) => e.currentTarget.style.background = font === f.name ? 'rgba(20,184,166,0.15)' : 'rgba(255,255,255,0.05)'}
-                      onMouseOut={(e) => e.currentTarget.style.background = font === f.name ? 'rgba(20,184,166,0.1)' : 'transparent'}
+                      onMouseOver={(e) => e.currentTarget.style.background = font === f.name ? 'rgba(235, 87, 56,0.15)' : 'rgba(255,255,255,0.05)'}
+                      onMouseOut={(e) => e.currentTarget.style.background = font === f.name ? 'rgba(235, 87, 56,0.1)' : 'transparent'}
                     >
                       <span>{f.name}</span>
                       <span style={{ fontSize: '0.6rem', color: 'var(--slate-500)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{f.category}</span>
@@ -713,8 +713,8 @@ export default function EventFlyerGenerator({ event, community, onClose, uploadI
                     className="interactive-press"
                     style={{
                       flex: 1, padding: '10px 8px', borderRadius: '10px',
-                      background: bgSource === opt.key ? 'rgba(20,184,166,0.1)' : 'rgba(255,255,255,0.03)',
-                      border: bgSource === opt.key ? '1px solid rgba(20,184,166,0.3)' : '1px solid rgba(255,255,255,0.06)',
+                      background: bgSource === opt.key ? 'rgba(235, 87, 56,0.1)' : 'rgba(255,255,255,0.03)',
+                      border: bgSource === opt.key ? '1px solid rgba(235, 87, 56,0.3)' : '1px solid rgba(255,255,255,0.06)',
                       color: bgSource === opt.key ? 'var(--teal-300)' : opt.available ? 'var(--slate-400)' : 'var(--slate-600)',
                       cursor: opt.available || opt.key === 'custom' ? 'pointer' : 'not-allowed',
                       fontSize: '0.75rem', fontWeight: 600, transition: 'all 0.2s',

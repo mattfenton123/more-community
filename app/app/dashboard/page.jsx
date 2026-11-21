@@ -149,7 +149,7 @@ function CommunitySwitcher({ currentCommunity, communities, activeId, onSelect, 
         className="interactive-press"
         style={{
           width: '100%',
-          background: '#0f172a',
+          background: '#1B1B1B',
           color: '#f8fafc',
           border: isOpen ? '1px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.18)',
           padding: isMobile ? '6px 10px' : '8px 12px',
@@ -162,7 +162,7 @@ function CommunitySwitcher({ currentCommunity, communities, activeId, onSelect, 
           gap: '8px',
           cursor: 'pointer',
           textAlign: 'left',
-          boxShadow: isOpen ? '0 0 0 2px rgba(20,184,166,0.2)' : 'none',
+          boxShadow: isOpen ? '0 0 0 2px rgba(235, 87, 56,0.2)' : 'none',
           transition: 'all 0.15s ease'
         }}
       >
@@ -194,7 +194,7 @@ function CommunitySwitcher({ currentCommunity, communities, activeId, onSelect, 
             width: isMobile ? '280px' : '100%',
             minWidth: '240px',
             maxWidth: '340px',
-            background: '#0f172a',
+            background: '#1B1B1B',
             border: '1px solid rgba(255,255,255,0.18)',
             borderRadius: '12px',
             boxShadow: '0 12px 32px rgba(0,0,0,0.65)',
@@ -263,8 +263,8 @@ function CommunitySwitcher({ currentCommunity, communities, activeId, onSelect, 
                       justifyContent: 'space-between',
                       padding: '8px 10px',
                       borderRadius: '8px',
-                      background: isSelected ? 'rgba(20,184,166,0.12)' : 'transparent',
-                      border: isSelected ? '1px solid rgba(20,184,166,0.3)' : '1px solid transparent',
+                      background: isSelected ? 'rgba(235, 87, 56,0.12)' : 'transparent',
+                      border: isSelected ? '1px solid rgba(235, 87, 56,0.3)' : '1px solid transparent',
                       color: isSelected ? 'var(--teal-300)' : '#f8fafc',
                       cursor: 'pointer',
                       textAlign: 'left',
@@ -317,8 +317,8 @@ function CommunitySwitcher({ currentCommunity, communities, activeId, onSelect, 
                   gap: '6px',
                   padding: '7px',
                   borderRadius: '6px',
-                  background: 'rgba(20,184,166,0.1)',
-                  border: '1px dashed rgba(20,184,166,0.3)',
+                  background: 'rgba(235, 87, 56,0.1)',
+                  border: '1px dashed rgba(235, 87, 56,0.3)',
                   color: 'var(--teal-300)',
                   fontSize: '0.78rem',
                   fontWeight: 600,
@@ -1049,7 +1049,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
           type: 'rsvp',
           text: `${rUser?.name || 'Someone'} RSVP'd to ${event.title}`,
           icon: Ticket,
-          color: '#14b8a6',
+          color: '#EB5738',
           time: formatActivityTime(rawDate),
           rawTime: rawDate ? new Date(rawDate).getTime() : 0
         });
@@ -1982,7 +1982,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
               <div style={{ marginTop: '10px', paddingTop: '10px', borderTop: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
                 <span style={{ fontSize: '0.72rem', color: '#d8b4fe', fontWeight: 600 }}>Detected Vibes:</span>
                 {generatedVibes.map((v, i) => (
-                  <span key={i} style={{ fontSize: '0.7rem', padding: '2px 8px', borderRadius: '6px', background: 'rgba(45,212,191,0.15)', color: '#5eead4', border: '1px solid rgba(45,212,191,0.3)', fontWeight: 500 }}>
+                  <span key={i} style={{ fontSize: '0.7rem', padding: '2px 8px', borderRadius: '6px', background: 'rgba(242, 114, 87,0.15)', color: '#F79984', border: '1px solid rgba(242, 114, 87,0.3)', fontWeight: 500 }}>
                     {v}
                   </span>
                 ))}
@@ -2305,8 +2305,8 @@ export default function LeaderDashboard({ initialCommunityId }) {
               <div style={{
                 padding: '14px 16px',
                 borderRadius: '14px',
-                background: stripeConnected ? 'rgba(20, 184, 166, 0.08)' : (eventForm.allowCash ? 'rgba(245, 158, 11, 0.08)' : 'rgba(239, 68, 68, 0.1)'),
-                border: stripeConnected ? '1px solid rgba(45, 212, 191, 0.3)' : (eventForm.allowCash ? '1px solid rgba(245, 158, 11, 0.25)' : '1px solid rgba(239, 68, 68, 0.3)'),
+                background: stripeConnected ? 'rgba(235, 87, 56, 0.08)' : (eventForm.allowCash ? 'rgba(245, 158, 11, 0.08)' : 'rgba(239, 68, 68, 0.1)'),
+                border: stripeConnected ? '1px solid rgba(242, 114, 87, 0.3)' : (eventForm.allowCash ? '1px solid rgba(245, 158, 11, 0.25)' : '1px solid rgba(239, 68, 68, 0.3)'),
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '10px'
@@ -2409,7 +2409,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                         cursor: 'pointer',
                         fontSize: '0.8rem',
                         fontWeight: 600,
-                        background: isSelected ? 'rgba(20,184,166,0.18)' : 'rgba(255,255,255,0.03)',
+                        background: isSelected ? 'rgba(235, 87, 56,0.18)' : 'rgba(255,255,255,0.03)',
                         border: isSelected ? '1px solid var(--teal-400)' : '1px solid rgba(255,255,255,0.08)',
                         color: isSelected ? 'var(--teal-300)' : 'var(--slate-300)',
                         transition: 'all 0.2s ease'
@@ -2440,13 +2440,13 @@ export default function LeaderDashboard({ initialCommunityId }) {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                 <span style={{ fontSize: '0.65rem', fontWeight: 600, color: 'var(--slate-500)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Preview</span>
                 {eventForm.resolvedDates && eventForm.resolvedDates.length > 1 && (
-                  <span style={{ fontSize: '0.72rem', color: 'var(--teal-300)', background: 'rgba(20,184,166,0.15)', padding: '2px 8px', borderRadius: '99px', fontWeight: 600 }}>
+                  <span style={{ fontSize: '0.72rem', color: 'var(--teal-300)', background: 'rgba(235, 87, 56,0.15)', padding: '2px 8px', borderRadius: '99px', fontWeight: 600 }}>
                     🔁 {eventForm.recurrenceSummary || `${eventForm.resolvedDates.length} sessions`}
                   </span>
                 )}
               </div>
               <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                <div style={{ width: '44px', height: '48px', background: 'rgba(20,184,166,0.1)', borderRadius: '10px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <div style={{ width: '44px', height: '48px', background: 'rgba(235, 87, 56,0.1)', borderRadius: '10px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                   <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--white)', lineHeight: 1 }}>{eventForm.date ? new Date(eventForm.date + 'T00:00:00').getDate() : ' - '}</div>
                   <div style={{ fontSize: '0.6rem', color: 'var(--teal-400)', fontWeight: 600, textTransform: 'uppercase' }}>{eventForm.date ? new Date(eventForm.date + 'T00:00:00').toLocaleDateString('en-GB', { month: 'short' }) : ''}</div>
                 </div>
@@ -2467,7 +2467,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
       {/* Step 3: Autopilot Triggers */}
       {eventStep === 3 && (
         <>
-          <div style={{ background: 'rgba(20,184,166,0.05)', border: '1px solid rgba(20,184,166,0.15)', borderRadius: '12px', padding: '14px', marginBottom: '16px', display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+          <div style={{ background: 'rgba(235, 87, 56,0.05)', border: '1px solid rgba(235, 87, 56,0.15)', borderRadius: '12px', padding: '14px', marginBottom: '16px', display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
             <Sparkles size={20} color="var(--teal-400)" style={{ flexShrink: 0, marginTop: '2px' }} />
             <div>
               <div style={{ fontWeight: 600, color: 'var(--teal-400)', fontSize: '0.9rem', marginBottom: '4px' }}>AI-Configured Triggers</div>
@@ -2520,16 +2520,16 @@ export default function LeaderDashboard({ initialCommunityId }) {
             <div 
               className="interactive-press"
               onClick={() => setEventForm({...eventForm, requireApproval: !eventForm.requireApproval})}
-              style={{ padding: '16px', background: eventForm.requireApproval ? 'rgba(20,184,166,0.06)' : 'rgba(255,255,255,0.02)', border: eventForm.requireApproval ? '1px solid rgba(20,184,166,0.3)' : '1px solid rgba(255,255,255,0.05)', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
+              style={{ padding: '16px', background: eventForm.requireApproval ? 'rgba(235, 87, 56,0.06)' : 'rgba(255,255,255,0.02)', border: eventForm.requireApproval ? '1px solid rgba(235, 87, 56,0.3)' : '1px solid rgba(255,255,255,0.05)', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ width: '40px', height: '40px', background: 'rgba(20,184,166,0.1)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: '40px', height: '40px', background: 'rgba(235, 87, 56,0.1)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <Shield size={18} color="var(--teal-400)" />
                 </div>
                 <div>
                   <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     Require Host Approval
-                    <span style={{ fontSize: '0.68rem', padding: '1px 6px', borderRadius: '4px', background: 'rgba(20,184,166,0.2)', color: 'var(--teal-300)', fontWeight: 700 }}>LU.MA STYLE</span>
+                    <span style={{ fontSize: '0.68rem', padding: '1px 6px', borderRadius: '4px', background: 'rgba(235, 87, 56,0.2)', color: 'var(--teal-300)', fontWeight: 700 }}>LU.MA STYLE</span>
                   </div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>Shield exact meeting pin & coordinates until you approve each request</div>
                 </div>
@@ -2619,7 +2619,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
               style={{ padding: '16px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ width: '40px', height: '40px', background: 'rgba(20,184,166,0.1)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: '40px', height: '40px', background: 'rgba(235, 87, 56,0.1)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <Shield size={18} color="var(--teal-400)" />
                 </div>
                 <div>
@@ -2704,7 +2704,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
       {!community ? (
         isLoading ? (
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px 40px', color: 'var(--slate-400)', textAlign: 'center' }}>
-            <div className="spinner" style={{ width: '32px', height: '32px', border: '3px solid rgba(20,184,166,0.2)', borderTopColor: 'var(--teal-400)', borderRadius: '50%', animation: 'spin 0.8s linear infinite', marginBottom: '16px' }} />
+            <div className="spinner" style={{ width: '32px', height: '32px', border: '3px solid rgba(235, 87, 56,0.2)', borderTopColor: 'var(--teal-400)', borderRadius: '50%', animation: 'spin 0.8s linear infinite', marginBottom: '16px' }} />
             <div style={{ fontSize: '0.95rem' }}>Loading Leader Dashboard...</div>
           </div>
         ) : (
@@ -2786,8 +2786,8 @@ export default function LeaderDashboard({ initialCommunityId }) {
                       gap: '4px',
                       padding: '8px 4px',
                       borderRadius: '10px',
-                      border: isActive ? '1px solid rgba(20,184,166,0.3)' : '1px solid transparent',
-                      background: isActive ? 'rgba(20,184,166,0.15)' : 'transparent',
+                      border: isActive ? '1px solid rgba(235, 87, 56,0.3)' : '1px solid transparent',
+                      background: isActive ? 'rgba(235, 87, 56,0.15)' : 'transparent',
                       color: isActive ? 'var(--teal-300)' : 'var(--slate-400)',
                       fontWeight: isActive ? 700 : 500,
                       fontSize: '0.72rem',
@@ -2819,7 +2819,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   borderRadius: '16px', 
                   overflow: 'hidden', 
                   height: '140px', 
-                  background: 'linear-gradient(135deg, rgba(20,184,166,0.2), rgba(15,23,42,0.8))',
+                  background: 'linear-gradient(135deg, rgba(235, 87, 56,0.2), rgba(27, 27, 27,0.8))',
                   border: '1px solid rgba(255,255,255,0.08)',
                   boxShadow: '0 4px 20px rgba(0,0,0,0.3)'
                 }}>
@@ -2837,7 +2837,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   <div style={{ 
                     position: 'absolute', 
                     inset: 0, 
-                    background: 'linear-gradient(to top, rgba(2,6,23,0.9) 0%, rgba(2,6,23,0.3) 50%, transparent 100%)',
+                    background: 'linear-gradient(to top, rgba(18, 18, 18,0.9) 0%, rgba(18, 18, 18,0.3) 50%, transparent 100%)',
                     display: 'flex',
                     alignItems: 'flex-end',
                     justifyContent: 'space-between',
@@ -2854,9 +2854,9 @@ export default function LeaderDashboard({ initialCommunityId }) {
                         rel="noopener noreferrer"
                         className="btn btn-outline interactive-press"
                         style={{ 
-                          background: 'rgba(15,23,42,0.85)', 
+                          background: 'rgba(27, 27, 27,0.85)', 
                           backdropFilter: 'blur(8px)',
-                          border: '1px solid rgba(45,212,191,0.4)', 
+                          border: '1px solid rgba(242, 114, 87,0.4)', 
                           color: 'var(--teal-300)',
                           padding: '8px 12px',
                           borderRadius: '8px',
@@ -2898,7 +2898,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                         disabled={isUploading}
                         className="btn btn-outline interactive-press"
                         style={{ 
-                          background: 'rgba(15,23,42,0.85)', 
+                          background: 'rgba(27, 27, 27,0.85)', 
                           backdropFilter: 'blur(8px)',
                           border: '1px solid rgba(255,255,255,0.2)', 
                           color: 'white',
@@ -2946,8 +2946,8 @@ export default function LeaderDashboard({ initialCommunityId }) {
 
                   return isShieldActive ? (
                     <div style={{
-                      background: 'linear-gradient(135deg, rgba(20,184,166,0.14), rgba(15,23,42,0.92))',
-                      border: '1px solid rgba(20,184,166,0.35)',
+                      background: 'linear-gradient(135deg, rgba(235, 87, 56,0.14), rgba(27, 27, 27,0.92))',
+                      border: '1px solid rgba(235, 87, 56,0.35)',
                       borderRadius: '16px',
                       padding: '16px 18px',
                       display: 'flex',
@@ -2959,11 +2959,11 @@ export default function LeaderDashboard({ initialCommunityId }) {
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                         <div style={{
                           width: '42px', height: '42px', borderRadius: '12px',
-                          background: 'rgba(20,184,166,0.2)',
+                          background: 'rgba(235, 87, 56,0.2)',
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                           flexShrink: 0
                         }}>
-                          <Shield size={22} color="#2dd4bf" />
+                          <Shield size={22} color="#F27257" />
                         </div>
                         <div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -2986,7 +2986,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                     </div>
                   ) : (
                     <div style={{
-                      background: 'linear-gradient(135deg, rgba(245,158,11,0.12), rgba(15,23,42,0.92))',
+                      background: 'linear-gradient(135deg, rgba(245,158,11,0.12), rgba(27, 27, 27,0.92))',
                       border: '1px solid rgba(245,158,11,0.3)',
                       borderRadius: '16px',
                       padding: '16px 18px',
@@ -3191,7 +3191,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                           const isPast = new Date(e.date + 'T00:00:00') < now;
                           return (
                             <div key={e.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                              <div style={{ width: '36px', height: '40px', background: isPast ? 'rgba(107,114,128,0.15)' : 'rgba(20,184,166,0.12)', borderRadius: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                              <div style={{ width: '36px', height: '40px', background: isPast ? 'rgba(107,114,128,0.15)' : 'rgba(235, 87, 56,0.12)', borderRadius: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                                 <div style={{ fontSize: '1rem', fontWeight: 700, color: isPast ? 'var(--slate-400)' : 'var(--teal-300)', lineHeight: 1 }}>{new Date(e.date + 'T00:00:00').getDate()}</div>
                               </div>
                               <div style={{ flex: 1, minWidth: 0 }}>
@@ -3251,7 +3251,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                           className="interactive-press"
                           style={{
                             padding: '6px 12px', borderRadius: '8px',
-                            background: 'rgba(20,184,166,0.12)', border: '1px solid rgba(20,184,166,0.25)',
+                            background: 'rgba(235, 87, 56,0.12)', border: '1px solid rgba(235, 87, 56,0.25)',
                             color: 'var(--teal-300)', fontSize: '0.75rem', fontWeight: 600,
                             display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer'
                           }}
@@ -3425,13 +3425,13 @@ export default function LeaderDashboard({ initialCommunityId }) {
                     onClick={() => setActiveTab('events')}
                     className="interactive-press stagger-item"
                     style={{
-                      background: 'linear-gradient(135deg, rgba(20,184,166,0.12) 0%, rgba(59,130,246,0.08) 100%)',
-                      border: '1px solid rgba(20,184,166,0.2)',
+                      background: 'linear-gradient(135deg, rgba(235, 87, 56, 0.12) 0%, rgba(235, 87, 56, 0.03) 100%)',
+                      border: '1px solid rgba(235, 87, 56,0.2)',
                       borderRadius: '16px', padding: '18px', cursor: 'pointer',
                       display: 'flex', alignItems: 'center', gap: '14px',
                     }}
                   >
-                    <div style={{ width: '56px', height: '60px', background: 'rgba(20,184,166,0.15)', borderRadius: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <div style={{ width: '56px', height: '60px', background: 'rgba(235, 87, 56,0.15)', borderRadius: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       <div style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--white)', lineHeight: 1 }}>{parseDateParts(stats.nextEvent.date).day}</div>
                       <div style={{ fontSize: '0.65rem', color: 'var(--teal-400)', fontWeight: 600, textTransform: 'uppercase' }}>{parseDateParts(stats.nextEvent.date).month}</div>
                     </div>
@@ -3457,12 +3457,12 @@ export default function LeaderDashboard({ initialCommunityId }) {
                     onClick={() => openEventWizard()}
                     className="interactive-press"
                     style={{
-                      background: 'linear-gradient(135deg, rgba(20,184,166,0.08) 0%, rgba(59,130,246,0.06) 100%)',
-                      border: '1px dashed rgba(20,184,166,0.3)',
+                      background: 'linear-gradient(135deg, rgba(235, 87, 56, 0.08) 0%, rgba(235, 87, 56, 0.03) 100%)',
+                      border: '1px dashed rgba(235, 87, 56,0.3)',
                       borderRadius: '16px', padding: '28px 20px', cursor: 'pointer', textAlign: 'center',
                     }}
                   >
-                    <div style={{ width: '52px', height: '52px', borderRadius: '50%', background: 'linear-gradient(135deg, var(--teal-500), #3b82f6)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}>
+                    <div style={{ width: '52px', height: '52px', borderRadius: '50%', background: 'linear-gradient(135deg, var(--brand-accent), var(--brand-accent-pressed))', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}>
                       <Plus size={24} color="white" />
                     </div>
                     <div style={{ fontWeight: 700, color: 'var(--white)', fontSize: '1.05rem', marginBottom: '4px', fontFamily: 'var(--font-heading)' }}>Create Your First Event</div>
@@ -3476,7 +3476,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--slate-500)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '10px', paddingLeft: '4px' }}>Quick Actions</div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr', gap: '8px' }}>
                   {[
-                    { label: 'New Event', icon: Plus, color: '#14b8a6', action: () => openEventWizard() },
+                    { label: 'New Event', icon: Plus, color: '#EB5738', action: () => openEventWizard() },
                     { label: 'Broadcast', icon: Megaphone, color: '#f59e0b', action: () => setActiveTab('people') },
                     { label: 'Scan QR', icon: QrCode, color: '#3b82f6', action: () => setShowScanner(true) },
                     { label: 'People', icon: Users, color: '#a78bfa', action: () => setActiveTab('people') },
@@ -3497,7 +3497,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
               {/* Growth Kit */}
               <div style={{ padding: '0 20px', marginBottom: '24px' }}>
                 <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--slate-500)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '10px', paddingLeft: '4px' }}>🚀 Growth Kit</div>
-                <div style={{ background: 'linear-gradient(135deg, rgba(20,184,166,0.06) 0%, rgba(139,92,246,0.06) 100%)', border: '1px solid rgba(20,184,166,0.15)', borderRadius: '16px', padding: '20px' }}>
+                <div style={{ background: 'linear-gradient(135deg, rgba(235, 87, 56,0.06) 0%, rgba(139,92,246,0.06) 100%)', border: '1px solid rgba(235, 87, 56,0.15)', borderRadius: '16px', padding: '20px' }}>
                   <div style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--white)', marginBottom: '4px' }}>Invite your community</div>
                   <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)', marginBottom: '16px', lineHeight: 1.5 }}>Share your community page link to grow your membership.</div>
                   
@@ -3514,7 +3514,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                         toast.success('Link copied!', 'Share it anywhere to grow your community');
                       }}
                       className="interactive-press"
-                      style={{ padding: '10px 16px', background: linkCopied ? 'rgba(34,197,94,0.2)' : 'rgba(20,184,166,0.15)', border: `1px solid ${linkCopied ? 'rgba(34,197,94,0.4)' : 'rgba(20,184,166,0.3)'}`, borderRadius: '10px', color: linkCopied ? '#22c55e' : 'var(--teal-300)', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.2s' }}
+                      style={{ padding: '10px 16px', background: linkCopied ? 'rgba(34,197,94,0.2)' : 'rgba(235, 87, 56,0.15)', border: `1px solid ${linkCopied ? 'rgba(34,197,94,0.4)' : 'rgba(235, 87, 56,0.3)'}`, borderRadius: '10px', color: linkCopied ? '#22c55e' : 'var(--teal-300)', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.2s' }}
                     >
                       {linkCopied ? '✓ Copied!' : 'Copy Link'}
                     </button>
@@ -3605,9 +3605,9 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 <div 
                   onClick={() => openEventWizard()}
                   className="interactive-press"
-                  style={{ padding: '40px 24px', textAlign: 'center', background: 'linear-gradient(135deg, rgba(20,184,166,0.06) 0%, rgba(59,130,246,0.04) 100%)', borderRadius: '20px', border: '1px dashed rgba(20,184,166,0.25)', cursor: 'pointer' }}
+                  style={{ padding: '40px 24px', textAlign: 'center', background: 'linear-gradient(135deg, rgba(235, 87, 56, 0.06) 0%, rgba(235, 87, 56, 0.03) 100%)', borderRadius: '20px', border: '1px dashed rgba(235, 87, 56,0.25)', cursor: 'pointer' }}
                 >
-                  <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'linear-gradient(135deg, rgba(20,184,166,0.15), rgba(59,130,246,0.1))', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', border: '2px dashed rgba(20,184,166,0.3)' }}>
+                  <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'linear-gradient(135deg, rgba(235, 87, 56, 0.15) 0%, rgba(235, 87, 56, 0.03) 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', border: '2px dashed rgba(235, 87, 56,0.3)' }}>
                     <Calendar size={28} color="var(--teal-400)" />
                   </div>
                   <h3 style={{ fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: '0 0 8px', fontSize: '1.15rem' }}>Create Your First Event</h3>
@@ -3727,7 +3727,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                               borderRadius: '20px',
                               border: '1px solid',
                               borderColor: dashboardEventFilter === tab.id ? 'var(--teal-500)' : 'rgba(255,255,255,0.08)',
-                              background: dashboardEventFilter === tab.id ? 'rgba(20,184,166,0.15)' : 'rgba(255,255,255,0.02)',
+                              background: dashboardEventFilter === tab.id ? 'rgba(235, 87, 56,0.15)' : 'rgba(255,255,255,0.02)',
                               color: dashboardEventFilter === tab.id ? 'var(--teal-300)' : 'var(--slate-400)',
                               fontSize: '0.8rem',
                               fontWeight: 600,
@@ -3793,7 +3793,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                           }}>
                             <div style={{ display: 'flex', gap: '14px', padding: '14px' }}>
                               {/* Date block */}
-                              <div style={{ width: '48px', height: '54px', background: isPast ? 'rgba(51,65,85,0.4)' : 'rgba(20,184,166,0.1)', borderRadius: '10px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                              <div style={{ width: '48px', height: '54px', background: isPast ? 'rgba(51,65,85,0.4)' : 'rgba(235, 87, 56,0.1)', borderRadius: '10px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                                 <div style={{ fontSize: '1.2rem', fontWeight: 700, color: isPast ? 'var(--slate-300)' : 'var(--white)', lineHeight: 1 }}>{day}</div>
                                 <div style={{ fontSize: '0.65rem', color: isPast ? 'var(--slate-400)' : 'var(--teal-400)', fontWeight: 600, textTransform: 'uppercase' }}>{month}</div>
                               </div>
@@ -3901,7 +3901,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                               <div style={{ display: 'flex', gap: '6px', padding: '0 14px 10px', flexWrap: 'wrap', alignItems: 'center' }}>
                                 {!isPast ? (
                                   <>
-                                    <button onClick={() => setShowScanner(true)} className="btn btn-outline interactive-press" style={{ padding: '6px 12px', fontSize: '0.75rem', color: 'var(--teal-400)', borderColor: 'rgba(20,184,166,0.3)' }}>
+                                    <button onClick={() => setShowScanner(true)} className="btn btn-outline interactive-press" style={{ padding: '6px 12px', fontSize: '0.75rem', color: 'var(--teal-400)', borderColor: 'rgba(235, 87, 56,0.3)' }}>
                                       <QrCode size={12} style={{ marginRight: '4px' }} /> Scan
                                     </button>
                                     <button onClick={() => setFlyerEvent(event)} className="btn btn-outline interactive-press" style={{ padding: '6px 12px', fontSize: '0.75rem', color: '#a78bfa', borderColor: 'rgba(167,139,250,0.3)' }}>
@@ -3915,7 +3915,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                                       }}
                                       disabled={uploadingPhotoEventId === event.id}
                                       className="btn btn-outline interactive-press"
-                                      style={{ padding: '6px 12px', fontSize: '0.75rem', color: '#2dd4bf', borderColor: 'rgba(45,212,191,0.35)' }}
+                                      style={{ padding: '6px 12px', fontSize: '0.75rem', color: '#F27257', borderColor: 'rgba(242, 114, 87,0.35)' }}
                                       title="Add a photo to this event"
                                     >
                                       <Camera size={12} style={{ marginRight: '4px' }} />
@@ -3926,7 +3926,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                                     <button 
                                       onClick={() => generateRamsPdf({ community, event, leaderName: user?.name, policyNumber: community.insurance_policy_number })} 
                                       className="btn btn-outline interactive-press" 
-                                      style={{ padding: '6px 12px', fontSize: '0.75rem', color: '#2dd4bf', borderColor: 'rgba(20,184,166,0.3)' }}
+                                      style={{ padding: '6px 12px', fontSize: '0.75rem', color: '#F27257', borderColor: 'rgba(235, 87, 56,0.3)' }}
                                       title="Download Council & Venue Safety Assessment (Risk Document PDF)"
                                     >
                                       <Shield size={12} style={{ marginRight: '4px' }} /> Safety Pack
@@ -3995,7 +3995,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                                       }}
                                       disabled={uploadingPhotoEventId === event.id}
                                       className="btn btn-outline interactive-press"
-                                      style={{ padding: '6px 12px', fontSize: '0.75rem', color: '#2dd4bf', borderColor: 'rgba(45,212,191,0.35)' }}
+                                      style={{ padding: '6px 12px', fontSize: '0.75rem', color: '#F27257', borderColor: 'rgba(242, 114, 87,0.35)' }}
                                       title="Add a memory photo to this past event"
                                     >
                                       <Camera size={12} style={{ marginRight: '4px' }} />
@@ -4064,7 +4064,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                                           border: 'none',
                                           ...(rsvp.checkedIn
                                             ? { background: 'rgba(34,197,94,0.2)', color: '#22c55e', border: '1px solid rgba(34,197,94,0.4)' }
-                                            : { background: 'rgba(20,184,166,0.15)', color: 'var(--teal-300)', border: '1px solid rgba(20,184,166,0.3)' }
+                                            : { background: 'rgba(235, 87, 56,0.15)', color: 'var(--teal-300)', border: '1px solid rgba(235, 87, 56,0.3)' }
                                           )
                                         }}
                                         title="Click to toggle attendee check-in status"
@@ -4184,7 +4184,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                               style={{ width: '80px', height: '80px', borderRadius: '14px', objectFit: 'cover' }} 
                             />
                           ) : (
-                            <div style={{ width: '80px', height: '80px', borderRadius: '14px', background: 'rgba(20,184,166,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <div style={{ width: '80px', height: '80px', borderRadius: '14px', background: 'rgba(235, 87, 56,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                               <Calendar size={28} color="var(--teal-400)" />
                             </div>
                           )}
@@ -4299,8 +4299,8 @@ export default function LeaderDashboard({ initialCommunityId }) {
                                 padding: '7px 16px', 
                                 borderRadius: '8px', 
                                 color: '#fff', 
-                                background: 'linear-gradient(135deg, #0d9488 0%, #0f766e 100%)',
-                                border: '1px solid #14b8a6',
+                                background: 'linear-gradient(135deg, #D94628 0%, #B83D22 100%)',
+                                border: '1px solid #EB5738',
                                 fontWeight: 500
                               }}
                             >
@@ -4354,8 +4354,8 @@ export default function LeaderDashboard({ initialCommunityId }) {
                       className="interactive-press"
                       title="How does community subscription work? Click for full financial breakdown"
                       style={{
-                        background: 'rgba(20, 184, 166, 0.15)',
-                        border: '1px solid rgba(20, 184, 166, 0.35)',
+                        background: 'rgba(235, 87, 56, 0.15)',
+                        border: '1px solid rgba(235, 87, 56, 0.35)',
                         borderRadius: '50%',
                         width: '18px',
                         height: '18px',
@@ -4393,7 +4393,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
 
                 {/* Live Breakdown Box if Price > 0 */}
                 {Number(subscriptionPrice) > 0 && (
-                  <div style={{ background: 'rgba(15, 23, 42, 0.6)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '16px', marginBottom: '16px' }}>
+                  <div style={{ background: 'rgba(27, 27, 27, 0.6)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '16px', marginBottom: '16px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                       <span style={{ fontSize: '0.75rem', color: 'var(--slate-400)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.04em' }}>
                         Subscription Revenue Breakdown
@@ -4462,8 +4462,8 @@ export default function LeaderDashboard({ initialCommunityId }) {
                     </div>
                   ) : (
                     <div style={{ 
-                      background: 'rgba(20, 184, 166, 0.08)', 
-                      border: '1px solid rgba(20, 184, 166, 0.25)', 
+                      background: 'rgba(235, 87, 56, 0.08)', 
+                      border: '1px solid rgba(235, 87, 56, 0.25)', 
                       borderRadius: '12px', 
                       padding: '12px 14px', 
                       marginBottom: '16px',
@@ -4492,7 +4492,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                     position: 'fixed',
                     inset: 0,
                     zIndex: 99999,
-                    background: 'rgba(2, 6, 23, 0.85)',
+                    background: 'rgba(18, 18, 18, 0.85)',
                     backdropFilter: 'blur(8px)',
                     display: 'flex',
                     alignItems: 'center',
@@ -4555,9 +4555,9 @@ export default function LeaderDashboard({ initialCommunityId }) {
                       </div>
 
                       {/* 2. Leader Community Fund */}
-                      <div style={{ background: 'rgba(20, 184, 166, 0.08)', border: '1px solid rgba(20, 184, 166, 0.25)', borderRadius: '12px', padding: '14px' }}>
+                      <div style={{ background: 'rgba(235, 87, 56, 0.08)', border: '1px solid rgba(235, 87, 56, 0.25)', borderRadius: '12px', padding: '14px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                          <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#2dd4bf' }}>2. Your Community Fund (95% standard / 100% Pro)</div>
+                          <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#F27257' }}>2. Your Community Fund (95% standard / 100% Pro)</div>
                           <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#34d399' }}>
                             +£{(Number(subscriptionPrice || 20) * 0.95).toFixed(2)}/mo
                           </div>
@@ -4629,7 +4629,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
               <div className="glass-panel" style={{ padding: '24px', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '20px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(20,184,166,0.12)', border: '1px solid rgba(20,184,166,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(235, 87, 56,0.12)', border: '1px solid rgba(235, 87, 56,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       <DollarSign size={20} color="var(--teal-400)" />
                     </div>
                     <div>
@@ -4698,8 +4698,8 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 ) : (
                   <div style={{
                     padding: '20px', borderRadius: '16px',
-                    background: 'linear-gradient(135deg, rgba(20,184,166,0.08) 0%, rgba(59,130,246,0.05) 100%)',
-                    border: '1px solid rgba(20,184,166,0.2)',
+                    background: 'linear-gradient(135deg, rgba(235, 87, 56, 0.08) 0%, rgba(235, 87, 56, 0.03) 100%)',
+                    border: '1px solid rgba(235, 87, 56,0.2)',
                   }}>
                     <div style={{ marginBottom: '16px' }}>
                       <h4 style={{ color: 'var(--white)', margin: '0 0 6px 0', fontSize: '1.05rem', fontWeight: 700 }}>
@@ -4761,7 +4761,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                         title="Click to view full experience page"
                       >
                         <img src={exp.image} alt={exp.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        <div style={{ position: 'absolute', top: '10px', left: '10px', background: isAff ? 'rgba(20,184,166,0.9)' : 'rgba(15,23,42,0.85)', padding: '3px 9px', borderRadius: '20px', fontSize: '0.7rem', fontWeight: 700, color: isAff ? '#042f2e' : '#e2e8f0' }}>
+                        <div style={{ position: 'absolute', top: '10px', left: '10px', background: isAff ? 'rgba(235, 87, 56,0.9)' : 'rgba(27, 27, 27,0.85)', padding: '3px 9px', borderRadius: '20px', fontSize: '0.7rem', fontWeight: 700, color: isAff ? '#042f2e' : '#e2e8f0' }}>
                           {isAff ? `${exp.provider || 'Viator'} • Host Pass` : 'Direct Venue'}
                         </div>
                         <div style={{ position: 'absolute', top: '10px', right: '10px', background: 'rgba(0,0,0,0.65)', padding: '4px 10px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 600, color: 'var(--white)', backdropFilter: 'blur(4px)' }}>
@@ -4815,8 +4815,8 @@ export default function LeaderDashboard({ initialCommunityId }) {
                                   className="interactive-press"
                                   title="How does this work? Click for full breakdown"
                                   style={{
-                                    background: 'rgba(20, 184, 166, 0.15)',
-                                    border: '1px solid rgba(20, 184, 166, 0.35)',
+                                    background: 'rgba(235, 87, 56, 0.15)',
+                                    border: '1px solid rgba(235, 87, 56, 0.35)',
                                     borderRadius: '50%',
                                     width: '18px',
                                     height: '18px',
@@ -4874,7 +4874,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                           </div>
                         ) : (
                           <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '16px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', background: 'rgba(20,184,166,0.1)', padding: '10px', borderRadius: '8px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', background: 'rgba(235, 87, 56,0.1)', padding: '10px', borderRadius: '8px' }}>
                               {isAff ? (
                                 <>
                                   <span style={{ fontSize: '0.82rem', color: 'var(--teal-300)' }}>Host Pass: <strong>£{hostPassFee}</strong></span>
@@ -4930,7 +4930,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                       style={{
                         display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px',
                         borderRadius: '9px', border: 'none', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, transition: 'all 0.2s',
-                        background: peopleSubTab === t.id ? 'rgba(20,184,166,0.15)' : 'transparent',
+                        background: peopleSubTab === t.id ? 'rgba(235, 87, 56,0.15)' : 'transparent',
                         color: peopleSubTab === t.id ? 'var(--teal-300)' : 'var(--slate-400)'
                       }}
                     >
@@ -5069,7 +5069,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                     color: 'var(--white)', cursor: 'pointer', textAlign: 'left'
                   }}
                 >
-                  <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(20,184,166,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--teal-400)', flexShrink: 0 }}>
+                  <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(235, 87, 56,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--teal-400)', flexShrink: 0 }}>
                     <BookOpen size={20} />
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
@@ -5078,7 +5078,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                         Community Guidelines & Norms
                       </span>
                       {guidelinesDraft.length > 0 ? (
-                        <span style={{ fontFamily: 'var(--font-body)', fontSize: '0.72rem', padding: '2px 8px', borderRadius: '999px', background: 'rgba(20,184,166,0.2)', color: 'var(--teal-300)', fontWeight: 600 }}>
+                        <span style={{ fontFamily: 'var(--font-body)', fontSize: '0.72rem', padding: '2px 8px', borderRadius: '999px', background: 'rgba(235, 87, 56,0.2)', color: 'var(--teal-300)', fontWeight: 600 }}>
                           {guidelinesDraft.length} {guidelinesDraft.length === 1 ? 'Rule' : 'Rules'} Active
                         </span>
                       ) : (
@@ -5117,7 +5117,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                               key={pack.id}
                               style={{
                                 padding: '12px',
-                                background: isSelected ? 'rgba(20,184,166,0.12)' : isRecommended ? 'rgba(245,158,11,0.08)' : 'rgba(255,255,255,0.02)',
+                                background: isSelected ? 'rgba(235, 87, 56,0.12)' : isRecommended ? 'rgba(245,158,11,0.08)' : 'rgba(255,255,255,0.02)',
                                 border: isSelected ? '1px solid var(--teal-500)' : isRecommended ? '1px solid rgba(245,158,11,0.4)' : '1px solid rgba(255,255,255,0.05)',
                                 borderRadius: '10px',
                                 display: 'flex',
@@ -5148,7 +5148,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                                     className="interactive-press"
                                     style={{
                                       width: '100%', padding: '8px 12px', borderRadius: '8px', border: 'none',
-                                      background: isSelected ? 'var(--teal-500)' : 'rgba(20,184,166,0.2)',
+                                      background: isSelected ? 'var(--teal-500)' : 'rgba(235, 87, 56,0.2)',
                                       color: isSelected ? '#000' : 'var(--teal-300)',
                                       fontFamily: 'var(--font-body)', fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer',
                                       display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px'
@@ -5164,8 +5164,8 @@ export default function LeaderDashboard({ initialCommunityId }) {
                                       className="interactive-press"
                                       style={{
                                         width: '100%', padding: '7px 10px', borderRadius: '6px',
-                                        border: '1px solid rgba(20,184,166,0.3)',
-                                        background: 'rgba(20,184,166,0.15)',
+                                        border: '1px solid rgba(235, 87, 56,0.3)',
+                                        background: 'rgba(235, 87, 56,0.15)',
                                         color: 'var(--teal-300)',
                                         fontFamily: 'var(--font-body)', fontSize: '0.76rem', fontWeight: 700, cursor: 'pointer',
                                         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px'
@@ -5219,8 +5219,8 @@ export default function LeaderDashboard({ initialCommunityId }) {
                               style={{
                                 padding: '6px 12px',
                                 borderRadius: '999px',
-                                border: isAlreadyAdded ? '1px solid rgba(255,255,255,0.04)' : '1px solid rgba(20,184,166,0.3)',
-                                background: isAlreadyAdded ? 'rgba(255,255,255,0.02)' : 'rgba(20,184,166,0.08)',
+                                border: isAlreadyAdded ? '1px solid rgba(255,255,255,0.04)' : '1px solid rgba(235, 87, 56,0.3)',
+                                background: isAlreadyAdded ? 'rgba(255,255,255,0.02)' : 'rgba(235, 87, 56,0.08)',
                                 color: isAlreadyAdded ? 'var(--slate-500)' : 'var(--teal-300)',
                                 fontFamily: 'var(--font-body)', fontSize: '0.75rem',
                                 cursor: isAlreadyAdded ? 'default' : 'pointer',
@@ -5318,8 +5318,8 @@ export default function LeaderDashboard({ initialCommunityId }) {
                         disabled={!newGuidelineInput.trim()}
                         className="interactive-press"
                         style={{
-                          padding: '0 16px', background: newGuidelineInput.trim() ? 'rgba(20,184,166,0.2)' : 'rgba(255,255,255,0.05)',
-                          border: newGuidelineInput.trim() ? '1px solid rgba(20,184,166,0.4)' : '1px solid rgba(255,255,255,0.08)',
+                          padding: '0 16px', background: newGuidelineInput.trim() ? 'rgba(235, 87, 56,0.2)' : 'rgba(255,255,255,0.05)',
+                          border: newGuidelineInput.trim() ? '1px solid rgba(235, 87, 56,0.4)' : '1px solid rgba(255,255,255,0.08)',
                           borderRadius: '8px', color: newGuidelineInput.trim() ? 'var(--teal-300)' : 'var(--slate-500)',
                           fontFamily: 'var(--font-body)', fontSize: '0.82rem', fontWeight: 700, cursor: newGuidelineInput.trim() ? 'pointer' : 'default',
                           display: 'flex', alignItems: 'center', gap: '4px'
@@ -5428,7 +5428,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                       toast.info('Visibility updated', `Community is now ${v}`);
                     }} className="interactive-press" style={{
                       flex: 1, padding: '10px 12px', borderRadius: '8px',
-                      background: communityVisibility === v ? 'rgba(20,184,166,0.2)' : 'rgba(255,255,255,0.03)',
+                      background: communityVisibility === v ? 'rgba(235, 87, 56,0.2)' : 'rgba(255,255,255,0.03)',
                       border: communityVisibility === v ? '1px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.05)',
                       color: communityVisibility === v ? 'var(--teal-300)' : 'var(--slate-400)',
                       fontFamily: 'var(--font-body)', fontSize: '0.78rem', fontWeight: 600, textTransform: 'capitalize', cursor: 'pointer'
@@ -5472,7 +5472,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
 
               {/* Accept Guest Sessions & Sponsor Pitches Toggle */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px 18px', background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px' }}>
-                <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(20,184,166,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--teal-400)', flexShrink: 0 }}>
+                <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(235, 87, 56,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--teal-400)', flexShrink: 0 }}>
                   <Sparkles size={20} />
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -5533,8 +5533,8 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   marginBottom: '6px',
                   padding: '12px 16px',
                   borderRadius: '12px',
-                  background: pendingCollaborationsCount > 0 ? 'rgba(239, 68, 68, 0.08)' : 'rgba(20, 184, 166, 0.05)',
-                  border: pendingCollaborationsCount > 0 ? '1px solid rgba(239, 68, 68, 0.3)' : '1px solid rgba(20, 184, 166, 0.15)',
+                  background: pendingCollaborationsCount > 0 ? 'rgba(239, 68, 68, 0.08)' : 'rgba(235, 87, 56, 0.05)',
+                  border: pendingCollaborationsCount > 0 ? '1px solid rgba(239, 68, 68, 0.3)' : '1px solid rgba(235, 87, 56, 0.15)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
@@ -5559,7 +5559,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                     type="button"
                     onClick={() => setModalType('pitches-review')}
                     className="btn btn-outline interactive-press"
-                    style={{ padding: '6px 12px', fontSize: '0.78rem', borderRadius: '8px', color: 'var(--teal-300)', borderColor: 'rgba(20, 184, 166, 0.4)' }}
+                    style={{ padding: '6px 12px', fontSize: '0.78rem', borderRadius: '8px', color: 'var(--teal-300)', borderColor: 'rgba(235, 87, 56, 0.4)' }}
                   >
                     Review Pitches & Partnerships →
                   </button>
@@ -5751,7 +5751,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   transition: 'border-color 0.2s, background 0.2s'
                 }}
               >
-                <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(20,184,166,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--teal-400)', flexShrink: 0 }}>
+                <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(235, 87, 56,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--teal-400)', flexShrink: 0 }}>
                   <Download size={20} />
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -5864,7 +5864,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                           padding: '4px 8px',
                           borderRadius: '6px',
                           fontSize: '0.75rem',
-                          background: editForm.category === cat ? 'rgba(20,184,166,0.2)' : 'rgba(255,255,255,0.05)',
+                          background: editForm.category === cat ? 'rgba(235, 87, 56,0.2)' : 'rgba(255,255,255,0.05)',
                           border: editForm.category === cat ? '1px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.1)',
                           color: editForm.category === cat ? 'var(--teal-300)' : 'var(--slate-300)',
                           cursor: 'pointer'
@@ -5976,7 +5976,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   {editForm.tags && editForm.tags.length > 0 && (
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '12px', padding: '10px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
                       {editForm.tags.map((tag, idx) => (
-                        <span key={idx} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 10px', borderRadius: '8px', background: 'rgba(20,184,166,0.15)', color: 'var(--teal-300)', fontSize: '0.8rem', fontWeight: 600 }}>
+                        <span key={idx} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 10px', borderRadius: '8px', background: 'rgba(235, 87, 56,0.15)', color: 'var(--teal-300)', fontSize: '0.8rem', fontWeight: 600 }}>
                           {tag}
                           <button type="button" onClick={() => removeEditTag(tag)} style={{ background: 'none', border: 'none', color: 'var(--teal-400)', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center' }}>
                             <X size={13} />
@@ -6021,7 +6021,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                           fontWeight: 600,
                           whiteSpace: 'nowrap',
                           border: editTagCategory === cat ? '1px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.08)',
-                          background: editTagCategory === cat ? 'rgba(20,184,166,0.2)' : 'rgba(255,255,255,0.02)',
+                          background: editTagCategory === cat ? 'rgba(235, 87, 56,0.2)' : 'rgba(255,255,255,0.02)',
                           color: editTagCategory === cat ? 'var(--teal-300)' : 'var(--slate-400)',
                           cursor: 'pointer'
                         }}
@@ -6045,7 +6045,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                             borderRadius: '999px',
                             fontSize: '0.78rem',
                             border: selected ? '1px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.1)',
-                            background: selected ? 'rgba(20,184,166,0.15)' : 'transparent',
+                            background: selected ? 'rgba(235, 87, 56,0.15)' : 'transparent',
                             color: selected ? 'var(--teal-300)' : 'var(--slate-300)',
                             fontWeight: selected ? 600 : 400,
                             cursor: 'pointer',
@@ -6173,7 +6173,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
             {/* WhatsApp Settings */}
             {modalType === 'pitches-review' && (
               <div style={{ color: 'var(--white)', display: 'flex', flexDirection: 'column', gap: '16px', padding: '16px 20px', maxHeight: '75vh', overflowY: 'auto' }}>
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', padding: '14px 16px', background: 'rgba(20, 184, 166, 0.08)', border: '1px solid rgba(20, 184, 166, 0.25)', borderRadius: '14px' }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', padding: '14px 16px', background: 'rgba(235, 87, 56, 0.08)', border: '1px solid rgba(235, 87, 56, 0.25)', borderRadius: '14px' }}>
                   <Sparkles size={22} color="var(--teal-400)" style={{ flexShrink: 0, marginTop: '2px' }} />
                   <div>
                     <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--white)', marginBottom: '4px' }}>
@@ -6410,7 +6410,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 </div>
 
                 {/* Section 2: How Approvals & Control Work */}
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', padding: '14px 16px', background: 'rgba(20, 184, 166, 0.08)', border: '1px solid rgba(20, 184, 166, 0.25)', borderRadius: '14px' }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', padding: '14px 16px', background: 'rgba(235, 87, 56, 0.08)', border: '1px solid rgba(235, 87, 56, 0.25)', borderRadius: '14px' }}>
                   <CheckCircle2 size={22} color="var(--teal-400)" style={{ flexShrink: 0, marginTop: '2px' }} />
                   <div>
                     <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--white)', marginBottom: '4px' }}>
@@ -6571,7 +6571,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
 
           {/* Modal Sticky Docked Footer */}
           {(modalType === 'event' || modalType === 'edit-event') ? (
-            <div style={{ padding: '16px 20px', borderTop: '1px solid rgba(255,255,255,0.08)', background: '#0f172a', position: 'sticky', bottom: 0, zIndex: 20, paddingBottom: 'max(16px, env(safe-area-inset-bottom, 16px))' }}>
+            <div style={{ padding: '16px 20px', borderTop: '1px solid rgba(255,255,255,0.08)', background: '#1B1B1B', position: 'sticky', bottom: 0, zIndex: 20, paddingBottom: 'max(16px, env(safe-area-inset-bottom, 16px))' }}>
               <div style={{ display: 'flex', gap: '8px', width: '100%' }}>
                 {eventStep > 0 && (
                   <button onClick={() => setEventStep(eventStep - 1)} className="btn btn-outline interactive-press" style={{ padding: '14px', flex: 1, borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
@@ -6592,7 +6592,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                     onClick={() => { if (editingEventId) handleSaveEvent(); else handleCreateEvent(); }}
                     disabled={isUploading || !canAdvanceStep()}
                     className="btn btn-primary interactive-press" 
-                    style={{ padding: '14px', flex: 2, borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', background: 'linear-gradient(135deg, var(--teal-500), #3b82f6)', opacity: isUploading ? 0.7 : 1 }}
+                    style={{ padding: '14px', flex: 2, borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', background: 'linear-gradient(135deg, var(--brand-accent), var(--brand-accent-pressed))', opacity: isUploading ? 0.7 : 1 }}
                   >
                     <Check size={18} /> {isUploading ? 'Publishing...' : editingEventId ? 'Save Changes' : (eventForm.resolvedDates && eventForm.resolvedDates.length > 1 ? `Publish ${eventForm.resolvedDates.length} Events` : 'Publish Event')}
                   </button>
@@ -6600,7 +6600,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
               </div>
             </div>
           ) : (isEditing || (modalType && modalType !== 'community' && modalType !== 'coleader')) ? (
-            <div style={{ padding: '16px 20px', borderTop: '1px solid rgba(255,255,255,0.08)', background: '#0f172a', position: 'sticky', bottom: 0, zIndex: 20, paddingBottom: 'max(16px, env(safe-area-inset-bottom, 16px))' }}>
+            <div style={{ padding: '16px 20px', borderTop: '1px solid rgba(255,255,255,0.08)', background: '#1B1B1B', position: 'sticky', bottom: 0, zIndex: 20, paddingBottom: 'max(16px, env(safe-area-inset-bottom, 16px))' }}>
               <button 
                 onClick={() => { 
                   if(isEditing) handleSave(); 
@@ -6632,7 +6632,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
       {/* Heavy-Safeguard Community Deletion Modal */}
       {isDeleteModalOpen && community && (
         <div className="modal-overlay" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', zIndex: 10000 }}>
-          <div className="glass-panel" style={{ width: '100%', maxWidth: '480px', borderRadius: '20px', border: '1px solid rgba(239,68,68,0.4)', background: 'linear-gradient(180deg, #1e1014 0%, #0f172a 100%)', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7)', overflow: 'hidden' }}>
+          <div className="glass-panel" style={{ width: '100%', maxWidth: '480px', borderRadius: '20px', border: '1px solid rgba(239,68,68,0.4)', background: 'linear-gradient(180deg, #1e1014 0%, #1B1B1B 100%)', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7)', overflow: 'hidden' }}>
             
             {/* Header */}
             <div style={{ padding: '20px', borderBottom: '1px solid rgba(239,68,68,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -6809,7 +6809,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
             position: 'fixed', 
             inset: 0, 
             zIndex: 99999, 
-            background: 'rgba(2, 6, 23, 0.85)', 
+            background: 'rgba(18, 18, 18, 0.85)', 
             backdropFilter: 'blur(8px)', 
             display: 'flex', 
             alignItems: 'center', 
@@ -6821,7 +6821,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
             onClick={e => e.stopPropagation()}
             className="modal-content"
             style={{ 
-              background: '#0f172a', 
+              background: '#1B1B1B', 
               border: '1px solid rgba(255,255,255,0.14)', 
               borderRadius: '20px', 
               maxWidth: '740px', 
@@ -6836,7 +6836,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
             {/* Header */}
             <div style={{ padding: '18px 22px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h2 style={{ margin: 0, fontSize: '1.2rem', fontFamily: 'Outfit, sans-serif', color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Globe color="#2dd4bf" size={20} /> Third-Party Discovery
+                <Globe color="#F27257" size={20} /> Third-Party Discovery
               </h2>
               <button 
                 onClick={() => setIsDiscoveryModalOpen(false)} 
@@ -6869,7 +6869,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 <select 
                   value={discoveryProvider} 
                   onChange={e => setDiscoveryProvider(e.target.value)}
-                  style={{ flex: '1 1 140px', minWidth: '130px', padding: '12px 14px', background: '#0f172a', border: '1px solid #334155', color: '#fff', borderRadius: '12px', fontSize: '0.9rem' }}
+                  style={{ flex: '1 1 140px', minWidth: '130px', padding: '12px 14px', background: '#1B1B1B', border: '1px solid #334155', color: '#fff', borderRadius: '12px', fontSize: '0.9rem' }}
                 >
                   <option value="viator">Viator Partner</option>
                   <option value="google">Google Places</option>
@@ -6880,7 +6880,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   value={discoverySearchTerm} 
                   onChange={e => setDiscoverySearchTerm(e.target.value)} 
                   onKeyDown={e => e.key === 'Enter' && handleSimulateApiSearch()}
-                  style={{ flex: '2 1 200px', minWidth: '180px', padding: '12px 16px', background: '#0f172a', border: '1px solid #334155', color: '#fff', borderRadius: '12px', fontSize: '0.9rem' }} 
+                  style={{ flex: '2 1 200px', minWidth: '180px', padding: '12px 16px', background: '#1B1B1B', border: '1px solid #334155', color: '#fff', borderRadius: '12px', fontSize: '0.9rem' }} 
                 />
                 <button 
                   onClick={handleSimulateApiSearch}
@@ -6895,7 +6895,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
 
               {isDiscovering && (
                 <div style={{ textAlign: 'center', padding: '40px 0', color: '#94a3b8' }}>
-                  <div className="spinner" style={{ width: '32px', height: '32px', border: '3px solid rgba(255,255,255,0.1)', borderTopColor: '#2dd4bf', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 16px' }}></div>
+                  <div className="spinner" style={{ width: '32px', height: '32px', border: '3px solid rgba(255,255,255,0.1)', borderTopColor: '#F27257', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 16px' }}></div>
                   Querying {discoveryProvider === 'viator' ? 'Viator Partner API' : 'Google Places API'}...
                 </div>
               )}
@@ -6908,7 +6908,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                       <div key={exp.id} style={{ display: 'flex', flexWrap: 'wrap', gap: '14px', padding: '14px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px', alignItems: 'center' }}>
                         <img src={exp.image} alt={exp.title} style={{ width: '90px', height: '90px', objectFit: 'cover', borderRadius: '10px', flexShrink: 0 }} />
                         <div style={{ flex: '1 1 240px', minWidth: 0 }}>
-                          <div style={{ fontSize: '0.72rem', color: '#2dd4bf', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px' }}>{exp.category} • {exp.source}</div>
+                          <div style={{ fontSize: '0.72rem', color: '#F27257', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px' }}>{exp.category} • {exp.source}</div>
                           <h4 style={{ color: '#fff', margin: '0 0 4px 0', fontSize: '0.95rem', lineHeight: 1.3 }}>{exp.title}</h4>
                           <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginBottom: '8px', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{exp.description}</div>
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', fontSize: '0.78rem', color: '#94a3b8' }}>
@@ -6982,7 +6982,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                     position: 'fixed',
                     inset: 0,
                     zIndex: 99999,
-                    background: 'rgba(2, 6, 23, 0.85)',
+                    background: 'rgba(18, 18, 18, 0.85)',
                     backdropFilter: 'blur(8px)',
                     display: 'flex',
                     alignItems: 'center',
@@ -6993,7 +6993,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   <div 
                     onClick={e => e.stopPropagation()}
                     style={{
-                      background: '#0f172a',
+                      background: '#1B1B1B',
                       border: '1px solid rgba(255,255,255,0.14)',
                       borderRadius: '20px',
                       maxWidth: '560px',
@@ -7062,9 +7062,9 @@ export default function LeaderDashboard({ initialCommunityId }) {
                                 </p>
                               </div>
 
-                              <div style={{ background: 'rgba(20, 184, 166, 0.08)', border: '1px solid rgba(20, 184, 166, 0.25)', borderRadius: '12px', padding: '14px' }}>
+                              <div style={{ background: 'rgba(235, 87, 56, 0.08)', border: '1px solid rgba(235, 87, 56, 0.25)', borderRadius: '12px', padding: '14px' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                                  <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#2dd4bf' }}>2. Group Host Pass (+£{hostPassFee}.00 via More Stripe)</div>
+                                  <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#F27257' }}>2. Group Host Pass (+£{hostPassFee}.00 via More Stripe)</div>
                                   <div style={{ fontSize: '1rem', fontWeight: 800, color: '#34d399' }}>In-App Strip Fund</div>
                                 </div>
                                 <p style={{ fontSize: '0.8rem', color: 'var(--slate-300)', margin: 0, lineHeight: 1.45 }}>
@@ -7083,7 +7083,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                               </div>
                             </div>
 
-                            <div style={{ background: 'rgba(15, 23, 42, 0.6)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '14px' }}>
+                            <div style={{ background: 'rgba(27, 27, 27, 0.6)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '14px' }}>
                               <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.04em', marginBottom: '8px' }}>
                                 Example Group Outcome ({econ.minGroupSize} Members @ £{hostPassFee} Host Pass)
                               </div>
@@ -7132,9 +7132,9 @@ export default function LeaderDashboard({ initialCommunityId }) {
                             </div>
 
                             {/* 3. Leader Markup */}
-                            <div style={{ background: 'rgba(20, 184, 166, 0.08)', border: '1px solid rgba(20, 184, 166, 0.25)', borderRadius: '12px', padding: '14px' }}>
+                            <div style={{ background: 'rgba(235, 87, 56, 0.08)', border: '1px solid rgba(235, 87, 56, 0.25)', borderRadius: '12px', padding: '14px' }}>
                               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                                <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#2dd4bf' }}>3. Your Community Leader Cut (+{markupPct}%)</div>
+                                <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#F27257' }}>3. Your Community Leader Cut (+{markupPct}%)</div>
                                 <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#34d399' }}>
                                   +£{leaderProfit}.00
                                 </div>
@@ -7146,7 +7146,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                           </div>
 
                           {/* Live Example Calculation */}
-                          <div style={{ background: 'rgba(15, 23, 42, 0.6)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '14px' }}>
+                          <div style={{ background: 'rgba(27, 27, 27, 0.6)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '14px' }}>
                             <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.04em', marginBottom: '8px' }}>
                               Stripe Payment Breakdown (Member Pays £{memberFinalPrice}.00)
                             </div>

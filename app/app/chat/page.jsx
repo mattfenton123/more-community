@@ -130,7 +130,7 @@ export default function ChatIndex() {
       <AppHeader title="Chats" />
       
       {communityFilterId && (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 20px', background: 'rgba(20,184,166,0.1)', borderBottom: '1px solid rgba(20,184,166,0.2)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 20px', background: 'rgba(235, 87, 56,0.1)', borderBottom: '1px solid rgba(235, 87, 56,0.2)' }}>
           <div style={{ fontSize: '0.85rem', color: 'var(--teal-300)', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Hash size={14} /> Showing filtered community chats
           </div>
@@ -243,7 +243,7 @@ export default function ChatIndex() {
         <button 
           onClick={() => { setCreateMode('menu'); setShowCreateModal(true); }}
           className="interactive-press"
-          style={{ background: 'var(--teal-500)', color: 'white', width: '56px', height: '56px', borderRadius: '28px', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 16px rgba(20,184,166,0.4)', cursor: 'pointer' }}
+          style={{ background: 'var(--teal-500)', color: 'white', width: '56px', height: '56px', borderRadius: '28px', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 16px rgba(235, 87, 56,0.4)', cursor: 'pointer' }}
         >
           <Plus size={24} />
         </button>
@@ -278,7 +278,7 @@ export default function ChatIndex() {
                 </button>
                 {manageableCommunities.length > 0 && (
                   <button onClick={() => setCreateMode('group')} className="interactive-press" style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', color: 'white', cursor: 'pointer', textAlign: 'left' }}>
-                    <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(20,184,166,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(235, 87, 56,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       <Users size={20} color="var(--teal-400)" />
                     </div>
                     <div>

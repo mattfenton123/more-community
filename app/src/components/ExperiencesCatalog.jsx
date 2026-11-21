@@ -69,7 +69,7 @@ export default function ExperiencesCatalog({ onPitchExperience }) {
               />
               <div style={{ 
                 position: 'absolute', top: '10px', right: '10px', 
-                background: 'rgba(15, 23, 42, 0.85)', backdropFilter: 'blur(6px)', 
+                background: 'rgba(27, 27, 27, 0.85)', backdropFilter: 'blur(6px)', 
                 padding: '4px 8px', borderRadius: '8px', 
                 display: 'flex', alignItems: 'center', gap: '4px', 
                 fontSize: '0.75rem', color: '#fff', fontWeight: 700,
@@ -80,10 +80,10 @@ export default function ExperiencesCatalog({ onPitchExperience }) {
               {exp.category && (
                 <div style={{
                   position: 'absolute', top: '10px', left: '10px',
-                  background: 'rgba(15, 23, 42, 0.85)', backdropFilter: 'blur(6px)',
+                  background: 'rgba(27, 27, 27, 0.85)', backdropFilter: 'blur(6px)',
                   padding: '3px 8px', borderRadius: '6px',
-                  fontSize: '0.68rem', color: '#2dd4bf', fontWeight: 700,
-                  border: '1px solid rgba(45, 212, 191, 0.3)'
+                  fontSize: '0.68rem', color: '#F27257', fontWeight: 700,
+                  border: '1px solid rgba(242, 114, 87, 0.3)'
                 }}>
                   {exp.category}
                 </div>
@@ -122,8 +122,8 @@ export default function ExperiencesCatalog({ onPitchExperience }) {
               </h4>
               
               <div style={{ display: 'flex', gap: '12px', fontSize: '0.75rem', color: 'var(--slate-400)', marginBottom: '10px', flexWrap: 'wrap' }}>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><MapPin size={12} color="#2dd4bf" /> {exp.location || 'Tunbridge Wells'}</span>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={12} color="#2dd4bf" /> {exp.duration || 'Flexible'}</span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><MapPin size={12} color="#F27257" /> {exp.location || 'Tunbridge Wells'}</span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={12} color="#F27257" /> {exp.duration || 'Flexible'}</span>
               </div>
               
               {/* Truncated preview with View More link */}
@@ -199,7 +199,7 @@ export default function ExperiencesCatalog({ onPitchExperience }) {
             position: 'fixed',
             inset: 0,
             zIndex: 99999,
-            background: 'rgba(2, 6, 23, 0.82)',
+            background: 'rgba(18, 18, 18, 0.82)',
             backdropFilter: 'blur(8px)',
             display: 'flex',
             alignItems: 'center',
@@ -210,7 +210,7 @@ export default function ExperiencesCatalog({ onPitchExperience }) {
           <div 
             onClick={e => e.stopPropagation()}
             style={{
-              background: '#0f172a',
+              background: '#1B1B1B',
               border: '1px solid rgba(255,255,255,0.14)',
               borderRadius: '20px',
               maxWidth: '560px',
@@ -224,7 +224,7 @@ export default function ExperiencesCatalog({ onPitchExperience }) {
             }}
           >
             {/* Modal Image Header */}
-            <div style={{ position: 'relative', height: '220px', background: '#020617', flexShrink: 0 }}>
+            <div style={{ position: 'relative', height: '220px', background: '#121212', flexShrink: 0 }}>
               <img 
                 src={selectedExp.image} 
                 alt={selectedExp.title} 
@@ -240,7 +240,7 @@ export default function ExperiencesCatalog({ onPitchExperience }) {
                   width: '32px',
                   height: '32px',
                   borderRadius: '50%',
-                  background: 'rgba(15, 23, 42, 0.8)',
+                  background: 'rgba(27, 27, 27, 0.8)',
                   border: '1px solid rgba(255,255,255,0.2)',
                   color: '#fff',
                   display: 'flex',
@@ -256,10 +256,10 @@ export default function ExperiencesCatalog({ onPitchExperience }) {
               {/* Provider Badge */}
               <div style={{
                 position: 'absolute', bottom: '12px', left: '16px',
-                background: 'rgba(15, 23, 42, 0.9)', backdropFilter: 'blur(8px)',
-                border: '1px solid rgba(45, 212, 191, 0.3)',
+                background: 'rgba(27, 27, 27, 0.9)', backdropFilter: 'blur(8px)',
+                border: '1px solid rgba(242, 114, 87, 0.3)',
                 padding: '4px 10px', borderRadius: '99px',
-                fontSize: '0.72rem', color: '#2dd4bf', fontWeight: 700,
+                fontSize: '0.72rem', color: '#F27257', fontWeight: 700,
                 display: 'flex', alignItems: 'center', gap: '5px'
               }}>
                 <Sparkles size={12} /> {selectedExp.provider || 'Viator Partner'}
@@ -268,7 +268,7 @@ export default function ExperiencesCatalog({ onPitchExperience }) {
               {/* Rating */}
               <div style={{
                 position: 'absolute', bottom: '12px', right: '16px',
-                background: 'rgba(15, 23, 42, 0.9)', backdropFilter: 'blur(8px)',
+                background: 'rgba(27, 27, 27, 0.9)', backdropFilter: 'blur(8px)',
                 border: '1px solid rgba(255,255,255,0.1)',
                 padding: '4px 10px', borderRadius: '99px',
                 fontSize: '0.74rem', color: '#fff', fontWeight: 700,
@@ -281,7 +281,7 @@ export default function ExperiencesCatalog({ onPitchExperience }) {
             {/* Modal Body */}
             <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: '16px', flex: 1 }}>
               <div>
-                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#2dd4bf', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#F27257', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                   {selectedExp.category || 'Local Experience'}
                 </span>
                 <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#fff', margin: '4px 0 0', lineHeight: 1.3, fontFamily: 'var(--font-heading)' }}>
@@ -302,13 +302,13 @@ export default function ExperiencesCatalog({ onPitchExperience }) {
                 <div>
                   <div style={{ fontSize: '0.68rem', color: 'var(--slate-400)', textTransform: 'uppercase', fontWeight: 600 }}>Location</div>
                   <div style={{ fontSize: '0.84rem', color: '#fff', fontWeight: 600, marginTop: '2px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <MapPin size={13} color="#2dd4bf" /> {selectedExp.location || 'Tunbridge Wells'}
+                    <MapPin size={13} color="#F27257" /> {selectedExp.location || 'Tunbridge Wells'}
                   </div>
                 </div>
                 <div>
                   <div style={{ fontSize: '0.68rem', color: 'var(--slate-400)', textTransform: 'uppercase', fontWeight: 600 }}>Duration</div>
                   <div style={{ fontSize: '0.84rem', color: '#fff', fontWeight: 600, marginTop: '2px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <Clock size={13} color="#2dd4bf" /> {selectedExp.duration || '1-2 hours'}
+                    <Clock size={13} color="#F27257" /> {selectedExp.duration || '1-2 hours'}
                   </div>
                 </div>
                 <div>

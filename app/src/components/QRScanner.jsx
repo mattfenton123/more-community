@@ -123,14 +123,14 @@ export default function QRScanner({ onScan, onClose }) {
       <div style={{
         marginTop: '70px',
         padding: '8px 16px',
-        background: isOffline ? 'rgba(239, 68, 68, 0.25)' : 'rgba(13, 148, 136, 0.25)',
+        background: isOffline ? 'rgba(239, 68, 68, 0.25)' : 'rgba(217, 70, 40, 0.25)',
         borderBottom: '1px solid rgba(255,255,255,0.1)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
         fontSize: '0.78rem',
         fontWeight: 600,
-        color: isOffline ? '#fca5a5' : '#5eead4',
+        color: isOffline ? '#fca5a5' : '#F79984',
         zIndex: 10
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>

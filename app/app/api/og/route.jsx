@@ -63,11 +63,11 @@ export async function GET(request) {
                   display: 'flex',
                   alignItems: 'center',
                   gap: '8px',
-                  background: 'rgba(20, 184, 166, 0.15)',
-                  border: '1px solid rgba(20, 184, 166, 0.35)',
+                  background: 'rgba(235, 87, 56, 0.15)',
+                  border: '1px solid rgba(235, 87, 56, 0.35)',
                   borderRadius: 999,
                   padding: '6px 16px',
-                  color: '#2dd4bf',
+                  color: '#F27257',
                   fontSize: 16,
                   fontWeight: 700,
                   textTransform: 'uppercase',
@@ -103,7 +103,7 @@ export async function GET(request) {
             {type === 'event' && community && (
               <div
                 style={{
-                  color: '#2dd4bf',
+                  color: '#F27257',
                   fontSize: 24,
                   fontWeight: 700,
                   textTransform: 'uppercase',
@@ -199,13 +199,13 @@ export async function GET(request) {
                   marginLeft: 'auto',
                   display: 'flex',
                   alignItems: 'center',
-                  background: 'linear-gradient(135deg, #14b8a6, #0d9488)',
+                  background: 'linear-gradient(135deg, #EB5738, #D94628)',
                   borderRadius: 12,
                   padding: '10px 22px',
                   color: 'white',
                   fontSize: 20,
                   fontWeight: 700,
-                  boxShadow: '0 8px 24px rgba(20, 184, 166, 0.35)',
+                  boxShadow: '0 8px 24px rgba(235, 87, 56, 0.35)',
                 }}
               >
                 <span>Join on More Community →</span>

@@ -39,8 +39,8 @@ function createPinIcon() {
   return L.divIcon({
     html: `<div style="
       width: 42px; height: 42px; border-radius: 50%;
-      background: #0d9488; border: 3px solid #ffffff;
-      box-shadow: 0 4px 18px rgba(0,0,0,0.5), 0 0 0 8px rgba(13,148,136,0.3);
+      background: #D94628; border: 3px solid #ffffff;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.5), 0 0 0 8px rgba(217, 70, 40,0.3);
       display: flex; align-items: center; justify-content: center;
       color: white; font-size: 22px; cursor: grab;
       transition: transform 0.15s ease;
@@ -639,7 +639,7 @@ export default function LocationPicker({ locationName, setLocationName, coords: 
           className="btn interactive-press"
           style={{
             padding: '0 18px', borderRadius: '12px',
-            background: '#0d9488', color: 'white',
+            background: '#D94628', color: 'white',
             border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center'
           }}
         >
@@ -653,7 +653,7 @@ export default function LocationPicker({ locationName, setLocationName, coords: 
           className="places-dropdown"
           style={{
             background: 'var(--slate-900)',
-            border: '1px solid rgba(45, 212, 191, 0.3)',
+            border: '1px solid rgba(242, 114, 87, 0.3)',
             borderRadius: '12px',
             overflow: 'hidden',
             marginTop: '-4px',
@@ -670,7 +670,7 @@ export default function LocationPicker({ locationName, setLocationName, coords: 
             color: 'var(--teal-300)',
             textTransform: 'uppercase',
             letterSpacing: '0.05em',
-            background: 'rgba(20, 184, 166, 0.08)',
+            background: 'rgba(235, 87, 56, 0.08)',
             borderBottom: '1px solid rgba(255,255,255,0.06)',
             display: 'flex',
             justifyContent: 'space-between',
@@ -720,7 +720,7 @@ export default function LocationPicker({ locationName, setLocationName, coords: 
                 fontWeight: 700,
                 padding: '2px 6px',
                 borderRadius: '4px',
-                background: res.source === 'google' ? 'rgba(20,184,166,0.16)' : res.source === 'postcode' ? 'rgba(59,130,246,0.16)' : 'rgba(255,255,255,0.08)',
+                background: res.source === 'google' ? 'rgba(235, 87, 56,0.16)' : res.source === 'postcode' ? 'rgba(59,130,246,0.16)' : 'rgba(255,255,255,0.08)',
                 color: res.source === 'google' ? 'var(--teal-300)' : res.source === 'postcode' ? '#93c5fd' : 'var(--slate-300)',
                 textTransform: 'uppercase',
                 letterSpacing: '0.04em',
@@ -737,9 +737,9 @@ export default function LocationPicker({ locationName, setLocationName, coords: 
       {isManualPin && (
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '7px 12px', background: 'rgba(20, 184, 166, 0.12)',
-          border: '1px solid rgba(20, 184, 166, 0.3)', borderRadius: '10px',
-          fontSize: '0.78rem', color: '#2dd4bf'
+          padding: '7px 12px', background: 'rgba(235, 87, 56, 0.12)',
+          border: '1px solid rgba(235, 87, 56, 0.3)', borderRadius: '10px',
+          fontSize: '0.78rem', color: '#F27257'
         }}>
           <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <Crosshair size={14} />
@@ -816,7 +816,7 @@ export default function LocationPicker({ locationName, setLocationName, coords: 
         <div style={{
           borderRadius: '14px', overflow: 'hidden',
           border: '1px solid rgba(255,255,255,0.12)',
-          background: '#020617', zIndex: 0,
+          background: '#121212', zIndex: 0,
           boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
           position: 'relative'
         }}>
@@ -824,13 +824,13 @@ export default function LocationPicker({ locationName, setLocationName, coords: 
             {!useLeafletFallback ? (
               <div
                 ref={googleMapContainerRef}
-                style={{ height: '100%', width: '100%', background: '#020617' }}
+                style={{ height: '100%', width: '100%', background: '#121212' }}
               />
             ) : (
               <MapContainer
                 center={coords}
                 zoom={targetZoom}
-                style={{ height: '100%', width: '100%', backgroundColor: '#020617' }}
+                style={{ height: '100%', width: '100%', backgroundColor: '#121212' }}
                 zoomControl={true}
                 attributionControl={false}
               >
@@ -864,24 +864,24 @@ export default function LocationPicker({ locationName, setLocationName, coords: 
             {/* Quick helper badge overlay */}
             <div style={{
               position: 'absolute', top: '10px', right: '10px', zIndex: 10,
-              background: 'rgba(15, 23, 42, 0.88)', backdropFilter: 'blur(8px)',
+              background: 'rgba(27, 27, 27, 0.88)', backdropFilter: 'blur(8px)',
               padding: '5px 11px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.18)',
-              fontSize: '0.72rem', color: '#2dd4bf', display: 'flex', alignItems: 'center', gap: '5px',
+              fontSize: '0.72rem', color: '#F27257', display: 'flex', alignItems: 'center', gap: '5px',
               pointerEvents: 'none'
             }}>
-              <Sparkles size={12} color="#2dd4bf" />
+              <Sparkles size={12} color="#F27257" />
               <span>{useLeafletFallback ? 'Map Pin • Tap or drag pin' : 'Google Maps • Tap or drag pin'}</span>
             </div>
           </div>
 
           {/* Map Footer status */}
           <div style={{
-            background: '#0f172a', padding: '10px 14px', fontSize: '0.8rem',
+            background: '#1B1B1B', padding: '10px 14px', fontSize: '0.8rem',
             color: 'var(--slate-300)', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             borderTop: '1px solid rgba(255,255,255,0.08)'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', overflow: 'hidden' }}>
-              <Check size={15} color="#2dd4bf" style={{ flexShrink: 0 }} />
+              <Check size={15} color="#F27257" style={{ flexShrink: 0 }} />
               <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 <span style={{ fontWeight: 600, color: 'var(--white)' }}>
                   {pinAddress || 'Pin placed'}

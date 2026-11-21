@@ -3,7 +3,7 @@ export const SILHOUETTE_AVATAR = '/images/default-avatar.svg';
 const AVATAR_PALETTE = [
   '#21726C',
   '#0D8B93',
-  '#0F766E',
+  '#B83D22',
   '#115E59',
   '#0E7490',
   '#1D4ED8',

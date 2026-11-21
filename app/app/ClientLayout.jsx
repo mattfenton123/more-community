@@ -24,11 +24,11 @@ class GlobalErrorBoundary extends Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div style={{ background: '#0f172a', color: '#f8fafc', fontFamily: 'system-ui, sans-serif', padding: '40px 20px', minHeight: '100vh' }}>
+        <div style={{ background: '#1B1B1B', color: '#f8fafc', fontFamily: 'system-ui, sans-serif', padding: '40px 20px', minHeight: '100vh' }}>
           <div style={{ maxWidth: '600px', margin: '0 auto' }}>
             <h1 style={{ color: '#f43f5e', fontSize: '1.5rem', marginBottom: '12px' }}>⚠️ Something went wrong</h1>
             <p style={{ color: '#94a3b8', marginBottom: '20px' }}>The app encountered an error. Please try refreshing.</p>
-            <div style={{ background: '#1e293b', borderRadius: '12px', padding: '16px', border: '1px solid #334155' }}>
+            <div style={{ background: '#252525', borderRadius: '12px', padding: '16px', border: '1px solid #334155' }}>
               <pre style={{ color: '#fb7185', whiteSpace: 'pre-wrap', wordBreak: 'break-all', fontSize: '0.85rem', margin: 0 }}>
                 {this.state.error?.message}
               </pre>
@@ -38,7 +38,7 @@ class GlobalErrorBoundary extends Component {
             </div>
             <button
               onClick={() => window.location.reload()}
-              style={{ marginTop: '20px', padding: '12px 24px', background: '#14b8a6', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '0.9rem', cursor: 'pointer' }}
+              style={{ marginTop: '20px', padding: '12px 24px', background: '#EB5738', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '0.9rem', cursor: 'pointer' }}
             >
               Reload App
             </button>
@@ -89,7 +89,7 @@ function GlobalSimulatorBar() {
       left: '50%',
       transform: 'translateX(-50%)',
       zIndex: 999999,
-      background: 'rgba(15, 23, 42, 0.96)',
+      background: 'rgba(27, 27, 27, 0.96)',
       border: '1.5px solid #f59e0b',
       boxShadow: '0 10px 30px rgba(0,0,0,0.5), 0 0 15px rgba(245, 158, 11, 0.25)',
       borderRadius: '999px',
@@ -188,7 +188,7 @@ function MainLayout({ children }) {
   // Don't render content until auth checks are done (exempt public routes so guests can browse immediately)
   if (!isPublicRoute && (authLoading || (authUser && !user))) return (
     <div style={{ minHeight: '100dvh', background: 'var(--slate-950)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '16px' }}>
-      <div style={{ width: '40px', height: '40px', border: '3px solid rgba(20,184,166,0.2)', borderTopColor: 'var(--teal-500)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+      <div style={{ width: '40px', height: '40px', border: '3px solid rgba(235, 87, 56,0.2)', borderTopColor: 'var(--teal-500)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
       <span style={{ color: 'var(--slate-400)', fontSize: '0.9rem' }}>Loading...</span>
     </div>
   );

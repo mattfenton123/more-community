@@ -9,9 +9,9 @@ import { getCommentAuthorAffiliation, isEventHostOrCohostLeader } from '../lib/e
 
 const BADGE_STYLES = {
   host: {
-    background: 'rgba(20, 184, 166, 0.16)',
-    border: '1px solid rgba(45, 212, 191, 0.4)',
-    color: '#5eead4',
+    background: 'rgba(235, 87, 56, 0.16)',
+    border: '1px solid rgba(242, 114, 87, 0.4)',
+    color: '#F79984',
   },
   cohost: {
     background: 'rgba(56, 189, 248, 0.16)',
@@ -134,8 +134,8 @@ export default function EventDiscussion({
               fontWeight: 700,
               padding: '2px 8px',
               borderRadius: '99px',
-              background: 'rgba(20, 184, 166, 0.14)',
-              color: '#5eead4',
+              background: 'rgba(235, 87, 56, 0.14)',
+              color: '#F79984',
             }}
           >
             {comments.length}
@@ -186,7 +186,7 @@ export default function EventDiscussion({
                   alignItems: 'flex-start',
                   padding: '12px 14px',
                   borderRadius: '14px',
-                  background: 'rgba(15, 23, 42, 0.55)',
+                  background: 'rgba(27, 27, 27, 0.55)',
                   border: '1px solid rgba(255, 255, 255, 0.06)',
                 }}
               >
@@ -294,7 +294,7 @@ export default function EventDiscussion({
               maxHeight: '140px',
               padding: '11px 14px',
               borderRadius: '12px',
-              background: 'rgba(15, 23, 42, 0.7)',
+              background: 'rgba(27, 27, 27, 0.7)',
               border: '1px solid rgba(255, 255, 255, 0.12)',
               color: 'var(--white)',
               fontSize: '0.9rem',
@@ -311,8 +311,8 @@ export default function EventDiscussion({
               padding: '11px 16px',
               borderRadius: '12px',
               border: 'none',
-              background: isPosting || !draft.trim() ? 'rgba(20, 184, 166, 0.25)' : 'var(--teal-500)',
-              color: isPosting || !draft.trim() ? '#94a3b8' : '#0f172a',
+              background: isPosting || !draft.trim() ? 'rgba(235, 87, 56, 0.25)' : 'var(--teal-500)',
+              color: isPosting || !draft.trim() ? '#94a3b8' : '#1B1B1B',
               fontWeight: 700,
               fontSize: '0.86rem',
               cursor: isPosting || !draft.trim() ? 'not-allowed' : 'pointer',

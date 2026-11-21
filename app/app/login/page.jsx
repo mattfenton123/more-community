@@ -163,7 +163,7 @@ function LoginScreenContent() {
         <div style={{
           position: 'absolute',
           inset: 0,
-          background: 'linear-gradient(to bottom, rgba(2,6,23,0.3) 0%, rgba(2,6,23,0.6) 50%, rgba(2,6,23,1) 100%)',
+          background: 'linear-gradient(to bottom, rgba(18, 18, 18,0.3) 0%, rgba(18, 18, 18,0.6) 50%, rgba(18, 18, 18,1) 100%)',
         }} />
       </div>
 
@@ -214,8 +214,8 @@ function LoginScreenContent() {
         <div style={{ width: '100%' }}>
           {isJoinInvite && !isForgotPassword && !resetEmailSent && !signUpEmailSent && (
             <div style={{
-              background: 'linear-gradient(135deg, rgba(20,184,166,0.15) 0%, rgba(56,189,248,0.1) 100%)',
-              border: '1px solid rgba(20,184,166,0.3)',
+              background: 'linear-gradient(135deg, rgba(235, 87, 56, 0.15) 0%, rgba(235, 87, 56, 0.03) 100%)',
+              border: '1px solid rgba(235, 87, 56,0.3)',
               borderRadius: '16px',
               padding: '14px 16px',
               marginBottom: '16px',
@@ -235,8 +235,8 @@ function LoginScreenContent() {
             <div style={{ marginBottom: '20px' }}>
               {resetEmailSent ? (
                 <div style={{
-                  background: 'rgba(20,184,166,0.1)',
-                  border: '1px solid rgba(20,184,166,0.3)',
+                  background: 'rgba(235, 87, 56,0.1)',
+                  border: '1px solid rgba(235, 87, 56,0.3)',
                   borderRadius: '16px',
                   padding: '20px',
                   textAlign: 'center',
@@ -295,8 +295,8 @@ function LoginScreenContent() {
           ) : signUpEmailSent ? (
             <div style={{ marginBottom: '20px' }}>
               <div style={{
-                background: 'rgba(20,184,166,0.1)',
-                border: '1px solid rgba(20,184,166,0.3)',
+                background: 'rgba(235, 87, 56,0.1)',
+                border: '1px solid rgba(235, 87, 56,0.3)',
                 borderRadius: '16px',
                 padding: '24px 20px',
                 textAlign: 'center',
@@ -448,8 +448,8 @@ function LoginScreenContent() {
                   disabled={isLoading}
                   style={{
                     marginTop: '10px',
-                    background: 'rgba(20,184,166,0.15)',
-                    border: '1px solid rgba(20,184,166,0.3)',
+                    background: 'rgba(235, 87, 56,0.15)',
+                    border: '1px solid rgba(235, 87, 56,0.3)',
                     color: 'var(--teal-300)',
                     padding: '6px 12px',
                     borderRadius: '8px',
@@ -468,7 +468,7 @@ function LoginScreenContent() {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px 0' }}>
             <div style={{ display: 'flex' }}>
               {[
-                { initials: 'TW', bg: 'linear-gradient(135deg, #14b8a6, #0d9488)' },
+                { initials: 'TW', bg: 'linear-gradient(135deg, #EB5738, #D94628)' },
                 { initials: 'SJ', bg: 'linear-gradient(135deg, #3b82f6, #1d4ed8)' },
                 { initials: 'AC', bg: 'linear-gradient(135deg, #8b5cf6, #6d28d9)' },
                 { initials: 'MF', bg: 'linear-gradient(135deg, #ec4899, #be185d)' }

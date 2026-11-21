@@ -172,9 +172,9 @@ export default function ProfileImageModal({
           justifyContent: 'center',
           borderRadius: '24px',
           overflow: 'hidden',
-          background: 'radial-gradient(circle at center, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.95) 100%)',
-          border: '1px solid rgba(20, 184, 166, 0.25)',
-          boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.9), 0 0 40px rgba(20, 184, 166, 0.1)'
+          background: 'radial-gradient(circle at center, rgba(37, 37, 37, 0.6) 0%, rgba(27, 27, 27, 0.95) 100%)',
+          border: '1px solid rgba(235, 87, 56, 0.25)',
+          boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.9), 0 0 40px rgba(235, 87, 56, 0.1)'
         }}>
           <img
             src={imageUrl}
@@ -218,8 +218,8 @@ export default function ProfileImageModal({
                 padding: '9px 18px',
                 fontSize: '0.85rem',
                 borderRadius: '12px',
-                background: 'linear-gradient(135deg, #0d9488 0%, #0f766e 100%)',
-                borderColor: '#14b8a6',
+                background: 'linear-gradient(135deg, #D94628 0%, #B83D22 100%)',
+                borderColor: '#EB5738',
                 fontWeight: 600
               }}
             >

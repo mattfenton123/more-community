@@ -76,7 +76,7 @@ export default function SecuritySettings() {
   const ToggleOption = ({ selected, title, description, onClick }) => (
     <div onClick={onClick} className="interactive-hover" style={{ 
       display: 'flex', alignItems: 'flex-start', gap: '12px', padding: '16px', 
-      background: selected ? 'rgba(20,184,166,0.1)' : 'rgba(255,255,255,0.02)',
+      background: selected ? 'rgba(235, 87, 56,0.1)' : 'rgba(255,255,255,0.02)',
       border: `1px solid ${selected ? 'var(--teal-500)' : 'rgba(255,255,255,0.05)'}`, 
       borderRadius: '12px', cursor: 'pointer', transition: 'all 0.2s'
     }}>

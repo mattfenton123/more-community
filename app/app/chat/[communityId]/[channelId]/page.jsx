@@ -141,7 +141,7 @@ export default function Chat() {
         if (!waGroupLink || waConfig?.businessConnected || isDirectMessage) return null;
         const normalizedLink = waGroupLink.startsWith('http') ? waGroupLink : `https://${waGroupLink}`;
         return (
-          <div style={{ background: 'rgba(15, 23, 42, 0.45)', borderBottom: '1px solid rgba(255, 255, 255, 0.06)', padding: '7px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+          <div style={{ background: 'rgba(27, 27, 27, 0.45)', borderBottom: '1px solid rgba(255, 255, 255, 0.06)', padding: '7px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
             <span style={{ fontSize: '0.76rem', color: 'var(--slate-400)' }}>
               Community chat lives here · WhatsApp group also linked
             </span>
@@ -371,7 +371,7 @@ export default function Chat() {
               onKeyDown={(e) => e.key === 'Enter' && handleSend()}
               placeholder={isDirectMessage ? 'Message...' : `Message #${channelId}...`}
               style={{ flex: 1, background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '999px', padding: '12px 20px', color: 'var(--slate-200)', outline: 'none', transition: 'border-color 0.2s' }}
-              onFocus={e => e.target.style.borderColor = 'rgba(20,184,166,0.4)'}
+              onFocus={e => e.target.style.borderColor = 'rgba(235, 87, 56,0.4)'}
               onBlur={e => e.target.style.borderColor = 'var(--slate-700)'}
             />
             <button disabled={isUploading || (!inputText.trim() && imageFiles.length === 0)} className="btn btn-primary interactive-press" onClick={handleSend} style={{ width: '44px', height: '44px', borderRadius: '50%', padding: 0, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: (isUploading || (!inputText.trim() && imageFiles.length === 0)) ? 0.5 : 1 }}>
@@ -450,7 +450,7 @@ export default function Chat() {
                 }}
                 placeholder="Reply in thread..."
                 style={{ flex: 1, background: 'var(--slate-800)', border: '1px solid var(--slate-700)', borderRadius: '999px', padding: '10px 16px', color: 'var(--white)', fontSize: '0.9rem', outline: 'none' }}
-                onFocus={e => e.target.style.borderColor = 'rgba(20,184,166,0.4)'}
+                onFocus={e => e.target.style.borderColor = 'rgba(235, 87, 56,0.4)'}
                 onBlur={e => e.target.style.borderColor = 'var(--slate-700)'}
               />
               <button disabled={!threadInputText.trim()} onClick={() => {

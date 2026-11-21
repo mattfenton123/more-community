@@ -96,11 +96,11 @@ export default function PartnerHub() {
       {/* Hero Header */}
       <div style={{
         padding: '24px 20px 20px',
-        background: 'linear-gradient(180deg, rgba(20, 184, 166, 0.12) 0%, rgba(15, 23, 42, 0) 100%)',
+        background: 'linear-gradient(180deg, rgba(235, 87, 56, 0.12) 0%, rgba(27, 27, 27, 0) 100%)',
         borderBottom: '1px solid rgba(255, 255, 255, 0.05)'
       }}>
         <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 10px', borderRadius: '99px', background: 'rgba(20, 184, 166, 0.15)', border: '1px solid rgba(20, 184, 166, 0.3)', color: 'var(--teal-300)', fontSize: '0.74rem', fontWeight: 700, marginBottom: '10px' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 10px', borderRadius: '99px', background: 'rgba(235, 87, 56, 0.15)', border: '1px solid rgba(235, 87, 56, 0.3)', color: 'var(--teal-300)', fontSize: '0.74rem', fontWeight: 700, marginBottom: '10px' }}>
             <Sparkles size={12} /> Local Community Collaborations
           </div>
           <h1 style={{ fontSize: '1.75rem', fontWeight: 800, margin: '0 0 8px 0', fontFamily: 'var(--font-heading)', lineHeight: 1.2 }}>
@@ -211,7 +211,7 @@ export default function PartnerHub() {
                   padding: '8px 14px',
                   borderRadius: '99px',
                   border: isSelected ? '1px solid var(--teal-500)' : '1px solid rgba(255, 255, 255, 0.08)',
-                  background: isSelected ? 'rgba(20, 184, 166, 0.2)' : 'rgba(255, 255, 255, 0.03)',
+                  background: isSelected ? 'rgba(235, 87, 56, 0.2)' : 'rgba(255, 255, 255, 0.03)',
                   color: isSelected ? 'var(--teal-300)' : 'var(--slate-300)',
                   fontSize: '0.82rem',
                   fontWeight: isSelected ? 700 : 500,
@@ -231,7 +231,7 @@ export default function PartnerHub() {
         {/* Multi-Club Sponsor Floating Action Bar if clubs are checked */}
         {selectedClubIds.length > 0 && (
           <div style={{
-            background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.16) 0%, rgba(20, 184, 166, 0.12) 100%)',
+            background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.16) 0%, rgba(235, 87, 56, 0.12) 100%)',
             border: '1.5px solid rgba(245, 158, 11, 0.4)',
             borderRadius: '16px',
             padding: '14px 18px',
@@ -354,7 +354,7 @@ export default function PartnerHub() {
                           <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--white)', margin: 0 }}>
                             {comm.name}
                           </h3>
-                          <span style={{ fontSize: '0.68rem', background: 'rgba(20, 184, 166, 0.15)', color: 'var(--teal-300)', padding: '2px 8px', borderRadius: '99px', fontWeight: 600 }}>
+                          <span style={{ fontSize: '0.68rem', background: 'rgba(235, 87, 56, 0.15)', color: 'var(--teal-300)', padding: '2px 8px', borderRadius: '99px', fontWeight: 600 }}>
                             {comm.category || 'Community'}
                           </span>
                         </div>
@@ -401,8 +401,8 @@ export default function PartnerHub() {
                         minWidth: '150px',
                         padding: '9px 12px',
                         borderRadius: '10px',
-                        background: 'rgba(20, 184, 166, 0.1)',
-                        border: '1px solid rgba(45, 212, 191, 0.3)',
+                        background: 'rgba(235, 87, 56, 0.1)',
+                        border: '1px solid rgba(242, 114, 87, 0.3)',
                         color: 'var(--teal-300)',
                         fontSize: '0.82rem',
                         fontWeight: 700,

@@ -188,8 +188,8 @@ export default function Discover() {
                 aria-label="List view"
                 className="interactive-press"
                 style={{
-                  background: viewMode === 'list' ? 'rgba(20,184,166,0.1)' : 'transparent',
-                  border: viewMode === 'list' ? '1px solid rgba(20,184,166,0.3)' : '1px solid transparent',
+                  background: viewMode === 'list' ? 'rgba(235, 87, 56,0.1)' : 'transparent',
+                  border: viewMode === 'list' ? '1px solid rgba(235, 87, 56,0.3)' : '1px solid transparent',
                   borderRadius: '8px', width: '36px', height: '36px',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   cursor: 'pointer', color: viewMode === 'list' ? 'var(--teal-400)' : 'var(--slate-400)',
@@ -204,8 +204,8 @@ export default function Discover() {
                 aria-label="Map view"
                 className="interactive-press"
                 style={{
-                  background: viewMode === 'map' ? 'rgba(20,184,166,0.1)' : 'transparent',
-                  border: viewMode === 'map' ? '1px solid rgba(20,184,166,0.3)' : '1px solid transparent',
+                  background: viewMode === 'map' ? 'rgba(235, 87, 56,0.1)' : 'transparent',
+                  border: viewMode === 'map' ? '1px solid rgba(235, 87, 56,0.3)' : '1px solid transparent',
                   borderRadius: '8px', width: '36px', height: '36px',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   cursor: 'pointer', color: viewMode === 'map' ? 'var(--teal-400)' : 'var(--slate-400)',
@@ -234,21 +234,21 @@ export default function Discover() {
         <div style={{
           margin: '12px 20px 4px',
           padding: '14px 18px',
-          background: 'linear-gradient(135deg, rgba(20,184,166,0.14) 0%, rgba(15,23,42,0.6) 100%)',
-          border: '1px solid rgba(45,212,191,0.3)',
+          background: 'var(--surface-card)',
+          border: '1px solid var(--hairline-border-strong)',
           borderRadius: '16px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
           flexWrap: 'wrap',
           gap: '12px',
-          boxShadow: '0 4px 16px rgba(0,0,0,0.2)'
+          boxShadow: '0 4px 16px rgba(0,0,0,0.08)'
         }}>
           <div>
-            <div style={{ fontWeight: 800, fontSize: '0.94rem', color: '#ffffff', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <div style={{ fontWeight: 700, fontSize: '0.96rem', fontFamily: 'var(--font-heading)', color: 'var(--ink-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
               <span>📍</span> Real-Life Local Communities
             </div>
-            <div style={{ fontSize: '0.8rem', color: 'var(--slate-300)', marginTop: '2px' }}>
+            <div style={{ fontSize: '0.8rem', color: 'var(--ink-secondary)', marginTop: '2px' }}>
               Free to browse on the web. Select any group to see upcoming events, member reviews, and host bios.
             </div>
           </div>
@@ -275,8 +275,8 @@ export default function Discover() {
               gap: '6px',
               padding: '6px 14px',
               borderRadius: '999px',
-              background: 'linear-gradient(135deg, rgba(20,184,166,0.2), rgba(59,130,246,0.15))',
-              border: '1px solid rgba(20,184,166,0.4)',
+              background: 'linear-gradient(135deg, rgba(235, 87, 56, 0.2) 0%, rgba(235, 87, 56, 0.03) 100%)',
+              border: '1px solid rgba(235, 87, 56,0.4)',
               color: 'var(--teal-300)',
               fontSize: '0.8rem',
               fontWeight: 700,
@@ -316,7 +316,7 @@ export default function Discover() {
           )}
           <button
             className="interactive-press"
-            style={{ background: 'var(--teal-500)', border: 'none', color: '#0f172a', cursor: 'pointer', padding: '6px 16px', borderRadius: '99px', fontSize: '0.8rem', fontWeight: 700, marginLeft: '4px' }}
+            style={{ background: 'var(--teal-500)', border: 'none', color: '#1B1B1B', cursor: 'pointer', padding: '6px 16px', borderRadius: '99px', fontSize: '0.8rem', fontWeight: 700, marginLeft: '4px' }}
           >
             Go
           </button>
@@ -374,7 +374,7 @@ export default function Discover() {
           <MapView communities={filteredCommunities} events={events} />
           <div style={{
             position: 'absolute', bottom: '16px', left: '50%', transform: 'translateX(-50%)',
-            background: 'rgba(15, 23, 42, 0.9)', backdropFilter: 'blur(12px)',
+            background: 'rgba(27, 27, 27, 0.9)', backdropFilter: 'blur(12px)',
             padding: '8px 16px', borderRadius: '999px',
             fontSize: '0.8rem', color: 'var(--slate-300)', fontWeight: 500,
             border: '1px solid rgba(255,255,255,0.08)',
@@ -423,7 +423,7 @@ export default function Discover() {
           
           {activePill === 'For You' && (
             <>
-              <div style={{ margin: '0 0 16px', fontSize: '0.85rem', color: 'var(--teal-400)', background: 'rgba(20,184,166,0.1)', padding: '8px 12px', borderRadius: '8px', border: '1px solid rgba(20,184,166,0.2)' }}>
+              <div style={{ margin: '0 0 16px', fontSize: '0.85rem', color: 'var(--teal-400)', background: 'rgba(235, 87, 56,0.1)', padding: '8px 12px', borderRadius: '8px', border: '1px solid rgba(235, 87, 56,0.2)' }}>
                 Based on your interests, location, and similar users in your area.
               </div>
               <SwipeDiscovery 
@@ -461,7 +461,7 @@ export default function Discover() {
                           <button 
                             onClick={(e) => { e.stopPropagation(); navigate.push(getEventPath(event, events)); }} 
                             className="btn btn-primary interactive-press"
-                            style={{ padding: '6px 16px', fontSize: '0.85rem', borderRadius: '8px', background: 'var(--teal-500)', color: '#0f172a', fontWeight: 700, border: 'none', cursor: 'pointer' }}
+                            style={{ padding: '6px 16px', fontSize: '0.85rem', borderRadius: '8px', background: 'var(--teal-500)', color: '#1B1B1B', fontWeight: 700, border: 'none', cursor: 'pointer' }}
                           >
                             Join Event
                           </button>
@@ -492,8 +492,8 @@ export default function Discover() {
                     cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '1rem',
                     transition: 'all 0.3s', position: 'relative', overflow: 'hidden'
                   }}
-                  onMouseOver={(e) => { e.currentTarget.style.transform = 'scale(1.02)'; e.currentTarget.style.borderColor = 'rgba(45,212,191,0.5)'; }}
-                  onMouseOut={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.borderColor = 'rgba(45,212,191,0.3)'; }}
+                  onMouseOver={(e) => { e.currentTarget.style.transform = 'scale(1.02)'; e.currentTarget.style.borderColor = 'rgba(242, 114, 87,0.5)'; }}
+                  onMouseOut={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.borderColor = 'rgba(242, 114, 87,0.3)'; }}
                 >
                   <div style={{ position: 'absolute', top: '-50%', right: '-10%', width: '150px', height: '150px', background: 'rgba(251,191,36,0.2)', filter: 'blur(40px)', borderRadius: '50%' }}></div>
                   <div style={{ fontSize: '2.2rem', zIndex: 1, filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.2))' }}>🎯</div>
@@ -675,8 +675,8 @@ export default function Discover() {
                 style={{
                   margin: '12px 20px 32px',
                   padding: '24px 20px',
-                  border: '1px solid rgba(20,184,166,0.3)',
-                  background: 'linear-gradient(135deg, rgba(20,184,166,0.08) 0%, rgba(59,130,246,0.05) 100%)',
+                  border: '1px solid rgba(235, 87, 56,0.3)',
+                  background: 'linear-gradient(135deg, rgba(235, 87, 56, 0.08) 0%, rgba(235, 87, 56, 0.03) 100%)',
                   borderRadius: '20px',
                   textAlign: 'center',
                   cursor: 'pointer',

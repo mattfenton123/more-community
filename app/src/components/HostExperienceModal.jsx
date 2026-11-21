@@ -145,7 +145,7 @@ export default function HostExperienceModal({ experience, communities, user, onC
             </div>
           </div>
 
-          <div style={{ padding: '16px', background: 'rgba(20,184,166,0.05)', borderRadius: '16px', border: '1px solid rgba(20,184,166,0.2)' }}>
+          <div style={{ padding: '16px', background: 'rgba(235, 87, 56,0.05)', borderRadius: '16px', border: '1px solid rgba(235, 87, 56,0.2)' }}>
             {isAffiliate ? (
               <>
                 <h4 style={{ margin: '0 0 8px', color: 'var(--teal-400)', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
@@ -216,7 +216,7 @@ export default function HostExperienceModal({ experience, communities, user, onC
             </div>
 
             {isAffiliate ? (
-              <div style={{ fontSize: '0.82rem', color: '#ccfbf1', background: 'rgba(20,184,166,0.12)', border: '1px solid rgba(45,212,191,0.28)', borderRadius: '10px', padding: '10px 12px', lineHeight: 1.45 }}>
+              <div style={{ fontSize: '0.82rem', color: '#ccfbf1', background: 'rgba(235, 87, 56,0.12)', border: '1px solid rgba(242, 114, 87,0.28)', borderRadius: '10px', padding: '10px 12px', lineHeight: 1.45 }}>
                 With <strong>{econ.minGroupSize} members</strong> × £{econ.hostPassMember} Pass = <strong>£{econ.pot} pot</strong> (~£{econ.netToHost} after More&apos;s 10% fee) —{' '}
                 {econ.coversLeaderTicket
                   ? <strong>covers your own ~£{econ.guidePrice} ticket + £{econ.leaderNetAfterOwnTicket} club fund surplus.</strong>
@@ -235,7 +235,7 @@ export default function HostExperienceModal({ experience, communities, user, onC
               <button 
                 type="button"
                 onClick={() => setIsPublic(true)}
-                style={{ flex: 1, padding: '12px', borderRadius: '12px', border: isPublic ? '2px solid var(--teal-500)' : '1px solid var(--slate-700)', background: isPublic ? 'rgba(20,184,166,0.1)' : 'var(--slate-800)', color: 'var(--white)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
+                style={{ flex: 1, padding: '12px', borderRadius: '12px', border: isPublic ? '2px solid var(--teal-500)' : '1px solid var(--slate-700)', background: isPublic ? 'rgba(235, 87, 56,0.1)' : 'var(--slate-800)', color: 'var(--white)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
               >
                 <Globe size={24} color={isPublic ? 'var(--teal-400)' : 'var(--slate-400)'} />
                 <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>Public</span>
@@ -244,7 +244,7 @@ export default function HostExperienceModal({ experience, communities, user, onC
               <button 
                 type="button"
                 onClick={() => setIsPublic(false)}
-                style={{ flex: 1, padding: '12px', borderRadius: '12px', border: !isPublic ? '2px solid var(--teal-500)' : '1px solid var(--slate-700)', background: !isPublic ? 'rgba(20,184,166,0.1)' : 'var(--slate-800)', color: 'var(--white)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
+                style={{ flex: 1, padding: '12px', borderRadius: '12px', border: !isPublic ? '2px solid var(--teal-500)' : '1px solid var(--slate-700)', background: !isPublic ? 'rgba(235, 87, 56,0.1)' : 'var(--slate-800)', color: 'var(--white)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
               >
                 <Lock size={24} color={!isPublic ? 'var(--teal-400)' : 'var(--slate-400)'} />
                 <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>Private</span>

@@ -88,9 +88,9 @@ export default function LeaderSetupChecklist({ community, events = [], onOpenEve
 
   return (
     <div className="leader-setup-checklist-card" style={{
-      background: 'linear-gradient(135deg, rgba(20,184,166,0.12) 0%, rgba(30,41,59,0.7) 100%)',
+      background: 'linear-gradient(135deg, rgba(235, 87, 56,0.12) 0%, rgba(37, 37, 37,0.7) 100%)',
       borderRadius: '20px',
-      border: '1px solid rgba(20,184,166,0.3)',
+      border: '1px solid rgba(235, 87, 56,0.3)',
       padding: '20px',
       marginBottom: '24px',
       boxShadow: '0 8px 32px rgba(0,0,0,0.25)',
@@ -102,7 +102,7 @@ export default function LeaderSetupChecklist({ community, events = [], onOpenEve
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <div style={{
             width: '36px', height: '36px', borderRadius: '10px',
-            background: 'rgba(20,184,166,0.2)', border: '1px solid rgba(20,184,166,0.4)',
+            background: 'rgba(235, 87, 56,0.2)', border: '1px solid rgba(235, 87, 56,0.4)',
             display: 'flex', alignItems: 'center', justifyContent: 'center'
           }}>
             <Sparkles size={18} color="var(--teal-400)" />
@@ -117,9 +117,9 @@ export default function LeaderSetupChecklist({ community, events = [], onOpenEve
                 fontWeight: 700,
                 padding: '2px 8px',
                 borderRadius: '99px',
-                background: progressPercent === 100 ? 'rgba(34,197,94,0.2)' : 'rgba(20,184,166,0.2)',
+                background: progressPercent === 100 ? 'rgba(34,197,94,0.2)' : 'rgba(235, 87, 56,0.2)',
                 color: progressPercent === 100 ? '#4ade80' : 'var(--teal-300)',
-                border: progressPercent === 100 ? '1px solid rgba(34,197,94,0.3)' : '1px solid rgba(20,184,166,0.3)'
+                border: progressPercent === 100 ? '1px solid rgba(34,197,94,0.3)' : '1px solid rgba(235, 87, 56,0.3)'
               }}>
                 {completedCount} of {steps.length} Complete ({progressPercent}%)
               </span>
@@ -163,7 +163,7 @@ export default function LeaderSetupChecklist({ community, events = [], onOpenEve
           width: `${progressPercent}%`,
           background: progressPercent === 100 
             ? 'linear-gradient(90deg, #22c55e, #10b981)'
-            : 'linear-gradient(90deg, var(--teal-400), #3b82f6)',
+            : 'linear-gradient(90deg, var(--brand-accent), var(--brand-accent-hover))',
           borderRadius: '99px',
           transition: 'width 0.4s ease'
         }} />
@@ -183,8 +183,8 @@ export default function LeaderSetupChecklist({ community, events = [], onOpenEve
                   justifyContent: 'space-between',
                   gap: '12px',
                   padding: '12px 14px',
-                  background: step.completed ? 'rgba(255,255,255,0.02)' : 'rgba(20,184,166,0.05)',
-                  border: step.completed ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(20,184,166,0.2)',
+                  background: step.completed ? 'rgba(255,255,255,0.02)' : 'rgba(235, 87, 56,0.05)',
+                  border: step.completed ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(235, 87, 56,0.2)',
                   borderRadius: '12px'
                 }}
               >

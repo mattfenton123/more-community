@@ -9,7 +9,7 @@ const BADGES = [
   { id: 'first_join', name: 'Pioneer', description: 'Joined your first community', icon: Star, color: '#f59e0b', check: (s) => s.communitiesJoined >= 1 },
   { id: 'social_butterfly', name: 'Social Butterfly', description: 'Joined 3+ communities', icon: Users, color: '#ec4899', check: (s) => s.communitiesJoined >= 3 },
   { id: 'networker', name: 'Networker', description: 'Joined 5+ communities', icon: Crown, color: '#a78bfa', check: (s) => s.communitiesJoined >= 5 },
-  { id: 'first_event', name: 'First Steps', description: 'RSVP\'d to your first event', icon: Calendar, color: '#14b8a6', check: (s) => s.eventsAttended >= 1 },
+  { id: 'first_event', name: 'First Steps', description: 'RSVP\'d to your first event', icon: Calendar, color: '#EB5738', check: (s) => s.eventsAttended >= 1 },
   { id: 'regular', name: 'Regular', description: 'Attended 5+ events', icon: Target, color: '#3b82f6', check: (s) => s.eventsAttended >= 5 },
   { id: 'super_fan', name: 'Super Fan', description: 'Attended 10+ events', icon: Trophy, color: '#f59e0b', check: (s) => s.eventsAttended >= 10 },
   { id: 'chatterbox', name: 'Chatterbox', description: 'Sent 10+ messages', icon: MessageCircle, color: '#22c55e', check: (s) => s.messagesSent >= 10 },
@@ -135,7 +135,7 @@ export default function GamificationPanel({ userId }) {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '8px' }}>
         {[
           { label: 'Groups', value: stats.communitiesJoined, color: '#3b82f6' },
-          { label: 'Events', value: stats.eventsAttended, color: '#14b8a6' },
+          { label: 'Events', value: stats.eventsAttended, color: '#EB5738' },
           { label: 'Messages', value: stats.messagesSent, color: '#22c55e' },
           { label: 'Streak', value: `${streak}w`, color: '#ef4444' },
         ].map(s => (
@@ -225,7 +225,7 @@ export function CommunityLeaderboard({ communityId }) {
       </div>
       <div>
         {leaderboard.map((m, i) => (
-          <div key={m.user?.id || i} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '16px', borderBottom: i < leaderboard.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none', background: i < 3 ? 'rgba(20,184,166,0.03)' : 'transparent' }}>
+          <div key={m.user?.id || i} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '16px', borderBottom: i < leaderboard.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none', background: i < 3 ? 'rgba(235, 87, 56,0.03)' : 'transparent' }}>
             <div style={{ width: '28px', fontWeight: 700, color: i === 0 ? '#f59e0b' : i === 1 ? '#a1a1aa' : i === 2 ? '#b45309' : 'var(--slate-500)', fontSize: i < 3 ? '1.1rem' : '0.9rem', textAlign: 'center' }}>
               #{i + 1}
             </div>

@@ -131,7 +131,7 @@ export default function CouncilDashboard() {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px' }}>
                 <div style={{ background: 'var(--slate-900)', border: '1px solid var(--slate-800)', borderRadius: '16px', padding: '24px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-                    <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(20,184,166,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(235, 87, 56,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       <Users size={18} color="var(--teal-400)" />
                     </div>
                     <span style={{ color: 'var(--slate-400)', fontSize: '0.9rem', fontWeight: 500 }}>Active Citizens</span>

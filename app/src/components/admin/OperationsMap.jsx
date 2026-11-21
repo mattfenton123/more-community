@@ -184,7 +184,7 @@ export default function OperationsMap({ platformStats }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', height: '100%' }}>
       <style>{`
         .operations-map-popup .leaflet-popup-content-wrapper {
-          background: #0f172a !important;
+          background: #1B1B1B !important;
           border: 1px solid rgba(255,255,255,0.14) !important;
           border-radius: 14px !important;
           box-shadow: 0 12px 36px rgba(0,0,0,0.7) !important;
@@ -194,7 +194,7 @@ export default function OperationsMap({ platformStats }) {
           margin: 0 !important;
         }
         .operations-map-popup .leaflet-popup-tip {
-          background: #0f172a !important;
+          background: #1B1B1B !important;
           border: 1px solid rgba(255,255,255,0.14) !important;
         }
       `}</style>
@@ -203,7 +203,7 @@ export default function OperationsMap({ platformStats }) {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
         <div>
           <h2 style={{ fontSize: '1.25rem', color: 'var(--white)', margin: '0 0 4px 0', fontFamily: 'var(--font-heading)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <MapPin size={20} color="#2dd4bf" /> Geographic Operations Map
+            <MapPin size={20} color="#F27257" /> Geographic Operations Map
           </h2>
           <p style={{ color: 'var(--slate-400)', fontSize: '0.85rem', margin: 0 }}>
             Live geospatial tracking with {communities.length} community markers across South East England.
@@ -216,8 +216,8 @@ export default function OperationsMap({ platformStats }) {
             type="button"
             onClick={() => setMapLayer('roadmap')}
             style={{
-              background: mapLayer === 'roadmap' ? '#2dd4bf' : 'transparent',
-              color: mapLayer === 'roadmap' ? '#0f172a' : 'var(--slate-300)',
+              background: mapLayer === 'roadmap' ? '#F27257' : 'transparent',
+              color: mapLayer === 'roadmap' ? '#1B1B1B' : 'var(--slate-300)',
               border: 'none',
               borderRadius: '8px',
               padding: '6px 12px',
@@ -233,8 +233,8 @@ export default function OperationsMap({ platformStats }) {
             type="button"
             onClick={() => setMapLayer('satellite')}
             style={{
-              background: mapLayer === 'satellite' ? '#2dd4bf' : 'transparent',
-              color: mapLayer === 'satellite' ? '#0f172a' : 'var(--slate-300)',
+              background: mapLayer === 'satellite' ? '#F27257' : 'transparent',
+              color: mapLayer === 'satellite' ? '#1B1B1B' : 'var(--slate-300)',
               border: 'none',
               borderRadius: '8px',
               padding: '6px 12px',
@@ -250,8 +250,8 @@ export default function OperationsMap({ platformStats }) {
             type="button"
             onClick={() => setMapLayer('terrain')}
             style={{
-              background: mapLayer === 'terrain' ? '#2dd4bf' : 'transparent',
-              color: mapLayer === 'terrain' ? '#0f172a' : 'var(--slate-300)',
+              background: mapLayer === 'terrain' ? '#F27257' : 'transparent',
+              color: mapLayer === 'terrain' ? '#1B1B1B' : 'var(--slate-300)',
               border: 'none',
               borderRadius: '8px',
               padding: '6px 12px',
@@ -281,9 +281,9 @@ export default function OperationsMap({ platformStats }) {
               style={{
                 padding: '6px 14px',
                 borderRadius: '99px',
-                background: isSelected ? 'rgba(45, 212, 191, 0.2)' : 'rgba(255, 255, 255, 0.04)',
-                border: isSelected ? '1px solid #2dd4bf' : '1px solid rgba(255, 255, 255, 0.08)',
-                color: isSelected ? '#2dd4bf' : 'var(--slate-300)',
+                background: isSelected ? 'rgba(242, 114, 87, 0.2)' : 'rgba(255, 255, 255, 0.04)',
+                border: isSelected ? '1px solid #F27257' : '1px solid rgba(255, 255, 255, 0.08)',
+                color: isSelected ? '#F27257' : 'var(--slate-300)',
                 fontSize: '0.78rem',
                 fontWeight: isSelected ? 700 : 500,
                 cursor: 'pointer',
@@ -385,7 +385,7 @@ export default function OperationsMap({ platformStats }) {
 
                     <div style={{ fontSize: '0.8rem', color: '#94a3b8', display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '12px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <MapPin size={13} color="#2dd4bf" /> 
+                        <MapPin size={13} color="#F27257" /> 
                         <span style={{ color: '#e2e8f0', fontWeight: 600 }}>{c.town}</span> 
                         <span style={{ color: '#64748b' }}>({c.area})</span>
                       </div>
@@ -398,7 +398,7 @@ export default function OperationsMap({ platformStats }) {
                         <span><strong>{c.cEvents || 0}</strong> meetups scheduled</span>
                       </div>
                       {c.cRevenue > 0 && (
-                        <div style={{ color: '#2dd4bf', fontWeight: 600 }}>
+                        <div style={{ color: '#F27257', fontWeight: 600 }}>
                           💰 £{c.cRevenue} total ticket revenue
                         </div>
                       )}
@@ -411,7 +411,7 @@ export default function OperationsMap({ platformStats }) {
                       style={{
                         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
                         width: '100%', padding: '8px 12px', borderRadius: '8px',
-                        background: 'rgba(20, 184, 166, 0.2)', border: '1px solid rgba(20, 184, 166, 0.4)',
+                        background: 'rgba(235, 87, 56, 0.2)', border: '1px solid rgba(235, 87, 56, 0.4)',
                         color: 'var(--teal-300)', fontSize: '0.78rem', fontWeight: 700, textDecoration: 'none'
                       }}
                     >
@@ -428,14 +428,14 @@ export default function OperationsMap({ platformStats }) {
         {/* Floating Active Focus Pill */}
         <div style={{
           position: 'absolute', bottom: '14px', left: '14px', zIndex: 1000,
-          background: 'rgba(15, 23, 42, 0.92)', backdropFilter: 'blur(10px)',
+          background: 'rgba(27, 27, 27, 0.92)', backdropFilter: 'blur(10px)',
           padding: '6px 14px', borderRadius: '99px', border: '1px solid rgba(255,255,255,0.15)',
           display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.78rem'
         }}>
-          <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#2dd4bf', boxShadow: '0 0 10px #2dd4bf' }}></span>
+          <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#F27257', boxShadow: '0 0 10px #F27257' }}></span>
           <span style={{ color: 'var(--white)', fontWeight: 700 }}>{currentFocus.name}</span>
           <span style={{ color: 'var(--slate-400)' }}>•</span>
-          <span style={{ color: '#2dd4bf', fontFamily: 'monospace' }}>{currentFocus.lat.toFixed(4)}°, {currentFocus.lng.toFixed(4)}°</span>
+          <span style={{ color: '#F27257', fontFamily: 'monospace' }}>{currentFocus.lat.toFixed(4)}°, {currentFocus.lng.toFixed(4)}°</span>
         </div>
       </div>
 
@@ -457,8 +457,8 @@ export default function OperationsMap({ platformStats }) {
                 style={{
                   padding: '12px 14px',
                   borderRadius: '12px',
-                  background: isSelected ? 'rgba(45, 212, 191, 0.12)' : 'rgba(255, 255, 255, 0.02)',
-                  border: isSelected ? '1px solid #2dd4bf' : '1px solid rgba(255, 255, 255, 0.06)',
+                  background: isSelected ? 'rgba(242, 114, 87, 0.12)' : 'rgba(255, 255, 255, 0.02)',
+                  border: isSelected ? '1px solid #F27257' : '1px solid rgba(255, 255, 255, 0.06)',
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
@@ -481,7 +481,7 @@ export default function OperationsMap({ platformStats }) {
                     <span>👥 {c.members || 0} members</span>
                   </div>
                 </div>
-                <span style={{ fontSize: '0.75rem', color: isSelected ? '#2dd4bf' : 'var(--slate-500)', fontWeight: 600 }}>
+                <span style={{ fontSize: '0.75rem', color: isSelected ? '#F27257' : 'var(--slate-500)', fontWeight: 600 }}>
                   Pin →
                 </span>
               </div>

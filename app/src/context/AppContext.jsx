@@ -361,30 +361,43 @@ export function AppProvider({ children }) {
   }, [user?.id]);
 
   useEffect(() => {
-    if (typeof document !== 'undefined') {
-      const root = document.documentElement;
-      
-      let effectiveTheme = theme;
-      if (theme === 'system') {
-        effectiveTheme = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
-      }
-      
+    if (typeof document === 'undefined') return;
+    const root = document.documentElement;
+    const mq = window.matchMedia('(prefers-color-scheme: light)');
+
+    const applyTheme = () => {
+      const effectiveTheme = theme === 'system' ? (mq.matches ? 'light' : 'dark') : theme;
       root.setAttribute('data-theme', effectiveTheme);
-      if (highContrast) root.setAttribute('data-high-contrast', 'true');
-      else root.removeAttribute('data-high-contrast');
-      
-      if (largeText) root.setAttribute('data-large-text', 'true');
-      else root.removeAttribute('data-large-text');
-      
-      if (reduceMotion) root.setAttribute('data-reduce-motion', 'true');
-      else root.removeAttribute('data-reduce-motion');
-      
-      // Save to localStorage
-      localStorage.setItem('more_theme', theme);
-      localStorage.setItem('more_high_contrast', highContrast);
-      localStorage.setItem('more_large_text', largeText);
-      localStorage.setItem('more_reduce_motion', reduceMotion);
+      const themeMeta = document.querySelector('meta[name="theme-color"]');
+      if (themeMeta) {
+        themeMeta.setAttribute('content', effectiveTheme === 'light' ? '#F7F3EC' : '#121212');
+      }
+    };
+
+    applyTheme();
+    if (theme === 'system' && mq.addEventListener) {
+      mq.addEventListener('change', applyTheme);
     }
+
+    if (highContrast) root.setAttribute('data-high-contrast', 'true');
+    else root.removeAttribute('data-high-contrast');
+
+    if (largeText) root.setAttribute('data-large-text', 'true');
+    else root.removeAttribute('data-large-text');
+
+    if (reduceMotion) root.setAttribute('data-reduce-motion', 'true');
+    else root.removeAttribute('data-reduce-motion');
+
+    localStorage.setItem('more_theme', theme);
+    localStorage.setItem('more_high_contrast', highContrast);
+    localStorage.setItem('more_large_text', largeText);
+    localStorage.setItem('more_reduce_motion', reduceMotion);
+
+    return () => {
+      if (theme === 'system' && mq.removeEventListener) {
+        mq.removeEventListener('change', applyTheme);
+      }
+    };
   }, [theme, highContrast, largeText, reduceMotion]);
 
   const fetchAllDataRef = useRef(null);
@@ -572,7 +585,7 @@ export function AppProvider({ children }) {
             image: c.image || c.cover_image, // support both column names
             category: visibleTags.length > 0 ? visibleTags[0] : 'All',
             metrics: { members: count, cost: c.cost || 'Free', eventsRun: 0 },
-            colors: ['#3b82f6', '#14b8a6'], // fallback gradient
+            colors: ['#3b82f6', '#EB5738'], // fallback gradient
             highlights: Array.isArray(c.highlights) ? c.highlights : []
           };
         }));

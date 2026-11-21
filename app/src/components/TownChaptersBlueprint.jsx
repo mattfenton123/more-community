@@ -42,8 +42,8 @@ export default function TownChaptersBlueprint({ community }) {
 
   return (
     <div className="town-chapters-blueprint-card" style={{
-      background: 'linear-gradient(135deg, rgba(20, 184, 166, 0.08) 0%, rgba(15, 23, 42, 0.7) 100%)',
-      border: '1px solid rgba(45, 212, 191, 0.25)',
+      background: 'linear-gradient(135deg, rgba(235, 87, 56, 0.08) 0%, rgba(27, 27, 27, 0.7) 100%)',
+      border: '1px solid rgba(242, 114, 87, 0.25)',
       borderRadius: '20px',
       padding: '22px 24px',
       marginBottom: '32px',
@@ -57,8 +57,8 @@ export default function TownChaptersBlueprint({ community }) {
               Multi-Town Chapter Network
             </span>
             <span style={{
-              background: 'rgba(20,184,166,0.15)',
-              border: '1px solid rgba(20,184,166,0.3)',
+              background: 'rgba(235, 87, 56,0.15)',
+              border: '1px solid rgba(235, 87, 56,0.3)',
               color: 'var(--teal-300)',
               fontSize: '0.68rem',
               fontWeight: 700,
@@ -81,7 +81,7 @@ export default function TownChaptersBlueprint({ community }) {
             display: 'inline-flex',
             alignItems: 'center',
             gap: '8px',
-            background: 'linear-gradient(135deg, #10b981 0%, #14b8a6 100%)',
+            background: 'linear-gradient(135deg, #10b981 0%, #EB5738 100%)',
             border: 'none',
             color: '#090d16',
             fontWeight: 800,
@@ -107,7 +107,7 @@ export default function TownChaptersBlueprint({ community }) {
           display: 'inline-flex',
           alignItems: 'center',
           gap: '8px',
-          background: 'rgba(20, 184, 166, 0.2)',
+          background: 'rgba(235, 87, 56, 0.2)',
           border: '1.5px solid var(--teal-400)',
           borderRadius: '12px',
           padding: '8px 14px',

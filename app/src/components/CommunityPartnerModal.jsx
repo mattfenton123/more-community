@@ -61,7 +61,7 @@ const FieldInfo = ({ text, title }) => {
         onMouseEnter={() => setShow(true)}
         onMouseLeave={() => setShow(false)}
         style={{
-          background: show ? 'rgba(45, 212, 191, 0.25)' : 'rgba(255, 255, 255, 0.08)',
+          background: show ? 'rgba(242, 114, 87, 0.25)' : 'rgba(255, 255, 255, 0.08)',
           border: '1px solid rgba(255, 255, 255, 0.18)',
           borderRadius: '50%',
           width: '16px',
@@ -69,7 +69,7 @@ const FieldInfo = ({ text, title }) => {
           display: 'inline-flex',
           alignItems: 'center',
           justifyContent: 'center',
-          color: show ? '#2dd4bf' : 'var(--slate-400)',
+          color: show ? '#F27257' : 'var(--slate-400)',
           cursor: 'pointer',
           padding: 0,
           transition: 'all 0.15s ease'
@@ -88,17 +88,17 @@ const FieldInfo = ({ text, title }) => {
           width: '240px',
           padding: '8px 10px',
           background: '#090d16',
-          border: '1px solid rgba(45, 212, 191, 0.45)',
+          border: '1px solid rgba(242, 114, 87, 0.45)',
           borderRadius: '10px',
           fontSize: '0.72rem',
           color: '#e2e8f0',
           lineHeight: 1.4,
           zIndex: 99999,
-          boxShadow: '0 10px 25px rgba(0,0,0,0.8), 0 0 15px rgba(20,184,166,0.2)',
+          boxShadow: '0 10px 25px rgba(0,0,0,0.8), 0 0 15px rgba(235, 87, 56,0.2)',
           pointerEvents: 'none',
           textAlign: 'left'
         }}>
-          {title && <strong style={{ color: '#2dd4bf', display: 'block', marginBottom: '2px', fontSize: '0.74rem' }}>{title}</strong>}
+          {title && <strong style={{ color: '#F27257', display: 'block', marginBottom: '2px', fontSize: '0.74rem' }}>{title}</strong>}
           <span>{text}</span>
         </span>
       )}
@@ -354,8 +354,8 @@ export default function CommunityPartnerModal({
                   fontWeight: 800,
                   textTransform: 'uppercase',
                   letterSpacing: '0.08em',
-                  background: 'rgba(45, 212, 191, 0.15)',
-                  color: '#2dd4bf',
+                  background: 'rgba(242, 114, 87, 0.15)',
+                  color: '#F27257',
                   padding: '3px 9px',
                   borderRadius: '99px'
                 }}>
@@ -411,7 +411,7 @@ export default function CommunityPartnerModal({
                     alignItems: 'center',
                     gap: '8px',
                     padding: '6px 8px',
-                    borderBottom: isCurrent ? '2px solid #2dd4bf' : (isPast ? '2px solid rgba(45, 212, 191, 0.4)' : '2px solid transparent'),
+                    borderBottom: isCurrent ? '2px solid #F27257' : (isPast ? '2px solid rgba(242, 114, 87, 0.4)' : '2px solid transparent'),
                     cursor: isPast ? 'pointer' : 'default',
                     opacity: isCurrent ? 1 : (isPast ? 0.85 : 0.45)
                   }}
@@ -420,8 +420,8 @@ export default function CommunityPartnerModal({
                     width: '20px',
                     height: '20px',
                     borderRadius: '50%',
-                    background: isCurrent ? '#2dd4bf' : (isPast ? 'rgba(45, 212, 191, 0.2)' : 'rgba(255, 255, 255, 0.1)'),
-                    color: isCurrent ? '#0f172a' : (isPast ? '#2dd4bf' : '#94a3b8'),
+                    background: isCurrent ? '#F27257' : (isPast ? 'rgba(242, 114, 87, 0.2)' : 'rgba(255, 255, 255, 0.1)'),
+                    color: isCurrent ? '#1B1B1B' : (isPast ? '#F27257' : '#94a3b8'),
                     fontSize: '0.7rem',
                     fontWeight: 800,
                     display: 'flex',
@@ -452,8 +452,8 @@ export default function CommunityPartnerModal({
                   width: '64px',
                   height: '64px',
                   borderRadius: '50%',
-                  background: 'rgba(45, 212, 191, 0.15)',
-                  color: '#2dd4bf',
+                  background: 'rgba(242, 114, 87, 0.15)',
+                  color: '#F27257',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -490,8 +490,8 @@ export default function CommunityPartnerModal({
                   type="button"
                   onClick={handleDone}
                   style={{
-                    background: 'linear-gradient(135deg, #2dd4bf, #0284c7)',
-                    color: '#0f172a',
+                    background: 'linear-gradient(135deg, #F27257, #0284c7)',
+                    color: '#1B1B1B',
                     fontWeight: 700,
                     padding: '12px 32px',
                     borderRadius: '12px',
@@ -511,12 +511,12 @@ export default function CommunityPartnerModal({
                     {/* Hero Value Banner */}
                     <div style={{
                       padding: '20px 24px',
-                      background: 'linear-gradient(135deg, rgba(45, 212, 191, 0.1) 0%, rgba(14, 165, 233, 0.06) 100%)',
-                      border: '1px solid rgba(45, 212, 191, 0.25)',
+                      background: 'linear-gradient(135deg, rgba(242, 114, 87, 0.1) 0%, rgba(14, 165, 233, 0.06) 100%)',
+                      border: '1px solid rgba(242, 114, 87, 0.25)',
                       borderRadius: '18px',
                       marginBottom: '24px'
                     }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#2dd4bf', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#F27257', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' }}>
                         <Sparkles size={16} /> Partnering on More Community
                       </div>
                       <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--white)', margin: '0 0 8px' }}>
@@ -530,7 +530,7 @@ export default function CommunityPartnerModal({
                     {/* 3 Core Guarantees */}
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '24px' }}>
                       <div style={{ background: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255, 255, 255, 0.06)', borderRadius: '14px', padding: '14px' }}>
-                        <DollarSign size={20} color="#2dd4bf" style={{ marginBottom: '8px' }} />
+                        <DollarSign size={20} color="#F27257" style={{ marginBottom: '8px' }} />
                         <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--white)', marginBottom: '4px' }}>80% Directly to Clubs</div>
                         <div style={{ fontSize: '0.74rem', color: 'var(--slate-400)', lineHeight: 1.4 }}>Your sponsorship directly finances grassroots equipment, kits, and group socials.</div>
                       </div>
@@ -558,8 +558,8 @@ export default function CommunityPartnerModal({
                           style={{
                             padding: '18px 20px',
                             borderRadius: '16px',
-                            background: partnerMode === 'sponsor' ? 'rgba(45, 212, 191, 0.12)' : 'rgba(255, 255, 255, 0.03)',
-                            border: partnerMode === 'sponsor' ? '2px solid #2dd4bf' : '1px solid rgba(255, 255, 255, 0.08)',
+                            background: partnerMode === 'sponsor' ? 'rgba(242, 114, 87, 0.12)' : 'rgba(255, 255, 255, 0.03)',
+                            border: partnerMode === 'sponsor' ? '2px solid #F27257' : '1px solid rgba(255, 255, 255, 0.08)',
                             cursor: 'pointer',
                             transition: 'all 0.2s ease',
                             display: 'flex',
@@ -568,14 +568,14 @@ export default function CommunityPartnerModal({
                           }}
                         >
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(45, 212, 191, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                              <Store size={20} color="#2dd4bf" />
+                            <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(242, 114, 87, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              <Store size={20} color="#F27257" />
                             </div>
-                            {partnerMode === 'sponsor' && <CheckCircle size={20} color="#2dd4bf" />}
+                            {partnerMode === 'sponsor' && <CheckCircle size={20} color="#F27257" />}
                           </div>
                           <div>
                             <div style={{ fontSize: '0.95rem', fontWeight: 800, color: 'var(--white)' }}>Local Business Sponsor</div>
-                            <div style={{ fontSize: '0.78rem', color: '#2dd4bf', fontWeight: 600, marginTop: '2px' }}>From £15/mo • 80% to club fund</div>
+                            <div style={{ fontSize: '0.78rem', color: '#F27257', fontWeight: 600, marginTop: '2px' }}>From £15/mo • 80% to club fund</div>
                           </div>
                           <p style={{ fontSize: '0.78rem', color: 'var(--slate-400)', lineHeight: 1.4, margin: 0 }}>
                             Feature your brand ad in the club feed and offer an exclusive perk to members on meetup days (cafes, physios, gear shops).
@@ -632,8 +632,8 @@ export default function CommunityPartnerModal({
                     {targetCommunity && (
                       <div style={{
                         padding: '16px 20px',
-                        background: 'rgba(45, 212, 191, 0.08)',
-                        border: '1px solid rgba(45, 212, 191, 0.3)',
+                        background: 'rgba(242, 114, 87, 0.08)',
+                        border: '1px solid rgba(242, 114, 87, 0.3)',
                         borderRadius: '16px',
                         marginBottom: '20px',
                         display: 'flex',
@@ -645,7 +645,7 @@ export default function CommunityPartnerModal({
                             width: '48px',
                             height: '48px',
                             borderRadius: '12px',
-                            background: '#1e293b',
+                            background: '#252525',
                             overflow: 'hidden',
                             display: 'flex',
                             alignItems: 'center',
@@ -654,23 +654,23 @@ export default function CommunityPartnerModal({
                             {targetCommunity.cover_image || targetCommunity.image ? (
                               <img src={targetCommunity.cover_image || targetCommunity.image} alt={targetCommunity.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                             ) : (
-                              <Users size={22} color="#2dd4bf" />
+                              <Users size={22} color="#F27257" />
                             )}
                           </div>
                           <div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                               <span style={{ fontSize: '0.95rem', fontWeight: 800, color: 'var(--white)' }}>{targetCommunity.name}</span>
-                              <span style={{ fontSize: '0.72rem', background: 'rgba(255,255,255,0.08)', padding: '2px 8px', borderRadius: '99px', color: '#2dd4bf' }}>
+                              <span style={{ fontSize: '0.72rem', background: 'rgba(255,255,255,0.08)', padding: '2px 8px', borderRadius: '99px', color: '#F27257' }}>
                                 {targetCommunity.category || 'Local Club'}
                               </span>
                             </div>
                             <div style={{ fontSize: '0.78rem', color: 'var(--slate-400)', marginTop: '2px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><MapPin size={12} color="#2dd4bf" /> {cleanLocationName(targetCommunity.location_name) || 'Local Town'}</span>
-                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><Users size={12} color="#2dd4bf" /> {targetCommunity.member_count || '50+'} active members</span>
+                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><MapPin size={12} color="#F27257" /> {cleanLocationName(targetCommunity.location_name) || 'Local Town'}</span>
+                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><Users size={12} color="#F27257" /> {targetCommunity.member_count || '50+'} active members</span>
                             </div>
                           </div>
                         </div>
-                        <span style={{ fontSize: '0.78rem', color: '#2dd4bf', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <span style={{ fontSize: '0.78rem', color: '#F27257', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}>
                           <CheckCircle size={16} /> Selected
                         </span>
                       </div>
@@ -688,14 +688,14 @@ export default function CommunityPartnerModal({
                             style={{
                               padding: '14px 16px',
                               borderRadius: '14px',
-                              background: sponsorForm.tier === 'directory' ? 'rgba(45, 212, 191, 0.12)' : 'rgba(255, 255, 255, 0.02)',
-                              border: sponsorForm.tier === 'directory' ? '2px solid #2dd4bf' : '1px solid rgba(255, 255, 255, 0.08)',
+                              background: sponsorForm.tier === 'directory' ? 'rgba(242, 114, 87, 0.12)' : 'rgba(255, 255, 255, 0.02)',
+                              border: sponsorForm.tier === 'directory' ? '2px solid #F27257' : '1px solid rgba(255, 255, 255, 0.08)',
                               cursor: 'pointer'
                             }}
                           >
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
                               <span style={{ fontWeight: 800, color: 'var(--white)', fontSize: '0.88rem' }}>Club Directory Sponsor</span>
-                              <span style={{ fontWeight: 800, color: '#2dd4bf', fontSize: '0.9rem' }}>£15<span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>/mo</span></span>
+                              <span style={{ fontWeight: 800, color: '#F27257', fontSize: '0.9rem' }}>£15<span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>/mo</span></span>
                             </div>
                             <p style={{ fontSize: '0.75rem', color: 'var(--slate-400)', margin: 0, lineHeight: 1.4 }}>
                               Placement inside {targetCommunity?.name || 'this club'}'s feed. £12/mo goes straight to the club fund.
@@ -767,8 +767,8 @@ export default function CommunityPartnerModal({
                               style={{
                                 padding: '8px 12px',
                                 borderRadius: '10px',
-                                background: isSelected ? 'rgba(45, 212, 191, 0.15)' : 'rgba(255, 255, 255, 0.02)',
-                                border: isSelected ? '1px solid #2dd4bf' : '1px solid rgba(255, 255, 255, 0.05)',
+                                background: isSelected ? 'rgba(242, 114, 87, 0.15)' : 'rgba(255, 255, 255, 0.02)',
+                                border: isSelected ? '1px solid #F27257' : '1px solid rgba(255, 255, 255, 0.05)',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'space-between',
@@ -779,7 +779,7 @@ export default function CommunityPartnerModal({
                                 <span style={{ fontSize: '0.82rem', fontWeight: 700, color: isSelected ? '#fff' : 'var(--slate-200)' }}>{c.name}</span>
                                 <span style={{ fontSize: '0.7rem', color: 'var(--slate-400)', display: 'inline-flex', alignItems: 'center', gap: '3px' }}><MapPin size={11} color="var(--slate-400)" /> {cleanLocationName(c.location_name) || 'UK'}</span>
                               </div>
-                              <span style={{ fontSize: '0.72rem', color: isSelected ? '#2dd4bf' : 'var(--slate-400)' }}>
+                              <span style={{ fontSize: '0.72rem', color: isSelected ? '#F27257' : 'var(--slate-400)' }}>
                                 {isSelected ? 'Selected' : 'Select'}
                               </span>
                             </div>
@@ -812,7 +812,7 @@ export default function CommunityPartnerModal({
                             <select
                               value={sponsorForm.category}
                               onChange={e => setSponsorForm({ ...sponsorForm, category: e.target.value })}
-                              style={{ width: '100%', padding: '12px 14px', background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: 'var(--white)', fontSize: '0.85rem' }}
+                              style={{ width: '100%', padding: '12px 14px', background: '#252525', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: 'var(--white)', fontSize: '0.85rem' }}
                             >
                               {BUSINESS_CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
                             </select>
@@ -834,7 +834,7 @@ export default function CommunityPartnerModal({
                             <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--slate-300)' }}>
                               Exclusive Member Perk (Optional) <FieldInfo title="Member Perk" text="An exclusive discount or welcome gift for members on meetup days (optional). Leave blank if sponsoring as a brand supporter without a discount." />
                             </label>
-                            <span style={{ fontSize: '0.7rem', color: '#2dd4bf', background: 'rgba(45,212,191,0.1)', padding: '1px 6px', borderRadius: '4px', fontWeight: 600 }}>Optional</span>
+                            <span style={{ fontSize: '0.7rem', color: '#F27257', background: 'rgba(242, 114, 87,0.1)', padding: '1px 6px', borderRadius: '4px', fontWeight: 600 }}>Optional</span>
                           </div>
                           <input
                             type="text"
@@ -882,7 +882,7 @@ export default function CommunityPartnerModal({
                             <select
                               value={sessionForm.discipline}
                               onChange={e => setSessionForm({ ...sessionForm, discipline: e.target.value })}
-                              style={{ width: '100%', padding: '12px 14px', background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: 'var(--white)', fontSize: '0.85rem' }}
+                              style={{ width: '100%', padding: '12px 14px', background: '#252525', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: 'var(--white)', fontSize: '0.85rem' }}
                             >
                               {SESSION_DISCIPLINES.map(d => <option key={d} value={d}>{d}</option>)}
                             </select>
@@ -951,7 +951,7 @@ export default function CommunityPartnerModal({
                               Ticket Price (£) <FieldInfo title="Ticket Price" text="The total price charged to each community member at checkout. Held securely in Stripe post-event escrow until 24-48 hours after the session is completed." />
                             </label>
                             <div style={{ position: 'relative' }}>
-                              <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#2dd4bf', fontWeight: 700, fontSize: '0.9rem' }}>£</span>
+                              <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#F27257', fontWeight: 700, fontSize: '0.9rem' }}>£</span>
                               <input
                                 type="number"
                                 step="0.5"
@@ -991,8 +991,8 @@ export default function CommunityPartnerModal({
                           const maxGuests = Number(sessionForm.maxCapacity) || 10;
                           return (
                             <div style={{
-                              background: 'rgba(45, 212, 191, 0.08)',
-                              border: '1px solid rgba(45, 212, 191, 0.25)',
+                              background: 'rgba(242, 114, 87, 0.08)',
+                              border: '1px solid rgba(242, 114, 87, 0.25)',
                               borderRadius: '14px',
                               padding: '12px 16px',
                               display: 'flex',
@@ -1003,7 +1003,7 @@ export default function CommunityPartnerModal({
                                 <span style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--white)' }}>
                                   Per-Ticket Settlement Split:
                                 </span>
-                                <span style={{ fontSize: '0.82rem', fontWeight: 800, color: '#2dd4bf' }}>
+                                <span style={{ fontSize: '0.82rem', fontWeight: 800, color: '#F27257' }}>
                                   Member pays £{price.toFixed(2)}
                                 </span>
                               </div>
@@ -1080,7 +1080,7 @@ export default function CommunityPartnerModal({
                                     objectFit: 'cover',
                                     borderRadius: '8px',
                                     cursor: 'pointer',
-                                    border: sponsorForm.bannerUrl === img.url ? '2px solid #2dd4bf' : '1px solid rgba(255,255,255,0.1)'
+                                    border: sponsorForm.bannerUrl === img.url ? '2px solid #F27257' : '1px solid rgba(255,255,255,0.1)'
                                   }}
                                 />
                               ))}
@@ -1128,8 +1128,8 @@ export default function CommunityPartnerModal({
                                   style={{
                                     padding: '8px 6px',
                                     borderRadius: '10px',
-                                    background: sponsorForm.fontStyle === font.id ? 'rgba(45,212,191,0.15)' : 'rgba(255,255,255,0.03)',
-                                    border: sponsorForm.fontStyle === font.id ? '1px solid #2dd4bf' : '1px solid rgba(255,255,255,0.08)',
+                                    background: sponsorForm.fontStyle === font.id ? 'rgba(242, 114, 87,0.15)' : 'rgba(255,255,255,0.03)',
+                                    border: sponsorForm.fontStyle === font.id ? '1px solid #F27257' : '1px solid rgba(255,255,255,0.08)',
                                     color: 'var(--white)',
                                     fontSize: '0.75rem',
                                     cursor: 'pointer'
@@ -1161,7 +1161,7 @@ export default function CommunityPartnerModal({
                                 <label style={{ display: 'flex', alignItems: 'center', fontSize: '0.8rem', fontWeight: 600, color: 'var(--slate-300)' }}>
                                   CTA Destination Link (URL) <FieldInfo title="CTA Destination URL" text="The external website, booking page, or offer link members visit when clicking your CTA button. If left blank, it automatically uses your main website or Instagram from Step 2." />
                                 </label>
-                                <span style={{ fontSize: '0.7rem', color: '#2dd4bf', background: 'rgba(45,212,191,0.1)', padding: '1px 6px', borderRadius: '4px', fontWeight: 600 }}>Optional</span>
+                                <span style={{ fontSize: '0.7rem', color: '#F27257', background: 'rgba(242, 114, 87,0.1)', padding: '1px 6px', borderRadius: '4px', fontWeight: 600 }}>Optional</span>
                               </div>
                               <input
                                 type="text"
@@ -1196,7 +1196,7 @@ export default function CommunityPartnerModal({
                                 alt="Sponsor Banner"
                                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                               />
-                              <div style={{ position: 'absolute', top: '10px', right: '10px', background: sponsorForm.accentColor, color: '#0f172a', fontSize: '0.68rem', fontWeight: 800, padding: '2px 8px', borderRadius: '99px', textTransform: 'uppercase' }}>
+                              <div style={{ position: 'absolute', top: '10px', right: '10px', background: sponsorForm.accentColor, color: '#1B1B1B', fontSize: '0.68rem', fontWeight: 800, padding: '2px 8px', borderRadius: '99px', textTransform: 'uppercase' }}>
                                 Verified Partner
                               </div>
                             </div>
@@ -1222,7 +1222,7 @@ export default function CommunityPartnerModal({
                                   alignItems: 'center',
                                   gap: '6px'
                                 }}>
-                                  <Tag size={13} color="#2dd4bf" /> {sponsorForm.perk}
+                                  <Tag size={13} color="#F27257" /> {sponsorForm.perk}
                                 </div>
                               ) : (
                                 <div style={{
@@ -1238,7 +1238,7 @@ export default function CommunityPartnerModal({
                                   alignItems: 'center',
                                   gap: '6px'
                                 }}>
-                                  <Store size={13} color="#2dd4bf" /> Official Community Business Sponsor
+                                  <Store size={13} color="#F27257" /> Official Community Business Sponsor
                                 </div>
                               )}
                               <button
@@ -1248,7 +1248,7 @@ export default function CommunityPartnerModal({
                                   padding: '10px',
                                   borderRadius: '10px',
                                   background: sponsorForm.accentColor,
-                                  color: '#0f172a',
+                                  color: '#1B1B1B',
                                   fontWeight: 800,
                                   fontSize: '0.82rem',
                                   border: 'none',
@@ -1330,7 +1330,7 @@ export default function CommunityPartnerModal({
                                 alt="Session Cover"
                                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                               />
-                              <div style={{ position: 'absolute', top: '10px', right: '10px', background: '#38bdf8', color: '#0f172a', fontSize: '0.68rem', fontWeight: 800, padding: '2px 8px', borderRadius: '99px' }}>
+                              <div style={{ position: 'absolute', top: '10px', right: '10px', background: '#38bdf8', color: '#1B1B1B', fontSize: '0.68rem', fontWeight: 800, padding: '2px 8px', borderRadius: '99px' }}>
                                 £{sessionForm.ticketPrice} / person
                               </div>
                             </div>
@@ -1345,7 +1345,7 @@ export default function CommunityPartnerModal({
                               <p style={{ fontSize: '0.76rem', color: 'var(--slate-400)', margin: '0 0 12px', lineHeight: 1.4 }}>
                                 {sessionForm.summary || 'Summary of what members will learn...'}
                               </p>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.72rem', color: '#2dd4bf' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.72rem', color: '#F27257' }}>
                                 <Shield size={14} /> Protected by Post-Event Escrow
                               </div>
                             </div>
@@ -1380,7 +1380,7 @@ export default function CommunityPartnerModal({
                         <div>
                           <span style={{ color: 'var(--slate-400)', display: 'block', fontSize: '0.74rem' }}>Target Community</span>
                           <strong style={{ color: 'var(--white)', fontSize: '0.95rem' }}>{targetCommunity?.name}</strong>
-                          <span style={{ color: '#2dd4bf', display: 'block', fontSize: '0.74rem', marginTop: '2px' }}>
+                          <span style={{ color: '#F27257', display: 'block', fontSize: '0.74rem', marginTop: '2px' }}>
                             {cleanLocationName(targetCommunity?.location_name) || 'Local Town'} • {targetCommunity?.member_count || '50+'} members
                           </span>
                         </div>
@@ -1399,7 +1399,7 @@ export default function CommunityPartnerModal({
                               <strong style={{ color: 'var(--white)' }}>Business:</strong> {sponsorForm.businessName} ({sponsorForm.category})
                             </div>
                             {sponsorForm.perk ? (
-                              <div style={{ color: '#2dd4bf' }}>
+                              <div style={{ color: '#F27257' }}>
                                 <strong>Member Perk:</strong> {sponsorForm.perk}
                               </div>
                             ) : (
@@ -1411,7 +1411,7 @@ export default function CommunityPartnerModal({
                               <strong style={{ color: 'var(--slate-300)' }}>CTA Button:</strong>
                               <span style={{ color: '#38bdf8' }}>"{sponsorForm.ctaText || 'Visit Partner'}"</span>
                               <span>→</span>
-                              <span style={{ color: '#2dd4bf' }}>{sponsorForm.ctaUrl || sponsorForm.website || 'Direct Link'}</span>
+                              <span style={{ color: '#F27257' }}>{sponsorForm.ctaUrl || sponsorForm.website || 'Direct Link'}</span>
                             </div>
                           </div>
                         ) : (
@@ -1428,8 +1428,8 @@ export default function CommunityPartnerModal({
 
                       {/* Financial / Escrow Breakdown */}
                       <div style={{
-                        background: 'rgba(45, 212, 191, 0.08)',
-                        border: '1px solid rgba(45, 212, 191, 0.2)',
+                        background: 'rgba(242, 114, 87, 0.08)',
+                        border: '1px solid rgba(242, 114, 87, 0.2)',
                         borderRadius: '12px',
                         padding: '12px 14px'
                       }}>
@@ -1437,7 +1437,7 @@ export default function CommunityPartnerModal({
                           <span style={{ color: 'var(--slate-300)', fontSize: '0.78rem' }}>
                             {partnerMode === 'sponsor' ? 'Monthly Investment:' : 'Post-Event Escrow Terms:'}
                           </span>
-                          <span style={{ fontWeight: 800, color: '#2dd4bf', fontSize: '0.95rem' }}>
+                          <span style={{ fontWeight: 800, color: '#F27257', fontSize: '0.95rem' }}>
                             {partnerMode === 'sponsor' ? (sponsorForm.tier === 'headline' ? '£49/month' : '£15/month') : 'Stripe 24-48h Hold'}
                           </span>
                         </div>
@@ -1516,10 +1516,10 @@ export default function CommunityPartnerModal({
                     type="button"
                     onClick={handleNext}
                     style={{
-                      background: 'linear-gradient(135deg, #2dd4bf, #0284c7)',
+                      background: 'linear-gradient(135deg, #F27257, #0284c7)',
                       border: 'none',
                       borderRadius: '12px',
-                      color: '#0f172a',
+                      color: '#1B1B1B',
                       padding: '10px 24px',
                       fontSize: '0.84rem',
                       fontWeight: 800,

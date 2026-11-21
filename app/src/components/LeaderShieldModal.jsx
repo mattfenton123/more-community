@@ -26,7 +26,7 @@ const ShieldEmblem = ({ isInsured = false, size = 64 }) => (
       inset: -6,
       borderRadius: '50%',
       background: isInsured 
-        ? 'radial-gradient(circle, rgba(45,212,191,0.35) 0%, rgba(14,165,233,0.15) 50%, transparent 75%)' 
+        ? 'radial-gradient(circle, rgba(242, 114, 87,0.35) 0%, rgba(14,165,233,0.15) 50%, transparent 75%)' 
         : 'radial-gradient(circle, rgba(245,158,11,0.35) 0%, rgba(217,119,6,0.15) 50%, transparent 75%)',
       filter: 'blur(8px)',
       zIndex: 0
@@ -44,21 +44,21 @@ const ShieldEmblem = ({ isInsured = false, size = 64 }) => (
       <defs>
         {/* Shield Body Gradient */}
         <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor={isInsured ? "#14b8a6" : "#f59e0b"} />
-          <stop offset="40%" stopColor={isInsured ? "#0f766e" : "#b45309"} />
+          <stop offset="0%" stopColor={isInsured ? "#EB5738" : "#f59e0b"} />
+          <stop offset="40%" stopColor={isInsured ? "#B83D22" : "#b45309"} />
           <stop offset="100%" stopColor={isInsured ? "#042f2e" : "#451a03"} />
         </linearGradient>
 
         {/* Shield Rim Gradient */}
         <linearGradient id="rimGrad" x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stopColor="#ffffff" stopOpacity="0.8" />
-          <stop offset="50%" stopColor={isInsured ? "#2dd4bf" : "#fbbf24"} />
-          <stop offset="100%" stopColor={isInsured ? "#0d9488" : "#d97706"} />
+          <stop offset="50%" stopColor={isInsured ? "#F27257" : "#fbbf24"} />
+          <stop offset="100%" stopColor={isInsured ? "#D94628" : "#d97706"} />
         </linearGradient>
 
         {/* Inner Plate Gradient */}
         <linearGradient id="innerPlate" x1="50%" y1="0%" x2="50%" y2="100%">
-          <stop offset="0%" stopColor={isInsured ? "#0f172a" : "#1e1b18"} />
+          <stop offset="0%" stopColor={isInsured ? "#1B1B1B" : "#1e1b18"} />
           <stop offset="100%" stopColor="#090d16" />
         </linearGradient>
       </defs>
@@ -80,13 +80,13 @@ const ShieldEmblem = ({ isInsured = false, size = 64 }) => (
       />
 
       {/* Decorative Heraldic Cross / Radiance */}
-      <path d="M50 20 L50 92" stroke={isInsured ? "rgba(45,212,191,0.25)" : "rgba(245,158,11,0.25)"} strokeWidth="1" strokeDasharray="2 3" />
-      <path d="M22 52 L78 52" stroke={isInsured ? "rgba(45,212,191,0.25)" : "rgba(245,158,11,0.25)"} strokeWidth="1" strokeDasharray="2 3" />
+      <path d="M50 20 L50 92" stroke={isInsured ? "rgba(242, 114, 87,0.25)" : "rgba(245,158,11,0.25)"} strokeWidth="1" strokeDasharray="2 3" />
+      <path d="M22 52 L78 52" stroke={isInsured ? "rgba(242, 114, 87,0.25)" : "rgba(245,158,11,0.25)"} strokeWidth="1" strokeDasharray="2 3" />
 
       {/* Central Star Crest */}
       <path 
         d="M50 30 L53 38 L62 38 L55 43 L58 51 L50 46 L42 51 L45 43 L38 38 L47 38 Z" 
-        fill={isInsured ? "#2dd4bf" : "#fbbf24"}
+        fill={isInsured ? "#F27257" : "#fbbf24"}
       />
 
       {/* Protective Checkmark Emblem */}
@@ -206,11 +206,11 @@ export default function LeaderShieldModal({ isOpen, onClose, community, leaderUs
           maxHeight: '94vh',
           overflowY: 'auto',
           background: 'linear-gradient(180deg, #0b1120 0%, #060a12 100%)',
-          border: '1.5px solid rgba(45, 212, 191, 0.35)',
+          border: '1.5px solid rgba(242, 114, 87, 0.35)',
           borderRadius: '26px',
           padding: '28px',
           position: 'relative',
-          boxShadow: '0 30px 70px rgba(0, 0, 0, 0.8), 0 0 40px rgba(20, 184, 166, 0.15)'
+          boxShadow: '0 30px 70px rgba(0, 0, 0, 0.8), 0 0 40px rgba(235, 87, 56, 0.15)'
         }}
       >
         {/* Close Button */}
@@ -272,8 +272,8 @@ export default function LeaderShieldModal({ isOpen, onClose, community, leaderUs
           <div>
             {/* Digital Insurance Wallet Card */}
             <div style={{
-              background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.98) 50%, rgba(20, 184, 166, 0.18) 100%)',
-              border: '1.5px solid rgba(45, 212, 191, 0.4)',
+              background: 'linear-gradient(135deg, rgba(37, 37, 37, 0.95) 0%, rgba(27, 27, 27, 0.98) 50%, rgba(235, 87, 56, 0.18) 100%)',
+              border: '1.5px solid rgba(242, 114, 87, 0.4)',
               borderRadius: '20px',
               padding: '22px',
               marginBottom: '20px',
@@ -320,7 +320,7 @@ export default function LeaderShieldModal({ isOpen, onClose, community, leaderUs
                 </div>
                 <div>
                   <span style={{ color: 'var(--slate-400)', fontSize: '0.7rem', display: 'block' }}>Indemnity Limit</span>
-                  <strong style={{ color: '#2dd4bf' }}>£5,000,000 Organiser Liability Protection</strong>
+                  <strong style={{ color: '#F27257' }}>£5,000,000 Organiser Liability Protection</strong>
                 </div>
                 <div>
                   <span style={{ color: 'var(--slate-400)', fontSize: '0.7rem', display: 'block' }}>Territory</span>
@@ -396,10 +396,10 @@ export default function LeaderShieldModal({ isOpen, onClose, community, leaderUs
               </strong>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '0.76rem', marginTop: '8px' }}>
                 <div style={{ background: 'rgba(255,255,255,0.03)', padding: '10px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                  <span style={{ color: '#2dd4bf', fontWeight: 800, display: 'block', marginBottom: '2px' }}>Stay on Free if:</span>
+                  <span style={{ color: '#F27257', fontWeight: 800, display: 'block', marginBottom: '2px' }}>Stay on Free if:</span>
                   You run casual, 100% free social meetups where members just chat and no tickets or fees are ever charged.
                 </div>
-                <div style={{ background: 'rgba(20,184,166,0.09)', padding: '10px', borderRadius: '10px', border: '1px solid rgba(45,212,191,0.25)' }}>
+                <div style={{ background: 'rgba(235, 87, 56,0.09)', padding: '10px', borderRadius: '10px', border: '1px solid rgba(242, 114, 87,0.25)' }}>
                   <span style={{ color: '#fbbf24', fontWeight: 800, display: 'block', marginBottom: '2px' }}>Upgrade to Pro if:</span>
                   You charge for tickets/activities (which legally creates an organizer duty of care), hire council spaces, lead outdoor walks, or want built-in Public Liability Insurance so you are never personally liable.
                 </div>
@@ -475,19 +475,19 @@ export default function LeaderShieldModal({ isOpen, onClose, community, leaderUs
                     width: '24px',
                     height: '24px',
                     borderRadius: '50%',
-                    background: 'rgba(20,184,166,0.15)',
+                    background: 'rgba(235, 87, 56,0.15)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     flexShrink: 0,
                     marginTop: '2px'
                   }}>
-                    <Check size={14} color="#2dd4bf" strokeWidth={3} />
+                    <Check size={14} color="#F27257" strokeWidth={3} />
                   </div>
                   <div style={{ flex: 1 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                       <span style={{ fontWeight: 700, color: 'var(--white)', fontSize: '0.85rem' }}>{perk.title}</span>
-                      <span style={{ fontSize: '0.65rem', color: 'var(--teal-300)', background: 'rgba(20,184,166,0.12)', padding: '1px 6px', borderRadius: '4px', fontWeight: 700 }}>
+                      <span style={{ fontSize: '0.65rem', color: 'var(--teal-300)', background: 'rgba(235, 87, 56,0.12)', padding: '1px 6px', borderRadius: '4px', fontWeight: 700 }}>
                         {perk.badge}
                       </span>
                     </div>

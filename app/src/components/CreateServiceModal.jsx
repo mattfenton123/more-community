@@ -104,7 +104,7 @@ export default function CreateServiceModal({ isOpen, onClose, communityId }) {
                     style={{
                       display: 'flex', alignItems: 'center', gap: '6px',
                       padding: '10px 14px', borderRadius: '99px',
-                      background: isSelected ? 'rgba(20,184,166,0.15)' : 'rgba(255,255,255,0.03)',
+                      background: isSelected ? 'rgba(235, 87, 56,0.15)' : 'rgba(255,255,255,0.03)',
                       border: `1px solid ${isSelected ? 'var(--teal-500)' : 'rgba(255,255,255,0.1)'}`,
                       color: isSelected ? 'var(--teal-400)' : 'var(--slate-300)',
                       cursor: 'pointer', fontSize: '0.85rem', fontWeight: isSelected ? 600 : 400

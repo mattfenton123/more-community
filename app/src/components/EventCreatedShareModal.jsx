@@ -38,12 +38,12 @@ export default function EventCreatedShareModal({ event, experience, allEvents, o
     <div style={{
       position: 'fixed', inset: 0, zIndex: 1100,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      background: 'rgba(2,6,23,0.88)', backdropFilter: 'blur(10px)',
+      background: 'rgba(18, 18, 18,0.88)', backdropFilter: 'blur(10px)',
       padding: '16px'
     }}>
       <div style={{
         background: 'var(--slate-900)',
-        border: '1px solid rgba(20,184,166,0.3)',
+        border: '1px solid rgba(235, 87, 56,0.3)',
         width: '100%', maxWidth: '480px',
         borderRadius: '24px', padding: '24px',
         color: 'var(--white)', textAlign: 'center',
@@ -53,7 +53,7 @@ export default function EventCreatedShareModal({ event, experience, allEvents, o
         {/* Top Icon */}
         <div style={{
           width: '64px', height: '64px', borderRadius: '50%',
-          background: 'rgba(20,184,166,0.15)', border: '1px solid rgba(20,184,166,0.4)',
+          background: 'rgba(235, 87, 56,0.15)', border: '1px solid rgba(235, 87, 56,0.4)',
           color: 'var(--teal-300)', display: 'flex', alignItems: 'center', justifyContent: 'center',
           margin: '0 auto 16px'
         }}>
