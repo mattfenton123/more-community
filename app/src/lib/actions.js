@@ -1344,30 +1344,92 @@ export async function promoteMemberAction(communityId, memberId, newRole, token)
   return true;
 }
 
-export async function createPollAction(communityId, question, options, token) {
-  await verifyUser(token);
-  
-  const { data, error } = await supabaseAdmin.from('polls').insert({
-    community_id: communityId,
-    question,
-    options
-  }).select().single();
-  
+export async function createPollAction(communityId, question, options, token, channel = 'general') {
+  const { user: caller, isAdmin } = await verifyCommunityManager(token, communityId);
+  const db = getSupabaseClient(token);
+  await ensureRlsManagerMembership(db, caller.id, communityId, isAdmin);
+
+  const cleanQuestion = String(question || '').trim();
+  const cleanOptions = (Array.isArray(options) ? options : [])
+    .map((o) => String(o || '').trim())
+    .filter(Boolean)
+    .slice(0, 8);
+
+  if (!cleanQuestion || cleanOptions.length < 2) {
+    throw new Error("A poll needs a question and at least 2 options.");
+  }
+
+  const { data, error } = await db
+    .from('polls')
+    .insert({
+      community_id: communityId,
+      channel: channel || 'general',
+      question: cleanQuestion,
+      options: cleanOptions,
+      created_by: caller.id,
+    })
+    .select()
+    .single();
+
   if (error) throw new Error(error.message);
+
+  // Notify community members so they can immediately jump to vote on the Community Page
+  try {
+    const [{ data: comm }, { data: members }] = await Promise.all([
+      db.from('communities').select('name').eq('id', communityId).maybeSingle(),
+      db.from('community_memberships').select('user_id').eq('community_id', communityId),
+    ]);
+    const memberIds = Array.from(new Set((members || []).map((m) => m.user_id).filter((id) => id && id !== caller.id)));
+    if (memberIds.length > 0) {
+      const notifs = memberIds.map((uid) => ({
+        user_id: uid,
+        type: 'poll',
+        title: `📊 New Poll in ${comm?.name || 'your community'}`,
+        message: `"${cleanQuestion}" — Tap to cast your vote!`,
+        link: `/community/${communityId}?tab=feed`,
+        is_read: false,
+      }));
+      await db.from('notifications').insert(notifs);
+    }
+  } catch (notifErr) {
+    console.warn('Could not notify members of new poll:', notifErr?.message || notifErr);
+  }
+
   return data;
 }
 
 export async function votePollAction(pollId, userId, optionIndex, token) {
   await verifyUser(token, userId);
-  
-  const { data, error } = await supabaseAdmin.from('poll_votes').upsert([{
-    poll_id: pollId,
-    user_id: userId,
-    option_index: optionIndex
-  }], { onConflict: 'poll_id,user_id' }).select().single();
-  
+  const db = getSupabaseClient(token);
+
+  const { data, error } = await db
+    .from('poll_votes')
+    .upsert(
+      [
+        {
+          poll_id: pollId,
+          user_id: userId,
+          option_index: Number(optionIndex),
+        },
+      ],
+      { onConflict: 'poll_id,user_id' }
+    )
+    .select()
+    .single();
+
   if (error) throw new Error(error.message);
   return data;
+}
+
+export async function deletePollAction(pollId, communityId, token) {
+  const { user: caller, isAdmin } = await verifyCommunityManager(token, communityId);
+  const db = getSupabaseClient(token);
+  await ensureRlsManagerMembership(db, caller.id, communityId, isAdmin);
+
+  await db.from('poll_votes').delete().eq('poll_id', pollId);
+  const { error } = await db.from('polls').delete().eq('id', pollId);
+  if (error) throw new Error(error.message);
+  return true;
 }
 
 export async function removeMemberAction(communityId, memberId, token) {

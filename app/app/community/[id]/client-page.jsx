@@ -90,14 +90,25 @@ function getGalleryType(tags) {
 export default function CommunityProfile() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user, communities, events, communityMemberships, users, eventRsvps, uploadImage, addEventPhoto, joinCommunity, leaveCommunity, experiences, services, updateServiceStatus, reviews, updateCommunity, approveChapter, declineChapter, sponsors, sponsorshipAssignments, addCommunityHighlight, theme } = useAppContext();
+  const { user, communities, events, communityMemberships, users, eventRsvps, uploadImage, addEventPhoto, joinCommunity, leaveCommunity, experiences, services, updateServiceStatus, reviews, updateCommunity, approveChapter, declineChapter, sponsors, sponsorshipAssignments, addCommunityHighlight, polls, pollVotes, votePoll, deletePoll, theme } = useAppContext();
   const { feedPosts, createFeedPost, likeFeedPost, deleteFeedPost } = useFeed();
   const { toast } = useToast();
+  const searchParams = useSearchParams();
+  const tabParam = searchParams?.get('tab');
+  const autoJoinParam = searchParams?.get('autoJoin');
   const [showRules, setShowRules] = useState(false);
   const [editingGuidelines, setEditingGuidelines] = useState(false);
   const [guidelinesDraft, setGuidelinesDraft] = useState([]);
   const [newGuideline, setNewGuideline] = useState('');
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState(
+    tabParam && ['overview', 'events', 'feed', 'photos', 'members'].includes(tabParam) ? tabParam : 'overview'
+  );
+
+  useEffect(() => {
+    if (tabParam && ['overview', 'events', 'feed', 'photos', 'members'].includes(tabParam)) {
+      setActiveTab(tabParam);
+    }
+  }, [tabParam]);
   const [expandedComments, setExpandedComments] = useState({});
   const [newPostText, setNewPostText] = useState('');
   const [newPostImage, setNewPostImage] = useState(null);
@@ -123,8 +134,6 @@ export default function CommunityProfile() {
   const pastEventPhotoInputRef = useRef(null);
   const [targetPastEventId, setTargetPastEventId] = useState(null);
   const [uploadingPastEventId, setUploadingPastEventId] = useState(null);
-  const searchParams = useSearchParams();
-  const autoJoinParam = searchParams?.get('autoJoin');
   
   const rawParam = id || (user?.joinedCommunities?.length > 0 ? user.joinedCommunities[0] : 'tw-tech-meetup');
   const community = findCommunityByParam(communities, rawParam);
@@ -223,6 +232,132 @@ export default function CommunityProfile() {
   const galleryPhotos = dbPhotos.length > 0 ? dbPhotos : stockPhotos;
   const nextEvent = upcomingEvents[0] || null;
   const communityFeed = feedPosts?.filter(p => p.communityId === communityId) || [];
+  const communityPolls = (polls || [])
+    .filter(p => p.community_id === communityId)
+    .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+
+  const renderPollsSection = (limit = null) => {
+    const visiblePolls = limit ? communityPolls.slice(0, limit) : communityPolls;
+    if (visiblePolls.length === 0) return null;
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '18px' }}>
+        {visiblePolls.map((poll) => {
+          const votes = pollVotes?.[poll.id] || [];
+          const totalVotes = votes.length;
+          const myVote = user?.id ? votes.find((v) => v.user_id === user.id) : null;
+          const opts = Array.isArray(poll.options) ? poll.options : [];
+
+          return (
+            <div
+              key={poll.id}
+              style={{
+                background: 'var(--surface-card)',
+                border: '1.5px solid rgba(59, 130, 246, 0.35)',
+                borderRadius: '16px',
+                padding: '16px',
+                boxShadow: '0 6px 20px rgba(59, 130, 246, 0.08)',
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                <span style={{ fontSize: '0.7rem', fontWeight: 800, color: '#3b82f6', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                  📊 Active Community Poll • {totalVotes} {totalVotes === 1 ? 'vote' : 'votes'}
+                </span>
+                {isLeader && typeof deletePoll === 'function' && (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        await deletePoll(poll.id, communityId);
+                        toast.success('Poll Closed', 'Removed from the community page.');
+                      } catch (err) {
+                        toast.error('Could not close poll', err?.message || 'Try again.');
+                      }
+                    }}
+                    style={{
+                      background: 'transparent',
+                      border: 'none',
+                      color: 'var(--ink-muted)',
+                      fontSize: '0.72rem',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                    }}
+                  >
+                    <Trash2 size={12} /> Close Poll
+                  </button>
+                )}
+              </div>
+
+              <div style={{ fontWeight: 800, fontSize: '1.02rem', color: 'var(--ink-primary)', marginBottom: '12px', lineHeight: 1.35 }}>
+                {poll.question}
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {opts.map((opt, idx) => {
+                  const optVotes = votes.filter((v) => Number(v.option_index) === idx).length;
+                  const pct = totalVotes > 0 ? Math.round((optVotes / totalVotes) * 100) : 0;
+                  const isMyPick = myVote && Number(myVote.option_index) === idx;
+                  return (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={async () => {
+                        if (!user?.id) {
+                          navigate.push(`/login?redirect=/community/${communityId}?tab=feed`);
+                          return;
+                        }
+                        try {
+                          await votePoll(poll.id, idx);
+                          toast.success('Vote Recorded! 🗳️', `You voted for "${opt}"`);
+                        } catch (err) {
+                          toast.error('Vote Error', err?.message || 'Could not record vote.');
+                        }
+                      }}
+                      className="interactive-press"
+                      style={{
+                        position: 'relative',
+                        overflow: 'hidden',
+                        textAlign: 'left',
+                        width: '100%',
+                        padding: '10px 14px',
+                        borderRadius: '11px',
+                        border: isMyPick ? '1.5px solid #3b82f6' : '1px solid var(--hairline-border-strong)',
+                        background: 'var(--surface-elevated)',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        gap: '10px',
+                      }}
+                    >
+                      <div
+                        style={{
+                          position: 'absolute',
+                          inset: 0,
+                          width: `${pct}%`,
+                          background: isMyPick ? 'rgba(59, 130, 246, 0.2)' : 'rgba(59, 130, 246, 0.08)',
+                          transition: 'width 0.35s ease',
+                          pointerEvents: 'none',
+                        }}
+                      />
+                      <span style={{ position: 'relative', zIndex: 1, fontSize: '0.86rem', fontWeight: isMyPick ? 800 : 600, color: 'var(--ink-primary)' }}>
+                        {isMyPick ? '✓ ' : ''}{opt}
+                      </span>
+                      <span style={{ position: 'relative', zIndex: 1, fontSize: '0.78rem', fontWeight: 800, color: isMyPick ? '#3b82f6' : 'var(--ink-muted)', flexShrink: 0 }}>
+                        {pct}% ({optVotes})
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
   
   // Real reviews
   const communityReviews = (reviews || [])
@@ -927,6 +1062,7 @@ export default function CommunityProfile() {
         {/* ===== FEED & PHOTOS TAB ===== */}
         {(activeTab === 'feed' || activeTab === 'photos') && (
           <>
+            {renderPollsSection()}
             {(isMember || isLeader) && (
               <div style={{ background: 'var(--surface-card)', border: '1px solid var(--hairline-border)', borderRadius: '16px', padding: '14px', marginBottom: '16px', maxWidth: '100%', boxSizing: 'border-box' }}>
                 <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
@@ -1459,6 +1595,9 @@ export default function CommunityProfile() {
         {/* ===== OVERVIEW / ABOUT TAB ===== */}
         {(activeTab === 'overview' || activeTab === 'about') && (
           <>
+            {/* Active Poll Highlight on Overview */}
+            {renderPollsSection(1)}
+
             {/* 1. Featured Next Upcoming Event (Action First) */}
             {nextEvent && (
               <div className="community-featured-event-card">

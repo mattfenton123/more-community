@@ -1,5 +1,7 @@
 "use client";
 import React, { useState, useMemo, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
+import { useRouter } from 'next/navigation';
 import {
   Sparkles,
   Calendar,
@@ -15,16 +17,22 @@ import {
   X,
   RotateCcw,
   MapPin,
-  Clock,
   MessageSquare,
   Layers,
   BarChart3,
-  ArrowRight,
   CheckCircle2,
+  ExternalLink,
+  Trash2,
+  TrendingUp,
+  FileEdit,
+  Compass,
 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
+import { useFeed } from '../context/FeedContext';
 import { useToast } from './Toast';
 import { cleanLocationName } from '../lib/location';
+import { getCommunitySlug } from '../lib/communityLinks';
+import { isEventPast } from '../lib/calendar';
 
 const CONSENT_STORAGE_KEY = 'more_ai_copilot_consent_v1';
 
@@ -40,7 +48,18 @@ function normalizeActionCard(card) {
     return {
       type: 'events',
       title: card.title || (events.length === 1 ? 'Launch New Meetup' : 'Draft Meetup Schedule'),
-      data: { events },
+      data: {
+        events: events.map((ev) => ({
+          weekLabel: ev.weekLabel || ev.themeBadge || '',
+          title: ev.title || '',
+          date: ev.date || '',
+          time: ev.time || '10:00',
+          location: ev.location || '',
+          description: ev.description || '',
+          maxCapacity: Number(ev.maxCapacity) || 25,
+          ticketPrice: Number(ev.ticketPrice) || 0,
+        })),
+      },
     };
   }
   if (card.type === 'poll') {
@@ -54,7 +73,7 @@ function normalizeActionCard(card) {
     return {
       type: 'poll',
       title: card.title || 'Launch Community Poll',
-      data: { question, options },
+      data: { question, options: [...options] },
     };
   }
   if (card.type === 'broadcast') {
@@ -62,10 +81,44 @@ function normalizeActionCard(card) {
     const inAppBody = card.data?.inAppBody || card.inAppAnnouncement || card.body || '';
     const whatsappCopy = card.data?.whatsappCopy || card.whatsappCopy || '';
     const instagramCopy = card.data?.instagramCopy || card.instagramCopy || '';
+    const pinToTop = Boolean(card.data?.pinToTop ?? card.pinToTop ?? true);
     return {
       type: 'broadcast',
-      title: card.title || 'Ready-to-Send Community Copy',
-      data: { inAppTitle, inAppBody, whatsappCopy, instagramCopy },
+      title: card.title || 'Announcement & Social Copy',
+      data: { inAppTitle, inAppBody, whatsappCopy, instagramCopy, pinToTop },
+    };
+  }
+  if (card.type === 'community_update') {
+    const description = card.data?.description || card.description || '';
+    const guidelines = Array.isArray(card.data?.guidelines)
+      ? card.data.guidelines
+      : Array.isArray(card.guidelines)
+      ? card.guidelines
+      : [];
+    if (!description && guidelines.length === 0) return null;
+    return {
+      type: 'community_update',
+      title: card.title || 'Community Profile & Guidelines Upgrade',
+      data: { description, guidelines: [...guidelines] },
+    };
+  }
+  if (card.type === 'audit') {
+    const summary = card.data?.summary || card.summary || '';
+    const metrics = Array.isArray(card.data?.metrics)
+      ? card.data.metrics
+      : Array.isArray(card.metrics)
+      ? card.metrics
+      : [];
+    const actions = Array.isArray(card.data?.actions)
+      ? card.data.actions
+      : Array.isArray(card.actions)
+      ? card.actions
+      : [];
+    if (!summary && actions.length === 0) return null;
+    return {
+      type: 'audit',
+      title: card.title || 'Community Health & Growth Audit',
+      data: { summary, metrics, actions },
     };
   }
   if (card.type === 'document') {
@@ -89,46 +142,166 @@ export default function LeaderAICoPilot({
   onJumpToUpgrade,
   onClose,
 }) {
-  const { user, createEvent, createEventsBatch, createPost, createFeedPost, createPoll } =
-    useAppContext();
+  const router = useRouter();
+  const {
+    user,
+    communities,
+    communityMemberships,
+    eventRsvps,
+    polls,
+    pollVotes,
+    services,
+    createEvent,
+    createEventsBatch,
+    createPost,
+    createFeedPost,
+    createPoll,
+    updateCommunity,
+  } = useAppContext();
+  const { feedPosts } = useFeed();
   const { toast } = useToast();
 
+  const [mounted, setMounted] = useState(false);
   const [hasConsented, setHasConsented] = useState(() => {
     if (typeof window === 'undefined') return false;
     return localStorage.getItem(CONSENT_STORAGE_KEY) === 'true';
   });
 
+  useEffect(() => {
+    setMounted(true);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onKeyDown = (e) => {
+      if (e.key === 'Escape' && onClose) onClose();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      window.removeEventListener('keydown', onKeyDown);
+    };
+  }, [onClose]);
+
   const hasProAccess = Boolean(
     isPro || user?.isAdmin || community?.is_insured || community?.insurance_tier === 'pro'
   );
   const communityLoc = cleanLocationName(community?.location_name) || 'Tunbridge Wells';
+  const communitySlug = useMemo(
+    () => (community ? getCommunitySlug(community, communities || []) : ''),
+    [community, communities]
+  );
 
-  const upcomingEvents = useMemo(() => {
+  // Build deep real-time Community Intelligence Snapshot from AppContext
+  const communitySnapshot = useMemo(() => {
     const today = new Date().toISOString().split('T')[0];
-    return (communityEvents || [])
-      .filter((e) => e.status !== 'cancelled' && e.status !== 'proposed' && (!e.date || e.date >= today))
+    const validEvents = (communityEvents || []).filter(
+      (e) => e.status !== 'cancelled' && e.status !== 'proposed'
+    );
+    const upcoming = validEvents
+      .filter((e) => !isEventPast(e) && (!e.date || e.date >= today))
       .sort((a, b) => String(a.date || '').localeCompare(String(b.date || '')));
-  }, [communityEvents]);
+    const past = validEvents
+      .filter((e) => isEventPast(e))
+      .sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
 
+    const pastEventsSummary = past.slice(0, 5).map((ev) => {
+      const rsvps = (eventRsvps?.[ev.id] || []).filter((r) => r.status === 'going' || r.checkedIn);
+      const checked = rsvps.filter((r) => r.checkedIn || r.checked_in).length;
+      return {
+        title: ev.title,
+        date: ev.date,
+        rsvps: rsvps.length,
+        checkedIn: checked,
+        turnoutPct: rsvps.length > 0 ? Math.round((checked / rsvps.length) * 100) : 0,
+      };
+    });
+
+    const members = communityMemberships?.[community?.id] || [];
+    const total = Math.max(members.length, memberCount || 1);
+    let verifiedLocals = 0;
+    let regulars3Plus = 0;
+    members.forEach((m) => {
+      const uid = m.userId || m.user_id;
+      const attended = validEvents.filter((ev) =>
+        (eventRsvps?.[ev.id] || []).some(
+          (r) => r.userId === uid && (r.checkedIn || r.checked_in || (r.status === 'going' && isEventPast(ev)))
+        )
+      ).length;
+      if (attended >= 1 || m.role === 'Leader' || m.role === 'Co-Leader') verifiedLocals++;
+      if (attended >= 3) regulars3Plus++;
+    });
+    if (verifiedLocals === 0 && verifiedMemberCount > 0) verifiedLocals = verifiedMemberCount;
+    const quietNeverAttended = Math.max(0, total - verifiedLocals);
+
+    const activePolls = (polls || [])
+      .filter((p) => p.community_id === community?.id)
+      .slice(0, 4)
+      .map((p) => ({
+        question: p.question,
+        votes: (pollVotes?.[p.id] || []).length,
+      }));
+
+    const recentFeedPosts = (feedPosts || [])
+      .filter((p) => p.communityId === community?.id)
+      .slice(0, 4)
+      .map((p) => String(p.text || '').slice(0, 110));
+
+    const pendingProposalsCount = (communityEvents || []).filter((e) => e.status === 'proposed').length;
+    const pendingPitchesCount = (services || []).filter(
+      (s) => s.communityId === community?.id && s.status === 'pending'
+    ).length;
+
+    const totalRevenue = validEvents.reduce((sum, ev) => {
+      const count = (eventRsvps?.[ev.id] || []).filter((r) => r.status === 'going').length;
+      return sum + count * Number(ev.ticketPrice || 0);
+    }, 0);
+
+    return {
+      upcoming,
+      description: community?.description || '',
+      guidelines: Array.isArray(community?.guidelines) ? community.guidelines : [],
+      hasWhatsappGroup: Boolean(community?.whatsapp_group),
+      memberBreakdown: { total, verifiedLocals, regulars3Plus, quietNeverAttended },
+      pastEventsSummary,
+      activePolls,
+      recentFeedPosts,
+      pendingProposalsCount,
+      pendingPitchesCount,
+      totalRevenue,
+    };
+  }, [
+    community,
+    communityEvents,
+    communityMemberships,
+    eventRsvps,
+    polls,
+    pollVotes,
+    feedPosts,
+    services,
+    memberCount,
+    verifiedMemberCount,
+  ]);
+
+  const upcomingEvents = communitySnapshot.upcoming;
   const nextUpcomingEvent = upcomingEvents[0] || communityEvents[0] || null;
 
   const buildInitialMessages = () => {
     const commName = community?.name || 'your community';
+    const mb = communitySnapshot.memberBreakdown;
     const nextNote = nextUpcomingEvent
-      ? `Your next meetup on the calendar is **"${nextUpcomingEvent.title}"** (${nextUpcomingEvent.date || 'soon'} at ${nextUpcomingEvent.time || '10:00'}).`
-      : `You don't have an upcoming meetup scheduled yet — tell me what you have in mind and I'll build it on the right ready to launch.`;
+      ? `Next on your calendar: **"${nextUpcomingEvent.title}"** (${nextUpcomingEvent.date || 'soon'}).`
+      : `You currently have **0 upcoming meetups** scheduled — let's put something great on the calendar!`;
 
     return [
       {
         id: 'welcome-msg',
         role: 'assistant',
-        reply: `Hi ${user?.name?.split(' ')[0] || 'there'}! I'm your **${commName}** Co-Pilot.\n\nI can see you have **${memberCount} member${memberCount === 1 ? '' : 's'}** (${verifiedMemberCount} Verified Local${verifiedMemberCount === 1 ? '' : 's'}). ${nextNote}\n\nChat with me here — anything I build (new events, 4-week plans, member polls, WhatsApp copy, or UK RAMS docs) will appear live in the **Output & Launchpad** panel ready for 1-tap launch.`,
+        reply: `Hi ${user?.name?.split(' ')[0] || 'there'}! I'm your **${commName}** Co-Pilot — connected to your live club data.\n\n**Live Snapshot:** **${mb.total} members** (${mb.verifiedLocals} Verified Locals, ${mb.quietNeverAttended} quiet newcomers who haven't attended yet). ${nextNote}\n\nTell me what you want to build or tap a quick goal — every draft appears in **Output & Launchpad** where you can **edit any field directly**, see **exactly where it publishes**, and launch in 1 tap.`,
         actionCard: null,
         suggestedReplies: [
+          '📈 Audit my community & tell me what to do this week',
           '🚀 Launch a meetup this Sunday at 10am',
-          '🗓️ Plan our next 4 weeks of meetups',
-          '📊 Create a poll to vote on meetup day',
-          '👋 Draft a warm WhatsApp welcome',
+          '📊 Create a poll to vote on our next meetup',
+          '✨ Rewrite our community bio & guidelines',
         ],
       },
     ];
@@ -137,39 +310,32 @@ export default function LeaderAICoPilot({
   const [messages, setMessages] = useState(() => buildInitialMessages());
   const [inputValue, setInputValue] = useState('');
   const [isThinking, setIsThinking] = useState(false);
-  const [activeModelLabel, setActiveModelLabel] = useState('Gemini 3.6 Flash');
+  const [activeModelLabel, setActiveModelLabel] = useState('Gemini 2.5 Flash');
 
-  // Output Workspace state (always synced to latest generated draft or user-selected draft)
+  // Active Output & Mobile Tab state
   const [selectedOutputMsgId, setSelectedOutputMsgId] = useState(null);
   const [mobileView, setMobileView] = useState('chat'); // 'chat' | 'output'
 
-  // Action completion tracking
-  const [publishedEventsMap, setPublishedEventsMap] = useState({});
+  // Launched / Published state + created destination URLs
+  const [publishedEventsMap, setPublishedEventsMap] = useState({}); // key -> createdEventId or true
   const [publishingBatchMap, setPublishingBatchMap] = useState({});
   const [sendingBroadcastMap, setSendingBroadcastMap] = useState({});
   const [sentBroadcastMap, setSentBroadcastMap] = useState({});
   const [launchingPollMap, setLaunchingPollMap] = useState({});
   const [launchedPollMap, setLaunchedPollMap] = useState({});
+  const [applyingProfileMap, setApplyingProfileMap] = useState({});
+  const [appliedProfileMap, setAppliedProfileMap] = useState({});
 
   const chatEndRef = useRef(null);
-
-  // Close modal on Escape key
-  useEffect(() => {
-    const onKeyDown = (e) => {
-      if (e.key === 'Escape' && onClose) onClose();
-    };
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [onClose]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
   }, [messages, isThinking]);
 
-  // All generated outputs in this session
-  const outputHistory = useMemo(() => {
-    return messages.filter((m) => m.role === 'assistant' && m.actionCard);
-  }, [messages]);
+  const outputHistory = useMemo(
+    () => messages.filter((m) => m.role === 'assistant' && m.actionCard),
+    [messages]
+  );
 
   const activeOutputMessage = useMemo(() => {
     if (outputHistory.length === 0) return null;
@@ -179,6 +345,22 @@ export default function LeaderAICoPilot({
     }
     return outputHistory[outputHistory.length - 1];
   }, [outputHistory, selectedOutputMsgId]);
+
+  // Inline editing helper to mutate an output card in place before launching
+  const updateOutputCardData = (msgId, updaterFn) => {
+    setMessages((prev) =>
+      prev.map((m) => {
+        if (m.id !== msgId || !m.actionCard) return m;
+        return {
+          ...m,
+          actionCard: {
+            ...m.actionCard,
+            data: updaterFn(m.actionCard.data),
+          },
+        };
+      })
+    );
+  };
 
   const handleAcceptConsent = () => {
     setHasConsented(true);
@@ -210,6 +392,7 @@ export default function LeaderAICoPilot({
     setMessages(nextHistory);
     if (textOverride === null) setInputValue('');
     setIsThinking(true);
+    setMobileView('chat');
 
     try {
       const compactHistory = nextHistory.slice(-10).map((m) => ({
@@ -230,14 +413,27 @@ export default function LeaderAICoPilot({
           communityName: community?.name || 'Local Community',
           communityLocation: communityLoc,
           communityTags: community?.tags || [],
-          memberCount,
-          verifiedCount: verifiedMemberCount,
+          memberCount: communitySnapshot.memberBreakdown.total,
+          verifiedCount: communitySnapshot.memberBreakdown.verifiedLocals,
           upcomingEvents: upcomingEvents.slice(0, 5).map((e) => ({
             title: e.title,
             date: e.date,
             time: e.time,
             location: cleanLocationName(e.location) || communityLoc,
+            rsvps: (eventRsvps?.[e.id] || []).filter((r) => r.status === 'going').length,
           })),
+          communitySnapshot: {
+            description: communitySnapshot.description,
+            guidelines: communitySnapshot.guidelines,
+            hasWhatsappGroup: communitySnapshot.hasWhatsappGroup,
+            memberBreakdown: communitySnapshot.memberBreakdown,
+            pastEventsSummary: communitySnapshot.pastEventsSummary,
+            activePolls: communitySnapshot.activePolls,
+            recentFeedPosts: communitySnapshot.recentFeedPosts,
+            pendingProposalsCount: communitySnapshot.pendingProposalsCount,
+            pendingPitchesCount: communitySnapshot.pendingPitchesCount,
+            totalRevenue: communitySnapshot.totalRevenue,
+          },
         }),
       });
 
@@ -254,7 +450,7 @@ export default function LeaderAICoPilot({
         role: 'assistant',
         reply:
           data?.reply ||
-          "I've drafted that for you in the Output & Launchpad panel. Tell me if you'd like to tweak anything before launching!",
+          "I've drafted that in the Output & Launchpad panel. You can edit any detail directly before launching!",
         actionCard: normalizedCard,
         suggestedReplies: Array.isArray(data?.suggestedReplies) ? data.suggestedReplies : [],
       };
@@ -272,8 +468,8 @@ export default function LeaderAICoPilot({
             "I hit a brief connection snag while thinking that through. Try sending that again or tap one of the quick options below!",
           actionCard: null,
           suggestedReplies: [
+            '📈 Audit my community & tell me what to do this week',
             '🚀 Launch a meetup this Sunday at 10am',
-            '🗓️ Plan our next 4 weeks of meetups',
           ],
         },
       ]);
@@ -287,10 +483,14 @@ export default function LeaderAICoPilot({
     if (!community?.id) return;
     const key = `${msgId}-${idx}`;
     if (publishedEventsMap[key]) return;
+    if (!ev.title?.trim() || !ev.date?.trim()) {
+      toast.error('Missing event details', 'Please ensure the event has a title and date.');
+      return;
+    }
     try {
-      await createEvent(community.id, {
-        title: ev.title,
-        description: ev.description,
+      const created = await createEvent(community.id, {
+        title: ev.title.trim(),
+        description: ev.description || '',
         date: ev.date,
         time: ev.time || '10:00',
         location: ev.location || communityLoc,
@@ -298,8 +498,8 @@ export default function LeaderAICoPilot({
         ticketPrice: Number(ev.ticketPrice) || 0,
         status: 'published',
       });
-      setPublishedEventsMap((prev) => ({ ...prev, [key]: true }));
-      toast.success('Event Launched Live! 🚀', `"${ev.title}" is now on your community calendar.`);
+      setPublishedEventsMap((prev) => ({ ...prev, [key]: created?.id || true }));
+      toast.success('Event Launched Live! 🚀', `"${ev.title}" is now on your Community Calendar & /events.`);
     } catch (err) {
       toast.error('Could not launch event', err?.message || 'Please try again.');
     }
@@ -315,8 +515,8 @@ export default function LeaderAICoPilot({
     setPublishingBatchMap((prev) => ({ ...prev, [msgId]: true }));
     try {
       const payloads = unpub.map(({ ev }) => ({
-        title: ev.title,
-        description: ev.description,
+        title: (ev.title || 'Community Meetup').trim(),
+        description: ev.description || '',
         date: ev.date,
         time: ev.time || '10:00',
         location: ev.location || communityLoc,
@@ -325,22 +525,32 @@ export default function LeaderAICoPilot({
         status: 'published',
       }));
 
+      const nextPublished = { ...publishedEventsMap };
       if (typeof createEventsBatch === 'function' && payloads.length > 1) {
-        await createEventsBatch(community.id, payloads);
+        const createdBatch = await createEventsBatch(community.id, payloads);
+        unpub.forEach(({ idx }, arrIdx) => {
+          nextPublished[`${msgId}-${idx}`] = createdBatch?.[arrIdx]?.id || true;
+        });
       } else {
-        for (const p of payloads) {
-          await createEvent(community.id, p);
+        for (const { ev, idx } of unpub) {
+          const created = await createEvent(community.id, {
+            title: (ev.title || 'Community Meetup').trim(),
+            description: ev.description || '',
+            date: ev.date,
+            time: ev.time || '10:00',
+            location: ev.location || communityLoc,
+            maxCapacity: Number(ev.maxCapacity) || 25,
+            ticketPrice: Number(ev.ticketPrice) || 0,
+            status: 'published',
+          });
+          nextPublished[`${msgId}-${idx}`] = created?.id || true;
         }
       }
 
-      const nextPublished = { ...publishedEventsMap };
-      unpub.forEach(({ idx }) => {
-        nextPublished[`${msgId}-${idx}`] = true;
-      });
       setPublishedEventsMap(nextPublished);
       toast.success(
         payloads.length === 1 ? 'Event Launched Live! 🚀' : 'Schedule Launched Live! 🚀',
-        `Added ${unpub.length} event${unpub.length === 1 ? '' : 's'} to your community calendar.`
+        `Published ${unpub.length} event${unpub.length === 1 ? '' : 's'} to ${community.name} Calendar & /events.`
       );
     } catch (err) {
       toast.error('Launch error', err?.message || 'Could not publish events.');
@@ -350,21 +560,24 @@ export default function LeaderAICoPilot({
   };
 
   const handlePublishBroadcastCard = async (msgId, broadcastData) => {
-    if (!community?.id || !broadcastData?.inAppBody) return;
+    if (!community?.id || !broadcastData?.inAppBody?.trim()) return;
     setSendingBroadcastMap((prev) => ({ ...prev, [msgId]: true }));
     try {
-      const fullText = broadcastData.inAppTitle
-        ? `📣 **${broadcastData.inAppTitle}**\n\n${broadcastData.inAppBody}`
-        : broadcastData.inAppBody;
+      const fullText = broadcastData.inAppTitle?.trim()
+        ? `📣 **${broadcastData.inAppTitle.trim()}**\n\n${broadcastData.inAppBody.trim()}`
+        : broadcastData.inAppBody.trim();
+      if (typeof createFeedPost === 'function') {
+        await createFeedPost(community.id, fullText, null, true, Boolean(broadcastData.pinToTop));
+      }
       if (typeof createPost === 'function') {
-        await createPost(community.id, fullText, null, ['in-app']);
-      } else if (typeof createFeedPost === 'function') {
-        await createFeedPost(community.id, fullText, null, true, false);
+        try {
+          await createPost(community.id, fullText, null, ['in-app']);
+        } catch {}
       }
       setSentBroadcastMap((prev) => ({ ...prev, [msgId]: true }));
       toast.success(
         'Announcement Published! 📣',
-        'Posted to your community feed and notified members.'
+        `Posted to ${community.name} Feed & notified all members.`
       );
     } catch (err) {
       toast.error('Broadcast Error', err?.message || 'Could not publish announcement.');
@@ -374,18 +587,45 @@ export default function LeaderAICoPilot({
   };
 
   const handleLaunchPollCard = async (msgId, pollData) => {
-    if (!community?.id || !pollData?.question || !Array.isArray(pollData?.options)) return;
+    if (!community?.id) return;
+    const cleanQ = String(pollData?.question || '').trim();
+    const cleanOpts = (pollData?.options || []).map((o) => String(o || '').trim()).filter(Boolean);
+    if (!cleanQ || cleanOpts.length < 2) {
+      toast.error('Incomplete Poll', 'Add a question and at least 2 options before launching.');
+      return;
+    }
     setLaunchingPollMap((prev) => ({ ...prev, [msgId]: true }));
     try {
-      if (typeof createPoll === 'function') {
-        await createPoll(community.id, pollData.question, pollData.options);
-      }
+      await createPoll(community.id, cleanQ, cleanOpts);
       setLaunchedPollMap((prev) => ({ ...prev, [msgId]: true }));
-      toast.success('Poll Launched Live! 📊', 'Members can now vote in your community.');
+      toast.success(
+        'Poll Launched Live! 📊',
+        `Live on ${community.name} Overview & Feed tabs — members notified!`
+      );
     } catch (err) {
       toast.error('Poll Launch Error', err?.message || 'Could not launch community poll.');
     } finally {
       setLaunchingPollMap((prev) => ({ ...prev, [msgId]: false }));
+    }
+  };
+
+  const handleApplyCommunityUpdate = async (msgId, updateData) => {
+    if (!community?.id || typeof updateCommunity !== 'function') return;
+    setApplyingProfileMap((prev) => ({ ...prev, [msgId]: true }));
+    try {
+      const payload = {};
+      if (updateData.description?.trim()) payload.description = updateData.description.trim();
+      if (Array.isArray(updateData.guidelines)) {
+        const cleanRules = updateData.guidelines.map((g) => String(g || '').trim()).filter(Boolean);
+        if (cleanRules.length > 0) payload.guidelines = cleanRules;
+      }
+      await updateCommunity(community.id, payload);
+      setAppliedProfileMap((prev) => ({ ...prev, [msgId]: true }));
+      toast.success('Community Page Updated! ✨', 'Your new description and guidelines are now live.');
+    } catch (err) {
+      toast.error('Update Failed', err?.message || 'Could not update community profile.');
+    } finally {
+      setApplyingProfileMap((prev) => ({ ...prev, [msgId]: false }));
     }
   };
 
@@ -409,6 +649,11 @@ export default function LeaderAICoPilot({
     a.click();
     URL.revokeObjectURL(url);
     toast.success('Document Downloaded! 📄', 'Saved to your device.');
+  };
+
+  const jumpToRoute = (path) => {
+    if (onClose) onClose();
+    router.push(path);
   };
 
   const renderFormattedReply = (text) => {
@@ -445,34 +690,62 @@ export default function LeaderAICoPilot({
     if (!card) return 'Output';
     if (card.type === 'events') {
       const len = card.data?.events?.length || 1;
-      return len === 1 ? '🚀 Event Draft' : `🗓️ ${len}-Week Plan`;
+      return len === 1 ? '🚀 Event Draft' : `🗓️ ${len}-Event Plan`;
     }
     if (card.type === 'poll') return '📊 Poll Draft';
-    if (card.type === 'broadcast') return '📣 Broadcast Copy';
-    if (card.type === 'document') return '🛡️ Document Draft';
+    if (card.type === 'broadcast') return '📣 Broadcast';
+    if (card.type === 'community_update') return '✨ Bio & Rules';
+    if (card.type === 'audit') return '📈 Growth Audit';
+    if (card.type === 'document') return '🛡️ Document';
     return '✨ Draft';
   };
 
-  return (
+  const inputFieldStyle = {
+    width: '100%',
+    padding: '8px 10px',
+    borderRadius: '9px',
+    background: 'var(--surface-card)',
+    border: '1px solid var(--hairline-border-strong)',
+    color: 'var(--ink-primary)',
+    fontSize: '0.84rem',
+    fontFamily: 'inherit',
+    boxSizing: 'border-box',
+  };
+
+  if (!mounted) return null;
+
+  const modalContent = (
     <div
-      className="modal-overlay"
+      className="copilot-portal-backdrop"
       onClick={onClose}
       style={{
         position: 'fixed',
         inset: 0,
-        zIndex: 100000,
-        background: 'rgba(10, 12, 18, 0.72)',
+        zIndex: 2147483000,
+        background: 'rgba(10, 12, 18, 0.78)',
         backdropFilter: 'blur(10px)',
         WebkitBackdropFilter: 'blur(10px)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '12px',
       }}
     >
       <style
         dangerouslySetInnerHTML={{
           __html: `
+            .copilot-portal-shell {
+              width: 100%;
+              height: 100dvh;
+              max-width: 100%;
+              border-radius: 0;
+              border: none;
+            }
+            .copilot-portal-header {
+              padding: max(12px, env(safe-area-inset-top)) 14px 12px 14px;
+            }
+            .copilot-portal-composer {
+              padding: 10px 12px max(12px, env(safe-area-inset-bottom)) 12px;
+            }
             .copilot-split-body {
               display: grid;
               grid-template-columns: minmax(0, 1fr);
@@ -488,8 +761,23 @@ export default function LeaderAICoPilot({
               display: none;
             }
             @media (min-width: 860px) {
+              .copilot-portal-backdrop {
+                padding: 20px;
+              }
+              .copilot-portal-shell {
+                max-width: 1180px !important;
+                height: min(90dvh, 840px) !important;
+                border-radius: 22px !important;
+                border: 1px solid var(--hairline-border-strong) !important;
+              }
+              .copilot-portal-header {
+                padding: 14px 20px !important;
+              }
+              .copilot-portal-composer {
+                padding: 10px 14px !important;
+              }
               .copilot-split-body {
-                grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.15fr);
+                grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.18fr);
               }
               .copilot-mobile-tabs {
                 display: none !important;
@@ -507,39 +795,35 @@ export default function LeaderAICoPilot({
       />
 
       <div
+        className="copilot-portal-shell"
         onClick={(e) => e.stopPropagation()}
         style={{
-          width: '100%',
-          maxWidth: '1120px',
-          height: 'min(90dvh, 800px)',
           background: 'var(--surface-card)',
-          border: '1px solid var(--hairline-border-strong)',
-          borderRadius: '22px',
-          boxShadow: '0 30px 80px rgba(0, 0, 0, 0.45)',
+          boxShadow: '0 30px 80px rgba(0, 0, 0, 0.5)',
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
         }}
       >
-        {/* Unified Modal Top Header */}
+        {/* Top Modal Bar */}
         <div
+          className="copilot-portal-header"
           style={{
-            padding: '14px 18px',
             borderBottom: '1px solid var(--hairline-border)',
             background: 'var(--surface-elevated)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            gap: '12px',
+            gap: '10px',
             flexShrink: 0,
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
             <div
               style={{
-                width: '36px',
-                height: '36px',
-                borderRadius: '11px',
+                width: '34px',
+                height: '34px',
+                borderRadius: '10px',
                 background: 'linear-gradient(135deg, #EB5738, #f59e0b)',
                 display: 'flex',
                 alignItems: 'center',
@@ -548,14 +832,14 @@ export default function LeaderAICoPilot({
                 flexShrink: 0,
               }}
             >
-              <Sparkles size={18} />
+              <Sparkles size={17} />
             </div>
             <div style={{ minWidth: 0 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '7px', flexWrap: 'wrap' }}>
                 <h2
                   style={{
                     margin: 0,
-                    fontSize: '1.08rem',
+                    fontSize: '1.02rem',
                     fontFamily: 'var(--font-heading)',
                     color: 'var(--ink-primary)',
                     whiteSpace: 'nowrap',
@@ -567,9 +851,9 @@ export default function LeaderAICoPilot({
                 </h2>
                 <span
                   style={{
-                    padding: '2px 8px',
+                    padding: '2px 7px',
                     borderRadius: '99px',
-                    fontSize: '0.66rem',
+                    fontSize: '0.62rem',
                     fontWeight: 800,
                     background: 'rgba(16, 185, 129, 0.14)',
                     color: '#10b981',
@@ -582,40 +866,40 @@ export default function LeaderAICoPilot({
               </div>
               <div
                 style={{
-                  fontSize: '0.75rem',
+                  fontSize: '0.73rem',
                   color: 'var(--ink-muted)',
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                 }}
               >
-                {community?.name || 'Community'} • Conversation on the left, live launchable output on the right
+                {community?.name || 'Community'} • {communitySnapshot.memberBreakdown.total} members • Live launchpad
               </div>
             </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
             {hasConsented && messages.length > 1 && (
               <button
                 type="button"
                 onClick={handleResetChat}
                 className="interactive-press"
-                title="Start a fresh session"
+                title="Start fresh chat"
                 style={{
                   background: 'var(--surface-card)',
                   border: '1px solid var(--hairline-border)',
                   color: 'var(--ink-secondary)',
-                  borderRadius: '10px',
-                  padding: '6px 10px',
+                  borderRadius: '9px',
+                  padding: '6px 9px',
                   cursor: 'pointer',
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '5px',
-                  fontSize: '0.76rem',
+                  gap: '4px',
+                  fontSize: '0.74rem',
                   fontWeight: 700,
                 }}
               >
-                <RotateCcw size={13} /> New Chat
+                <RotateCcw size={13} /> Reset
               </button>
             )}
             {onClose && (
@@ -623,17 +907,18 @@ export default function LeaderAICoPilot({
                 type="button"
                 onClick={onClose}
                 className="interactive-press"
+                aria-label="Close Co-Pilot"
                 style={{
                   background: 'var(--surface-card)',
                   border: '1px solid var(--hairline-border)',
-                  color: 'var(--ink-secondary)',
-                  borderRadius: '10px',
+                  color: 'var(--ink-primary)',
+                  borderRadius: '9px',
                   padding: '6px 10px',
                   cursor: 'pointer',
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '4px',
-                  fontSize: '0.78rem',
+                  fontSize: '0.76rem',
                   fontWeight: 700,
                 }}
               >
@@ -643,7 +928,7 @@ export default function LeaderAICoPilot({
           </div>
         </div>
 
-        {/* One-Time Privacy Consent Gate */}
+        {/* One-Time Consent Gate */}
         {!hasConsented ? (
           <div
             style={{
@@ -651,13 +936,13 @@ export default function LeaderAICoPilot({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              padding: '24px',
+              padding: '20px',
               overflowY: 'auto',
             }}
           >
             <div
               style={{
-                maxWidth: '520px',
+                maxWidth: '500px',
                 background: 'var(--surface-elevated)',
                 border: '1px solid rgba(235, 87, 56, 0.3)',
                 borderRadius: '18px',
@@ -667,26 +952,12 @@ export default function LeaderAICoPilot({
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
                 <Shield size={24} color="#EB5738" style={{ flexShrink: 0, marginTop: '2px' }} />
                 <div>
-                  <div
-                    style={{
-                      fontWeight: 800,
-                      fontSize: '1rem',
-                      color: 'var(--ink-primary)',
-                      marginBottom: '6px',
-                    }}
-                  >
+                  <div style={{ fontWeight: 800, fontSize: '1rem', color: 'var(--ink-primary)', marginBottom: '6px' }}>
                     Privacy-First AI Disclosure
                   </div>
-                  <p
-                    style={{
-                      margin: '0 0 12px 0',
-                      fontSize: '0.85rem',
-                      color: 'var(--ink-secondary)',
-                      lineHeight: 1.55,
-                    }}
-                  >
-                    To plan events, create polls, write announcements, and draft safety documents, More. AI Co-Pilot sends{' '}
-                    <strong>only your community&apos;s public title, town, tags, and your chat messages</strong> to Google Gemini.
+                  <p style={{ margin: '0 0 12px 0', fontSize: '0.84rem', color: 'var(--ink-secondary)', lineHeight: 1.55 }}>
+                    To plan events, create polls, audit growth, write broadcasts, and draft safety documents, More. AI Co-Pilot shares{' '}
+                    <strong>only your community&apos;s public profile, aggregate counts, event summaries, and your chat prompts</strong> with Google Gemini.
                   </p>
                   <div
                     style={{
@@ -699,7 +970,7 @@ export default function LeaderAICoPilot({
                       marginBottom: '16px',
                     }}
                   >
-                    🔒 <strong>Never shared:</strong> Member names, private DMs, emails, phone numbers, or attendee rosters are excluded. Nothing publishes until you tap Launch.
+                    🔒 <strong>Never shared:</strong> Member names, emails, private DMs, or phone numbers are excluded. Nothing publishes until you tap Launch.
                   </div>
                   <button
                     type="button"
@@ -723,11 +994,11 @@ export default function LeaderAICoPilot({
           </div>
         ) : (
           <>
-            {/* Mobile View Switcher (Chat vs Live Output) */}
+            {/* Mobile Top Switcher: Conversation vs Live Output & Launchpad */}
             <div
               className="copilot-mobile-tabs"
               style={{
-                padding: '8px 14px',
+                padding: '8px 12px',
                 borderBottom: '1px solid var(--hairline-border)',
                 background: 'var(--surface-card)',
                 gap: '8px',
@@ -739,11 +1010,11 @@ export default function LeaderAICoPilot({
                 onClick={() => setMobileView('chat')}
                 style={{
                   flex: 1,
-                  padding: '8px 10px',
+                  padding: '9px 10px',
                   borderRadius: '10px',
                   border:
                     mobileView === 'chat'
-                      ? '1px solid var(--brand-accent)'
+                      ? '1.5px solid var(--brand-accent)'
                       : '1px solid var(--hairline-border)',
                   background:
                     mobileView === 'chat' ? 'var(--brand-accent-soft)' : 'var(--surface-elevated)',
@@ -764,17 +1035,24 @@ export default function LeaderAICoPilot({
                 onClick={() => setMobileView('output')}
                 style={{
                   flex: 1,
-                  padding: '8px 10px',
+                  padding: '9px 10px',
                   borderRadius: '10px',
                   border:
                     mobileView === 'output'
-                      ? '1px solid #10b981'
+                      ? '1.5px solid #10b981'
+                      : outputHistory.length > 0
+                      ? '1.5px solid rgba(16, 185, 129, 0.45)'
                       : '1px solid var(--hairline-border)',
                   background:
                     mobileView === 'output'
-                      ? 'rgba(16, 185, 129, 0.14)'
+                      ? 'rgba(16, 185, 129, 0.16)'
+                      : outputHistory.length > 0
+                      ? 'rgba(16, 185, 129, 0.08)'
                       : 'var(--surface-elevated)',
-                  color: mobileView === 'output' ? '#10b981' : 'var(--ink-secondary)',
+                  color:
+                    mobileView === 'output' || outputHistory.length > 0
+                      ? '#10b981'
+                      : 'var(--ink-secondary)',
                   fontWeight: 800,
                   fontSize: '0.8rem',
                   cursor: 'pointer',
@@ -785,7 +1063,7 @@ export default function LeaderAICoPilot({
                 }}
               >
                 <Layers size={14} />
-                Output &amp; Launchpad
+                Output &amp; Launch
                 {outputHistory.length > 0 && (
                   <span
                     style={{
@@ -803,7 +1081,7 @@ export default function LeaderAICoPilot({
               </button>
             </div>
 
-            {/* Split-Pane Studio Body: Left = Conversation, Right = Live Output & Launchpad */}
+            {/* Split-Pane Studio Body */}
             <div className="copilot-split-body">
               {/* LEFT PANE: CONVERSATION */}
               <div
@@ -815,10 +1093,10 @@ export default function LeaderAICoPilot({
                   background: 'var(--surface-canvas)',
                 }}
               >
-                {/* Quick Starter Chips */}
+                {/* Quick Goal Chips */}
                 <div
                   style={{
-                    padding: '10px 14px',
+                    padding: '9px 12px',
                     borderBottom: '1px solid var(--hairline-border)',
                     display: 'flex',
                     gap: '6px',
@@ -829,31 +1107,35 @@ export default function LeaderAICoPilot({
                 >
                   {[
                     {
-                      label: '🚀 New Meetup',
-                      prompt: `Create a single welcoming meetup for ${community?.name || 'our community'} in ${communityLoc} this weekend at 10:00 AM with a post-event coffee stop.`,
+                      label: '📈 Health Audit',
+                      prompt: `Audit ${community?.name || 'my community'} using our real member and turnout numbers and tell me the top 3 things I should do this week.`,
+                    },
+                    {
+                      label: '🚀 New Event',
+                      prompt: `Create a single welcoming meetup for ${community?.name || 'our community'} in ${communityLoc} this Sunday at 10:00 AM with a post-event coffee stop.`,
                     },
                     {
                       label: '🗓️ 4-Week Plan',
                       prompt: `Plan our next 4 weeks of meetups in ${communityLoc} with a mix of beginner-friendly and regular sessions.`,
                     },
                     {
-                      label: '📊 Member Poll',
+                      label: '📊 Live Poll',
                       prompt: `Create a community poll asking members which day and time works best for our next meetup in ${communityLoc}.`,
                     },
                     {
-                      label: '👋 WhatsApp Copy',
+                      label: '📣 Broadcast',
                       prompt:
-                        'Draft a warm WhatsApp group message welcoming newcomers and explaining how attending their first meetup unlocks Verified Local standing.',
+                        'Draft a warm pinned announcement and WhatsApp message welcoming quiet newcomers to join their first in-person meetup.',
+                    },
+                    {
+                      label: '✨ Bio & Rules',
+                      prompt: `Rewrite our public Community Description and 4 friendly Community Guidelines for ${community?.name || 'our community'} in ${communityLoc}.`,
                     },
                     {
                       label: '🛡️ UK RAMS',
                       prompt: nextUpcomingEvent
                         ? `Draft a UK Council Risk Assessment (RAMS) for "${nextUpcomingEvent.title}" at ${cleanLocationName(nextUpcomingEvent.location) || communityLoc}.`
                         : `Draft a UK Council Risk Assessment (RAMS) for our next community meetup in ${communityLoc}.`,
-                    },
-                    {
-                      label: '🤝 Sponsor Pitch',
-                      prompt: `Write a friendly sponsorship outreach email to an independent café in ${communityLoc} to partner with ${community?.name || 'our community'}.`,
                     },
                   ].map((chip, idx) => (
                     <button
@@ -880,7 +1162,7 @@ export default function LeaderAICoPilot({
                   ))}
                 </div>
 
-                {/* Scrollable Chat Messages */}
+                {/* Chat Stream */}
                 <div
                   style={{
                     flex: 1,
@@ -908,7 +1190,7 @@ export default function LeaderAICoPilot({
                       >
                         <div
                           style={{
-                            maxWidth: '90%',
+                            maxWidth: '92%',
                             padding: isUser ? '10px 14px' : '12px 14px',
                             borderRadius: isUser ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
                             background: isUser
@@ -938,7 +1220,7 @@ export default function LeaderAICoPilot({
                           )}
                           <div>{renderFormattedReply(msg.reply)}</div>
 
-                          {/* Compact pill linking directly to the Output Panel on the right (or mobile Output tab) */}
+                          {/* Clear CTA linking right to the Output & Launchpad pane */}
                           {!isUser && msg.actionCard && (
                             <button
                               type="button"
@@ -950,16 +1232,14 @@ export default function LeaderAICoPilot({
                               style={{
                                 marginTop: '10px',
                                 width: '100%',
-                                padding: '8px 12px',
+                                padding: '9px 12px',
                                 borderRadius: '10px',
                                 background: isSelectedOutput
-                                  ? 'rgba(16, 185, 129, 0.14)'
-                                  : 'var(--surface-elevated)',
-                                border: isSelectedOutput
-                                  ? '1px solid rgba(16, 185, 129, 0.45)'
-                                  : '1px solid var(--hairline-border-strong)',
-                                color: isSelectedOutput ? '#10b981' : 'var(--ink-primary)',
-                                fontSize: '0.76rem',
+                                  ? 'rgba(16, 185, 129, 0.16)'
+                                  : 'rgba(16, 185, 129, 0.08)',
+                                border: '1.5px solid rgba(16, 185, 129, 0.45)',
+                                color: '#10b981',
+                                fontSize: '0.78rem',
                                 fontWeight: 800,
                                 cursor: 'pointer',
                                 display: 'flex',
@@ -968,17 +1248,14 @@ export default function LeaderAICoPilot({
                                 gap: '8px',
                               }}
                             >
-                              <span>
+                              <span style={{ textAlign: 'left' }}>
                                 {getOutputBadgeLabel(msg.actionCard)}: {msg.actionCard.title}
                               </span>
-                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
-                                {isSelectedOutput ? 'Viewing →' : 'Open Output →'}
-                              </span>
+                              <span style={{ flexShrink: 0 }}>Edit &amp; Launch →</span>
                             </button>
                           )}
                         </div>
 
-                        {/* Follow-up Suggestion Chips */}
                         {isLastAssistant &&
                           Array.isArray(msg.suggestedReplies) &&
                           msg.suggestedReplies.length > 0 && (
@@ -1027,20 +1304,20 @@ export default function LeaderAICoPilot({
                       }}
                     >
                       <Loader2 size={14} className="spin" color="#EB5738" />
-                      Building your response &amp; live output...
+                      Analysing {community?.name || 'your club'} &amp; preparing live output...
                     </div>
                   )}
                   <div ref={chatEndRef} />
                 </div>
 
-                {/* Chat Composer Bar */}
+                {/* Chat Composer */}
                 <form
+                  className="copilot-portal-composer"
                   onSubmit={(e) => {
                     e.preventDefault();
                     handleSendMessage();
                   }}
                   style={{
-                    padding: '10px 12px',
                     borderTop: '1px solid var(--hairline-border)',
                     background: 'var(--surface-card)',
                     display: 'flex',
@@ -1059,7 +1336,7 @@ export default function LeaderAICoPilot({
                         handleSendMessage();
                       }
                     }}
-                    placeholder="Ask anything or tweak the draft on the right..."
+                    placeholder="Ask anything, or tweak what's in the launchpad..."
                     style={{
                       flex: 1,
                       background: 'var(--surface-elevated)',
@@ -1068,10 +1345,10 @@ export default function LeaderAICoPilot({
                       outline: 'none',
                       resize: 'none',
                       color: 'var(--ink-primary)',
-                      fontSize: '0.86rem',
+                      fontSize: '0.88rem',
                       fontFamily: 'inherit',
                       padding: '9px 12px',
-                      minHeight: '38px',
+                      minHeight: '40px',
                       maxHeight: '100px',
                       lineHeight: 1.4,
                     }}
@@ -1081,9 +1358,9 @@ export default function LeaderAICoPilot({
                     disabled={!inputValue.trim() || isThinking}
                     className="btn btn-primary interactive-press"
                     style={{
-                      padding: '10px 14px',
+                      padding: '10px 15px',
                       borderRadius: '12px',
-                      fontSize: '0.82rem',
+                      fontSize: '0.84rem',
                       fontWeight: 800,
                       display: 'inline-flex',
                       alignItems: 'center',
@@ -1098,7 +1375,7 @@ export default function LeaderAICoPilot({
                 </form>
               </div>
 
-              {/* RIGHT PANE: LIVE OUTPUT & LAUNCHPAD CANVAS */}
+              {/* RIGHT PANE: EDITABLE OUTPUT & LAUNCHPAD CANVAS */}
               <div
                 className={`copilot-pane-output ${mobileView === 'chat' ? 'mobile-hidden' : ''}`}
                 style={{
@@ -1108,7 +1385,7 @@ export default function LeaderAICoPilot({
                   background: 'var(--surface-card)',
                 }}
               >
-                {/* Output Pane Header + Draft Switcher */}
+                {/* Output Pane Header + Session Draft History Switcher */}
                 <div
                   style={{
                     padding: '10px 16px',
@@ -1126,7 +1403,7 @@ export default function LeaderAICoPilot({
                     <Layers size={15} color="#10b981" />
                     <span
                       style={{
-                        fontSize: '0.8rem',
+                        fontSize: '0.78rem',
                         fontWeight: 800,
                         color: 'var(--ink-primary)',
                         textTransform: 'uppercase',
@@ -1138,7 +1415,7 @@ export default function LeaderAICoPilot({
                   </div>
 
                   {outputHistory.length > 1 && (
-                    <div style={{ display: 'flex', gap: '5px', overflowX: 'auto' }}>
+                    <div style={{ display: 'flex', gap: '5px', overflowX: 'auto' }} className="no-scrollbar">
                       {outputHistory.map((m, idx) => {
                         const active = activeOutputMessage?.id === m.id;
                         return (
@@ -1168,10 +1445,9 @@ export default function LeaderAICoPilot({
                   )}
                 </div>
 
-                {/* Output Canvas Scroll Area */}
-                <div style={{ flex: 1, overflowY: 'auto', padding: '18px' }}>
+                {/* Output Canvas Body */}
+                <div style={{ flex: 1, overflowY: 'auto', padding: '16px 16px max(24px, env(safe-area-inset-bottom))' }}>
                   {!activeOutputMessage?.actionCard ? (
-                    /* Clean Empty State showing exactly what appears here */
                     <div
                       style={{
                         height: '100%',
@@ -1180,13 +1456,13 @@ export default function LeaderAICoPilot({
                         alignItems: 'center',
                         justifyContent: 'center',
                         textAlign: 'center',
-                        padding: '20px',
+                        padding: '16px',
                       }}
                     >
                       <div
                         style={{
-                          width: '56px',
-                          height: '56px',
+                          width: '54px',
+                          height: '54px',
                           borderRadius: '16px',
                           background: 'rgba(235, 87, 56, 0.12)',
                           border: '1px solid rgba(235, 87, 56, 0.25)',
@@ -1194,67 +1470,51 @@ export default function LeaderAICoPilot({
                           alignItems: 'center',
                           justifyContent: 'center',
                           color: '#EB5738',
-                          marginBottom: '14px',
+                          marginBottom: '12px',
                         }}
                       >
-                        <Sparkles size={26} />
+                        <Compass size={26} />
                       </div>
-                      <h3
-                        style={{
-                          margin: '0 0 8px 0',
-                          fontSize: '1.08rem',
-                          fontFamily: 'var(--font-heading)',
-                          color: 'var(--ink-primary)',
-                        }}
-                      >
-                        Your Live Drafts Appear Here
+                      <h3 style={{ margin: '0 0 6px 0', fontSize: '1.06rem', fontFamily: 'var(--font-heading)', color: 'var(--ink-primary)' }}>
+                        Your Live Drafts &amp; Launch Controls Appear Here
                       </h3>
-                      <p
-                        style={{
-                          margin: '0 0 20px 0',
-                          fontSize: '0.84rem',
-                          color: 'var(--ink-secondary)',
-                          maxWidth: '380px',
-                          lineHeight: 1.5,
-                        }}
-                      >
-                        Ask the Co-Pilot on the left to build anything — your ready-to-launch events, polls, WhatsApp broadcasts, or UK RAMS documents appear right here in full view.
+                      <p style={{ margin: '0 0 18px 0', fontSize: '0.83rem', color: 'var(--ink-secondary)', maxWidth: '400px', lineHeight: 1.5 }}>
+                        Pick a quick goal below or chat on the left. You can <strong>edit every field inline</strong>, see <strong>exactly where it publishes</strong>, and jump straight to the live page once launched.
                       </p>
 
                       <div
                         style={{
                           width: '100%',
-                          maxWidth: '420px',
+                          maxWidth: '460px',
                           display: 'grid',
-                          gridTemplateColumns: '1fr 1fr',
+                          gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))',
                           gap: '8px',
                         }}
                       >
                         {[
                           {
-                            icon: '🚀',
-                            title: 'Launch an Event',
-                            sub: '1-tap publish to calendar',
-                            prompt: `Create a single welcoming meetup for ${community?.name || 'our community'} in ${communityLoc} this weekend at 10:00 AM with a post-event coffee stop.`,
+                            icon: '📈',
+                            title: 'Community Health Audit',
+                            sub: 'Real turnout & 3-step action plan',
+                            prompt: `Audit ${community?.name || 'my community'} using our real member and turnout numbers and tell me the top 3 things I should do this week.`,
                           },
                           {
-                            icon: '🗓️',
-                            title: '4-Week Schedule',
-                            sub: 'Batch launch a full month',
-                            prompt: `Plan our next 4 weeks of meetups in ${communityLoc} with a mix of beginner-friendly and regular sessions.`,
+                            icon: '🚀',
+                            title: 'Launch a New Meetup',
+                            sub: 'Publishes to Club Calendar & /events',
+                            prompt: `Create a single welcoming meetup for ${community?.name || 'our community'} in ${communityLoc} this Sunday at 10:00 AM with a post-event coffee stop.`,
                           },
                           {
                             icon: '📊',
-                            title: 'Member Poll',
-                            sub: 'Let members vote live',
+                            title: 'Launch a Member Poll',
+                            sub: 'Publishes to Community Page & notifies',
                             prompt: `Create a community poll asking members which day and time works best for our next meetup in ${communityLoc}.`,
                           },
                           {
-                            icon: '📣',
-                            title: 'WhatsApp & Feed',
-                            sub: 'Post & copy social invites',
-                            prompt:
-                              'Draft a warm WhatsApp group message and in-app announcement welcoming newcomers to our next meetup.',
+                            icon: '✨',
+                            title: 'Upgrade Bio & Guidelines',
+                            sub: 'Updates your public microsite live',
+                            prompt: `Rewrite our public Community Description and 4 friendly Community Guidelines for ${community?.name || 'our community'} in ${communityLoc}.`,
                           },
                         ].map((card, i) => (
                           <button
@@ -1272,67 +1532,61 @@ export default function LeaderAICoPilot({
                               cursor: 'pointer',
                             }}
                           >
-                            <div style={{ fontSize: '1.2rem', marginBottom: '4px' }}>{card.icon}</div>
-                            <div
-                              style={{
-                                fontSize: '0.82rem',
-                                fontWeight: 800,
-                                color: 'var(--ink-primary)',
-                              }}
-                            >
-                              {card.title}
-                            </div>
-                            <div style={{ fontSize: '0.72rem', color: 'var(--ink-muted)', marginTop: '2px' }}>
-                              {card.sub}
-                            </div>
+                            <div style={{ fontSize: '1.15rem', marginBottom: '4px' }}>{card.icon}</div>
+                            <div style={{ fontSize: '0.82rem', fontWeight: 800, color: 'var(--ink-primary)' }}>{card.title}</div>
+                            <div style={{ fontSize: '0.72rem', color: 'var(--ink-muted)', marginTop: '2px' }}>{card.sub}</div>
                           </button>
                         ))}
                       </div>
                     </div>
                   ) : (
-                    /* ===== ACTIVE OUTPUT RENDERERS ===== */
                     (() => {
                       const msgId = activeOutputMessage.id;
                       const card = activeOutputMessage.actionCard;
 
-                      // 1. EVENTS LAUNCHPAD (Single Event or Multi-Week Schedule)
+                      // 1. INLINE-EDITABLE EVENTS LAUNCHPAD
                       if (card.type === 'events' && Array.isArray(card.data?.events)) {
                         const evList = card.data.events;
                         const allLaunched = evList.every((_, idx) => publishedEventsMap[`${msgId}-${idx}`]);
 
                         return (
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                            {/* Destination Clarity Banner */}
+                            <div
+                              style={{
+                                padding: '10px 13px',
+                                borderRadius: '12px',
+                                background: 'rgba(59, 130, 246, 0.1)',
+                                border: '1px solid rgba(59, 130, 246, 0.28)',
+                                fontSize: '0.78rem',
+                                color: 'var(--ink-primary)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                              }}
+                            >
+                              <MapPin size={15} color="#3b82f6" style={{ flexShrink: 0 }} />
+                              <span>
+                                <strong>Where this goes:</strong> Publishes directly to <strong>{community?.name} Calendar</strong>, Public Events Discovery (<code>/events</code>), and <strong>Dashboard → Events</strong>.
+                              </span>
+                            </div>
+
                             <div
                               style={{
                                 display: 'flex',
                                 justifyContent: 'space-between',
                                 alignItems: 'center',
-                                gap: '12px',
+                                gap: '10px',
                                 flexWrap: 'wrap',
-                                paddingBottom: '12px',
+                                paddingBottom: '10px',
                                 borderBottom: '1px solid var(--hairline-border)',
                               }}
                             >
                               <div>
-                                <div
-                                  style={{
-                                    fontSize: '0.72rem',
-                                    fontWeight: 800,
-                                    color: '#EB5738',
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '0.05em',
-                                  }}
-                                >
-                                  {evList.length === 1 ? 'Ready to Launch Event' : `${evList.length}-Event Schedule Draft`}
+                                <div style={{ fontSize: '0.7rem', fontWeight: 800, color: '#EB5738', textTransform: 'uppercase' }}>
+                                  Edit Details Inline or Launch in 1 Tap
                                 </div>
-                                <h3
-                                  style={{
-                                    margin: '2px 0 0',
-                                    fontSize: '1.12rem',
-                                    fontFamily: 'var(--font-heading)',
-                                    color: 'var(--ink-primary)',
-                                  }}
-                                >
+                                <h3 style={{ margin: '2px 0 0', fontSize: '1.08rem', fontFamily: 'var(--font-heading)', color: 'var(--ink-primary)' }}>
                                   {card.title}
                                 </h3>
                               </div>
@@ -1345,7 +1599,7 @@ export default function LeaderAICoPilot({
                                 style={{
                                   padding: '10px 16px',
                                   borderRadius: '11px',
-                                  fontSize: '0.84rem',
+                                  fontSize: '0.83rem',
                                   fontWeight: 800,
                                   display: 'inline-flex',
                                   alignItems: 'center',
@@ -1361,7 +1615,7 @@ export default function LeaderAICoPilot({
                                   <Calendar size={15} />
                                 )}
                                 {allLaunched
-                                  ? 'Launched on Calendar ✓'
+                                  ? 'Launched Live ✓'
                                   : evList.length === 1
                                   ? '🚀 Launch Event Live'
                                   : `🚀 Launch All (${evList.length})`}
@@ -1370,364 +1624,395 @@ export default function LeaderAICoPilot({
 
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                               {evList.map((ev, idx) => {
-                                const isLaunched = Boolean(publishedEventsMap[`${msgId}-${idx}`]);
+                                const launchedId = publishedEventsMap[`${msgId}-${idx}`];
+                                const isLaunched = Boolean(launchedId);
+                                const updateEvField = (field, val) => {
+                                  updateOutputCardData(msgId, (d) => ({
+                                    ...d,
+                                    events: d.events.map((item, i) => (i === idx ? { ...item, [field]: val } : item)),
+                                  }));
+                                };
+
                                 return (
                                   <div
                                     key={idx}
                                     style={{
                                       background: 'var(--surface-elevated)',
                                       border: isLaunched
-                                        ? '1.5px solid rgba(16, 185, 129, 0.5)'
+                                        ? '1.5px solid rgba(16, 185, 129, 0.55)'
                                         : '1px solid var(--hairline-border)',
                                       borderRadius: '15px',
-                                      padding: '15px',
+                                      padding: '14px',
+                                      display: 'flex',
+                                      flexDirection: 'column',
+                                      gap: '9px',
                                     }}
                                   >
-                                    <div
-                                      style={{
-                                        display: 'flex',
-                                        justifyContent: 'space-between',
-                                        alignItems: 'center',
-                                        gap: '8px',
-                                        flexWrap: 'wrap',
-                                        marginBottom: '6px',
-                                      }}
-                                    >
-                                      <span
-                                        style={{
-                                          fontSize: '0.68rem',
-                                          fontWeight: 800,
-                                          textTransform: 'uppercase',
-                                          padding: '2px 8px',
-                                          borderRadius: '99px',
-                                          background: 'rgba(235, 87, 56, 0.14)',
-                                          color: '#EB5738',
-                                        }}
-                                      >
-                                        {ev.weekLabel || ev.themeBadge || `Event ${idx + 1}`}
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
+                                      <span style={{ fontSize: '0.68rem', fontWeight: 800, textTransform: 'uppercase', padding: '2px 8px', borderRadius: '99px', background: 'rgba(235, 87, 56, 0.14)', color: '#EB5738' }}>
+                                        {ev.weekLabel || `Event ${idx + 1}`}
                                       </span>
-                                      <span
+                                      {isLaunched && (
+                                        <button
+                                          type="button"
+                                          onClick={() =>
+                                            jumpToRoute(
+                                              typeof launchedId === 'string'
+                                                ? `/events/${launchedId}`
+                                                : `/community/${communitySlug || community?.id}?tab=events`
+                                            )
+                                          }
+                                          style={{
+                                            background: 'rgba(16, 185, 129, 0.15)',
+                                            border: '1px solid rgba(16, 185, 129, 0.4)',
+                                            color: '#10b981',
+                                            borderRadius: '99px',
+                                            padding: '4px 10px',
+                                            fontSize: '0.73rem',
+                                            fontWeight: 800,
+                                            cursor: 'pointer',
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            gap: '4px',
+                                          }}
+                                        >
+                                          View Live Event <ExternalLink size={12} />
+                                        </button>
+                                      )}
+                                    </div>
+
+                                    <input
+                                      type="text"
+                                      disabled={isLaunched}
+                                      value={ev.title}
+                                      onChange={(e) => updateEvField('title', e.target.value)}
+                                      placeholder="Event title"
+                                      style={{ ...inputFieldStyle, fontWeight: 800, fontSize: '0.94rem' }}
+                                    />
+
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                                      <input
+                                        type="date"
+                                        disabled={isLaunched}
+                                        value={ev.date}
+                                        onChange={(e) => updateEvField('date', e.target.value)}
+                                        style={inputFieldStyle}
+                                      />
+                                      <input
+                                        type="time"
+                                        disabled={isLaunched}
+                                        value={ev.time}
+                                        onChange={(e) => updateEvField('time', e.target.value)}
+                                        style={inputFieldStyle}
+                                      />
+                                    </div>
+
+                                    <input
+                                      type="text"
+                                      disabled={isLaunched}
+                                      value={ev.location}
+                                      onChange={(e) => updateEvField('location', e.target.value)}
+                                      placeholder="Meeting venue / landmark"
+                                      style={inputFieldStyle}
+                                    />
+
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                                      <div>
+                                        <label style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--ink-muted)', display: 'block', marginBottom: '3px' }}>
+                                          Max Spots
+                                        </label>
+                                        <input
+                                          type="number"
+                                          min="2"
+                                          disabled={isLaunched}
+                                          value={ev.maxCapacity}
+                                          onChange={(e) => updateEvField('maxCapacity', Number(e.target.value))}
+                                          style={inputFieldStyle}
+                                        />
+                                      </div>
+                                      <div>
+                                        <label style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--ink-muted)', display: 'block', marginBottom: '3px' }}>
+                                          Ticket Price (£, 0 = Free)
+                                        </label>
+                                        <input
+                                          type="number"
+                                          min="0"
+                                          step="0.5"
+                                          disabled={isLaunched}
+                                          value={ev.ticketPrice}
+                                          onChange={(e) => updateEvField('ticketPrice', Number(e.target.value))}
+                                          style={inputFieldStyle}
+                                        />
+                                      </div>
+                                    </div>
+
+                                    <textarea
+                                      rows={3}
+                                      disabled={isLaunched}
+                                      value={ev.description}
+                                      onChange={(e) => updateEvField('description', e.target.value)}
+                                      style={{ ...inputFieldStyle, resize: 'vertical', lineHeight: 1.45 }}
+                                    />
+
+                                    {!isLaunched && (
+                                      <button
+                                        type="button"
+                                        onClick={() => handlePublishSingleEvent(msgId, ev, idx)}
+                                        className="interactive-press"
                                         style={{
-                                          fontSize: '0.78rem',
-                                          fontWeight: 700,
-                                          color: 'var(--ink-secondary)',
+                                          padding: '9px 14px',
+                                          borderRadius: '10px',
+                                          border: '1px solid rgba(235, 87, 56, 0.45)',
+                                          background: 'rgba(235, 87, 56, 0.12)',
+                                          color: '#EB5738',
+                                          fontSize: '0.8rem',
+                                          fontWeight: 800,
+                                          cursor: 'pointer',
                                           display: 'inline-flex',
                                           alignItems: 'center',
-                                          gap: '5px',
+                                          justifyContent: 'center',
+                                          gap: '6px',
                                         }}
                                       >
-                                        <Clock size={13} color="#EB5738" /> {ev.date} • {ev.time}
-                                      </span>
-                                    </div>
-
-                                    <div
-                                      style={{
-                                        fontWeight: 800,
-                                        fontSize: '1.02rem',
-                                        color: 'var(--ink-primary)',
-                                        marginBottom: '5px',
-                                      }}
-                                    >
-                                      {ev.title}
-                                    </div>
-                                    <div
-                                      style={{
-                                        fontSize: '0.8rem',
-                                        color: 'var(--ink-secondary)',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '5px',
-                                        marginBottom: '8px',
-                                      }}
-                                    >
-                                      <MapPin size={13} color="#EB5738" /> {ev.location}
-                                      <span style={{ opacity: 0.5 }}>•</span>
-                                      <span>Max {ev.maxCapacity || 25} spots</span>
-                                      <span style={{ opacity: 0.5 }}>•</span>
-                                      <span>{Number(ev.ticketPrice) > 0 ? `£${ev.ticketPrice}` : 'Free'}</span>
-                                    </div>
-                                    <p
-                                      style={{
-                                        margin: '0 0 12px 0',
-                                        fontSize: '0.82rem',
-                                        color: 'var(--ink-secondary)',
-                                        lineHeight: 1.5,
-                                        whiteSpace: 'pre-wrap',
-                                      }}
-                                    >
-                                      {ev.description}
-                                    </p>
-
-                                    <button
-                                      type="button"
-                                      disabled={isLaunched}
-                                      onClick={() => handlePublishSingleEvent(msgId, ev, idx)}
-                                      className="interactive-press"
-                                      style={{
-                                        padding: '8px 14px',
-                                        borderRadius: '10px',
-                                        border: isLaunched
-                                          ? '1px solid rgba(16, 185, 129, 0.45)'
-                                          : '1px solid rgba(235, 87, 56, 0.4)',
-                                        background: isLaunched
-                                          ? 'rgba(16, 185, 129, 0.14)'
-                                          : 'rgba(235, 87, 56, 0.12)',
-                                        color: isLaunched ? '#10b981' : '#EB5738',
-                                        fontSize: '0.78rem',
-                                        fontWeight: 800,
-                                        cursor: isLaunched ? 'default' : 'pointer',
-                                        display: 'inline-flex',
-                                        alignItems: 'center',
-                                        gap: '6px',
-                                      }}
-                                    >
-                                      {isLaunched ? (
-                                        <>
-                                          <Check size={14} /> Live on Community Calendar
-                                        </>
-                                      ) : (
-                                        <>
-                                          <Plus size={14} /> Launch This Event Live
-                                        </>
-                                      )}
-                                    </button>
+                                        <Plus size={14} /> Launch This Event Live
+                                      </button>
+                                    )}
                                   </div>
                                 );
                               })}
                             </div>
-
-                            <div
-                              style={{
-                                fontSize: '0.76rem',
-                                color: 'var(--ink-muted)',
-                                padding: '10px 12px',
-                                borderRadius: '10px',
-                                background: 'var(--surface-elevated)',
-                                border: '1px dashed var(--hairline-border)',
-                              }}
-                            >
-                              💬 Want to tweak times, dates, ticket price, or make it dog-friendly? Just tell the Co-Pilot in the chat on the left and this output will update automatically.
-                            </div>
                           </div>
                         );
                       }
 
-                      // 2. POLL LAUNCHPAD
-                      if (card.type === 'poll' && card.data?.question) {
+                      // 2. INLINE-EDITABLE POLL LAUNCHPAD
+                      if (card.type === 'poll' && card.data) {
                         const isLaunched = Boolean(launchedPollMap[msgId]);
+                        const opts = card.data.options || [];
+
                         return (
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                            {/* Destination Clarity Banner */}
                             <div
                               style={{
+                                padding: '10px 13px',
+                                borderRadius: '12px',
+                                background: 'rgba(59, 130, 246, 0.1)',
+                                border: '1px solid rgba(59, 130, 246, 0.28)',
+                                fontSize: '0.78rem',
+                                color: 'var(--ink-primary)',
                                 display: 'flex',
-                                justifyContent: 'space-between',
                                 alignItems: 'center',
-                                gap: '12px',
-                                flexWrap: 'wrap',
-                                paddingBottom: '12px',
-                                borderBottom: '1px solid var(--hairline-border)',
+                                gap: '8px',
                               }}
                             >
+                              <BarChart3 size={15} color="#3b82f6" style={{ flexShrink: 0 }} />
+                              <span>
+                                <strong>Where this goes:</strong> Appears live at the top of <strong>{community?.name} Overview &amp; Feed &amp; Photos</strong> AND sends a vote notification to all <strong>{communitySnapshot.memberBreakdown.total} members</strong>.
+                              </span>
+                            </div>
+
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', flexWrap: 'wrap', paddingBottom: '10px', borderBottom: '1px solid var(--hairline-border)' }}>
                               <div>
-                                <div
-                                  style={{
-                                    fontSize: '0.72rem',
-                                    fontWeight: 800,
-                                    color: '#3b82f6',
-                                    textTransform: 'uppercase',
-                                  }}
-                                >
-                                  Community Poll Ready
+                                <div style={{ fontSize: '0.7rem', fontWeight: 800, color: '#3b82f6', textTransform: 'uppercase' }}>
+                                  Edit Question &amp; Options Inline
                                 </div>
-                                <h3
-                                  style={{
-                                    margin: '2px 0 0',
-                                    fontSize: '1.12rem',
-                                    fontFamily: 'var(--font-heading)',
-                                    color: 'var(--ink-primary)',
-                                  }}
-                                >
+                                <h3 style={{ margin: '2px 0 0', fontSize: '1.08rem', fontFamily: 'var(--font-heading)', color: 'var(--ink-primary)' }}>
                                   {card.title}
                                 </h3>
                               </div>
-                              <button
-                                type="button"
-                                disabled={launchingPollMap[msgId] || isLaunched}
-                                onClick={() => handleLaunchPollCard(msgId, card.data)}
-                                className="btn btn-primary interactive-press"
-                                style={{
-                                  padding: '10px 16px',
-                                  borderRadius: '11px',
-                                  fontSize: '0.84rem',
-                                  fontWeight: 800,
-                                  display: 'inline-flex',
-                                  alignItems: 'center',
-                                  gap: '6px',
-                                  background: isLaunched ? '#10b981' : undefined,
-                                }}
-                              >
-                                {launchingPollMap[msgId] ? (
-                                  <Loader2 size={15} className="spin" />
-                                ) : isLaunched ? (
-                                  <CheckCircle2 size={15} />
-                                ) : (
-                                  <BarChart3 size={15} />
-                                )}
-                                {isLaunched ? 'Poll Live ✓' : '🚀 Launch Poll Live'}
-                              </button>
+
+                              {isLaunched ? (
+                                <button
+                                  type="button"
+                                  onClick={() => jumpToRoute(`/community/${communitySlug || community?.id}?tab=feed`)}
+                                  className="btn btn-primary interactive-press"
+                                  style={{ padding: '9px 15px', borderRadius: '11px', fontSize: '0.82rem', fontWeight: 800, background: '#10b981', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                                >
+                                  View Live Poll <ExternalLink size={14} />
+                                </button>
+                              ) : (
+                                <button
+                                  type="button"
+                                  disabled={launchingPollMap[msgId]}
+                                  onClick={() => handleLaunchPollCard(msgId, card.data)}
+                                  className="btn btn-primary interactive-press"
+                                  style={{ padding: '10px 16px', borderRadius: '11px', fontSize: '0.83rem', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                                >
+                                  {launchingPollMap[msgId] ? <Loader2 size={15} className="spin" /> : <BarChart3 size={15} />}
+                                  🚀 Launch Poll Live
+                                </button>
+                              )}
                             </div>
 
-                            <div
-                              style={{
-                                background: 'var(--surface-elevated)',
-                                border: '1px solid var(--hairline-border)',
-                                borderRadius: '16px',
-                                padding: '16px',
-                              }}
-                            >
-                              <div
-                                style={{
-                                  fontWeight: 800,
-                                  fontSize: '1.02rem',
-                                  color: 'var(--ink-primary)',
-                                  marginBottom: '12px',
-                                }}
-                              >
-                                {card.data.question}
+                            <div style={{ background: 'var(--surface-elevated)', border: '1px solid var(--hairline-border)', borderRadius: '15px', padding: '14px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                              <div>
+                                <label style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--ink-muted)', display: 'block', marginBottom: '4px' }}>
+                                  Poll Question
+                                </label>
+                                <input
+                                  type="text"
+                                  disabled={isLaunched}
+                                  value={card.data.question}
+                                  onChange={(e) =>
+                                    updateOutputCardData(msgId, (d) => ({ ...d, question: e.target.value }))
+                                  }
+                                  style={{ ...inputFieldStyle, fontWeight: 800, fontSize: '0.94rem' }}
+                                />
                               </div>
-                              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                {(card.data.options || []).map((opt, oIdx) => (
-                                  <div
-                                    key={oIdx}
+
+                              <div>
+                                <label style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--ink-muted)', display: 'block', marginBottom: '6px' }}>
+                                  Voting Options
+                                </label>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '7px' }}>
+                                  {opts.map((opt, oIdx) => (
+                                    <div key={oIdx} style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                                      <input
+                                        type="text"
+                                        disabled={isLaunched}
+                                        value={opt}
+                                        onChange={(e) =>
+                                          updateOutputCardData(msgId, (d) => ({
+                                            ...d,
+                                            options: d.options.map((x, idx2) => (idx2 === oIdx ? e.target.value : x)),
+                                          }))
+                                        }
+                                        style={inputFieldStyle}
+                                      />
+                                      {!isLaunched && opts.length > 2 && (
+                                        <button
+                                          type="button"
+                                          onClick={() =>
+                                            updateOutputCardData(msgId, (d) => ({
+                                              ...d,
+                                              options: d.options.filter((_, idx2) => idx2 !== oIdx),
+                                            }))
+                                          }
+                                          style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '6px' }}
+                                        >
+                                          <Trash2 size={15} />
+                                        </button>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                                {!isLaunched && opts.length < 6 && (
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      updateOutputCardData(msgId, (d) => ({
+                                        ...d,
+                                        options: [...(d.options || []), ''],
+                                      }))
+                                    }
                                     style={{
-                                      padding: '10px 14px',
-                                      borderRadius: '11px',
-                                      background: 'var(--surface-card)',
-                                      border: '1px solid var(--hairline-border)',
-                                      fontSize: '0.86rem',
-                                      color: 'var(--ink-primary)',
-                                      fontWeight: 600,
+                                      marginTop: '8px',
+                                      background: 'transparent',
+                                      border: '1px dashed var(--hairline-border-strong)',
+                                      color: 'var(--ink-secondary)',
+                                      borderRadius: '8px',
+                                      padding: '6px 10px',
+                                      fontSize: '0.75rem',
+                                      fontWeight: 700,
+                                      cursor: 'pointer',
                                     }}
                                   >
-                                    {oIdx + 1}. {opt}
-                                  </div>
-                                ))}
+                                    + Add Option
+                                  </button>
+                                )}
                               </div>
                             </div>
                           </div>
                         );
                       }
 
-                      // 3. BROADCAST & SOCIAL COPY LAUNCHPAD
+                      // 3. INLINE-EDITABLE BROADCAST & SOCIAL PACK
                       if (card.type === 'broadcast' && card.data) {
                         const isSent = Boolean(sentBroadcastMap[msgId]);
                         return (
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                             <div
                               style={{
-                                paddingBottom: '12px',
-                                borderBottom: '1px solid var(--hairline-border)',
+                                padding: '10px 13px',
+                                borderRadius: '12px',
+                                background: 'rgba(16, 185, 129, 0.1)',
+                                border: '1px solid rgba(16, 185, 129, 0.28)',
+                                fontSize: '0.78rem',
+                                color: 'var(--ink-primary)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
                               }}
                             >
-                              <div
-                                style={{
-                                  fontSize: '0.72rem',
-                                  fontWeight: 800,
-                                  color: '#10b981',
-                                  textTransform: 'uppercase',
-                                }}
-                              >
-                                Ready-to-Send Multi-Channel Copy
-                              </div>
-                              <h3
-                                style={{
-                                  margin: '2px 0 0',
-                                  fontSize: '1.12rem',
-                                  fontFamily: 'var(--font-heading)',
-                                  color: 'var(--ink-primary)',
-                                }}
-                              >
-                                {card.title}
-                              </h3>
+                              <Megaphone size={15} color="#10b981" style={{ flexShrink: 0 }} />
+                              <span>
+                                <strong>Where this goes:</strong> Publishes to <strong>{community?.name} Feed &amp; Photos</strong>{card.data.pinToTop ? ' (pinned to top)' : ''} + notifies all <strong>{communitySnapshot.memberBreakdown.total} members</strong>. WhatsApp &amp; Instagram copies are ready below.
+                              </span>
                             </div>
 
-                            {card.data.inAppBody && (
-                              <div
-                                style={{
-                                  background: 'var(--surface-elevated)',
-                                  borderRadius: '14px',
-                                  padding: '14px',
-                                  border: '1px solid var(--hairline-border)',
-                                }}
-                              >
-                                <div
-                                  style={{
-                                    display: 'flex',
-                                    justifyContent: 'space-between',
-                                    alignItems: 'center',
-                                    gap: '8px',
-                                    flexWrap: 'wrap',
-                                    marginBottom: '8px',
-                                  }}
-                                >
-                                  <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#EB5738' }}>
+                            {card.data.inAppBody !== undefined && (
+                              <div style={{ background: 'var(--surface-elevated)', borderRadius: '14px', padding: '14px', border: '1px solid var(--hairline-border)', display: 'flex', flexDirection: 'column', gap: '9px' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                                  <span style={{ fontSize: '0.74rem', fontWeight: 800, color: '#EB5738' }}>
                                     📣 IN-APP FEED &amp; PUSH NOTIFICATION
                                   </span>
-                                  <button
-                                    type="button"
-                                    disabled={sendingBroadcastMap[msgId] || isSent}
-                                    onClick={() => handlePublishBroadcastCard(msgId, card.data)}
-                                    className="btn btn-primary interactive-press"
-                                    style={{
-                                      padding: '7px 13px',
-                                      borderRadius: '9px',
-                                      fontSize: '0.76rem',
-                                      fontWeight: 800,
-                                      display: 'inline-flex',
-                                      alignItems: 'center',
-                                      gap: '5px',
-                                      background: isSent ? '#10b981' : undefined,
-                                    }}
-                                  >
-                                    {isSent ? (
-                                      <>
-                                        <Check size={13} /> Published ✓
-                                      </>
-                                    ) : sendingBroadcastMap[msgId] ? (
-                                      <>
-                                        <Loader2 size={13} className="spin" /> Publishing...
-                                      </>
-                                    ) : (
-                                      <>
-                                        <Send size={13} /> Publish to Feed &amp; Notify
-                                      </>
-                                    )}
-                                  </button>
+                                  {isSent ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => jumpToRoute(`/community/${communitySlug || community?.id}?tab=feed`)}
+                                      className="btn btn-primary interactive-press"
+                                      style={{ padding: '7px 13px', borderRadius: '9px', fontSize: '0.76rem', fontWeight: 800, background: '#10b981', display: 'inline-flex', alignItems: 'center', gap: '5px' }}
+                                    >
+                                      View on Feed <ExternalLink size={13} />
+                                    </button>
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      disabled={sendingBroadcastMap[msgId]}
+                                      onClick={() => handlePublishBroadcastCard(msgId, card.data)}
+                                      className="btn btn-primary interactive-press"
+                                      style={{ padding: '7px 13px', borderRadius: '9px', fontSize: '0.76rem', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '5px' }}
+                                    >
+                                      {sendingBroadcastMap[msgId] ? <Loader2 size={13} className="spin" /> : <Send size={13} />}
+                                      Publish to Feed &amp; Notify
+                                    </button>
+                                  )}
                                 </div>
-                                {card.data.inAppTitle && (
-                                  <div style={{ fontWeight: 800, fontSize: '0.92rem', color: 'var(--ink-primary)', marginBottom: '5px' }}>
-                                    {card.data.inAppTitle}
-                                  </div>
+
+                                <input
+                                  type="text"
+                                  disabled={isSent}
+                                  value={card.data.inAppTitle || ''}
+                                  onChange={(e) => updateOutputCardData(msgId, (d) => ({ ...d, inAppTitle: e.target.value }))}
+                                  placeholder="Announcement headline"
+                                  style={{ ...inputFieldStyle, fontWeight: 800 }}
+                                />
+                                <textarea
+                                  rows={3}
+                                  disabled={isSent}
+                                  value={card.data.inAppBody || ''}
+                                  onChange={(e) => updateOutputCardData(msgId, (d) => ({ ...d, inAppBody: e.target.value }))}
+                                  style={{ ...inputFieldStyle, resize: 'vertical', lineHeight: 1.5 }}
+                                />
+                                {!isSent && (
+                                  <label style={{ display: 'inline-flex', alignItems: 'center', gap: '7px', fontSize: '0.78rem', fontWeight: 600, color: 'var(--ink-secondary)', cursor: 'pointer' }}>
+                                    <input
+                                      type="checkbox"
+                                      checked={Boolean(card.data.pinToTop)}
+                                      onChange={(e) => updateOutputCardData(msgId, (d) => ({ ...d, pinToTop: e.target.checked }))}
+                                      style={{ accentColor: '#EB5738' }}
+                                    />
+                                    📌 Pin announcement to the top of Community Feed
+                                  </label>
                                 )}
-                                <div style={{ fontSize: '0.84rem', color: 'var(--ink-secondary)', whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>
-                                  {card.data.inAppBody}
-                                </div>
                               </div>
                             )}
 
                             {card.data.whatsappCopy && (
-                              <div
-                                style={{
-                                  background: 'var(--surface-elevated)',
-                                  borderRadius: '14px',
-                                  padding: '14px',
-                                  border: '1px solid var(--hairline-border)',
-                                }}
-                              >
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                                  <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#10b981' }}>
-                                    💬 WHATSAPP GROUP MESSAGE
-                                  </span>
+                              <div style={{ background: 'var(--surface-elevated)', borderRadius: '14px', padding: '14px', border: '1px solid var(--hairline-border)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                  <span style={{ fontSize: '0.74rem', fontWeight: 800, color: '#10b981' }}>💬 WHATSAPP GROUP COPY</span>
                                   <button
                                     type="button"
                                     onClick={() => handleCopyText(card.data.whatsappCopy, 'WhatsApp Message')}
@@ -1737,25 +2022,19 @@ export default function LeaderAICoPilot({
                                     <Copy size={13} /> Copy WhatsApp
                                   </button>
                                 </div>
-                                <div style={{ fontSize: '0.84rem', color: 'var(--ink-secondary)', whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>
-                                  {card.data.whatsappCopy}
-                                </div>
+                                <textarea
+                                  rows={4}
+                                  value={card.data.whatsappCopy}
+                                  onChange={(e) => updateOutputCardData(msgId, (d) => ({ ...d, whatsappCopy: e.target.value }))}
+                                  style={{ ...inputFieldStyle, resize: 'vertical', lineHeight: 1.5 }}
+                                />
                               </div>
                             )}
 
                             {card.data.instagramCopy && (
-                              <div
-                                style={{
-                                  background: 'var(--surface-elevated)',
-                                  borderRadius: '14px',
-                                  padding: '14px',
-                                  border: '1px solid var(--hairline-border)',
-                                }}
-                              >
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                                  <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#ec4899' }}>
-                                    📸 INSTAGRAM CAPTION
-                                  </span>
+                              <div style={{ background: 'var(--surface-elevated)', borderRadius: '14px', padding: '14px', border: '1px solid var(--hairline-border)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                  <span style={{ fontSize: '0.74rem', fontWeight: 800, color: '#ec4899' }}>📸 INSTAGRAM CAPTION</span>
                                   <button
                                     type="button"
                                     onClick={() => handleCopyText(card.data.instagramCopy, 'Instagram Caption')}
@@ -1765,35 +2044,212 @@ export default function LeaderAICoPilot({
                                     <Copy size={13} /> Copy Caption
                                   </button>
                                 </div>
-                                <div style={{ fontSize: '0.84rem', color: 'var(--ink-secondary)', whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>
-                                  {card.data.instagramCopy}
-                                </div>
+                                <textarea
+                                  rows={3}
+                                  value={card.data.instagramCopy}
+                                  onChange={(e) => updateOutputCardData(msgId, (d) => ({ ...d, instagramCopy: e.target.value }))}
+                                  style={{ ...inputFieldStyle, resize: 'vertical', lineHeight: 1.5 }}
+                                />
                               </div>
                             )}
                           </div>
                         );
                       }
 
-                      // 4. DOCUMENT LAUNCHPAD (UK Council RAMS / Sponsor Pitch / Grant Application)
-                      if (card.type === 'document' && card.data?.content) {
+                      // 4. COMMUNITY BIO & GUIDELINES LIVE UPGRADE
+                      if (card.type === 'community_update' && card.data) {
+                        const isApplied = Boolean(appliedProfileMap[msgId]);
                         return (
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                             <div
                               style={{
+                                padding: '10px 13px',
+                                borderRadius: '12px',
+                                background: 'rgba(139, 92, 246, 0.1)',
+                                border: '1px solid rgba(139, 92, 246, 0.3)',
+                                fontSize: '0.78rem',
+                                color: 'var(--ink-primary)',
                                 display: 'flex',
-                                justifyContent: 'space-between',
                                 alignItems: 'center',
-                                gap: '10px',
-                                flexWrap: 'wrap',
-                                paddingBottom: '12px',
-                                borderBottom: '1px solid var(--hairline-border)',
+                                gap: '8px',
                               }}
                             >
+                              <FileEdit size={15} color="#a78bfa" style={{ flexShrink: 0 }} />
+                              <span>
+                                <strong>Where this goes:</strong> Updates your public <strong>{community?.name} Page</strong> description and join guidelines immediately.
+                              </span>
+                            </div>
+
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', flexWrap: 'wrap', paddingBottom: '10px', borderBottom: '1px solid var(--hairline-border)' }}>
+                              <h3 style={{ margin: 0, fontSize: '1.08rem', fontFamily: 'var(--font-heading)', color: 'var(--ink-primary)' }}>
+                                {card.title}
+                              </h3>
+                              {isApplied ? (
+                                <button
+                                  type="button"
+                                  onClick={() => jumpToRoute(`/community/${communitySlug || community?.id}`)}
+                                  className="btn btn-primary interactive-press"
+                                  style={{ padding: '9px 15px', borderRadius: '11px', fontSize: '0.82rem', fontWeight: 800, background: '#10b981', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                                >
+                                  View Updated Page <ExternalLink size={14} />
+                                </button>
+                              ) : (
+                                <button
+                                  type="button"
+                                  disabled={applyingProfileMap[msgId]}
+                                  onClick={() => handleApplyCommunityUpdate(msgId, card.data)}
+                                  className="btn btn-primary interactive-press"
+                                  style={{ padding: '10px 16px', borderRadius: '11px', fontSize: '0.83rem', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                                >
+                                  {applyingProfileMap[msgId] ? <Loader2 size={14} className="spin" /> : <Check size={14} />}
+                                  ✨ Apply Live to Community Page
+                                </button>
+                              )}
+                            </div>
+
+                            <div style={{ background: 'var(--surface-elevated)', borderRadius: '14px', padding: '14px', border: '1px solid var(--hairline-border)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                               <div>
-                                <div style={{ fontSize: '0.72rem', fontWeight: 800, color: '#f59e0b', textTransform: 'uppercase' }}>
-                                  Ready-to-Use Document
+                                <label style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--ink-muted)', display: 'block', marginBottom: '4px' }}>
+                                  Public Community Bio / Description
+                                </label>
+                                <textarea
+                                  rows={5}
+                                  disabled={isApplied}
+                                  value={card.data.description || ''}
+                                  onChange={(e) => updateOutputCardData(msgId, (d) => ({ ...d, description: e.target.value }))}
+                                  style={{ ...inputFieldStyle, resize: 'vertical', lineHeight: 1.5 }}
+                                />
+                              </div>
+
+                              <div>
+                                <label style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--ink-muted)', display: 'block', marginBottom: '6px' }}>
+                                  Community Guidelines (Shown When New Members Join)
+                                </label>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '7px' }}>
+                                  {(card.data.guidelines || []).map((rule, rIdx) => (
+                                    <input
+                                      key={rIdx}
+                                      type="text"
+                                      disabled={isApplied}
+                                      value={rule}
+                                      onChange={(e) =>
+                                        updateOutputCardData(msgId, (d) => ({
+                                          ...d,
+                                          guidelines: d.guidelines.map((x, idx2) => (idx2 === rIdx ? e.target.value : x)),
+                                        }))
+                                      }
+                                      style={inputFieldStyle}
+                                    />
+                                  ))}
                                 </div>
-                                <h3 style={{ margin: '2px 0 0', fontSize: '1.08rem', fontFamily: 'var(--font-heading)', color: 'var(--ink-primary)' }}>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      }
+
+                      // 5. LIVE COMMUNITY HEALTH & GROWTH AUDIT
+                      if (card.type === 'audit' && card.data) {
+                        return (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                            <div style={{ paddingBottom: '10px', borderBottom: '1px solid var(--hairline-border)' }}>
+                              <div style={{ fontSize: '0.7rem', fontWeight: 800, color: '#10b981', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                <TrendingUp size={13} /> Powered by Live Dashboard Data
+                              </div>
+                              <h3 style={{ margin: '2px 0 6px', fontSize: '1.1rem', fontFamily: 'var(--font-heading)', color: 'var(--ink-primary)' }}>
+                                {card.title}
+                              </h3>
+                              <p style={{ margin: 0, fontSize: '0.84rem', color: 'var(--ink-secondary)', lineHeight: 1.5 }}>
+                                {card.data.summary}
+                              </p>
+                            </div>
+
+                            {Array.isArray(card.data.metrics) && card.data.metrics.length > 0 && (
+                              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '8px' }}>
+                                {card.data.metrics.map((met, mIdx) => {
+                                  const color =
+                                    met.status === 'good'
+                                      ? '#10b981'
+                                      : met.status === 'action'
+                                      ? '#EB5738'
+                                      : '#f59e0b';
+                                  return (
+                                    <div
+                                      key={mIdx}
+                                      style={{
+                                        background: 'var(--surface-elevated)',
+                                        border: `1px solid ${color}40`,
+                                        borderRadius: '13px',
+                                        padding: '12px',
+                                        textAlign: 'center',
+                                      }}
+                                    >
+                                      <div style={{ fontSize: '1.22rem', fontWeight: 800, color }}>{met.value}</div>
+                                      <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--ink-muted)', marginTop: '2px', textTransform: 'uppercase' }}>
+                                        {met.label}
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            )}
+
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                              {(card.data.actions || []).map((act, aIdx) => (
+                                <div
+                                  key={aIdx}
+                                  style={{
+                                    background: 'var(--surface-elevated)',
+                                    border: '1px solid var(--hairline-border)',
+                                    borderRadius: '14px',
+                                    padding: '14px',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: '8px',
+                                  }}
+                                >
+                                  <div style={{ fontWeight: 800, fontSize: '0.92rem', color: 'var(--ink-primary)' }}>
+                                    {aIdx + 1}. {act.title}
+                                  </div>
+                                  <div style={{ fontSize: '0.8rem', color: 'var(--ink-secondary)', lineHeight: 1.45 }}>
+                                    {act.reason}
+                                  </div>
+                                  <div>
+                                    <button
+                                      type="button"
+                                      disabled={isThinking}
+                                      onClick={() => handleSendMessage(act.prompt)}
+                                      className="btn btn-primary interactive-press"
+                                      style={{
+                                        padding: '8px 14px',
+                                        borderRadius: '9px',
+                                        fontSize: '0.78rem',
+                                        fontWeight: 800,
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: '5px',
+                                      }}
+                                    >
+                                      ✨ {act.buttonLabel || 'Draft This Now'} →
+                                    </button>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      }
+
+                      // 6. EDITABLE DOCUMENT (RAMS / SPONSOR / GRANT)
+                      if (card.type === 'document' && card.data?.content) {
+                        return (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', flexWrap: 'wrap', paddingBottom: '10px', borderBottom: '1px solid var(--hairline-border)' }}>
+                              <div>
+                                <div style={{ fontSize: '0.7rem', fontWeight: 800, color: '#f59e0b', textTransform: 'uppercase' }}>
+                                  Exportable Document (Edit Inline Before Copy / Download)
+                                </div>
+                                <h3 style={{ margin: '2px 0 0', fontSize: '1.05rem', fontFamily: 'var(--font-heading)', color: 'var(--ink-primary)' }}>
                                   {card.title}
                                 </h3>
                               </div>
@@ -1831,22 +2287,36 @@ export default function LeaderAICoPilot({
                               )}
                             </div>
 
-                            <div
-                              style={{
-                                background: 'var(--surface-elevated)',
-                                border: '1px solid var(--hairline-border)',
-                                borderRadius: '14px',
-                                padding: '16px',
-                                fontSize: '0.84rem',
-                                color: 'var(--ink-secondary)',
-                                whiteSpace: 'pre-wrap',
-                                lineHeight: 1.6,
-                              }}
-                            >
-                              {hasProAccess
-                                ? card.data.content
-                                : `${String(card.data.content).slice(0, 520)}...\n\n[Upgrade to Leader Pro (£20/mo) to export the full document alongside £5M Public Liability Insurance & 2% ticket fees.]`}
-                            </div>
+                            {hasProAccess ? (
+                              <textarea
+                                rows={16}
+                                value={card.data.content}
+                                onChange={(e) => updateOutputCardData(msgId, (d) => ({ ...d, content: e.target.value }))}
+                                style={{
+                                  ...inputFieldStyle,
+                                  background: 'var(--surface-elevated)',
+                                  padding: '14px',
+                                  fontSize: '0.83rem',
+                                  lineHeight: 1.55,
+                                  resize: 'vertical',
+                                }}
+                              />
+                            ) : (
+                              <div
+                                style={{
+                                  background: 'var(--surface-elevated)',
+                                  border: '1px solid var(--hairline-border)',
+                                  borderRadius: '14px',
+                                  padding: '16px',
+                                  fontSize: '0.84rem',
+                                  color: 'var(--ink-secondary)',
+                                  whiteSpace: 'pre-wrap',
+                                  lineHeight: 1.6,
+                                }}
+                              >
+                                {`${String(card.data.content).slice(0, 520)}...\n\n[Upgrade to Leader Pro (£20/mo) to export the full document alongside £5M Public Liability Insurance & 2% ticket fees.]`}
+                              </div>
+                            )}
                           </div>
                         );
                       }
@@ -1862,4 +2332,6 @@ export default function LeaderAICoPilot({
       </div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 }

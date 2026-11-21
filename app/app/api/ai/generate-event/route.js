@@ -147,8 +147,8 @@ export async function POST(request) {
     }
 
     const apiKey = (process.env.GEMINI_API_KEY || process.env.GOOGLE_AI_API_KEY || '').trim();
-    // Use the latest capable Gemini Flash models with automatic fallback
-    const models = ['gemini-3.6-flash', 'gemini-2.5-flash', 'gemini-2.0-flash'];
+    // Prioritize universally available Gemini 2.5 Flash (fast, strong reasoning & JSON outputs) with fallback chain
+    const models = ['gemini-2.5-flash', 'gemini-3.6-flash', 'gemini-2.0-flash'];
     let lastApiError = null;
 
     // ==============================================================
@@ -159,7 +159,8 @@ export async function POST(request) {
       const memberCount = Number(body.memberCount) || 12;
       const verifiedCount = Number(body.verifiedCount) || Math.max(1, Math.round(memberCount * 0.6));
       const upcomingEvents = Array.isArray(body.upcomingEvents) ? body.upcomingEvents.slice(0, 6) : [];
-      const history = Array.isArray(body.history) ? body.history.slice(-8) : [];
+      const snapshot = body.communitySnapshot && typeof body.communitySnapshot === 'object' ? body.communitySnapshot : {};
+      const history = Array.isArray(body.history) ? body.history.slice(-10) : [];
       const today = new Date().toISOString().split('T')[0];
 
       const fallbackReply = buildConversationalCoPilotFallback({
@@ -171,6 +172,7 @@ export async function POST(request) {
         memberCount,
         verifiedCount,
         upcomingEvents,
+        snapshot,
       });
 
       if (!apiKey) {
@@ -182,33 +184,65 @@ export async function POST(request) {
         });
       }
 
-      const systemDirective = `You are "More AI", a warm, sharp, conversational Community Co-Pilot helping the leader of "${communityName}" in ${loc}.
+      const memberBreakdown = snapshot.memberBreakdown || {
+        total: memberCount,
+        verifiedLocals: verifiedCount,
+        regulars3Plus: Math.max(0, Math.round(verifiedCount * 0.35)),
+        quietNeverAttended: Math.max(0, memberCount - verifiedCount),
+      };
+      const pastEventsSummary = Array.isArray(snapshot.pastEventsSummary) ? snapshot.pastEventsSummary.slice(0, 5) : [];
+      const activePolls = Array.isArray(snapshot.activePolls) ? snapshot.activePolls.slice(0, 4) : [];
+      const recentFeedPosts = Array.isArray(snapshot.recentFeedPosts) ? snapshot.recentFeedPosts.slice(0, 4) : [];
+
+      const systemDirective = `You are "More AI", an expert, proactive, conversational Community Growth & Operations Co-Pilot for the leader of "${communityName}" in ${loc}.
 Today's date is ${today}.
 
-LIVE COMMUNITY SNAPSHOT:
+REAL-TIME LIVE COMMUNITY DATA (use these exact real numbers when advising):
 - Community Name: ${communityName}
 - Town / Location: ${loc}
 - Activity Tags: ${communityTags.join(', ') || 'Local community, social, outdoors'}
-- Total Members: ${memberCount} (${verifiedCount} Verified In-Person Locals who have attended 1+ meetup)
-- Upcoming Scheduled Events: ${upcomingEvents.length > 0 ? JSON.stringify(upcomingEvents) : 'None scheduled yet'}
-- Platform Trust Model: Newcomers (0 meetups) unlock "Verified Local 🛡️" status after attending their 1st in-person meetup (which unlocks offering carpool lifts, 1:1 member DMs, and proposing events). 5+ meetups unlocks "Community Regular 🔥" (local sponsor perks & Co-Leader eligibility).
+- Current Community Bio: ${snapshot.description ? String(snapshot.description).slice(0, 320) : 'Not set yet'}
+- Current Guidelines Count: ${Array.isArray(snapshot.guidelines) ? snapshot.guidelines.length : 0}
+- WhatsApp Group Linked: ${snapshot.hasWhatsappGroup ? 'Yes' : 'No'}
+- Member Standing Breakdown:
+  * Total Members: ${memberBreakdown.total}
+  * Verified Locals (1+ meetup attended): ${memberBreakdown.verifiedLocals}
+  * Community Regulars (3+ meetups — ideal Co-Leader candidates): ${memberBreakdown.regulars3Plus}
+  * Quiet Members (joined online, 0 meetups attended yet): ${memberBreakdown.quietNeverAttended}
+- Ticket Revenue: £${Number(snapshot.totalRevenue || 0)} all-time (£${Number(snapshot.monthRevenue || 0)} this month)
+- Pending Admin Items: ${Number(snapshot.pendingProposalsCount || 0)} member event proposals, ${Number(snapshot.pendingPitchesCount || 0)} local business/workshop pitches
+- Upcoming Scheduled Events: ${upcomingEvents.length > 0 ? JSON.stringify(upcomingEvents) : 'NONE scheduled — high priority gap!'}
+- Recent Past Events & Turnout: ${pastEventsSummary.length > 0 ? JSON.stringify(pastEventsSummary) : 'No past events recorded yet'}
+- Active Community Polls: ${activePolls.length > 0 ? JSON.stringify(activePolls) : 'None active'}
+- Recent Feed Posts: ${recentFeedPosts.length > 0 ? JSON.stringify(recentFeedPosts) : 'None yet'}
 
-HOW TO RESPOND:
-1. Be genuinely conversational, collaborative, and specific to ${loc} and "${communityName}". Ask a brief clarifying question or offer to tweak details if helpful. Keep your conversational "reply" natural, concise (2-4 short paragraphs max), and easy to read in a chat bubble.
-2. Whenever the leader asks to launch/create a single new event OR plan a multi-week schedule, tweak an event just discussed, launch a community poll, write a broadcast/WhatsApp/Instagram message, or generate a UK Risk Assessment (RAMS) / Local Sponsor Pitch / Council Grant Pitch, attach an executable "actionCard" in your JSON response so they can launch, publish, copy, or download it with 1 tap right inside the chat!
-3. If the leader asks to create/launch ONE specific new event (e.g. "Launch a Sunday 10am dog-friendly coffee walk at Dunorlan Park for 20 people"), return an "events" actionCard with that 1 tailored event ready for 1-tap launch.
-4. If the leader asks to run a vote or poll (e.g. "Ask members which day suits best"), return a "poll" actionCard with a clear question and 2-4 concise options ready for 1-tap launch.
-5. If the leader is just asking for advice, strategy, or brainstorming (e.g. "How do I get quiet members to attend?", "What are good rainy day meetup ideas in ${loc}?"), give practical, empathetic advice and set "actionCard": null.
-6. Always provide 3 short, natural "suggestedReplies" (under 8 words each) that the leader might want to tap next to continue the conversation (e.g. "Launch a single event from Idea #1", "Change the start time to 09:30", "Also draft a WhatsApp invite for this", "Create a poll to vote on the date").
+WHERE EVERY LAUNCHED ITEM APPEARS IN MORE COMMUNITY (always tell the leader clearly!):
+- Events: Published immediately to the ${communityName} Calendar, Public Events Discovery (/events), and Dashboard → Events tab.
+- Polls: Published immediately to the top of the ${communityName} Page (Overview + Feed & Photos tab) AND notifies all ${memberBreakdown.total} members to vote.
+- Announcements / Broadcasts: Published to the ${communityName} Feed & Photos tab (optionally pinned) AND sends instant In-App & Push notifications to all members; WhatsApp & Instagram copy is ready to copy in 1 tap.
+- Community Bio & Guidelines Updates: Updates the public ${communityName} microsite immediately.
+- UK RAMS / Sponsor Pitches / Council Grants: Exportable documents ready to copy or download (.md).
+
+HOW TO BE EXTRAORDINARILY USEFUL:
+1. Be sharp, warm, specific to ${loc}, and reference the community's REAL numbers above (e.g. mention their ${memberBreakdown.quietNeverAttended} quiet newcomers, past turnout rates, or calendar gaps). Keep "reply" concise (2-4 short paragraphs) and clearly mention what you built in the Live Output & Launchpad panel and WHERE it will go when launched.
+2. ALWAYS attach an executable "actionCard" whenever the leader asks to:
+   - Launch a single event or multi-week schedule -> "events"
+   - Create a poll / ask members to vote -> "poll"
+   - Draft an announcement, re-engagement message, WhatsApp or Instagram post -> "broadcast"
+   - Rewrite or improve their Community Bio / Description or Community Guidelines -> "community_update"
+   - Audit their community health, diagnose low turnout, or ask "what should I do this week?" -> "audit" (with 3 concrete metrics + 3 clickable action steps!)
+   - Generate a UK Council RAMS, Local Café/Business Sponsor Pitch, or UK Council/Lottery Grant -> "document"
+3. If the leader asks to tweak a previous draft (e.g. "Change time to 9:30", "Make it £5", "Add a 4th poll option", "Make it friendlier"), return the FULL updated "actionCard" immediately so the Output Launchpad updates live!
+4. Always provide 3 crisp, high-value "suggestedReplies" (under 8 words each).
 
 RETURN FORMAT:
 Return ONLY a valid JSON object matching this exact structure:
 {
-  "reply": "Your conversational response to the leader (markdown allowed for bold/bullets)...",
+  "reply": "Your conversational response (markdown bold/bullets allowed)...",
   "actionCard": null OR one of:
     - {
         "type": "events",
-        "title": "Launch New Event" | "Draft Event Schedule",
+        "title": "Launch New Event" | "Draft 4-Week Schedule",
         "events": [
           {
             "weekLabel": "This Weekend",
@@ -216,7 +250,7 @@ Return ONLY a valid JSON object matching this exact structure:
             "date": "YYYY-MM-DD",
             "time": "HH:MM",
             "location": "Specific venue/landmark in ${loc}",
-            "description": "Warm event description with Meeting Point, What to Expect, and Afterwards",
+            "description": "Warm description with Meeting Point, What to Expect, What to Bring, and Post-Meetup Social",
             "maxCapacity": 25,
             "ticketPrice": 0
           }
@@ -226,15 +260,40 @@ Return ONLY a valid JSON object matching this exact structure:
         "type": "poll",
         "title": "Launch Community Poll",
         "question": "Short clear question for members?",
-        "options": ["Option 1", "Option 2", "Option 3"]
+        "options": ["Option 1", "Option 2", "Option 3", "Option 4"]
       }
     - {
         "type": "broadcast",
-        "title": "Ready-to-Send Community Copy",
+        "title": "Announcement & Social Copy",
         "announcementTitle": "Short title with emoji",
-        "inAppAnnouncement": "2-3 sentence in-app announcement",
+        "inAppAnnouncement": "2-3 sentence feed announcement",
+        "pinToTop": true,
         "whatsappCopy": "WhatsApp message with *bold* highlights and emojis",
         "instagramCopy": "Instagram caption with local hashtags"
+      }
+    - {
+        "type": "community_update",
+        "title": "Community Profile & Guidelines Upgrade",
+        "description": "Warm, welcoming public community description optimised for local discovery (2-3 short paragraphs)",
+        "guidelines": ["Rule 1...", "Rule 2...", "Rule 3...", "Rule 4..."]
+      }
+    - {
+        "type": "audit",
+        "title": "Community Health & Growth Plan",
+        "summary": "2-sentence executive diagnosis using real numbers",
+        "metrics": [
+          { "label": "Activation Rate", "value": "58%", "status": "good" | "warn" | "action" },
+          { "label": "Quiet Newcomers", "value": "5 members", "status": "warn" },
+          { "label": "Calendar Pipeline", "value": "1 upcoming", "status": "action" }
+        ],
+        "actions": [
+          {
+            "title": "Re-engage Quiet Newcomers",
+            "reason": "Why this matters right now based on their data",
+            "buttonLabel": "Draft Welcome Broadcast",
+            "prompt": "Exact prompt to trigger next when clicked"
+          }
+        ]
       }
     - {
         "type": "document",
@@ -1437,15 +1496,97 @@ function buildConversationalCoPilotFallback({
   memberCount = 12,
   verifiedCount = 6,
   upcomingEvents = [],
+  snapshot = {},
 }) {
   const lower = String(prompt || '').toLowerCase();
   const nextEv = upcomingEvents[0] || null;
   const lastAssistantMsg = [...(history || [])].reverse().find((m) => m?.role === 'assistant');
+  const memberBreakdown = snapshot.memberBreakdown || {
+    total: memberCount,
+    verifiedLocals: verifiedCount,
+    regulars3Plus: Math.max(0, Math.round(verifiedCount * 0.35)),
+    quietNeverAttended: Math.max(0, memberCount - verifiedCount),
+  };
+
+  // 0. Live Community Health & Growth Audit
+  if (
+    lower.includes('audit') ||
+    lower.includes('health') ||
+    lower.includes('what should i do') ||
+    lower.includes('grow') ||
+    lower.includes('how is our club') ||
+    lower.includes('how are we doing')
+  ) {
+    const activationPct = memberBreakdown.total > 0 ? Math.round((memberBreakdown.verifiedLocals / memberBreakdown.total) * 100) : 0;
+    return {
+      reply: `I've analysed **${communityName}** in ${loc} using your live dashboard data!\n\nRight now **${activationPct}%** of your members (${memberBreakdown.verifiedLocals}/${memberBreakdown.total}) have attended an in-person meetup, leaving **${memberBreakdown.quietNeverAttended} quiet newcomer${memberBreakdown.quietNeverAttended === 1 ? '' : 's'}** who joined online but haven't shown up yet. I've built a **3-step action plan** in the Output & Launchpad panel — tap any action to draft and launch it immediately.`,
+      actionCard: {
+        type: 'audit',
+        title: `${communityName} Growth & Health Audit`,
+        summary: `You have ${memberBreakdown.verifiedLocals} Verified Locals and ${upcomingEvents.length} upcoming meetup(s) on the calendar. Activating your ${memberBreakdown.quietNeverAttended} quiet newcomers and keeping 3–4 dates ahead on the calendar is your fastest lever this week.`,
+        metrics: [
+          { label: 'In-Person Activation', value: `${activationPct}%`, status: activationPct >= 50 ? 'good' : 'warn' },
+          { label: 'Quiet Newcomers', value: `${memberBreakdown.quietNeverAttended} members`, status: memberBreakdown.quietNeverAttended > 0 ? 'warn' : 'good' },
+          { label: 'Upcoming Calendar', value: `${upcomingEvents.length} scheduled`, status: upcomingEvents.length >= 2 ? 'good' : 'action' },
+        ],
+        actions: [
+          {
+            title: upcomingEvents.length < 2 ? 'Fill Your Next 4 Weeks on the Calendar' : 'Launch a Beginner-Friendly Coffee Meetup',
+            reason: upcomingEvents.length < 2 ? 'Clubs with 3+ upcoming dates convert 2.4× more newcomers into first-time attendees.' : 'Low-pressure morning socials have the highest first-timer attendance rate.',
+            buttonLabel: upcomingEvents.length < 2 ? 'Plan 4-Week Schedule' : 'Draft Beginner Meetup',
+            prompt: upcomingEvents.length < 2
+              ? `Plan our next 4 weeks of meetups in ${loc} with a mix of beginner-friendly and regular sessions.`
+              : `Create a single welcoming beginner-friendly meetup for ${communityName} in ${loc} this Sunday at 10:00 AM with a post-event coffee stop.`,
+          },
+          {
+            title: `Activate Your ${memberBreakdown.quietNeverAttended || 'Quiet'} Online Members`,
+            reason: 'A warm, low-pressure message reassuring newcomers they can arrive solo doubles first-meetup turnout.',
+            buttonLabel: 'Draft Welcome Broadcast',
+            prompt: 'Draft a warm in-app announcement and WhatsApp message welcoming quiet newcomers and explaining how attending their first meetup unlocks Verified Local standing.',
+          },
+          {
+            title: 'Let Members Vote on Next Meetup Time',
+            reason: 'Members who vote on a poll are 3× more likely to RSVP when the winning date is published.',
+            buttonLabel: 'Draft Live Poll',
+            prompt: `Create a community poll asking members which day and time works best for our next meetup in ${loc}.`,
+          },
+        ],
+      },
+      suggestedReplies: [
+        'Draft a welcome broadcast for quiet newcomers',
+        'Plan our next 4 weeks of meetups',
+        'Rewrite our community bio & guidelines',
+      ],
+    };
+  }
+
+  // 0b. Rewrite Community Bio & Guidelines
+  if (lower.includes('bio') || lower.includes('description') || lower.includes('guideline') || lower.includes('rules')) {
+    return {
+      reply: `I've drafted a warmer, discovery-optimised **Community Description & Guidelines** for **${communityName}** in the Output & Launchpad panel!\n\nYou can edit any sentence directly on the right, then tap **Apply Live to Community Page** to update your public microsite immediately.`,
+      actionCard: {
+        type: 'community_update',
+        title: `Profile & Guidelines Upgrade — ${communityName}`,
+        description: `${communityName} is a welcoming, down-to-earth local group in ${loc} bringing friendly neighbours together in real life. Whether you're brand new to the area, coming solo for the first time, or a regular looking for good company, you'll get a warm hello from the moment you arrive.\n\nWe host relaxed, zero-pressure meetups with plenty of time to chat — usually wrapping up at a favourite local café or pub. Come once to earn your Verified Local badge and unlock carpool sharing, 1:1 member messaging, and proposing your own meetup ideas!`,
+        guidelines: [
+          'Everyone is welcome — say hello to newcomers and make sure nobody stands alone at the start.',
+          'Keep RSVPs up to date: if your plans change, cancel at least 24 hours ahead so someone else can take the spot.',
+          'No cold sales pitches, spam, or unsolicited promotion inside chats or events.',
+          'Look out for each other on routes and socials — respect pace, personal space, and privacy.',
+        ],
+      },
+      suggestedReplies: [
+        'Make the bio shorter and punchier',
+        'Add a dog-friendly rule to the guidelines',
+        'Audit our community health & growth',
+      ],
+    };
+  }
 
   // 1b. Launch a Community Poll
   if (lower.includes('poll') || lower.includes('vote') || lower.includes('ask members which')) {
     return {
-      reply: `Great idea — letting members vote dramatically boosts turnout because people feel ownership over the plan. I've drafted a quick poll for **${communityName}** below. Tap **Launch Poll Live** to post it right away, or tell me if you want different options!`,
+      reply: `I've drafted a live poll for **${communityName}** in the Output & Launchpad panel!\n\n**Where it goes:** Launching this poll publishes it straight to the top of your **${communityName} Page (Overview & Feed tabs)** and sends a notification to all **${memberBreakdown.total} members** to vote. You can edit the question or options directly before tapping Launch.`,
       actionCard: {
         type: 'poll',
         title: `Community Poll for ${communityName}`,

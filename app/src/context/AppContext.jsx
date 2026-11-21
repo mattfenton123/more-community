@@ -2865,6 +2865,21 @@ export function AppProvider({ children }) {
 
 
 
+  const deletePoll = async (pollId, communityId) => {
+    const prevPolls = [...polls];
+    setPolls(prev => prev.filter(p => p.id !== pollId));
+    try {
+      const { data: { session: freshSession } } = await supabase.auth.getSession();
+      const token = freshSession?.access_token || session?.access_token;
+      const { deletePollAction } = await import('../lib/actions');
+      await deletePollAction(pollId, communityId, token);
+    } catch (err) {
+      setPolls(prevPolls);
+      console.error('Failed to delete poll', err);
+      throw err;
+    }
+  };
+
   return (
     <AppContext.Provider value={{
       user: effectiveUser,
@@ -2890,6 +2905,7 @@ export function AppProvider({ children }) {
       pollVotes,
       createPoll,
       votePoll,
+      deletePoll,
       joinCommunity,
       leaveCommunity,
       sendMessage,
