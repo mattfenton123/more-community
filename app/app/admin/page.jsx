@@ -19,6 +19,7 @@ import Commercials from '../../src/components/admin/Commercials';
 import ModerationQueue from '../../src/components/admin/ModerationQueue';
 import InvestorAnalytics from '../../src/components/admin/InvestorAnalytics';
 import { resolveUserAvatar } from '../../src/lib/avatar';
+import { isCommunityPendingChapter } from '../../src/lib/communityVisibility';
 
 // ─── Shared Components ────────────────────────────────────
 const StatCard = ({ value, label, icon: Icon, color, accent, onClick, description }) => (
@@ -128,7 +129,11 @@ export default function AdminDashboard() {
     events, 
     communityMemberships, 
     eventRsvps, 
+    sponsors,
+    sponsorshipAssignments,
     adminVerifyCommunity, 
+    approveChapter,
+    declineChapter,
     updateUser, 
     adminDeleteUser,
     notifications, 
@@ -201,13 +206,16 @@ const ADMIN_EMAILS = [
     const totalEvents = publishedEventsList.length;
     const activeEvents = publishedEventsList.filter(e => e.status !== 'cancelled').length;
 
-    // Revenue
+    const isGoingOrCheckedIn = (r) => r && (r.status === 'going' || r.status === 'checked_in' || r.checkedIn || r.checked_in);
+    const isCheckedInRsvp = (r) => r && (r.checkedIn || r.checked_in || r.status === 'checked_in');
+
+    // Revenue (exclude cancelled & proposed events)
     let totalRevenue = 0;
     let monthRevenue = 0;
     const now = new Date();
-    publishedEventsList.forEach(event => {
+    publishedEventsList.filter(e => e.status !== 'cancelled').forEach(event => {
       const price = event.ticketPrice || 0;
-      const rsvps = (eventRsvps[event.id] || []).filter(r => r.status === 'going');
+      const rsvps = (eventRsvps[event.id] || []).filter(isGoingOrCheckedIn);
       const rev = price * rsvps.length;
       totalRevenue += rev;
       if (event.date) {
@@ -219,22 +227,23 @@ const ADMIN_EMAILS = [
     // Total RSVPs and check-ins
     let totalRsvps = 0, totalCheckins = 0;
     Object.values(eventRsvps).forEach(rsvps => {
-      totalRsvps += rsvps.filter(r => r.status === 'going').length;
-      totalCheckins += rsvps.filter(r => r.checkedIn).length;
+      totalRsvps += (rsvps || []).filter(isGoingOrCheckedIn).length;
+      totalCheckins += (rsvps || []).filter(isCheckedInRsvp).length;
     });
     const avgAttendance = activeEvents > 0 ? Math.round(totalRsvps / activeEvents) : 0;
 
     // Community health
     const communityHealth = communities.map(c => {
       const members = (communityMemberships[c.id] || []).length;
-      const cEvents = events.filter(e => e.communityId === c.id && e.status !== 'cancelled' && e.status !== 'proposed').length;
+      const cEventsList = events.filter(e => e.communityId === c.id && e.status !== 'cancelled' && e.status !== 'proposed');
+      const cEvents = cEventsList.length;
       const cMessages = messages.filter(m => m.communityId === c.id).length;
       const activityScore = members * 2 + cEvents * 10 + cMessages;
       const health = activityScore >= 30 ? 'active' : activityScore >= 10 ? 'moderate' : 'dormant';
       
       let cRevenue = 0;
-      events.filter(e => e.communityId === c.id).forEach(e => {
-        cRevenue += (e.ticketPrice || 0) * (eventRsvps[e.id] || []).filter(r => r.status === 'going').length;
+      cEventsList.forEach(e => {
+        cRevenue += (e.ticketPrice || 0) * (eventRsvps[e.id] || []).filter(isGoingOrCheckedIn).length;
       });
       
       return { ...c, members, cEvents, cMessages, activityScore, health, cRevenue };
@@ -257,17 +266,19 @@ const ADMIN_EMAILS = [
 
   const filteredUsers = useMemo(() => {
     let list = users.map(u => {
-      const isAdmin = ADMIN_EMAILS.includes(u.email?.toLowerCase()) || !!u.is_admin;
+      const resolvedEmail = extractUserEmail(u);
+      const isAdmin = ADMIN_EMAILS.includes(resolvedEmail?.toLowerCase()) || !!u.is_admin;
       const ledCommunity = communities.find(c => {
         const mems = communityMemberships[c.id] || [];
         return mems.some(m => m.userId === u.id && m.role === 'Leader');
       });
       const joinedCount = Object.values(communityMemberships).filter(mems => mems.some(m => m.userId === u.id)).length;
-      return { ...u, isAdmin, isLeader: !!ledCommunity, ledCommunityName: ledCommunity?.name, joinedCount };
+      return { ...u, email: resolvedEmail, isAdmin, isLeader: !!ledCommunity, ledCommunityName: ledCommunity?.name, joinedCount };
     });
     if (userFilter === 'admins') list = list.filter(u => u.isAdmin);
     if (userFilter === 'leaders') list = list.filter(u => u.isLeader);
     if (userFilter === 'members') list = list.filter(u => !u.isAdmin && !u.isLeader);
+    if (userFilter === 'suspended') list = list.filter(u => Boolean(u.is_suspended));
     if (searchTerm) list = list.filter(u => u.name?.toLowerCase().includes(searchTerm.toLowerCase()) || u.email?.toLowerCase().includes(searchTerm.toLowerCase()));
     return list;
   }, [users, communities, communityMemberships, userFilter, searchTerm]);
@@ -275,8 +286,8 @@ const ADMIN_EMAILS = [
   const filteredEvents = useMemo(() => {
     let list = events.map(e => {
       const community = communities.find(c => c.id === e.communityId);
-      const rsvps = (eventRsvps[e.id] || []).filter(r => r.status === 'going');
-      const checkins = rsvps.filter(r => r.checkedIn).length;
+      const rsvps = (eventRsvps[e.id] || []).filter(r => r.status === 'going' || r.status === 'checked_in' || r.checkedIn || r.checked_in);
+      const checkins = rsvps.filter(r => r.checkedIn || r.checked_in || r.status === 'checked_in').length;
       const revenue = (e.ticketPrice || 0) * rsvps.length;
       return { ...e, communityName: community?.name || 'Unknown', rsvpCount: rsvps.length, checkins, revenue, rsvpsList: rsvps };
     });
@@ -405,9 +416,10 @@ const ADMIN_EMAILS = [
   const handleExportCSV = (type) => {
     let csv = '';
     if (type === 'users') {
-      csv = 'Name,Email,Role,Communities Joined\n' + users.map(u => {
+      csv = 'Name,Email,Role,Status,Communities Joined\n' + users.map(u => {
+        const email = extractUserEmail(u);
         const joined = Object.values(communityMemberships).filter(m => m.some(mem => mem.userId === u.id)).length;
-        return `"${u.name}","${u.email || ''}","${ADMIN_EMAILS.includes(u.email?.toLowerCase()) ? 'Admin' : 'Member'}",${joined}`;
+        return `"${u.name}","${email}","${ADMIN_EMAILS.includes(email?.toLowerCase()) ? 'Admin' : 'Member'}","${u.is_suspended ? 'Suspended' : 'Active'}",${joined}`;
       }).join('\n');
     } else if (type === 'communities') {
       csv = 'Name,Category,Members,Events,Revenue,Verified\n' + platformStats.communityHealth.map(c =>
@@ -418,9 +430,11 @@ const ADMIN_EMAILS = [
         `"${e.title}","${e.communityName}","${e.date}",${e.rsvpCount},${e.checkins},${e.revenue}`
       ).join('\n');
     } else if (type === 'revenue') {
-      csv = 'Community,Events,Members,Gross Revenue,Platform Take (5%),Leader Net (95%)\n' + revenueByComm.map(c =>
-        `"${c.name}",${c.cEvents},${c.members},${c.cRevenue},${(c.cRevenue * 0.05).toFixed(2)},${(c.cRevenue * 0.95).toFixed(2)}`
-      ).join('\n');
+      csv = 'Community,Plan,Events,Members,Gross Revenue,Platform Take,Leader Net\n' + revenueByComm.map(c => {
+        const isPro = Boolean(c.is_insured || c.insurance_tier === 'pro');
+        const rate = isPro ? 0.02 : 0.05;
+        return `"${c.name}","${isPro ? 'Leader Pro (2%)' : 'Standard (5%)'}",${c.cEvents},${c.members},${c.cRevenue},${(c.cRevenue * rate).toFixed(2)},${(c.cRevenue * (1 - rate)).toFixed(2)}`;
+      }).join('\n');
     }
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
@@ -465,21 +479,46 @@ const ADMIN_EMAILS = [
   };
 
   // ═════════════════════════════════════════════════════════
-  // TABS CONFIG
+  // TABS CONFIG (Grouped for crisp sidebar navigation)
   // ═════════════════════════════════════════════════════════
-  const tabs = [
-    { key: 'overview', label: 'Overview', icon: BarChart3 },
-    { key: 'analytics', label: 'Investor Analytics', icon: TrendingUp },
-    { key: 'crm', label: 'Leader CRM', icon: UserCheck },
-    { key: 'map', label: 'Ops Map', icon: Map },
-    { key: 'communities', label: 'Communities', icon: Globe },
-    { key: 'users', label: 'Users', icon: Users },
-    { key: 'events', label: 'Events & Attendees', icon: Calendar },
-    { key: 'revenue', label: 'Commercials', icon: DollarSign },
-    { key: 'moderation', label: 'Moderation', icon: Shield },
-    { key: 'content', label: 'Content', icon: MessageCircle },
-    { key: 'config', label: 'Config', icon: Settings },
+  const moderationCount = useMemo(() => {
+    const pendingChapters = (communities || []).filter(c => isCommunityPendingChapter(c)).length;
+    const suspendedCount = (users || []).filter(u => Boolean(u.is_suspended)).length;
+    const proposedCount = (events || []).filter(e => e.status === 'proposed').length;
+    return pendingChapters + suspendedCount + proposedCount;
+  }, [communities, users, events]);
+
+  const tabGroups = [
+    {
+      heading: 'Operations',
+      items: [
+        { key: 'overview', label: 'Overview', icon: BarChart3, subtitle: 'Live platform health, engagement, and community pulse' },
+        { key: 'communities', label: 'Communities', icon: Globe, subtitle: 'Directory, verification, featured placement, and payouts' },
+        { key: 'users', label: 'Users', icon: Users, subtitle: 'Member directory, role management, and account moderation' },
+        { key: 'events', label: 'Events & Attendees', icon: Calendar, subtitle: 'Scheduled meetups, rosters, check-ins, and reminders' },
+      ],
+    },
+    {
+      heading: 'Growth & Revenue',
+      items: [
+        { key: 'analytics', label: 'Investor Analytics', icon: TrendingUp, subtitle: 'Live signups, DAU/MAU stickiness, and retention cohorts' },
+        { key: 'crm', label: 'Leader CRM', icon: UserCheck, subtitle: 'Track and onboard prospective local community organisers' },
+        { key: 'revenue', label: 'Commercials', icon: DollarSign, subtitle: 'Ticket volume, 5%/2% take-rate, sponsors, and remittances' },
+        { key: 'map', label: 'Ops Map', icon: Map, subtitle: 'Regional footprint across active communities and hubs' },
+      ],
+    },
+    {
+      heading: 'Trust & System',
+      items: [
+        { key: 'moderation', label: 'Moderation', icon: Shield, badge: moderationCount, subtitle: 'Pending chapter sign-offs, suspended accounts, and proposals' },
+        { key: 'content', label: 'Content & Push', icon: MessageCircle, subtitle: 'Global platform announcements and recent feed posts' },
+        { key: 'config', label: 'Config & Exports', icon: Settings, subtitle: 'Admin access, live database counts, and audit exports' },
+      ],
+    },
   ];
+
+  const tabs = tabGroups.flatMap(g => g.items);
+  const currentTabMeta = tabs.find(t => t.key === activeTab) || tabs[0];
 
   const hasAdminAccess = Boolean(realUser?.isAdmin || user?.isAdmin);
 
@@ -488,33 +527,31 @@ const ADMIN_EMAILS = [
   }
 
   return (
-    <div className="view-admin dashboard-layout" style={{ position: 'relative', minHeight: '100dvh', display: 'flex' }}>
+    <div className="view-admin dashboard-layout" style={{ position: 'relative', minHeight: '100dvh', display: 'flex', background: 'var(--surface-canvas)' }}>
       {/* Desktop Sidebar (PC Only) */}
       <div className="dashboard-sidebar desktop-only">
         <div className="dashboard-sidebar-header">
           <button 
             onClick={() => navigate.push('/app')}
-            style={{ background: 'none', border: 'none', color: 'var(--teal-400)', fontSize: '0.82rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', padding: '0 0 14px 0', fontWeight: 600 }}
+            style={{ background: 'none', border: 'none', color: 'var(--brand-accent)', fontSize: '0.82rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', padding: '0 0 12px 0', fontWeight: 700 }}
             className="interactive-press"
           >
-            <ChevronLeft size={16} /> Back to App
+            <ChevronLeft size={15} /> Back to App
           </button>
           
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-            <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(59,130,246,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3b82f6', border: '1px solid rgba(59,130,246,0.3)', flexShrink: 0 }}>
-              <Shield size={22} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '11px', marginBottom: '12px' }}>
+            <div style={{ width: '38px', height: '38px', borderRadius: '11px', background: 'rgba(37, 99, 235, 0.14)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#2563eb', border: '1px solid rgba(37, 99, 235, 0.28)', flexShrink: 0 }}>
+              <Shield size={20} />
             </div>
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span style={{ fontWeight: 800, color: 'var(--white)', fontSize: '1.1rem', fontFamily: 'var(--font-heading)' }}>Platform Admin</span>
-              </div>
-              <span style={{ fontSize: '0.62rem', fontWeight: 800, padding: '1px 6px', borderRadius: '99px', background: 'rgba(34,197,94,0.15)', color: '#22c55e', border: '1px solid rgba(34,197,94,0.25)', letterSpacing: '0.04em' }}>
-                LIVE OPS
+              <div style={{ fontWeight: 800, color: 'var(--ink-primary)', fontSize: '1.04rem', fontFamily: 'var(--font-heading)', lineHeight: 1.2 }}>Platform Admin</div>
+              <span style={{ display: 'inline-block', marginTop: '2px', fontSize: '0.62rem', fontWeight: 800, padding: '1px 7px', borderRadius: '99px', background: 'rgba(22, 163, 74, 0.14)', color: '#16a34a', border: '1px solid rgba(22, 163, 74, 0.28)', letterSpacing: '0.04em' }}>
+                ● LIVE OPS
               </span>
             </div>
           </div>
           
-          <div style={{ display: 'flex', gap: '6px', marginTop: '12px' }}>
+          <div style={{ display: 'flex', gap: '6px' }}>
             <button 
               onClick={() => {
                 setSimulatedPersona('member');
@@ -523,271 +560,264 @@ const ADMIN_EMAILS = [
               className="interactive-press"
               style={{ 
                 flex: 1, padding: '7px 8px', borderRadius: '8px', fontSize: '0.72rem', 
-                background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.3)', 
-                color: '#4ade80', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', cursor: 'pointer' 
+                background: 'rgba(22, 163, 74, 0.1)', border: '1px solid rgba(22, 163, 74, 0.28)', 
+                color: '#16a34a', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', cursor: 'pointer' 
               }}
               title="Open Member User View (/app)"
             >
-              <Users size={12} color="#4ade80" /> Member View →
+              <Users size={12} /> Member →
             </button>
             <button 
               onClick={() => navigate.push('/dashboard')}
               className="interactive-press"
               style={{ 
                 flex: 1, padding: '7px 8px', borderRadius: '8px', fontSize: '0.72rem', 
-                background: 'rgba(235, 87, 56,0.12)', border: '1px solid rgba(235, 87, 56,0.3)', 
-                color: 'var(--teal-300)', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', cursor: 'pointer' 
+                background: 'var(--brand-accent-soft)', border: '1px solid rgba(235, 87, 56, 0.3)', 
+                color: 'var(--brand-accent)', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', cursor: 'pointer' 
               }}
             >
-              <Crown size={12} color="var(--teal-400)" /> Leader View →
-            </button>
-            <button 
-              onClick={() => handleExportCSV('revenue')}
-              className="interactive-press"
-              style={{ 
-                padding: '7px 10px', borderRadius: '8px', fontSize: '0.74rem', 
-                background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', 
-                color: 'var(--white)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' 
-              }}
-              title="Export CSV"
-            >
-              <Download size={13} color="var(--teal-400)" />
+              <Crown size={12} /> Leader →
             </button>
           </div>
         </div>
 
-        {/* Navigation Links */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '2px', overflowY: 'auto' }}>
-          <div style={{ fontSize: '0.68rem', color: 'var(--slate-500)', textTransform: 'uppercase', fontWeight: 700, padding: '0 8px 6px', letterSpacing: '0.05em' }}>
-            Operations Console
-          </div>
-          {tabs.map(tab => {
-            const isActive = activeTab === tab.key;
-            return (
-              <button 
-                key={tab.key}
-                onClick={() => { setActiveTab(tab.key); setSearchTerm(''); }}
-                className={`dashboard-nav-item ${isActive ? 'active' : ''}`}
-                style={{ padding: '10px 12px', fontSize: '0.85rem' }}
-              >
-                <tab.icon size={16} />
-                <span>{tab.label}</span>
-              </button>
-            );
-          })}
+        {/* Grouped Navigation Links */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '12px', overflowY: 'auto' }}>
+          {tabGroups.map(group => (
+            <div key={group.heading} style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+              <div style={{ fontSize: '0.66rem', color: 'var(--ink-muted)', textTransform: 'uppercase', fontWeight: 700, padding: '0 10px 4px', letterSpacing: '0.06em' }}>
+                {group.heading}
+              </div>
+              {group.items.map(tab => {
+                const isActive = activeTab === tab.key;
+                return (
+                  <button 
+                    key={tab.key}
+                    onClick={() => { setActiveTab(tab.key); setSearchTerm(''); }}
+                    className={`dashboard-nav-item ${isActive ? 'active' : ''}`}
+                    style={{ padding: '9px 12px', fontSize: '0.84rem', justifyContent: 'space-between', marginBottom: '2px' }}
+                  >
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+                      <tab.icon size={15} style={{ flexShrink: 0 }} />
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{tab.label}</span>
+                    </span>
+                    {tab.badge > 0 && (
+                      <span style={{ fontSize: '0.64rem', fontWeight: 800, background: 'var(--brand-accent)', color: '#FFFFFF', padding: '1px 7px', borderRadius: '99px', flexShrink: 0 }}>
+                        {tab.badge}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          ))}
         </div>
 
-        {/* Quick Perspective Switcher in Sidebar Footer */}
-        <div style={{ paddingTop: '14px', marginTop: '14px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-          <div style={{ fontSize: '0.68rem', color: 'var(--slate-500)', textTransform: 'uppercase', fontWeight: 700, padding: '0 8px 6px', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <Eye size={11} color="var(--teal-400)" /> Perspective Simulator
+        {/* Quick Perspective Simulator in Sidebar Footer */}
+        <div style={{ paddingTop: '14px', marginTop: '12px', borderTop: '1px solid var(--hairline-border)' }}>
+          <div style={{ fontSize: '0.66rem', color: 'var(--ink-muted)', textTransform: 'uppercase', fontWeight: 700, padding: '0 4px 8px', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '5px' }}>
+            <Eye size={11} color="var(--brand-accent)" /> Preview As Role
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
             {[
-              { key: 'admin', label: 'Admin', icon: Shield, color: '#3b82f6' },
-              { key: 'leader', label: 'Leader', icon: Crown, color: '#f59e0b' },
-              { key: 'member', label: 'Member', icon: Users, color: '#10b981' },
-              { key: 'sponsor', label: 'Sponsor', icon: Store, color: '#fbbf24' }
-            ].map(p => (
-              <button
-                key={p.key}
-                onClick={() => setSimulatedPersona(p.key)}
-                className="interactive-press"
-                style={{
-                  padding: '6px 8px', borderRadius: '8px',
-                  border: simulatedPersona === p.key ? `1px solid ${p.color}` : '1px solid rgba(255,255,255,0.06)',
-                  background: simulatedPersona === p.key ? `${p.color}22` : 'rgba(255,255,255,0.02)',
-                  color: simulatedPersona === p.key ? '#fff' : 'var(--slate-400)',
-                  fontSize: '0.7rem', fontWeight: simulatedPersona === p.key ? 700 : 500,
-                  cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px'
-                }}
-              >
-                <p.icon size={11} color={p.color} />
-                <span>{p.label}</span>
-              </button>
-            ))}
+              { key: 'admin', label: 'Admin', icon: Shield, color: '#2563eb' },
+              { key: 'leader', label: 'Leader', icon: Crown, color: '#d97706' },
+              { key: 'member', label: 'Member', icon: Users, color: '#16a34a' },
+              { key: 'sponsor', label: 'Sponsor', icon: Store, color: '#ea580c' },
+              { key: 'partner', label: 'Host', icon: Calendar, color: '#0d9488' }
+            ].map(p => {
+              const active = simulatedPersona === p.key;
+              return (
+                <button
+                  key={p.key}
+                  onClick={() => setSimulatedPersona(p.key)}
+                  className="interactive-press"
+                  style={{
+                    padding: '6px 8px', borderRadius: '8px',
+                    border: active ? `1.5px solid ${p.color}` : '1px solid var(--hairline-border)',
+                    background: active ? `${p.color}18` : 'var(--surface-elevated)',
+                    color: active ? 'var(--ink-primary)' : 'var(--ink-secondary)',
+                    fontSize: '0.72rem', fontWeight: active ? 700 : 600,
+                    cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px'
+                  }}
+                >
+                  <p.icon size={11} color={p.color} />
+                  <span>{p.label}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>
 
       {/* Main Dashboard Content */}
       <div className="dashboard-main" style={{ flex: 1, minWidth: 0, paddingBottom: '110px' }}>
-      {/* ═══ HEADER ═══ */}
-      <div style={{ padding: '24px 24px 18px', background: 'linear-gradient(180deg, rgba(59,130,246,0.12) 0%, transparent 100%)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '14px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-            <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: 'rgba(59,130,246,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3b82f6', border: '1px solid rgba(59,130,246,0.3)' }}>
-              <Shield size={24} />
-            </div>
+        {/* Desktop Editorial Header (clean, single-line, zero duplication with sidebar) */}
+        <div className="desktop-only" style={{ paddingBottom: '20px', marginBottom: '20px', borderBottom: '1px solid var(--hairline-border)' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: '14px' }}>
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <h1 style={{ fontSize: '1.6rem', fontWeight: 700, color: 'var(--white)', margin: 0, fontFamily: 'var(--font-heading)' }}>Platform Admin</h1>
-                <span style={{ fontSize: '0.65rem', fontWeight: 700, padding: '2px 8px', borderRadius: '99px', background: 'rgba(34,197,94,0.15)', color: '#22c55e', border: '1px solid rgba(34,197,94,0.25)' }}>
-                  LIVE OPS
-                </span>
-              </div>
-              <p style={{ color: 'var(--slate-400)', margin: '2px 0 0', fontSize: '0.82rem' }}>
-                Global Operations, Commercials, Community Health & Creator Enablement
+              <h1 style={{ fontSize: '1.65rem', fontWeight: 700, color: 'var(--ink-primary)', margin: 0, fontFamily: 'var(--font-heading)', lineHeight: 1.15 }}>
+                {currentTabMeta.label}
+              </h1>
+              <p style={{ color: 'var(--ink-secondary)', margin: '4px 0 0', fontSize: '0.86rem' }}>
+                {currentTabMeta.subtitle}
               </p>
             </div>
-          </div>
-          
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-            <button 
-              onClick={() => handleExportCSV('revenue')}
-              className="btn btn-outline interactive-press"
-              style={{ padding: '8px 12px', borderRadius: '10px', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--white)' }}
-            >
-              <Download size={14} color="var(--teal-400)" /> Export Data
-            </button>
-            <button 
-              onClick={() => {
-                setSimulatedPersona('member');
-                navigate.push('/app');
-              }}
-              className="btn interactive-press"
-              style={{ padding: '8px 14px', borderRadius: '10px', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.3)', color: '#4ade80', fontWeight: 600 }}
-              title="Open Member User View (/app)"
-            >
-              <Users size={14} color="#4ade80" /> Member / User View →
-            </button>
-            <button 
-              onClick={() => navigate.push('/dashboard')}
-              className="btn interactive-press"
-              style={{ padding: '8px 14px', borderRadius: '10px', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', background: 'rgba(235, 87, 56,0.15)', border: '1px solid rgba(235, 87, 56,0.3)', color: 'var(--teal-300)', fontWeight: 600 }}
-            >
-              <Crown size={14} color="var(--teal-400)" /> Leader View →
-            </button>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+              {simulatedPersona !== 'admin' && (
+                <>
+                  <button
+                    onClick={() => {
+                      if (simulatedPersona === 'leader') navigate.push('/dashboard');
+                      else if (simulatedPersona === 'member') navigate.push('/discover');
+                      else if (simulatedPersona === 'sponsor' || simulatedPersona === 'partner') navigate.push('/partner');
+                    }}
+                    className="btn btn-primary interactive-press"
+                    style={{ borderRadius: '9px', padding: '8px 14px', fontSize: '0.78rem', fontWeight: 700, color: '#FFFFFF', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                  >
+                    <Eye size={13} /> Open Full App as {simulatedPersona === 'leader' ? 'Leader' : simulatedPersona === 'member' ? 'Member' : simulatedPersona === 'sponsor' ? 'Sponsor' : 'Host'} →
+                  </button>
+                  <button
+                    onClick={() => {
+                      exitSimulator();
+                      setSimulatedPersona('admin');
+                    }}
+                    className="interactive-press"
+                    style={{ background: 'var(--surface-card)', border: '1px solid var(--hairline-border-strong)', borderRadius: '9px', padding: '8px 12px', color: 'var(--ink-secondary)', fontSize: '0.76rem', fontWeight: 600, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                  >
+                    <X size={13} /> Exit Preview
+                  </button>
+                </>
+              )}
+              <button 
+                onClick={() => handleExportCSV(activeTab === 'users' ? 'users' : activeTab === 'communities' ? 'communities' : activeTab === 'events' ? 'events' : 'revenue')}
+                className="interactive-press"
+                style={{ padding: '8px 14px', borderRadius: '9px', fontSize: '0.8rem', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '6px', cursor: 'pointer', background: 'var(--surface-card)', border: '1px solid var(--hairline-border-strong)', color: 'var(--ink-primary)' }}
+              >
+                <Download size={14} color="var(--brand-accent)" /> Export CSV
+              </button>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* ═══ TAB NAVIGATION ═══ */}
+        {/* Mobile Header (compact, Light + Dark mode crisp) */}
+        <div className="mobile-only" style={{ padding: '16px 18px 14px', background: 'var(--surface-card)', borderBottom: '1px solid var(--hairline-border)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', marginBottom: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <button
+                type="button"
+                onClick={() => navigate.push('/app')}
+                aria-label="Back to App"
+                style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--surface-elevated)', border: '1px solid var(--hairline-border)', color: 'var(--ink-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+              >
+                <ChevronLeft size={17} />
+              </button>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <h1 style={{ fontSize: '1.15rem', fontWeight: 700, color: 'var(--ink-primary)', margin: 0, fontFamily: 'var(--font-heading)' }}>Platform Admin</h1>
+                  <span style={{ fontSize: '0.6rem', fontWeight: 800, padding: '1px 6px', borderRadius: '99px', background: 'rgba(22, 163, 74, 0.14)', color: '#16a34a' }}>LIVE</span>
+                </div>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '6px' }}>
+              <button
+                onClick={() => navigate.push('/dashboard')}
+                className="interactive-press"
+                style={{ padding: '6px 10px', borderRadius: '8px', fontSize: '0.72rem', fontWeight: 700, background: 'var(--brand-accent-soft)', border: '1px solid rgba(235, 87, 56, 0.3)', color: 'var(--brand-accent)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+              >
+                <Crown size={12} /> Leader
+              </button>
+              <button
+                onClick={() => handleExportCSV('revenue')}
+                aria-label="Export CSV"
+                className="interactive-press"
+                style={{ padding: '6px 9px', borderRadius: '8px', background: 'var(--surface-elevated)', border: '1px solid var(--hairline-border-strong)', color: 'var(--ink-primary)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center' }}
+              >
+                <Download size={14} />
+              </button>
+            </div>
+          </div>
 
-      {/* ROLE & PERSPECTIVE SIMULATOR BAR */}
-      <div style={{
-        padding: '12px 24px',
-        background: 'linear-gradient(90deg, rgba(37, 37, 37, 0.95) 0%, rgba(27, 27, 27, 0.95) 100%)',
-        borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        flexWrap: 'wrap',
-        gap: '12px'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-          <span style={{ fontSize: '0.74rem', color: 'var(--slate-400)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <Eye size={13} color="var(--teal-400)" /> Perspective Simulator:
-          </span>
-          {[
-            { key: 'admin', label: 'Admin Console', icon: Shield, color: '#3b82f6' },
-            { key: 'leader', label: 'Leader View', icon: Crown, color: '#f59e0b' },
-            { key: 'member', label: 'Community User', icon: Users, color: '#10b981' },
-            { key: 'sponsor', label: 'Local Sponsor', icon: Store, color: '#fbbf24' },
-            { key: 'partner', label: 'Experience Host', icon: Calendar, color: '#3A8E76' }
-          ].map(p => (
-            <button
-              key={p.key}
-              onClick={() => setSimulatedPersona(p.key)}
-              className="interactive-press"
-              style={{
-                padding: '6px 13px',
-                borderRadius: '99px',
-                border: simulatedPersona === p.key ? `1.5px solid ${p.color}` : '1px solid rgba(255, 255, 255, 0.08)',
-                background: simulatedPersona === p.key ? `${p.color}22` : 'rgba(255, 255, 255, 0.03)',
-                color: simulatedPersona === p.key ? '#fff' : 'var(--slate-400)',
-                fontSize: '0.74rem',
-                fontWeight: simulatedPersona === p.key ? 700 : 500,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                transition: 'all 0.15s ease'
-              }}
-            >
-              <p.icon size={13} color={p.color} />
-              <span>{p.label}</span>
-            </button>
-          ))}
+          {/* Mobile Compact Perspective Switcher */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', overflowX: 'auto', paddingBottom: '2px', WebkitOverflowScrolling: 'touch' }}>
+            <span style={{ fontSize: '0.68rem', color: 'var(--ink-muted)', fontWeight: 700, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>View:</span>
+            {[
+              { key: 'admin', label: 'Admin', icon: Shield, color: '#2563eb' },
+              { key: 'leader', label: 'Leader', icon: Crown, color: '#d97706' },
+              { key: 'member', label: 'Member', icon: Users, color: '#16a34a' },
+              { key: 'sponsor', label: 'Sponsor', icon: Store, color: '#ea580c' },
+              { key: 'partner', label: 'Host', icon: Calendar, color: '#0d9488' }
+            ].map(p => {
+              const active = simulatedPersona === p.key;
+              return (
+                <button
+                  key={p.key}
+                  onClick={() => setSimulatedPersona(p.key)}
+                  className="interactive-press"
+                  style={{
+                    padding: '5px 10px',
+                    borderRadius: '99px',
+                    border: active ? `1.5px solid ${p.color}` : '1px solid var(--hairline-border)',
+                    background: active ? `${p.color}18` : 'var(--surface-elevated)',
+                    color: active ? 'var(--ink-primary)' : 'var(--ink-secondary)',
+                    fontSize: '0.7rem',
+                    fontWeight: active ? 700 : 600,
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  <p.icon size={11} color={p.color} />
+                  <span>{p.label}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
-        {simulatedPersona !== 'admin' && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <button
-              onClick={() => {
-                if (simulatedPersona === 'leader') navigate.push('/dashboard');
-                else if (simulatedPersona === 'member') navigate.push('/discover');
-                else if (simulatedPersona === 'sponsor' || simulatedPersona === 'partner') navigate.push('/partner');
-              }}
-              className="btn btn-primary interactive-press"
-              style={{
-                borderRadius: '8px',
-                padding: '6px 14px',
-                fontSize: '0.74rem',
-                fontWeight: 700,
-                display: 'flex',
-                alignItems: 'center',
-                gap: '5px'
-              }}
-            >
-              <Eye size={13} /> Launch Whole App as {simulatedPersona === 'leader' ? 'Leader' : simulatedPersona === 'member' ? 'Member' : simulatedPersona === 'sponsor' ? 'Sponsor' : 'Host'} →
-            </button>
-            <button
-              onClick={() => {
-                exitSimulator();
-                setSimulatedPersona('admin');
-              }}
-              className="interactive-press"
-              style={{
-                background: 'rgba(255,255,255,0.06)',
-                border: '1px solid rgba(255,255,255,0.1)',
-                borderRadius: '8px',
-                padding: '6px 10px',
-                color: 'var(--slate-300)',
-                fontSize: '0.72rem',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px'
-              }}
-            >
-              <X size={12} /> Reset to Admin
-            </button>
-          </div>
-        )}
-      </div>
+        {/* Mobile Tab Strip */}
+        <div className="mobile-only" style={{ display: 'flex', gap: '6px', padding: '12px 18px', overflowX: 'auto', borderBottom: '1px solid var(--hairline-border)', background: 'var(--surface-canvas)', WebkitOverflowScrolling: 'touch' }}>
+          {tabs.map(tab => {
+            const active = activeTab === tab.key;
+            return (
+              <button 
+                key={tab.key} 
+                onClick={() => { setActiveTab(tab.key); setSearchTerm(''); }}
+                className="interactive-press"
+                style={{
+                  padding: '7px 14px', borderRadius: '99px',
+                  background: active ? 'var(--brand-accent)' : 'var(--surface-card)',
+                  color: active ? '#FFFFFF' : 'var(--ink-secondary)',
+                  border: active ? '1px solid var(--brand-accent)' : '1px solid var(--hairline-border)',
+                  fontWeight: 700, fontSize: '0.76rem', whiteSpace: 'nowrap', transition: 'all 0.15s ease',
+                  display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer'
+                }}
+              >
+                <tab.icon size={13} />
+                {tab.label}
+                {tab.badge > 0 && (
+                  <span style={{ fontSize: '0.62rem', fontWeight: 800, background: active ? '#FFFFFF' : 'var(--brand-accent)', color: active ? 'var(--brand-accent)' : '#FFFFFF', padding: '0 5px', borderRadius: '99px' }}>
+                    {tab.badge}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
 
-      <div className="mobile-only" style={{ display: 'flex', gap: '6px', padding: '14px 24px', overflowX: 'auto', borderBottom: '1px solid rgba(255,255,255,0.05)', WebkitOverflowScrolling: 'touch' }}>
-        {tabs.map(tab => (
-          <button 
-            key={tab.key} 
-            onClick={() => { setActiveTab(tab.key); setSearchTerm(''); }}
-            className="interactive-press"
-            style={{
-              padding: '8px 16px', borderRadius: '99px', border: 'none',
-              background: activeTab === tab.key ? 'var(--brand-accent)' : 'var(--surface-card)',
-              color: activeTab === tab.key ? '#FFFFFF' : 'var(--ink-secondary)',
-              border: activeTab === tab.key ? '1px solid var(--brand-accent)' : '1px solid var(--hairline-border)',
-              fontWeight: 600, fontSize: '0.78rem', whiteSpace: 'nowrap', transition: 'all 0.15s ease',
-              display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer'
-            }}
-          >
-            <tab.icon size={14} />
-            {tab.label}
-          </button>
-        ))}
-      </div>
-
-      <div style={{ padding: '24px' }}>
+        <div className="admin-inner-body">
 
         {/* SIMULATED PERSPECTIVE VIEWS */}
         {simulatedPersona === 'leader' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '20px' }}>
             <div style={{
-              background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(27, 27, 27, 0.6) 100%)',
-              border: '1px solid rgba(245, 158, 11, 0.3)',
-              borderRadius: '18px',
-              padding: '24px'
+              background: 'var(--surface-card)',
+              border: '1px solid rgba(217, 119, 6, 0.35)',
+              borderLeft: '4px solid #d97706',
+              borderRadius: '16px',
+              padding: '22px'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', marginBottom: '16px' }}>
                 <div>
@@ -841,12 +871,13 @@ const ADMIN_EMAILS = [
         )}
 
         {simulatedPersona === 'member' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '20px' }}>
             <div style={{
-              background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(27, 27, 27, 0.6) 100%)',
-              border: '1px solid rgba(16, 185, 129, 0.3)',
-              borderRadius: '18px',
-              padding: '24px'
+              background: 'var(--surface-card)',
+              border: '1px solid rgba(22, 163, 74, 0.35)',
+              borderLeft: '4px solid #16a34a',
+              borderRadius: '16px',
+              padding: '22px'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', marginBottom: '16px' }}>
                 <div>
@@ -885,7 +916,7 @@ const ADMIN_EMAILS = [
               </div>
 
               {/* Member Perks & RSVP Passes */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))', gap: '14px' }}>
                 <div style={{ background: 'rgba(255,255,255,0.03)', padding: '16px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.06)' }}>
                   <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#34d399', marginBottom: '8px' }}>✓ Your Active Event Ticket Pass</div>
                   <div style={{ fontWeight: 700, color: 'var(--ink-primary)', fontSize: '0.98rem' }}>Saturday Morning Ridge Walk & Coffee</div>
@@ -910,12 +941,13 @@ const ADMIN_EMAILS = [
         )}
 
         {simulatedPersona === 'sponsor' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '20px' }}>
             <div style={{
-              background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(27, 27, 27, 0.6) 100%)',
-              border: '1px solid rgba(245, 158, 11, 0.3)',
-              borderRadius: '18px',
-              padding: '24px'
+              background: 'var(--surface-card)',
+              border: '1px solid rgba(234, 88, 12, 0.35)',
+              borderLeft: '4px solid #ea580c',
+              borderRadius: '16px',
+              padding: '22px'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', marginBottom: '16px' }}>
                 <div>
@@ -969,12 +1001,13 @@ const ADMIN_EMAILS = [
         )}
 
         {simulatedPersona === 'partner' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '20px' }}>
             <div style={{
-              background: 'linear-gradient(135deg, rgba(6, 182, 212, 0.12) 0%, rgba(27, 27, 27, 0.6) 100%)',
-              border: '1px solid rgba(6, 182, 212, 0.3)',
-              borderRadius: '18px',
-              padding: '24px'
+              background: 'var(--surface-card)',
+              border: '1px solid rgba(13, 148, 136, 0.35)',
+              borderLeft: '4px solid #0d9488',
+              borderRadius: '16px',
+              padding: '22px'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', marginBottom: '16px' }}>
                 <div>
@@ -1121,7 +1154,7 @@ const ADMIN_EMAILS = [
             </div>
 
             {/* Two-Column Operations Layout: Community Health & Recent Activity */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '20px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: '20px' }}>
               
               {/* Community Health */}
               <div className="glass-panel" style={{ padding: '20px', borderRadius: '16px' }}>
@@ -1212,7 +1245,7 @@ const ADMIN_EMAILS = [
                 <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#ef4444', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <AlertTriangle size={15} /> Action Required: Dormant Communities Need Outreach
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '10px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: '10px' }}>
                   {platformStats.communityHealth.filter(c => c.health === 'dormant').map(c => {
                     const leaderMem = (communityMemberships[c.id] || []).find(m => m.role === 'Leader' || m.role === 'Co-Leader');
                     const leaderUser = leaderMem ? users.find(u => u.id === leaderMem.userId) : null;
@@ -1331,7 +1364,7 @@ const ADMIN_EMAILS = [
 
                     {/* Expanded Detail & Admin Management Panel */}
                     {isExpanded && (
-                      <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', padding: '18px', background: 'rgba(0,0,0,0.15)' }}>
+                      <div style={{ borderTop: '1px solid var(--hairline-border)', padding: '18px', background: 'var(--surface-elevated)' }}>
                         {/* Leader card */}
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', marginBottom: '16px', padding: '12px 14px', background: 'rgba(255,255,255,0.02)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.05)', flexWrap: 'wrap' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -1381,9 +1414,13 @@ const ADMIN_EMAILS = [
                             <div style={{ fontSize: '1.2rem', fontWeight: 700, color: '#f59e0b' }}>£{c.cRevenue}</div>
                             <div style={{ fontSize: '0.65rem', color: 'var(--slate-400)', textTransform: 'uppercase' }}>Gross Sales</div>
                           </div>
-                          <div style={{ textAlign: 'center', padding: '12px 8px', background: 'rgba(255,255,255,0.02)', borderRadius: '10px' }}>
-                            <div style={{ fontSize: '1.2rem', fontWeight: 700, color: '#60a5fa' }}>£{(c.cRevenue * 0.05).toFixed(2)}</div>
-                            <div style={{ fontSize: '0.65rem', color: 'var(--slate-400)', textTransform: 'uppercase' }}>Take (5%)</div>
+                          <div style={{ textAlign: 'center', padding: '12px 8px', background: 'var(--surface-card)', border: '1px solid var(--hairline-border)', borderRadius: '10px' }}>
+                            <div style={{ fontSize: '1.2rem', fontWeight: 700, color: '#2563eb' }}>
+                              £{(c.cRevenue * (Boolean(c.is_insured || c.insurance_tier === 'pro') ? 0.02 : 0.05)).toFixed(2)}
+                            </div>
+                            <div style={{ fontSize: '0.65rem', color: 'var(--ink-muted)', textTransform: 'uppercase' }}>
+                              Take ({Boolean(c.is_insured || c.insurance_tier === 'pro') ? '2% Pro' : '5%'})
+                            </div>
                           </div>
                         </div>
 
@@ -1469,7 +1506,8 @@ const ADMIN_EMAILS = [
                 { value: 'leaders', label: '👑 Leaders' },
                 { value: 'members', label: 'Members' },
                 { value: 'active', label: '🟢 Active' },
-                { value: 'dormant', label: '💤 Dormant' }
+                { value: 'dormant', label: '💤 Dormant' },
+                { value: 'suspended', label: `🚫 Suspended (${users.filter(u => Boolean(u.is_suspended)).length})` }
               ]} />
               <button 
                 type="button"
@@ -1504,8 +1542,8 @@ const ADMIN_EMAILS = [
                   let userEvents = 0;
                   let userCheckins = 0;
                   Object.values(eventRsvps).forEach(rsvps => {
-                    const match = rsvps.find(r => r.userId === u.id && r.status === 'going');
-                    if (match) { userEvents++; if (match.checkedIn) userCheckins++; }
+                    const match = (rsvps || []).find(r => r.userId === u.id && (r.status === 'going' || r.status === 'checked_in' || r.checkedIn || r.checked_in));
+                    if (match) { userEvents++; if (match.checkedIn || match.checked_in || match.status === 'checked_in') userCheckins++; }
                   });
                   const engagementScore = Math.min(100, u.joinedCount * 15 + userEvents * 20 + userMessages * 5);
                   const engagementLevel = engagementScore >= 60 ? 'high' : engagementScore >= 25 ? 'medium' : 'low';
@@ -1567,7 +1605,7 @@ const ADMIN_EMAILS = [
 
                       {/* Expanded Detail */}
                       {isExpanded && (
-                        <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '16px', background: 'rgba(0,0,0,0.15)' }}>
+                        <div style={{ borderTop: '1px solid var(--hairline-border)', padding: '16px', background: 'var(--surface-elevated)' }}>
                           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(90px, 1fr))', gap: '6px', marginBottom: '14px' }}>
                             {[
                               { label: 'Communities', value: u.joinedCount, color: '#3b82f6' },
@@ -1858,7 +1896,7 @@ const ADMIN_EMAILS = [
 
                     {/* Expanded Event Operations & Attendee Roster */}
                     {isExpanded && (
-                      <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', padding: '16px', background: 'rgba(0,0,0,0.15)' }}>
+                      <div style={{ borderTop: '1px solid var(--hairline-border)', padding: '16px', background: 'var(--surface-elevated)' }}>
                         {/* Event Quick Info */}
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px', marginBottom: '14px', fontSize: '0.76rem', color: 'var(--slate-400)' }}>
                           <div>Time: <strong style={{ color: 'var(--white)' }}>{e.time || 'All day'}</strong></div>
@@ -1999,8 +2037,29 @@ const ADMIN_EMAILS = [
 
         {activeTab === 'crm' && <LeaderCRM toast={toast} />}
         {activeTab === 'map' && <OperationsMap platformStats={platformStats} />}
-        {activeTab === 'revenue' && <Commercials platformStats={platformStats} handleExportCSV={handleExportCSV} revenueByComm={revenueByComm} />}
-        {activeTab === 'moderation' && <ModerationQueue />}
+        {activeTab === 'revenue' && (
+          <Commercials
+            platformStats={platformStats}
+            handleExportCSV={handleExportCSV}
+            revenueByComm={revenueByComm}
+            events={events}
+            eventRsvps={eventRsvps}
+            sponsors={sponsors}
+            sponsorshipAssignments={sponsorshipAssignments}
+            communities={communities}
+          />
+        )}
+        {activeTab === 'moderation' && (
+          <ModerationQueue
+            users={users}
+            communities={communities}
+            events={events}
+            updateUser={updateUser}
+            approveChapter={approveChapter}
+            declineChapter={declineChapter}
+            navigate={navigate}
+          />
+        )}
 
         {/* ═══════════════════════════════════════════════════ */}
         {/* TAB 6: CONTENT & BROADCASTS                         */}

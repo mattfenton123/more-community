@@ -20,7 +20,7 @@ export default function InvestorAnalytics({
   toast 
 }) {
   const [timeRange, setTimeRange] = useState('30D'); // '7D' | '14D' | '30D' | '90D'
-  const [analyticsMode, setAnalyticsMode] = useState('pitch'); // 'pitch' | 'live'
+  const [analyticsMode, setAnalyticsMode] = useState('live'); // 'live' | 'pitch'
   const [chartView, setChartView] = useState('acquisition'); // 'acquisition' | 'active' | 'breakdown'
   const [copiedMemo, setCopiedMemo] = useState(false);
   const [tableSearch, setTableSearch] = useState('');

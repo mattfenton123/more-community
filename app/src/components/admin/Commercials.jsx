@@ -1,64 +1,38 @@
 "use client";
-import React, { useState } from 'react';
-import { DollarSign, Download, TrendingUp, Handshake, BarChart3, Plus, CheckCircle2, Clock, Sparkles, Building2, ExternalLink, X, ArrowUpRight } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { Download, TrendingUp, Handshake, BarChart3, Plus, CheckCircle2, Clock, Building2, X, Trash2 } from 'lucide-react';
 import { useToast } from '../Toast';
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
+import { parseEventDateTime } from '../../lib/calendar';
 
-const INITIAL_SPONSORS = [
-  {
-    id: 'sp-1',
-    brandName: 'Finisterre UK',
-    communityName: 'North Coast Dippers & Hikers',
-    tier: 'Headline Partner',
-    monthlyFee: 500,
-    status: 'Active',
-    renewalDate: '2026-12-15',
-    contactEmail: 'partnerships@finisterre.com',
-    deliverables: 'Logo on banner, 1x pinned community post/mo, prize donation'
-  },
-  {
-    id: 'sp-2',
-    brandName: 'Oatly Barista',
-    communityName: 'London Coffee Run Club',
-    tier: 'Community Partner',
-    monthlyFee: 250,
-    status: 'Active',
-    renewalDate: '2026-11-30',
-    contactEmail: 'uk-events@oatly.com',
-    deliverables: 'Post-run coffee sampling, branded finish-line flags'
-  },
-  {
-    id: 'sp-3',
-    brandName: 'Red Bull UK',
-    communityName: 'Bouldering & Brews Collective',
-    tier: 'Event Supporter',
-    monthlyFee: 150,
-    status: 'Pending Renewal',
-    renewalDate: '2026-10-31',
-    contactEmail: 'grassroots@redbull.co.uk',
-    deliverables: 'Cooler drops at bi-weekly climbing social'
-  }
-];
-
-export default function Commercials({ platformStats, handleExportCSV, revenueByComm }) {
+export default function Commercials({
+  platformStats,
+  handleExportCSV,
+  revenueByComm = [],
+  events = [],
+  eventRsvps = {},
+  sponsors: dbSponsors = [],
+  sponsorshipAssignments = [],
+  communities = [],
+}) {
   const { toast } = useToast();
   const [activeSubTab, setActiveSubTab] = useState('revenue');
-  const [sponsors, setSponsors] = useState(() => {
+  const [loggedSponsors, setLoggedSponsors] = useState(() => {
     if (typeof window !== 'undefined') {
       try {
-        const stored = localStorage.getItem('more_admin_sponsors');
+        const stored = localStorage.getItem('more_admin_logged_sponsors_v2');
         if (stored) return JSON.parse(stored);
-      } catch (e) {}
+      } catch {}
     }
-    return INITIAL_SPONSORS;
+    return [];
   });
 
   const [isAddSponsorOpen, setIsAddSponsorOpen] = useState(false);
   const [newSponsor, setNewSponsor] = useState({
     brandName: '',
     communityName: revenueByComm[0]?.name || '',
-    tier: 'Headline Partner',
-    monthlyFee: 500,
+    tier: 'Community Partner',
+    monthlyFee: 250,
     status: 'Active',
     renewalDate: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
     contactEmail: '',
@@ -70,18 +44,38 @@ export default function Commercials({ platformStats, handleExportCSV, revenueByC
       try {
         const stored = localStorage.getItem('more_admin_payout_statuses');
         if (stored) return JSON.parse(stored);
-      } catch (e) {}
+      } catch {}
     }
     return {};
   });
 
-  // Save sponsors to localStorage
-  const saveSponsors = (updated) => {
-    setSponsors(updated);
+  const saveLoggedSponsors = (updated) => {
+    setLoggedSponsors(updated);
     if (typeof window !== 'undefined') {
-      localStorage.setItem('more_admin_sponsors', JSON.stringify(updated));
+      localStorage.setItem('more_admin_logged_sponsors_v2', JSON.stringify(updated));
     }
   };
+
+  // Merge real database sponsors with manually logged deals
+  const allSponsorDeals = useMemo(() => {
+    const fromDb = (dbSponsors || []).map((sp) => {
+      const assignment = (sponsorshipAssignments || []).find(a => a.sponsor_id === sp.id);
+      const comm = assignment?.target_id ? (communities || []).find(c => c.id === assignment.target_id) : null;
+      return {
+        id: sp.id,
+        source: 'database',
+        brandName: sp.name || sp.companyName || 'Local Sponsor',
+        communityName: assignment?.target_type === 'global' ? 'Platform Wide' : (comm?.name || 'Local Community'),
+        tier: sp.tier || 'Community Sponsor',
+        monthlyFee: Number(sp.monthlyFee || sp.monthly_fee || 0),
+        status: sp.status || 'Active',
+        renewalDate: sp.renewalDate || sp.created_at || new Date().toISOString(),
+        contactEmail: sp.email || sp.contactEmail || '',
+        deliverables: sp.perk || sp.description || 'Community sponsor placement & member perks',
+      };
+    });
+    return [...fromDb, ...loggedSponsors];
+  }, [dbSponsors, sponsorshipAssignments, communities, loggedSponsors]);
 
   const handleAddSponsor = (e) => {
     e.preventDefault();
@@ -91,23 +85,23 @@ export default function Commercials({ platformStats, handleExportCSV, revenueByC
     }
     const created = {
       id: `sp-${Date.now()}`,
+      source: 'local',
       brandName: newSponsor.brandName.trim(),
       communityName: newSponsor.communityName || 'Platform Wide',
       tier: newSponsor.tier,
-      monthlyFee: Number(newSponsor.monthlyFee) || 250,
+      monthlyFee: Number(newSponsor.monthlyFee) || 0,
       status: newSponsor.status,
       renewalDate: newSponsor.renewalDate,
       contactEmail: newSponsor.contactEmail.trim(),
       deliverables: newSponsor.deliverables.trim() || 'Community sponsorship activation'
     };
-    const updated = [created, ...sponsors];
-    saveSponsors(updated);
+    saveLoggedSponsors([created, ...loggedSponsors]);
     setIsAddSponsorOpen(false);
     setNewSponsor({
       brandName: '',
       communityName: revenueByComm[0]?.name || '',
-      tier: 'Headline Partner',
-      monthlyFee: 500,
+      tier: 'Community Partner',
+      monthlyFee: 250,
       status: 'Active',
       renewalDate: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       contactEmail: '',
@@ -126,199 +120,225 @@ export default function Commercials({ platformStats, handleExportCSV, revenueByC
     toast.success('Payout Status Updated', `Marked as ${nextStatus}`);
   };
 
-  const totalSponsorMRR = sponsors
+  // Accurate per-community take-rate calculation (5% Standard / 2% Leader Pro)
+  const { totalGrossTicketRevenue, platformGrossCut, leaderGrossPayouts } = useMemo(() => {
+    let gross = 0;
+    let platform = 0;
+    let leader = 0;
+    revenueByComm.forEach((c) => {
+      const rev = Number(c.cRevenue) || 0;
+      const isPro = Boolean(c.is_insured || c.insurance_tier === 'pro');
+      const feeRate = isPro ? 0.02 : 0.05;
+      const cut = rev * feeRate;
+      gross += rev;
+      platform += cut;
+      leader += rev - cut;
+    });
+    if (gross === 0 && platformStats?.totalRevenue > 0) {
+      gross = Number(platformStats.totalRevenue) || 0;
+      platform = gross * 0.05;
+      leader = gross - platform;
+    }
+    return {
+      totalGrossTicketRevenue: Math.round(gross * 100) / 100,
+      platformGrossCut: Math.round(platform * 100) / 100,
+      leaderGrossPayouts: Math.round(leader * 100) / 100,
+    };
+  }, [revenueByComm, platformStats?.totalRevenue]);
+
+  const totalSponsorMRR = allSponsorDeals
     .filter(s => s.status === 'Active')
     .reduce((sum, s) => sum + (Number(s.monthlyFee) || 0), 0);
 
-  const platformTakeRate = 0.05; // 5% standard platform fee (0% for Pro)
-  const leaderTakeRate = 0.95;   // 95% to standard leaders (100% for Pro)
-
-  const totalGrossTicketRevenue = platformStats.totalRevenue || 0;
-  const platformGrossCut = Math.round(totalGrossTicketRevenue * platformTakeRate);
-  const leaderGrossPayouts = Math.round(totalGrossTicketRevenue * leaderTakeRate);
-
-  // Time-series chart
-  const currentMonthRev = platformStats.monthRevenue || 0;
-  const chartData = [
-    { month: 'Apr', ticketRevenue: Math.round(currentMonthRev * 0.4), sponsorRevenue: 400 },
-    { month: 'May', ticketRevenue: Math.round(currentMonthRev * 0.55), sponsorRevenue: 550 },
-    { month: 'Jun', ticketRevenue: Math.round(currentMonthRev * 0.7), sponsorRevenue: 650 },
-    { month: 'Jul', ticketRevenue: Math.round(currentMonthRev * 0.85), sponsorRevenue: 750 },
-    { month: 'Aug', ticketRevenue: Math.round(currentMonthRev * 0.95), sponsorRevenue: 850 },
-    { month: 'Sep', ticketRevenue: currentMonthRev, sponsorRevenue: totalSponsorMRR },
-  ];
+  // Live 6-month ticket sales trend from actual events & confirmed RSVPs
+  const chartData = useMemo(() => {
+    const now = new Date();
+    const buckets = [];
+    const map = new Map();
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      const label = d.toLocaleDateString('en-GB', { month: 'short' });
+      const row = { key, month: label, ticketRevenue: 0 };
+      buckets.push(row);
+      map.set(key, row);
+    }
+    (events || []).forEach((ev) => {
+      if (ev.status === 'cancelled' || ev.status === 'proposed') return;
+      const price = Number(ev.ticketPrice) || 0;
+      if (price <= 0) return;
+      const dt = parseEventDateTime(ev.date, ev.time) || (ev.createdAt ? new Date(ev.createdAt) : null);
+      if (!dt || isNaN(dt.getTime())) return;
+      const key = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}`;
+      const bucket = map.get(key);
+      if (!bucket) return;
+      const activeRsvps = (eventRsvps?.[ev.id] || []).filter(
+        r => r.status === 'going' || r.status === 'checked_in' || r.checkedIn || r.checked_in
+      ).length;
+      bucket.ticketRevenue += price * activeRsvps;
+    });
+    return buckets;
+  }, [events, eventRsvps]);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      {/* ─── Top Header & Controls ─── */}
+      {/* Top Header & Controls */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
         <div>
-          <h2 style={{ fontSize: '1.3rem', color: 'var(--white)', margin: '0 0 4px 0', fontFamily: 'var(--font-heading)' }}>Commercials & Financial Operations</h2>
-          <p style={{ color: 'var(--slate-400)', fontSize: '0.85rem', margin: 0 }}>Ticket sales, brand sponsorships, take-rate monetization, and leader remittances.</p>
+          <h2 style={{ fontSize: '1.25rem', color: 'var(--ink-primary)', margin: '0 0 4px 0', fontFamily: 'var(--font-heading)' }}>
+            Commercials &amp; Financial Operations
+          </h2>
+          <p style={{ color: 'var(--ink-secondary)', fontSize: '0.84rem', margin: 0 }}>
+            Live ticket volume, 5% standard / 2% Pro take-rate calculations, brand sponsorships, and leader remittances.
+          </p>
         </div>
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <button 
-            onClick={() => handleExportCSV('revenue')} 
-            className="btn btn-outline interactive-press" 
-            style={{ padding: '8px 14px', borderRadius: '10px', fontSize: '0.8rem', display: 'flex', gap: '6px', alignItems: 'center', cursor: 'pointer', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--white)' }}
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            onClick={() => handleExportCSV('revenue')}
+            className="interactive-press"
+            style={{ padding: '8px 14px', borderRadius: '10px', fontSize: '0.8rem', fontWeight: 600, display: 'flex', gap: '6px', alignItems: 'center', cursor: 'pointer', background: 'var(--surface-card)', border: '1px solid var(--hairline-border-strong)', color: 'var(--ink-primary)' }}
           >
-            <Download size={14} color="var(--teal-400)" /> Export CSV
+            <Download size={14} color="var(--brand-accent)" /> Export CSV
           </button>
-          <button 
+          <button
+            type="button"
             onClick={() => setIsAddSponsorOpen(true)}
-            className="btn btn-primary interactive-press" 
-            style={{ padding: '8px 14px', borderRadius: '10px', fontSize: '0.8rem', display: 'flex', gap: '6px', alignItems: 'center', cursor: 'pointer', background: 'var(--teal-500)', border: 'none', color: '#fff', fontWeight: 600 }}
+            className="btn btn-primary interactive-press"
+            style={{ padding: '8px 14px', borderRadius: '10px', fontSize: '0.8rem', display: 'flex', gap: '6px', alignItems: 'center', cursor: 'pointer', color: '#FFFFFF', fontWeight: 700 }}
           >
             <Plus size={14} /> Log Sponsor Deal
           </button>
         </div>
       </div>
 
-      {/* ─── Executive Financial Snapshot Cards ─── */}
+      {/* Executive Financial Snapshot Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
-        <div className="glass-panel" style={{ padding: '16px', border: '1px solid rgba(235, 87, 56,0.2)', background: 'linear-gradient(135deg, rgba(235, 87, 56,0.08) 0%, rgba(235, 87, 56,0.01) 100%)' }}>
-          <div style={{ fontSize: '0.7rem', color: 'var(--slate-400)', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px' }}>Gross Platform Volume</div>
-          <div style={{ fontSize: '1.7rem', fontWeight: 700, color: '#F27257', fontFamily: 'var(--font-heading)' }}>£{totalGrossTicketRevenue}</div>
-          <div style={{ fontSize: '0.7rem', color: 'var(--slate-500)', marginTop: '4px' }}>Across all community events</div>
+        <div className="glass-panel" style={{ padding: '16px', borderRadius: '14px', border: '1px solid rgba(235, 87, 56, 0.25)' }}>
+          <div style={{ fontSize: '0.7rem', color: 'var(--ink-muted)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>Gross Ticket Volume</div>
+          <div style={{ fontSize: '1.7rem', fontWeight: 800, color: 'var(--brand-accent)', fontFamily: 'var(--font-heading)' }}>£{totalGrossTicketRevenue.toLocaleString()}</div>
+          <div style={{ fontSize: '0.72rem', color: 'var(--ink-secondary)', marginTop: '4px' }}>Live across paid community events</div>
         </div>
 
-        <div className="glass-panel" style={{ padding: '16px', border: '1px solid rgba(59,130,246,0.2)', background: 'linear-gradient(135deg, rgba(59,130,246,0.08) 0%, rgba(59,130,246,0.01) 100%)' }}>
-          <div style={{ fontSize: '0.7rem', color: 'var(--slate-400)', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px' }}>Platform Take (5% Standard / 2% Pro)</div>
-          <div style={{ fontSize: '1.7rem', fontWeight: 700, color: '#60a5fa', fontFamily: 'var(--font-heading)' }}>£{platformGrossCut}</div>
-          <div style={{ fontSize: '0.7rem', color: 'var(--slate-500)', marginTop: '4px' }}>Net fee revenue retained</div>
+        <div className="glass-panel" style={{ padding: '16px', borderRadius: '14px', border: '1px solid rgba(37, 99, 235, 0.25)' }}>
+          <div style={{ fontSize: '0.7rem', color: 'var(--ink-muted)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>Platform Take (5% / 2% Pro)</div>
+          <div style={{ fontSize: '1.7rem', fontWeight: 800, color: '#2563eb', fontFamily: 'var(--font-heading)' }}>£{platformGrossCut.toFixed(2)}</div>
+          <div style={{ fontSize: '0.72rem', color: 'var(--ink-secondary)', marginTop: '4px' }}>Net platform fee revenue</div>
         </div>
 
-        <div className="glass-panel" style={{ padding: '16px', border: '1px solid rgba(34,197,94,0.2)', background: 'linear-gradient(135deg, rgba(34,197,94,0.08) 0%, rgba(34,197,94,0.01) 100%)' }}>
-          <div style={{ fontSize: '0.7rem', color: 'var(--slate-400)', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px' }}>Leader Earnings (85%)</div>
-          <div style={{ fontSize: '1.7rem', fontWeight: 700, color: '#4ade80', fontFamily: 'var(--font-heading)' }}>£{leaderGrossPayouts}</div>
-          <div style={{ fontSize: '0.7rem', color: 'var(--slate-500)', marginTop: '4px' }}>Earned by community creators</div>
+        <div className="glass-panel" style={{ padding: '16px', borderRadius: '14px', border: '1px solid rgba(22, 163, 74, 0.25)' }}>
+          <div style={{ fontSize: '0.7rem', color: 'var(--ink-muted)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>Leader Earnings (95% / 98% Pro)</div>
+          <div style={{ fontSize: '1.7rem', fontWeight: 800, color: '#16a34a', fontFamily: 'var(--font-heading)' }}>£{leaderGrossPayouts.toFixed(2)}</div>
+          <div style={{ fontSize: '0.72rem', color: 'var(--ink-secondary)', marginTop: '4px' }}>Earned by local group leaders</div>
         </div>
 
-        <div className="glass-panel" style={{ padding: '16px', border: '1px solid rgba(245,158,11,0.2)', background: 'linear-gradient(135deg, rgba(245,158,11,0.08) 0%, rgba(245,158,11,0.01) 100%)' }}>
-          <div style={{ fontSize: '0.7rem', color: 'var(--slate-400)', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px' }}>Active Sponsorship MRR</div>
-          <div style={{ fontSize: '1.7rem', fontWeight: 700, color: '#fbbf24', fontFamily: 'var(--font-heading)' }}>£{totalSponsorMRR}/mo</div>
-          <div style={{ fontSize: '0.7rem', color: 'var(--slate-500)', marginTop: '4px' }}>{sponsors.filter(s => s.status === 'Active').length} brand contracts active</div>
+        <div className="glass-panel" style={{ padding: '16px', borderRadius: '14px', border: '1px solid rgba(217, 119, 6, 0.25)' }}>
+          <div style={{ fontSize: '0.7rem', color: 'var(--ink-muted)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>Active Sponsorship MRR</div>
+          <div style={{ fontSize: '1.7rem', fontWeight: 800, color: '#d97706', fontFamily: 'var(--font-heading)' }}>£{totalSponsorMRR}/mo</div>
+          <div style={{ fontSize: '0.72rem', color: 'var(--ink-secondary)', marginTop: '4px' }}>{allSponsorDeals.filter(s => s.status === 'Active').length} active sponsor contracts</div>
         </div>
       </div>
 
-      {/* ─── Commercial Subtabs ─── */}
-      <div style={{ display: 'flex', gap: '8px', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '8px' }}>
-        <button 
-          onClick={() => setActiveSubTab('revenue')} 
-          className="interactive-press"
-          style={{ 
-            background: activeSubTab === 'revenue' ? 'white' : 'transparent', 
-            border: 'none', 
-            borderRadius: '99px',
-            padding: '8px 16px',
-            color: activeSubTab === 'revenue' ? 'black' : 'var(--slate-400)', 
-            fontWeight: 600, 
-            fontSize: '0.82rem', 
-            cursor: 'pointer', 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '6px' 
-          }}
-        >
-          <TrendingUp size={15} /> Ticket Revenue
-        </button>
-        <button 
-          onClick={() => setActiveSubTab('sponsors')} 
-          className="interactive-press"
-          style={{ 
-            background: activeSubTab === 'sponsors' ? 'white' : 'transparent', 
-            border: 'none', 
-            borderRadius: '99px',
-            padding: '8px 16px',
-            color: activeSubTab === 'sponsors' ? 'black' : 'var(--slate-400)', 
-            fontWeight: 600, 
-            fontSize: '0.82rem', 
-            cursor: 'pointer', 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '6px' 
-          }}
-        >
-          <Handshake size={15} /> Brand Sponsorships ({sponsors.length})
-        </button>
-        <button 
-          onClick={() => setActiveSubTab('payouts')} 
-          className="interactive-press"
-          style={{ 
-            background: activeSubTab === 'payouts' ? 'white' : 'transparent', 
-            border: 'none', 
-            borderRadius: '99px',
-            padding: '8px 16px',
-            color: activeSubTab === 'payouts' ? 'black' : 'var(--slate-400)', 
-            fontWeight: 600, 
-            fontSize: '0.82rem', 
-            cursor: 'pointer', 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '6px' 
-          }}
-        >
-          <Building2 size={15} /> Leader Remittances
-        </button>
+      {/* Commercial Subtabs */}
+      <div style={{ display: 'flex', gap: '8px', borderBottom: '1px solid var(--hairline-border)', paddingBottom: '10px', flexWrap: 'wrap' }}>
+        {[
+          { id: 'revenue', label: 'Ticket Revenue', icon: TrendingUp },
+          { id: 'sponsors', label: `Brand Sponsorships (${allSponsorDeals.length})`, icon: Handshake },
+          { id: 'payouts', label: 'Leader Remittances', icon: Building2 },
+        ].map((tab) => {
+          const active = activeSubTab === tab.id;
+          const Icon = tab.icon;
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveSubTab(tab.id)}
+              className="interactive-press"
+              style={{
+                background: active ? 'var(--ink-primary)' : 'var(--surface-card)',
+                border: active ? '1px solid var(--ink-primary)' : '1px solid var(--hairline-border-strong)',
+                borderRadius: '99px',
+                padding: '8px 15px',
+                color: active ? 'var(--surface-canvas)' : 'var(--ink-secondary)',
+                fontWeight: 700,
+                fontSize: '0.8rem',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}
+            >
+              <Icon size={14} /> {tab.label}
+            </button>
+          );
+        })}
       </div>
 
-      {/* ─── TAB 1: TICKET REVENUE ─── */}
+      {/* TAB 1: TICKET REVENUE */}
       {activeSubTab === 'revenue' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <div className="glass-panel" style={{ padding: '20px', borderRadius: '16px' }}>
-            <h3 style={{ fontSize: '0.95rem', color: 'var(--white)', margin: '0 0 16px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <BarChart3 size={17} color="var(--teal-400)" /> Revenue Breakdown & Trajectory (6 Months)
-            </h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px', marginBottom: '16px' }}>
+              <h3 style={{ fontSize: '0.96rem', color: 'var(--ink-primary)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px', fontFamily: 'var(--font-heading)' }}>
+                <BarChart3 size={17} color="var(--brand-accent)" /> Live Ticket Sales Trajectory (Last 6 Months)
+              </h3>
+              <span style={{ fontSize: '0.72rem', color: 'var(--ink-muted)' }}>Live event &amp; RSVP records</span>
+            </div>
             <div style={{ height: '240px', width: '100%' }}>
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -16, bottom: 0 }}>
                   <defs>
-                    <linearGradient id="colorTickets" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#EB5738" stopOpacity={0.35}/>
-                      <stop offset="95%" stopColor="#EB5738" stopOpacity={0}/>
+                    <linearGradient id="colorTicketsLive" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#EB5738" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#EB5738" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <XAxis dataKey="month" stroke="rgba(255,255,255,0.2)" fontSize={12} tickLine={false} axisLine={false} />
-                  <YAxis stroke="rgba(255,255,255,0.2)" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `£${value}`} />
-                  <Tooltip contentStyle={{ background: '#09090b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px' }} itemStyle={{ color: '#F27257' }} />
-                  <Area type="monotone" dataKey="ticketRevenue" stroke="#EB5738" strokeWidth={3} fillOpacity={1} fill="url(#colorTickets)" name="Ticket Sales" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--hairline-border)" vertical={false} />
+                  <XAxis dataKey="month" stroke="var(--ink-muted)" fontSize={12} tickLine={false} axisLine={false} />
+                  <YAxis stroke="var(--ink-muted)" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `£${value}`} />
+                  <Tooltip
+                    contentStyle={{ background: 'var(--surface-card)', border: '1px solid var(--hairline-border-strong)', borderRadius: '10px', color: 'var(--ink-primary)' }}
+                    itemStyle={{ color: 'var(--brand-accent)', fontWeight: 700 }}
+                  />
+                  <Area type="monotone" dataKey="ticketRevenue" stroke="#EB5738" strokeWidth={3} fillOpacity={1} fill="url(#colorTicketsLive)" name="Ticket Sales (£)" />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
           </div>
 
           <div>
-            <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--slate-400)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '10px' }}>
+            <div style={{ fontSize: '0.74rem', fontWeight: 700, color: 'var(--ink-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '10px' }}>
               Revenue Performance By Community
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '12px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 300px), 1fr))', gap: '12px' }}>
               {revenueByComm.map(c => {
                 const isPro = Boolean(c.is_insured || c.insurance_tier === 'pro');
                 const rate = isPro ? 0.02 : 0.05;
-                const commPlatformTake = Math.round(c.cRevenue * rate);
-                const commLeaderNet = Math.round(c.cRevenue * (1 - rate));
+                const leaderPct = isPro ? 98 : 95;
+                const commPlatformTake = (c.cRevenue * rate).toFixed(2);
+                const commLeaderNet = (c.cRevenue * (1 - rate)).toFixed(2);
                 return (
-                  <div key={c.id} className="glass-panel interactive-hover" style={{ padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ minWidth: 0, flex: 1, paddingRight: '12px' }}>
-                      <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.9rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.name}</div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', marginTop: '2px' }}>
-                        {c.cEvents} events • {c.members} members
+                  <div key={c.id} className="glass-panel interactive-hover" style={{ padding: '16px', borderRadius: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
+                    <div style={{ minWidth: 0, flex: 1 }}>
+                      <div style={{ fontWeight: 700, color: 'var(--ink-primary)', fontSize: '0.92rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.name}</div>
+                      <div style={{ fontSize: '0.76rem', color: 'var(--ink-secondary)', marginTop: '2px' }}>
+                        {c.cEvents} events · {c.members} members · {isPro ? 'Leader Pro (2%)' : 'Standard (5%)'}
                       </div>
-                      <div style={{ display: 'flex', gap: '10px', fontSize: '0.7rem', marginTop: '6px' }}>
-                        <span style={{ color: '#60a5fa' }}>Platform Take: £{commPlatformTake}</span>
-                        <span style={{ color: '#4ade80' }}>Leader (85%): £{commLeaderNet}</span>
+                      <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', fontSize: '0.72rem', fontWeight: 600, marginTop: '6px' }}>
+                        <span style={{ color: '#2563eb' }}>Platform: £{commPlatformTake}</span>
+                        <span style={{ color: '#16a34a' }}>Leader ({leaderPct}%): £{commLeaderNet}</span>
                       </div>
                     </div>
-                    <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: '1.2rem', fontWeight: 700, color: '#F27257' }}>£{c.cRevenue}</div>
-                      <div style={{ fontSize: '0.65rem', color: 'var(--slate-500)', textTransform: 'uppercase' }}>Gross</div>
+                    <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                      <div style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--brand-accent)' }}>£{c.cRevenue}</div>
+                      <div style={{ fontSize: '0.65rem', color: 'var(--ink-muted)', textTransform: 'uppercase', fontWeight: 600 }}>Gross</div>
                     </div>
                   </div>
                 );
               })}
               {revenueByComm.length === 0 && (
-                <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px', color: 'var(--slate-500)' }}>
-                  No community ticket revenue recorded yet.
+                <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px 20px', color: 'var(--ink-secondary)', background: 'var(--surface-card)', border: '1px solid var(--hairline-border)', borderRadius: '14px' }}>
+                  No paid community ticket revenue recorded yet.
                 </div>
               )}
             </div>
@@ -326,105 +346,132 @@ export default function Commercials({ platformStats, handleExportCSV, revenueByC
         </div>
       )}
 
-      {/* ─── TAB 2: SPONSORSHIPS ─── */}
+      {/* TAB 2: SPONSORSHIPS */}
       {activeSubTab === 'sponsors' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          {/* Sponsorship packages banner */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '12px' }}>
-            <div className="glass-panel" style={{ padding: '16px', borderRadius: '12px', border: '1px solid rgba(245,158,11,0.2)' }}>
-              <div style={{ fontSize: '0.68rem', fontWeight: 700, color: '#f59e0b', textTransform: 'uppercase' }}>Tier 1 • Headline Partner</div>
-              <div style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--white)', margin: '4px 0' }}>£500 <span style={{ fontSize: '0.75rem', color: 'var(--slate-400)', fontWeight: 400 }}>/ month</span></div>
-              <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', lineHeight: 1.4 }}>Top banner inclusion, event co-branding, monthly pinned leader announcement.</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
+            <div className="glass-panel" style={{ padding: '16px', borderRadius: '14px', border: '1px solid rgba(217, 119, 6, 0.25)' }}>
+              <div style={{ fontSize: '0.68rem', fontWeight: 700, color: '#d97706', textTransform: 'uppercase' }}>Tier 1 · Headline Partner</div>
+              <div style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--ink-primary)', margin: '4px 0' }}>£500 <span style={{ fontSize: '0.75rem', color: 'var(--ink-muted)', fontWeight: 500 }}>/ month</span></div>
+              <div style={{ fontSize: '0.74rem', color: 'var(--ink-secondary)', lineHeight: 1.45 }}>Top banner inclusion, event co-branding, monthly pinned leader announcement.</div>
             </div>
 
-            <div className="glass-panel" style={{ padding: '16px', borderRadius: '12px', border: '1px solid rgba(59,130,246,0.2)' }}>
-              <div style={{ fontSize: '0.68rem', fontWeight: 700, color: '#3b82f6', textTransform: 'uppercase' }}>Tier 2 • Community Partner</div>
-              <div style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--white)', margin: '4px 0' }}>£250 <span style={{ fontSize: '0.75rem', color: 'var(--slate-400)', fontWeight: 400 }}>/ month</span></div>
-              <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', lineHeight: 1.4 }}>Product sampling at 2x monthly events, in-chat sponsor badge, newsletter shoutout.</div>
+            <div className="glass-panel" style={{ padding: '16px', borderRadius: '14px', border: '1px solid rgba(37, 99, 235, 0.25)' }}>
+              <div style={{ fontSize: '0.68rem', fontWeight: 700, color: '#2563eb', textTransform: 'uppercase' }}>Tier 2 · Community Partner</div>
+              <div style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--ink-primary)', margin: '4px 0' }}>£250 <span style={{ fontSize: '0.75rem', color: 'var(--ink-muted)', fontWeight: 500 }}>/ month</span></div>
+              <div style={{ fontSize: '0.74rem', color: 'var(--ink-secondary)', lineHeight: 1.45 }}>Product sampling at monthly events, in-chat sponsor badge, newsletter shoutout.</div>
             </div>
 
-            <div className="glass-panel" style={{ padding: '16px', borderRadius: '12px', border: '1px solid rgba(235, 87, 56,0.2)' }}>
-              <div style={{ fontSize: '0.68rem', fontWeight: 700, color: '#EB5738', textTransform: 'uppercase' }}>Tier 3 • Event Supporter</div>
-              <div style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--white)', margin: '4px 0' }}>£150 <span style={{ fontSize: '0.75rem', color: 'var(--slate-400)', fontWeight: 400 }}>/ activation</span></div>
-              <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', lineHeight: 1.4 }}>Per-event refreshment/merch sponsor, ticket raffle perks for community attendees.</div>
+            <div className="glass-panel" style={{ padding: '16px', borderRadius: '14px', border: '1px solid rgba(235, 87, 56, 0.25)' }}>
+              <div style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--brand-accent)', textTransform: 'uppercase' }}>Tier 3 · Event Supporter</div>
+              <div style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--ink-primary)', margin: '4px 0' }}>£150 <span style={{ fontSize: '0.75rem', color: 'var(--ink-muted)', fontWeight: 500 }}>/ activation</span></div>
+              <div style={{ fontSize: '0.74rem', color: 'var(--ink-secondary)', lineHeight: 1.45 }}>Per-event refreshment/merch sponsor, ticket raffle perks for attendees.</div>
             </div>
           </div>
 
-          {/* Active Deals Table / Cards */}
           <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-              <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--slate-400)', textTransform: 'uppercase' }}>
-                Active Deals & Allocations ({sponsors.length})
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', flexWrap: 'wrap', gap: '8px' }}>
+              <span style={{ fontSize: '0.74rem', fontWeight: 700, color: 'var(--ink-muted)', textTransform: 'uppercase' }}>
+                Live &amp; Logged Sponsor Deals ({allSponsorDeals.length})
               </span>
-              <span style={{ fontSize: '0.75rem', color: '#fbbf24', fontWeight: 600 }}>
-                Total Run-Rate: £{totalSponsorMRR * 12}/yr
+              <span style={{ fontSize: '0.78rem', color: '#d97706', fontWeight: 700 }}>
+                Annualised Run-Rate: £{(totalSponsorMRR * 12).toLocaleString()}/yr
               </span>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {sponsors.map(sp => (
-                <div key={sp.id} className="glass-panel" style={{ padding: '16px', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
-                  <div style={{ flex: 1, minWidth: '220px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                      <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 600, color: 'var(--white)' }}>{sp.brandName}</h4>
-                      <span style={{ 
-                        fontSize: '0.65rem', fontWeight: 700, padding: '2px 8px', borderRadius: '99px',
-                        background: sp.status === 'Active' ? 'rgba(34,197,94,0.15)' : 'rgba(245,158,11,0.15)',
-                        color: sp.status === 'Active' ? '#22c55e' : '#f59e0b'
-                      }}>
-                        {sp.status}
-                      </span>
-                    </div>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--slate-300)', marginBottom: '4px' }}>
-                      Attached to: <span style={{ color: 'var(--white)', fontWeight: 500 }}>{sp.communityName}</span>
-                    </div>
-                    <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)' }}>
-                      {sp.deliverables}
-                    </div>
-                    {sp.contactEmail && (
-                      <div style={{ fontSize: '0.72rem', color: 'var(--slate-500)', marginTop: '4px' }}>
-                        Contact: <a href={`mailto:${sp.contactEmail}`} style={{ color: 'var(--teal-400)', textDecoration: 'none' }}>{sp.contactEmail}</a>
+            {allSponsorDeals.length === 0 ? (
+              <div style={{ padding: '40px 20px', textAlign: 'center', background: 'var(--surface-card)', border: '1px dashed var(--hairline-border-strong)', borderRadius: '16px' }}>
+                <p style={{ margin: '0 0 14px 0', color: 'var(--ink-secondary)', fontSize: '0.86rem' }}>
+                  No active brand sponsorship contracts logged yet.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setIsAddSponsorOpen(true)}
+                  className="btn btn-primary interactive-press"
+                  style={{ padding: '9px 16px', borderRadius: '10px', fontSize: '0.82rem', fontWeight: 700, color: '#FFFFFF', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                >
+                  <Plus size={14} /> Log First Sponsor Deal
+                </button>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {allSponsorDeals.map(sp => (
+                  <div key={sp.id} className="glass-panel" style={{ padding: '16px', borderRadius: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
+                    <div style={{ flex: '1 1 220px', minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '4px' }}>
+                        <h4 style={{ margin: 0, fontSize: '0.96rem', fontWeight: 700, color: 'var(--ink-primary)' }}>{sp.brandName}</h4>
+                        <span style={{
+                          fontSize: '0.66rem', fontWeight: 700, padding: '2px 8px', borderRadius: '99px',
+                          background: sp.status === 'Active' ? 'rgba(22, 163, 74, 0.14)' : 'rgba(217, 119, 6, 0.14)',
+                          color: sp.status === 'Active' ? '#16a34a' : '#d97706'
+                        }}>
+                          {sp.status}
+                        </span>
                       </div>
-                    )}
-                  </div>
+                      <div style={{ fontSize: '0.8rem', color: 'var(--ink-secondary)', marginBottom: '4px' }}>
+                        Attached to: <strong style={{ color: 'var(--ink-primary)' }}>{sp.communityName}</strong>
+                      </div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--ink-muted)' }}>{sp.deliverables}</div>
+                      {sp.contactEmail && (
+                        <div style={{ fontSize: '0.74rem', color: 'var(--ink-muted)', marginTop: '4px' }}>
+                          Contact: <a href={`mailto:${sp.contactEmail}`} style={{ color: 'var(--brand-accent)', textDecoration: 'none' }}>{sp.contactEmail}</a>
+                        </div>
+                      )}
+                    </div>
 
-                  <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
-                    <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#f59e0b' }}>
-                      £{sp.monthlyFee}<span style={{ fontSize: '0.7rem', color: 'var(--slate-400)', fontWeight: 400 }}>/mo</span>
+                    <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
+                      <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#d97706' }}>
+                        £{sp.monthlyFee}<span style={{ fontSize: '0.7rem', color: 'var(--ink-muted)', fontWeight: 500 }}>/mo</span>
+                      </div>
+                      <div style={{ fontSize: '0.72rem', color: 'var(--ink-muted)' }}>
+                        Renewal: {new Date(sp.renewalDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      </div>
+                      {sp.source === 'local' && (
+                        <div style={{ display: 'flex', gap: '6px' }}>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const nextStatus = sp.status === 'Active' ? 'Pending Renewal' : 'Active';
+                              saveLoggedSponsors(loggedSponsors.map(s => s.id === sp.id ? { ...s, status: nextStatus } : s));
+                              toast.success('Status Updated', `${sp.brandName} marked as ${nextStatus}`);
+                            }}
+                            className="interactive-press"
+                            style={{ padding: '4px 10px', fontSize: '0.7rem', borderRadius: '7px', border: '1px solid var(--hairline-border-strong)', background: 'var(--surface-elevated)', color: 'var(--ink-primary)', cursor: 'pointer', fontWeight: 600 }}
+                          >
+                            Toggle Status
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              saveLoggedSponsors(loggedSponsors.filter(s => s.id !== sp.id));
+                              toast.info('Removed', `${sp.brandName} removed.`);
+                            }}
+                            aria-label="Remove deal"
+                            style={{ padding: '4px 7px', borderRadius: '7px', border: '1px solid rgba(220, 38, 38, 0.25)', background: 'rgba(220, 38, 38, 0.08)', color: '#dc2626', cursor: 'pointer' }}
+                          >
+                            <Trash2 size={12} />
+                          </button>
+                        </div>
+                      )}
                     </div>
-                    <div style={{ fontSize: '0.7rem', color: 'var(--slate-400)' }}>
-                      Renewal: {new Date(sp.renewalDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-                    </div>
-                    <button 
-                      onClick={() => {
-                        const nextStatus = sp.status === 'Active' ? 'Pending Renewal' : 'Active';
-                        saveSponsors(sponsors.map(s => s.id === sp.id ? { ...s, status: nextStatus } : s));
-                        toast.success('Status Toggled', `${sp.brandName} status updated to ${nextStatus}`);
-                      }}
-                      className="interactive-press"
-                      style={{ marginTop: '4px', padding: '4px 10px', fontSize: '0.7rem', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: 'var(--slate-300)', cursor: 'pointer' }}
-                    >
-                      Toggle Status
-                    </button>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}
 
-      {/* ─── TAB 3: LEADER REMITTANCES ─── */}
+      {/* TAB 3: LEADER REMITTANCES */}
       {activeSubTab === 'payouts' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div className="glass-panel" style={{ padding: '18px', borderRadius: '12px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-              <h3 style={{ margin: 0, fontSize: '0.95rem', color: 'var(--white)' }}>Monthly Leader Remittance Schedule</h3>
-              <span style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>Next automated payout batch: 1st of month</span>
+          <div className="glass-panel" style={{ padding: '18px', borderRadius: '14px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px', marginBottom: '6px' }}>
+              <h3 style={{ margin: 0, fontSize: '0.96rem', color: 'var(--ink-primary)', fontFamily: 'var(--font-heading)' }}>Leader Remittance Schedule</h3>
+              <span style={{ fontSize: '0.75rem', color: 'var(--ink-muted)' }}>Automated via Stripe Connect</span>
             </div>
-            <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--slate-400)', lineHeight: 1.5 }}>
-              Creators receive 85% of gross ticket sales directly to their registered bank accounts via Stripe Connect.
-              Platform fee (15%) covers payment processing, infrastructure, and organizer support.
+            <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--ink-secondary)', lineHeight: 1.5 }}>
+              Leaders keep <strong>95%</strong> of paid ticket sales on Free Tier (<strong>5%</strong> platform fee) or <strong>98%</strong> on Leader Pro (<strong>2%</strong> platform fee), minus standard Stripe card processing fees.
             </p>
           </div>
 
@@ -432,39 +479,39 @@ export default function Commercials({ platformStats, handleExportCSV, revenueByC
             {revenueByComm.map(c => {
               const gross = c.cRevenue;
               const isPro = Boolean(c.is_insured || c.insurance_tier === 'pro');
-                    const leaderShare = Math.round(gross * (isPro ? 0.98 : 0.95));
-                    const platformCut = gross - leaderShare;
+              const leaderShare = (gross * (isPro ? 0.98 : 0.95)).toFixed(2);
               const isPaid = payoutStatuses[c.id] === 'Paid';
               return (
-                <div key={c.id} className="glass-panel" style={{ padding: '14px 16px', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                <div key={c.id} className="glass-panel" style={{ padding: '14px 16px', borderRadius: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
                   <div>
-                    <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.9rem' }}>{c.name}</div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', marginTop: '2px' }}>
-                      Gross ticket volume: £{gross} • Events: {c.cEvents}
+                    <div style={{ fontWeight: 700, color: 'var(--ink-primary)', fontSize: '0.92rem' }}>{c.name}</div>
+                    <div style={{ fontSize: '0.76rem', color: 'var(--ink-secondary)', marginTop: '2px' }}>
+                      Gross ticket volume: £{gross} · {c.cEvents} events · {isPro ? 'Pro 98%' : 'Standard 95%'}
                     </div>
                   </div>
 
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                     <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#4ade80' }}>£{leaderShare}</div>
-                      <div style={{ fontSize: '0.65rem', color: 'var(--slate-500)', textTransform: 'uppercase' }}>Net Remittance</div>
+                      <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#16a34a' }}>£{leaderShare}</div>
+                      <div style={{ fontSize: '0.66rem', color: 'var(--ink-muted)', textTransform: 'uppercase', fontWeight: 600 }}>Net Remittance</div>
                     </div>
 
-                    <button 
+                    <button
+                      type="button"
                       onClick={() => togglePayoutStatus(c.id)}
                       className="interactive-press"
                       style={{
-                        padding: '6px 14px',
-                        borderRadius: '8px',
-                        border: 'none',
-                        fontSize: '0.75rem',
-                        fontWeight: 600,
+                        padding: '7px 14px',
+                        borderRadius: '9px',
+                        border: isPaid ? '1px solid rgba(22, 163, 74, 0.3)' : '1px solid rgba(217, 119, 6, 0.3)',
+                        fontSize: '0.76rem',
+                        fontWeight: 700,
                         cursor: 'pointer',
                         display: 'flex',
                         alignItems: 'center',
                         gap: '6px',
-                        background: isPaid ? 'rgba(34,197,94,0.15)' : 'rgba(245,158,11,0.15)',
-                        color: isPaid ? '#22c55e' : '#f59e0b'
+                        background: isPaid ? 'rgba(22, 163, 74, 0.12)' : 'rgba(217, 119, 6, 0.12)',
+                        color: isPaid ? '#16a34a' : '#d97706'
                       }}
                     >
                       {isPaid ? <CheckCircle2 size={13} /> : <Clock size={13} />}
@@ -475,7 +522,7 @@ export default function Commercials({ platformStats, handleExportCSV, revenueByC
               );
             })}
             {revenueByComm.length === 0 && (
-              <div style={{ padding: '40px', textAlign: 'center', color: 'var(--slate-500)' }}>
+              <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--ink-secondary)', background: 'var(--surface-card)', border: '1px solid var(--hairline-border)', borderRadius: '14px' }}>
                 No community payouts currently pending.
               </div>
             )}
@@ -483,37 +530,37 @@ export default function Commercials({ platformStats, handleExportCSV, revenueByC
         </div>
       )}
 
-      {/* ─── MODAL: Log New Sponsor Deal ─── */}
+      {/* MODAL: Log New Sponsor Deal */}
       {isAddSponsorOpen && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '20px' }}>
-          <div className="glass-panel" style={{ width: '100%', maxWidth: '480px', padding: '24px', borderRadius: '16px', background: '#1B1B1B', border: '1px solid rgba(255,255,255,0.1)' }}>
+        <div className="modal-overlay" style={{ position: 'fixed', inset: 0, background: 'rgba(18, 18, 18, 0.72)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '20px' }}>
+          <div style={{ width: '100%', maxWidth: '480px', padding: '24px', borderRadius: '18px', background: 'var(--surface-card)', border: '1px solid var(--hairline-border-strong)', boxShadow: '0 24px 60px rgba(0,0,0,0.45)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
-              <h3 style={{ margin: 0, fontSize: '1.1rem', color: 'var(--white)' }}>Log Sponsorship Deal</h3>
-              <button onClick={() => setIsAddSponsorOpen(false)} style={{ background: 'none', border: 'none', color: 'var(--slate-400)', cursor: 'pointer' }}>
+              <h3 style={{ margin: 0, fontSize: '1.1rem', color: 'var(--ink-primary)', fontFamily: 'var(--font-heading)' }}>Log Sponsorship Deal</h3>
+              <button type="button" onClick={() => setIsAddSponsorOpen(false)} style={{ background: 'none', border: 'none', color: 'var(--ink-muted)', cursor: 'pointer' }}>
                 <X size={18} />
               </button>
             </div>
 
             <form onSubmit={handleAddSponsor} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--slate-400)', marginBottom: '4px' }}>Brand / Partner Name</label>
-                <input 
-                  type="text" 
-                  placeholder="e.g. Red Bull UK, Gymshark, Oatly"
+                <label style={{ display: 'block', fontSize: '0.76rem', color: 'var(--ink-secondary)', fontWeight: 600, marginBottom: '4px' }}>Brand / Partner Name</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Local Coffee Roastery, Outdoor Gear Shop"
                   value={newSponsor.brandName}
                   onChange={e => setNewSponsor({ ...newSponsor, brandName: e.target.value })}
-                  style={{ width: '100%', padding: '10px 12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'var(--ink-primary)', fontSize: '0.85rem' }}
+                  style={{ width: '100%', padding: '10px 12px', background: 'var(--surface-elevated)', border: '1px solid var(--hairline-border-strong)', borderRadius: '8px', color: 'var(--ink-primary)', fontSize: '0.86rem' }}
                   required
                 />
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--slate-400)', marginBottom: '4px' }}>Package Tier</label>
-                  <select 
+                  <label style={{ display: 'block', fontSize: '0.76rem', color: 'var(--ink-secondary)', fontWeight: 600, marginBottom: '4px' }}>Package Tier</label>
+                  <select
                     value={newSponsor.tier}
                     onChange={e => setNewSponsor({ ...newSponsor, tier: e.target.value, monthlyFee: e.target.value === 'Headline Partner' ? 500 : e.target.value === 'Community Partner' ? 250 : 150 })}
-                    style={{ width: '100%', padding: '10px 12px', background: 'var(--surface-card)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'var(--ink-primary)', fontSize: '0.85rem' }}
+                    style={{ width: '100%', padding: '10px 12px', background: 'var(--surface-elevated)', border: '1px solid var(--hairline-border-strong)', borderRadius: '8px', color: 'var(--ink-primary)', fontSize: '0.86rem' }}
                   >
                     <option value="Headline Partner">Headline Partner (£500/mo)</option>
                     <option value="Community Partner">Community Partner (£250/mo)</option>
@@ -521,62 +568,62 @@ export default function Commercials({ platformStats, handleExportCSV, revenueByC
                   </select>
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--slate-400)', marginBottom: '4px' }}>Monthly Fee (£)</label>
-                  <input 
+                  <label style={{ display: 'block', fontSize: '0.76rem', color: 'var(--ink-secondary)', fontWeight: 600, marginBottom: '4px' }}>Monthly Fee (£)</label>
+                  <input
                     type="number"
                     value={newSponsor.monthlyFee}
                     onChange={e => setNewSponsor({ ...newSponsor, monthlyFee: e.target.value })}
-                    style={{ width: '100%', padding: '10px 12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'var(--ink-primary)', fontSize: '0.85rem' }}
+                    style={{ width: '100%', padding: '10px 12px', background: 'var(--surface-elevated)', border: '1px solid var(--hairline-border-strong)', borderRadius: '8px', color: 'var(--ink-primary)', fontSize: '0.86rem' }}
                   />
                 </div>
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--slate-400)', marginBottom: '4px' }}>Target Community Allocation</label>
-                <input 
-                  type="text" 
-                  placeholder="e.g. North Coast Dippers or Platform Wide"
+                <label style={{ display: 'block', fontSize: '0.76rem', color: 'var(--ink-secondary)', fontWeight: 600, marginBottom: '4px' }}>Target Community Allocation</label>
+                <input
+                  type="text"
+                  placeholder="e.g. More Community Walks or Platform Wide"
                   value={newSponsor.communityName}
                   onChange={e => setNewSponsor({ ...newSponsor, communityName: e.target.value })}
-                  style={{ width: '100%', padding: '10px 12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'var(--ink-primary)', fontSize: '0.85rem' }}
+                  style={{ width: '100%', padding: '10px 12px', background: 'var(--surface-elevated)', border: '1px solid var(--hairline-border-strong)', borderRadius: '8px', color: 'var(--ink-primary)', fontSize: '0.86rem' }}
                 />
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--slate-400)', marginBottom: '4px' }}>Partner Contact Email</label>
-                <input 
-                  type="email" 
-                  placeholder="partnerships@brand.com"
+                <label style={{ display: 'block', fontSize: '0.76rem', color: 'var(--ink-secondary)', fontWeight: 600, marginBottom: '4px' }}>Partner Contact Email</label>
+                <input
+                  type="email"
+                  placeholder="partnerships@brand.co.uk"
                   value={newSponsor.contactEmail}
                   onChange={e => setNewSponsor({ ...newSponsor, contactEmail: e.target.value })}
-                  style={{ width: '100%', padding: '10px 12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'var(--ink-primary)', fontSize: '0.85rem' }}
+                  style={{ width: '100%', padding: '10px 12px', background: 'var(--surface-elevated)', border: '1px solid var(--hairline-border-strong)', borderRadius: '8px', color: 'var(--ink-primary)', fontSize: '0.86rem' }}
                 />
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--slate-400)', marginBottom: '4px' }}>Deliverables & Perks</label>
-                <textarea 
+                <label style={{ display: 'block', fontSize: '0.76rem', color: 'var(--ink-secondary)', fontWeight: 600, marginBottom: '4px' }}>Deliverables &amp; Perks</label>
+                <textarea
                   rows={2}
-                  placeholder="e.g. Logo on flyer, 2x product drops, promo link in community description"
+                  placeholder="e.g. Logo on flyer, member discount perk, pinned community post"
                   value={newSponsor.deliverables}
                   onChange={e => setNewSponsor({ ...newSponsor, deliverables: e.target.value })}
-                  style={{ width: '100%', padding: '10px 12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'var(--ink-primary)', fontSize: '0.85rem', resize: 'none' }}
+                  style={{ width: '100%', padding: '10px 12px', background: 'var(--surface-elevated)', border: '1px solid var(--hairline-border-strong)', borderRadius: '8px', color: 'var(--ink-primary)', fontSize: '0.86rem', resize: 'none' }}
                 />
               </div>
 
-              <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
-                <button 
+              <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
+                <button
                   type="button"
                   onClick={() => setIsAddSponsorOpen(false)}
                   className="interactive-press"
-                  style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: 'var(--slate-300)', cursor: 'pointer' }}
+                  style={{ flex: 1, padding: '10px', borderRadius: '9px', border: '1px solid var(--hairline-border-strong)', background: 'transparent', color: 'var(--ink-secondary)', fontWeight: 600, cursor: 'pointer' }}
                 >
                   Cancel
                 </button>
-                <button 
+                <button
                   type="submit"
-                  className="interactive-press"
-                  style={{ flex: 1, padding: '10px', borderRadius: '8px', border: 'none', background: 'var(--teal-500)', color: '#fff', fontWeight: 600, cursor: 'pointer' }}
+                  className="btn btn-primary interactive-press"
+                  style={{ flex: 1, padding: '10px', borderRadius: '9px', color: '#FFFFFF', fontWeight: 700, cursor: 'pointer' }}
                 >
                   Save Partner Deal
                 </button>

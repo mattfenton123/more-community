@@ -2663,11 +2663,11 @@ export default function LeaderDashboard({ initialCommunityId }) {
         <div className="dashboard-sidebar desktop-only">
           <div className="dashboard-sidebar-header">
             <button 
-              onClick={() => community?.id ? router.push(`/community/${community.id}`) : router.back()}
-              style={{ background: 'none', border: 'none', color: 'var(--teal-400)', fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', padding: '0 0 12px 0', fontWeight: 600 }}
+              onClick={() => community?.id ? router.push(`/community/${getCommunitySlug(community, communities)}`) : router.back()}
+              style={{ background: 'none', border: 'none', color: 'var(--brand-accent)', fontSize: '0.82rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', padding: '0 0 12px 0', fontWeight: 700 }}
               className="interactive-press"
             >
-              <ChevronLeft size={16} /> Back to Community
+              <ChevronLeft size={15} /> Back to Community
             </button>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%' }}>
               <CommunitySwitcher
@@ -2679,10 +2679,10 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 isMobile={false}
               />
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' }}>
-              <span style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>Leader View</span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px' }}>
+              <span style={{ fontSize: '0.74rem', color: 'var(--ink-muted)', fontWeight: 600 }}>Leader Workspace</span>
               {user?.isAdmin && (
-                <button onClick={() => router.push('/admin')} style={{ background: 'none', border: 'none', color: '#3b82f6', fontSize: '0.75rem', cursor: 'pointer', padding: 0, fontWeight: 600 }}>
+                <button onClick={() => router.push('/admin')} style={{ background: 'none', border: 'none', color: '#2563eb', fontSize: '0.74rem', cursor: 'pointer', padding: 0, fontWeight: 700 }}>
                   Admin View →
                 </button>
               )}
@@ -2707,16 +2707,37 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 style={{ justifyContent: 'space-between' }}
               >
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: '10px' }}>
-                  <tab.icon size={18} />
+                  <tab.icon size={17} />
                   <span>{tab.label}</span>
                 </span>
                 {tab.badge > 0 && (
-                  <span style={{ fontSize: '0.68rem', fontWeight: 800, background: 'var(--brand-accent)', color: '#FFFFFF', padding: '1px 7px', borderRadius: '99px' }}>
+                  <span style={{ fontSize: '0.66rem', fontWeight: 800, background: 'var(--brand-accent)', color: '#FFFFFF', padding: '1px 7px', borderRadius: '99px' }}>
                     {tab.badge}
                   </span>
                 )}
               </button>
             ))}
+          </div>
+          <div style={{ paddingTop: '14px', marginTop: '14px', borderTop: '1px solid var(--hairline-border)' }}>
+            <button
+              type="button"
+              onClick={() => setShowAICoPilot(true)}
+              className="btn btn-primary interactive-press"
+              style={{
+                width: '100%',
+                padding: '11px 14px',
+                borderRadius: '12px',
+                fontSize: '0.82rem',
+                fontWeight: 700,
+                color: '#FFFFFF',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '7px',
+              }}
+            >
+              <Sparkles size={15} /> AI Co-Pilot Studio
+            </button>
           </div>
         </div>
       )}
@@ -2747,8 +2768,8 @@ export default function LeaderDashboard({ initialCommunityId }) {
               showBack={true} 
               onBack={() => community?.id ? router.push(`/community/${getCommunitySlug(community, communities)}`) : router.back()} 
             />
-            <div style={{ padding: '0 20px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)', display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: 1 }}>
+            <div style={{ padding: '4px 20px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+              <div style={{ fontSize: '0.85rem', color: 'var(--ink-secondary)', display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: 1 }}>
                 <CommunitySwitcher
                   currentCommunity={community}
                   communities={availableCommunities}
@@ -2757,17 +2778,26 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   onCreateNew={() => setModalType('community')}
                   isMobile={true}
                 />
-                <span style={{ whiteSpace: 'nowrap' }}>• Leader View</span>
               </div>
-              {user?.isAdmin && (
-                <button 
-                  onClick={() => router.push('/admin')} 
-                  className="btn btn-outline interactive-press"
-                  style={{ padding: '6px 12px', borderRadius: '8px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px', borderColor: '#3b82f6', color: '#3b82f6' }}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+                <button
+                  type="button"
+                  onClick={() => setShowAICoPilot(true)}
+                  className="btn btn-primary interactive-press"
+                  style={{ padding: '6px 11px', borderRadius: '8px', fontSize: '0.74rem', fontWeight: 700, color: '#FFFFFF', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
                 >
-                  <Shield size={12} /> Admin
+                  <Sparkles size={13} /> AI
                 </button>
-              )}
+                {user?.isAdmin && (
+                  <button 
+                    onClick={() => router.push('/admin')} 
+                    className="btn btn-outline interactive-press"
+                    style={{ padding: '6px 10px', borderRadius: '8px', fontSize: '0.74rem', display: 'flex', alignItems: 'center', gap: '4px', borderColor: '#2563eb', color: '#2563eb' }}
+                  >
+                    <Shield size={12} /> Admin
+                  </button>
+                )}
+              </div>
             </div>
           </div>
 
@@ -2969,79 +2999,6 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 </div>
               </div>
 
-              {/* More AI Community Co-Pilot Banner */}
-              <div style={{ padding: '0 20px', marginBottom: '16px' }}>
-                  <div
-                    onClick={() => setShowAICoPilot(true)}
-                    className="interactive-press"
-                    style={{
-                      padding: '14px 18px',
-                      borderRadius: '16px',
-                      background: 'var(--surface-card)',
-                      border: '1px solid var(--hairline-border-strong)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      gap: '12px',
-                      flexWrap: 'wrap',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <div
-                        style={{
-                          width: '38px',
-                          height: '38px',
-                          borderRadius: '11px',
-                          background: 'var(--brand-accent-soft)',
-                          border: '1px solid rgba(200, 90, 50, 0.28)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          color: 'var(--brand-accent)',
-                          flexShrink: 0,
-                        }}
-                      >
-                        <Sparkles size={18} />
-                      </div>
-                      <div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                          <span style={{ fontWeight: 700, fontSize: '0.92rem', color: 'var(--ink-primary)' }}>
-                            More AI Community Co-Pilot
-                          </span>
-                          <span
-                            style={{
-                              fontSize: '0.65rem',
-                              fontWeight: 800,
-                              padding: '1px 7px',
-                              borderRadius: '999px',
-                              background: 'var(--brand-secondary-soft)',
-                              color: 'var(--brand-secondary)',
-                            }}
-                          >
-                            FREE PLANNER + PRO CONCIERGE
-                          </span>
-                        </div>
-                        <div style={{ fontSize: '0.78rem', color: 'var(--ink-secondary)', marginTop: '2px' }}>
-                          Auto-plan 4 weeks of events, draft WhatsApp &amp; social broadcasts, or generate UK Council RAMS &amp; sponsor pitches.
-                        </div>
-                      </div>
-                    </div>
-                    <span
-                      style={{
-                        fontSize: '0.8rem',
-                        fontWeight: 700,
-                        color: 'var(--teal-300)',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '4px',
-                      }}
-                    >
-                      Open Studio <ChevronRight size={15} />
-                    </span>
-                  </div>
-              </div>
-
               {/* Pending Chapter Sign-Off Alert on Overview */}
               {pendingChapterApplications.length > 0 && (
                 <div style={{ padding: '0 20px', marginBottom: '16px' }}>
@@ -3147,116 +3104,115 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 </div>
               )}
 
-              {/* Leader Setup & Launch Checklist */}
-              <div style={{ padding: '0 20px', marginBottom: '16px' }}>
-                <LeaderSetupChecklist
-                  community={community}
-                  events={communityEvents}
-                  onOpenEventModal={() => {
-                    setEditingEventId(null);
-                    setEventForm(emptyEventForm);
-                    setModalType('event');
-                  }}
-                  onOpenSettings={(section) => {
-                    setActiveTab('settings');
-                    if (section === 'guidelines') setIsGuidelinesExpanded(true);
-                  }}
-                />
-              </div>
-
-              {/* Leader Pro Tools Card */}
-              <div style={{ padding: '0 20px', marginBottom: '16px' }}>
-                {(() => {
-                  const refCode = community.insurance_policy_number || `MC-SAFE-2026-${community.id.slice(0, 6).toUpperCase()}`;
-
-                  return isShieldActive ? (
-                    <div style={{
+              {/* Priority Action #1: Next Upcoming Event Hero Card (with 1-tap Check-In) */}
+              {stats.nextEvent ? (
+                <div style={{ padding: '0 20px', marginBottom: '16px' }}>
+                  <div 
+                    onClick={() => setActiveTab('events')}
+                    className="interactive-press stagger-item"
+                    style={{
                       background: 'var(--surface-card)',
-                      border: '1px solid rgba(235, 87, 56, 0.35)',
-                      borderRadius: '16px',
-                      padding: '16px 18px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      gap: '12px',
-                      flexWrap: 'wrap'
-                    }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <div style={{
-                          width: '42px', height: '42px', borderRadius: '12px',
-                          background: 'var(--brand-accent-soft)',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          flexShrink: 0
-                        }}>
-                          <Shield size={22} color="var(--brand-accent)" />
-                        </div>
-                        <div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                            <span style={{ fontWeight: 700, color: 'var(--ink-primary)', fontSize: '0.94rem' }}>MORE Leader Pro Active</span>
-                            <span style={{ fontSize: '0.66rem', background: '#15803D', color: '#FFFFFF', padding: '2px 7px', borderRadius: '99px', fontWeight: 700 }}>2% FEES</span>
-                          </div>
-                          <div style={{ fontSize: '0.76rem', color: 'var(--ink-secondary)', marginTop: '2px' }}>
-                            Venue Safety Pack (RAMS) • Digital Waivers • Priority Local Discovery
-                          </div>
-                        </div>
+                      border: '1.5px solid rgba(235, 87, 56, 0.35)',
+                      borderRadius: '16px', padding: '16px 18px', cursor: 'pointer',
+                      display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap',
+                    }}
+                  >
+                    <div style={{ width: '54px', height: '58px', background: 'var(--brand-accent-soft)', border: '1px solid rgba(235, 87, 56, 0.25)', borderRadius: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <div style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--ink-primary)', lineHeight: 1 }}>{parseDateParts(stats.nextEvent.date).day}</div>
+                      <div style={{ fontSize: '0.64rem', color: 'var(--brand-accent)', fontWeight: 700, textTransform: 'uppercase', marginTop: '2px' }}>{parseDateParts(stats.nextEvent.date).month}</div>
+                    </div>
+                    <div style={{ flex: '1 1 180px', minWidth: 0 }}>
+                      <div style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--brand-accent)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '2px' }}>
+                        {stats.daysToNext === 0 ? '● Happening Today' : stats.daysToNext === 1 ? '⏰ Tomorrow' : `Next Event · In ${stats.daysToNext} days`}
                       </div>
-                      <div style={{ display: 'flex', gap: '8px' }}>
-                        <button onClick={() => setShowShieldModal(true)} className="btn btn-outline interactive-press" style={{ padding: '8px 12px', fontSize: '0.76rem' }}>
-                          Manage
-                        </button>
-                        <button onClick={() => generatePliCertificatePdf({ community, leaderName: user?.name, policyNumber: refCode })} className="btn btn-primary interactive-press" style={{ padding: '8px 12px', fontSize: '0.76rem', color: '#FFFFFF', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                          <Download size={13} /> Safety Pack
-                        </button>
+                      <div style={{ fontWeight: 700, color: 'var(--ink-primary)', fontSize: '1.02rem', fontFamily: 'var(--font-heading)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{stats.nextEvent.title}</div>
+                      <div style={{ fontSize: '0.78rem', color: 'var(--ink-secondary)', display: 'flex', gap: '10px', flexWrap: 'wrap', marginTop: '3px' }}>
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><Clock size={12} /> {stats.nextEvent.time}</span>
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><MapPin size={12} /> {cleanLocationName(stats.nextEvent.location)}</span>
                       </div>
                     </div>
-                  ) : (
-                    <div style={{
-                      background: 'var(--surface-card)',
-                      border: '1px solid rgba(217, 119, 6, 0.35)',
-                      borderRadius: '16px',
-                      padding: '16px 18px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      gap: '12px',
-                      flexWrap: 'wrap'
-                    }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <div style={{
-                          width: '42px', height: '42px', borderRadius: '12px',
-                          background: 'rgba(217, 119, 6, 0.14)',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          flexShrink: 0
-                        }}>
-                          <Shield size={22} color="#D97706" />
-                        </div>
-                        <div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <span style={{ fontWeight: 700, color: 'var(--ink-primary)', fontSize: '1rem', fontFamily: 'var(--font-heading)' }}>Upgrade to Leader Pro</span>
-                            <span style={{ fontSize: '0.68rem', background: '#B45309', color: '#FFFFFF', padding: '2px 7px', borderRadius: '5px', fontWeight: 800, letterSpacing: '0.04em' }}>PRO</span>
-                          </div>
-                          <div style={{ fontSize: '0.76rem', color: 'var(--ink-secondary)', marginTop: '3px', display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', lineHeight: 1.35 }}>
-                            <span style={{ color: 'var(--teal-300)' }}><strong>✓ 2% ticket fee</strong> (save 60%)</span>
-                            <span><strong>✓ Venue Risk Assessments (RAMS)</strong></span>
-                            <span><strong>✓ Digital attendee waivers</strong></span>
-                            <span><strong>✓ Group PLI Waitlist</strong></span>
-                          </div>
-                        </div>
-                      </div>
-                      <button 
-                        onClick={() => setShowShieldModal(true)} 
-                        className="btn btn-primary interactive-press"
-                        style={{ padding: '9px 16px', fontSize: '0.84rem', fontWeight: 700, color: '#FFFFFF', display: 'flex', alignItems: 'center', gap: '6px', borderRadius: '10px' }}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setRollCallEvent(stats.nextEvent);
+                        }}
+                        className="interactive-press"
+                        style={{
+                          padding: '9px 14px',
+                          borderRadius: '10px',
+                          background: 'rgba(22, 163, 74, 0.14)',
+                          border: '1px solid rgba(22, 163, 74, 0.35)',
+                          color: '#16a34a',
+                          fontSize: '0.78rem',
+                          fontWeight: 800,
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '5px',
+                        }}
                       >
-                        <Crown size={15} /> Learn More (£16.50/mo)
+                        <UserCheck size={14} /> Check-In
                       </button>
+                      <ChevronRight size={18} color="var(--ink-muted)" />
                     </div>
-                  );
-                })()}
+                  </div>
+                </div>
+              ) : (
+                <div style={{ padding: '0 20px', marginBottom: '16px' }}>
+                  <div 
+                    onClick={() => openEventWizard()}
+                    className="interactive-press"
+                    style={{
+                      background: 'var(--surface-card)',
+                      border: '1.5px dashed rgba(235, 87, 56, 0.4)',
+                      borderRadius: '16px', padding: '22px 20px', cursor: 'pointer',
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '14px', flexWrap: 'wrap'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                      <div style={{ width: '46px', height: '46px', borderRadius: '12px', background: 'linear-gradient(135deg, var(--brand-accent), var(--brand-accent-pressed))', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <Plus size={22} color="#FFFFFF" />
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 700, color: 'var(--ink-primary)', fontSize: '1.02rem', fontFamily: 'var(--font-heading)' }}>Schedule Your Next Meetup</div>
+                        <div style={{ color: 'var(--ink-secondary)', fontSize: '0.8rem', marginTop: '2px' }}>No upcoming events yet — launch one in under a minute or draft 4 weeks with AI Co-Pilot.</div>
+                      </div>
+                    </div>
+                    <span className="btn btn-primary" style={{ padding: '8px 14px', borderRadius: '10px', fontSize: '0.8rem', fontWeight: 700, color: '#FFFFFF' }}>
+                      Create Event →
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* Priority Action #2: Clean Editorial Quick Actions */}
+              <div style={{ padding: '0 20px', marginBottom: '20px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(105px, 1fr))', gap: '8px' }}>
+                  {[
+                    { label: 'New Event', icon: Plus, color: '#EB5738', action: () => openEventWizard() },
+                    { label: 'AI Co-Pilot', icon: Sparkles, color: '#d97706', action: () => setShowAICoPilot(true) },
+                    { label: 'Broadcast', icon: Megaphone, color: '#2563eb', action: () => setActiveTab('social hub') },
+                    { label: 'Scan QR', icon: QrCode, color: '#16a34a', action: () => setShowScanner(true) },
+                    { label: 'View Page', icon: Globe, color: '#7c3aed', action: () => router.push(`/community/${getCommunitySlug(community, communities)}`) },
+                  ].map(a => (
+                    <button key={a.label} onClick={a.action} className="interactive-press" style={{
+                      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', padding: '14px 10px',
+                      background: 'var(--surface-card)', border: '1px solid var(--hairline-border)', borderRadius: '14px',
+                      color: 'var(--ink-primary)', cursor: 'pointer', fontSize: '0.78rem', fontWeight: 700
+                    }}>
+                      <div style={{ width: '34px', height: '34px', borderRadius: '10px', background: `${a.color}16`, color: a.color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <a.icon size={17} />
+                      </div>
+                      <span>{a.label}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
 
-              {/* Stats Grid 2x3  -  clickable for drill-down */}
-              <div style={{ padding: '0 20px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: leaderDrillDown ? '0' : '24px' }}>
+              {/* Stats Grid  -  Responsive 2x3 Mobile / 3x2-6x1 Desktop */}
+              <div style={{ padding: '0 20px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '10px', marginBottom: leaderDrillDown ? '0' : '22px' }}>
                 {[
                   { key: 'members',   value: stats.totalMembers || 0,                                                                    label: 'Total Members',     icon: Users,     color: 'var(--ink-primary)' },
                   { key: 'active',    value: stats.activeMembers || 0,                                                                   label: 'Active Members',    icon: Activity,  color: '#22c55e', accent: '#22c55e' },
@@ -3321,7 +3277,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                         return { u, score: getEngagementScore(m, events, eventRsvps, communityMessages, community.id) };
                       }).filter(Boolean).sort((a, b) => b.score - a.score).slice(0, 5).map(({ u, score }) => (
                         <div key={u.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 0', borderBottom: '1px solid var(--hairline-border)' }}>
-                          <img src={u.avatar} alt={u.name} style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }} />
+                          <img src={resolveUserAvatar(u)} alt={u.name} style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }} />
                           <span style={{ flex: 1, fontSize: '0.85rem', color: 'var(--white)' }}>{u.name}</span>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                             <div style={{ width: '40px', height: '4px', background: 'rgba(255,255,255,0.06)', borderRadius: '99px', overflow: 'hidden' }}>
@@ -3642,205 +3598,203 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 </div>
               </div>
 
-              {/* Next Event Hero Card */}
-              {stats.nextEvent && (
-                <div style={{ padding: '0 20px', marginBottom: '20px' }}>
-                  <div 
-                    onClick={() => setActiveTab('events')}
-                    className="interactive-press stagger-item"
-                    style={{
-                      background: 'linear-gradient(135deg, rgba(235, 87, 56, 0.12) 0%, rgba(235, 87, 56, 0.03) 100%)',
-                      border: '1px solid rgba(235, 87, 56,0.2)',
-                      borderRadius: '16px', padding: '18px', cursor: 'pointer',
-                      display: 'flex', alignItems: 'center', gap: '14px',
-                    }}
-                  >
-                    <div style={{ width: '56px', height: '60px', background: 'rgba(235, 87, 56,0.15)', borderRadius: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      <div style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--white)', lineHeight: 1 }}>{parseDateParts(stats.nextEvent.date).day}</div>
-                      <div style={{ fontSize: '0.65rem', color: 'var(--teal-400)', fontWeight: 600, textTransform: 'uppercase' }}>{parseDateParts(stats.nextEvent.date).month}</div>
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: '0.65rem', fontWeight: 600, color: 'var(--teal-400)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '2px' }}>
-                        {stats.daysToNext === 0 ? '🔴 Happening Today' : stats.daysToNext === 1 ? '⏰ Tomorrow' : `Coming up in ${stats.daysToNext} days`}
-                      </div>
-                      <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '1rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{stats.nextEvent.title}</div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', display: 'flex', gap: '8px', marginTop: '2px' }}>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}><Clock size={11} /> {stats.nextEvent.time}</span>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}><MapPin size={11} /> {cleanLocationName(stats.nextEvent.location)}</span>
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setRollCallEvent(stats.nextEvent);
-                      }}
-                      className="interactive-press"
-                      style={{
-                        padding: '8px 12px',
-                        borderRadius: '10px',
-                        background: 'rgba(16, 185, 129, 0.16)',
-                        border: '1px solid rgba(16, 185, 129, 0.35)',
-                        color: '#10b981',
-                        fontSize: '0.76rem',
-                        fontWeight: 800,
-                        cursor: 'pointer',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '5px',
-                        flexShrink: 0
-                      }}
-                    >
-                      <UserCheck size={14} /> Check-In
-                    </button>
-                    <ChevronRight size={18} color="var(--teal-400)" />
-                  </div>
-                </div>
-              )}
+              {/* Setup Checklist & Leader Pro Card (tucked cleanly below core ops & metrics) */}
+              <div style={{ padding: '0 20px', marginBottom: '18px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                <LeaderSetupChecklist
+                  community={community}
+                  events={communityEvents}
+                  onOpenEventModal={() => {
+                    setEditingEventId(null);
+                    setEventForm(emptyEventForm);
+                    setModalType('event');
+                  }}
+                  onOpenSettings={(section) => {
+                    setActiveTab('settings');
+                    if (section === 'guidelines') setIsGuidelinesExpanded(true);
+                  }}
+                />
 
-              {/* Create Event  -  Prominent CTA when no upcoming events */}
-              {!stats.nextEvent && (
-                <div style={{ padding: '0 20px', marginBottom: '20px' }}>
-                  <div 
-                    onClick={() => openEventWizard()}
-                    className="interactive-press"
-                    style={{
-                      background: 'linear-gradient(135deg, rgba(235, 87, 56, 0.08) 0%, rgba(235, 87, 56, 0.03) 100%)',
-                      border: '1px dashed rgba(235, 87, 56,0.3)',
-                      borderRadius: '16px', padding: '28px 20px', cursor: 'pointer', textAlign: 'center',
-                    }}
-                  >
-                    <div style={{ width: '52px', height: '52px', borderRadius: '50%', background: 'linear-gradient(135deg, var(--brand-accent), var(--brand-accent-pressed))', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}>
-                      <Plus size={24} color="white" />
-                    </div>
-                    <div style={{ fontWeight: 700, color: 'var(--white)', fontSize: '1.05rem', marginBottom: '4px', fontFamily: 'var(--font-heading)' }}>Create Your First Event</div>
-                    <div style={{ color: 'var(--slate-400)', fontSize: '0.8rem', lineHeight: 1.5 }}>Events bring your community together. Set up one in under a minute.</div>
-                  </div>
-                </div>
-              )}
+                {(() => {
+                  const refCode = community.insurance_policy_number || `MC-SAFE-2026-${community.id.slice(0, 6).toUpperCase()}`;
 
-              {/* Quick Actions */}
-              <div style={{ padding: '0 20px', marginBottom: '24px' }}>
-                <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--slate-500)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '10px', paddingLeft: '4px' }}>Quick Actions</div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(84px, 1fr))', gap: '8px' }}>
-                  {[
-                    { label: 'New Event', icon: Plus, color: '#EB5738', action: () => openEventWizard() },
-                    { label: 'Broadcast', icon: Megaphone, color: '#f59e0b', action: () => setActiveTab('social hub') },
-                    { label: 'Scan QR', icon: QrCode, color: '#3b82f6', action: () => setShowScanner(true) },
-                    { label: 'People', icon: Users, color: '#a78bfa', action: () => setActiveTab('people') },
-                    { label: 'View Page', icon: Globe, color: '#f43f5e', action: () => router.push(`/community/${getCommunitySlug(community, communities)}`) },
-                  ].map(a => (
-                    <button key={a.label} onClick={a.action} className="interactive-press" style={{
-                      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', padding: '16px 8px',
-                      background: `${a.color}08`, border: `1px solid ${a.color}20`, borderRadius: '12px',
-                      color: a.color, cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600
+                  return isShieldActive ? (
+                    <div style={{
+                      background: 'var(--surface-card)',
+                      border: '1px solid rgba(235, 87, 56, 0.35)',
+                      borderRadius: '16px',
+                      padding: '16px 18px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: '12px',
+                      flexWrap: 'wrap'
                     }}>
-                      <a.icon size={20} />
-                      {a.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Growth Kit */}
-              <div style={{ padding: '0 20px', marginBottom: '24px' }}>
-                <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--slate-500)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '10px', paddingLeft: '4px' }}>🚀 Growth Kit</div>
-                <div style={{ background: 'linear-gradient(135deg, rgba(235, 87, 56,0.06) 0%, rgba(139,92,246,0.06) 100%)', border: '1px solid rgba(235, 87, 56,0.15)', borderRadius: '16px', padding: '20px' }}>
-                  <div style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--white)', marginBottom: '4px' }}>Invite your community</div>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)', marginBottom: '16px', lineHeight: 1.5 }}>Share your community page link to grow your membership.</div>
-                  
-                  {/* Share link bar */}
-                  <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
-                    <div style={{ flex: 1, padding: '10px 14px', background: 'var(--surface-elevated)', border: '1px solid var(--hairline-border)', borderRadius: '10px', fontSize: '0.8rem', color: 'var(--slate-400)', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
-                      www.morecommunity.app{getCommunityPath(community, communities)}
-                    </div>
-                    <button
-                      onClick={() => {
-                        navigator.clipboard.writeText(`${SITE_ORIGIN}${getCommunityPath(community, communities)}`);
-                        setLinkCopied(true);
-                        setTimeout(() => setLinkCopied(false), 2000);
-                        toast.success('Link copied!', 'Share it anywhere to grow your community');
-                      }}
-                      className="interactive-press"
-                      style={{ padding: '10px 16px', background: linkCopied ? 'rgba(34,197,94,0.2)' : 'rgba(235, 87, 56,0.15)', border: `1px solid ${linkCopied ? 'rgba(34,197,94,0.4)' : 'rgba(235, 87, 56,0.3)'}`, borderRadius: '10px', color: linkCopied ? '#22c55e' : 'var(--teal-300)', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.2s' }}
-                    >
-                      {linkCopied ? '✓ Copied!' : 'Copy Link'}
-                    </button>
-                  </div>
-
-                  {/* Share channels */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                    <button
-                      onClick={() => {
-                        const url = `${SITE_ORIGIN}${getCommunityPath(community, communities)}`;
-                        const text = `Join ${community.name} on MoreCommunity! 🌟 ${url}`;
-                        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
-                      }}
-                      className="interactive-press"
-                      style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 14px', background: 'rgba(37,211,102,0.1)', border: '1px solid rgba(37,211,102,0.25)', borderRadius: '12px', color: '#25d366', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}
-                    >
-                      <span style={{ fontSize: '1.2rem' }}>💬</span>
-                      Share on WhatsApp
-                    </button>
-                    <button
-                      onClick={async () => {
-                        const url = `${SITE_ORIGIN}${getCommunityPath(community, communities)}`;
-                        const text = `Join ${community.name} on More Community!`;
-                        if (typeof navigator !== 'undefined' && navigator.share) {
-                          try {
-                            await navigator.share({ title: community.name, text, url });
-                            return;
-                          } catch (err) {
-                            if (err?.name === 'AbortError') return;
-                          }
-                        }
-                        if (typeof navigator !== 'undefined' && navigator.clipboard) {
-                          navigator.clipboard.writeText(`${text} ${url}`);
-                          toast.success('Invite Copied!', 'Paste it into Instagram, Facebook, SMS, or email.');
-                        }
-                      }}
-                      className="interactive-press"
-                      style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 14px', background: 'rgba(29,161,242,0.1)', border: '1px solid rgba(29,161,242,0.25)', borderRadius: '12px', color: '#1da1f2', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}
-                    >
-                      <Share2 size={16} />
-                      Share Invite
-                    </button>
-                    <button
-                      onClick={() => router.push(`/community/${getCommunitySlug(community, communities)}`)}
-                      className="interactive-press"
-                      style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 14px', background: 'rgba(236,72,153,0.1)', border: '1px solid rgba(236,72,153,0.25)', borderRadius: '12px', color: '#ec4899', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}
-                    >
-                      <Globe size={16} />
-                      View Public Page
-                    </button>
-                    <button
-                      onClick={() => setActiveTab('people')}
-                      className="interactive-press"
-                      style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 14px', background: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.25)', borderRadius: '12px', color: '#a78bfa', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}
-                    >
-                      <BarChart3 size={16} />
-                      Member CRM
-                      <InfoExplainer explainerKey="leader_crm_card" size={12} style={{ marginLeft: 'auto' }} />
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Recent Activity */}
-              <div style={{ padding: '0 20px', marginBottom: '24px' }}>
-                <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--slate-500)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '10px', paddingLeft: '4px' }}>Recent Activity</div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  {recentActivity.length > 0 ? recentActivity.map((a, i) => (
-                    <div key={i} className="stagger-item" style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: '10px', border: '1px solid var(--hairline-border)' }}>
-                      <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: `${a.color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        <a.icon size={14} color={a.color} />
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div style={{ width: '40px', height: '40px', borderRadius: '11px', background: 'var(--brand-accent-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          <Shield size={20} color="var(--brand-accent)" />
+                        </div>
+                        <div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                            <span style={{ fontWeight: 700, color: 'var(--ink-primary)', fontSize: '0.94rem' }}>MORE Leader Pro Active</span>
+                            <span style={{ fontSize: '0.66rem', background: '#15803D', color: '#FFFFFF', padding: '2px 7px', borderRadius: '99px', fontWeight: 700 }}>2% FEES</span>
+                          </div>
+                          <div style={{ fontSize: '0.76rem', color: 'var(--ink-secondary)', marginTop: '2px' }}>
+                            Venue Safety Pack (RAMS) · Digital Waivers · Priority Local Discovery
+                          </div>
+                        </div>
                       </div>
-                      <div style={{ flex: 1, fontSize: '0.85rem', color: 'var(--slate-300)' }}>{a.text}</div>
-                      <div style={{ fontSize: '0.7rem', color: 'var(--slate-600)', whiteSpace: 'nowrap' }}>{a.time}</div>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button onClick={() => setShowShieldModal(true)} className="btn btn-outline interactive-press" style={{ padding: '8px 12px', fontSize: '0.76rem' }}>
+                          Manage
+                        </button>
+                        <button onClick={() => generatePliCertificatePdf({ community, leaderName: user?.name, policyNumber: refCode })} className="btn btn-primary interactive-press" style={{ padding: '8px 12px', fontSize: '0.76rem', color: '#FFFFFF', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                          <Download size={13} /> Safety Pack
+                        </button>
+                      </div>
                     </div>
-                  )) : (
-                    <div style={{ padding: '24px', textAlign: 'center', color: 'var(--slate-500)', fontSize: '0.85rem' }}>No recent activity yet  -  create your first event!</div>
-                  )}
+                  ) : (
+                    <div style={{
+                      background: 'var(--surface-card)',
+                      border: '1px solid rgba(217, 119, 6, 0.35)',
+                      borderRadius: '16px',
+                      padding: '16px 18px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: '12px',
+                      flexWrap: 'wrap'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div style={{ width: '40px', height: '40px', borderRadius: '11px', background: 'rgba(217, 119, 6, 0.14)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          <Shield size={20} color="#D97706" />
+                        </div>
+                        <div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{ fontWeight: 700, color: 'var(--ink-primary)', fontSize: '0.96rem', fontFamily: 'var(--font-heading)' }}>Upgrade to Leader Pro</span>
+                            <span style={{ fontSize: '0.66rem', background: '#B45309', color: '#FFFFFF', padding: '2px 7px', borderRadius: '5px', fontWeight: 800, letterSpacing: '0.04em' }}>PRO</span>
+                          </div>
+                          <div style={{ fontSize: '0.76rem', color: 'var(--ink-secondary)', marginTop: '3px', display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', lineHeight: 1.35 }}>
+                            <span style={{ color: 'var(--brand-accent)' }}><strong>✓ 2% ticket fee</strong> (save 60%)</span>
+                            <span><strong>✓ Venue RAMS PDFs</strong></span>
+                            <span><strong>✓ Digital waivers</strong></span>
+                            <span><strong>✓ Group PLI waitlist</strong></span>
+                          </div>
+                        </div>
+                      </div>
+                      <button 
+                        onClick={() => setShowShieldModal(true)} 
+                        className="btn btn-primary interactive-press"
+                        style={{ padding: '8px 14px', fontSize: '0.8rem', fontWeight: 700, color: '#FFFFFF', display: 'flex', alignItems: 'center', gap: '6px', borderRadius: '10px' }}
+                      >
+                        <Crown size={14} /> Learn More (£16.50/mo)
+                      </button>
+                    </div>
+                  );
+                })()}
+              </div>
+
+              {/* Growth Kit & Recent Activity (Side-by-side on desktop) */}
+              <div style={{ padding: '0 20px', marginBottom: '24px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: '18px', alignItems: 'start' }}>
+                <div>
+                  <div style={{ fontSize: '0.74rem', fontWeight: 700, color: 'var(--ink-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '10px', paddingLeft: '4px' }}>🚀 Growth Kit</div>
+                  <div style={{ background: 'var(--surface-card)', border: '1px solid var(--hairline-border)', borderRadius: '16px', padding: '18px' }}>
+                    <div style={{ fontSize: '0.94rem', fontWeight: 700, color: 'var(--ink-primary)', marginBottom: '4px', fontFamily: 'var(--font-heading)' }}>Invite your community</div>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--ink-secondary)', marginBottom: '14px', lineHeight: 1.5 }}>Share your community page link to grow your membership.</div>
+                    
+                    {/* Share link bar */}
+                    <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+                      <div style={{ flex: 1, padding: '10px 12px', background: 'var(--surface-elevated)', border: '1px solid var(--hairline-border)', borderRadius: '10px', fontSize: '0.78rem', color: 'var(--ink-secondary)', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
+                        www.morecommunity.app{getCommunityPath(community, communities)}
+                      </div>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(`${SITE_ORIGIN}${getCommunityPath(community, communities)}`);
+                          setLinkCopied(true);
+                          setTimeout(() => setLinkCopied(false), 2000);
+                          toast.success('Link copied!', 'Share it anywhere to grow your community');
+                        }}
+                        className="interactive-press"
+                        style={{ padding: '10px 14px', background: linkCopied ? 'rgba(22, 163, 74, 0.16)' : 'var(--brand-accent-soft)', border: `1px solid ${linkCopied ? 'rgba(22, 163, 74, 0.4)' : 'rgba(235, 87, 56, 0.35)'}`, borderRadius: '10px', color: linkCopied ? '#16a34a' : 'var(--brand-accent)', fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.2s' }}
+                      >
+                        {linkCopied ? '✓ Copied!' : 'Copy Link'}
+                      </button>
+                    </div>
+
+                    {/* Share channels */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                      <button
+                        onClick={() => {
+                          const url = `${SITE_ORIGIN}${getCommunityPath(community, communities)}`;
+                          const text = `Join ${community.name} on MoreCommunity! 🌟 ${url}`;
+                          window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+                        }}
+                        className="interactive-press"
+                        style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '11px 12px', background: 'rgba(22, 163, 74, 0.1)', border: '1px solid rgba(22, 163, 74, 0.25)', borderRadius: '11px', color: '#16a34a', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 700 }}
+                      >
+                        <span>💬</span>
+                        WhatsApp
+                      </button>
+                      <button
+                        onClick={async () => {
+                          const url = `${SITE_ORIGIN}${getCommunityPath(community, communities)}`;
+                          const text = `Join ${community.name} on More Community!`;
+                          if (typeof navigator !== 'undefined' && navigator.share) {
+                            try {
+                              await navigator.share({ title: community.name, text, url });
+                              return;
+                            } catch (err) {
+                              if (err?.name === 'AbortError') return;
+                            }
+                          }
+                          if (typeof navigator !== 'undefined' && navigator.clipboard) {
+                            navigator.clipboard.writeText(`${text} ${url}`);
+                            toast.success('Invite Copied!', 'Paste it into Instagram, Facebook, SMS, or email.');
+                          }
+                        }}
+                        className="interactive-press"
+                        style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '11px 12px', background: 'rgba(37, 99, 235, 0.1)', border: '1px solid rgba(37, 99, 235, 0.25)', borderRadius: '11px', color: '#2563eb', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 700 }}
+                      >
+                        <Share2 size={15} />
+                        Share Invite
+                      </button>
+                      <button
+                        onClick={() => router.push(`/community/${getCommunitySlug(community, communities)}`)}
+                        className="interactive-press"
+                        style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '11px 12px', background: 'var(--surface-elevated)', border: '1px solid var(--hairline-border-strong)', borderRadius: '11px', color: 'var(--ink-primary)', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}
+                      >
+                        <Globe size={15} color="var(--brand-accent)" />
+                        Public Page
+                      </button>
+                      <button
+                        onClick={() => setActiveTab('people')}
+                        className="interactive-press"
+                        style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '11px 12px', background: 'var(--surface-elevated)', border: '1px solid var(--hairline-border-strong)', borderRadius: '11px', color: 'var(--ink-primary)', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}
+                      >
+                        <BarChart3 size={15} color="#7c3aed" />
+                        Member CRM
+                        <InfoExplainer explainerKey="leader_crm_card" size={12} style={{ marginLeft: 'auto' }} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <div style={{ fontSize: '0.74rem', fontWeight: 700, color: 'var(--ink-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '10px', paddingLeft: '4px' }}>Recent Activity</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '7px' }}>
+                    {recentActivity.length > 0 ? recentActivity.map((a, i) => (
+                      <div key={i} className="stagger-item" style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 14px', background: 'var(--surface-card)', borderRadius: '12px', border: '1px solid var(--hairline-border)' }}>
+                        <div style={{ width: '32px', height: '32px', borderRadius: '9px', background: `${a.color}16`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          <a.icon size={14} color={a.color} />
+                        </div>
+                        <div style={{ flex: 1, fontSize: '0.84rem', color: 'var(--ink-primary)' }}>{a.text}</div>
+                        <div style={{ fontSize: '0.72rem', color: 'var(--ink-muted)', whiteSpace: 'nowrap' }}>{a.time}</div>
+                      </div>
+                    )) : (
+                      <div style={{ padding: '28px 20px', textAlign: 'center', color: 'var(--ink-muted)', fontSize: '0.84rem', background: 'var(--surface-card)', border: '1px solid var(--hairline-border)', borderRadius: '14px' }}>
+                        No recent activity yet — create your first event!
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </>
@@ -4680,7 +4634,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                       </div>
                       <div style={{ borderTop: '1px solid var(--hairline-border)', paddingTop: '8px', marginTop: '4px', display: 'flex', justifyContent: 'space-between', color: 'var(--teal-300)', fontSize: '0.8rem' }}>
                         <span>Estimated Annual (20 active members):</span>
-                        <span style={{ fontWeight: 700 }}>£{(Number(subscriptionPrice) * 0.95 * 20 * 12).toLocaleString()}/year to your fund</span>
+                        <span style={{ fontWeight: 700 }}>£{(Number(subscriptionPrice) * (isShieldActive ? 0.98 : 0.95) * 20 * 12).toLocaleString()}/year to your fund</span>
                       </div>
                     </div>
                   </div>
