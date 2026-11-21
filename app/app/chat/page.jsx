@@ -14,17 +14,31 @@ import {
   Lock,
   X,
   ChevronLeft,
+  Calendar,
 } from 'lucide-react';
 import AppHeader from '../../src/components/AppHeader';
 import { FALLBACK_IMAGES } from '../../src/lib/constants';
 import { useToast } from '../../src/components/Toast';
 import { resolveUserAvatar, getDefaultAvatar } from '../../src/lib/avatar';
 import { formatChatTime, getManageableCommunities } from '../../src/lib/chatUtils';
+import { getEventPath } from '../../src/lib/eventLinks';
+import { isEventUpcoming } from '../../src/lib/calendar';
 
 export default function ChatIndex() {
-  const { communities, user, users, isLoading, channels, createChannel, communityMemberships, theme } =
-    useAppContext();
-  const { directMessages, chatReadReceipts, messages } = useChat();
+  const {
+    communities,
+    user,
+    users,
+    isLoading,
+    channels,
+    createChannel,
+    communityMemberships,
+    events = [],
+    eventRsvps = {},
+    eventComments = {},
+    theme,
+  } = useAppContext();
+  const { directMessages, chatReadReceipts, messages, markChatRead } = useChat();
   const router = useRouter();
   const searchParams = useSearchParams();
   const communityFilterId = searchParams?.get('communityId');
@@ -180,6 +194,35 @@ export default function ChatIndex() {
       });
     }
 
+    // Event Discussion / Q&A threads for events user leads, is Going to, or commented on
+    (events || []).forEach((ev) => {
+      if (!ev?.id || ev.status === 'cancelled' || ev.status === 'proposed') return;
+      const comm = (communities || []).find((c) => c.id === ev.communityId) || null;
+      const rsvps = eventRsvps?.[ev.id] || [];
+      const isGoing = rsvps.some(
+        (r) => (r.userId === user.id || r.user_id === user.id) && r.status !== 'declined' && r.status !== 'cancelled'
+      );
+      const isHost =
+        Boolean(user?.ledCommunities?.includes(ev.communityId)) ||
+        (Array.isArray(ev.cohostCommunityIds) && ev.cohostCommunityIds.some((cid) => user?.ledCommunities?.includes(cid))) ||
+        (Array.isArray(ev.cohost_community_ids) && ev.cohost_community_ids.some((cid) => user?.ledCommunities?.includes(cid)));
+      const evComments = eventComments?.[ev.id] || [];
+      const hasCommented = evComments.some((c) => c.authorId === user.id || c.author_id === user.id);
+      const upcoming = isEventUpcoming(ev);
+
+      if (!isGoing && !isHost && !hasCommented) return;
+      if (!upcoming && evComments.length === 0) return;
+
+      items.push({
+        type: 'event_qna',
+        id: ev.id,
+        event: ev,
+        comm,
+        hasComments: evComments.length > 0,
+        isUpcoming: upcoming,
+      });
+    });
+
     const q = inboxSearch.toLowerCase().trim();
 
     const enriched = items
@@ -224,6 +267,36 @@ export default function ChatIndex() {
                 dmLastReadMs <
                   new Date(latestMsg.createdAt || latestMsg.created_at || new Date().toISOString()).getTime())
           );
+        } else if (item.type === 'event_qna') {
+          itemMessages = (eventComments?.[item.id] || []).map((c) => ({
+            id: c.id,
+            authorId: c.authorId || c.author_id,
+            senderId: c.authorId || c.author_id,
+            authorName: c.authorName,
+            text: c.text,
+            createdAt: c.createdAt || c.created_at,
+          }));
+          latestMsg = itemMessages[itemMessages.length - 1] || null;
+
+          if (q) {
+            for (let idx = itemMessages.length - 1; idx >= 0; idx--) {
+              if ((itemMessages[idx]?.text || '').toLowerCase().includes(q)) {
+                matchedMsg = itemMessages[idx];
+                break;
+              }
+            }
+          }
+
+          const evLastReadMs = (chatReadReceipts || [])
+            .filter((r) => r.community_id === 'event_qna' && r.channel_id === item.id)
+            .reduce((max, r) => Math.max(max, new Date(r.last_read_at || 0).getTime()), 0);
+          hasUnread = Boolean(
+            latestMsg &&
+              latestMsg.authorId !== user?.id &&
+              (!evLastReadMs ||
+                evLastReadMs <
+                  new Date(latestMsg.createdAt || latestMsg.created_at || new Date().toISOString()).getTime())
+          );
         } else {
           itemMessages = (messages || []).filter(
             (m) =>
@@ -260,15 +333,22 @@ export default function ChatIndex() {
           );
         }
 
-        const rawTitle = item.type === 'dm' ? item.otherUser.name : item.name;
+        const rawTitle =
+          item.type === 'dm'
+            ? item.otherUser.name
+            : item.type === 'event_qna'
+              ? item.event.title
+              : item.name;
         const displayTitle =
-          item.type !== 'dm' && rawTitle.toLowerCase() === 'general' ? item.comm.name : rawTitle;
+          item.type === 'channel' && rawTitle.toLowerCase() === 'general' ? item.comm.name : rawTitle;
         const displaySubtitle =
-          item.type !== 'dm'
-            ? rawTitle.toLowerCase() === 'general'
-              ? 'General Chat'
-              : item.comm.name
-            : null;
+          item.type === 'event_qna'
+            ? `Event Q&A${item.event?.date ? ` · ${item.event.date}` : ''}`
+            : item.type === 'channel'
+              ? rawTitle.toLowerCase() === 'general'
+                ? 'General Chat'
+                : item.comm.name
+              : null;
 
         const previewMsg = matchedMsg || latestMsg;
 
@@ -291,7 +371,9 @@ export default function ChatIndex() {
       })
       .filter((item) => {
         if (communityFilterId && item.comm?.id !== communityFilterId) return false;
-        if (inboxTab === 'Communities' && item.type === 'dm') return false;
+        if (inboxTab === 'All' && item.type === 'event_qna' && !item.hasComments && !q) return false;
+        if (inboxTab === 'Communities' && item.type !== 'channel') return false;
+        if (inboxTab === 'Events' && item.type !== 'event_qna') return false;
         if (inboxTab === 'Direct' && item.type !== 'dm') return false;
         if (q) {
           const inTitle = (item.displayTitle || '').toLowerCase().includes(q);
@@ -316,6 +398,10 @@ export default function ChatIndex() {
     inboxTab,
     inboxSearch,
     remoteSearchHits,
+    events,
+    eventRsvps,
+    eventComments,
+    communities,
   ]);
 
   const sharedCommunityMembers = useMemo(() => {
@@ -584,7 +670,7 @@ export default function ChatIndex() {
               </div>
 
               <div className="segmented-control">
-                {['All', 'Communities', 'Direct'].map((tab) => (
+                {['All', 'Communities', 'Events', 'Direct'].map((tab) => (
                   <button
                     key={tab}
                     onClick={() => setInboxTab(tab)}
@@ -662,36 +748,50 @@ export default function ChatIndex() {
                 }}
               >
                 {inboxItems.map((item, i) => {
-                  const rawTitle = item.type === 'dm' ? item.otherUser.name : item.name;
+                  const rawTitle =
+                    item.type === 'dm'
+                      ? item.otherUser.name
+                      : item.type === 'event_qna'
+                        ? item.event.title
+                        : item.name;
                   let avatar =
                     item.type === 'dm'
                       ? resolveUserAvatar(item.otherUser)
-                      : getDefaultAvatar(item.displayTitle);
+                      : item.type === 'event_qna'
+                        ? item.event.image || item.comm?.image || item.comm?.cover_image || FALLBACK_IMAGES.event
+                        : getDefaultAvatar(item.displayTitle);
 
-                  if (item.type !== 'dm' && rawTitle.toLowerCase() === 'general') {
+                  if (item.type === 'channel' && rawTitle.toLowerCase() === 'general') {
                     avatar = item.comm.image || item.comm.cover_image || FALLBACK_IMAGES.community;
                   }
 
                   let Icon = Hash;
                   if (item.type === 'dm') Icon = MessageCircle;
+                  else if (item.type === 'event_qna') Icon = Calendar;
                   else if (item.channelType === 'announcement') Icon = Megaphone;
                   else if (item.channelType === 'group' || item.memberIds) Icon = Lock;
 
                   const shownMsg = item.previewMsg || item.latestMsg;
                   const msgAuthorId = shownMsg?.authorId || shownMsg?.senderId;
                   const isMe = msgAuthorId === user?.id;
-                  const authorName = (users || []).find((u) => u.id === msgAuthorId)?.name || 'Member';
+                  const authorName =
+                    shownMsg?.authorName || (users || []).find((u) => u.id === msgAuthorId)?.name || 'Member';
 
                   return (
                     <div
                       key={`${item.type}-${item.id}-${i}`}
-                      onClick={() =>
-                        router.push(
-                          item.type === 'dm'
-                            ? `/chat/dm/${item.id}`
-                            : `/chat/${item.comm.id}/${item.id}`
-                        )
-                      }
+                      onClick={() => {
+                        if (item.type === 'event_qna') {
+                          if (markChatRead) markChatRead('event_qna', item.id);
+                          router.push(`${getEventPath(item.event, events)}#discussion`);
+                        } else {
+                          router.push(
+                            item.type === 'dm'
+                              ? `/chat/dm/${item.id}`
+                              : `/chat/${item.comm.id}/${item.id}`
+                          );
+                        }
+                      }}
                       className="interactive-press"
                       style={{
                         display: 'flex',

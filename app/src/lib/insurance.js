@@ -4,15 +4,21 @@ import { cleanLocationName } from './location';
 export const LEADER_PRO_CONFIG = {
   monthlyPrice: 16.50,
   annualPrice: 165.00,
-  coverAmount: '£5M Organiser Legal Protection',
-  underwriter: 'MORE Community Safety & Legal Protection Standards',
-  schemeName: 'Community Organiser Legal Cover & Safety Pack',
+  coverAmount: 'Venue Safety Packs & 2% Reduced Ticket Fees',
+  underwriter: 'MORE Community Safety & Venue Standards',
+  schemeName: 'MORE Leader Pro Compliance & Safety Pack',
   perks: [
     {
+      id: 'fees_lead',
+      title: '2% Reduced Platform Ticket Fee',
+      badge: 'Live · Save 60%',
+      desc: 'Keep 98% of your paid event ticket revenue (reduced from 5% standard; standard Stripe card processing fees apply).'
+    },
+    {
       id: 'pli',
-      title: '£5M Organiser Legal Protection',
-      badge: 'Launch Feature',
-      desc: 'Protects you from personal liability if an accident, injury, or property damage occurs on your walks or meetups. Eliminates £100s/yr in standalone broker costs.'
+      title: 'Group Public Liability Cover (Coming Soon)',
+      badge: 'Early Access Waitlist',
+      desc: 'We are finalising a UK group PLI partner scheme for active Leader Pro groups. Active Pro leaders get priority onboarding once underwritten.'
     },
     {
       id: 'rams',

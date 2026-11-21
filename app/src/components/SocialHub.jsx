@@ -281,7 +281,7 @@ ${postText}
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       {/* Social Hub Header / Tabs */}
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', background: 'rgba(255,255,255,0.02)', padding: '6px', borderRadius: '16px' }}>
+      <div style={{ display: 'flex', gap: '6px', marginBottom: '20px', background: 'var(--surface-card)', border: '1px solid var(--hairline-border)', padding: '5px', borderRadius: '14px' }}>
         {[
           { key: 'composer', label: 'Broadcast Composer' },
           { key: 'calendar', label: 'Broadcast History' }
@@ -291,11 +291,11 @@ ${postText}
             onClick={() => setActiveTab(tab.key)}
             className="interactive-press"
             style={{
-              flex: 1, padding: '12px 0', borderRadius: '12px', border: 'none',
-              background: activeTab === tab.key ? 'var(--slate-800)' : 'transparent',
-              color: activeTab === tab.key ? 'white' : 'var(--slate-400)',
-              fontWeight: 700, fontSize: '0.88rem', cursor: 'pointer',
-              transition: 'all 0.2s', boxShadow: activeTab === tab.key ? '0 4px 12px rgba(0,0,0,0.15)' : 'none'
+              flex: 1, padding: '10px 0', borderRadius: '10px', border: 'none',
+              background: activeTab === tab.key ? 'var(--brand-accent)' : 'transparent',
+              color: activeTab === tab.key ? '#FFFFFF' : 'var(--ink-secondary)',
+              fontWeight: 700, fontSize: '0.86rem', cursor: 'pointer',
+              transition: 'all 0.2s'
             }}
           >
             {tab.label}

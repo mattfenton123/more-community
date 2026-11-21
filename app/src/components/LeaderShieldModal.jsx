@@ -243,26 +243,26 @@ export default function LeaderShieldModal({ isOpen, onClose, community, leaderUs
 
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <h2 style={{ margin: 0, fontSize: '1.45rem', color: 'var(--white)', fontWeight: 800, fontFamily: 'var(--font-heading)' }}>
-                MORE Leader Shield
+              <h2 style={{ margin: 0, fontSize: '1.45rem', color: 'var(--ink-primary)', fontWeight: 800, fontFamily: 'var(--font-heading)' }}>
+                MORE Leader Pro
               </h2>
               <span style={{
-                background: isInsured ? 'rgba(34,197,94,0.18)' : 'rgba(245,158,11,0.18)',
-                color: isInsured ? '#4ade80' : '#fbbf24',
-                border: isInsured ? '1px solid rgba(34,197,94,0.4)' : '1px solid rgba(245,158,11,0.4)',
+                background: isInsured ? 'rgba(21,128,61,0.16)' : 'rgba(217,119,6,0.16)',
+                color: isInsured ? '#15803D' : '#D97706',
+                border: isInsured ? '1px solid rgba(21,128,61,0.35)' : '1px solid rgba(217,119,6,0.35)',
                 padding: '2px 9px',
                 borderRadius: '99px',
                 fontSize: '0.7rem',
                 fontWeight: 800,
                 letterSpacing: '0.04em'
               }}>
-                {isInsured ? 'ACTIVE COVER' : 'PRO TIER'}
+                {isInsured ? 'PRO ACTIVE' : 'PRO TIER'}
               </span>
             </div>
-            <p style={{ margin: '3px 0 0 0', fontSize: '0.84rem', color: 'var(--slate-300)', lineHeight: 1.4 }}>
+            <p style={{ margin: '3px 0 0 0', fontSize: '0.84rem', color: 'var(--ink-secondary)', lineHeight: 1.4 }}>
               {isInsured 
-                ? '£5M Organiser Legal Protection, Council Safety Packs & 2% Ticket Fees' 
-                : 'Built-in £5,000,000 Organiser Legal Protection, Council & Venue Safety Packs, Digital Attendee Waivers & 2% Ticket Fees.'}
+                ? '2% Reduced Ticket Fees, Venue Safety Packs (RAMS) & Digital Attendee Waivers' 
+                : '2% Reduced Platform Ticket Fees, 1-Click Council & Venue Safety Packs (RAMS), Digital Attendee Waivers & Early Access to Group PLI Cover.'}
             </p>
           </div>
         </div>
@@ -319,8 +319,8 @@ export default function LeaderShieldModal({ isOpen, onClose, community, leaderUs
                   <strong style={{ color: 'var(--white)', fontFamily: 'monospace', letterSpacing: '0.04em' }}>{policyNumber}</strong>
                 </div>
                 <div>
-                  <span style={{ color: 'var(--slate-400)', fontSize: '0.7rem', display: 'block' }}>Indemnity Limit</span>
-                  <strong style={{ color: '#F27257' }}>£5,000,000 Organiser Liability Protection</strong>
+                  <span style={{ color: 'var(--slate-400)', fontSize: '0.7rem', display: 'block' }}>Safety &amp; Compliance</span>
+                  <strong style={{ color: '#F27257' }}>RAMS Templates &amp; Digital Waivers</strong>
                 </div>
                 <div>
                   <span style={{ color: 'var(--slate-400)', fontSize: '0.7rem', display: 'block' }}>Territory</span>
@@ -400,8 +400,8 @@ export default function LeaderShieldModal({ isOpen, onClose, community, leaderUs
                   You run casual, 100% free social meetups where members just chat and no tickets or fees are ever charged.
                 </div>
                 <div style={{ background: 'rgba(235, 87, 56,0.09)', padding: '10px', borderRadius: '10px', border: '1px solid rgba(242, 114, 87,0.25)' }}>
-                  <span style={{ color: '#fbbf24', fontWeight: 800, display: 'block', marginBottom: '2px' }}>Upgrade to Pro if:</span>
-                  You charge for tickets/activities (which legally creates an organizer duty of care), hire council spaces, lead outdoor walks, or want built-in Public Liability Insurance so you are never personally liable.
+                  <span style={{ color: '#D97706', fontWeight: 800, display: 'block', marginBottom: '2px' }}>Upgrade to Pro if:</span>
+                  You charge for tickets/subscriptions (cut platform fees from 5% to 2%), hire council or hall venues needing Risk Assessments (RAMS), or want priority local discovery and early access to our upcoming group PLI scheme.
                 </div>
               </div>
             </div>

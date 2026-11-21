@@ -34,13 +34,11 @@ function getEngagementStatus(score) {
   return { label: 'Inactive', color: '#ef4444', bg: 'rgba(239,68,68,0.1)', icon: AlertTriangle };
 }
 
-export default function MemberCRM({ communityId }) {
-  const { users, communityMemberships, events, eventRsvps, broadcastNotification, promoteMember } = useAppContext();
-    const { messages } = useChat();
+export default function MemberCRM({ communityId, onOpenBroadcast }) {
+  const { users, communityMemberships, events, eventRsvps, promoteMember } = useAppContext();
+  const { messages } = useChat();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
-  const [broadcastText, setBroadcastText] = useState('');
-  const [isSending, setIsSending] = useState(false);
   const [filter, setFilter] = useState('all');
   const [selectedMemberImage, setSelectedMemberImage] = useState(null);
 
@@ -72,64 +70,43 @@ export default function MemberCRM({ communityId }) {
     slipping: members.filter(m => m.status.label === 'Slipping' || m.status.label === 'Inactive').length,
   };
 
-  const handleBroadcast = async () => {
-    if (!broadcastText.trim()) return;
-    setIsSending(true);
-    try {
-      await broadcastNotification(communityId, 'Community Update', broadcastText);
-      toast.success('Broadcast sent!', `Notified ${members.length} members`);
-      setBroadcastText('');
-    } catch (err) {
-      toast.error('Failed to send', err.message);
-    } finally {
-      setIsSending(false);
-    }
-  };
-
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
       {/* Stats Row */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
-        <div style={{ background: 'rgba(34,197,94,0.05)', border: '1px solid rgba(34,197,94,0.1)', borderRadius: '12px', padding: '14px', textAlign: 'center' }}>
-          <div style={{ fontSize: '1.4rem', fontWeight: 700, color: '#22c55e' }}>{stats.active}</div>
-          <div style={{ fontSize: '0.7rem', color: 'var(--slate-400)', fontWeight: 600 }}>Active</div>
+        <div style={{ background: 'var(--surface-card)', border: '1px solid var(--hairline-border)', borderRadius: '12px', padding: '14px', textAlign: 'center' }}>
+          <div style={{ fontSize: '1.4rem', fontWeight: 700, color: '#16a34a' }}>{stats.active}</div>
+          <div style={{ fontSize: '0.72rem', color: 'var(--ink-secondary)', fontWeight: 600 }}>Active</div>
         </div>
-        <div style={{ background: 'rgba(59,130,246,0.05)', border: '1px solid rgba(59,130,246,0.1)', borderRadius: '12px', padding: '14px', textAlign: 'center' }}>
-          <div style={{ fontSize: '1.4rem', fontWeight: 700, color: '#3b82f6' }}>{stats.engaged}</div>
-          <div style={{ fontSize: '0.7rem', color: 'var(--slate-400)', fontWeight: 600 }}>Engaged</div>
+        <div style={{ background: 'var(--surface-card)', border: '1px solid var(--hairline-border)', borderRadius: '12px', padding: '14px', textAlign: 'center' }}>
+          <div style={{ fontSize: '1.4rem', fontWeight: 700, color: '#2563eb' }}>{stats.engaged}</div>
+          <div style={{ fontSize: '0.72rem', color: 'var(--ink-secondary)', fontWeight: 600 }}>Engaged</div>
         </div>
-        <div style={{ background: 'rgba(245,158,11,0.05)', border: '1px solid rgba(245,158,11,0.1)', borderRadius: '12px', padding: '14px', textAlign: 'center' }}>
-          <div style={{ fontSize: '1.4rem', fontWeight: 700, color: '#f59e0b' }}>{stats.slipping}</div>
-          <div style={{ fontSize: '0.7rem', color: 'var(--slate-400)', fontWeight: 600 }}>Slipping</div>
+        <div style={{ background: 'var(--surface-card)', border: '1px solid var(--hairline-border)', borderRadius: '12px', padding: '14px', textAlign: 'center' }}>
+          <div style={{ fontSize: '1.4rem', fontWeight: 700, color: '#d97706' }}>{stats.slipping}</div>
+          <div style={{ fontSize: '0.72rem', color: 'var(--ink-secondary)', fontWeight: 600 }}>Slipping</div>
         </div>
       </div>
 
-      {/* Broadcast Section */}
-      <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '16px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', color: 'var(--teal-400)' }}>
-          <Megaphone size={16} />
-          <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>Broadcast to All Members</span>
+      {/* Single Broadcast Entrypoint */}
+      {onOpenBroadcast && (
+        <div style={{ background: 'var(--surface-card)', border: '1px solid var(--hairline-border)', borderRadius: '14px', padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+            <Megaphone size={17} color="var(--brand-accent)" style={{ flexShrink: 0 }} />
+            <div style={{ fontSize: '0.84rem', color: 'var(--ink-secondary)' }}>
+              Send announcements to all members, specific event attendees, or selected people in <strong style={{ color: 'var(--ink-primary)' }}>Broadcast</strong>.
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onOpenBroadcast}
+            className="btn btn-primary interactive-press"
+            style={{ padding: '7px 14px', borderRadius: '99px', fontSize: '0.78rem', fontWeight: 700, color: '#FFFFFF', whiteSpace: 'nowrap' }}
+          >
+            Open Broadcast →
+          </button>
         </div>
-        <textarea
-          value={broadcastText}
-          onChange={(e) => setBroadcastText(e.target.value)}
-          placeholder="Write a message to all your members..."
-          style={{
-            width: '100%', minHeight: '80px', resize: 'vertical',
-            background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)',
-            borderRadius: '10px', padding: '12px', color: 'var(--white)', fontSize: '0.9rem',
-            fontFamily: 'inherit', lineHeight: 1.5
-          }}
-        />
-        <button
-          onClick={handleBroadcast}
-          disabled={!broadcastText.trim() || isSending}
-          className="btn btn-primary interactive-press"
-          style={{ marginTop: '8px', padding: '10px 20px', borderRadius: '10px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px' }}
-        >
-          <Send size={14} /> {isSending ? 'Sending...' : `Send to ${members.length} members`}
-        </button>
-      </div>
+      )}
 
       {/* Filter + Search */}
       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
@@ -139,10 +116,11 @@ export default function MemberCRM({ communityId }) {
             onClick={() => setFilter(f)}
             className="interactive-press"
             style={{
-              padding: '8px 16px', borderRadius: '99px', border: 'none',
-              background: filter === f ? 'white' : 'rgba(255,255,255,0.05)',
-              color: filter === f ? 'black' : 'var(--slate-300)',
-              fontWeight: 600, fontSize: '0.8rem', textTransform: 'capitalize'
+              padding: '8px 16px', borderRadius: '99px',
+              border: filter === f ? '1px solid var(--brand-accent)' : '1px solid var(--hairline-border-strong)',
+              background: filter === f ? 'var(--brand-accent)' : 'var(--surface-card)',
+              color: filter === f ? '#FFFFFF' : 'var(--ink-secondary)',
+              fontWeight: 600, fontSize: '0.8rem', textTransform: 'capitalize', cursor: 'pointer'
             }}
           >
             {f}
@@ -151,16 +129,16 @@ export default function MemberCRM({ communityId }) {
       </div>
 
       <div style={{ position: 'relative' }}>
-        <Search size={16} color="var(--slate-500)" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)' }} />
+        <Search size={16} color="var(--ink-muted)" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)' }} />
         <input
           type="text"
           placeholder="Search members..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           style={{
-            width: '100%', background: 'rgba(255,255,255,0.05)',
-            border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px',
-            padding: '12px 12px 12px 40px', color: 'var(--white)', fontSize: '0.9rem'
+            width: '100%', background: 'var(--surface-card)',
+            border: '1px solid var(--hairline-border-strong)', borderRadius: '10px',
+            padding: '11px 12px 11px 40px', color: 'var(--ink-primary)', fontSize: '0.9rem'
           }}
         />
       </div>
@@ -169,8 +147,9 @@ export default function MemberCRM({ communityId }) {
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
         {filteredMembers.map(member => {
           const StatusIcon = member.status.icon;
+          const isCoLeader = member.role === 'Co-Leader' || member.role === 'Moderator';
           return (
-            <div key={member.userId} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '14px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div key={member.userId} style={{ background: 'var(--surface-card)', border: '1px solid var(--hairline-border)', borderRadius: '12px', padding: '14px', display: 'flex', alignItems: 'center', gap: '12px' }}>
               <img 
                 src={resolveUserAvatar(member.user)} 
                 alt={member.user.name} 
@@ -188,12 +167,12 @@ export default function MemberCRM({ communityId }) {
                   {member.role === 'Leader' && (
                     <Star size={12} color="#f59e0b" fill="#f59e0b" />
                   )}
-                  {member.role === 'Moderator' && (
-                    <span style={{ fontSize: '0.6rem', fontWeight: 700, background: 'rgba(59,130,246,0.15)', color: '#3b82f6', padding: '2px 6px', borderRadius: '4px' }}>MOD</span>
+                  {isCoLeader && (
+                    <span style={{ fontSize: '0.62rem', fontWeight: 700, background: 'rgba(139,92,246,0.18)', color: '#8b5cf6', padding: '2px 6px', borderRadius: '4px' }}>Co-Leader</span>
                   )}
                 </div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--slate-500)', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
-                  <Zap size={10} /> Score: {member.score}
+                <div style={{ fontSize: '0.75rem', color: 'var(--ink-muted)', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
+                  <Zap size={10} /> Engagement: {member.score}%
                 </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -201,15 +180,15 @@ export default function MemberCRM({ communityId }) {
                   <button
                     onClick={async (e) => {
                       e.stopPropagation();
-                      const newRole = member.role === 'Moderator' ? 'Member' : 'Moderator';
+                      const newRole = isCoLeader ? 'Member' : 'Co-Leader';
                       try {
                         await promoteMember(communityId, member.userId, newRole);
-                        toast.success(newRole === 'Moderator' ? 'Promoted!' : 'Demoted', `${member.user.name} is now a ${newRole}.`);
+                        toast.success(newRole === 'Co-Leader' ? 'Promoted!' : 'Demoted', `${member.user.name} is now a ${newRole}.`);
                       } catch (err) { toast.error('Failed', 'Could not update role.'); }
                     }}
                     className="interactive-press"
-                    style={{ padding: '4px 8px', background: member.role === 'Moderator' ? 'rgba(239,68,68,0.08)' : 'rgba(59,130,246,0.08)', border: `1px solid ${member.role === 'Moderator' ? 'rgba(239,68,68,0.2)' : 'rgba(59,130,246,0.2)'}`, borderRadius: '6px', color: member.role === 'Moderator' ? '#ef4444' : '#3b82f6', fontSize: '0.65rem', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}
-                  >{member.role === 'Moderator' ? 'Demote' : 'Promote'}</button>
+                    style={{ padding: '5px 9px', background: isCoLeader ? 'rgba(220,38,38,0.08)' : 'rgba(139,92,246,0.1)', border: `1px solid ${isCoLeader ? 'rgba(220,38,38,0.25)' : 'rgba(139,92,246,0.28)'}`, borderRadius: '7px', color: isCoLeader ? '#dc2626' : '#7c3aed', fontSize: '0.7rem', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}
+                  >{isCoLeader ? 'Demote' : 'Make Co-Leader'}</button>
                 )}
                 <div style={{
                   display: 'flex', alignItems: 'center', gap: '4px',

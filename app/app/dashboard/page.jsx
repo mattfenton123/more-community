@@ -36,11 +36,7 @@ import ProfileImageModal from '../../src/components/ProfileImageModal';
 import LeaderShieldModal from '../../src/components/LeaderShieldModal';
 import { isAffiliateExperience, getHostPassEconomics } from '../../src/lib/experiencePricing';
 import { resolveUserAvatar } from '../../src/lib/avatar';
-import LeaderProposalsInbox from '../../src/components/LeaderProposalsInbox';
 import SpecialistVaultModal from '../../src/components/SpecialistVaultModal';
-import PayoutBankModal from '../../src/components/PayoutBankModal';
-import { Banknote } from 'lucide-react';
-import CouncilImpactMetrics from '../../src/components/CouncilImpactMetrics';
 import { generatePliCertificatePdf, generateRamsPdf } from '../../src/lib/insurance';
 
 // ─── Stat Card Component ──────────────────────────────────
@@ -358,15 +354,23 @@ export default function LeaderDashboard({ initialCommunityId }) {
   const [showSubscriptionInfo, setShowSubscriptionInfo] = useState(false);
   const [showShieldModal, setShowShieldModal] = useState(false);
   const [specialistModalState, setSpecialistModalState] = useState({ isOpen: false, mode: 'inspect', specialist: null });
-  const [experiencesSubTab, setExperiencesSubTab] = useState('pitches');
-  const [showPayoutBankModal, setShowPayoutBankModal] = useState(false); // 'pitches' | 'trips' | 'council'
+  const [eventsSubTab, setEventsSubTab] = useState('my-events'); // 'my-events' | 'network'
+  const [memberSearch, setMemberSearch] = useState('');
+  const [openEventMenuId, setOpenEventMenuId] = useState(null);
   const [activeCommunityId, setActiveCommunityId] = useState(
     initialCommunityId || searchParams?.get('community') || user?.ledCommunities?.[0] || null
   );
   
   useEffect(() => {
     const tab = searchParams?.get('tab');
-    if (tab) setActiveTab(tab);
+    if (tab === 'network') {
+      setActiveTab('events');
+      setEventsSubTab('network');
+    } else if (tab === 'experiences') {
+      setActiveTab('overview');
+    } else if (tab) {
+      setActiveTab(tab);
+    }
     const comm = searchParams?.get('community');
     if (comm) setActiveCommunityId(comm);
     if (searchParams?.get('shield') === 'success') {
@@ -425,13 +429,12 @@ export default function LeaderDashboard({ initialCommunityId }) {
   }, [community, communities]);
   const memberList = community ? (communityMemberships[community.id] || []) : [];
   const communityEvents = community ? events.filter(e => e.communityId === community.id || e.collabCommunityIds?.includes(community.id)).sort((a, b) => new Date(a.date) - new Date(b.date)) : [];
-  const publishedEvents = communityEvents.filter(e => e.status !== 'cancelled');
+  const publishedEvents = communityEvents.filter(e => e.status !== 'cancelled' && e.status !== 'proposed');
   const communityMessages = community ? messages.filter(m => m.communityId === community.id) : [];
 
   const isShieldActive = Boolean(
     community?.is_insured || 
-    community?.insurance_tier === 'pro' ||
-    (typeof window !== 'undefined' && community?.id && localStorage.getItem(`more_community_insured_${community.id}`) === 'true')
+    community?.insurance_tier === 'pro'
   );
 
   const emptyEventForm = { 
@@ -786,34 +789,24 @@ export default function LeaderDashboard({ initialCommunityId }) {
   const [leaderDrillDown, setLeaderDrillDown] = useState(null); // 'members'|'active'|'revenue'|'events'|'checkin'|'next'
 
   // ─── Stripe Connect Express State & Handlers ──────────────
-  const [stripeConnected, setStripeConnected] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem(`more_stripe_connected_${community?.id}`) === 'true';
-    }
-    return false;
-  });
+  const [stripeConnected, setStripeConnected] = useState(false);
   const [isConnectingStripe, setIsConnectingStripe] = useState(false);
 
   useEffect(() => {
+    const dbAcct = community?.stripe_account_id;
+    const hasRealAcct = Boolean(dbAcct && !String(dbAcct).startsWith('acct_payout_'));
+    setStripeConnected(hasRealAcct);
+  }, [community?.id, community?.stripe_account_id]);
+
+  useEffect(() => {
     if (searchParams?.get('stripe_connect') === 'success') {
-      const accId = searchParams.get('account_id') || `acct_express_${community?.id || 'leader'}`;
       setStripeConnected(true);
-      if (typeof window !== 'undefined') {
-        try {
-          localStorage.setItem(`more_stripe_connected_${community?.id}`, 'true');
-          localStorage.setItem(`more_stripe_account_${community?.id}`, accId);
-        } catch (e) {}
-      }
-      toast.success('Stripe Express Connected!', 'Your bank account is linked. 95% of ticket revenue will be paid out automatically.');
+      toast.success('Stripe Express Connected!', 'Your payout account is linked via Stripe Express.');
     }
   }, [searchParams, community?.id]);
 
-  const handleConnectStripe = async (preferStripeExpress = false) => {
+  const handleConnectStripe = async () => {
     if (!community?.id) return;
-    if (!preferStripeExpress) {
-      setShowPayoutBankModal(true);
-      return;
-    }
     try {
       setIsConnectingStripe(true);
       let authHeader = {};
@@ -2688,21 +2681,30 @@ export default function LeaderDashboard({ initialCommunityId }) {
           <div style={{ flex: 1 }}>
             {[
               { id: 'overview', icon: Activity, label: 'Overview' },
-              { id: 'events', icon: Calendar, label: 'Events' },
+              { id: 'events', icon: Calendar, label: 'Events', badge: pendingProposedEvents.length },
               { id: 'people', icon: Users, label: 'People' },
-              { id: 'monetisation', icon: DollarSign, label: 'Revenue' },
-              { id: 'experiences', icon: Globe, label: 'Specialists & Experiences' },
-              { id: 'social hub', icon: Heart, label: 'Social Hub' },
-              { id: 'network', icon: Map, label: 'Network' },
-              { id: 'settings', icon: Settings, label: 'Settings' }
+              { id: 'social hub', icon: Megaphone, label: 'Broadcast' },
+              { id: 'monetisation', icon: DollarSign, label: 'Finance' },
+              { id: 'settings', icon: Settings, label: 'Settings', badge: pendingChapterApplications.length }
             ].map(tab => (
               <button 
                 key={tab.id} 
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => {
+                  setActiveTab(tab.id);
+                  if (tab.id === 'events') setEventsSubTab('my-events');
+                }}
                 className={`dashboard-nav-item ${activeTab === tab.id ? 'active' : ''}`}
+                style={{ justifyContent: 'space-between' }}
               >
-                <tab.icon size={18} />
-                <span style={{ textTransform: 'capitalize' }}>{tab.label}</span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '10px' }}>
+                  <tab.icon size={18} />
+                  <span>{tab.label}</span>
+                </span>
+                {tab.badge > 0 && (
+                  <span style={{ fontSize: '0.68rem', fontWeight: 800, background: 'var(--brand-accent)', color: '#FFFFFF', padding: '1px 7px', borderRadius: '99px' }}>
+                    {tab.badge}
+                  </span>
+                )}
               </button>
             ))}
           </div>
@@ -2760,11 +2762,11 @@ export default function LeaderDashboard({ initialCommunityId }) {
           </div>
 
           <div className="dashboard-content-scroll">
-          {/* Tab Navigation (Mobile) - 4x2 Grid layout: No horizontal sliding */}
+          {/* Tab Navigation (Mobile) - Clean 3x2 Grid */}
           <div className="mobile-only" style={{ padding: '0 20px', marginBottom: '20px' }}>
             <div style={{ 
               display: 'grid', 
-              gridTemplateColumns: 'repeat(4, 1fr)', 
+              gridTemplateColumns: 'repeat(3, 1fr)', 
               gap: '6px', 
               background: 'var(--surface-card)', 
               border: '1px solid var(--hairline-border)', 
@@ -2773,49 +2775,52 @@ export default function LeaderDashboard({ initialCommunityId }) {
             }}>
               {[
                 { id: 'overview', icon: Activity, label: 'Overview' },
-                { id: 'events', icon: Calendar, label: 'Events' },
+                { id: 'events', icon: Calendar, label: 'Events', badge: pendingProposedEvents.length },
                 { id: 'people', icon: Users, label: 'People' },
-                { id: 'monetisation', icon: DollarSign, label: 'Revenue' },
-                { id: 'experiences', icon: Globe, label: 'Experiences' },
-                { id: 'social hub', icon: Heart, label: 'Social Hub' },
-                { id: 'network', icon: Map, label: 'Network' },
-                { id: 'settings', icon: Settings, label: 'Settings' }
+                { id: 'social hub', icon: Megaphone, label: 'Broadcast' },
+                { id: 'monetisation', icon: DollarSign, label: 'Finance' },
+                { id: 'settings', icon: Settings, label: 'Settings', badge: pendingChapterApplications.length }
               ].map(tab => {
                 const isActive = activeTab === tab.id;
                 const Icon = tab.icon;
                 return (
                   <button 
                     key={tab.id} 
-                    onClick={() => setActiveTab(tab.id)}
+                    onClick={() => {
+                      setActiveTab(tab.id);
+                      if (tab.id === 'events') setEventsSubTab('my-events');
+                    }}
                     className="interactive-press"
                     style={{
+                      position: 'relative',
                       display: 'flex',
                       flexDirection: 'column',
                       alignItems: 'center',
                       justifyContent: 'center',
                       gap: '4px',
-                      padding: '8px 4px',
+                      padding: '9px 4px',
                       borderRadius: '10px',
-                      border: isActive ? '1px solid rgba(235, 87, 56,0.3)' : '1px solid transparent',
-                      background: isActive ? 'rgba(235, 87, 56,0.15)' : 'transparent',
-                      color: isActive ? 'var(--teal-300)' : 'var(--slate-400)',
+                      border: isActive ? '1px solid rgba(235, 87, 56,0.32)' : '1px solid transparent',
+                      background: isActive ? 'var(--brand-accent-soft)' : 'transparent',
+                      color: isActive ? 'var(--teal-300)' : 'var(--ink-secondary)',
                       fontWeight: isActive ? 700 : 500,
-                      fontSize: '0.72rem',
+                      fontSize: '0.74rem',
                       cursor: 'pointer',
                       transition: 'all 0.15s ease'
                     }}
                   >
-                    <Icon size={16} color={isActive ? 'var(--teal-300)' : 'var(--slate-400)'} />
+                    {tab.badge > 0 && (
+                      <span style={{ position: 'absolute', top: '4px', right: '8px', minWidth: '16px', height: '16px', borderRadius: '99px', background: 'var(--brand-accent)', color: '#FFFFFF', fontSize: '0.62rem', fontWeight: 800, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '0 4px' }}>
+                        {tab.badge}
+                      </span>
+                    )}
+                    <Icon size={16} color={isActive ? 'var(--brand-accent)' : 'var(--ink-secondary)'} />
                     <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}>{tab.label}</span>
                   </button>
                 );
               })}
             </div>
           </div>
-
-          {['events', 'people', 'monetisation', 'experiences', 'network'].includes(activeTab) && (
-            <FeatureUnlockModal featureKey={`leader_${activeTab}`} />
-          )}
 
           {/* ══════════════════════════════════════════════════════ */}
           {/* TAB: OVERVIEW  -  Command Centre                       */}
@@ -3019,15 +3024,10 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 />
               </div>
 
-              {/* Leader Shield & InsurTech Compliance Card */}
+              {/* Leader Pro Tools Card */}
               <div style={{ padding: '0 20px', marginBottom: '16px' }}>
                 {(() => {
-                  const isShieldActive = Boolean(
-                    community.is_insured || 
-                    community.insurance_tier === 'pro' ||
-                    (typeof window !== 'undefined' && localStorage.getItem(`more_community_insured_${community.id}`) === 'true')
-                  );
-                  const policyNo = community.insurance_policy_number || `MC-PRO-2026-${community.id.slice(0, 6).toUpperCase()}`;
+                  const refCode = community.insurance_policy_number || `MC-SAFE-2026-${community.id.slice(0, 6).toUpperCase()}`;
 
                   return isShieldActive ? (
                     <div style={{
@@ -3052,11 +3052,11 @@ export default function LeaderDashboard({ initialCommunityId }) {
                         </div>
                         <div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                            <span style={{ fontWeight: 700, color: 'var(--ink-primary)', fontSize: '0.94rem' }}>MORE Leader Shield Active</span>
-                            <span style={{ fontSize: '0.66rem', background: '#15803D', color: '#FFFFFF', padding: '2px 7px', borderRadius: '99px', fontWeight: 700 }}>£5M COVER</span>
+                            <span style={{ fontWeight: 700, color: 'var(--ink-primary)', fontSize: '0.94rem' }}>MORE Leader Pro Active</span>
+                            <span style={{ fontSize: '0.66rem', background: '#15803D', color: '#FFFFFF', padding: '2px 7px', borderRadius: '99px', fontWeight: 700 }}>2% FEES</span>
                           </div>
                           <div style={{ fontSize: '0.76rem', color: 'var(--ink-secondary)', marginTop: '2px' }}>
-                            Policy #{policyNo} • 2% Reduced Ticket Fees (Save 60%)
+                            Venue Safety Pack (RAMS) • Digital Waivers • Priority Local Discovery
                           </div>
                         </div>
                       </div>
@@ -3064,8 +3064,8 @@ export default function LeaderDashboard({ initialCommunityId }) {
                         <button onClick={() => setShowShieldModal(true)} className="btn btn-outline interactive-press" style={{ padding: '8px 12px', fontSize: '0.76rem' }}>
                           Manage
                         </button>
-                        <button onClick={() => generatePliCertificatePdf({ community, leaderName: user?.name, policyNumber: policyNo })} className="btn btn-primary interactive-press" style={{ padding: '8px 12px', fontSize: '0.76rem', color: '#FFFFFF', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                          <Download size={13} /> Certificate
+                        <button onClick={() => generatePliCertificatePdf({ community, leaderName: user?.name, policyNumber: refCode })} className="btn btn-primary interactive-press" style={{ padding: '8px 12px', fontSize: '0.76rem', color: '#FFFFFF', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                          <Download size={13} /> Safety Pack
                         </button>
                       </div>
                     </div>
@@ -3094,22 +3094,21 @@ export default function LeaderDashboard({ initialCommunityId }) {
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <span style={{ fontWeight: 700, color: 'var(--ink-primary)', fontSize: '1rem', fontFamily: 'var(--font-heading)' }}>Upgrade to Leader Pro</span>
                             <span style={{ fontSize: '0.68rem', background: '#B45309', color: '#FFFFFF', padding: '2px 7px', borderRadius: '5px', fontWeight: 800, letterSpacing: '0.04em' }}>PRO</span>
-                            <InfoExplainer explainerKey="leader_pro" size={13} />
                           </div>
                           <div style={{ fontSize: '0.76rem', color: 'var(--ink-secondary)', marginTop: '3px', display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', lineHeight: 1.35 }}>
-                            <span style={{ color: 'var(--teal-300)' }}><strong>✓ £5M Organiser Legal Protection</strong> included</span>
-                            <span><strong>✓ 2% ticket fee</strong> (save 60%)</span>
-                            <span><strong>✓ Council & Venue Safety Packs</strong></span>
+                            <span style={{ color: 'var(--teal-300)' }}><strong>✓ 2% ticket fee</strong> (save 60%)</span>
+                            <span><strong>✓ Venue Risk Assessments (RAMS)</strong></span>
                             <span><strong>✓ Digital attendee waivers</strong></span>
+                            <span><strong>✓ Group PLI Waitlist</strong></span>
                           </div>
                         </div>
                       </div>
                       <button 
                         onClick={() => setShowShieldModal(true)} 
                         className="btn btn-primary interactive-press"
-                        style={{ padding: '9px 16px', fontSize: '0.84rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px', borderRadius: '10px' }}
+                        style={{ padding: '9px 16px', fontSize: '0.84rem', fontWeight: 700, color: '#FFFFFF', display: 'flex', alignItems: 'center', gap: '6px', borderRadius: '10px' }}
                       >
-                        <Crown size={15} /> Upgrade to Pro (£16.50/mo)
+                        <Crown size={15} /> Learn More (£16.50/mo)
                       </button>
                     </div>
                   );
@@ -3677,14 +3676,32 @@ export default function LeaderDashboard({ initialCommunityId }) {
           {/* ══════════════════════════════════════════════════════ */}
           {activeTab === 'events' && (
             <div style={{ padding: '0 20px', marginBottom: '24px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                <h2 style={{ margin: 0, fontFamily: 'var(--font-heading)', fontSize: '1.1rem', color: 'var(--white)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Calendar size={18} color="var(--teal-400)" /> My Events
-                </h2>
-                <button onClick={() => openEventWizard()} className="btn btn-primary interactive-press" style={{ padding: '8px 14px', fontSize: '0.8rem', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', gap: '10px', flexWrap: 'wrap' }}>
+                <div style={{ display: 'inline-flex', background: 'var(--surface-card)', border: '1px solid var(--hairline-border)', borderRadius: '12px', padding: '4px', gap: '3px' }}>
+                  {[
+                    { id: 'my-events', label: 'My Events', icon: Calendar },
+                    { id: 'network', label: 'Co-Host Network', icon: Map }
+                  ].map(t => (
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => setEventsSubTab(t.id)}
+                      style={{
+                        display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '7px 14px',
+                        borderRadius: '9px', border: 'none', cursor: 'pointer', fontSize: '0.82rem', fontWeight: 700,
+                        background: eventsSubTab === t.id ? 'var(--brand-accent)' : 'transparent',
+                        color: eventsSubTab === t.id ? '#FFFFFF' : 'var(--ink-secondary)'
+                      }}
+                    >
+                      <t.icon size={14} /> {t.label}
+                    </button>
+                  ))}
+                </div>
+                <button onClick={() => openEventWizard()} className="btn btn-primary interactive-press" style={{ padding: '8px 14px', fontSize: '0.82rem', borderRadius: '10px', color: '#FFFFFF', display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <Plus size={16} /> New Event
                 </button>
               </div>
+              {eventsSubTab === 'my-events' && (<>
 
               {/* Member Event Proposals Queue (hidden from public until leader approves) */}
               {pendingProposedEvents.length > 0 && (
@@ -3848,10 +3865,12 @@ export default function LeaderDashboard({ initialCommunityId }) {
                         
                         return (
                           <div key={event.id} className="stagger-item" style={{ 
-                            background: isPast ? 'rgba(255,255,255,0.015)' : 'rgba(255,255,255,0.02)', 
-                            border: isPast ? '1px solid rgba(255,255,255,0.04)' : '1px solid rgba(255,255,255,0.06)', 
+                            background: 'var(--surface-card)', 
+                            border: '1px solid var(--hairline-border)', 
                             borderRadius: '14px', 
-                            overflow: 'hidden', 
+                            overflow: 'visible', 
+                            position: 'relative', 
+                            zIndex: openEventMenuId === event.id ? 35 : 1, 
                             opacity: isCancelled ? 0.5 : isPast ? 0.88 : 1 
                           }}>
                             <div style={{ display: 'flex', gap: '14px', padding: '14px' }}>
@@ -3964,77 +3983,73 @@ export default function LeaderDashboard({ initialCommunityId }) {
                               <div style={{ display: 'flex', gap: '6px', padding: '0 14px 10px', flexWrap: 'wrap', alignItems: 'center' }}>
                                 {!isPast ? (
                                   <>
-                                    <button onClick={() => setShowScanner(true)} className="btn btn-outline interactive-press" style={{ padding: '6px 12px', fontSize: '0.75rem', color: 'var(--teal-400)', borderColor: 'rgba(235, 87, 56,0.3)' }}>
-                                      <QrCode size={12} style={{ marginRight: '4px' }} /> Scan
-                                    </button>
-                                    <button onClick={() => setFlyerEvent(event)} className="btn btn-outline interactive-press" style={{ padding: '6px 12px', fontSize: '0.75rem', color: '#a78bfa', borderColor: 'rgba(167,139,250,0.3)' }}>
-                                      <Printer size={12} style={{ marginRight: '4px' }} /> Flyer & Poster
-                                    </button>
-                                    <button
-                                      onClick={() => {
-                                        if (uploadingPhotoEventId) return;
-                                        setPhotoTargetEventId(event.id);
-                                        setTimeout(() => eventPhotoInputRef.current?.click(), 0);
-                                      }}
-                                      disabled={uploadingPhotoEventId === event.id}
-                                      className="btn btn-outline interactive-press"
-                                      style={{ padding: '6px 12px', fontSize: '0.75rem', color: '#F27257', borderColor: 'rgba(242, 114, 87,0.35)' }}
-                                      title="Add a photo to this event"
-                                    >
-                                      <Camera size={12} style={{ marginRight: '4px' }} />
-                                      {uploadingPhotoEventId === event.id
-                                        ? 'Uploading...'
-                                        : `Add Photo${event.galleryImages?.length ? ` (${event.galleryImages.length})` : ''}`}
-                                    </button>
-                                    <button 
-                                      onClick={() => generateRamsPdf({ community, event, leaderName: user?.name, policyNumber: community.insurance_policy_number })} 
-                                      className="btn btn-outline interactive-press" 
-                                      style={{ padding: '6px 12px', fontSize: '0.75rem', color: '#F27257', borderColor: 'rgba(235, 87, 56,0.3)' }}
-                                      title="Download Council & Venue Safety Assessment (Risk Document PDF)"
-                                    >
-                                      <Shield size={12} style={{ marginRight: '4px' }} /> Safety Pack
-                                    </button>
-                                    <button onClick={() => setExpandedEventId(isExpanded ? null : event.id)} className="btn btn-outline interactive-press" style={{ padding: '6px 12px', fontSize: '0.75rem' }}>
-                                      {isExpanded ? <ChevronUp size={12} style={{ marginRight: '4px' }} /> : <ChevronDown size={12} style={{ marginRight: '4px' }} />}
-                                      {isExpanded ? 'Hide' : 'Attendees'}
-                                    </button>
-                                    <button 
-                                      onClick={() => handleOpenReminderModal(event)} 
-                                      className="btn btn-outline interactive-press" 
-                                      style={{ padding: '6px 12px', fontSize: '0.75rem', color: '#38bdf8', borderColor: 'rgba(56,189,248,0.3)' }}
-                                      title={attendees.length === 0 ? "No registered attendees yet" : `Broadcast reminder to ${attendees.length} attendee(s)`}
-                                    >
-                                      <Bell size={12} style={{ marginRight: '4px' }} /> Remind
-                                    </button>
                                     <button 
                                       onClick={() => setRollCallEvent(event)} 
                                       className="btn btn-outline interactive-press" 
-                                      style={{ padding: '6px 12px', fontSize: '0.75rem', color: '#10b981', borderColor: 'rgba(16,185,129,0.35)' }}
+                                      style={{ padding: '6px 12px', fontSize: '0.76rem', color: '#15803D', borderColor: 'rgba(21,128,61,0.35)', fontWeight: 600 }}
                                       title="Open event check-in mode"
                                     >
                                       <UserCheck size={12} style={{ marginRight: '4px' }} /> Check-In
                                     </button>
-                                    <button onClick={() => handleEditEvent(event)} className="btn btn-outline interactive-press" style={{ padding: '6px 12px', fontSize: '0.75rem' }}>
+                                    <button onClick={() => setExpandedEventId(isExpanded ? null : event.id)} className="btn btn-outline interactive-press" style={{ padding: '6px 12px', fontSize: '0.76rem' }}>
+                                      {isExpanded ? <ChevronUp size={12} style={{ marginRight: '4px' }} /> : <ChevronDown size={12} style={{ marginRight: '4px' }} />}
+                                      {isExpanded ? 'Hide' : `Attendees (${attendees.length})`}
+                                    </button>
+                                    <button onClick={() => handleEditEvent(event)} className="btn btn-outline interactive-press" style={{ padding: '6px 12px', fontSize: '0.76rem' }}>
                                       <Edit3 size={12} style={{ marginRight: '4px' }} /> Edit
                                     </button>
-                                    <button 
-                                      onClick={() => handleDuplicateEvent(event)} 
-                                      className="btn btn-outline interactive-press" 
-                                      style={{ padding: '6px 12px', fontSize: '0.75rem', color: '#38bdf8', borderColor: 'rgba(56,189,248,0.35)' }}
-                                      title="Duplicate this event and schedule repeat"
-                                    >
-                                      <Copy size={12} style={{ marginRight: '4px' }} /> Duplicate
-                                    </button>
                                     {cancelConfirmId === event.id ? (
-                                      <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-                                        <span style={{ fontSize: '0.7rem', color: 'var(--slate-400)' }}>Cancel?</span>
-                                        <button onClick={() => handleCancelEvent(event.id)} className="btn btn-danger interactive-press" style={{ padding: '4px 10px', fontSize: '0.7rem' }}>Yes</button>
-                                        <button onClick={() => setCancelConfirmId(null)} className="btn btn-outline interactive-press" style={{ padding: '4px 10px', fontSize: '0.7rem' }}>No</button>
+                                      <div style={{ display: 'flex', gap: '5px', alignItems: 'center', padding: '3px 8px', borderRadius: '8px', background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.3)' }}>
+                                        <span style={{ fontSize: '0.72rem', color: '#dc2626', fontWeight: 600 }}>Cancel event?</span>
+                                        <button onClick={() => handleCancelEvent(event.id)} className="btn btn-danger interactive-press" style={{ padding: '3px 9px', fontSize: '0.7rem' }}>Yes</button>
+                                        <button onClick={() => setCancelConfirmId(null)} className="btn btn-outline interactive-press" style={{ padding: '3px 9px', fontSize: '0.7rem' }}>No</button>
                                       </div>
                                     ) : (
-                                      <button onClick={() => setCancelConfirmId(event.id)} className="btn btn-outline interactive-press" style={{ padding: '6px 12px', fontSize: '0.75rem', color: '#ef4444', borderColor: 'rgba(239,68,68,0.3)' }}>
-                                        <Ban size={12} style={{ marginRight: '4px' }} /> Cancel
-                                      </button>
+                                      <div style={{ position: 'relative' }}>
+                                        <button
+                                          type="button"
+                                          onClick={() => setOpenEventMenuId(openEventMenuId === event.id ? null : event.id)}
+                                          className="btn btn-outline interactive-press"
+                                          style={{ padding: '6px 11px', fontSize: '0.76rem', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                                        >
+                                          More <ChevronDown size={12} />
+                                        </button>
+                                        {openEventMenuId === event.id && (
+                                          <div style={{
+                                            position: 'absolute', left: 0, top: 'calc(100% + 6px)', zIndex: 40,
+                                            minWidth: '205px', background: 'var(--surface-card)',
+                                            border: '1px solid var(--hairline-border-strong)', borderRadius: '12px',
+                                            padding: '6px', boxShadow: '0 12px 28px rgba(0,0,0,0.28)',
+                                            display: 'flex', flexDirection: 'column', gap: '2px'
+                                          }}>
+                                            {[
+                                              { label: 'Scan QR Ticket', icon: QrCode, onClick: () => { setOpenEventMenuId(null); setShowScanner(true); } },
+                                              { label: 'Send Reminder', icon: Bell, onClick: () => { setOpenEventMenuId(null); handleOpenReminderModal(event); } },
+                                              { label: 'Flyer & Poster', icon: Printer, onClick: () => { setOpenEventMenuId(null); setFlyerEvent(event); } },
+                                              { label: uploadingPhotoEventId === event.id ? 'Uploading...' : `Add Photo${event.galleryImages?.length ? ` (${event.galleryImages.length})` : ''}`, icon: Camera, onClick: () => { setOpenEventMenuId(null); if (uploadingPhotoEventId) return; setPhotoTargetEventId(event.id); setTimeout(() => eventPhotoInputRef.current?.click(), 0); } },
+                                              { label: 'Risk Assessment (PDF)', icon: Shield, onClick: () => { setOpenEventMenuId(null); generateRamsPdf({ community, event, leaderName: user?.name, policyNumber: community.insurance_policy_number }); } },
+                                              { label: 'Duplicate Event', icon: Copy, onClick: () => { setOpenEventMenuId(null); handleDuplicateEvent(event); } },
+                                              { label: 'Cancel Event', icon: Ban, danger: true, onClick: () => { setOpenEventMenuId(null); setCancelConfirmId(event.id); } },
+                                            ].map(act => (
+                                              <button
+                                                key={act.label}
+                                                type="button"
+                                                onClick={act.onClick}
+                                                style={{
+                                                  width: '100%', textAlign: 'left', padding: '8px 10px', borderRadius: '8px',
+                                                  border: 'none', background: 'transparent', cursor: 'pointer',
+                                                  color: act.danger ? '#dc2626' : 'var(--ink-primary)',
+                                                  fontSize: '0.8rem', fontWeight: act.danger ? 700 : 500,
+                                                  display: 'flex', alignItems: 'center', gap: '8px'
+                                                }}
+                                              >
+                                                <act.icon size={13} color={act.danger ? '#dc2626' : 'var(--brand-accent)'} />
+                                                <span>{act.label}</span>
+                                              </button>
+                                            ))}
+                                          </div>
+                                        )}
+                                      </div>
                                     )}
                                   </>
                                 ) : (
@@ -4149,14 +4164,10 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   </div>
                 </>
               )}
-            </div>
-          )}
+              </>)}
 
-          {/* ══════════════════════════════════════════════════════ */}
-          {/* TAB: NETWORK (Cross-Pollination)                       */}
-          {/* ══════════════════════════════════════════════════════ */}
-          {activeTab === 'network' && (
-            <div style={{ padding: '0 20px', marginBottom: '24px' }}>
+              {eventsSubTab === 'network' && (
+            <div style={{ marginBottom: '24px' }}>
               <div style={{ marginBottom: '20px' }}>
                 <h2 style={{ margin: '0 0 8px 0', fontFamily: 'var(--font-heading)', fontSize: '1.2rem', color: 'var(--white)', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <Map size={20} color="var(--teal-400)" /> Network Events
@@ -4386,11 +4397,13 @@ export default function LeaderDashboard({ initialCommunityId }) {
                     (sourceComm && sourceComm.name && sourceComm.name.toLowerCase().includes(q))
                   );
                 }).length === 0 && (
-                  <div style={{ padding: '40px', textAlign: 'center', color: 'var(--slate-400)', background: 'rgba(255,255,255,0.02)', borderRadius: '16px' }}>
+                  <div style={{ padding: '40px', textAlign: 'center', color: 'var(--slate-400)', background: 'var(--surface-card)', border: '1px solid var(--hairline-border)', borderRadius: '16px' }}>
                     {networkSearchQuery ? `No network events matching "${networkSearchQuery}".` : 'No network events found. Check back later!'}
                   </div>
                 )}
               </div>
+            </div>
+              )}
             </div>
           )}
 
@@ -4474,13 +4487,13 @@ export default function LeaderDashboard({ initialCommunityId }) {
                         <span>Member Monthly Dues:</span>
                         <span style={{ fontWeight: 600, color: 'var(--ink-primary)' }}>£{Number(subscriptionPrice).toFixed(2)} / mo</span>
                       </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', color: '#34d399' }}>
-                        <span>Your Club Fund (95% standard / 100% Pro):</span>
-                        <span style={{ fontWeight: 700 }}>+£{(Number(subscriptionPrice) * 0.95).toFixed(2)} / member</span>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', color: '#16a34a' }}>
+                        <span>Your Club Fund ({isShieldActive ? '98% Pro' : '95% standard / 98% Pro'}):</span>
+                        <span style={{ fontWeight: 700 }}>+£{(Number(subscriptionPrice) * (isShieldActive ? 0.98 : 0.95)).toFixed(2)} / member</span>
                       </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--slate-400)', fontSize: '0.8rem' }}>
-                        <span>Platform & Card Processing (5% standard / 0% Pro):</span>
-                        <span>£{(Number(subscriptionPrice) * 0.05).toFixed(2)}</span>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--ink-secondary)', fontSize: '0.8rem' }}>
+                        <span>Platform Fee (5% standard / 2% Pro, excl. Stripe card fee):</span>
+                        <span>£{(Number(subscriptionPrice) * (isShieldActive ? 0.02 : 0.05)).toFixed(2)}</span>
                       </div>
                       <div style={{ borderTop: '1px solid var(--hairline-border)', paddingTop: '8px', marginTop: '4px', display: 'flex', justifyContent: 'space-between', color: 'var(--teal-300)', fontSize: '0.8rem' }}>
                         <span>Estimated Annual (20 active members):</span>
@@ -4516,11 +4529,12 @@ export default function LeaderDashboard({ initialCommunityId }) {
                       </div>
                       <button
                         type="button"
-                        onClick={() => setShowPayoutBankModal(true)}
+                        onClick={() => handleConnectStripe()}
+                        disabled={isConnectingStripe}
                         className="btn btn-primary interactive-press"
-                        style={{ padding: '8px 16px', borderRadius: '10px', fontSize: '0.82rem', fontWeight: 700, alignSelf: 'flex-start' }}
+                        style={{ padding: '8px 16px', borderRadius: '10px', fontSize: '0.82rem', fontWeight: 700, color: '#FFFFFF', alignSelf: 'flex-start' }}
                       >
-                        Register Payout Account
+                        {isConnectingStripe ? 'Opening Stripe Express...' : 'Connect Stripe Payouts'}
                       </button>
                     </div>
                   ) : (
@@ -4620,7 +4634,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                       {/* 2. Leader Community Fund */}
                       <div style={{ background: 'rgba(235, 87, 56, 0.08)', border: '1px solid rgba(235, 87, 56, 0.25)', borderRadius: '12px', padding: '14px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                          <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#F27257' }}>2. Your Community Fund (95% standard / 100% Pro)</div>
+                          <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--brand-accent)' }}>2. Your Community Fund (95% standard / 98% Pro)</div>
                           <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#34d399' }}>
                             +£{(Number(subscriptionPrice || 20) * 0.95).toFixed(2)}/mo
                           </div>
@@ -4633,13 +4647,13 @@ export default function LeaderDashboard({ initialCommunityId }) {
                       {/* 3. More Platform & Card Processing */}
                       <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--hairline-border)', borderRadius: '12px', padding: '14px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                          <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--ink-primary)' }}>3. More Platform & Payment Processing (5% standard / 0% Pro)</div>
-                          <div style={{ fontSize: '0.95rem', fontWeight: 800, color: '#a78bfa' }}>
-                            £{(Number(subscriptionPrice || 20) * 0.05).toFixed(2)}/mo
+                          <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--ink-primary)' }}>3. More Platform Fee (5% standard / 2% Pro)</div>
+                          <div style={{ fontSize: '0.95rem', fontWeight: 800, color: '#7c3aed' }}>
+                            £{(Number(subscriptionPrice || 20) * (isShieldActive ? 0.02 : 0.05)).toFixed(2)}/mo
                           </div>
                         </div>
-                        <p style={{ fontSize: '0.8rem', color: 'var(--slate-300)', margin: 0, lineHeight: 1.45 }}>
-                          Covers UK payment gateway fees (Stripe card/direct debit charges), automated recurring subscription billing, member access controls, and fraud protection. Reduced to 0% for Leader Pro members.
+                        <p style={{ fontSize: '0.8rem', color: 'var(--ink-secondary)', margin: 0, lineHeight: 1.45 }}>
+                          Covers automated recurring billing, member access controls, and platform infrastructure. Standard Stripe card processing (~1.5% + 20p UK) is deducted directly by Stripe. Leader Pro cuts the platform fee from 5% to 2%.
                         </p>
                       </div>
                     </div>
@@ -4714,47 +4728,46 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 {stripeConnected ? (
                   <>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '16px', marginBottom: '20px' }}>
-                      <div style={{ background: 'rgba(255,255,255,0.02)', padding: '14px', borderRadius: '12px', border: '1px solid var(--hairline-border)' }}>
-                        <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '4px' }}>In Transit</div>
-                        <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--teal-400)' }}>£450.00</div>
-                        <div style={{ fontSize: '0.75rem', color: 'var(--slate-500)', marginTop: '2px' }}>Rolling daily transfer</div>
+                      <div style={{ background: 'var(--surface-elevated)', padding: '14px', borderRadius: '12px', border: '1px solid var(--hairline-border)' }}>
+                        <div style={{ fontSize: '0.72rem', color: 'var(--ink-muted)', textTransform: 'uppercase', letterSpacing: '0.6px', marginBottom: '4px' }}>This Month (Est. Net)</div>
+                        <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--brand-accent)' }}>£{((stats.monthRevenue || 0) * (isShieldActive ? 0.98 : 0.95)).toFixed(2)}</div>
+                        <div style={{ fontSize: '0.74rem', color: 'var(--ink-secondary)', marginTop: '2px' }}>After platform fee</div>
                       </div>
-                      <div style={{ background: 'rgba(255,255,255,0.02)', padding: '14px', borderRadius: '12px', border: '1px solid var(--hairline-border)' }}>
-                        <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '4px' }}>Lifetime Earnings</div>
-                        <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--white)' }}>£3,240.00</div>
-                        <div style={{ fontSize: '0.75rem', color: 'var(--slate-500)', marginTop: '2px' }}>95% Leader share</div>
+                      <div style={{ background: 'var(--surface-elevated)', padding: '14px', borderRadius: '12px', border: '1px solid var(--hairline-border)' }}>
+                        <div style={{ fontSize: '0.72rem', color: 'var(--ink-muted)', textTransform: 'uppercase', letterSpacing: '0.6px', marginBottom: '4px' }}>All-Time (Est. Net)</div>
+                        <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--ink-primary)' }}>£{((stats.totalRevenue || 0) * (isShieldActive ? 0.98 : 0.95)).toFixed(2)}</div>
+                        <div style={{ fontSize: '0.74rem', color: 'var(--ink-secondary)', marginTop: '2px' }}>{isShieldActive ? '98% Leader share (Pro)' : '95% Leader share'}</div>
                       </div>
-                      <div style={{ background: 'rgba(255,255,255,0.02)', padding: '14px', borderRadius: '12px', border: '1px solid var(--hairline-border)' }}>
-                        <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '4px' }}>Platform Split</div>
-                        <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#38bdf8' }}>{isShieldActive ? '98% / 2%' : '95% / 5%'}</div>
-                        <div style={{ fontSize: '0.75rem', color: 'var(--slate-500)', marginTop: '2px' }}>{isShieldActive ? '2% reduced fee (Pro)' : '5% standard platform fee'}</div>
+                      <div style={{ background: 'var(--surface-elevated)', padding: '14px', borderRadius: '12px', border: '1px solid var(--hairline-border)' }}>
+                        <div style={{ fontSize: '0.72rem', color: 'var(--ink-muted)', textTransform: 'uppercase', letterSpacing: '0.6px', marginBottom: '4px' }}>Platform Split</div>
+                        <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#2563eb' }}>{isShieldActive ? '98% / 2%' : '95% / 5%'}</div>
+                        <div style={{ fontSize: '0.74rem', color: 'var(--ink-secondary)', marginTop: '2px' }}>{isShieldActive ? '2% reduced fee (Pro)' : '5% standard platform fee'}</div>
                       </div>
                     </div>
 
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', padding: '12px 16px', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px solid var(--hairline-border)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', padding: '12px 16px', background: 'var(--surface-elevated)', borderRadius: '12px', border: '1px solid var(--hairline-border)' }}>
                       <div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--teal-400)' }}></div>
-                          <span style={{ fontSize: '0.85rem', color: 'var(--slate-200)', fontWeight: 600 }}>
-                            {community?.payout_bank ? `${community.payout_bank.bankName || 'UK Bank'} Linked` : 'Payout Bank Linked'}
+                          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#16a34a' }}></div>
+                          <span style={{ fontSize: '0.85rem', color: 'var(--ink-primary)', fontWeight: 600 }}>
+                            Stripe Express Account Linked
                           </span>
                         </div>
-                        <div style={{ fontSize: '0.78rem', color: 'var(--slate-400)', marginTop: '4px' }}>
-                          {community?.payout_bank 
-                            ? `Account: ${community.payout_bank.accountName} • Sort: ${community.payout_bank.sortCodeMasked || '••-••-••'} • Acc: ${community.payout_bank.accountMasked || '••••'}` 
-                            : 'Payouts route automatically via UK Faster Payments directly to your bank.'}
+                        <div style={{ fontSize: '0.78rem', color: 'var(--ink-secondary)', marginTop: '4px' }}>
+                          Payouts route automatically via Stripe Express &amp; UK Faster Payments directly to your bank.
                         </div>
                       </div>
                       <button
-                        onClick={() => setShowPayoutBankModal(true)}
+                        onClick={() => handleConnectStripe()}
+                        disabled={isConnectingStripe}
                         className="interactive-press"
                         style={{
                           padding: '8px 14px', borderRadius: '8px',
-                          background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)',
-                          color: 'var(--white)', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer'
+                          background: 'var(--surface-card)', border: '1px solid var(--hairline-border-strong)',
+                          color: 'var(--ink-primary)', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer'
                         }}
                       >
-                        Manage Payout Account
+                        {isConnectingStripe ? 'Opening Stripe...' : 'Manage in Stripe'}
                       </button>
                     </div>
                   </>
@@ -4985,16 +4998,16 @@ export default function LeaderDashboard({ initialCommunityId }) {
             <div style={{ paddingBottom: '40px' }}>
               {/* Sub-tab switcher */}
               <div style={{ padding: '0 20px', marginBottom: '20px' }}>
-                <div style={{ display: 'inline-flex', background: 'rgba(255,255,255,0.04)', borderRadius: '12px', padding: '4px', gap: '2px' }}>
-                  {[{ id: 'members', label: 'Members', icon: Users }, { id: 'crm', label: 'CRM & Broadcast', icon: BarChart3 }].map(t => (
+                <div style={{ display: 'inline-flex', background: 'var(--surface-card)', border: '1px solid var(--hairline-border)', borderRadius: '12px', padding: '4px', gap: '3px' }}>
+                  {[{ id: 'members', label: 'Members', icon: Users }, { id: 'crm', label: 'Engagement Insights', icon: BarChart3 }].map(t => (
                     <button
                       key={t.id}
                       onClick={() => setPeopleSubTab(t.id)}
                       style={{
                         display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px',
-                        borderRadius: '9px', border: 'none', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, transition: 'all 0.2s',
-                        background: peopleSubTab === t.id ? 'rgba(235, 87, 56,0.15)' : 'transparent',
-                        color: peopleSubTab === t.id ? 'var(--teal-300)' : 'var(--slate-400)'
+                        borderRadius: '9px', border: 'none', cursor: 'pointer', fontSize: '0.84rem', fontWeight: 700, transition: 'all 0.2s',
+                        background: peopleSubTab === t.id ? 'var(--brand-accent)' : 'transparent',
+                        color: peopleSubTab === t.id ? '#FFFFFF' : 'var(--ink-secondary)'
                       }}
                     >
                       <t.icon size={15} /> {t.label}
@@ -5006,17 +5019,35 @@ export default function LeaderDashboard({ initialCommunityId }) {
               {/* Members sub-tab */}
               {peopleSubTab === 'members' && (
                 <div style={{ padding: '0 20px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {/* Member count header */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                    <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)' }}><span style={{ color: 'var(--white)', fontWeight: 700 }}>{memberList.length}</span> members in {community.name}</div>
-                    <button onClick={() => setModalType('coleader')} className="btn btn-outline interactive-press" style={{ padding: '6px 12px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '6px', borderRadius: '8px', color: '#a78bfa', borderColor: 'rgba(139,92,246,0.3)' }}>
-                      <Crown size={12} /> Promote
+                  {/* Member count header + Search */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', flexWrap: 'wrap', marginBottom: '4px' }}>
+                    <div style={{ fontSize: '0.85rem', color: 'var(--ink-secondary)' }}><span style={{ color: 'var(--ink-primary)', fontWeight: 700 }}>{memberList.length}</span> members in {community.name}</div>
+                    <button onClick={() => setModalType('coleader')} className="btn btn-outline interactive-press" style={{ padding: '6px 12px', fontSize: '0.76rem', display: 'flex', alignItems: 'center', gap: '6px', borderRadius: '8px', color: '#7c3aed', borderColor: 'rgba(139,92,246,0.35)' }}>
+                      <Crown size={12} /> Promote Co-Leader
                     </button>
                   </div>
+
+                  {memberList.length > 0 && (
+                    <div style={{ position: 'relative', marginBottom: '4px' }}>
+                      <Search size={15} color="var(--ink-muted)" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
+                      <input
+                        type="text"
+                        placeholder="Search members by name..."
+                        value={memberSearch}
+                        onChange={(e) => setMemberSearch(e.target.value)}
+                        style={{
+                          width: '100%', padding: '10px 12px 10px 36px', borderRadius: '10px',
+                          background: 'var(--surface-card)', border: '1px solid var(--hairline-border-strong)',
+                          color: 'var(--ink-primary)', fontSize: '0.88rem', boxSizing: 'border-box'
+                        }}
+                      />
+                    </div>
+                  )}
 
                   {memberList.map(membership => {
                     const memberUser = users.find(u => u.id === membership.userId);
                     if (!memberUser) return null;
+                    if (memberSearch.trim() && !(memberUser.name || '').toLowerCase().includes(memberSearch.trim().toLowerCase())) return null;
                     const score = getEngagementScore(membership, events, eventRsvps, communityMessages, community.id);
                     return (
                       <div key={memberUser.id} className="stagger-item" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--hairline-border)', borderRadius: '12px' }}>
@@ -5068,7 +5099,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
               {/* CRM sub-tab */}
               {peopleSubTab === 'crm' && (
                 <div style={{ padding: '0 20px' }}>
-                  <MemberCRM communityId={community.id} />
+                  <MemberCRM communityId={community.id} onOpenBroadcast={() => setActiveTab('social hub')} />
                 </div>
               )}
             </div>
@@ -5524,8 +5555,8 @@ export default function LeaderDashboard({ initialCommunityId }) {
                     toast.info(newVal ? 'Approval required' : 'Auto-approve enabled', newVal ? 'You\'ll review join requests' : 'Members join instantly'); 
                   }} 
                   style={{
-                    width: '46px', height: '26px', borderRadius: '99px', border: 'none',
-                    background: requireApproval ? 'var(--teal-500)' : 'rgba(255,255,255,0.1)',
+                    width: '46px', height: '26px', borderRadius: '99px', border: requireApproval ? 'none' : '1px solid var(--hairline-border-strong)',
+                    background: requireApproval ? 'var(--brand-accent)' : 'var(--surface-elevated)',
                     position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0
                   }}
                 >
@@ -5580,8 +5611,8 @@ export default function LeaderDashboard({ initialCommunityId }) {
                     toast.info(newVal ? 'Collaborations Enabled' : 'Collaborations Disabled', newVal ? 'Instructors & sponsors can propose sessions' : 'Incoming pitches hidden from your page'); 
                   }} 
                   style={{
-                    width: '46px', height: '26px', borderRadius: '99px', border: 'none',
-                    background: (community.accepts_pitches ?? true) ? 'var(--teal-500)' : 'rgba(255,255,255,0.1)',
+                    width: '46px', height: '26px', borderRadius: '99px', border: (community.accepts_pitches ?? true) ? 'none' : '1px solid var(--hairline-border-strong)',
+                    background: (community.accepts_pitches ?? true) ? 'var(--brand-accent)' : 'var(--surface-elevated)',
                     position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0
                   }}
                 >
@@ -5751,8 +5782,8 @@ export default function LeaderDashboard({ initialCommunityId }) {
                     toast.info(newVal ? 'Carpool Enabled' : 'Carpool Disabled', newVal ? 'Share a Lift section is visible on your event pages' : 'Share a Lift section hidden from your event pages');
                   }}
                   style={{
-                    width: '46px', height: '26px', borderRadius: '99px', border: 'none',
-                    background: (community.allow_carpool ?? community.allowCarpool ?? true) ? 'var(--teal-500)' : 'rgba(255,255,255,0.1)',
+                    width: '46px', height: '26px', borderRadius: '99px', border: (community.allow_carpool ?? community.allowCarpool ?? true) ? 'none' : '1px solid var(--hairline-border-strong)',
+                    background: (community.allow_carpool ?? community.allowCarpool ?? true) ? 'var(--brand-accent)' : 'var(--surface-elevated)',
                     position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0
                   }}
                 >
@@ -5785,8 +5816,8 @@ export default function LeaderDashboard({ initialCommunityId }) {
                     toast.info(newVal ? 'Guest Passes Enabled' : 'Guest Passes Disabled', newVal ? 'Members can bring a +1 to your events' : 'Guest pass option hidden from event RSVPs');
                   }}
                   style={{
-                    width: '46px', height: '26px', borderRadius: '99px', border: 'none',
-                    background: (community.allow_guests ?? community.allowGuests ?? true) ? 'var(--teal-500)' : 'rgba(255,255,255,0.1)',
+                    width: '46px', height: '26px', borderRadius: '99px', border: (community.allow_guests ?? community.allowGuests ?? true) ? 'none' : '1px solid var(--hairline-border-strong)',
+                    background: (community.allow_guests ?? community.allowGuests ?? true) ? 'var(--brand-accent)' : 'var(--surface-elevated)',
                     position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0
                   }}
                 >
@@ -7005,23 +7036,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
         }}
       />
 
-      <PayoutBankModal
-        isOpen={showPayoutBankModal}
-        onClose={() => setShowPayoutBankModal(false)}
-        community={community}
-        onBankSaved={(bankData) => {
-          setStripeConnected(true);
-          if (community?.id) {
-            updateCommunity(community.id, {
-              stripe_account_id: `acct_payout_${Date.now()}`,
-              payout_bank: bankData
-            });
-            try {
-              localStorage.setItem(`more_stripe_connected_${community.id}`, 'true');
-            } catch (e) {}
-          }
-        }}
-      />
+
 
       <LeaderShieldModal
         isOpen={showShieldModal}

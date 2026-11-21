@@ -1,8 +1,9 @@
 "use client";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { MessageSquare, Send, Trash2, CheckCircle2, Lock } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
+import { useChat } from '../context/ChatContext';
 import { useToast } from './Toast';
 import { getEventPath } from '../lib/eventLinks';
 import { getCommentAuthorAffiliation, isEventHostOrCohostLeader } from '../lib/eventCollaboration';
@@ -60,13 +61,20 @@ export default function EventDiscussion({
     deleteEventComment,
   } = useAppContext();
 
+  const { markChatRead } = useChat() || {};
   const [draft, setDraft] = useState('');
   const [isPosting, setIsPosting] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
 
-  if (!event?.id) return null;
+  const comments = event?.id ? (eventComments?.[event.id] || []) : [];
 
-  const comments = eventComments?.[event.id] || [];
+  useEffect(() => {
+    if (user?.id && event?.id && comments.length > 0 && markChatRead) {
+      markChatRead('event_qna', event.id);
+    }
+  }, [user?.id, event?.id, comments.length]);
+
+  if (!event?.id) return null;
   const canModerate = isEventHostOrCohostLeader(user, event);
   const allCommunityNames = [community?.name, ...partnerCommunities.map(p => p.name)].filter(Boolean);
   const eventPath = getEventPath(event, events);
@@ -83,6 +91,7 @@ export default function EventDiscussion({
     setIsPosting(true);
     try {
       await addEventComment(event.id, text);
+      if (markChatRead) markChatRead('event_qna', event.id);
       setDraft('');
     } catch (err) {
       toast.error('Could not post message', err?.message || 'Please try again.');

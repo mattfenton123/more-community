@@ -1631,31 +1631,69 @@ export async function createEventCommentAction(eventId, text, token, clientComme
     throw new Error(error.message);
   }
 
-  // Non-blocking host notification when service key is configured
+  // Non-blocking notifications for hosts, co-leaders, co-hosts, and previous thread participants
   if (hasValidServiceKey) {
     try {
-      const [{ data: ev }, { data: author }] = await Promise.all([
-        supabaseAdmin.from('events').select('title, community_id').eq('id', eventId).maybeSingle(),
+      const [{ data: ev }, { data: author }, { data: prevComments }] = await Promise.all([
+        supabaseAdmin.from('events').select('title, community_id, cohost_community_ids').eq('id', eventId).maybeSingle(),
         supabaseAdmin.from('users').select('name').eq('id', authUser.id).maybeSingle(),
+        supabaseAdmin.from('event_comments').select('author_id').eq('event_id', eventId),
       ]);
-      if (ev?.community_id) {
-        const { data: comm } = await supabaseAdmin.from('communities').select('leader_id').eq('id', ev.community_id).maybeSingle();
-        if (comm?.leader_id && comm.leader_id !== authUser.id) {
-          const senderName = author?.name || 'Someone';
-          const preview = cleanedText.length > 120 ? `${cleanedText.slice(0, 117)}...` : cleanedText;
-          await supabaseAdmin.from('notifications').insert({
-            user_id: comm.leader_id,
-            title: `💬 Question on ${ev.title || 'your event'}`,
-            message: `${senderName}: "${preview}"`,
-            type: 'event',
-            link: `/events/${eventId}#discussion`,
-          });
-          await sendPushNotificationAction(comm.leader_id, {
-            title: `${senderName} posted in ${ev.title || 'event discussion'}`,
-            body: preview,
-            url: `/events/${eventId}#discussion`,
-          }).catch(() => {});
-        }
+
+      const commIds = new Set();
+      if (ev?.community_id) commIds.add(ev.community_id);
+      if (Array.isArray(ev?.cohost_community_ids)) {
+        ev.cohost_community_ids.filter(Boolean).forEach((cid) => commIds.add(cid));
+      }
+
+      const leaderIds = new Set();
+      if (commIds.size > 0) {
+        const commIdList = Array.from(commIds);
+        const [{ data: comms }, { data: coLeaderRows }] = await Promise.all([
+          supabaseAdmin.from('communities').select('leader_id').in('id', commIdList),
+          supabaseAdmin
+            .from('community_memberships')
+            .select('user_id, role')
+            .in('community_id', commIdList)
+            .in('role', ['Leader', 'Co-Leader']),
+        ]);
+        (comms || []).forEach((c) => { if (c?.leader_id) leaderIds.add(c.leader_id); });
+        (coLeaderRows || []).forEach((m) => { if (m?.user_id) leaderIds.add(m.user_id); });
+      }
+
+      const recipientIds = new Set();
+      leaderIds.forEach((uid) => { if (uid && uid !== authUser.id) recipientIds.add(uid); });
+      (prevComments || []).forEach((pc) => {
+        if (pc?.author_id && pc.author_id !== authUser.id) recipientIds.add(pc.author_id);
+      });
+
+      if (recipientIds.size > 0) {
+        const senderName = author?.name || 'Someone';
+        const isAuthorHost = leaderIds.has(authUser.id);
+        const preview = cleanedText.length > 120 ? `${cleanedText.slice(0, 117)}...` : cleanedText;
+        const notifTitle = isAuthorHost
+          ? `💬 Host replied on ${ev?.title || 'an event'}`
+          : `💬 Event Q&A: ${ev?.title || 'Event discussion'}`;
+        const link = `/events/${eventId}#discussion`;
+
+        const rows = Array.from(recipientIds).map((uid) => ({
+          user_id: uid,
+          title: notifTitle,
+          message: `${senderName}: "${preview}"`,
+          type: 'event',
+          link,
+        }));
+        await supabaseAdmin.from('notifications').insert(rows);
+
+        await Promise.all(
+          Array.from(recipientIds).map((uid) =>
+            sendPushNotificationAction(uid, {
+              title: `${senderName} in ${ev?.title || 'Event Q&A'}`,
+              body: preview,
+              url: link,
+            }).catch(() => {})
+          )
+        );
       }
     } catch {}
   }
