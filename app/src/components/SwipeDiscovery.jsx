@@ -1,17 +1,30 @@
+"use client";
 import React, { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { X, Heart, X as XIcon, MapPin, Calendar, Sparkles, Info } from 'lucide-react';
-import { useToast } from './Toast';
+import { X, Heart, MapPin, Calendar, Sparkles, Info, ArrowRight } from 'lucide-react';
+import { cleanLocationName } from '../lib/location';
+import { parseEventDateTime } from '../lib/calendar';
+import { getEventPath } from '../lib/eventLinks';
 
-export default function SwipeDiscovery({ events, communities, onClose, onSave, inline = false }) {
+function formatSwipeDate(dateStr, timeStr) {
+  const dt = parseEventDateTime(dateStr, timeStr);
+  if (dt && !isNaN(dt.getTime())) {
+    const dayStr = dt.toLocaleDateString('en-GB', {
+      weekday: 'short',
+      day: 'numeric',
+      month: 'short',
+    });
+    return timeStr ? `${dayStr} • ${timeStr}` : dayStr;
+  }
+  return [dateStr, timeStr].filter(Boolean).join(' • ') || 'Date TBC';
+}
+
+export default function SwipeDiscovery({ events = [], communities = [], onClose, onSave, inline = false }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [offset, setOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
-  const [leaveDirection, setLeaveDirection] = useState(null); // 'left' | 'right'
-  const [showInfo, setShowInfo] = useState(false);
   const cardRef = useRef(null);
-  const { toast } = useToast();
   const router = useRouter();
 
   const currentEvent = events[currentIndex];
@@ -28,6 +41,20 @@ export default function SwipeDiscovery({ events, communities, onClose, onSave, i
     setOffset(diffX);
   };
 
+  const handleSwipe = (direction) => {
+    if (!currentEvent) return;
+    const viewportW = typeof window !== 'undefined' ? window.innerWidth : 800;
+    setOffset(direction === 'right' ? viewportW : -viewportW);
+
+    setTimeout(() => {
+      if (direction === 'right' && typeof onSave === 'function') {
+        onSave(currentEvent);
+      }
+      setCurrentIndex((prev) => prev + 1);
+      setOffset(0);
+    }, 260);
+  };
+
   const handlePointerUp = () => {
     setIsDragging(false);
     if (offset > 100) {
@@ -35,7 +62,7 @@ export default function SwipeDiscovery({ events, communities, onClose, onSave, i
     } else if (offset < -100) {
       handleSwipe('left');
     } else {
-      setOffset(0); // Snap back
+      setOffset(0);
     }
   };
 
@@ -51,91 +78,317 @@ export default function SwipeDiscovery({ events, communities, onClose, onSave, i
     };
   }, [isDragging, offset]);
 
-  const handleSwipe = (direction) => {
-    setLeaveDirection(direction);
-    setOffset(direction === 'right' ? window.innerWidth : -window.innerWidth);
-    
-    setTimeout(() => {
-      if (direction === 'right') {
-        onSave(currentEvent);
-      }
-      
-      setCurrentIndex(prev => prev + 1);
-      setOffset(0);
-      setLeaveDirection(null);
-    }, 300); // Wait for animation
-  };
-
   if (!currentEvent) {
     return inline ? (
-      <div style={{ width: '100%', maxWidth: '440px', margin: '0 auto', display: 'flex', flexDirection: 'column', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '24px', overflow: 'hidden', padding: '40px 20px', textAlign: 'center', marginBottom: '24px' }}>
-        <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(235, 87, 56,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
-          <Sparkles size={32} color="var(--teal-400)" />
+      <div
+        style={{
+          width: '100%',
+          maxWidth: '440px',
+          margin: '0 auto 24px',
+          display: 'flex',
+          flexDirection: 'column',
+          background: 'var(--surface-card)',
+          border: '1px solid var(--hairline-border-strong)',
+          borderRadius: '20px',
+          overflow: 'hidden',
+          padding: '32px 20px',
+          textAlign: 'center',
+        }}
+      >
+        <div
+          style={{
+            width: '56px',
+            height: '56px',
+            borderRadius: '50%',
+            background: 'var(--brand-accent-soft)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 14px',
+          }}
+        >
+          <Sparkles size={26} color="var(--brand-accent)" />
         </div>
-        <h2 style={{ color: 'var(--white)', fontFamily: 'var(--font-heading)', fontSize: '1.5rem', marginBottom: '12px' }}>You're all caught up!</h2>
-        <p style={{ color: 'var(--slate-400)', fontSize: '0.9rem', lineHeight: 1.5 }}>We've run out of new events to show you right now. Check back later for more matches.</p>
+        <h2
+          style={{
+            color: 'var(--ink-primary)',
+            fontFamily: 'var(--font-heading)',
+            fontSize: '1.3rem',
+            margin: '0 0 8px',
+          }}
+        >
+          You&apos;re all caught up!
+        </h2>
+        <p style={{ color: 'var(--ink-secondary)', fontSize: '0.88rem', lineHeight: 1.5, margin: 0 }}>
+          We&apos;ve shown all upcoming events for now. Check back soon for new meetups.
+        </p>
       </div>
     ) : (
-      <div className="modal-overlay" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '20px', zIndex: 2000 }}>
-        <div style={{ height: 'calc(100dvh - 120px)', width: '100%', maxWidth: '440px', margin: '0 auto', display: 'flex', flexDirection: 'column', background: 'var(--slate-950)', borderRadius: '24px', overflow: 'hidden', position: 'relative', boxShadow: '0 24px 64px rgba(0,0,0,0.5)' }}>
-          <button onClick={onClose} className="interactive-press" style={{ position: 'absolute', top: '16px', right: '16px', width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--white)', cursor: 'pointer', zIndex: 100 }}>
-            <X size={20} />
+      <div
+        className="modal-overlay"
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          padding: '20px',
+          zIndex: 2000,
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(18, 18, 18, 0.72)',
+          backdropFilter: 'blur(10px)',
+        }}
+      >
+        <div
+          style={{
+            width: '100%',
+            maxWidth: '420px',
+            margin: '0 auto',
+            display: 'flex',
+            flexDirection: 'column',
+            background: 'var(--surface-card)',
+            border: '1px solid var(--hairline-border-strong)',
+            borderRadius: '24px',
+            overflow: 'hidden',
+            position: 'relative',
+            boxShadow: '0 24px 64px rgba(0, 0, 0, 0.35)',
+          }}
+        >
+          <button
+            onClick={onClose}
+            aria-label="Close"
+            className="interactive-press"
+            style={{
+              position: 'absolute',
+              top: '14px',
+              right: '14px',
+              width: '36px',
+              height: '36px',
+              borderRadius: '50%',
+              background: 'var(--surface-elevated)',
+              border: '1px solid var(--hairline-border-strong)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'var(--ink-primary)',
+              cursor: 'pointer',
+              zIndex: 100,
+            }}
+          >
+            <X size={18} />
           </button>
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px', textAlign: 'center' }}>
-            <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(235, 87, 56,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '24px' }}>
-              <Sparkles size={40} color="var(--teal-400)" />
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '44px 28px 32px',
+              textAlign: 'center',
+            }}
+          >
+            <div
+              style={{
+                width: '72px',
+                height: '72px',
+                borderRadius: '50%',
+                background: 'var(--brand-accent-soft)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '20px',
+              }}
+            >
+              <Sparkles size={34} color="var(--brand-accent)" />
             </div>
-            <h2 style={{ color: 'var(--white)', fontFamily: 'var(--font-heading)', fontSize: '2rem', marginBottom: '16px' }}>You're all caught up!</h2>
-            <p style={{ color: 'var(--slate-400)', fontSize: '1rem', lineHeight: 1.6, marginBottom: '32px' }}>We've run out of new events to show you right now. Check back later for more.</p>
-            <button onClick={onClose} className="btn btn-primary interactive-press" style={{ width: '100%', padding: '14px', borderRadius: '12px' }}>Back to Discover</button>
+            <h2
+              style={{
+                color: 'var(--ink-primary)',
+                fontFamily: 'var(--font-heading)',
+                fontSize: '1.6rem',
+                margin: '0 0 10px',
+              }}
+            >
+              You&apos;re all caught up!
+            </h2>
+            <p
+              style={{
+                color: 'var(--ink-secondary)',
+                fontSize: '0.94rem',
+                lineHeight: 1.55,
+                margin: '0 0 24px',
+              }}
+            >
+              You&apos;ve seen every upcoming event in the deck. Check back soon or browse the full list.
+            </p>
+            <button
+              onClick={onClose}
+              className="btn btn-primary interactive-press"
+              style={{
+                width: '100%',
+                padding: '12px 16px',
+                borderRadius: '12px',
+                fontWeight: 700,
+                color: '#FFFFFF',
+              }}
+            >
+              Back to Events
+            </button>
           </div>
         </div>
       </div>
     );
   }
 
-  const community = communities.find(c => c.id === currentEvent.communityId);
-  const rotation = (offset / window.innerWidth) * 30; // Max 30 deg rotation
+  const community = communities.find((c) => c.id === currentEvent.communityId);
+  const viewportW = typeof window !== 'undefined' ? window.innerWidth : 800;
+  const rotation = (offset / viewportW) * 24;
+  const eventPath = getEventPath(currentEvent, events);
+  const displayLoc = cleanLocationName(currentEvent.location) || 'Local Venue';
+  const displayDate = formatSwipeDate(currentEvent.date, currentEvent.time);
+  const remainingCount = events.length - currentIndex;
 
-  const wrapperStyle = inline 
-    ? { width: '100%', maxWidth: '440px', margin: '0 auto 24px', display: 'flex', flexDirection: 'column', position: 'relative' }
-    : { display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '20px', zIndex: 2000, position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)' };
+  const wrapperStyle = inline
+    ? {
+        width: '100%',
+        maxWidth: '440px',
+        margin: '0 auto 24px',
+        display: 'flex',
+        flexDirection: 'column',
+        position: 'relative',
+      }
+    : {
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        padding: '16px',
+        zIndex: 2000,
+        position: 'fixed',
+        inset: 0,
+        background: 'rgba(18, 18, 18, 0.72)',
+        backdropFilter: 'blur(10px)',
+      };
 
-  const containerStyle = inline 
-    ? { height: '500px', width: '100%', display: 'flex', flexDirection: 'column', background: 'var(--slate-900)', borderRadius: '24px', overflow: 'hidden', position: 'relative', border: '1px solid rgba(255,255,255,0.06)', boxShadow: '0 12px 32px rgba(0,0,0,0.3)' }
-    : { height: 'calc(100dvh - 120px)', width: '100%', maxWidth: '440px', margin: '0 auto', display: 'flex', flexDirection: 'column', background: 'var(--slate-950)', borderRadius: '24px', overflow: 'hidden', position: 'relative', boxShadow: '0 24px 64px rgba(0,0,0,0.5)' };
+  const containerStyle = inline
+    ? {
+        height: '530px',
+        width: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        background: 'var(--surface-elevated)',
+        borderRadius: '24px',
+        overflow: 'hidden',
+        position: 'relative',
+        border: '1px solid var(--hairline-border-strong)',
+      }
+    : {
+        height: 'min(640px, calc(100dvh - 48px))',
+        width: '100%',
+        maxWidth: '440px',
+        margin: '0 auto',
+        display: 'flex',
+        flexDirection: 'column',
+        background: 'var(--surface-canvas)',
+        border: '1px solid var(--hairline-border-strong)',
+        borderRadius: '24px',
+        overflow: 'hidden',
+        position: 'relative',
+        boxShadow: '0 24px 64px rgba(0, 0, 0, 0.35)',
+      };
 
   return (
-    <div className={inline ? "" : "modal-overlay"} style={wrapperStyle}>
+    <div className={inline ? '' : 'modal-overlay'} style={wrapperStyle}>
       <div style={containerStyle}>
-        
+        {/* Top Modal Header (for modal mode) */}
         {!inline && (
-          <button onClick={onClose} className="interactive-press" style={{ position: 'absolute', top: '16px', right: '16px', width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(10px)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--white)', cursor: 'pointer', zIndex: 100 }}>
-            <X size={20} />
-          </button>
+          <div
+            style={{
+              padding: '14px 16px 6px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              zIndex: 30,
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Sparkles size={16} color="var(--brand-accent)" />
+              <span
+                style={{
+                  fontFamily: 'var(--font-heading)',
+                  fontSize: '0.96rem',
+                  fontWeight: 700,
+                  color: 'var(--ink-primary)',
+                }}
+              >
+                Swipe Events
+              </span>
+              <span
+                style={{
+                  fontSize: '0.72rem',
+                  fontWeight: 600,
+                  color: 'var(--ink-muted)',
+                  background: 'var(--surface-elevated)',
+                  border: '1px solid var(--hairline-border)',
+                  padding: '2px 8px',
+                  borderRadius: '99px',
+                }}
+              >
+                {remainingCount} left
+              </span>
+            </div>
+            <button
+              onClick={onClose}
+              aria-label="Close swipe events"
+              className="interactive-press"
+              style={{
+                width: '34px',
+                height: '34px',
+                borderRadius: '50%',
+                background: 'var(--surface-elevated)',
+                border: '1px solid var(--hairline-border-strong)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'var(--ink-primary)',
+                cursor: 'pointer',
+              }}
+            >
+              <X size={18} />
+            </button>
+          </div>
         )}
 
-        <div style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', overflow: 'hidden' }}>
-          
-          {/* Next Card Background (Preview) */}
+        {/* Card Deck Stage */}
+        <div
+          style={{
+            flex: 1,
+            position: 'relative',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '12px 16px',
+            overflow: 'hidden',
+          }}
+        >
+          {/* Next Card Preview */}
           {events[currentIndex + 1] && (
-            <div style={{ 
-              position: 'absolute', 
-              width: 'calc(100% - 40px)', 
-              height: 'calc(100% - 40px)', 
-              background: 'rgba(27, 27, 27, 0.4)',
-              backdropFilter: 'blur(10px)',
-              borderRadius: '24px', 
-              transform: 'scale(0.95) translateY(20px)', 
-              opacity: 0.5,
-              zIndex: 1,
-              pointerEvents: 'none',
-              border: '1px solid rgba(255,255,255,0.1)'
-            }}></div>
+            <div
+              style={{
+                position: 'absolute',
+                width: 'calc(100% - 36px)',
+                height: 'calc(100% - 24px)',
+                background: 'var(--surface-card)',
+                borderRadius: '20px',
+                transform: 'scale(0.95) translateY(14px)',
+                opacity: 0.65,
+                zIndex: 1,
+                pointerEvents: 'none',
+                border: '1px solid var(--hairline-border-strong)',
+              }}
+            />
           )}
 
           {/* Current Draggable Card */}
-          <div 
+          <div
             ref={cardRef}
             onMouseDown={handlePointerDown}
             onMouseMove={handlePointerMove}
@@ -143,99 +396,295 @@ export default function SwipeDiscovery({ events, communities, onClose, onSave, i
             onTouchMove={handlePointerMove}
             style={{
               position: 'absolute',
-              width: 'calc(100% - 40px)',
-              height: 'calc(100% - 40px)',
-              background: 'rgba(27, 27, 27, 0.75)',
-              backdropFilter: 'blur(20px)',
-              borderRadius: '24px',
-              boxShadow: '0 20px 40px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1)',
+              width: 'calc(100% - 32px)',
+              height: 'calc(100% - 20px)',
+              background: 'var(--surface-card)',
+              borderRadius: '20px',
+              boxShadow: '0 14px 36px rgba(0, 0, 0, 0.18)',
               zIndex: 10,
               transform: `translateX(${offset}px) rotate(${rotation}deg)`,
-              transition: isDragging ? 'none' : 'transform 0.3s ease-out',
+              transition: isDragging ? 'none' : 'transform 0.28s ease-out',
               cursor: isDragging ? 'grabbing' : 'grab',
               overflow: 'hidden',
               display: 'flex',
               flexDirection: 'column',
-              border: '1px solid rgba(255,255,255,0.1)'
+              border: '1px solid var(--hairline-border-strong)',
+              userSelect: 'none',
             }}
           >
-            {/* Action overlays based on drag offset */}
-            <div style={{ position: 'absolute', top: '40px', right: '40px', opacity: offset < -20 ? Math.min(1, Math.abs(offset) / 100) : 0, zIndex: 20, transform: 'rotate(15deg)' }}>
-              <div style={{ border: '4px solid #ef4444', color: '#ef4444', fontSize: '2rem', fontWeight: 800, padding: '8px 16px', borderRadius: '12px', textTransform: 'uppercase', letterSpacing: '2px' }}>Pass</div>
+            {/* Drag Stamps */}
+            <div
+              style={{
+                position: 'absolute',
+                top: '28px',
+                right: '24px',
+                opacity: offset < -20 ? Math.min(1, Math.abs(offset) / 100) : 0,
+                zIndex: 20,
+                transform: 'rotate(12deg)',
+                pointerEvents: 'none',
+              }}
+            >
+              <div
+                style={{
+                  border: '3px solid #DC2626',
+                  background: 'rgba(255, 255, 255, 0.92)',
+                  color: '#DC2626',
+                  fontSize: '1.35rem',
+                  fontWeight: 800,
+                  padding: '6px 14px',
+                  borderRadius: '10px',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.08em',
+                }}
+              >
+                Pass
+              </div>
             </div>
-            <div style={{ position: 'absolute', top: '40px', left: '40px', opacity: offset > 20 ? Math.min(1, offset / 100) : 0, zIndex: 20, transform: 'rotate(-15deg)' }}>
-              <div style={{ border: '4px solid #22c55e', color: '#22c55e', fontSize: '2rem', fontWeight: 800, padding: '8px 16px', borderRadius: '12px', textTransform: 'uppercase', letterSpacing: '2px' }}>Save</div>
+            <div
+              style={{
+                position: 'absolute',
+                top: '28px',
+                left: '24px',
+                opacity: offset > 20 ? Math.min(1, offset / 100) : 0,
+                zIndex: 20,
+                transform: 'rotate(-12deg)',
+                pointerEvents: 'none',
+              }}
+            >
+              <div
+                style={{
+                  border: '3px solid #15803D',
+                  background: 'rgba(255, 255, 255, 0.92)',
+                  color: '#15803D',
+                  fontSize: '1.35rem',
+                  fontWeight: 800,
+                  padding: '6px 14px',
+                  borderRadius: '10px',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.08em',
+                }}
+              >
+                Save
+              </div>
             </div>
 
-            <div style={{ 
-              height: '55%', 
-              background: `url(${currentEvent.image || community?.image || '/images/communities/parkrun.webp'})`, 
-              backgroundSize: 'cover', 
-              backgroundPosition: 'center',
-              position: 'relative',
-              pointerEvents: 'none'
-            }}>
-              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 50%, rgba(27, 27, 27, 0.95) 100%)' }}></div>
-              <div style={{ position: 'absolute', top: '16px', right: '16px', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', color: 'var(--white)', padding: '6px 12px', borderRadius: '99px', fontSize: '0.8rem', fontWeight: 700 }}>
+            {/* Cover Image */}
+            <div
+              style={{
+                height: '48%',
+                minHeight: '170px',
+                background: `var(--surface-elevated) url(${currentEvent.image || community?.image || '/images/communities/parkrun.webp'}) center/cover no-repeat`,
+                position: 'relative',
+                pointerEvents: 'none',
+                flexShrink: 0,
+              }}
+            >
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '12px',
+                  right: '12px',
+                  background: 'rgba(20, 18, 15, 0.8)',
+                  backdropFilter: 'blur(8px)',
+                  border: '1px solid rgba(255, 255, 255, 0.16)',
+                  color: '#FFFFFF',
+                  padding: '5px 11px',
+                  borderRadius: '99px',
+                  fontSize: '0.75rem',
+                  fontWeight: 700,
+                }}
+              >
                 {currentEvent.ticketPrice > 0 ? `£${currentEvent.ticketPrice}` : 'FREE'}
               </div>
             </div>
-            
-            <div style={{ padding: '24px', flex: 1, display: 'flex', flexDirection: 'column', pointerEvents: 'none' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                <div style={{ color: 'var(--teal-400)', fontSize: '0.85rem', fontWeight: 700, textTransform: 'uppercase' }}>
-                  {community?.name}
+
+            {/* Card Body */}
+            <div
+              style={{
+                padding: '16px 18px',
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                minHeight: 0,
+                pointerEvents: 'none',
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  gap: '8px',
+                  marginBottom: '6px',
+                }}
+              >
+                <div
+                  style={{
+                    color: 'var(--teal-300)',
+                    fontSize: '0.74rem',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {community?.name || 'Local Community'}
                 </div>
-                <button 
-                  onPointerDown={(e) => e.stopPropagation()} 
-                  onMouseDown={(e) => e.stopPropagation()} 
+                <button
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onMouseDown={(e) => e.stopPropagation()}
                   onTouchStart={(e) => e.stopPropagation()}
                   onClick={() => {
-                    onClose();
-                    router.push(`/events/${currentEvent.id}`);
+                    if (typeof onClose === 'function') onClose();
+                    router.push(eventPath);
                   }}
-                  style={{ pointerEvents: 'auto', background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '50%', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--white)', cursor: 'pointer' }}
+                  title="View event details"
+                  aria-label="View event details"
+                  style={{
+                    pointerEvents: 'auto',
+                    background: 'var(--surface-elevated)',
+                    border: '1px solid var(--hairline-border-strong)',
+                    borderRadius: '99px',
+                    padding: '4px 10px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    color: 'var(--ink-primary)',
+                    fontSize: '0.72rem',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    flexShrink: 0,
+                  }}
                 >
-                  <Info size={16} />
+                  <Info size={13} /> Details <ArrowRight size={11} />
                 </button>
               </div>
-              <h3 style={{ fontSize: '2rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: '0 0 16px 0', lineHeight: 1.1 }}>
+
+              <h3
+                style={{
+                  fontSize: '1.3rem',
+                  fontFamily: 'var(--font-heading)',
+                  color: 'var(--ink-primary)',
+                  margin: '0 0 10px 0',
+                  lineHeight: 1.2,
+                  display: '-webkit-box',
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
+                }}
+              >
                 {currentEvent.title}
               </h3>
-              
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '16px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--slate-300)' }}>
-                  <Calendar size={18} color="var(--slate-400)" />
-                  <span style={{ fontSize: '1rem', fontWeight: 500 }}>{currentEvent.date} at {currentEvent.time}</span>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '10px' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    color: 'var(--ink-secondary)',
+                    fontSize: '0.84rem',
+                    fontWeight: 600,
+                  }}
+                >
+                  <Calendar size={14} color="var(--brand-accent)" style={{ flexShrink: 0 }} />
+                  <span>{displayDate}</span>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--slate-300)' }}>
-                  <MapPin size={18} color="var(--slate-400)" />
-                  <span style={{ fontSize: '1rem', fontWeight: 500 }}>{currentEvent.location}</span>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    color: 'var(--ink-secondary)',
+                    fontSize: '0.84rem',
+                    fontWeight: 500,
+                  }}
+                >
+                  <MapPin size={14} color="var(--brand-accent)" style={{ flexShrink: 0 }} />
+                  <span
+                    style={{
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {displayLoc}
+                  </span>
                 </div>
               </div>
 
-              <p style={{ color: 'var(--slate-400)', fontSize: '0.9rem', lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                {currentEvent.description || `Join us for an incredible experience with ${community?.name}. Meet like-minded people and make memories!`}
+              <p
+                style={{
+                  color: 'var(--ink-muted)',
+                  fontSize: '0.84rem',
+                  lineHeight: 1.48,
+                  margin: 0,
+                  display: '-webkit-box',
+                  WebkitLineClamp: 3,
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
+                }}
+              >
+                {currentEvent.description ||
+                  `Join ${community?.name || 'us'} for an in-person community meetup.`}
               </p>
             </div>
           </div>
         </div>
 
-        <div style={{ padding: '20px 40px 40px', display: 'flex', justifyContent: 'space-around', alignItems: 'center', zIndex: 100 }}>
-          <button 
+        {/* Bottom Action Buttons */}
+        <div
+          style={{
+            padding: '12px 32px 22px',
+            display: 'flex',
+            justifyContent: 'center',
+            gap: '32px',
+            alignItems: 'center',
+            zIndex: 100,
+          }}
+        >
+          <button
             onClick={() => handleSwipe('left')}
+            aria-label="Pass on event"
             className="interactive-press"
-            style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'var(--slate-800)', border: '2px solid var(--slate-700)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ef4444', cursor: 'pointer', boxShadow: '0 8px 24px rgba(0,0,0,0.3)' }}
+            style={{
+              width: '56px',
+              height: '56px',
+              borderRadius: '50%',
+              background: 'var(--surface-card)',
+              border: '1.5px solid var(--hairline-border-strong)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#DC2626',
+              cursor: 'pointer',
+              boxShadow: '0 6px 18px rgba(0, 0, 0, 0.12)',
+            }}
           >
-            <XIcon size={32} />
+            <X size={26} strokeWidth={2.5} />
           </button>
-          
-          <button 
+
+          <button
             onClick={() => handleSwipe('right')}
+            aria-label="Save event"
             className="interactive-press"
-            style={{ width: '72px', height: '72px', borderRadius: '50%', background: 'var(--teal-500)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--white)', cursor: 'pointer', boxShadow: '0 8px 32px rgba(235, 87, 56,0.4)' }}
+            style={{
+              width: '64px',
+              height: '64px',
+              borderRadius: '50%',
+              background: 'var(--brand-accent)',
+              border: 'none',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#FFFFFF',
+              cursor: 'pointer',
+              boxShadow: '0 8px 24px rgba(200, 90, 50, 0.35)',
+            }}
           >
-            <Heart size={36} fill="currentColor" />
+            <Heart size={28} fill="#FFFFFF" color="#FFFFFF" />
           </button>
         </div>
       </div>

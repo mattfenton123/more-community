@@ -36,6 +36,8 @@ const KNOWN_LOCATIONS = [
   { name: 'st leonards on sea', lat: 50.8560, lng: 0.5560 },
   { name: 'st leonards', lat: 50.8560, lng: 0.5560 },
   { name: 'hastings', lat: 50.8540, lng: 0.5730 },
+  { name: 'beachy head', lat: 50.7357, lng: 0.2412 },
+  { name: 'eastbourne', lat: 50.7684, lng: 0.2905 },
 
   // Tunbridge Wells landmarks & spots (synced with verified location coordinates)
   { name: 'pantiles bandstand', lat: 51.1257, lng: 0.2573 },
