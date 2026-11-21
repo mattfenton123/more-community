@@ -514,8 +514,8 @@ Strong community density in Tunbridge Wells. High leader engagement driving recu
                   fontSize: '0.75rem',
                   fontWeight: 600,
                   cursor: 'pointer',
-                  background: timeRange === t ? 'white' : 'rgba(255,255,255,0.06)',
-                  color: timeRange === t ? 'black' : 'var(--slate-400)',
+                  background: timeRange === t ? 'var(--ink-primary)' : 'var(--surface-card)',
+                  color: timeRange === t ? 'var(--surface-canvas)' : 'var(--ink-secondary)',
                   transition: 'all 0.15s ease'
                 }}
               >
@@ -590,7 +590,7 @@ Strong community density in Tunbridge Wells. High leader engagement driving recu
         }}>
           <Sparkles size={16} color="#c084fc" style={{ flexShrink: 0 }} />
           <div style={{ flex: 1, fontSize: '0.78rem', color: 'var(--slate-300)', lineHeight: 1.4 }}>
-            <strong style={{ color: 'white' }}>Investor Pitch Presentation Mode Active:</strong> Simulates authentic 18% WoW compounding growth trajectory & cohort retention curves calibrated to current community dynamics. Ideal for seed pitch decks, angel reviews, and demo presentations. Switch to Live Telemetry anytime.
+            <strong style={{ color: 'var(--ink-primary)' }}>Investor Pitch Presentation Mode Active:</strong> Simulates authentic 18% WoW compounding growth trajectory & cohort retention curves calibrated to current community dynamics. Ideal for seed pitch decks, angel reviews, and demo presentations. Switch to Live Telemetry anytime.
           </div>
         </div>
       )}
@@ -604,7 +604,7 @@ Strong community density in Tunbridge Wells. High leader engagement driving recu
             <span style={{ fontSize: '0.7rem', color: 'var(--slate-400)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Community Base</span>
             <Users size={16} color="#a855f7" />
           </div>
-          <div style={{ fontSize: '1.9rem', fontWeight: 700, fontFamily: 'var(--font-heading)', color: 'white' }}>
+          <div style={{ fontSize: '1.9rem', fontWeight: 700, fontFamily: 'var(--font-heading)', color: 'var(--ink-primary)' }}>
             {analyticsData.latestTotalUsers}
           </div>
           <div style={{ fontSize: '0.72rem', color: '#22c55e', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '3px', fontWeight: 600 }}>
@@ -618,12 +618,12 @@ Strong community density in Tunbridge Wells. High leader engagement driving recu
             <span style={{ fontSize: '0.7rem', color: 'var(--slate-400)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Daily Signups Run-Rate</span>
             <TrendingUp size={16} color="#3A8E76" />
           </div>
-          <div style={{ fontSize: '1.9rem', fontWeight: 700, fontFamily: 'var(--font-heading)', color: 'white' }}>
+          <div style={{ fontSize: '1.9rem', fontWeight: 700, fontFamily: 'var(--font-heading)', color: 'var(--ink-primary)' }}>
             {analyticsData.avgDailySignups}
             <span style={{ fontSize: '0.9rem', color: 'var(--slate-400)', fontWeight: 400, marginLeft: '4px' }}>/day</span>
           </div>
           <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', marginTop: '4px' }}>
-            Peak: <strong style={{ color: 'white' }}>+{analyticsData.peakDailySignups}</strong> on {analyticsData.peakDayLabel}
+            Peak: <strong style={{ color: 'var(--ink-primary)' }}>+{analyticsData.peakDailySignups}</strong> on {analyticsData.peakDayLabel}
           </div>
         </div>
 
@@ -633,12 +633,12 @@ Strong community density in Tunbridge Wells. High leader engagement driving recu
             <span style={{ fontSize: '0.7rem', color: 'var(--slate-400)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Daily Active Users (DAU)</span>
             <Zap size={16} color="#22c55e" />
           </div>
-          <div style={{ fontSize: '1.9rem', fontWeight: 700, fontFamily: 'var(--font-heading)', color: 'white' }}>
+          <div style={{ fontSize: '1.9rem', fontWeight: 700, fontFamily: 'var(--font-heading)', color: 'var(--ink-primary)' }}>
             {analyticsData.avgDau}
             <span style={{ fontSize: '0.9rem', color: 'var(--slate-400)', fontWeight: 400, marginLeft: '4px' }}>avg</span>
           </div>
           <div style={{ fontSize: '0.72rem', color: '#22c55e', marginTop: '4px' }}>
-            Today: <strong style={{ color: 'white' }}>{analyticsData.currentDau}</strong> active logins
+            Today: <strong style={{ color: 'var(--ink-primary)' }}>{analyticsData.currentDau}</strong> active logins
           </div>
         </div>
 
@@ -662,7 +662,7 @@ Strong community density in Tunbridge Wells. High leader engagement driving recu
             <span style={{ fontSize: '0.7rem', color: 'var(--slate-400)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Monthly Active (MAU)</span>
             <UserCheck size={16} color="#3b82f6" />
           </div>
-          <div style={{ fontSize: '1.9rem', fontWeight: 700, fontFamily: 'var(--font-heading)', color: 'white' }}>
+          <div style={{ fontSize: '1.9rem', fontWeight: 700, fontFamily: 'var(--font-heading)', color: 'var(--ink-primary)' }}>
             {analyticsData.mauEstimate}
           </div>
           <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', marginTop: '4px' }}>
@@ -676,7 +676,7 @@ Strong community density in Tunbridge Wells. High leader engagement driving recu
             <span style={{ fontSize: '0.7rem', color: 'var(--slate-400)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Total Interactions</span>
             <MessageCircle size={16} color="#ec4899" />
           </div>
-          <div style={{ fontSize: '1.9rem', fontWeight: 700, fontFamily: 'var(--font-heading)', color: 'white' }}>
+          <div style={{ fontSize: '1.9rem', fontWeight: 700, fontFamily: 'var(--font-heading)', color: 'var(--ink-primary)' }}>
             {analyticsData.totalInteractionsInPeriod}
           </div>
           <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', marginTop: '4px' }}>
@@ -721,8 +721,8 @@ Strong community density in Tunbridge Wells. High leader engagement driving recu
                   fontSize: '0.75rem',
                   fontWeight: 600,
                   cursor: 'pointer',
-                  background: chartView === tab.id ? 'white' : 'rgba(255,255,255,0.05)',
-                  color: chartView === tab.id ? 'black' : 'var(--slate-400)',
+                  background: chartView === tab.id ? 'var(--ink-primary)' : 'var(--surface-card)',
+                  color: chartView === tab.id ? 'var(--surface-canvas)' : 'var(--ink-secondary)',
                   transition: 'all 0.15s ease'
                 }}
               >
@@ -891,7 +891,7 @@ Strong community density in Tunbridge Wells. High leader engagement driving recu
         <div className="glass-panel" style={{ padding: '18px', borderRadius: '14px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
             <Activity size={16} color="#3b82f6" />
-            <h4 style={{ margin: 0, fontSize: '0.9rem', color: 'white', fontWeight: 600 }}>Cohort Retention Curve</h4>
+            <h4 style={{ margin: 0, fontSize: '0.9rem', color: 'var(--ink-primary)', fontWeight: 600 }}>Cohort Retention Curve</h4>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             
@@ -938,7 +938,7 @@ Strong community density in Tunbridge Wells. High leader engagement driving recu
         <div className="glass-panel" style={{ padding: '18px', borderRadius: '14px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
             <Zap size={16} color="#f59e0b" />
-            <h4 style={{ margin: 0, fontSize: '0.9rem', color: 'white', fontWeight: 600 }}>Virality & Word-of-Mouth Engine</h4>
+            <h4 style={{ margin: 0, fontSize: '0.9rem', color: 'var(--ink-primary)', fontWeight: 600 }}>Virality & Word-of-Mouth Engine</h4>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '12px' }}>
             <div style={{ padding: '10px', background: 'rgba(255,255,255,0.03)', borderRadius: '10px' }}>
@@ -953,7 +953,7 @@ Strong community density in Tunbridge Wells. High leader engagement driving recu
             </div>
           </div>
           <div style={{ fontSize: '0.75rem', color: 'var(--slate-300)', lineHeight: 1.4 }}>
-            Every active member currently brings an estimated <strong style={{ color: 'white' }}>{analyticsData.kFactor}</strong> new users through leader WhatsApp invites and event links.
+            Every active member currently brings an estimated <strong style={{ color: 'var(--ink-primary)' }}>{analyticsData.kFactor}</strong> new users through leader WhatsApp invites and event links.
           </div>
         </div>
 
@@ -982,7 +982,7 @@ Strong community density in Tunbridge Wells. High leader engagement driving recu
                 border: '1px solid rgba(255,255,255,0.08)',
                 borderRadius: '8px',
                 padding: '6px 12px',
-                color: 'white',
+                color: 'var(--ink-primary)',
                 fontSize: '0.78rem',
                 width: '180px'
               }}
@@ -1060,7 +1060,7 @@ Strong community density in Tunbridge Wells. High leader engagement driving recu
                   </td>
 
                   {/* Cumulative Base */}
-                  <td style={{ padding: '10px 12px', color: 'white', fontWeight: 700 }}>
+                  <td style={{ padding: '10px 12px', color: 'var(--ink-primary)', fontWeight: 700 }}>
                     {row.totalUsers}
                   </td>
 

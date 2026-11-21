@@ -524,33 +524,21 @@ export default function CommunityProfile() {
         {/* Navigation Bar */}
         <div className="community-nav-bar" style={{
           position: 'relative',
-          padding: '16px 20px',
+          padding: '14px 20px',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
           zIndex: 100
         }}>
-          <button 
-            className="interactive-press community-nav-btn" 
-            style={{ 
-              width: '42px', height: '42px', borderRadius: '50%', 
-              background: 'rgba(27, 27, 27, 0.85)', 
-              backdropFilter: 'blur(12px)', 
-              border: '1px solid rgba(255,255,255,0.2)', 
-              color: '#ffffff', 
-              display: 'flex', alignItems: 'center', justifyContent: 'center', 
-              cursor: 'pointer',
-              boxShadow: '0 4px 14px rgba(0,0,0,0.3)',
-              position: 'relative',
-              zIndex: 100
-            }} 
+          <button
+            className="interactive-press community-nav-btn"
             onClick={() => navigate.back()}
             title="Go Back"
             aria-label="Go Back"
           >
-            <ChevronLeft size={22} />
+            <ChevronLeft size={20} />
           </button>
-          
+
           {/* Centered More Community Logo */}
           <button
             type="button"
@@ -568,32 +556,20 @@ export default function CommunityProfile() {
               borderRadius: '8px'
             }}
           >
-            <img src="/logo.png" alt="More Community" style={{ height: '22px', display: 'block', pointerEvents: 'none' }} />
+            <img src="/logo.png" className="theme-invert" alt="More Community" style={{ height: '22px', display: 'block', pointerEvents: 'none' }} />
           </button>
 
           {/* Action buttons (Share, Flag, Leader Panel) */}
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
             <button
               onClick={handleShare}
-              className="interactive-press"
-              style={{
-                width: '42px', height: '42px', borderRadius: '50%',
-                background: 'rgba(27, 27, 27, 0.85)',
-                border: '1px solid rgba(255,255,255,0.2)',
-                backdropFilter: 'blur(12px)',
-                color: '#ffffff',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'pointer',
-                boxShadow: '0 4px 14px rgba(0,0,0,0.3)',
-                position: 'relative',
-                zIndex: 100
-              }}
+              className="interactive-press community-nav-btn"
               title="Share Community"
               aria-label="Share Community"
             >
-              <Share2 size={18} />
+              <Share2 size={17} />
             </button>
-            <button 
+            <button
               onClick={async () => {
                 if (!user?.id) {
                   navigate.push(`/login?redirect=/community/${community.id}`);
@@ -612,251 +588,169 @@ export default function CommunityProfile() {
                     toast.error('Error', err.message || 'Could not flag community.');
                   }
                 }
-              }} 
-              className="interactive-press" 
-              style={{ 
-                width: '42px', height: '42px', borderRadius: '50%', 
-                background: 'rgba(27, 27, 27, 0.85)', 
-                border: '1px solid rgba(244,63,94,0.4)', 
-                backdropFilter: 'blur(12px)', 
-                color: 'var(--rose-400)', 
-                display: 'flex', alignItems: 'center', justifyContent: 'center', 
-                cursor: 'pointer',
-                boxShadow: '0 4px 14px rgba(0,0,0,0.3)',
-                position: 'relative',
-                zIndex: 100
-              }} 
+              }}
+              className="interactive-press community-nav-btn"
+              style={{ color: 'var(--ink-muted)' }}
               title="Report Community"
               aria-label="Report Community"
             >
-              <Flag size={18} />
+              <Flag size={16} />
             </button>
             {isLeader && (
-              <button 
-                className="interactive-press" 
-                style={{ 
-                  width: '42px', height: '42px', borderRadius: '50%', 
-                  background: 'rgba(27, 27, 27, 0.85)', 
-                  border: '1px solid rgba(235, 87, 56,0.6)', 
-                  backdropFilter: 'blur(12px)', 
-                  color: 'var(--teal-300)', 
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', 
-                  cursor: 'pointer',
-                  boxShadow: '0 4px 14px rgba(0,0,0,0.3)',
-                  position: 'relative',
-                  zIndex: 100
-                }} 
+              <button
+                className="interactive-press community-nav-btn"
+                style={{ borderColor: 'var(--brand-accent)', color: 'var(--brand-accent)' }}
                 onClick={() => navigate.push(`/dashboard?community=${community.id}`)}
                 title="Leader Panel"
                 aria-label="Leader Panel"
               >
-                <Settings size={20} />
+                <Settings size={18} />
               </button>
             )}
           </div>
         </div>
 
         {/* Cinematic Framed Cover Card */}
-        <div style={{ padding: '0 20px', marginBottom: '20px' }}>
-          <div 
+        <div style={{ padding: '0 20px', marginBottom: '22px' }}>
+          <div
             className="community-cover-card"
             style={{
-              backgroundImage: community.image ? `url(${community.image})` : `linear-gradient(135deg, #D94628 0%, #1B1B1B 100%)`,
+              backgroundImage: community.image ? `url(${community.image})` : `linear-gradient(135deg, #C85A32 0%, #1B1B1B 100%)`,
             }}
           >
             {/* Subtle atmospheric vignette */}
             <div style={{
               position: 'absolute', inset: 0,
-              background: 'linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(27, 27, 27,0.15) 50%, rgba(27, 27, 27,0.7) 100%)'
+              background: 'linear-gradient(to bottom, rgba(0,0,0,0.22) 0%, transparent 45%, rgba(18, 18, 18, 0.35) 100%)'
             }} />
 
-            {/* Overlaid Top Badges */}
+            {/* Clean Top Badges — max 2 so the photo breathes */}
             <div style={{ position: 'absolute', top: '16px', left: '16px', right: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', zIndex: 2 }}>
-              {/* Category / Primary Tag */}
-              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                <span style={{
-                  fontSize: '0.74rem',
-                  fontWeight: 700,
-                  background: 'rgba(27, 27, 27, 0.8)',
-                  backdropFilter: 'blur(8px)',
-                  color: '#ffffff',
-                  padding: '5px 12px',
-                  borderRadius: '99px',
-                  border: '1px solid rgba(255,255,255,0.25)',
-                  letterSpacing: '0.02em'
-                }}>
-                  {community.category || (community.tags && community.tags[0]) || 'Community'}
-                </span>
-                {community.tags && community.tags.slice(1, 3).map(tag => (
-                  <span key={tag} style={{
-                    fontSize: '0.74rem',
-                    fontWeight: 600,
-                    background: 'rgba(27, 27, 27, 0.65)',
-                    backdropFilter: 'blur(8px)',
-                    color: '#e2e8f0',
-                    padding: '5px 10px',
-                    borderRadius: '99px',
-                    border: '1px solid rgba(255,255,255,0.15)'
-                  }}>
-                    {tag}
-                  </span>
-                ))}
-              </div>
+              <span style={{
+                fontSize: '0.72rem',
+                fontWeight: 700,
+                background: 'rgba(18, 18, 18, 0.72)',
+                backdropFilter: 'blur(8px)',
+                color: '#F4F1EA',
+                padding: '5px 12px',
+                borderRadius: '99px',
+                border: '1px solid rgba(244, 241, 234, 0.2)',
+                letterSpacing: '0.03em'
+              }}>
+                {community.category || (community.tags && community.tags[0]) || 'Community'}
+              </span>
 
-              {/* Verified Leader & Insured Pill */}
               {Boolean(community.is_insured || community.insurance_tier === 'pro') && (
                 <div style={{
-                  display: 'flex',
+                  display: 'inline-flex',
                   alignItems: 'center',
                   gap: '5px',
-                  background: 'rgba(217, 70, 40, 0.9)',
+                  background: 'rgba(38, 94, 79, 0.90)',
                   backdropFilter: 'blur(8px)',
-                  color: '#ffffff',
+                  color: '#F4F1EA',
                   padding: '5px 11px',
                   borderRadius: '99px',
-                  fontSize: '0.74rem',
+                  fontSize: '0.72rem',
                   fontWeight: 700,
-                  border: '1px solid rgba(242, 114, 87,0.5)',
-                  boxShadow: '0 2px 8px rgba(217, 70, 40,0.3)'
+                  border: '1px solid rgba(244, 241, 234, 0.2)'
                 }}>
-                  <Shield size={12} color="#ffffff" /> Insured &amp; Verified
+                  <Shield size={12} color="#F4F1EA" /> Insured &amp; Verified
                 </div>
               )}
-            </div>
-
-            {/* Bottom Inset Chips */}
-            <div style={{ position: 'absolute', bottom: '16px', left: '16px', right: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', zIndex: 2 }}>
-              <span style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '5px',
-                fontSize: '0.78rem',
-                fontWeight: 600,
-                color: '#ffffff',
-                background: 'rgba(27, 27, 27, 0.75)',
-                backdropFilter: 'blur(8px)',
-                padding: '5px 12px',
-                borderRadius: '99px',
-                border: '1px solid rgba(255,255,255,0.2)'
-              }}>
-                <MapPin size={13} color="var(--teal-400)" /> {cleanLocationName(community.location_name) || 'Tunbridge Wells'}
-              </span>
-
-              <span style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '5px',
-                fontSize: '0.78rem',
-                fontWeight: 600,
-                color: '#ffffff',
-                background: 'rgba(27, 27, 27, 0.75)',
-                backdropFilter: 'blur(8px)',
-                padding: '5px 12px',
-                borderRadius: '99px',
-                border: '1px solid rgba(255,255,255,0.2)'
-              }}>
-                <Users size={13} color="var(--teal-400)" /> {community.members || memberList.length || 1} members
-              </span>
             </div>
           </div>
         </div>
 
-        {/* Community Identity & Title */}
-        <div style={{ padding: '0 20px', marginBottom: '16px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: '0 0 8px 0' }}>
-            <h1 className="community-hero-title" style={{ fontFamily: 'var(--font-heading)', fontSize: '2.1rem', color: 'var(--white)', margin: 0, lineHeight: 1.15, fontWeight: 800 }}>
+        {/* Community Identity, Single Editorial Meta Line & Compact Host Byline */}
+        <div style={{ padding: '0 20px', marginBottom: '20px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: '0 0 8px 0' }}>
+            <h1 className="community-hero-title" style={{ fontFamily: 'var(--font-heading)', fontSize: 'clamp(1.8rem, 4vw, 2.4rem)', color: 'var(--ink-primary)', margin: 0, lineHeight: 1.12, fontWeight: 700, letterSpacing: '-0.025em' }}>
               {community.name}
             </h1>
-            {community.verified && <BadgeCheck size={28} color="#3b82f6" style={{ flexShrink: 0 }} />}
+            {community.verified && <BadgeCheck size={24} color="var(--brand-secondary)" style={{ flexShrink: 0 }} />}
           </div>
-          
-          {/* Subtitle meta strip */}
-          <div className="community-hero-meta" style={{ display: 'flex', gap: '14px', fontSize: '0.86rem', color: 'var(--slate-300)', marginBottom: '16px', flexWrap: 'wrap', alignItems: 'center' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <MapPin size={14} color="var(--teal-400)" /> {cleanLocationName(community.location_name) || 'Tunbridge Wells'}
+
+          {/* Single clean editorial meta strip */}
+          <div className="community-hero-meta" style={{ display: 'flex', gap: '10px', fontSize: '0.88rem', color: 'var(--ink-secondary)', marginBottom: '16px', flexWrap: 'wrap', alignItems: 'center' }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+              <MapPin size={14} color="var(--brand-accent)" /> {cleanLocationName(community.location_name) || 'Tunbridge Wells'}
             </span>
-            <span>•</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <Users size={14} color="var(--teal-400)" /> {community.members || memberList.length || 1} members
+            <span style={{ opacity: 0.4 }}>·</span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+              <Users size={14} color="var(--ink-muted)" /> {community.members || memberList.length || 1} members
             </span>
             {community.activity_level && (
               <>
-                <span>•</span>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <Activity size={14} color="var(--teal-400)" /> {community.activity_level === 'Very Active' ? 'Weekly' : community.activity_level === 'Active' ? 'Fortnightly' : 'Casual'}
-                </span>
+                <span style={{ opacity: 0.4 }}>·</span>
+                <span>{community.activity_level === 'Very Active' ? 'Weekly' : community.activity_level === 'Active' ? 'Fortnightly' : 'Casual'}</span>
               </>
             )}
-            <span>•</span>
-            <span style={{ fontWeight: 600, color: 'var(--teal-300)' }}>
+            <span style={{ opacity: 0.4 }}>·</span>
+            <span style={{ fontWeight: 700, color: 'var(--teal-300)' }}>
               {Number(community.subscription_price || 0) > 0 ? `£${community.subscription_price}/month` : 'Free to Join'}
             </span>
           </div>
 
-          {/* Organiser Card */}
-          <div className="community-organiser-card" style={{ 
-            display: 'flex', alignItems: 'center', gap: '14px', 
-            padding: '14px 18px', background: 'rgba(255,255,255,0.03)', 
-            borderRadius: '16px', border: '1px solid rgba(255,255,255,0.06)',
-            marginBottom: '8px'
+          {/* Sleek Single-Line Host Byline (replaces bulky top organiser card) */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '12px',
+            padding: '12px 0',
+            borderTop: '1px solid var(--hairline-border)',
+            borderBottom: '1px solid var(--hairline-border)',
+            flexWrap: 'wrap'
           }}>
-            <img 
-              src={resolveUserAvatar(leaderUser, community.name)} 
-              alt="Organiser" 
-              onClick={() => leaderUser && navigate.push(`/profile/${leaderUser.id}`)}
-              style={{ width: '46px', height: '46px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--teal-500)', cursor: leaderUser ? 'pointer' : 'default' }} 
-            />
-            <div style={{ flex: 1 }}>
-              <div className="organiser-label" style={{ fontSize: '0.74rem', color: 'var(--teal-400)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                Organised by
-                <span className="leader-pill" style={{ background: 'rgba(235, 87, 56,0.15)', color: '#F27257', padding: '1px 6px', borderRadius: '4px', fontSize: '0.65rem' }}>Leader &amp; Co-Hosts</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                <img
+                  src={resolveUserAvatar(leaderUser, community.name)}
+                  alt="Organiser"
+                  onClick={() => leaderUser && navigate.push(`/profile/${leaderUser.id}`)}
+                  style={{ width: '34px', height: '34px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--surface-canvas)', cursor: leaderUser ? 'pointer' : 'default' }}
+                />
+                {coHostUsers.slice(0, 2).map((coHost) => (
+                  <img
+                    key={coHost.id}
+                    src={resolveUserAvatar(coHost, 'Co-Host')}
+                    alt={coHost.name}
+                    onClick={() => navigate.push(`/profile/${coHost.id}`)}
+                    style={{ width: '30px', height: '30px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--surface-canvas)', marginLeft: '-10px', cursor: 'pointer' }}
+                    title={`Co-Host: ${coHost.name}`}
+                  />
+                ))}
               </div>
-              <div style={{ fontWeight: 700, color: 'var(--white)', fontSize: '0.98rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span>{leaderUser?.name || 'Community Team'}</span>
+              <div style={{ fontSize: '0.86rem', color: 'var(--ink-secondary)', minWidth: 0 }}>
+                <span>Hosted by </span>
+                <strong
+                  onClick={() => leaderUser && navigate.push(`/profile/${leaderUser.id}`)}
+                  style={{ color: 'var(--ink-primary)', cursor: leaderUser ? 'pointer' : 'default' }}
+                >
+                  {leaderUser?.name || 'Community Team'}
+                </strong>
+                {coHostUsers.length > 0 && (
+                  <span style={{ color: 'var(--ink-muted)' }}> + {coHostUsers.length} co-host{coHostUsers.length > 1 ? 's' : ''}</span>
+                )}
                 {isLeader && (
-                  <span 
+                  <span
                     onClick={() => navigate.push(`/dashboard?community=${community.id}&tab=members`)}
-                    style={{ fontSize: '0.7rem', color: 'var(--teal-400)', cursor: 'pointer', fontWeight: 500, textDecoration: 'underline' }}
-                    title="Appoint a Co-Leader to share hosting duties"
+                    style={{ marginLeft: '10px', fontSize: '0.76rem', color: 'var(--teal-300)', cursor: 'pointer', fontWeight: 600, textDecoration: 'underline' }}
                   >
                     + Add Co-Host
                   </span>
                 )}
               </div>
             </div>
-            <button onClick={() => leaderUser && navigate.push(`/chat/dm/${leaderUser.id}`)} className="btn btn-outline interactive-press" style={{ padding: '8px 14px', borderRadius: '10px', fontSize: '0.8rem', display: 'flex', gap: '4px', alignItems: 'center', flexShrink: 0 }}>
-              <MessageCircle size={14} /> Message
+
+            <button
+              onClick={() => leaderUser && navigate.push(`/chat/dm/${leaderUser.id}`)}
+              className="btn btn-outline interactive-press"
+              style={{ padding: '7px 14px', borderRadius: '99px', fontSize: '0.8rem', fontWeight: 600, display: 'inline-flex', gap: '6px', alignItems: 'center', flexShrink: 0 }}
+            >
+              <MessageCircle size={14} /> Message Host
             </button>
           </div>
-
-          {coHostUsers.length > 0 && (
-            <div style={{ marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-              <span style={{ fontSize: '0.72rem', color: 'var(--slate-400)', fontWeight: 600 }}>Co-Hosts:</span>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                {coHostUsers.map(coHost => (
-                  <div 
-                    key={coHost.id} 
-                    onClick={() => navigate.push(`/profile/${coHost.id}`)}
-                    className="interactive-press"
-                    style={{ 
-                      display: 'inline-flex', alignItems: 'center', gap: '6px', 
-                      padding: '3px 9px', borderRadius: '99px', 
-                      background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
-                      cursor: 'pointer', fontSize: '0.76rem', color: 'var(--white)'
-                    }}
-                    title={`View ${coHost.name}'s profile`}
-                  >
-                    <img 
-                      src={resolveUserAvatar(coHost, 'Co-Host')} 
-                      alt={coHost.name} 
-                      style={{ width: '18px', height: '18px', borderRadius: '50%', objectFit: 'cover' }} 
-                    />
-                    <span style={{ fontWeight: 600 }}>{coHost.name}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Responsive Layout Grid (2 Columns on Desktop) */}
@@ -1480,61 +1374,60 @@ export default function CommunityProfile() {
           }} />
         )}
 
-        {/* ===== ABOUT TAB ===== */}
+        {/* ===== OVERVIEW / ABOUT TAB ===== */}
         {(activeTab === 'overview' || activeTab === 'about') && (
           <>
-            {/* Featured Next Upcoming Walk / Meetup Card */}
+            {/* 1. Featured Next Upcoming Event (Action First) */}
             {nextEvent && (
               <div className="community-featured-event-card">
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                  <span style={{ fontSize: '0.72rem', fontWeight: 800, color: 'var(--teal-400)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Calendar size={13} /> Next Upcoming Event
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px', gap: '8px' }}>
+                  <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--teal-300)', textTransform: 'uppercase', letterSpacing: '0.09em', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                    <Calendar size={13} /> Next Meetup
                   </span>
-                  <span style={{ fontSize: '0.72rem', fontWeight: 700, padding: '3px 8px', borderRadius: '6px', background: 'rgba(235, 87, 56,0.15)', color: '#F27257', border: '1px solid rgba(242, 114, 87,0.3)' }}>
+                  <span style={{ fontSize: '0.72rem', fontWeight: 700, padding: '3px 9px', borderRadius: '99px', background: 'var(--brand-accent-soft)', color: 'var(--teal-300)', border: '1px solid rgba(200, 90, 50, 0.25)' }}>
                     {nextEvent.price && Number(nextEvent.price) > 0 ? `£${nextEvent.price}` : 'Free RSVP'}
                   </span>
                 </div>
 
-                <h3 className="featured-event-title" style={{ margin: '0 0 10px 0', fontSize: '1.35rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', fontWeight: 800, lineHeight: 1.2 }}>
+                <h3 className="featured-event-title" style={{ margin: '0 0 10px 0', fontSize: '1.35rem', fontFamily: 'var(--font-heading)', color: 'var(--ink-primary)', fontWeight: 700, lineHeight: 1.2 }}>
                   {nextEvent.title}
                 </h3>
 
-                <div className="featured-event-meta" style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '0.86rem', color: 'var(--slate-300)', marginBottom: '16px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Clock size={15} color="var(--teal-400)" />
-                    <span><strong>{nextEvent.date}</strong> at {nextEvent.time}</span>
+                <div className="featured-event-meta" style={{ display: 'flex', flexWrap: 'wrap', gap: '10px 18px', fontSize: '0.85rem', color: 'var(--ink-secondary)', marginBottom: '16px' }}>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                    <Clock size={14} color="var(--brand-accent)" />
+                    <span><strong>{nextEvent.date}</strong> · {nextEvent.time}</span>
                   </div>
                   {nextEvent.location && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <MapPin size={15} color="var(--teal-400)" />
-                      <span>{nextEvent.location}</span>
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                      <MapPin size={14} color="var(--ink-muted)" />
+                      <span>{cleanLocationName(nextEvent.location)}</span>
                     </div>
                   )}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Users size={15} color="var(--teal-400)" />
-                    <span>{eventRsvps[nextEvent.id]?.length || 0} attending</span>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                    <Users size={14} color="var(--ink-muted)" />
+                    <span>{eventRsvps[nextEvent.id]?.length || 0} going</span>
                   </div>
                 </div>
 
                 <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
                   <button
-                    onClick={() => navigate.push(`/events/${nextEvent.id}`)}
+                    onClick={() => navigate.push(getEventPath(nextEvent, events))}
                     className="btn btn-primary interactive-press"
                     style={{
-                      flex: 1, minWidth: '160px', padding: '12px 18px', borderRadius: '12px',
-                      fontWeight: 700, fontSize: '0.9rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                      boxShadow: '0 4px 14px rgba(235, 87, 56,0.3)'
+                      flex: 1, minWidth: '170px', padding: '12px 18px', borderRadius: '12px',
+                      fontWeight: 700, fontSize: '0.9rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
                     }}
                   >
-                    RSVP &amp; View Event Details <ChevronRight size={16} />
+                    RSVP &amp; View Details <ChevronRight size={16} />
                   </button>
                   {(community?.allow_carpool !== false && community?.allowCarpool !== false && nextEvent?.allowCarpool !== false && nextEvent?.allow_carpool !== false && !nextEvent?.description?.includes('[Carpool: disabled]')) && (
                     <button
                       onClick={() => navigate.push(`/events/${nextEvent.id}#carpool`)}
                       className="btn btn-outline interactive-press"
                       style={{
-                        padding: '12px 16px', borderRadius: '12px', fontSize: '0.86rem', fontWeight: 600,
-                        display: 'flex', alignItems: 'center', gap: '6px'
+                        padding: '12px 16px', borderRadius: '12px', fontSize: '0.85rem', fontWeight: 600,
+                        display: 'inline-flex', alignItems: 'center', gap: '6px'
                       }}
                     >
                       🚗 Carpool
@@ -1543,512 +1436,145 @@ export default function CommunityProfile() {
                 </div>
               </div>
             )}
+
             {/* Leader Editing Prompt */}
             {isLeader && (
-              <div style={{ marginBottom: '24px', padding: '16px', background: 'rgba(235, 87, 56,0.1)', border: '1px dashed var(--teal-500)', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                  <Sparkles size={20} color="var(--teal-400)" />
+              <div style={{ marginBottom: '24px', padding: '14px 16px', background: 'var(--surface-card)', border: '1px dashed var(--brand-accent)', borderRadius: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                  <Sparkles size={18} color="var(--brand-accent)" />
                   <div>
-                    <div style={{ color: 'var(--teal-300)', fontWeight: 600, fontSize: '0.95rem' }}>Edit Community Profile</div>
-                    <div style={{ color: 'var(--slate-300)', fontSize: '0.85rem' }}>Add a welcome video, update pricing, or change social links.</div>
+                    <div style={{ color: 'var(--ink-primary)', fontWeight: 700, fontSize: '0.9rem' }}>Edit Community Profile</div>
+                    <div style={{ color: 'var(--ink-muted)', fontSize: '0.8rem' }}>Update your story, cover photo, pricing, or links.</div>
                   </div>
                 </div>
-                <button onClick={() => navigate.push(`/dashboard?community=${community.id}&tab=settings`)} className="btn btn-primary interactive-press" style={{ padding: '8px 16px', borderRadius: '8px', fontSize: '0.85rem' }}>
+                <button onClick={() => navigate.push(`/dashboard?community=${community.id}&tab=settings`)} className="btn btn-outline interactive-press" style={{ padding: '7px 14px', borderRadius: '10px', fontSize: '0.82rem' }}>
                   Edit Settings
                 </button>
               </div>
             )}
 
-            {/* Organizer Spotlight */}
-            <div className="community-spotlight-card" style={{ marginBottom: '32px', background: 'linear-gradient(135deg, rgba(235, 87, 56,0.05), rgba(27, 27, 27,1))', border: '1px solid rgba(235, 87, 56,0.2)', borderRadius: '16px', padding: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }}>
-              <img 
-                src={resolveUserAvatar(leaderUser, community.name)} 
-                alt="Organiser" 
-                onClick={() => leaderUser && navigate.push(`/profile/${leaderUser.id}`)}
-                style={{ width: '88px', height: '88px', borderRadius: '50%', objectFit: 'cover', border: '3px solid var(--teal-500)', cursor: leaderUser ? 'pointer' : 'default', marginBottom: '16px', boxShadow: '0 4px 12px rgba(235, 87, 56,0.2)' }} 
-              />
-              <div className="spotlight-role" style={{ fontSize: '0.75rem', color: 'var(--teal-400)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '4px' }}>Community Leader</div>
-              <div className="spotlight-leader-name" style={{ fontWeight: 800, color: 'var(--white)', fontSize: '1.4rem', fontFamily: 'var(--font-heading)', marginBottom: '8px' }}>{leaderUser?.name || 'Community Team'}</div>
-              <p style={{ color: 'var(--slate-300)', fontSize: '0.95rem', marginBottom: '20px', maxWidth: '400px', lineHeight: 1.5 }}>
-                {leaderUser?.bio || `Hey! I'm the organizer for ${community.name}. Feel free to drop me a message if you have any questions before joining!`}
-              </p>
-              <button 
-                onClick={() => leaderUser && navigate.push(`/chat/dm/${leaderUser.id}`)} 
-                className="btn btn-primary interactive-press" 
-                style={{ width: '100%', maxWidth: '280px', padding: '14px', borderRadius: '12px', fontSize: '1rem', display: 'flex', gap: '8px', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}
-              >
-                <MessageCircle size={18} /> Message Organizer
-              </button>
+            {/* 2. About & Editorial Story */}
+            <div style={{ marginBottom: '28px' }}>
+              <h3 style={{ fontSize: '1.35rem', fontFamily: 'var(--font-heading)', color: 'var(--ink-primary)', margin: '0 0 12px 0' }}>What we're about</h3>
 
-              {/* Co-Hosts & Leadership Team */}
-              {coHostUsers.length > 0 && (
-                <div style={{ width: '100%', marginTop: '24px', paddingTop: '20px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-                  <div style={{ fontSize: '0.74rem', color: 'var(--teal-400)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-                    <Users size={14} /> Co-Host{coHostUsers.length > 1 ? 's' : ''} ({coHostUsers.length})
-                  </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: coHostUsers.length === 1 ? '1fr' : 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', width: '100%', maxWidth: '520px', margin: '0 auto' }}>
-                    {coHostUsers.map(coHost => (
-                      <div 
-                        key={coHost.id}
-                        className="glass-panel"
-                        style={{ padding: '14px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', borderRadius: '14px' }}
-                      >
-                        <img 
-                          src={resolveUserAvatar(coHost, 'Co-Host')} 
-                          alt={coHost.name}
-                          onClick={() => navigate.push(`/profile/${coHost.id}`)}
-                          style={{ width: '56px', height: '56px', borderRadius: '50%', objectFit: 'cover', border: '2px solid rgba(242, 114, 87,0.5)', marginBottom: '8px', cursor: 'pointer' }}
-                        />
-                        <div 
-                          onClick={() => navigate.push(`/profile/${coHost.id}`)}
-                          style={{ fontWeight: 700, fontSize: '0.98rem', color: 'var(--white)', cursor: 'pointer', marginBottom: '2px' }}
-                        >
-                          {coHost.name}
-                        </div>
-                        <div style={{ fontSize: '0.72rem', color: '#a78bfa', fontWeight: 600, marginBottom: '6px' }}>Co-Host</div>
-                        {coHost.bio && (
-                          <p style={{ fontSize: '0.78rem', color: 'var(--slate-300)', lineHeight: 1.4, margin: '0 0 10px 0', maxWidth: '240px' }}>
-                            {coHost.bio}
-                          </p>
-                        )}
-                        <button 
-                          onClick={() => navigate.push(`/chat/dm/${coHost.id}`)}
-                          className="btn btn-outline interactive-press"
-                          style={{ padding: '6px 14px', borderRadius: '8px', fontSize: '0.78rem', display: 'flex', alignItems: 'center', gap: '4px', marginTop: 'auto' }}
-                        >
-                          <MessageCircle size={13} /> Message
-                        </button>
-                      </div>
-                    ))}
-                  </div>
+              {/* Calm Hairline Tags */}
+              {(community.category || community.tags?.length > 0) && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '16px' }}>
+                  {community.category && (
+                    <span style={{ padding: '4px 10px', borderRadius: '99px', background: 'var(--brand-accent-soft)', color: 'var(--teal-300)', fontSize: '0.76rem', fontWeight: 600, border: '1px solid rgba(200, 90, 50, 0.22)' }}>
+                      {community.category}
+                    </span>
+                  )}
+                  {community.tags?.filter(t => t !== community.category).slice(0, 4).map((tag, idx) => (
+                    <span key={idx} style={{ padding: '4px 10px', borderRadius: '99px', background: 'var(--surface-card)', color: 'var(--ink-secondary)', fontSize: '0.76rem', fontWeight: 600, border: '1px solid var(--hairline-border-strong)' }}>
+                      {tag}
+                    </span>
+                  ))}
                 </div>
               )}
+
+              <div style={{
+                position: 'relative',
+                lineHeight: 1.75,
+                color: 'var(--ink-secondary)',
+                fontSize: '0.98rem',
+                maxHeight: showFullDesc ? 'none' : '155px',
+                overflow: 'hidden',
+                transition: 'max-height 0.3s ease'
+              }}>
+                {community.description?.split('\n').map((line, i) => (
+                  <p key={i} style={{ margin: '0 0 12px 0', minHeight: line.trim() === '' ? '10px' : 'auto' }}>{line}</p>
+                ))}
+
+                {!showFullDesc && (
+                  <div style={{
+                    position: 'absolute', bottom: 0, left: 0, right: 0, height: '72px',
+                    background: 'linear-gradient(to bottom, transparent, var(--surface-canvas))',
+                    pointerEvents: 'none'
+                  }} />
+                )}
+              </div>
+
+              <button
+                onClick={() => setShowFullDesc(!showFullDesc)}
+                className="interactive-press community-show-more-btn"
+                style={{
+                  marginTop: '10px', padding: '8px 16px', borderRadius: '99px',
+                  background: 'var(--surface-card)', border: '1px solid var(--hairline-border-strong)',
+                  color: 'var(--teal-300)', fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer',
+                  display: 'inline-flex', alignItems: 'center', gap: '6px'
+                }}
+              >
+                {showFullDesc ? 'Read Less' : 'Read Full Story'}
+              </button>
+            </div>
+
+            {/* 3. Hairline Editorial Fact Strip (replaces 4 chunky icon-box cards) */}
+            <div className="community-fact-strip">
+              <div className="community-fact-cell">
+                <div className="community-fact-label">Who It's For</div>
+                <div className="community-fact-value">{community.target_audience || 'All abilities welcome'}</div>
+              </div>
+              <div className="community-fact-cell">
+                <div className="community-fact-label">Cost</div>
+                <div className="community-fact-value">{community.cost || community.metrics?.cost || 'Free to join'}</div>
+              </div>
+              <div className="community-fact-cell">
+                <div className="community-fact-label">Cadence</div>
+                <div className="community-fact-value">{community.activity_level === 'Very Active' ? 'Weekly' : community.activity_level === 'Active' ? 'Fortnightly' : 'Monthly'}</div>
+              </div>
+              <div className="community-fact-cell">
+                <div className="community-fact-label">Location</div>
+                <div className="community-fact-value">{cleanLocationName(community.location_name) || 'Tunbridge Wells'}</div>
+              </div>
             </div>
 
             {/* Welcome Video */}
             {community.welcome_video_url ? (
-              <div style={{ marginBottom: '32px', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
-                <iframe 
-                  width="100%" 
-                  height="220" 
-                  src={community.welcome_video_url} 
-                  title="Welcome Video" 
-                  frameBorder="0" 
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+              <div style={{ marginBottom: '32px', borderRadius: '16px', overflow: 'hidden', border: '1px solid var(--hairline-border)' }}>
+                <iframe
+                  width="100%"
+                  height="220"
+                  src={community.welcome_video_url}
+                  title="Welcome Video"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
                   style={{ display: 'block' }}
                 />
               </div>
             ) : isLeader ? (
-              <div onClick={() => navigate.push(`/dashboard?community=${community.id}&tab=settings`)} className="interactive-press" style={{ marginBottom: '32px', borderRadius: '16px', padding: '24px', textAlign: 'center', border: '1px dashed rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.02)', cursor: 'pointer' }}>
-                <Camera size={24} color="var(--slate-400)" style={{ margin: '0 auto 8px' }} />
-                <div style={{ color: 'var(--white)', fontWeight: 600, fontSize: '0.95rem' }}>Add a Welcome Video</div>
-                <div style={{ color: 'var(--slate-400)', fontSize: '0.85rem' }}>Introduce yourself and welcome new members.</div>
+              <div onClick={() => navigate.push(`/dashboard?community=${community.id}&tab=settings`)} className="interactive-press" style={{ marginBottom: '28px', borderRadius: '14px', padding: '18px', textAlign: 'center', border: '1px dashed var(--hairline-border-strong)', background: 'var(--surface-card)', cursor: 'pointer' }}>
+                <Camera size={20} color="var(--ink-muted)" style={{ margin: '0 auto 6px' }} />
+                <div style={{ color: 'var(--ink-primary)', fontWeight: 600, fontSize: '0.9rem' }}>Add a Welcome Video</div>
+                <div style={{ color: 'var(--ink-muted)', fontSize: '0.8rem' }}>Introduce yourself and welcome new members.</div>
               </div>
             ) : null}
 
-            {/* Community Supporters */}
-            {(() => {
-              const supporters = sponsorshipAssignments
-                .filter(a => (a.target_id === communityId && a.target_type === 'community') || a.target_type === 'global')
-                .map(a => sponsors.find(s => s.id === a.sponsor_id))
-                .filter(Boolean);
-                
-              if (supporters.length > 0) {
-                return (
-                  <div style={{ marginBottom: '32px' }}>
-                    <h3 style={{ fontSize: '1.3rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: '0 0 16px 0' }}>Community Supporters</h3>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '12px' }}>
-                      {supporters.map(sponsor => (
-                        <div key={sponsor.id} onClick={() => navigate.push(`/sponsors/${sponsor.id}`)} className="interactive-press" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '16px', display: 'flex', alignItems: 'center', gap: '16px', cursor: 'pointer' }}>
-                          <div style={{ width: '60px', height: '60px', borderRadius: '12px', background: 'white', overflow: 'hidden', padding: '4px', flexShrink: 0 }}>
-                            <img src={sponsor.logo} alt={sponsor.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                          </div>
-                          <div>
-                            <div style={{ fontSize: '0.75rem', color: 'var(--teal-400)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.5px', marginBottom: '2px' }}>{sponsor.tier === 'Headline' ? 'Headline Sponsor' : 'Community Supporter'}</div>
-                            <div style={{ fontSize: '1.1rem', color: 'var(--white)', fontWeight: 700 }}>{sponsor.name}</div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                );
-              }
-              return null;
-            })()}
-
-            {/* Description & Accordion */}
-            <div style={{ marginBottom: '32px' }}>
-              <h3 style={{ fontSize: '1.3rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: '0 0 16px 0' }}>What we're about</h3>
-              
-              {/* Tags & Community Focus */}
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '16px' }}>
-                {community.category && (
-                  <span style={{ padding: '6px 12px', borderRadius: '8px', background: 'rgba(235, 87, 56,0.12)', color: 'var(--teal-300)', fontSize: '0.8rem', fontWeight: 600, border: '1px solid rgba(235, 87, 56,0.2)' }}>
-                    🎯 {community.category}
-                  </span>
-                )}
-                {community.activity_level && (
-                  <span style={{ padding: '6px 12px', borderRadius: '8px', background: 'rgba(236,72,153,0.1)', color: 'var(--pink-400)', fontSize: '0.8rem', fontWeight: 600 }}>
-                    ⚡ {community.activity_level === 'Very Active' ? 'High Energy (Weekly)' : community.activity_level === 'Active' ? 'Active (Fortnightly)' : community.activity_level === 'Casual' ? 'Casual Pace' : community.activity_level}
-                  </span>
-                )}
-                {community.tags?.map((tag, idx) => {
-                  if (tag === community.category) return null;
-                  return (
-                    <span key={idx} style={{ padding: '6px 12px', borderRadius: '8px', background: 'rgba(59,130,246,0.1)', color: 'var(--blue-400)', fontSize: '0.8rem', fontWeight: 600 }}>
-                      {tag.match(/[\p{Emoji}]/u) ? tag : `🔥 ${tag}`}
-                    </span>
-                  );
-                })}
-              </div>
-
-              <div style={{ 
-                position: 'relative', 
-                lineHeight: 1.8, 
-                color: 'var(--slate-200)', 
-                fontSize: '1rem',
-                maxHeight: showFullDesc ? 'none' : '150px',
-                overflow: 'hidden',
-                transition: 'max-height 0.3s ease'
-              }}>
-                {community.description?.split('\n').map((line, i) => (
-                  <p key={i} style={{ margin: '0 0 12px 0', minHeight: line.trim() === '' ? '12px' : 'auto' }}>{line}</p>
-                ))}
-                
-                {!showFullDesc && (
-                  <div style={{ 
-                    position: 'absolute', bottom: 0, left: 0, right: 0, height: '80px', 
-                    background: 'linear-gradient(to bottom, transparent, var(--slate-950))',
-                    display: 'flex', alignItems: 'flex-end', justifyContent: 'center', paddingBottom: '8px'
-                  }}>
-                  </div>
-                )}
-              </div>
-              
-              <button 
-                onClick={() => setShowFullDesc(!showFullDesc)}
-                className="interactive-press community-show-more-btn"
-                style={{ 
-                  marginTop: '8px', width: '100%', padding: '12px', borderRadius: '12px', 
-                  background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)',
-                  color: 'var(--teal-400)', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer',
-                  display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px'
-                }}
-              >
-                {showFullDesc ? 'Show Less' : (
-                  <>Show <img className="community-show-more-logo" src="/images/logo.webp" alt="More Community" style={{ height: '14px', filter: 'brightness(0) invert(1)', opacity: 0.8 }} /></>
-                )}
-              </button>
-            </div>
-
-            {/* Gallery Peek */}
+            {/* 4. Community Moments (Gallery Peek) */}
             {galleryPhotos.length > 0 && (
               <div style={{ marginBottom: '32px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                  <h3 style={{ fontSize: '1.3rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <ImageIcon size={20} color="var(--teal-400)" /> Past Events
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '14px' }}>
+                  <h3 style={{ fontSize: '1.25rem', fontFamily: 'var(--font-heading)', color: 'var(--ink-primary)', margin: 0 }}>
+                    Community Moments
                   </h3>
-                  <button onClick={() => setActiveTab('photos')} className="interactive-press" style={{ background: 'none', border: 'none', color: 'var(--teal-400)', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}>View All</button>
+                  <button onClick={() => setActiveTab('photos')} className="interactive-press" style={{ background: 'none', border: 'none', color: 'var(--teal-300)', fontSize: '0.82rem', fontWeight: 700, cursor: 'pointer' }}>View All →</button>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', borderRadius: '16px', overflow: 'hidden' }}>
                   {galleryPhotos.slice(0, 3).map((photo, i) => (
-                    <img key={i} src={typeof photo === 'string' ? photo : photo.url} alt="Gallery peek" style={{ width: '100%', height: i === 0 ? '200px' : '96px', objectFit: 'cover', gridColumn: i === 0 ? 'span 3' : 'span 1' }} />
+                    <img key={i} src={typeof photo === 'string' ? photo : photo.url} alt="Community moment" style={{ width: '100%', height: i === 0 ? '210px' : '104px', objectFit: 'cover', gridColumn: i === 0 ? 'span 3' : 'span 1' }} />
                   ))}
                 </div>
               </div>
             )}
 
-            {/* Key Info Cards */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '32px' }}>
-              <div className="community-key-info-card" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '16px' }}>
-                <div className="info-icon-box" style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(235, 87, 56,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px', color: 'var(--teal-400)' }}>
-                  <Users size={20} />
-                </div>
-                <div className="info-title" style={{ fontSize: '0.75rem', color: 'var(--slate-400)', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px', letterSpacing: '0.05em' }}>Who It's For</div>
-                <div className="info-value" style={{ fontSize: '0.9rem', color: 'var(--white)', fontWeight: 500, lineHeight: 1.4 }}>{community.target_audience || 'All ages & abilities welcome. No experience needed.'}</div>
-              </div>
-              <div className="community-key-info-card" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '16px' }}>
-                <div className="info-icon-box" style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(235, 87, 56,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px', color: 'var(--teal-400)' }}>
-                  <span style={{ fontSize: '1.2rem', fontWeight: 600 }}>£</span>
-                </div>
-                <div className="info-title" style={{ fontSize: '0.75rem', color: 'var(--slate-400)', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px', letterSpacing: '0.05em' }}>Cost</div>
-                <div className="info-value" style={{ fontSize: '0.9rem', color: 'var(--white)', fontWeight: 500, lineHeight: 1.4 }}>{community.cost || community.metrics?.cost || 'Free to join'}</div>
-              </div>
-              <div className="community-key-info-card" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '16px' }}>
-                <div className="info-icon-box" style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(235, 87, 56,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px', color: 'var(--teal-400)' }}>
-                  <Calendar size={20} />
-                </div>
-                <div className="info-title" style={{ fontSize: '0.75rem', color: 'var(--slate-400)', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px', letterSpacing: '0.05em' }}>How Often</div>
-                <div className="info-value" style={{ fontSize: '0.9rem', color: 'var(--white)', fontWeight: 500, lineHeight: 1.4 }}>{community.activity_level === 'Very Active' ? 'Weekly meetups' : community.activity_level === 'Active' ? 'Fortnightly' : 'Monthly'}</div>
-              </div>
-              <div className="community-key-info-card" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '16px' }}>
-                <div className="info-icon-box" style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(235, 87, 56,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px', color: 'var(--teal-400)' }}>
-                  <MapPin size={20} />
-                </div>
-                <div className="info-title" style={{ fontSize: '0.75rem', color: 'var(--slate-400)', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px', letterSpacing: '0.05em' }}>Location</div>
-                <div className="info-value" style={{ fontSize: '0.9rem', color: 'var(--white)', fontWeight: 500, lineHeight: 1.4 }}>{cleanLocationName(community.location_name) || 'Tunbridge Wells, Kent'}</div>
-              </div>
-            </div>
-
-            {/* Socials & Group Chats */}
-            {(community.whatsapp_group || community.instagram_handle || (community.external_links && community.external_links.length > 0)) && (
-              <div style={{ marginBottom: '32px' }}>
-                <h3 style={{ fontSize: '1.1rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: '0 0 16px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <MessageCircle size={18} color="var(--teal-400)" /> Socials & Group Chats
-                </h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  {/* WhatsApp Group */}
-                  {community.whatsapp_group && (
-                    <a 
-                      href={community.whatsapp_group.startsWith('http') ? community.whatsapp_group : `https://${community.whatsapp_group}`} 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      className="interactive-press community-social-whatsapp" 
-                      style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', background: 'rgba(37,211,102,0.06)', border: '1px solid rgba(37,211,102,0.25)', borderRadius: '16px', textDecoration: 'none', color: 'var(--white)' }}
-                    >
-                      <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: '#25D366', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff', flexShrink: 0 }}>
-                        <MessageCircle size={22} />
-                      </div>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontWeight: 700, fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          Official WhatsApp Group
-                          <span style={{ fontSize: '0.65rem', background: '#25D366', color: '#000', fontWeight: 800, padding: '2px 6px', borderRadius: '6px', textTransform: 'uppercase' }}>Join Chat</span>
-                        </div>
-                        <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)', marginTop: '2px' }}>Seamless 1-tap onboarding for members</div>
-                      </div>
-                      <ExternalLink size={18} color="var(--slate-400)" />
-                    </a>
-                  )}
-
-                  {/* Instagram Handle */}
-                  {community.instagram_handle && (
-                    <a 
-                      href={community.instagram_handle.startsWith('http') ? community.instagram_handle : `https://instagram.com/${community.instagram_handle.replace('@', '')}`} 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      className="interactive-press community-social-instagram" 
-                      style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', background: 'rgba(236,72,153,0.06)', border: '1px solid rgba(236,72,153,0.25)', borderRadius: '16px', textDecoration: 'none', color: 'var(--white)' }}
-                    >
-                      <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: 'linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff', flexShrink: 0 }}>
-                        <Camera size={22} />
-                      </div>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontWeight: 700, fontSize: '1rem' }}>Instagram</div>
-                        <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)', marginTop: '2px' }}>{community.instagram_handle.startsWith('@') ? community.instagram_handle : `@${community.instagram_handle}`}</div>
-                      </div>
-                      <ExternalLink size={18} color="var(--slate-400)" />
-                    </a>
-                  )}
-
-                  {/* External Links */}
-                  {community.external_links && community.external_links.map((link, idx) => {
-                     let IconComponent = Globe;
-                     const titleLower = (link.title || '').toLowerCase();
-                     const urlLower = (link.url || '').toLowerCase();
-                     if (titleLower.includes('strava') || urlLower.includes('strava')) IconComponent = Activity;
-                     if (titleLower.includes('whatsapp') || urlLower.includes('whatsapp')) IconComponent = MessageCircle;
-                     
-                     let displayUrl = link.url;
-                     try { displayUrl = new URL(link.url).hostname.replace('www.', ''); } catch(e) {}
-
-                     return (
-                        <a key={idx} href={link.url} target="_blank" rel="noopener noreferrer" className="interactive-press" style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', textDecoration: 'none', color: 'var(--white)' }}>
-                          <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: 'rgba(235, 87, 56,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--teal-400)', flexShrink: 0 }}>
-                            <IconComponent size={20} />
-                          </div>
-                          <div style={{ flex: 1 }}>
-                            <div style={{ fontWeight: 600, fontSize: '1rem' }}>{link.title}</div>
-                            <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)', marginTop: '2px' }}>{displayUrl}</div>
-                          </div>
-                          <ChevronRight size={18} color="var(--slate-500)" />
-                        </a>
-                     );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Upcoming Events List */}
-            {upcomingEvents.length > 0 && (
-              <div style={{ marginBottom: '32px' }}>
-                <h3 style={{ fontSize: '1.3rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: '0 0 16px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Calendar size={20} color="var(--teal-400)" /> Upcoming Events
-                </h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  {upcomingEvents.map(evt => (
-                    <div 
-                      key={evt.id}
-                      onClick={() => navigate.push(getEventPath(evt, events))} 
-                      className="interactive-press"
-                      style={{ borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.02)', cursor: 'pointer', display: 'flex' }}
-                    >
-                      {evt.image && (
-                        <div style={{ width: '100px', flexShrink: 0, background: `url(${evt.image})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
-                        </div>
-                      )}
-                      <div style={{ padding: '16px', flex: 1 }}>
-                        <div style={{ display: 'flex', gap: '8px', fontSize: '0.8rem', color: 'var(--teal-300)', fontWeight: 600, marginBottom: '6px' }}>
-                          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Calendar size={14} /> {evt.date}</span>
-                          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={14} /> {evt.time}</span>
-                        </div>
-                        <div style={{ fontWeight: 700, fontSize: '1.05rem', color: 'var(--white)', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          {evt.title}
-                          {evt.communityId !== communityId && <span style={{ fontSize: '0.65rem', background: 'var(--teal-500)', color: '#FFFFFF', padding: '2px 6px', borderRadius: '6px', fontWeight: 700, textTransform: 'uppercase' }}>Collab</span>}
-                        </div>
-                        <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)', display: 'flex', alignItems: 'center', gap: '4px' }}><MapPin size={14} /> {cleanLocationName(evt.location)}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-
-            {/* Get In Touch */}
-            {leaderUser && (
-              <div style={{ marginBottom: '32px', padding: '20px', background: 'rgba(235, 87, 56,0.05)', borderRadius: '16px', border: '1px solid rgba(235, 87, 56,0.2)' }}>
-                <h3 style={{ fontSize: '1.2rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: '0 0 16px 0' }}>Get in Touch</h3>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                  <img src={resolveUserAvatar(leaderUser)} alt="" style={{ width: '56px', height: '56px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--slate-800)' }} />
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 700, fontSize: '1.05rem', color: 'var(--white)' }}>{leaderUser.name}</div>
-                    <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)' }}>Community Organiser</div>
-                  </div>
-                </div>
-                <button 
-                  onClick={() => navigate.push(`/chat/dm/${leaderUser.id}`)}
-                  className="btn btn-primary interactive-press"
-                  style={{ width: '100%', marginTop: '16px', padding: '12px', borderRadius: '12px', fontSize: '0.95rem', fontWeight: 600, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}
-                >
-                  <MessageCircle size={18} /> Message Organiser
-                </button>
-              </div>
-            )}
-
-
-            {/* Promoted Experiences (Marketplace) */}
-            {experiences && experiences.filter(exp => exp.promotedBy === community.id).length > 0 && (
-              <div style={{ marginBottom: '32px' }}>
-                <h3 style={{ fontSize: '1.1rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: '0 0 12px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Globe size={18} color="var(--teal-400)" /> Trips & Retreats
-                </h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  {experiences.filter(exp => exp.promotedBy === community.id).map(exp => {
-                    const finalPrice = exp.basePrice + Math.round(exp.basePrice * ((exp.leaderMarkup || 0) / 100));
-                    return (
-                      <div key={exp.id} onClick={() => navigate.push(`/checkout/experience/${exp.id}`)} className="interactive-press" style={{ display: 'flex', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px', overflow: 'hidden', cursor: 'pointer' }}>
-                        <div style={{ width: '100px', flexShrink: 0 }}>
-                          <img src={exp.image} alt={exp.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        </div>
-                        <div style={{ padding: '12px', flex: 1 }}>
-                          <div style={{ fontSize: '0.7rem', color: 'var(--teal-400)', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px' }}>{exp.category}</div>
-                          <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.95rem', marginBottom: '4px' }}>{exp.title}</div>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '8px' }}>
-                            <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)' }}><Clock size={12} style={{ display: 'inline', verticalAlign: '-2px' }} /> {exp.duration}</div>
-                            <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--white)' }}>£{finalPrice}</div>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Multi-Chapter Franchise Network (Respects leader setting) */}
-            {(community.id !== 'more-leaders-network' && community.allow_chapters !== false && community.allowChapters !== false) && (
-              <TownChaptersBlueprint community={community} />
-            )}
-
-            {/* Town Cross-Pollination (Local Sister Groups) */}
-            {community.id !== 'more-leaders-network' && (
-              <div style={{ marginBottom: '32px' }}>
-                <TownCrossPollination currentCommunity={community} />
-              </div>
-            )}
-
-            {/* Unified Partner & Collaborate Card (Respects leader setting) */}
-            {(community.id !== 'more-leaders-network' && community.accepts_pitches !== false) && (
-              <div style={{
-                marginBottom: '32px',
-                padding: '20px',
-                borderRadius: '18px',
-                background: 'linear-gradient(135deg, rgba(235, 87, 56, 0.1) 0%, rgba(27, 27, 27, 0.6) 100%)',
-                border: '1px solid rgba(242, 114, 87, 0.3)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: '16px',
-                flexWrap: 'wrap'
-              }}>
-                <div style={{ maxWidth: '480px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                    <Sparkles size={16} color="var(--teal-400)" />
-                    <span style={{ fontSize: '0.74rem', fontWeight: 700, color: 'var(--teal-300)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                      Partner or Host with Us
-                    </span>
-                  </div>
-                  <div style={{ fontSize: '1rem', fontWeight: 800, color: '#fff', marginBottom: '3px' }}>
-                    Are you a local instructor, coach, or business?
-                  </div>
-                  <div style={{ fontSize: '0.82rem', color: 'var(--slate-300)', lineHeight: 1.45 }}>
-                    Host an in-person guest workshop, or sponsor {community?.name} with an exclusive member perk. Leaders review all pitches directly with single-tap privacy.
-                  </div>
-                </div>
-                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setPartnerModalTab('session');
-                      setShowPartnerModal(true);
-                    }}
-                    className="btn btn-outline interactive-press"
-                    style={{
-                      fontSize: '0.82rem',
-                      padding: '9px 16px',
-                      borderRadius: '10px',
-                      background: 'rgba(255, 255, 255, 0.04)',
-                      border: '1px solid rgba(242, 114, 87, 0.35)',
-                      color: 'var(--teal-300)',
-                      fontWeight: 700,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px'
-                    }}
-                  >
-                    <Calendar size={14} /> Host a Session
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setPartnerModalTab('sponsor');
-                      setShowPartnerModal(true);
-                    }}
-                    className="btn btn-primary interactive-press"
-                    style={{
-                      fontSize: '0.82rem',
-                      padding: '9px 16px',
-                      borderRadius: '10px',
-                      fontWeight: 700,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px'
-                    }}
-                  >
-                    <Store size={14} /> Sponsor & Offer Perk
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Reviews */}
+            {/* 5. What Members Say (Real Social Proof moved up!) */}
             <div style={{ marginBottom: '32px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
-                <h3 style={{ fontSize: '1.1rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Star size={18} color="var(--amber-400)" /> What members say
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '10px' }}>
+                <h3 style={{ fontSize: '1.25rem', fontFamily: 'var(--font-heading)', color: 'var(--ink-primary)', margin: 0 }}>
+                  What members say
                 </h3>
-                <button 
+                <button
                   type="button"
                   onClick={() => {
                     if (!user?.id) {
@@ -2064,7 +1590,7 @@ export default function CommunityProfile() {
                     setShowReviewForm(true);
                   }}
                   className="btn btn-outline interactive-press"
-                  style={{ padding: '6px 14px', fontSize: '0.82rem', borderRadius: '10px' }}
+                  style={{ padding: '6px 14px', fontSize: '0.8rem', borderRadius: '99px' }}
                 >
                   Leave a Review
                 </button>
@@ -2073,66 +1599,354 @@ export default function CommunityProfile() {
                 {topReviews.length > 0 ? topReviews.map((review) => {
                   const author = users.find(u => u.id === review.user_id) || { name: 'Community Member', avatar: '/images/default-avatar.svg' };
                   return (
-                    <div key={review.id} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px', padding: '16px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-                        <img src={author.avatar} alt={author.name} style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }} />
-                        <div>
-                          <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.9rem' }}>{author.name}</div>
-                          <div style={{ display: 'flex', gap: '2px' }}>
-                            {Array.from({ length: 5 }).map((_, i) => (
-                              <Star key={i} size={12} fill={i < review.rating ? "var(--amber-400)" : "none"} color={i < review.rating ? "var(--amber-400)" : "var(--slate-600)"} />
-                            ))}
-                          </div>
+                    <div key={review.id} className="review-card" style={{ background: 'var(--surface-card)', border: '1px solid var(--hairline-border)', borderRadius: '16px', padding: '18px' }}>
+                      <p style={{ margin: '0 0 14px 0', color: 'var(--ink-primary)', fontSize: '0.96rem', lineHeight: 1.6, fontFamily: 'var(--font-heading)', fontStyle: 'italic' }}>"{review.content}"</p>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <img src={author.avatar} alt={author.name} style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }} />
+                          <span className="review-author-name" style={{ fontWeight: 600, color: 'var(--ink-secondary)', fontSize: '0.84rem' }}>{author.name}</span>
+                        </div>
+                        <div style={{ display: 'flex', gap: '2px' }}>
+                          {Array.from({ length: 5 }).map((_, i) => (
+                            <Star key={i} size={12} fill={i < review.rating ? 'var(--amber-400)' : 'none'} color={i < review.rating ? 'var(--amber-400)' : 'var(--slate-600)'} />
+                          ))}
                         </div>
                       </div>
-                      <p style={{ margin: 0, color: 'var(--slate-300)', fontSize: '0.9rem', lineHeight: 1.5, fontStyle: 'italic' }}>"{review.content}"</p>
                     </div>
                   );
                 }) : (
-                  <div style={{ padding: '24px', textAlign: 'center', background: 'rgba(255,255,255,0.02)', borderRadius: '16px', border: '1px dashed rgba(255,255,255,0.1)' }}>
-                    <p style={{ color: 'var(--slate-400)', margin: '0 0 12px 0' }}>No reviews yet.</p>
+                  <div style={{ padding: '22px', textAlign: 'center', background: 'var(--surface-card)', borderRadius: '16px', border: '1px dashed var(--hairline-border-strong)' }}>
+                    <p style={{ color: 'var(--ink-muted)', margin: '0 0 10px 0', fontSize: '0.88rem' }}>No member reviews yet — be the first to share what it's like.</p>
                     {isMember && (
-                      <button onClick={() => { setActiveTab('reviews'); setShowReviewForm(true); }} className="btn btn-outline interactive-press" style={{ padding: '6px 16px', fontSize: '0.85rem' }}>
+                      <button onClick={() => { setActiveTab('reviews'); setShowReviewForm(true); }} className="btn btn-outline interactive-press" style={{ padding: '6px 14px', fontSize: '0.82rem', borderRadius: '99px' }}>
                         Leave a Review
                       </button>
                     )}
                   </div>
                 )}
                 {communityReviews.length > 3 && (
-                  <button onClick={() => setActiveTab('reviews')} className="interactive-press" style={{ background: 'none', border: 'none', color: 'var(--teal-400)', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer', padding: '8px' }}>
-                    View all {communityReviews.length} reviews
+                  <button onClick={() => setActiveTab('reviews')} className="interactive-press" style={{ background: 'none', border: 'none', color: 'var(--teal-300)', fontSize: '0.86rem', fontWeight: 700, cursor: 'pointer', padding: '6px 0', textAlign: 'left' }}>
+                    Read all {communityReviews.length} reviews →
                   </button>
                 )}
               </div>
             </div>
 
-            {/* Contact & Links */}
-            <div style={{ marginBottom: '32px' }}>
-              <h3 style={{ fontSize: '1.1rem', fontFamily: 'var(--font-heading)', color: 'var(--white)', margin: '0 0 12px 0' }}>Get in Touch</h3>
-              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                {community.contact_email && (
-                  <a href={`mailto:${community.contact_email}`} className="btn btn-outline interactive-press" style={{ flex: 1, padding: '12px', fontSize: '0.85rem', display: 'flex', justifyContent: 'center', gap: '6px', borderRadius: '12px', minWidth: '120px' }}>
-                    <Mail size={16} /> Email
-                  </a>
-                )}
-                {community.instagram && (
-                  <a href={`https://instagram.com/${community.instagram.replace('@', '')}`} target="_blank" rel="noreferrer" className="btn btn-outline interactive-press" style={{ flex: 1, padding: '12px', fontSize: '0.85rem', display: 'flex', justifyContent: 'center', gap: '6px', borderRadius: '12px', minWidth: '120px' }}>
-                    <Camera size={16} /> Instagram
-                  </a>
-                )}
-                {community.website && (
-                  <a 
-                    href={community.website.startsWith('http') ? community.website : `https://${community.website}`} 
-                    target="_blank" 
-                    rel="noopener noreferrer nofollow" 
-                    className="btn btn-outline interactive-press" 
-                    style={{ flex: 1, padding: '12px', fontSize: '0.85rem', display: 'flex', justifyContent: 'center', gap: '6px', borderRadius: '12px', minWidth: '120px' }}
-                    title={`Visit official website: ${community.website}`}
+            {/* 6. Meet Your Host & Co-Hosts (Single Refined Host Card — replaces 3 duplicate host boxes) */}
+            <div className="community-spotlight-card" style={{ marginBottom: '32px', background: 'var(--surface-card)', border: '1px solid var(--hairline-border)', borderRadius: '18px', padding: '22px' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px', flexWrap: 'wrap' }}>
+                <img
+                  src={resolveUserAvatar(leaderUser, community.name)}
+                  alt="Organiser"
+                  onClick={() => leaderUser && navigate.push(`/profile/${leaderUser.id}`)}
+                  style={{ width: '64px', height: '64px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--brand-accent)', cursor: leaderUser ? 'pointer' : 'default', flexShrink: 0 }}
+                />
+                <div style={{ flex: 1, minWidth: '200px' }}>
+                  <div className="spotlight-role" style={{ fontSize: '0.7rem', color: 'var(--teal-300)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: '3px' }}>Community Host</div>
+                  <div className="spotlight-leader-name" style={{ fontWeight: 700, color: 'var(--ink-primary)', fontSize: '1.25rem', fontFamily: 'var(--font-heading)', marginBottom: '6px' }}>{leaderUser?.name || 'Community Team'}</div>
+                  <p style={{ color: 'var(--ink-secondary)', fontSize: '0.9rem', margin: '0 0 14px 0', lineHeight: 1.55 }}>
+                    {leaderUser?.bio || `Hey! I host ${community.name}. Drop me a message anytime if you have questions before coming along.`}
+                  </p>
+                  <button
+                    onClick={() => leaderUser && navigate.push(`/chat/dm/${leaderUser.id}`)}
+                    className="btn btn-outline interactive-press"
+                    style={{ padding: '9px 16px', borderRadius: '10px', fontSize: '0.85rem', display: 'inline-flex', gap: '6px', alignItems: 'center', fontWeight: 600 }}
                   >
-                    <ExternalLink size={16} /> Website
-                  </a>
-                )}
+                    <MessageCircle size={15} /> Message {leaderUser?.name?.split(' ')[0] || 'Host'}
+                  </button>
+                </div>
               </div>
+
+              {coHostUsers.length > 0 && (
+                <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid var(--hairline-border)' }}>
+                  <div style={{ fontSize: '0.7rem', color: 'var(--ink-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '10px' }}>
+                    Co-Hosts ({coHostUsers.length})
+                  </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                    {coHostUsers.map(coHost => (
+                      <div
+                        key={coHost.id}
+                        onClick={() => navigate.push(`/profile/${coHost.id}`)}
+                        className="interactive-press"
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '6px 12px 6px 6px', borderRadius: '99px', background: 'var(--surface-elevated)', border: '1px solid var(--hairline-border)', cursor: 'pointer' }}
+                      >
+                        <img
+                          src={resolveUserAvatar(coHost, 'Co-Host')}
+                          alt={coHost.name}
+                          style={{ width: '26px', height: '26px', borderRadius: '50%', objectFit: 'cover' }}
+                        />
+                        <span style={{ fontWeight: 600, fontSize: '0.82rem', color: 'var(--ink-primary)' }}>{coHost.name}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* 7. More Upcoming Events */}
+            {upcomingEvents.length > 1 && (
+              <div style={{ marginBottom: '32px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '14px' }}>
+                  <h3 style={{ fontSize: '1.25rem', fontFamily: 'var(--font-heading)', color: 'var(--ink-primary)', margin: 0 }}>
+                    Upcoming Schedule
+                  </h3>
+                  <button onClick={() => setActiveTab('events')} className="interactive-press" style={{ background: 'none', border: 'none', color: 'var(--teal-300)', fontSize: '0.82rem', fontWeight: 700, cursor: 'pointer' }}>See all {upcomingEvents.length} →</button>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {upcomingEvents.slice(1, 4).map(evt => (
+                    <div
+                      key={evt.id}
+                      onClick={() => navigate.push(getEventPath(evt, events))}
+                      className="interactive-press community-event-card"
+                      style={{ borderRadius: '14px', overflow: 'hidden', border: '1px solid var(--hairline-border)', background: 'var(--surface-card)', cursor: 'pointer', display: 'flex' }}
+                    >
+                      {evt.image && (
+                        <div style={{ width: '88px', flexShrink: 0, background: `url(${evt.image})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
+                      )}
+                      <div style={{ padding: '14px', flex: 1 }}>
+                        <div style={{ fontSize: '0.76rem', color: 'var(--teal-300)', fontWeight: 700, marginBottom: '4px' }}>
+                          {evt.date} · {evt.time}
+                        </div>
+                        <div className="event-title" style={{ fontWeight: 700, fontSize: '0.98rem', color: 'var(--ink-primary)', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          {evt.title}
+                          {evt.communityId !== communityId && <span style={{ fontSize: '0.62rem', background: 'var(--teal-500)', color: '#FFFFFF', padding: '2px 6px', borderRadius: '6px', fontWeight: 700, textTransform: 'uppercase' }}>Collab</span>}
+                        </div>
+                        <div className="event-meta" style={{ fontSize: '0.82rem', color: 'var(--ink-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}><MapPin size={13} /> {cleanLocationName(evt.location)}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 8. Unified Connect & Links (Socials + Email + Website in one calm list) */}
+            {(community.whatsapp_group || community.instagram_handle || community.instagram || community.contact_email || community.website || (community.external_links && community.external_links.length > 0)) && (
+              <div style={{ marginBottom: '32px' }}>
+                <h3 style={{ fontSize: '1.2rem', fontFamily: 'var(--font-heading)', color: 'var(--ink-primary)', margin: '0 0 14px 0' }}>
+                  Connect &amp; Links
+                </h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {community.whatsapp_group && (
+                    <a
+                      href={community.whatsapp_group.startsWith('http') ? community.whatsapp_group : `https://${community.whatsapp_group}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="interactive-press community-link-row"
+                    >
+                      <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'var(--brand-secondary-soft)', color: 'var(--brand-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <MessageCircle size={18} />
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: 600, fontSize: '0.94rem', color: 'var(--ink-primary)' }}>WhatsApp Group Chat</div>
+                        <div style={{ fontSize: '0.78rem', color: 'var(--ink-muted)' }}>Quick updates and member chat</div>
+                      </div>
+                      <ExternalLink size={16} color="var(--ink-muted)" />
+                    </a>
+                  )}
+
+                  {(community.instagram_handle || community.instagram) && (
+                    <a
+                      href={(community.instagram_handle || community.instagram).startsWith('http') ? (community.instagram_handle || community.instagram) : `https://instagram.com/${(community.instagram_handle || community.instagram).replace('@', '')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="interactive-press community-link-row"
+                    >
+                      <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'var(--brand-accent-soft)', color: 'var(--brand-accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <Camera size={18} />
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: 600, fontSize: '0.94rem', color: 'var(--ink-primary)' }}>Instagram</div>
+                        <div style={{ fontSize: '0.78rem', color: 'var(--ink-muted)' }}>
+                          {(community.instagram_handle || community.instagram).startsWith('@') ? (community.instagram_handle || community.instagram) : `@${(community.instagram_handle || community.instagram).replace(/^https?:\/\/(www\.)?instagram\.com\//i, '')}`}
+                        </div>
+                      </div>
+                      <ExternalLink size={16} color="var(--ink-muted)" />
+                    </a>
+                  )}
+
+                  {community.website && (
+                    <a
+                      href={community.website.startsWith('http') ? community.website : `https://${community.website}`}
+                      target="_blank"
+                      rel="noopener noreferrer nofollow"
+                      className="interactive-press community-link-row"
+                    >
+                      <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'var(--surface-elevated)', color: 'var(--ink-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <Globe size={18} />
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: 600, fontSize: '0.94rem', color: 'var(--ink-primary)' }}>Website</div>
+                        <div style={{ fontSize: '0.78rem', color: 'var(--ink-muted)' }}>{community.website.replace(/^https?:\/\/(www\.)?/i, '')}</div>
+                      </div>
+                      <ExternalLink size={16} color="var(--ink-muted)" />
+                    </a>
+                  )}
+
+                  {community.contact_email && (
+                    <a
+                      href={`mailto:${community.contact_email}`}
+                      className="interactive-press community-link-row"
+                    >
+                      <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'var(--surface-elevated)', color: 'var(--ink-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <Mail size={18} />
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: 600, fontSize: '0.94rem', color: 'var(--ink-primary)' }}>Email Organiser</div>
+                        <div style={{ fontSize: '0.78rem', color: 'var(--ink-muted)' }}>{community.contact_email}</div>
+                      </div>
+                      <ChevronRight size={16} color="var(--ink-muted)" />
+                    </a>
+                  )}
+
+                  {community.external_links && community.external_links.map((link, idx) => {
+                    let IconComponent = Globe;
+                    const titleLower = (link.title || '').toLowerCase();
+                    const urlLower = (link.url || '').toLowerCase();
+                    if (titleLower.includes('strava') || urlLower.includes('strava')) IconComponent = Activity;
+                    if (titleLower.includes('whatsapp') || urlLower.includes('whatsapp')) IconComponent = MessageCircle;
+                    let displayUrl = link.url;
+                    try { displayUrl = new URL(link.url).hostname.replace('www.', ''); } catch (e) {}
+
+                    return (
+                      <a key={idx} href={link.url} target="_blank" rel="noopener noreferrer" className="interactive-press community-link-row">
+                        <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'var(--surface-elevated)', color: 'var(--ink-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          <IconComponent size={18} />
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontWeight: 600, fontSize: '0.94rem', color: 'var(--ink-primary)' }}>{link.title}</div>
+                          <div style={{ fontSize: '0.78rem', color: 'var(--ink-muted)' }}>{displayUrl}</div>
+                        </div>
+                        <ExternalLink size={16} color="var(--ink-muted)" />
+                      </a>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Community Supporters */}
+            {(() => {
+              const supporters = sponsorshipAssignments
+                .filter(a => (a.target_id === communityId && a.target_type === 'community') || a.target_type === 'global')
+                .map(a => sponsors.find(s => s.id === a.sponsor_id))
+                .filter(Boolean);
+
+              if (supporters.length > 0) {
+                return (
+                  <div style={{ marginBottom: '32px' }}>
+                    <h3 style={{ fontSize: '1.15rem', fontFamily: 'var(--font-heading)', color: 'var(--ink-primary)', margin: '0 0 12px 0' }}>Community Supporters</h3>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '10px' }}>
+                      {supporters.map(sponsor => (
+                        <div key={sponsor.id} onClick={() => navigate.push(`/sponsors/${sponsor.id}`)} className="interactive-press community-supporter-card" style={{ background: 'var(--surface-card)', border: '1px solid var(--hairline-border)', borderRadius: '14px', padding: '14px', display: 'flex', alignItems: 'center', gap: '14px', cursor: 'pointer' }}>
+                          <div style={{ width: '52px', height: '52px', borderRadius: '10px', background: '#FFFFFF', overflow: 'hidden', padding: '4px', flexShrink: 0, border: '1px solid var(--hairline-border)' }}>
+                            <img src={sponsor.logo} alt={sponsor.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                          </div>
+                          <div>
+                            <div style={{ fontSize: '0.7rem', color: 'var(--teal-300)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.06em', marginBottom: '2px' }}>{sponsor.tier === 'Headline' ? 'Headline Sponsor' : 'Community Supporter'}</div>
+                            <div className="supporter-name" style={{ fontSize: '1rem', color: 'var(--ink-primary)', fontWeight: 700 }}>{sponsor.name}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              }
+              return null;
+            })()}
+
+            {/* Promoted Experiences (Marketplace) */}
+            {experiences && experiences.filter(exp => exp.promotedBy === community.id).length > 0 && (
+              <div style={{ marginBottom: '32px' }}>
+                <h3 style={{ fontSize: '1.15rem', fontFamily: 'var(--font-heading)', color: 'var(--ink-primary)', margin: '0 0 12px 0' }}>
+                  Trips &amp; Retreats
+                </h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {experiences.filter(exp => exp.promotedBy === community.id).map(exp => {
+                    const finalPrice = exp.basePrice + Math.round(exp.basePrice * ((exp.leaderMarkup || 0) / 100));
+                    return (
+                      <div key={exp.id} onClick={() => navigate.push(`/checkout/experience/${exp.id}`)} className="interactive-press" style={{ display: 'flex', background: 'var(--surface-card)', border: '1px solid var(--hairline-border)', borderRadius: '14px', overflow: 'hidden', cursor: 'pointer' }}>
+                        <div style={{ width: '96px', flexShrink: 0 }}>
+                          <img src={exp.image} alt={exp.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        </div>
+                        <div style={{ padding: '12px', flex: 1 }}>
+                          <div style={{ fontSize: '0.68rem', color: 'var(--teal-300)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '3px' }}>{exp.category}</div>
+                          <div style={{ fontWeight: 700, color: 'var(--ink-primary)', fontSize: '0.94rem', marginBottom: '4px' }}>{exp.title}</div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '6px' }}>
+                            <div style={{ fontSize: '0.78rem', color: 'var(--ink-muted)' }}><Clock size={12} style={{ display: 'inline', verticalAlign: '-2px' }} /> {exp.duration}</div>
+                            <div style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--ink-primary)' }}>£{finalPrice}</div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* 9. Quiet Ecosystem Footer (Partner, Sister Groups & Chapters tucked below hairline divider) */}
+            <div className="community-ecosystem-section">
+              {community.id !== 'more-leaders-network' && (
+                <div style={{ marginBottom: '24px' }}>
+                  <TownCrossPollination currentCommunity={community} />
+                </div>
+              )}
+
+              {(community.id !== 'more-leaders-network' && community.allow_chapters !== false && community.allowChapters !== false) && (
+                <div style={{ marginBottom: '24px' }}>
+                  <TownChaptersBlueprint community={community} />
+                </div>
+              )}
+
+              {(community.id !== 'more-leaders-network' && community.accepts_pitches !== false) && (
+                <div style={{
+                  marginBottom: '24px',
+                  padding: '20px',
+                  borderRadius: '16px',
+                  background: 'var(--surface-card)',
+                  border: '1px solid var(--hairline-border)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '16px',
+                  flexWrap: 'wrap'
+                }}>
+                  <div style={{ maxWidth: '460px' }}>
+                    <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--teal-300)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '4px' }}>
+                      Partner or Host with Us
+                    </div>
+                    <div style={{ fontSize: '0.98rem', fontWeight: 700, fontFamily: 'var(--font-heading)', color: 'var(--ink-primary)', marginBottom: '4px' }}>
+                      Local instructor, coach, or independent business?
+                    </div>
+                    <div style={{ fontSize: '0.82rem', color: 'var(--ink-muted)', lineHeight: 1.45 }}>
+                      Pitch a guest session or member perk directly to {community?.name}'s host.
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPartnerModalTab('session');
+                        setShowPartnerModal(true);
+                      }}
+                      className="btn btn-outline interactive-press"
+                      style={{ fontSize: '0.8rem', padding: '8px 14px', borderRadius: '10px', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                    >
+                      <Calendar size={14} /> Host a Session
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPartnerModalTab('sponsor');
+                        setShowPartnerModal(true);
+                      }}
+                      className="btn btn-outline interactive-press"
+                      style={{ fontSize: '0.8rem', padding: '8px 14px', borderRadius: '10px', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                    >
+                      <Store size={14} /> Sponsor &amp; Offer Perk
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Community Guidelines */}
@@ -2431,7 +2245,7 @@ export default function CommunityProfile() {
                                     navigate.push(`/dashboard?community=${community.id}&duplicateEvent=${event.id}`);
                                   }}
                                   className="btn btn-outline interactive-press"
-                                  style={{ flex: 1, minWidth: '120px', padding: '9px 12px', borderRadius: '10px', fontSize: '0.82rem', display: 'flex', gap: '6px', justifyContent: 'center', alignItems: 'center', color: '#7dd3fc', borderColor: 'rgba(56,189,248,0.35)' }}
+                                  style={{ flex: 1, minWidth: '120px', padding: '9px 12px', borderRadius: '10px', fontSize: '0.82rem', display: 'flex', gap: '6px', justifyContent: 'center', alignItems: 'center', color: 'var(--ink-primary)', borderColor: 'var(--hairline-border-strong)' }}
                                 >
                                   <Copy size={14} /> Duplicate Event
                                 </button>
@@ -2657,7 +2471,7 @@ export default function CommunityProfile() {
             <div className="community-pass-card">
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <img src="/logo.png" alt="More Community" style={{ height: '18px' }} />
+                  <img src="/logo.png" className="theme-invert" alt="More Community" style={{ height: '18px' }} />
                   <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--teal-400)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                     Community Pass
                   </span>
@@ -2688,9 +2502,9 @@ export default function CommunityProfile() {
                       className="interactive-press"
                       style={{
                         width: '100%', padding: '12px', borderRadius: '12px',
-                        background: '#25D366', color: '#ffffff', fontWeight: 700, fontSize: '0.92rem',
+                        background: 'var(--brand-secondary)', color: '#FFFFFF', fontWeight: 700, fontSize: '0.9rem',
                         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                        textDecoration: 'none', marginBottom: '8px', boxShadow: '0 4px 14px rgba(37,211,102,0.3)'
+                        textDecoration: 'none', marginBottom: '8px'
                       }}
                     >
                       <MessageCircle size={18} /> Open WhatsApp Chat

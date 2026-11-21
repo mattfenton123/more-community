@@ -366,9 +366,9 @@ export default function OnboardingFlow({ onComplete }) {
               style={{
                 padding: '8px 16px',
                 borderRadius: '12px',
-                border: gender === g ? '1px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.1)',
-                background: gender === g ? 'rgba(235, 87, 56,0.12)' : 'var(--slate-800)',
-                color: gender === g ? 'var(--teal-300)' : 'var(--slate-400)',
+                border: gender === g ? '1px solid var(--brand-accent)' : '1px solid var(--hairline-border-strong)',
+                background: gender === g ? 'var(--brand-accent-soft)' : 'var(--surface-card)',
+                color: gender === g ? 'var(--teal-300)' : 'var(--ink-secondary)',
                 fontSize: '0.85rem',
                 cursor: 'pointer'
               }}
@@ -393,9 +393,9 @@ export default function OnboardingFlow({ onComplete }) {
               style={{
                 padding: '10px 18px',
                 borderRadius: '999px',
-                border: selected ? '1px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.1)',
-                background: selected ? 'rgba(235, 87, 56,0.12)' : 'transparent',
-                color: selected ? 'var(--teal-300)' : 'var(--slate-300)',
+                border: selected ? '1px solid var(--brand-accent)' : '1px solid var(--hairline-border-strong)',
+                background: selected ? 'var(--brand-accent-soft)' : 'var(--surface-card)',
+                color: selected ? 'var(--teal-300)' : 'var(--ink-secondary)',
                 fontWeight: selected ? 600 : 400,
                 fontSize: '0.9rem',
                 cursor: 'pointer',
@@ -472,7 +472,7 @@ export default function OnboardingFlow({ onComplete }) {
                 borderRadius: '20px',
                 overflow: 'hidden',
                 background: 'var(--slate-900)',
-                border: '1px solid rgba(255,255,255,0.08)',
+                border: '1px solid var(--hairline-border-strong)',
                 boxShadow: '0 12px 36px rgba(0,0,0,0.45)',
                 transform: `translateX(${swipeOffset}px) rotate(${swipeOffset * 0.04}deg)`,
                 opacity: swipeLeaveDir ? 0 : 1,
@@ -750,7 +750,7 @@ export default function OnboardingFlow({ onComplete }) {
           autoFocus
           style={{
             width: '100%', padding: '14px 16px',
-            background: 'var(--slate-800)', border: '1px solid var(--slate-700)',
+            background: 'var(--surface-card)', border: '1px solid var(--slate-700)',
             borderRadius: '12px', color: 'var(--white)', fontSize: '1rem',
             transition: 'border-color 0.2s',
           }}
@@ -767,7 +767,7 @@ export default function OnboardingFlow({ onComplete }) {
           onChange={e => setBio(e.target.value)}
           style={{
             width: '100%', padding: '14px 16px',
-            background: 'var(--slate-800)', border: '1px solid var(--slate-700)',
+            background: 'var(--surface-card)', border: '1px solid var(--slate-700)',
             borderRadius: '12px', color: 'var(--white)', fontSize: '0.95rem',
             minHeight: '80px', resize: 'none', fontFamily: 'inherit',
             transition: 'border-color 0.2s', marginBottom: '16px'
@@ -787,7 +787,7 @@ export default function OnboardingFlow({ onComplete }) {
             onChange={e => setLocation(e.target.value)}
             style={{
               width: '100%', padding: '14px 16px',
-              background: 'var(--slate-800)', border: '1px solid var(--slate-700)',
+              background: 'var(--surface-card)', border: '1px solid var(--slate-700)',
               borderRadius: '12px', color: 'var(--white)', fontSize: '1rem',
               transition: 'border-color 0.2s',
             }}
@@ -803,7 +803,7 @@ export default function OnboardingFlow({ onComplete }) {
             onChange={e => setDob(e.target.value)}
             style={{
               width: '100%', padding: '14px 16px',
-              background: 'var(--slate-800)', border: '1px solid var(--slate-700)',
+              background: 'var(--surface-card)', border: '1px solid var(--slate-700)',
               borderRadius: '12px', color: 'var(--white)', fontSize: '1rem',
               transition: 'border-color 0.2s', fontFamily: 'inherit'
             }}
@@ -825,13 +825,13 @@ export default function OnboardingFlow({ onComplete }) {
         <div>
           <label style={{ display: 'block', marginBottom: '8px', color: 'var(--slate-300)', fontSize: '0.85rem', fontWeight: 500 }}>Theme</label>
           <div style={{ display: 'flex', gap: '8px' }}>
-            <button onClick={() => setTheme('light')} className="interactive-press" style={{ flex: 1, padding: '12px', borderRadius: '12px', border: theme === 'light' ? '1px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.1)', background: theme === 'light' ? 'rgba(235, 87, 56,0.12)' : 'var(--slate-800)', color: theme === 'light' ? 'var(--teal-300)' : 'var(--slate-400)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+            <button onClick={() => setTheme('light')} className="interactive-press" style={{ flex: 1, padding: '12px', borderRadius: '12px', border: theme === 'light' ? '1px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.1)', background: theme === 'light' ? 'rgba(235, 87, 56,0.12)' : 'var(--surface-card)', color: theme === 'light' ? 'var(--teal-300)' : 'var(--slate-400)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
               <Sun size={20} /> <span style={{ fontSize: '0.8rem' }}>Light</span>
             </button>
-            <button onClick={() => setTheme('dark')} className="interactive-press" style={{ flex: 1, padding: '12px', borderRadius: '12px', border: theme === 'dark' ? '1px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.1)', background: theme === 'dark' ? 'rgba(235, 87, 56,0.12)' : 'var(--slate-800)', color: theme === 'dark' ? 'var(--teal-300)' : 'var(--slate-400)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+            <button onClick={() => setTheme('dark')} className="interactive-press" style={{ flex: 1, padding: '12px', borderRadius: '12px', border: theme === 'dark' ? '1px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.1)', background: theme === 'dark' ? 'rgba(235, 87, 56,0.12)' : 'var(--surface-card)', color: theme === 'dark' ? 'var(--teal-300)' : 'var(--slate-400)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
               <Moon size={20} /> <span style={{ fontSize: '0.8rem' }}>Dark</span>
             </button>
-            <button onClick={() => setTheme('system')} className="interactive-press" style={{ flex: 1, padding: '12px', borderRadius: '12px', border: theme === 'system' ? '1px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.1)', background: theme === 'system' ? 'rgba(235, 87, 56,0.12)' : 'var(--slate-800)', color: theme === 'system' ? 'var(--teal-300)' : 'var(--slate-400)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+            <button onClick={() => setTheme('system')} className="interactive-press" style={{ flex: 1, padding: '12px', borderRadius: '12px', border: theme === 'system' ? '1px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.1)', background: theme === 'system' ? 'rgba(235, 87, 56,0.12)' : 'var(--surface-card)', color: theme === 'system' ? 'var(--teal-300)' : 'var(--slate-400)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
               <Monitor size={20} /> <span style={{ fontSize: '0.8rem' }}>Auto</span>
             </button>
           </div>
@@ -840,7 +840,7 @@ export default function OnboardingFlow({ onComplete }) {
         <div>
           <label style={{ display: 'block', marginBottom: '8px', color: 'var(--slate-300)', fontSize: '0.85rem', fontWeight: 500 }}>Accessibility</label>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <div onClick={() => setHighContrast(!highContrast)} className="interactive-press" style={{ padding: '12px 16px', borderRadius: '12px', background: 'var(--slate-800)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.05)' }}>
+            <div onClick={() => setHighContrast(!highContrast)} className="interactive-press" style={{ padding: '12px 16px', borderRadius: '12px', background: 'var(--surface-card)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.05)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <Eye size={18} color="var(--teal-400)" />
                 <span style={{ fontSize: '0.9rem', color: 'var(--slate-200)' }}>High Contrast</span>
@@ -850,7 +850,7 @@ export default function OnboardingFlow({ onComplete }) {
               </div>
             </div>
             
-            <div onClick={() => setLargeText(!largeText)} className="interactive-press" style={{ padding: '12px 16px', borderRadius: '12px', background: 'var(--slate-800)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.05)' }}>
+            <div onClick={() => setLargeText(!largeText)} className="interactive-press" style={{ padding: '12px 16px', borderRadius: '12px', background: 'var(--surface-card)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.05)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <Type size={18} color="var(--teal-400)" />
                 <span style={{ fontSize: '0.9rem', color: 'var(--slate-200)' }}>Large Text</span>
@@ -860,7 +860,7 @@ export default function OnboardingFlow({ onComplete }) {
               </div>
             </div>
             
-            <div onClick={() => setReduceMotion(!reduceMotion)} className="interactive-press" style={{ padding: '12px 16px', borderRadius: '12px', background: 'var(--slate-800)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.05)' }}>
+            <div onClick={() => setReduceMotion(!reduceMotion)} className="interactive-press" style={{ padding: '12px 16px', borderRadius: '12px', background: 'var(--surface-card)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.05)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <Activity size={18} color="var(--teal-400)" />
                 <span style={{ fontSize: '0.9rem', color: 'var(--slate-200)' }}>Reduce Motion</span>
@@ -893,22 +893,22 @@ export default function OnboardingFlow({ onComplete }) {
       </p>
 
       <div style={{ width: '100%', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', textAlign: 'left' }}>
-        <div style={{ padding: '12px', borderRadius: '14px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+        <div style={{ padding: '12px', borderRadius: '14px', background: 'rgba(255,255,255,0.04)', border: '1px solid var(--hairline-border-strong)' }}>
           <div style={{ fontSize: '1.1rem', marginBottom: '4px' }}>📅</div>
           <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--white)', marginBottom: '2px' }}>1-Tap RSVP &amp; Sync</div>
           <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', lineHeight: 1.35 }}>Browse by List or Map, RSVP in one tap, and add straight to your calendar.</div>
         </div>
-        <div style={{ padding: '12px', borderRadius: '14px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+        <div style={{ padding: '12px', borderRadius: '14px', background: 'rgba(255,255,255,0.04)', border: '1px solid var(--hairline-border-strong)' }}>
           <div style={{ fontSize: '1.1rem', marginBottom: '4px' }}>🎟️</div>
           <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--white)', marginBottom: '2px' }}>+1 Guest Pass</div>
           <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', lineHeight: 1.35 }}>Nervous coming alone? Reserve a +1 spot for a friend without extra sign-up.</div>
         </div>
-        <div style={{ padding: '12px', borderRadius: '14px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+        <div style={{ padding: '12px', borderRadius: '14px', background: 'rgba(255,255,255,0.04)', border: '1px solid var(--hairline-border-strong)' }}>
           <div style={{ fontSize: '1.1rem', marginBottom: '4px' }}>🚗</div>
           <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--white)', marginBottom: '2px' }}>Share a Lift</div>
           <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', lineHeight: 1.35 }}>Offer or request a carpool seat safely without sharing phone numbers.</div>
         </div>
-        <div style={{ padding: '12px', borderRadius: '14px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+        <div style={{ padding: '12px', borderRadius: '14px', background: 'rgba(255,255,255,0.04)', border: '1px solid var(--hairline-border-strong)' }}>
           <div style={{ fontSize: '1.1rem', marginBottom: '4px' }}>💡</div>
           <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--white)', marginBottom: '2px' }}>Idea Board &amp; XP</div>
           <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', lineHeight: 1.35 }}>Vote on future events, chat in channels, and earn badges as you show up.</div>

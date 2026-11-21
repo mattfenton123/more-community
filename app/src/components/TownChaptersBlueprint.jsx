@@ -83,7 +83,7 @@ export default function TownChaptersBlueprint({ community }) {
             gap: '8px',
             background: 'linear-gradient(135deg, #10b981 0%, #EB5738 100%)',
             border: 'none',
-            color: '#090d16',
+            color: '#FFFFFF',
             fontWeight: 800,
             fontSize: '0.86rem',
             padding: '10px 18px',
@@ -111,7 +111,7 @@ export default function TownChaptersBlueprint({ community }) {
           border: '1.5px solid var(--teal-400)',
           borderRadius: '12px',
           padding: '8px 14px',
-          color: '#fff',
+          color: 'var(--ink-primary)',
           fontSize: '0.84rem',
           fontWeight: 700
         }}>
@@ -130,7 +130,7 @@ export default function TownChaptersBlueprint({ community }) {
               alignItems: 'center',
               gap: '8px',
               background: 'rgba(255, 255, 255, 0.04)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
+              border: '1px solid var(--hairline-border-strong)',
               borderRadius: '12px',
               padding: '8px 14px',
               color: 'var(--slate-200)',

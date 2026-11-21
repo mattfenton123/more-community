@@ -75,7 +75,7 @@ export default function PitchExperienceModal({ experience, communities, user, on
     }}>
       <div style={{
         background: 'var(--slate-900)',
-        border: '1px solid rgba(255,255,255,0.1)',
+        border: '1px solid var(--hairline-border-strong)',
         width: '100%', maxWidth: '480px',
         borderRadius: '20px', padding: '24px',
         maxHeight: '90dvh', overflowY: 'auto',
@@ -102,7 +102,7 @@ export default function PitchExperienceModal({ experience, communities, user, on
             {/* Experience Mini Banner */}
             <div style={{
               display: 'flex', gap: '12px', alignItems: 'center',
-              padding: '10px 14px', background: 'rgba(255,255,255,0.03)',
+              padding: '10px 14px', background: 'var(--surface-card)',
               borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)'
             }}>
               <img src={experience.image} alt={experience.title} style={{ width: '48px', height: '48px', borderRadius: '8px', objectFit: 'cover' }} />
@@ -262,7 +262,7 @@ export default function PitchExperienceModal({ experience, communities, user, on
 
             <div style={{
               marginTop: '12px', padding: '12px',
-              background: 'rgba(255,255,255,0.03)', borderRadius: '12px',
+              background: 'var(--surface-card)', borderRadius: '12px',
               fontSize: '0.78rem', color: 'var(--slate-400)', textAlign: 'left', lineHeight: 1.5
             }}>
               💡 <strong>Next Step</strong>: Once the community votes on the winning date, return here and tap <strong>&quot;Host for my Community&quot;</strong> to lock in the tickets and booking link.

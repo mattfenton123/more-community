@@ -254,7 +254,7 @@ export default function ChatIndex() {
         <div className="modal-overlay" style={{ display: 'flex', flexDirection: 'column', padding: '20px', position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 100, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(4px)' }}>
           <div className="modal-content" style={{ flex: 1, display: 'flex', flexDirection: 'column', maxHeight: '80vh', overflow: 'hidden', background: 'var(--slate-900)', borderRadius: '24px', padding: '24px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-              <h2 style={{ fontFamily: 'var(--font-heading)', margin: 0, color: 'white' }}>
+              <h2 style={{ fontFamily: 'var(--font-heading)', margin: 0, color: 'var(--ink-primary)' }}>
                 {createMode === 'menu' && 'New Chat'}
                 {createMode === 'dm' && 'New Direct Message'}
                 {createMode === 'group' && 'New Group'}
@@ -267,7 +267,7 @@ export default function ChatIndex() {
             {/* Menu Mode */}
             {createMode === 'menu' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <button onClick={() => setCreateMode('dm')} className="interactive-press" style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', color: 'white', cursor: 'pointer', textAlign: 'left' }}>
+                <button onClick={() => setCreateMode('dm')} className="interactive-press" style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', color: 'var(--ink-primary)', cursor: 'pointer', textAlign: 'left' }}>
                   <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(59,130,246,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <MessageCircle size={20} color="#3b82f6" />
                   </div>
@@ -277,7 +277,7 @@ export default function ChatIndex() {
                   </div>
                 </button>
                 {manageableCommunities.length > 0 && (
-                  <button onClick={() => setCreateMode('group')} className="interactive-press" style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', color: 'white', cursor: 'pointer', textAlign: 'left' }}>
+                  <button onClick={() => setCreateMode('group')} className="interactive-press" style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', color: 'var(--ink-primary)', cursor: 'pointer', textAlign: 'left' }}>
                     <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(235, 87, 56,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       <Users size={20} color="var(--teal-400)" />
                     </div>
@@ -352,7 +352,7 @@ export default function ChatIndex() {
                             else setSelectedMembers(selectedMembers.filter(id => id !== u.id));
                           }} />
                           <img src={resolveUserAvatar(u)} alt={u.name} style={{ width: '24px', height: '24px', borderRadius: '50%', objectFit: 'cover' }} />
-                          <span style={{ color: 'white' }}>{u.name}</span>
+                          <span style={{ color: 'var(--ink-primary)' }}>{u.name}</span>
                         </label>
                       ))}
                     </div>

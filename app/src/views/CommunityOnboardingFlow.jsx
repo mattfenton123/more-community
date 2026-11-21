@@ -65,7 +65,7 @@ function StepBasics({ name, setName, description, setDescription, parentCommunit
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '8px' }}>
-            <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '10px 12px' }}>
+            <div style={{ background: 'var(--surface-card)', border: '1px solid var(--hairline-border-strong)', borderRadius: '10px', padding: '10px 12px' }}>
               <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--teal-300)', marginBottom: '3px' }}>
                 ⚖️ 1. Approval Gate
               </div>
@@ -74,7 +74,7 @@ function StepBasics({ name, setName, description, setDescription, parentCommunit
               </div>
             </div>
 
-            <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '10px 12px' }}>
+            <div style={{ background: 'var(--surface-card)', border: '1px solid var(--hairline-border-strong)', borderRadius: '10px', padding: '10px 12px' }}>
               <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--teal-300)', marginBottom: '3px' }}>
                 💰 2. Payment & Revenue Split
               </div>
@@ -83,7 +83,7 @@ function StepBasics({ name, setName, description, setDescription, parentCommunit
               </div>
             </div>
 
-            <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '10px 12px' }}>
+            <div style={{ background: 'var(--surface-card)', border: '1px solid var(--hairline-border-strong)', borderRadius: '10px', padding: '10px 12px' }}>
               <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--teal-300)', marginBottom: '3px' }}>
                 📍 3. Local Autonomy
               </div>
@@ -189,7 +189,7 @@ function StepDetails({ targetAudience, setTargetAudience, cost, setCost, activit
 
       {/* Multi-Town Chapter Network & Carpool Toggles */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '8px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '14px', padding: '14px 16px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '14px', padding: '14px 16px', background: 'var(--surface-card)', border: '1px solid var(--hairline-border-strong)', borderRadius: '14px' }}>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: '0.92rem', fontWeight: 700, color: 'var(--white)', marginBottom: '2px' }}>
               Multi-Town Chapter Network
@@ -214,7 +214,7 @@ function StepDetails({ targetAudience, setTargetAudience, cost, setCost, activit
           </button>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '14px', padding: '14px 16px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '14px', padding: '14px 16px', background: 'var(--surface-card)', border: '1px solid var(--hairline-border-strong)', borderRadius: '14px' }}>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: '0.92rem', fontWeight: 700, color: 'var(--white)', marginBottom: '2px' }}>
               Community Carpool & Lift Sharing
@@ -464,7 +464,7 @@ function StepCoverPhoto({ coverImagePreview, handleImageSelect, fileInputRef }) 
       >
         {!coverImagePreview ? (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', color: 'var(--slate-400)' }}>
-            <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'var(--surface-card)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <ImageIcon size={28} color="var(--teal-400)" />
             </div>
             <span style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--white)' }}>Upload Cover Photo</span>
@@ -567,7 +567,7 @@ function StepEvent({ eventTitle, setEventTitle, eventDate, setEventDate, eventTi
         {startOnlyTime && (
           <div style={{
             background: 'rgba(255,255,255,0.025)',
-            border: '1px solid rgba(255,255,255,0.08)',
+            border: '1px solid var(--hairline-border-strong)',
             borderRadius: '12px',
             padding: '12px 14px',
             display: 'flex',
@@ -617,8 +617,8 @@ function StepEvent({ eventTitle, setEventTitle, eventDate, setEventDate, eventTi
                       borderRadius: '99px',
                       fontSize: '0.75rem',
                       fontWeight: approxDuration === preset ? 700 : 500,
-                      border: approxDuration === preset ? '1px solid var(--teal-400)' : '1px solid rgba(255,255,255,0.1)',
-                      background: approxDuration === preset ? 'rgba(235, 87, 56,0.18)' : 'rgba(255,255,255,0.03)',
+                      border: approxDuration === preset ? '1px solid var(--teal-400)' : '1px solid var(--hairline-border-strong)',
+                      background: approxDuration === preset ? 'rgba(235, 87, 56,0.18)' : 'var(--surface-card)',
                       color: approxDuration === preset ? 'var(--teal-300)' : 'var(--slate-300)',
                       cursor: 'pointer'
                     }}
@@ -775,7 +775,7 @@ function StepPlan({ selectedTier, setSelectedTier, billingInterval, setBillingIn
             position: 'relative'
           }}
         >
-          <div style={{ position: 'absolute', top: '-10px', right: '16px', background: 'linear-gradient(135deg, #F27257, #0284c7)', color: '#1B1B1B', fontSize: '0.68rem', fontWeight: 800, padding: '2px 8px', borderRadius: '99px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          <div style={{ position: 'absolute', top: '-10px', right: '16px', background: 'var(--brand-accent)', color: '#FFFFFF', fontSize: '0.68rem', fontWeight: 800, padding: '2px 8px', borderRadius: '99px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
             Recommended
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
@@ -805,8 +805,8 @@ function StepPlan({ selectedTier, setSelectedTier, billingInterval, setBillingIn
                 onClick={(e) => { e.stopPropagation(); setBillingInterval('annual'); }}
                 style={{
                   flex: 1, padding: '6px', fontSize: '0.75rem', fontWeight: 600, borderRadius: '8px',
-                  background: billingInterval === 'annual' ? 'var(--teal-500)' : 'rgba(255,255,255,0.06)',
-                  color: billingInterval === 'annual' ? '#1B1B1B' : 'var(--slate-300)',
+                  background: billingInterval === 'annual' ? 'var(--teal-500)' : 'var(--surface-card)',
+                  color: billingInterval === 'annual' ? '#FFFFFF' : 'var(--slate-300)',
                   border: 'none', cursor: 'pointer'
                 }}
               >
@@ -817,8 +817,8 @@ function StepPlan({ selectedTier, setSelectedTier, billingInterval, setBillingIn
                 onClick={(e) => { e.stopPropagation(); setBillingInterval('monthly'); }}
                 style={{
                   flex: 1, padding: '6px', fontSize: '0.75rem', fontWeight: 600, borderRadius: '8px',
-                  background: billingInterval === 'monthly' ? 'var(--teal-500)' : 'rgba(255,255,255,0.06)',
-                  color: billingInterval === 'monthly' ? '#1B1B1B' : 'var(--slate-300)',
+                  background: billingInterval === 'monthly' ? 'var(--teal-500)' : 'var(--surface-card)',
+                  color: billingInterval === 'monthly' ? '#FFFFFF' : 'var(--slate-300)',
                   border: 'none', cursor: 'pointer'
                 }}
               >

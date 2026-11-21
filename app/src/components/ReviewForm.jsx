@@ -142,7 +142,7 @@ export default function ReviewForm({ communityId, onClose }) {
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 placeholder="What do you love about this community? What could be better?"
-                style={{ width: '100%', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '16px', color: 'var(--white)', minHeight: '120px', fontSize: '0.95rem', fontFamily: 'inherit', resize: 'none', outline: 'none' }}
+                style={{ width: '100%', background: 'var(--surface-elevated)', border: '1px solid var(--hairline-border-strong)', borderRadius: '12px', padding: '16px', color: 'var(--white)', minHeight: '120px', fontSize: '0.95rem', fontFamily: 'inherit', resize: 'none', outline: 'none' }}
                 required
               />
             </div>

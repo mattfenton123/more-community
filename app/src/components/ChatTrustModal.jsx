@@ -67,7 +67,7 @@ export default function ChatTrustModal({ isOpen, onClose, targetUser, communityI
         onClick={e => e.stopPropagation()}
         className="modal-content"
         style={{
-          background: '#1B1B1B',
+          background: 'var(--surface-card)',
           border: '1px solid rgba(255,255,255,0.12)',
           borderRadius: '24px',
           maxWidth: '500px',
@@ -81,7 +81,7 @@ export default function ChatTrustModal({ isOpen, onClose, targetUser, communityI
         {/* Header */}
         <div style={{
           padding: '16px 20px',
-          borderBottom: '1px solid rgba(255,255,255,0.08)',
+          borderBottom: '1px solid var(--hairline-border)',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
@@ -93,7 +93,7 @@ export default function ChatTrustModal({ isOpen, onClose, targetUser, communityI
               Report or Block Member
             </h3>
           </div>
-          <button onClick={onClose} className="interactive-press" style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: '4px' }}>
+          <button onClick={onClose} className="interactive-press" style={{ background: 'none', border: 'none', color: 'var(--ink-muted)', cursor: 'pointer', padding: '4px' }}>
             <X size={18} />
           </button>
         </div>
@@ -101,7 +101,7 @@ export default function ChatTrustModal({ isOpen, onClose, targetUser, communityI
         {/* Body */}
         <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div>
-            <div style={{ fontSize: '0.85rem', color: '#cbd5e1', marginBottom: '8px' }}>
+            <div style={{ fontSize: '0.85rem', color: 'var(--ink-secondary)', marginBottom: '8px' }}>
               Why are you reporting <strong>{targetUser.name}</strong>?
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -121,7 +121,7 @@ export default function ChatTrustModal({ isOpen, onClose, targetUser, communityI
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.78rem', color: '#94a3b8', marginBottom: '6px', textTransform: 'uppercase', fontWeight: 700 }}>
+            <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--ink-muted)', marginBottom: '6px', textTransform: 'uppercase', fontWeight: 700 }}>
               Additional Details (Optional)
             </label>
             <textarea
@@ -131,10 +131,10 @@ export default function ChatTrustModal({ isOpen, onClose, targetUser, communityI
               style={{
                 width: '100%',
                 padding: '10px 12px',
-                background: '#252525',
+                background: 'var(--surface-card)',
                 border: '1px solid #334155',
                 borderRadius: '10px',
-                color: '#fff',
+                color: 'var(--ink-primary)',
                 fontSize: '0.85rem',
                 minHeight: '70px',
                 resize: 'vertical',
@@ -143,14 +143,14 @@ export default function ChatTrustModal({ isOpen, onClose, targetUser, communityI
             />
           </div>
 
-          <label style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.85rem', color: '#fff', cursor: 'pointer', padding: '10px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '10px' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.85rem', color: 'var(--ink-primary)', cursor: 'pointer', padding: '10px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '10px' }}>
             <input type="checkbox" checked={alsoBlock} onChange={e => setAlsoBlock(e.target.checked)} />
             <span>Block this user (they will no longer be able to message you)</span>
           </label>
         </div>
 
         {/* Footer */}
-        <div style={{ padding: '16px 20px', borderTop: '1px solid rgba(255,255,255,0.08)', background: 'rgba(0,0,0,0.2)', display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+        <div style={{ padding: '16px 20px', borderTop: '1px solid var(--hairline-border)', background: 'var(--surface-elevated)', display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
           <button onClick={onClose} className="btn btn-outline interactive-press" style={{ padding: '8px 16px', borderRadius: '8px', fontSize: '0.85rem' }}>
             Cancel
           </button>

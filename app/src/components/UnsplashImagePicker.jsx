@@ -111,7 +111,7 @@ export default function UnsplashImagePicker({
       position: 'fixed',
       inset: 0,
       zIndex: 110000,
-      background: 'rgba(5, 10, 20, 0.88)',
+      background: 'rgba(18, 18, 18, 0.72)',
       backdropFilter: 'blur(12px)',
       display: 'flex',
       alignItems: 'center',
@@ -124,7 +124,7 @@ export default function UnsplashImagePicker({
           width: '100%',
           maxWidth: '720px',
           maxHeight: '90vh',
-          background: 'linear-gradient(180deg, #1B1B1B 0%, #090d16 100%)',
+          background: 'var(--surface-card)',
           border: '1.5px solid rgba(242, 114, 87, 0.35)',
           borderRadius: '24px',
           display: 'flex',
@@ -140,7 +140,7 @@ export default function UnsplashImagePicker({
               <ImageIcon size={20} />
             </div>
             <div>
-              <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#fff', fontFamily: 'var(--font-heading)' }}>
+              <div style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--ink-primary)', fontFamily: 'var(--font-heading)' }}>
                 {title}
               </div>
               <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>
@@ -184,7 +184,7 @@ export default function UnsplashImagePicker({
                 borderRadius: '12px',
                 background: 'rgba(255, 255, 255, 0.05)',
                 border: '1.5px solid rgba(242, 114, 87, 0.35)',
-                color: '#fff',
+                color: 'var(--ink-primary)',
                 fontSize: '0.9rem',
                 outline: 'none',
                 boxShadow: '0 4px 14px rgba(0,0,0,0.2)'
@@ -228,7 +228,7 @@ export default function UnsplashImagePicker({
                   borderRadius: '99px',
                   border: 'none',
                   background: activeCategory === cat ? 'var(--teal-500)' : 'rgba(255, 255, 255, 0.05)',
-                  color: activeCategory === cat ? '#1B1B1B' : 'var(--slate-300)',
+                  color: activeCategory === cat ? '#FFFFFF' : 'var(--slate-300)',
                   fontSize: '0.74rem',
                   fontWeight: activeCategory === cat ? 800 : 500,
                   cursor: 'pointer',
@@ -247,7 +247,7 @@ export default function UnsplashImagePicker({
           {isLoading ? (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '14px' }}>
               {[1, 2, 3, 4, 5, 6].map(n => (
-                <div key={n} style={{ height: '140px', borderRadius: '14px', background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div key={n} style={{ height: '140px', borderRadius: '14px', background: 'var(--surface-card)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <Loader2 size={24} className="spin" color="var(--teal-400)" />
                 </div>
               ))}
@@ -292,7 +292,7 @@ export default function UnsplashImagePicker({
                     </div>
 
                     <div>
-                      <span style={{ fontSize: '0.8rem', fontWeight: 800, color: '#fff', lineHeight: 1.25, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                      <span style={{ fontSize: '0.8rem', fontWeight: 800, color: '#FFFFFF', lineHeight: 1.25, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                         {img.label}
                       </span>
                       {img.author && (
@@ -309,7 +309,7 @@ export default function UnsplashImagePicker({
 
           {!isLoading && displayPhotos.length === 0 && (
             <div style={{ textAlign: 'center', padding: '50px 20px', color: 'var(--slate-400)', fontSize: '0.88rem' }}>
-              <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(255,255,255,0.03)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}>
+              <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'var(--surface-card)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}>
                 <Search size={22} color="var(--slate-500)" />
               </div>
               <p style={{ margin: '0 0 6px', color: 'var(--white)', fontWeight: 700 }}>

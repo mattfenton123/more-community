@@ -104,7 +104,7 @@ export default function CreateServiceModal({ isOpen, onClose, communityId }) {
                     style={{
                       display: 'flex', alignItems: 'center', gap: '6px',
                       padding: '10px 14px', borderRadius: '99px',
-                      background: isSelected ? 'rgba(235, 87, 56,0.15)' : 'rgba(255,255,255,0.03)',
+                      background: isSelected ? 'rgba(235, 87, 56,0.15)' : 'var(--surface-card)',
                       border: `1px solid ${isSelected ? 'var(--teal-500)' : 'rgba(255,255,255,0.1)'}`,
                       color: isSelected ? 'var(--teal-400)' : 'var(--slate-300)',
                       cursor: 'pointer', fontSize: '0.85rem', fontWeight: isSelected ? 600 : 400
@@ -153,7 +153,7 @@ export default function CreateServiceModal({ isOpen, onClose, communityId }) {
 
           <div style={{ 
             padding: '16px', 
-            background: isPremium ? 'rgba(245, 158, 11, 0.08)' : 'rgba(255,255,255,0.03)', 
+            background: isPremium ? 'rgba(245, 158, 11, 0.08)' : 'var(--surface-card)', 
             borderRadius: '16px', 
             border: isPremium ? '1.5px solid rgba(245, 158, 11, 0.35)' : '1px solid rgba(255,255,255,0.06)',
             transition: 'all 0.2s ease'
@@ -176,7 +176,7 @@ export default function CreateServiceModal({ isOpen, onClose, communityId }) {
                 
                 {/* Transparent Fundraising Split */}
                 <div style={{ 
-                  background: 'rgba(0,0,0,0.25)', 
+                  background: 'var(--surface-elevated)', 
                   borderRadius: '10px', 
                   padding: '8px 12px', 
                   display: 'flex', 
@@ -192,7 +192,7 @@ export default function CreateServiceModal({ isOpen, onClose, communityId }) {
             </label>
             
             {isPremium && (
-              <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--slate-400)', fontSize: '0.8rem' }}>
+              <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid var(--hairline-border)', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--slate-400)', fontSize: '0.8rem' }}>
                 <Shield size={14} color="#34d399" />
                 <span>Zero hassle: Billing only starts after the community leader accepts your pitch. Cancel anytime.</span>
               </div>

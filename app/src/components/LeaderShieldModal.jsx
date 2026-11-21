@@ -205,7 +205,7 @@ export default function LeaderShieldModal({ isOpen, onClose, community, leaderUs
           maxWidth: '600px',
           maxHeight: '94vh',
           overflowY: 'auto',
-          background: 'linear-gradient(180deg, #0b1120 0%, #060a12 100%)',
+          background: 'var(--surface-card)',
           border: '1.5px solid rgba(242, 114, 87, 0.35)',
           borderRadius: '26px',
           padding: '28px',
@@ -365,7 +365,7 @@ export default function LeaderShieldModal({ isOpen, onClose, community, leaderUs
                   justifyContent: 'center',
                   gap: '8px',
                   background: 'rgba(255, 255, 255, 0.05)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  border: '1px solid var(--hairline-border-strong)',
                   color: 'var(--white)'
                 }}
               >
@@ -383,7 +383,7 @@ export default function LeaderShieldModal({ isOpen, onClose, community, leaderUs
             {/* The Legal Reality Callout */}
             <div style={{
               background: 'rgba(255, 255, 255, 0.03)',
-              border: '1px solid rgba(255, 255, 255, 0.08)',
+              border: '1px solid var(--hairline-border)',
               borderRadius: '18px',
               padding: '16px',
               marginBottom: '18px',
@@ -395,7 +395,7 @@ export default function LeaderShieldModal({ isOpen, onClose, community, leaderUs
                 Do You Actually Need Leader Pro?
               </strong>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '0.76rem', marginTop: '8px' }}>
-                <div style={{ background: 'rgba(255,255,255,0.03)', padding: '10px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                <div style={{ background: 'var(--surface-card)', padding: '10px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)' }}>
                   <span style={{ color: '#F27257', fontWeight: 800, display: 'block', marginBottom: '2px' }}>Stay on Free if:</span>
                   You run casual, 100% free social meetups where members just chat and no tickets or fees are ever charged.
                 </div>
@@ -409,8 +409,8 @@ export default function LeaderShieldModal({ isOpen, onClose, community, leaderUs
             {/* Billing Interval Switch */}
             <div style={{
               display: 'flex',
-              background: 'rgba(255,255,255,0.04)',
-              border: '1px solid rgba(255,255,255,0.08)',
+              background: 'var(--surface-card)',
+              border: '1px solid var(--hairline-border)',
               borderRadius: '14px',
               padding: '4px',
               marginBottom: '18px'
@@ -424,7 +424,7 @@ export default function LeaderShieldModal({ isOpen, onClose, community, leaderUs
                   borderRadius: '10px',
                   border: 'none',
                   background: billingInterval === 'annual' ? 'var(--teal-500)' : 'transparent',
-                  color: billingInterval === 'annual' ? '#090d16' : 'var(--slate-400)',
+                  color: billingInterval === 'annual' ? '#FFFFFF' : 'var(--slate-400)',
                   fontWeight: 800,
                   fontSize: '0.85rem',
                   cursor: 'pointer',
@@ -435,7 +435,7 @@ export default function LeaderShieldModal({ isOpen, onClose, community, leaderUs
                 }}
               >
                 <span>Annual (£165 / yr)</span>
-                <span style={{ fontSize: '0.65rem', background: 'rgba(0,0,0,0.25)', color: 'var(--white)', padding: '2px 6px', borderRadius: '4px', fontWeight: 800 }}>SAVE £33</span>
+                <span style={{ fontSize: '0.65rem', background: 'var(--surface-elevated)', color: 'var(--white)', padding: '2px 6px', borderRadius: '4px', fontWeight: 800 }}>SAVE £33</span>
               </button>
               <button
                 onClick={() => setBillingInterval('monthly')}
@@ -446,7 +446,7 @@ export default function LeaderShieldModal({ isOpen, onClose, community, leaderUs
                   borderRadius: '10px',
                   border: 'none',
                   background: billingInterval === 'monthly' ? 'var(--teal-500)' : 'transparent',
-                  color: billingInterval === 'monthly' ? '#090d16' : 'var(--slate-400)',
+                  color: billingInterval === 'monthly' ? '#FFFFFF' : 'var(--slate-400)',
                   fontWeight: 800,
                   fontSize: '0.85rem',
                   cursor: 'pointer'

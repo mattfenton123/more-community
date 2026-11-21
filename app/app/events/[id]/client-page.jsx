@@ -747,7 +747,7 @@ export default function EventClient({ id }) {
               display: 'inline-flex',
               alignItems: 'center',
               gap: '7px',
-              color: 'white',
+              color: '#FFFFFF',
               fontSize: '0.85rem',
               fontWeight: 700,
               cursor: 'pointer',
@@ -1088,7 +1088,7 @@ export default function EventClient({ id }) {
                       border: '2px solid #1B1B1B',
                       marginLeft: idx === 0 ? 0 : '-10px',
                       objectFit: 'cover',
-                      background: '#252525'
+                      background: 'var(--surface-card)'
                     }}
                   />
                 );
@@ -1241,7 +1241,7 @@ export default function EventClient({ id }) {
                 <div style={{ color: 'var(--slate-300)', fontSize: '0.78rem' }}>Reserves your group spot, covers hosting &amp; leader ticket share. Refundable if under {minTripGroup} commit.</div>
               </div>
               <div style={{ padding: '10px 12px', borderRadius: '12px', background: 'rgba(27, 27, 27,0.55)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                <div style={{ fontWeight: 700, color: '#fff', marginBottom: '3px' }}>Step 2: Own Ticket (~£{supplierEstimate} on {tripProvider})</div>
+                <div style={{ fontWeight: 700, color: 'var(--ink-primary)', marginBottom: '3px' }}>Step 2: Own Ticket (~£{supplierEstimate} on {tripProvider})</div>
                 <div style={{ color: 'var(--slate-300)', fontSize: '0.78rem' }}>Paid directly to {tripProvider} via our tracked group link once {minTripGroup}+ people join.</div>
               </div>
             </div>
@@ -1969,7 +1969,7 @@ export default function EventClient({ id }) {
         }}>
           <div style={{
             width: '100%', maxWidth: '440px',
-            background: 'linear-gradient(180deg, #1B1B1B 0%, #090d16 100%)',
+            background: 'var(--surface-card)',
             border: '1px solid rgba(242, 114, 87, 0.35)',
             borderRadius: '24px', padding: '24px',
             boxShadow: '0 20px 50px rgba(0,0,0,0.7), 0 0 40px rgba(235, 87, 56, 0.15)',
@@ -2101,7 +2101,7 @@ export default function EventClient({ id }) {
         }}>
           <div style={{
             width: '100%', maxWidth: '480px',
-            background: 'linear-gradient(180deg, #1B1B1B 0%, #090d16 100%)',
+            background: 'var(--surface-card)',
             border: '1px solid rgba(242, 114, 87, 0.35)',
             borderRadius: '24px', padding: '24px',
             boxShadow: '0 20px 50px rgba(0,0,0,0.7), 0 0 40px rgba(235, 87, 56, 0.18)',
@@ -2244,7 +2244,7 @@ export default function EventClient({ id }) {
                       style={{
                         width: '100%', padding: '12px 16px', borderRadius: '12px',
                         background: 'linear-gradient(135deg, #25D366 0%, #128C7E 100%)',
-                        color: '#ffffff', fontWeight: 700, fontSize: '0.92rem',
+                        color: 'var(--ink-primary)', fontWeight: 700, fontSize: '0.92rem',
                         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
                         textDecoration: 'none', marginBottom: '10px',
                         boxShadow: '0 4px 16px rgba(37, 211, 102, 0.25)'
@@ -2315,7 +2315,7 @@ export default function EventClient({ id }) {
                             <button
                               type="button"
                               onClick={() => openCarpoolSection(true)}
-                              style={{ background: 'none', border: 'none', color: '#94a3b8', fontSize: '0.72rem', textDecoration: 'underline', cursor: 'pointer', padding: 0 }}
+                              style={{ background: 'none', border: 'none', color: 'var(--ink-muted)', fontSize: '0.72rem', textDecoration: 'underline', cursor: 'pointer', padding: 0 }}
                             >
                               Or offer yours
                             </button>
@@ -2326,7 +2326,7 @@ export default function EventClient({ id }) {
                             return (
                               <div key={lift.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', background: 'rgba(27, 27, 27,0.55)', border: '1px solid rgba(242, 114, 87,0.25)', borderRadius: '10px', padding: '9px 10px' }}>
                                 <div style={{ minWidth: 0 }}>
-                                  <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                  <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--ink-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                     {lift.driverName} • {seatsLeft} {seatsLeft === 1 ? 'seat' : 'seats'} left
                                   </div>
                                   <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
@@ -2522,7 +2522,7 @@ export default function EventClient({ id }) {
         }}>
           <div style={{
             width: '100%', maxWidth: '440px', maxHeight: '80vh',
-            background: 'linear-gradient(180deg, #1B1B1B 0%, #090d16 100%)',
+            background: 'var(--surface-card)',
             border: '1px solid rgba(255,255,255,0.12)',
             borderRadius: '24px', padding: '24px',
             boxShadow: '0 20px 50px rgba(0,0,0,0.7)',
@@ -2554,7 +2554,7 @@ export default function EventClient({ id }) {
                 return (
                   <div key={att.userId} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '14px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <img src={avatar} alt={u?.name || 'Member'} style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', background: '#252525' }} />
+                      <img src={avatar} alt={u?.name || 'Member'} style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', background: 'var(--surface-card)' }} />
                       <div>
                         <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.92rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
                           {u?.name || 'Community Member'}
@@ -2591,7 +2591,7 @@ export default function EventClient({ id }) {
         }}>
           <div style={{
             width: '100%', maxWidth: '440px',
-            background: 'linear-gradient(180deg, #1B1B1B 0%, #090d16 100%)',
+            background: 'var(--surface-card)',
             border: '1px solid rgba(242, 114, 87, 0.35)',
             borderRadius: '24px', padding: '24px',
             boxShadow: '0 20px 50px rgba(0,0,0,0.7)',
@@ -2732,7 +2732,7 @@ export default function EventClient({ id }) {
               </a>
               <button
                 onClick={() => setActivePhotoModal(null)}
-                style={{ padding: '8px 16px', borderRadius: '99px', background: 'rgba(255,255,255,0.1)', color: '#fff', border: 'none', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer' }}
+                style={{ padding: '8px 16px', borderRadius: '99px', background: 'rgba(255,255,255,0.1)', color: 'var(--ink-primary)', border: 'none', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer' }}
               >
                 Close
               </button>

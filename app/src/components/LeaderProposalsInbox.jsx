@@ -272,7 +272,7 @@ export default function LeaderProposalsInbox({
                 className="glass-panel"
                 style={{
                   borderRadius: '20px',
-                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  border: '1px solid var(--hairline-border)',
                   overflow: 'hidden',
                   background: 'linear-gradient(180deg, rgba(37, 37, 37, 0.4) 0%, rgba(27, 27, 27, 0.6) 100%)'
                 }}
@@ -370,7 +370,7 @@ export default function LeaderProposalsInbox({
                   {/* Right Column: Economics & 1-Click Action */}
                   <div style={{
                     background: 'rgba(255, 255, 255, 0.03)',
-                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                    border: '1px solid var(--hairline-border)',
                     borderRadius: '16px',
                     padding: '16px',
                     display: 'flex',
@@ -518,7 +518,7 @@ export default function LeaderProposalsInbox({
                   type="date" 
                   value={selectedDate}
                   onChange={(e) => setSelectedDate(e.target.value)}
-                  style={{ width: '100%', padding: '10px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--white)' }}
+                  style={{ width: '100%', padding: '10px', borderRadius: '10px', background: 'var(--surface-card)', border: '1px solid var(--hairline-border-strong)', color: 'var(--white)' }}
                 />
               </div>
 
@@ -528,7 +528,7 @@ export default function LeaderProposalsInbox({
                   type="time" 
                   value={selectedTime}
                   onChange={(e) => setSelectedTime(e.target.value)}
-                  style={{ width: '100%', padding: '10px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--white)' }}
+                  style={{ width: '100%', padding: '10px', borderRadius: '10px', background: 'var(--surface-card)', border: '1px solid var(--hairline-border-strong)', color: 'var(--white)' }}
                 />
               </div>
 

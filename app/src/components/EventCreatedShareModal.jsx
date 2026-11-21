@@ -71,7 +71,7 @@ export default function EventCreatedShareModal({ event, experience, allEvents, o
 
         {/* Event Preview Card */}
         <div style={{
-          background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)',
+          background: 'var(--surface-card)', border: '1px solid var(--hairline-border)',
           borderRadius: '16px', padding: '14px', marginBottom: '20px', textAlign: 'left'
         }}>
           <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--white)', marginBottom: '8px' }}>
@@ -95,7 +95,7 @@ export default function EventCreatedShareModal({ event, experience, allEvents, o
             {isAffiliate && (
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' }}>
                 <span style={{ color: 'var(--slate-400)' }}>Own {providerName} Ticket (Step 2):</span>
-                <span style={{ color: '#fff', fontWeight: 600, fontSize: '0.88rem' }}>~£{supplierEst} once {minGroup}+ join</span>
+                <span style={{ color: 'var(--ink-primary)', fontWeight: 600, fontSize: '0.88rem' }}>~£{supplierEst} once {minGroup}+ join</span>
               </div>
             )}
           </div>

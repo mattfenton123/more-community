@@ -138,14 +138,14 @@ export default function GuestRsvpModal({ event, isOpen, onClose, onSuccess }) {
               height: '28px',
               borderRadius: '8px',
               background: 'rgba(217, 70, 40, 0.15)',
-              color: '#D94628',
+              color: '#C85A32',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center'
             }}>
               <Ticket size={16} />
             </div>
-            <span style={{ fontSize: '0.9rem', fontWeight: 800, color: isLight ? '#1B1B1B' : '#ffffff' }}>
+            <span style={{ fontSize: '0.9rem', fontWeight: 800, color: isLight ? '#1C1915' : '#ffffff' }}>
               {confirmedData ? 'Ticket Confirmed' : 'Reserve Spot & Meeting Point'}
             </span>
           </div>
@@ -153,7 +153,7 @@ export default function GuestRsvpModal({ event, isOpen, onClose, onSuccess }) {
             type="button" 
             onClick={onClose} 
             className="interactive-press"
-            style={{ background: 'transparent', border: 'none', color: isLight ? '#64748b' : 'var(--slate-400)', cursor: 'pointer', padding: '4px' }}
+            style={{ background: 'transparent', border: 'none', color: isLight ? '#6E655A' : 'var(--slate-400)', cursor: 'pointer', padding: '4px' }}
           >
             <X size={18} />
           </button>
@@ -178,13 +178,13 @@ export default function GuestRsvpModal({ event, isOpen, onClose, onSuccess }) {
                 }}>
                   <Check size={32} strokeWidth={3} />
                 </div>
-                <h2 style={{ margin: '0 0 4px', fontSize: '1.25rem', color: isLight ? '#1B1B1B' : '#ffffff' }}>
+                <h2 style={{ margin: '0 0 4px', fontSize: '1.25rem', color: isLight ? '#1C1915' : '#ffffff' }}>
                   You're going!
                 </h2>
-                <p style={{ margin: 0, fontSize: '0.85rem', color: isLight ? '#64748b' : 'var(--slate-400)' }}>
+                <p style={{ margin: 0, fontSize: '0.85rem', color: isLight ? '#6E655A' : 'var(--slate-400)' }}>
                   A confirmation ticket has been sent to <strong>{confirmedData.attendeeEmail}</strong>.
                 </p>
-                <div style={{ display: 'inline-block', marginTop: '8px', padding: '3px 10px', borderRadius: '6px', background: isLight ? '#EFE9DE' : 'rgba(255,255,255,0.06)', fontSize: '0.75rem', fontWeight: 700, color: '#D94628' }}>
+                <div style={{ display: 'inline-block', marginTop: '8px', padding: '3px 10px', borderRadius: '6px', background: isLight ? '#EFE9DE' : 'rgba(255,255,255,0.06)', fontSize: '0.75rem', fontWeight: 700, color: '#C85A32' }}>
                   {confirmedData.ticketNumber}
                 </div>
               </div>
@@ -192,18 +192,18 @@ export default function GuestRsvpModal({ event, isOpen, onClose, onSuccess }) {
               {/* Meeting Point Box */}
               <div style={{
                 background: isLight ? '#FBF3EF' : 'rgba(217, 70, 40, 0.1)',
-                border: isLight ? '1px solid #99f6e4' : '1px solid rgba(217, 70, 40, 0.3)',
+                border: isLight ? '1px solid rgba(200, 90, 50, 0.28)' : '1px solid rgba(217, 70, 40, 0.3)',
                 borderRadius: '12px',
                 padding: '14px',
                 marginBottom: '16px'
               }}>
-                <div style={{ fontSize: '0.72rem', fontWeight: 800, color: '#D94628', textTransform: 'uppercase', marginBottom: '2px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <div style={{ fontSize: '0.72rem', fontWeight: 800, color: '#C85A32', textTransform: 'uppercase', marginBottom: '2px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                   <MapPin size={12} /> Meeting Point
                 </div>
-                <div style={{ fontSize: '0.92rem', fontWeight: 700, color: isLight ? '#1B1B1B' : '#ffffff', marginBottom: '6px' }}>
+                <div style={{ fontSize: '0.92rem', fontWeight: 700, color: isLight ? '#1C1915' : '#ffffff', marginBottom: '6px' }}>
                   {formatShareLocation(event.location, 'Location on event page')}
                 </div>
-                <div style={{ fontSize: '0.78rem', color: isLight ? '#64748b' : 'var(--slate-300)' }}>
+                <div style={{ fontSize: '0.78rem', color: isLight ? '#6E655A' : 'var(--slate-300)' }}>
                   {event.date} at {event.time}
                 </div>
               </div>
@@ -219,7 +219,7 @@ export default function GuestRsvpModal({ event, isOpen, onClose, onSuccess }) {
                     flex: 1,
                     padding: '10px 12px',
                     borderRadius: '10px',
-                    background: '#D94628',
+                    background: '#C85A32',
                     color: '#ffffff',
                     fontWeight: 700,
                     fontSize: '0.82rem',
@@ -242,8 +242,8 @@ export default function GuestRsvpModal({ event, isOpen, onClose, onSuccess }) {
                     padding: '10px 12px',
                     borderRadius: '10px',
                     background: isLight ? '#EFE9DE' : 'rgba(255,255,255,0.06)',
-                    color: isLight ? '#1B1B1B' : '#ffffff',
-                    border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255,255,255,0.1)',
+                    color: isLight ? '#1C1915' : '#ffffff',
+                    border: isLight ? '1px solid rgba(28, 25, 21, 0.16)' : '1px solid rgba(255,255,255,0.1)',
                     fontWeight: 700,
                     fontSize: '0.82rem',
                     textDecoration: 'none',
@@ -300,8 +300,8 @@ export default function GuestRsvpModal({ event, isOpen, onClose, onSuccess }) {
                     className="interactive-press"
                     style={{
                       background: isLight ? '#ffffff' : 'rgba(255,255,255,0.08)',
-                      color: isLight ? '#1B1B1B' : '#ffffff',
-                      border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255,255,255,0.1)',
+                      color: isLight ? '#1C1915' : '#ffffff',
+                      border: isLight ? '1px solid rgba(28, 25, 21, 0.16)' : '1px solid rgba(255,255,255,0.1)',
                       padding: '8px 14px',
                       borderRadius: '999px',
                       fontSize: '0.8rem',
@@ -330,10 +330,10 @@ export default function GuestRsvpModal({ event, isOpen, onClose, onSuccess }) {
             /* STEP 1: GUEST RSVP INPUT FORM */
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               <div>
-                <h3 style={{ margin: '0 0 4px', fontSize: '1.15rem', color: isLight ? '#1B1B1B' : '#ffffff' }}>
+                <h3 style={{ margin: '0 0 4px', fontSize: '1.15rem', color: isLight ? '#1C1915' : '#ffffff' }}>
                   {event.title}
                 </h3>
-                <p style={{ margin: 0, fontSize: '0.8rem', color: isLight ? '#64748b' : 'var(--slate-400)' }}>
+                <p style={{ margin: 0, fontSize: '0.8rem', color: isLight ? '#6E655A' : 'var(--slate-400)' }}>
                   Enter your details to receive your digital ticket and exact meeting point.
                 </p>
               </div>
@@ -358,9 +358,9 @@ export default function GuestRsvpModal({ event, isOpen, onClose, onSuccess }) {
                     width: '100%',
                     padding: '10px 12px',
                     borderRadius: '10px',
-                    border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255,255,255,0.1)',
+                    border: isLight ? '1px solid rgba(28, 25, 21, 0.16)' : '1px solid rgba(255,255,255,0.1)',
                     background: isLight ? '#F7F3EC' : 'rgba(0,0,0,0.2)',
-                    color: isLight ? '#1B1B1B' : '#ffffff',
+                    color: isLight ? '#1C1915' : '#ffffff',
                     fontSize: '0.88rem'
                   }}
                 />
@@ -380,13 +380,13 @@ export default function GuestRsvpModal({ event, isOpen, onClose, onSuccess }) {
                     width: '100%',
                     padding: '10px 12px',
                     borderRadius: '10px',
-                    border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255,255,255,0.1)',
+                    border: isLight ? '1px solid rgba(28, 25, 21, 0.16)' : '1px solid rgba(255,255,255,0.1)',
                     background: isLight ? '#F7F3EC' : 'rgba(0,0,0,0.2)',
-                    color: isLight ? '#1B1B1B' : '#ffffff',
+                    color: isLight ? '#1C1915' : '#ffffff',
                     fontSize: '0.88rem'
                   }}
                 />
-                <span style={{ fontSize: '0.7rem', color: isLight ? '#64748b' : 'var(--slate-500)', marginTop: '2px', display: 'block' }}>
+                <span style={{ fontSize: '0.7rem', color: isLight ? '#6E655A' : 'var(--slate-500)', marginTop: '2px', display: 'block' }}>
                   We'll email your pass & meeting point. No password required.
                 </span>
               </div>
@@ -400,8 +400,8 @@ export default function GuestRsvpModal({ event, isOpen, onClose, onSuccess }) {
               }}>
                 <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Users size={16} color="#D94628" />
-                    <span style={{ fontSize: '0.82rem', fontWeight: 700, color: isLight ? '#1B1B1B' : '#ffffff' }}>
+                    <Users size={16} color="#C85A32" />
+                    <span style={{ fontSize: '0.82rem', fontWeight: 700, color: isLight ? '#1C1915' : '#ffffff' }}>
                       Bring a friend (+1 Guest Pass)?
                     </span>
                   </div>
@@ -409,7 +409,7 @@ export default function GuestRsvpModal({ event, isOpen, onClose, onSuccess }) {
                     type="checkbox"
                     checked={hasPlusOne}
                     onChange={e => setHasPlusOne(e.target.checked)}
-                    style={{ width: '16px', height: '16px', accentColor: '#D94628', cursor: 'pointer' }}
+                    style={{ width: '16px', height: '16px', accentColor: '#C85A32', cursor: 'pointer' }}
                   />
                 </label>
 
@@ -424,9 +424,9 @@ export default function GuestRsvpModal({ event, isOpen, onClose, onSuccess }) {
                         width: '100%',
                         padding: '8px 10px',
                         borderRadius: '8px',
-                        border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255,255,255,0.1)',
+                        border: isLight ? '1px solid rgba(28, 25, 21, 0.16)' : '1px solid rgba(255,255,255,0.1)',
                         background: isLight ? '#ffffff' : 'rgba(0,0,0,0.2)',
-                        color: isLight ? '#1B1B1B' : '#ffffff',
+                        color: isLight ? '#1C1915' : '#ffffff',
                         fontSize: '0.82rem'
                       }}
                     />
@@ -439,9 +439,9 @@ export default function GuestRsvpModal({ event, isOpen, onClose, onSuccess }) {
                         width: '100%',
                         padding: '8px 10px',
                         borderRadius: '8px',
-                        border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255,255,255,0.1)',
+                        border: isLight ? '1px solid rgba(28, 25, 21, 0.16)' : '1px solid rgba(255,255,255,0.1)',
                         background: isLight ? '#ffffff' : 'rgba(0,0,0,0.2)',
-                        color: isLight ? '#1B1B1B' : '#ffffff',
+                        color: isLight ? '#1C1915' : '#ffffff',
                         fontSize: '0.82rem'
                       }}
                     />
@@ -464,9 +464,9 @@ export default function GuestRsvpModal({ event, isOpen, onClose, onSuccess }) {
                       width: '100%',
                       padding: '8px 10px',
                       borderRadius: '8px',
-                      border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255,255,255,0.1)',
+                      border: isLight ? '1px solid rgba(28, 25, 21, 0.16)' : '1px solid rgba(255,255,255,0.1)',
                       background: isLight ? '#F7F3EC' : 'rgba(0,0,0,0.2)',
-                      color: isLight ? '#1B1B1B' : '#ffffff',
+                      color: isLight ? '#1C1915' : '#ffffff',
                       fontSize: '0.82rem'
                     }}
                   />
@@ -481,7 +481,7 @@ export default function GuestRsvpModal({ event, isOpen, onClose, onSuccess }) {
                   width: '100%',
                   padding: '12px',
                   borderRadius: '12px',
-                  background: '#D94628',
+                  background: '#C85A32',
                   color: '#ffffff',
                   fontWeight: 800,
                   fontSize: '0.92rem',

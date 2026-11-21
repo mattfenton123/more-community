@@ -1629,37 +1629,32 @@ textarea.form-input {
     margin-top: 0;
   }
 }
-/* Refined Microsite Desktop Layout */
+/* Refined Microsite Desktop Layout — Clean Editorial Canvas */
 @media (min-width: 1024px) {
   .view-profile {
     display: flex;
     flex-direction: column;
     align-items: center;
-    background: url('/images/general.webp') no-repeat center center fixed !important;
-    background-size: cover !important;
+    background: var(--surface-canvas) !important;
   }
   .view-profile::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: rgba(18, 18, 18, 0.7);
-    backdrop-filter: blur(20px);
-    z-index: 0;
+    display: none;
   }
   .view-profile > * {
     z-index: 1;
     position: relative;
   }
-  
+
   .microsite-container {
-    max-width: 1140px !important;
+    max-width: 1120px !important;
     width: 100%;
-    margin: 40px auto;
-    background: var(--slate-950);
-    border-radius: 24px;
-    overflow: hidden;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-    border: 1px solid rgba(255,255,255,0.1);
+    margin: 0 auto;
+    background: transparent;
+    border-radius: 0;
+    overflow: visible;
+    box-shadow: none;
+    border: none;
+    padding-top: 8px;
   }
 }
 /* Global App Desktop Layout overrides */
@@ -2047,23 +2042,22 @@ button:disabled, [role="button"][aria-disabled="true"] {
 
 /* 1. Page Background & Desktop Wrappers */
 [data-theme="light"] .view-profile {
-  background: #F7F3EC !important;
+  background: var(--surface-canvas) !important;
 }
 
 @media (min-width: 1024px) {
   [data-theme="light"] .view-profile {
-    background: #EFE9DE !important;
+    background: var(--surface-canvas) !important;
   }
 
   [data-theme="light"] .view-profile::before {
-    background: rgba(247, 243, 236, 0.92) !important;
-    backdrop-filter: blur(20px) !important;
+    display: none !important;
   }
 
   [data-theme="light"] .microsite-container {
-    background: #ffffff !important;
-    border: 1px solid rgba(28, 25, 21, 0.10) !important;
-    box-shadow: 0 12px 40px rgba(28, 25, 21, 0.08) !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
   }
 }
 
@@ -2138,9 +2132,9 @@ button:disabled, [role="button"][aria-disabled="true"] {
 
 /* 5. Organiser Spotlight Card (About Tab) */
 [data-theme="light"] .community-spotlight-card {
-  background: linear-gradient(135deg, rgba(200, 90, 50, 0.08) 0%, #ffffff 100%) !important;
-  border: 1.5px solid rgba(200, 90, 50, 0.25) !important;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05) !important;
+  background: #ffffff !important;
+  border: 1px solid rgba(28, 25, 21, 0.10) !important;
+  box-shadow: 0 2px 12px rgba(28, 25, 21, 0.04) !important;
 }
 
 [data-theme="light"] .community-spotlight-card .spotlight-leader-name {
@@ -2757,4 +2751,161 @@ button:disabled, [role="button"][aria-disabled="true"] {
   background: rgba(200, 90, 50, 0.14) !important;
   border: 1.5px solid #C85A32 !important;
   color: #8F3414 !important;
+}
+
+/* ============================================================
+   COMMUNITY PAGE EDITORIAL REDESIGN
+   ============================================================ */
+.community-nav-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--surface-card);
+  border: 1px solid var(--hairline-border-strong);
+  color: var(--ink-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.12s ease;
+}
+
+.community-nav-btn:hover {
+  background: var(--surface-elevated);
+}
+
+.community-fact-strip {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  background: var(--surface-card);
+  border: 1px solid var(--hairline-border);
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 32px;
+}
+
+.community-fact-cell {
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--hairline-border);
+  border-right: 1px solid var(--hairline-border);
+}
+
+.community-fact-cell:nth-child(2n) {
+  border-right: none;
+}
+
+.community-fact-cell:nth-last-child(-n+2) {
+  border-bottom: none;
+}
+
+.community-fact-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-muted);
+  margin-bottom: 6px;
+}
+
+.community-fact-value {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--ink-primary);
+  line-height: 1.4;
+}
+
+@media (min-width: 640px) {
+  .community-fact-strip {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .community-fact-cell {
+    border-bottom: none;
+    border-right: 1px solid var(--hairline-border);
+  }
+  .community-fact-cell:nth-child(2n) {
+    border-right: 1px solid var(--hairline-border);
+  }
+  .community-fact-cell:last-child {
+    border-right: none;
+  }
+}
+
+.community-link-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  background: var(--surface-card);
+  border: 1px solid var(--hairline-border);
+  border-radius: 14px;
+  text-decoration: none;
+  color: var(--ink-primary);
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.community-link-row:hover {
+  background: var(--surface-elevated);
+  border-color: var(--hairline-border-strong);
+}
+
+.community-ecosystem-section {
+  margin-top: 40px;
+  padding-top: 32px;
+  border-top: 1px solid var(--hairline-border);
+}
+
+/* THOROUGH LIGHT MODE SAFETY NETS (RGB-SERIALIZED + SELECTION BOXES) */
+
+/* Crisp white selection boxes, inputs, and dropdowns in Light Mode (never dark/grey) */
+[data-theme="light"] select,
+[data-theme="light"] input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="submit"]):not([type="button"]),
+[data-theme="light"] textarea {
+  background-color: #FFFFFF !important;
+  color: #1C1915 !important;
+  border-color: rgba(28, 25, 21, 0.18) !important;
+}
+
+/* Remove greyish --slate-800 on unselected selection boxes in Light Mode (keep clean crisp white card) */
+[data-theme="light"] button[style*="background: var(--slate-800)"],
+[data-theme="light"] button[style*="background-color: var(--slate-800)"],
+[data-theme="light"] label[style*="background: var(--slate-800)"] {
+  background: #FFFFFF !important;
+  border-color: rgba(28, 25, 21, 0.16) !important;
+  color: #1C1915 !important;
+}
+
+/* Catch any remaining browser-serialized rgb(255,255,255) text inside non-dark cards/modals */
+[data-theme="light"] .glass-panel [style*="color: rgb(255, 255, 255)"]:not(button):not(a):not(.btn):not([style*="background"]),
+[data-theme="light"] .modal-content [style*="color: rgb(255, 255, 255)"]:not(button):not(a):not(.btn):not([style*="background"]),
+[data-theme="light"] .dashboard-main [style*="color: rgb(255, 255, 255)"]:not(button):not(a):not(.btn):not([style*="background"]),
+[data-theme="light"] .view-profile [style*="color: rgb(255, 255, 255)"]:not(.community-cover-card *):not(button):not(a):not(.btn):not([style*="background"]) {
+  color: #1C1915 !important;
+}
+
+/* Catch any remaining light-slate serialized text (#cbd5e1, #e2e8f0, #f8fafc, #94a3b8) on Light surfaces */
+[data-theme="light"] [style*="color: rgb(248, 250, 252)"]:not(button):not(.btn),
+[data-theme="light"] [style*="color: rgb(226, 232, 240)"]:not(button):not(.btn):not(.community-cover-card *),
+[data-theme="light"] [style*="color: rgb(203, 213, 225)"]:not(button):not(.btn):not(.community-cover-card *) {
+  color: #4A443C !important;
+}
+
+[data-theme="light"] [style*="color: rgb(148, 163, 184)"]:not(.community-cover-card *) {
+  color: #6E655A !important;
+}
+
+/* Catch any remaining hardcoded dark modal cards (rgb(13,21,39), rgb(11,17,32), rgb(9,13,22), rgb(19,28,49)) */
+[data-theme="light"] [style*="background: rgb(13, 21, 39)"],
+[data-theme="light"] [style*="background: rgb(11, 17, 32)"],
+[data-theme="light"] [style*="background: rgb(9, 13, 22)"],
+[data-theme="light"] [style*="background: rgb(19, 28, 49)"] {
+  background: #FFFFFF !important;
+  color: #1C1915 !important;
+  border-color: rgba(28, 25, 21, 0.14) !important;
+}
+
+/* Unselected translucent buttons/labels in Light Mode get clean white card fill + warm hairline */
+[data-theme="light"] button[style*="background: rgba(255, 255, 255, 0.0"],
+[data-theme="light"] label[style*="background: rgba(255, 255, 255, 0.0"] {
+  background: #FFFFFF !important;
+  border-color: rgba(28, 25, 21, 0.16) !important;
 }

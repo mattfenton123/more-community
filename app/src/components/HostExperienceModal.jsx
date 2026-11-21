@@ -99,7 +99,7 @@ export default function HostExperienceModal({ experience, communities, user, onC
                       else setCollabCommunityIds(prev => [...prev, c.id]);
                     }}
                     style={{
-                      background: isSelected ? 'var(--teal-500)' : 'rgba(255,255,255,0.05)',
+                      background: isSelected ? 'var(--teal-500)' : 'var(--surface-card)',
                       border: '1px solid',
                       borderColor: isSelected ? 'var(--teal-400)' : 'rgba(255,255,255,0.1)',
                       color: isSelected ? 'white' : 'var(--slate-300)',

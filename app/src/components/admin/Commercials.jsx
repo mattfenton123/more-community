@@ -502,7 +502,7 @@ export default function Commercials({ platformStats, handleExportCSV, revenueByC
                   placeholder="e.g. Red Bull UK, Gymshark, Oatly"
                   value={newSponsor.brandName}
                   onChange={e => setNewSponsor({ ...newSponsor, brandName: e.target.value })}
-                  style={{ width: '100%', padding: '10px 12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: '#fff', fontSize: '0.85rem' }}
+                  style={{ width: '100%', padding: '10px 12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'var(--ink-primary)', fontSize: '0.85rem' }}
                   required
                 />
               </div>
@@ -513,7 +513,7 @@ export default function Commercials({ platformStats, handleExportCSV, revenueByC
                   <select 
                     value={newSponsor.tier}
                     onChange={e => setNewSponsor({ ...newSponsor, tier: e.target.value, monthlyFee: e.target.value === 'Headline Partner' ? 500 : e.target.value === 'Community Partner' ? 250 : 150 })}
-                    style={{ width: '100%', padding: '10px 12px', background: '#252525', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: '#fff', fontSize: '0.85rem' }}
+                    style={{ width: '100%', padding: '10px 12px', background: 'var(--surface-card)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'var(--ink-primary)', fontSize: '0.85rem' }}
                   >
                     <option value="Headline Partner">Headline Partner (£500/mo)</option>
                     <option value="Community Partner">Community Partner (£250/mo)</option>
@@ -526,7 +526,7 @@ export default function Commercials({ platformStats, handleExportCSV, revenueByC
                     type="number"
                     value={newSponsor.monthlyFee}
                     onChange={e => setNewSponsor({ ...newSponsor, monthlyFee: e.target.value })}
-                    style={{ width: '100%', padding: '10px 12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: '#fff', fontSize: '0.85rem' }}
+                    style={{ width: '100%', padding: '10px 12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'var(--ink-primary)', fontSize: '0.85rem' }}
                   />
                 </div>
               </div>
@@ -538,7 +538,7 @@ export default function Commercials({ platformStats, handleExportCSV, revenueByC
                   placeholder="e.g. North Coast Dippers or Platform Wide"
                   value={newSponsor.communityName}
                   onChange={e => setNewSponsor({ ...newSponsor, communityName: e.target.value })}
-                  style={{ width: '100%', padding: '10px 12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: '#fff', fontSize: '0.85rem' }}
+                  style={{ width: '100%', padding: '10px 12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'var(--ink-primary)', fontSize: '0.85rem' }}
                 />
               </div>
 
@@ -549,7 +549,7 @@ export default function Commercials({ platformStats, handleExportCSV, revenueByC
                   placeholder="partnerships@brand.com"
                   value={newSponsor.contactEmail}
                   onChange={e => setNewSponsor({ ...newSponsor, contactEmail: e.target.value })}
-                  style={{ width: '100%', padding: '10px 12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: '#fff', fontSize: '0.85rem' }}
+                  style={{ width: '100%', padding: '10px 12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'var(--ink-primary)', fontSize: '0.85rem' }}
                 />
               </div>
 
@@ -560,7 +560,7 @@ export default function Commercials({ platformStats, handleExportCSV, revenueByC
                   placeholder="e.g. Logo on flyer, 2x product drops, promo link in community description"
                   value={newSponsor.deliverables}
                   onChange={e => setNewSponsor({ ...newSponsor, deliverables: e.target.value })}
-                  style={{ width: '100%', padding: '10px 12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: '#fff', fontSize: '0.85rem', resize: 'none' }}
+                  style={{ width: '100%', padding: '10px 12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'var(--ink-primary)', fontSize: '0.85rem', resize: 'none' }}
                 />
               </div>
 

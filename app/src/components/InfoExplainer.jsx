@@ -188,12 +188,12 @@ export function ExplainerModal({ isOpen, onClose, badge, title, summary, steps =
         style={{
           width: '100%',
           maxWidth: '440px',
-          background: 'linear-gradient(165deg, #1B1B1B 0%, #252525 100%)',
+          background: 'var(--surface-card)',
           border: '1px solid rgba(242, 114, 87, 0.35)',
           borderRadius: '20px',
           padding: '22px',
           boxShadow: '0 24px 60px rgba(0, 0, 0, 0.55)',
-          color: '#f8fafc',
+          color: 'var(--ink-primary)',
           position: 'relative'
         }}
       >
@@ -210,7 +210,7 @@ export function ExplainerModal({ isOpen, onClose, badge, title, summary, steps =
             borderRadius: '999px',
             border: '1px solid rgba(255,255,255,0.12)',
             background: 'rgba(255,255,255,0.06)',
-            color: '#cbd5e1',
+            color: 'var(--ink-secondary)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -240,12 +240,12 @@ export function ExplainerModal({ isOpen, onClose, badge, title, summary, steps =
           </div>
         )}
 
-        <h3 style={{ margin: '0 0 8px 0', fontSize: '1.2rem', fontWeight: 700, color: '#ffffff', paddingRight: '28px', lineHeight: 1.25 }}>
+        <h3 style={{ margin: '0 0 8px 0', fontSize: '1.2rem', fontWeight: 700, color: 'var(--ink-primary)', paddingRight: '28px', lineHeight: 1.25 }}>
           {title}
         </h3>
 
         {summary && (
-          <p style={{ margin: '0 0 14px 0', fontSize: '0.88rem', lineHeight: 1.55, color: '#cbd5e1' }}>
+          <p style={{ margin: '0 0 14px 0', fontSize: '0.88rem', lineHeight: 1.55, color: 'var(--ink-secondary)' }}>
             {summary}
           </p>
         )}
@@ -263,7 +263,7 @@ export function ExplainerModal({ isOpen, onClose, badge, title, summary, steps =
                 border: '1px solid rgba(255, 255, 255, 0.07)'
               }}>
                 <CheckCircle2 size={16} color="#F27257" style={{ flexShrink: 0, marginTop: '2px' }} />
-                <span style={{ fontSize: '0.84rem', lineHeight: 1.45, color: '#e2e8f0' }}>{s}</span>
+                <span style={{ fontSize: '0.84rem', lineHeight: 1.45, color: 'var(--ink-primary)' }}>{s}</span>
               </div>
             ))}
           </div>
@@ -311,7 +311,7 @@ export function ExplainerModal({ isOpen, onClose, badge, title, summary, steps =
               borderRadius: '10px',
               border: 'none',
               background: 'linear-gradient(135deg, #EB5738, #D94628)',
-              color: '#ffffff',
+              color: 'var(--ink-primary)',
               fontWeight: 700,
               fontSize: '0.86rem',
               cursor: 'pointer'

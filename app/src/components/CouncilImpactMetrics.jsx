@@ -48,7 +48,7 @@ export default function CouncilImpactMetrics({ community, events = [], members =
             </span>
             <span style={{ fontSize: '0.8rem', color: 'var(--slate-400)' }}>Town Health &amp; Social Prescribing</span>
           </div>
-          <h3 style={{ margin: 0, fontSize: '1.4rem', color: '#fff', fontFamily: 'var(--font-heading)' }}>
+          <h3 style={{ margin: 0, fontSize: '1.4rem', color: 'var(--ink-primary)', fontFamily: 'var(--font-heading)' }}>
             Council &amp; NHS Social Prescribing Dashboard
           </h3>
           <p style={{ margin: '8px 0 0 0', fontSize: '0.9rem', color: 'var(--slate-300)', lineHeight: 1.5 }}>
@@ -80,7 +80,7 @@ export default function CouncilImpactMetrics({ community, events = [], members =
             <span style={{ fontSize: '0.75rem', color: 'var(--slate-400)', textTransform: 'uppercase', fontWeight: 600 }}>Social Contact Hours</span>
             <Users size={18} color="var(--teal-400)" />
           </div>
-          <div style={{ fontSize: '2rem', fontWeight: 800, color: '#fff', fontFamily: 'var(--font-heading)' }}>
+          <div style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--ink-primary)', fontFamily: 'var(--font-heading)' }}>
             {estimatedHours} hrs
           </div>
           <div style={{ fontSize: '0.78rem', color: 'var(--teal-400)', marginTop: '4px' }}>
@@ -138,14 +138,14 @@ export default function CouncilImpactMetrics({ community, events = [], members =
         flexDirection: 'column',
         gap: '12px'
       }}>
-        <h4 style={{ margin: 0, fontSize: '1rem', color: '#fff', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <h4 style={{ margin: 0, fontSize: '1rem', color: 'var(--ink-primary)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
           <Building2 size={18} color="#93c5fd" />
           Active Municipal Partnerships &amp; Grants
         </h4>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '12px' }}>
           <div style={{ background: 'rgba(255, 255, 255, 0.02)', padding: '14px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontWeight: 600, color: '#fff', fontSize: '0.88rem' }}>Royal Tunbridge Wells Town Forum</span>
+              <span style={{ fontWeight: 600, color: 'var(--ink-primary)', fontSize: '0.88rem' }}>Royal Tunbridge Wells Town Forum</span>
               <span style={{ fontSize: '0.7rem', background: 'rgba(52, 211, 153, 0.2)', color: '#34d399', padding: '2px 8px', borderRadius: '10px', fontWeight: 700 }}>Active</span>
             </div>
             <p style={{ margin: '6px 0 0 0', fontSize: '0.8rem', color: 'var(--slate-400)' }}>
@@ -155,7 +155,7 @@ export default function CouncilImpactMetrics({ community, events = [], members =
 
           <div style={{ background: 'rgba(255, 255, 255, 0.02)', padding: '14px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontWeight: 600, color: '#fff', fontSize: '0.88rem' }}>NHS Kent &amp; Medway ICB</span>
+              <span style={{ fontWeight: 600, color: 'var(--ink-primary)', fontSize: '0.88rem' }}>NHS Kent &amp; Medway ICB</span>
               <span style={{ fontSize: '0.7rem', background: 'rgba(96, 165, 250, 0.2)', color: '#93c5fd', padding: '2px 8px', borderRadius: '10px', fontWeight: 700 }}>Accredited Directory</span>
             </div>
             <p style={{ margin: '6px 0 0 0', fontSize: '0.8rem', color: 'var(--slate-400)' }}>

@@ -36,7 +36,7 @@ export default function LinkSafetyModal({ isOpen, onClose, linkAnalysis }) {
         onClick={e => e.stopPropagation()}
         className="modal-content"
         style={{
-          background: '#1B1B1B',
+          background: 'var(--surface-card)',
           border: `1px solid ${isHighRisk ? '#ef4444' : isCaution ? 'rgba(245,158,11,0.4)' : isVerified ? 'rgba(16,185,129,0.3)' : 'rgba(255,255,255,0.12)'}`,
           borderRadius: '24px',
           maxWidth: '540px',
@@ -55,8 +55,8 @@ export default function LinkSafetyModal({ isOpen, onClose, linkAnalysis }) {
         {/* Header Strip */}
         <div style={{
           padding: '16px 20px',
-          background: isHighRisk ? 'rgba(239,68,68,0.15)' : isCaution ? 'rgba(245,158,11,0.1)' : isVerified ? 'rgba(16,185,129,0.1)' : 'rgba(255,255,255,0.03)',
-          borderBottom: '1px solid rgba(255,255,255,0.08)',
+          background: isHighRisk ? 'rgba(239,68,68,0.15)' : isCaution ? 'rgba(245,158,11,0.1)' : isVerified ? 'rgba(16,185,129,0.1)' : 'var(--surface-card)',
+          borderBottom: '1px solid var(--hairline-border)',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center'
@@ -84,7 +84,7 @@ export default function LinkSafetyModal({ isOpen, onClose, linkAnalysis }) {
               borderRadius: '50%',
               width: '32px',
               height: '32px',
-              color: '#94a3b8',
+              color: 'var(--ink-muted)',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
@@ -98,10 +98,10 @@ export default function LinkSafetyModal({ isOpen, onClose, linkAnalysis }) {
         {/* Content Body */}
         <div style={{ padding: '24px', flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '18px' }}>
           <div>
-            <span style={{ fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700 }}>
+            <span style={{ fontSize: '0.75rem', color: 'var(--ink-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700 }}>
               Destination Host
             </span>
-            <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#fff', margin: '4px 0 0', wordBreak: 'break-all', fontFamily: 'Outfit, sans-serif' }}>
+            <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--ink-primary)', margin: '4px 0 0', wordBreak: 'break-all', fontFamily: 'Outfit, sans-serif' }}>
               {hostname}
             </div>
           </div>
@@ -109,14 +109,14 @@ export default function LinkSafetyModal({ isOpen, onClose, linkAnalysis }) {
           {/* Full URL Box */}
           <div style={{
             background: 'rgba(18, 18, 18, 0.7)',
-            border: '1px solid rgba(255,255,255,0.08)',
+            border: '1px solid var(--hairline-border)',
             borderRadius: '12px',
             padding: '12px 14px'
           }}>
             <div style={{ fontSize: '0.7rem', color: '#64748b', textTransform: 'uppercase', fontWeight: 700, marginBottom: '4px' }}>
               Full Target Link
             </div>
-            <div style={{ fontSize: '0.82rem', color: '#cbd5e1', wordBreak: 'break-all', fontFamily: 'monospace', lineHeight: 1.4 }}>
+            <div style={{ fontSize: '0.82rem', color: 'var(--ink-secondary)', wordBreak: 'break-all', fontFamily: 'monospace', lineHeight: 1.4 }}>
               {url}
             </div>
           </div>
@@ -152,7 +152,7 @@ export default function LinkSafetyModal({ isOpen, onClose, linkAnalysis }) {
               <div style={{ fontSize: '0.75rem', fontWeight: 700, color: color, marginBottom: '6px' }}>
                 Safety Checklist
               </div>
-              <ul style={{ margin: 0, paddingLeft: '18px', fontSize: '0.8rem', color: '#cbd5e1', lineHeight: 1.5 }}>
+              <ul style={{ margin: 0, paddingLeft: '18px', fontSize: '0.8rem', color: 'var(--ink-secondary)', lineHeight: 1.5 }}>
                 {reasons.map((r, i) => (
                   <li key={i}>{r}</li>
                 ))}
@@ -163,7 +163,7 @@ export default function LinkSafetyModal({ isOpen, onClose, linkAnalysis }) {
           {/* Safety Reminder */}
           <div style={{
             fontSize: '0.78rem',
-            color: '#94a3b8',
+            color: 'var(--ink-muted)',
             background: 'rgba(255,255,255,0.02)',
             borderRadius: '10px',
             padding: '10px 12px',
@@ -176,8 +176,8 @@ export default function LinkSafetyModal({ isOpen, onClose, linkAnalysis }) {
         {/* Footer Actions */}
         <div style={{
           padding: '16px 20px',
-          borderTop: '1px solid rgba(255,255,255,0.08)',
-          background: 'rgba(0,0,0,0.25)',
+          borderTop: '1px solid var(--hairline-border)',
+          background: 'var(--surface-elevated)',
           display: 'flex',
           gap: '12px',
           alignItems: 'center'
@@ -190,7 +190,7 @@ export default function LinkSafetyModal({ isOpen, onClose, linkAnalysis }) {
               padding: '12px',
               borderRadius: '12px',
               fontSize: '0.9rem',
-              color: '#cbd5e1',
+              color: 'var(--ink-secondary)',
               cursor: 'pointer'
             }}
           >
@@ -206,7 +206,7 @@ export default function LinkSafetyModal({ isOpen, onClose, linkAnalysis }) {
               fontSize: '0.9rem',
               fontWeight: 700,
               background: isHighRisk ? '#ef4444' : isCaution ? '#f59e0b' : 'var(--teal-500)',
-              color: '#fff',
+              color: 'var(--ink-primary)',
               border: 'none',
               cursor: 'pointer',
               display: 'flex',

@@ -129,7 +129,7 @@ export default function SpecialistVaultModal({ isOpen, onClose, specialist, mode
             className="interactive-press"
             style={{
               background: 'rgba(255, 255, 255, 0.05)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
+              border: '1px solid var(--hairline-border-strong)',
               borderRadius: '10px',
               width: '36px',
               height: '36px',
@@ -242,7 +242,7 @@ export default function SpecialistVaultModal({ isOpen, onClose, specialist, mode
                     gap: '12px',
                     padding: '12px 14px',
                     background: 'rgba(255, 255, 255, 0.02)',
-                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                    border: '1px solid var(--hairline-border)',
                     borderRadius: '12px'
                   }}>
                     <CheckCircle2 size={18} color="var(--teal-400)" style={{ marginTop: '2px', flexShrink: 0 }} />
@@ -264,7 +264,7 @@ export default function SpecialistVaultModal({ isOpen, onClose, specialist, mode
                     gap: '12px',
                     padding: '12px 14px',
                     background: 'rgba(255, 255, 255, 0.02)',
-                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                    border: '1px solid var(--hairline-border)',
                     borderRadius: '12px'
                   }}>
                     <FileText size={18} color="var(--teal-400)" style={{ marginTop: '2px', flexShrink: 0 }} />
@@ -331,7 +331,7 @@ export default function SpecialistVaultModal({ isOpen, onClose, specialist, mode
                   <p style={{ color: 'var(--slate-300)', fontSize: '0.9rem', maxWidth: '480px', margin: '0 auto 24px auto', lineHeight: 1.5 }}>
                     Thank you, {formData.fullName}. Your proposed session has been delivered directly to the community leader's dashboard inbox. They will review your pitch and date proposal.
                   </p>
-                  <div style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '14px', padding: '16px', maxWidth: '440px', margin: '0 auto 24px auto', textAlign: 'left' }}>
+                  <div style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid var(--hairline-border)', borderRadius: '14px', padding: '16px', maxWidth: '440px', margin: '0 auto 24px auto', textAlign: 'left' }}>
                     <div style={{ fontSize: '0.8rem', color: 'var(--teal-400)', fontWeight: 600, textTransform: 'uppercase' }}>Queued Pitch</div>
                     <div style={{ fontSize: '1rem', color: 'var(--white)', fontWeight: 700, margin: '4px 0' }}>{formData.pitchTitle || 'Workshop Session'}</div>
                     <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)' }}>
@@ -403,7 +403,7 @@ export default function SpecialistVaultModal({ isOpen, onClose, specialist, mode
                             placeholder="e.g. David MacLeod"
                             value={formData.fullName}
                             onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                            style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.1)', color: 'var(--white)', fontSize: '0.9rem' }}
+                            style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid var(--hairline-border-strong)', color: 'var(--white)', fontSize: '0.9rem' }}
                           />
                         </div>
                         <div>
@@ -413,7 +413,7 @@ export default function SpecialistVaultModal({ isOpen, onClose, specialist, mode
                             placeholder="e.g. Peak Navigation Guides"
                             value={formData.tradingName}
                             onChange={(e) => setFormData({ ...formData, tradingName: e.target.value })}
-                            style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.1)', color: 'var(--white)', fontSize: '0.9rem' }}
+                            style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid var(--hairline-border-strong)', color: 'var(--white)', fontSize: '0.9rem' }}
                           />
                         </div>
                       </div>
@@ -427,7 +427,7 @@ export default function SpecialistVaultModal({ isOpen, onClose, specialist, mode
                             placeholder="dave@peaknavigation.co.uk"
                             value={formData.email}
                             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                            style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.1)', color: 'var(--white)', fontSize: '0.9rem' }}
+                            style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid var(--hairline-border-strong)', color: 'var(--white)', fontSize: '0.9rem' }}
                           />
                         </div>
                         <div>
@@ -438,7 +438,7 @@ export default function SpecialistVaultModal({ isOpen, onClose, specialist, mode
                             placeholder="e.g. Tunbridge Wells / Kent / Peak District"
                             value={formData.region}
                             onChange={(e) => setFormData({ ...formData, region: e.target.value })}
-                            style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.1)', color: 'var(--white)', fontSize: '0.9rem' }}
+                            style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid var(--hairline-border-strong)', color: 'var(--white)', fontSize: '0.9rem' }}
                           />
                         </div>
                       </div>
@@ -450,7 +450,7 @@ export default function SpecialistVaultModal({ isOpen, onClose, specialist, mode
                           placeholder="Tell local leaders about your qualifications and style of sessions..."
                           value={formData.bio}
                           onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-                          style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.1)', color: 'var(--white)', fontSize: '0.9rem' }}
+                          style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid var(--hairline-border-strong)', color: 'var(--white)', fontSize: '0.9rem' }}
                         />
                       </div>
 
@@ -479,7 +479,7 @@ export default function SpecialistVaultModal({ isOpen, onClose, specialist, mode
                         <select
                           value={formData.category}
                           onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                          style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', background: 'var(--slate-800)', border: '1px solid rgba(255, 255, 255, 0.1)', color: 'var(--white)', fontSize: '0.9rem' }}
+                          style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', background: 'var(--slate-800)', border: '1px solid var(--hairline-border-strong)', color: 'var(--white)', fontSize: '0.9rem' }}
                         >
                           <option value="Outdoor &amp; Adventure">Outdoor, Hiking &amp; Navigation</option>
                           <option value="Fitness &amp; Movement">Fitness, Running &amp; Movement</option>
@@ -501,7 +501,7 @@ export default function SpecialistVaultModal({ isOpen, onClose, specialist, mode
                           placeholder="e.g. Mountain Leader (Summer ML), British Athletics Coach, Yoga Alliance 200hr, or 8 years self-taught foraging experience..."
                           value={formData.qualifications}
                           onChange={(e) => setFormData({ ...formData, qualifications: e.target.value })}
-                          style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.1)', color: 'var(--white)', fontSize: '0.9rem' }}
+                          style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid var(--hairline-border-strong)', color: 'var(--white)', fontSize: '0.9rem' }}
                         />
                       </div>
 
@@ -526,14 +526,14 @@ export default function SpecialistVaultModal({ isOpen, onClose, specialist, mode
                               placeholder="Insurer name (e.g. Hiscox, Balens)"
                               value={formData.insurer}
                               onChange={(e) => setFormData({ ...formData, insurer: e.target.value })}
-                              style={{ padding: '8px 12px', borderRadius: '8px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--white)', fontSize: '0.82rem' }}
+                              style={{ padding: '8px 12px', borderRadius: '8px', background: 'var(--surface-card)', border: '1px solid var(--hairline-border-strong)', color: 'var(--white)', fontSize: '0.82rem' }}
                             />
                             <input 
                               type="text"
                               placeholder="Policy number / ref (optional)"
                               value={formData.policyNumber}
                               onChange={(e) => setFormData({ ...formData, policyNumber: e.target.value })}
-                              style={{ padding: '8px 12px', borderRadius: '8px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--white)', fontSize: '0.82rem' }}
+                              style={{ padding: '8px 12px', borderRadius: '8px', background: 'var(--surface-card)', border: '1px solid var(--hairline-border-strong)', color: 'var(--white)', fontSize: '0.82rem' }}
                             />
                           </div>
                         )}
@@ -571,7 +571,7 @@ export default function SpecialistVaultModal({ isOpen, onClose, specialist, mode
                           placeholder="e.g. Twilight Navigation & Hill Safety Masterclass"
                           value={formData.pitchTitle}
                           onChange={(e) => setFormData({ ...formData, pitchTitle: e.target.value })}
-                          style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.1)', color: 'var(--white)', fontSize: '0.9rem' }}
+                          style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid var(--hairline-border-strong)', color: 'var(--white)', fontSize: '0.9rem' }}
                         />
                       </div>
 
@@ -582,7 +582,7 @@ export default function SpecialistVaultModal({ isOpen, onClose, specialist, mode
                           placeholder="What will members learn or experience? Keep it engaging and welcoming..."
                           value={formData.pitchSummary}
                           onChange={(e) => setFormData({ ...formData, pitchSummary: e.target.value })}
-                          style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.1)', color: 'var(--white)', fontSize: '0.9rem' }}
+                          style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid var(--hairline-border-strong)', color: 'var(--white)', fontSize: '0.9rem' }}
                         />
                       </div>
 
@@ -593,7 +593,7 @@ export default function SpecialistVaultModal({ isOpen, onClose, specialist, mode
                             type="number"
                             value={formData.standardRrp}
                             onChange={(e) => setFormData({ ...formData, standardRrp: e.target.value })}
-                            style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.1)', color: 'var(--white)', fontSize: '0.9rem' }}
+                            style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid var(--hairline-border-strong)', color: 'var(--white)', fontSize: '0.9rem' }}
                           />
                         </div>
                         <div>
@@ -613,7 +613,7 @@ export default function SpecialistVaultModal({ isOpen, onClose, specialist, mode
                             step="0.5"
                             value={formData.communityCut}
                             onChange={(e) => setFormData({ ...formData, communityCut: e.target.value })}
-                            style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.1)', color: 'var(--teal-300)', fontSize: '0.9rem', fontWeight: 600 }}
+                            style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid var(--hairline-border-strong)', color: 'var(--teal-300)', fontSize: '0.9rem', fontWeight: 600 }}
                           />
                         </div>
                       </div>

@@ -475,7 +475,7 @@ ${postText}
                           borderRadius: '8px',
                           background: 'var(--slate-900)',
                           border: '1px solid var(--slate-700)',
-                          color: '#fff',
+                          color: 'var(--ink-primary)',
                           fontSize: '0.8rem'
                         }}
                       />
@@ -540,7 +540,7 @@ ${postText}
                                 alignItems: 'center', 
                                 justifyContent: 'center',
                                 fontSize: '0.7rem',
-                                color: '#fff',
+                                color: 'var(--ink-primary)',
                                 fontWeight: 700
                               }}>
                                 {m.avatar ? (

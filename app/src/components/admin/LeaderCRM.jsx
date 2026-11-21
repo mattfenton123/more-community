@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Mail, Calendar, Plus, Search, X, Trash2, CheckCircle2 } from 'lucide-react';
 
 const STATUS_COLORS = {
-  'Prospect': { bg: 'rgba(148, 163, 184, 0.1)', color: '#94a3b8' },
+  'Prospect': { bg: 'rgba(148, 163, 184, 0.1)', color: 'var(--ink-muted)' },
   'Pitched': { bg: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6' },
   'In Talks': { bg: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b' },
   'Onboarding': { bg: 'rgba(168, 85, 247, 0.1)', color: '#a855f7' },
@@ -196,9 +196,9 @@ export default function LeaderCRM({ toast }) {
       {/* Add Lead Modal */}
       {isModalOpen && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '20px' }}>
-          <div className="glass-panel" style={{ width: '100%', maxWidth: '420px', padding: '24px', borderRadius: '16px', background: '#090d16', border: '1px solid rgba(255,255,255,0.1)' }}>
+          <div className="glass-panel" style={{ width: '100%', maxWidth: '420px', padding: '24px', borderRadius: '16px', background: 'var(--surface-elevated)', border: '1px solid rgba(255,255,255,0.1)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <h3 style={{ margin: 0, fontSize: '1.1rem', color: 'white', fontWeight: 600 }}>Add Leader Lead</h3>
+              <h3 style={{ margin: 0, fontSize: '1.1rem', color: 'var(--ink-primary)', fontWeight: 600 }}>Add Leader Lead</h3>
               <button onClick={() => setIsModalOpen(false)} style={{ background: 'none', border: 'none', color: 'var(--slate-400)', cursor: 'pointer' }}>
                 <X size={18} />
               </button>
@@ -212,7 +212,7 @@ export default function LeaderCRM({ toast }) {
                   placeholder="e.g. Alex Morgan"
                   value={newLead.name}
                   onChange={e => setNewLead({ ...newLead, name: e.target.value })}
-                  style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '10px', color: 'white', fontSize: '0.9rem' }}
+                  style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '10px', color: 'var(--ink-primary)', fontSize: '0.9rem' }}
                 />
               </div>
               <div>
@@ -222,7 +222,7 @@ export default function LeaderCRM({ toast }) {
                   placeholder="e.g. Run Club / Book Club / Photography"
                   value={newLead.niche}
                   onChange={e => setNewLead({ ...newLead, niche: e.target.value })}
-                  style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '10px', color: 'white', fontSize: '0.9rem' }}
+                  style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '10px', color: 'var(--ink-primary)', fontSize: '0.9rem' }}
                 />
               </div>
               <div>
@@ -232,7 +232,7 @@ export default function LeaderCRM({ toast }) {
                   placeholder="e.g. @alexruns"
                   value={newLead.handle}
                   onChange={e => setNewLead({ ...newLead, handle: e.target.value })}
-                  style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '10px', color: 'white', fontSize: '0.9rem' }}
+                  style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '10px', color: 'var(--ink-primary)', fontSize: '0.9rem' }}
                 />
               </div>
               <div>
@@ -242,7 +242,7 @@ export default function LeaderCRM({ toast }) {
                   placeholder="alex@example.com"
                   value={newLead.email}
                   onChange={e => setNewLead({ ...newLead, email: e.target.value })}
-                  style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '10px', color: 'white', fontSize: '0.9rem' }}
+                  style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '10px', color: 'var(--ink-primary)', fontSize: '0.9rem' }}
                 />
               </div>
               <div>
@@ -250,7 +250,7 @@ export default function LeaderCRM({ toast }) {
                 <select 
                   value={newLead.status}
                   onChange={e => setNewLead({ ...newLead, status: e.target.value })}
-                  style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '10px', color: 'white', fontSize: '0.9rem' }}
+                  style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '10px', color: 'var(--ink-primary)', fontSize: '0.9rem' }}
                 >
                   <option value="Prospect">Prospect</option>
                   <option value="Pitched">Pitched</option>

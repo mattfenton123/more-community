@@ -463,10 +463,10 @@ const { events, communities, user, users, eventRsvps, rsvpToEvent, createEvent, 
               borderRadius: '10px', overflow: 'hidden', border: '1px solid var(--hairline-border-strong)',
               display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: '42px', boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
             }}>
-              <div style={{ background: isArchived ? 'var(--slate-600)' : 'var(--teal-500)', color: 'white', width: '100%', textAlign: 'center', fontSize: '0.65rem', fontWeight: 800, padding: '2px 0', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              <div style={{ background: isArchived ? 'var(--slate-600)' : 'var(--teal-500)', color: '#FFFFFF', width: '100%', textAlign: 'center', fontSize: '0.65rem', fontWeight: 800, padding: '2px 0', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                 {event.date ? (isNaN(new Date(event.date)) ? event.date.substring(0,3) : new Date(event.date).toLocaleDateString('en-GB', { month: 'short' })) : 'TBA'}
               </div>
-              <div style={{ padding: '4px 8px', color: 'white', fontSize: '1.1rem', fontWeight: 800 }}>
+              <div style={{ padding: '4px 8px', color: '#FFFFFF', fontSize: '1.1rem', fontWeight: 800 }}>
                 {event.date ? (isNaN(new Date(event.date)) ? (event.date.match(/\d+/) ? event.date.match(/\d+/)[0] : '-') : new Date(event.date).getDate()) : '-'}
               </div>
             </div>
@@ -946,8 +946,8 @@ const { events, communities, user, users, eventRsvps, rsvpToEvent, createEvent, 
         <div style={{
           margin: '0 20px 12px',
           padding: '14px 18px',
-          background: 'linear-gradient(135deg, rgba(235, 87, 56,0.14) 0%, rgba(27, 27, 27,0.6) 100%)',
-          border: '1px solid rgba(242, 114, 87,0.3)',
+          background: 'var(--surface-card)',
+          border: '1px solid var(--hairline-border-strong)',
           borderRadius: '16px',
           display: 'flex',
           alignItems: 'center',
@@ -957,7 +957,7 @@ const { events, communities, user, users, eventRsvps, rsvpToEvent, createEvent, 
           boxShadow: '0 4px 16px rgba(0,0,0,0.2)'
         }}>
           <div>
-            <div style={{ fontWeight: 800, fontSize: '0.94rem', color: '#ffffff', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <div style={{ fontWeight: 800, fontSize: '0.94rem', color: 'var(--ink-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
               <span>📅</span> Upcoming Events &amp; Community Meetups
             </div>
             <div style={{ fontSize: '0.8rem', color: 'var(--slate-300)', marginTop: '2px' }}>
@@ -1098,7 +1098,7 @@ const { events, communities, user, users, eventRsvps, rsvpToEvent, createEvent, 
         }}>
           <div style={{
             width: '100%', maxWidth: '440px',
-            background: 'linear-gradient(180deg, #1B1B1B 0%, #090d16 100%)',
+            background: 'var(--surface-card)',
             border: '1px solid rgba(245, 158, 11, 0.35)',
             borderRadius: '24px', padding: '24px',
             boxShadow: '0 20px 50px rgba(0,0,0,0.7)',
@@ -1133,7 +1133,7 @@ const { events, communities, user, users, eventRsvps, rsvpToEvent, createEvent, 
                   required
                   style={{
                     width: '100%', minHeight: '44px', padding: '10px 12px', borderRadius: '10px',
-                    background: '#252525', border: '1px solid rgba(255,255,255,0.15)',
+                    background: 'var(--surface-card)', border: '1px solid rgba(255,255,255,0.15)',
                     color: 'var(--white)', fontSize: '16px', outline: 'none',
                     colorScheme: 'dark'
                   }}
@@ -1141,7 +1141,7 @@ const { events, communities, user, users, eventRsvps, rsvpToEvent, createEvent, 
                   {communities.map(c => {
                     const isMember = user?.joinedCommunities?.includes(c.id);
                     return (
-                      <option key={c.id} value={c.id} style={{ background: '#1B1B1B', color: '#fff' }}>
+                      <option key={c.id} value={c.id}>
                         {c.name} {isMember ? '(Your Community)' : ''}
                       </option>
                     );
@@ -1164,7 +1164,7 @@ const { events, communities, user, users, eventRsvps, rsvpToEvent, createEvent, 
                   required
                   style={{
                     width: '100%', minHeight: '44px', padding: '10px 14px', borderRadius: '10px',
-                    background: '#252525', border: '1px solid rgba(255,255,255,0.15)',
+                    background: 'var(--surface-card)', border: '1px solid rgba(255,255,255,0.15)',
                     color: 'var(--white)', fontSize: '16px', outline: 'none'
                   }}
                 />
@@ -1211,7 +1211,7 @@ const { events, communities, user, users, eventRsvps, rsvpToEvent, createEvent, 
                   required
                   style={{
                     width: '100%', minHeight: '44px', padding: '10px 12px', borderRadius: '10px',
-                    background: '#252525', border: '1px solid rgba(255,255,255,0.15)',
+                    background: 'var(--surface-card)', border: '1px solid rgba(255,255,255,0.15)',
                     color: 'var(--white)', fontSize: '16px', outline: 'none',
                     colorScheme: 'dark'
                   }}
@@ -1259,7 +1259,7 @@ const { events, communities, user, users, eventRsvps, rsvpToEvent, createEvent, 
                   onClick={e => { try { if (e.target.showPicker) e.target.showPicker(); } catch (_) {} }}
                   style={{
                     width: '100%', minHeight: '44px', padding: '10px 12px', borderRadius: '10px',
-                    background: '#252525', border: '1px solid rgba(255,255,255,0.15)',
+                    background: 'var(--surface-card)', border: '1px solid rgba(255,255,255,0.15)',
                     color: 'var(--white)', fontSize: '16px', outline: 'none',
                     colorScheme: 'dark'
                   }}

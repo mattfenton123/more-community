@@ -192,7 +192,7 @@ export default function CarpoolHub({ event, user, isAttendee = false, community,
             width: '44px', height: '44px', borderRadius: '14px',
             background: 'linear-gradient(135deg, #10b981 0%, #EB5738 100%)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: '#ffffff', boxShadow: '0 4px 14px rgba(235, 87, 56, 0.35)'
+            color: 'var(--ink-primary)', boxShadow: '0 4px 14px rgba(235, 87, 56, 0.35)'
           }}>
             <Car size={22} />
           </div>
@@ -230,7 +230,7 @@ export default function CarpoolHub({ event, user, isAttendee = false, community,
             style={{
               padding: '9px 16px', borderRadius: '12px',
               background: 'linear-gradient(135deg, #10b981 0%, #EB5738 100%)',
-              color: '#1B1B1B', fontWeight: 700, fontSize: '0.86rem',
+              color: '#FFFFFF', fontWeight: 700, fontSize: '0.86rem',
               border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px',
               boxShadow: '0 4px 16px rgba(16, 185, 129, 0.3)'
             }}
@@ -391,7 +391,7 @@ export default function CarpoolHub({ event, user, isAttendee = false, community,
                     <span style={{ fontSize: '0.72rem', color: 'var(--slate-400)', fontWeight: 600 }}>Riders:</span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                       {carpool.passengers.map((p, idx) => (
-                        <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(255,255,255,0.05)', padding: '2px 8px', borderRadius: '99px', fontSize: '0.72rem', color: 'var(--slate-300)' }}>
+                        <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'var(--surface-card)', padding: '2px 8px', borderRadius: '99px', fontSize: '0.72rem', color: 'var(--slate-300)' }}>
                           <img src={p.avatar} alt={p.name} style={{ width: '16px', height: '16px', borderRadius: '50%' }} />
                           <span>{p.name.split(' ')[0]}</span>
                         </div>
@@ -477,7 +477,7 @@ export default function CarpoolHub({ event, user, isAttendee = false, community,
         }}>
           <div style={{
             width: '100%', maxWidth: '460px',
-            background: 'linear-gradient(180deg, #1B1B1B 0%, #090d16 100%)',
+            background: 'var(--surface-card)',
             border: '1px solid rgba(235, 87, 56, 0.35)',
             borderRadius: '24px', padding: '24px',
             boxShadow: '0 20px 50px rgba(0,0,0,0.7)',
@@ -521,7 +521,7 @@ export default function CarpoolHub({ event, user, isAttendee = false, community,
                 />
                 
                 {/* Privacy Tip */}
-                <div style={{ fontSize: '0.72rem', color: '#94a3b8', marginTop: '6px', lineHeight: 1.4, display: 'flex', alignItems: 'center', gap: '5px' }}>
+                <div style={{ fontSize: '0.72rem', color: 'var(--ink-muted)', marginTop: '6px', lineHeight: 1.4, display: 'flex', alignItems: 'center', gap: '5px' }}>
                   <Shield size={12} color="#F27257" />
                   <span>Privacy tip: Use your road or neighborhood rather than full house door number.</span>
                 </div>
@@ -535,7 +535,7 @@ export default function CarpoolHub({ event, user, isAttendee = false, community,
                       onClick={() => setOrigin(prev => prev ? `${prev} (${chip})` : chip)}
                       style={{
                         padding: '3px 8px', borderRadius: '99px',
-                        background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
+                        background: 'rgba(255,255,255,0.06)', border: '1px solid var(--hairline-border-strong)',
                         color: 'var(--slate-300)', fontSize: '0.7rem', cursor: 'pointer'
                       }}
                     >
@@ -577,10 +577,10 @@ export default function CarpoolHub({ event, user, isAttendee = false, community,
                       color: 'var(--white)', fontSize: '0.88rem', outline: 'none'
                     }}
                   >
-                    <option value={1} style={{ background: '#1B1B1B' }}>1 Seat</option>
-                    <option value={2} style={{ background: '#1B1B1B' }}>2 Seats</option>
-                    <option value={3} style={{ background: '#1B1B1B' }}>3 Seats</option>
-                    <option value={4} style={{ background: '#1B1B1B' }}>4 Seats</option>
+                    <option value={1}>1 Seat</option>
+                    <option value={2}>2 Seats</option>
+                    <option value={3}>3 Seats</option>
+                    <option value={4}>4 Seats</option>
                   </select>
                 </div>
               </div>
@@ -621,7 +621,7 @@ export default function CarpoolHub({ event, user, isAttendee = false, community,
                       onClick={() => setChipIn(val)}
                       style={{
                         padding: '8px', borderRadius: '8px',
-                        background: chipIn === val ? 'rgba(235, 87, 56, 0.25)' : 'rgba(255,255,255,0.05)',
+                        background: chipIn === val ? 'rgba(235, 87, 56, 0.25)' : 'var(--surface-card)',
                         border: `1px solid ${chipIn === val ? 'var(--teal-400)' : 'rgba(255,255,255,0.1)'}`,
                         color: chipIn === val ? 'var(--teal-300)' : 'var(--slate-300)',
                         fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer'
@@ -658,7 +658,7 @@ export default function CarpoolHub({ event, user, isAttendee = false, community,
                 style={{
                   width: '100%', padding: '14px', borderRadius: '12px',
                   background: 'linear-gradient(135deg, #10b981 0%, #EB5738 100%)',
-                  color: '#1B1B1B', fontWeight: 800, fontSize: '0.98rem', border: 'none',
+                  color: '#FFFFFF', fontWeight: 800, fontSize: '0.98rem', border: 'none',
                   cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
                 }}
               >

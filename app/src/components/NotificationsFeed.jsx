@@ -20,7 +20,7 @@ const TYPE_CONFIG = {
   chapter: { icon: Map, color: '#0284c7', label: 'Chapter' },
   pitch: { icon: Sparkles, color: '#10b981', label: 'Pitch' },
   idea: { icon: Lightbulb, color: '#f59e0b', label: 'Idea' },
-  carpool: { icon: Car, color: '#D94628', label: 'Carpool' },
+  carpool: { icon: Car, color: '#C85A32', label: 'Carpool' },
   default: { icon: Bell, color: '#EB5738', label: 'Notification' }
 };
 
@@ -137,7 +137,7 @@ function SwipeableNotificationItem({ n, type, config, isAlertItem, isLight, onCl
           bottom: 0,
           right: 0,
           width: '112px',
-          background: n.is_read ? (isLight ? '#64748b' : '#334155') : '#D94628',
+          background: n.is_read ? (isLight ? '#64748b' : '#334155') : '#C85A32',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -253,7 +253,7 @@ function SwipeableNotificationItem({ n, type, config, isAlertItem, isLight, onCl
                 Already read
               </span>
             ) : (
-              <span style={{ fontSize: '0.66rem', fontWeight: 600, color: isLight ? '#D94628' : '#F27257' }}>
+              <span style={{ fontSize: '0.66rem', fontWeight: 600, color: isLight ? '#C85A32' : '#F27257' }}>
                 Unread
               </span>
             )}
@@ -275,7 +275,7 @@ function SwipeableNotificationItem({ n, type, config, isAlertItem, isLight, onCl
               borderRadius: '6px',
               border: isLight ? '1px solid rgba(0,0,0,0.1)' : '1px solid rgba(255,255,255,0.1)',
               background: isLight ? 'rgba(0,0,0,0.03)' : 'rgba(255,255,255,0.06)',
-              color: isLight ? '#D94628' : '#F27257',
+              color: isLight ? '#C85A32' : '#F27257',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
@@ -365,11 +365,11 @@ export default function NotificationsFeed({ onClose, isModal = false }) {
         {/* Header */}
         <div style={{ 
           padding: '14px 16px', 
-          borderBottom: isLight ? '1px solid #e2e8f0' : '1px solid #252525', 
+          borderBottom: isLight ? '1px solid rgba(28, 25, 21, 0.10)' : '1px solid #252525', 
           display: 'flex', 
           alignItems: 'center', 
           justifyContent: 'space-between',
-          background: isLight ? '#F7F3EC' : '#131c31' 
+          background: isLight ? '#F7F3EC' : '#252525' 
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <button 
@@ -380,7 +380,7 @@ export default function NotificationsFeed({ onClose, isModal = false }) {
             >
               <ArrowLeft size={18} />
             </button>
-            <h3 style={{ margin: 0, color: isLight ? '#1B1B1B' : 'var(--white)', fontSize: '0.98rem', fontFamily: 'var(--font-heading)' }}>Notification Details</h3>
+            <h3 style={{ margin: 0, color: isLight ? '#1C1915' : 'var(--white)', fontSize: '0.98rem', fontFamily: 'var(--font-heading)' }}>Notification Details</h3>
           </div>
           {onClose && (
             <button
@@ -406,7 +406,7 @@ export default function NotificationsFeed({ onClose, isModal = false }) {
                 </span>
                 <span style={{ fontSize: '0.72rem', color: isLight ? '#64748b' : 'var(--slate-500)' }}>{timeAgo(selectedNotification.created_at)}</span>
               </div>
-              <h2 style={{ margin: '4px 0 0', fontSize: '1.02rem', color: isLight ? '#1B1B1B' : 'var(--white)', fontWeight: 700 }}>{selectedNotification.title}</h2>
+              <h2 style={{ margin: '4px 0 0', fontSize: '1.02rem', color: isLight ? '#1C1915' : 'var(--white)', fontWeight: 700 }}>{selectedNotification.title}</h2>
             </div>
           </div>
           
@@ -417,7 +417,7 @@ export default function NotificationsFeed({ onClose, isModal = false }) {
             padding: '16px', 
             background: isLight ? '#F7F3EC' : 'rgba(255,255,255,0.03)', 
             borderRadius: '12px', 
-            border: isLight ? '1px solid #e2e8f0' : '1px solid rgba(255,255,255,0.05)', 
+            border: isLight ? '1px solid rgba(28, 25, 21, 0.10)' : '1px solid rgba(255,255,255,0.05)', 
             whiteSpace: 'pre-wrap' 
           }}>
             {selectedNotification.message}
@@ -429,7 +429,7 @@ export default function NotificationsFeed({ onClose, isModal = false }) {
             <button 
               onClick={() => { navigate.push(selectedNotification.link); if (onClose) onClose(); }}
               className="btn btn-primary interactive-press" 
-              style={{ width: '100%', padding: '11px', borderRadius: '8px', background: '#D94628', border: 'none', color: '#ffffff', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', cursor: 'pointer' }}
+              style={{ width: '100%', padding: '11px', borderRadius: '8px', background: '#C85A32', border: 'none', color: '#ffffff', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', cursor: 'pointer' }}
             >
               Open Details <ChevronRight size={16} />
             </button>
@@ -455,15 +455,15 @@ export default function NotificationsFeed({ onClose, isModal = false }) {
       {/* Header */}
       <div style={{ 
         padding: '14px 16px', 
-        borderBottom: isLight ? '1px solid #e2e8f0' : '1px solid #252525', 
+        borderBottom: isLight ? '1px solid rgba(28, 25, 21, 0.10)' : '1px solid #252525', 
         display: 'flex', 
         alignItems: 'center', 
         justifyContent: 'space-between', 
-        background: isLight ? '#F7F3EC' : '#131c31' 
+        background: isLight ? '#F7F3EC' : '#252525' 
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <h3 style={{ margin: 0, color: isLight ? '#1B1B1B' : 'var(--white)', fontSize: '0.98rem', fontFamily: 'var(--font-heading)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Bell size={18} color={isLight ? '#D94628' : 'var(--teal-400)'} /> Notifications
+          <h3 style={{ margin: 0, color: isLight ? '#1C1915' : 'var(--white)', fontSize: '0.98rem', fontFamily: 'var(--font-heading)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Bell size={18} color={isLight ? '#C85A32' : 'var(--teal-400)'} /> Notifications
           </h3>
           {unreadCount > 0 && (
             <span 
@@ -493,7 +493,7 @@ export default function NotificationsFeed({ onClose, isModal = false }) {
                 border: isLight ? '1px solid rgba(217, 70, 40,0.25)' : '1px solid rgba(235, 87, 56,0.2)', 
                 borderRadius: '8px', 
                 padding: '5px 9px', 
-                color: isLight ? '#D94628' : 'var(--teal-400)', 
+                color: isLight ? '#C85A32' : 'var(--teal-400)', 
                 fontSize: '0.69rem', 
                 fontWeight: 700, 
                 cursor: 'pointer', 
@@ -529,15 +529,15 @@ export default function NotificationsFeed({ onClose, isModal = false }) {
       {/* 3 Tabs: Inbox, Alerts, History */}
       <div style={{ 
         display: 'flex', 
-        borderBottom: isLight ? '1px solid #e2e8f0' : '1px solid #252525', 
+        borderBottom: isLight ? '1px solid rgba(28, 25, 21, 0.10)' : '1px solid #252525', 
         background: isLight ? '#EFE9DE' : '#0b1222' 
       }}>
         <button 
           onClick={() => setActiveTab('inbox')}
           style={{
             flex: 1, padding: '10px 8px', background: 'transparent', border: 'none',
-            borderBottom: activeTab === 'inbox' ? (isLight ? '2px solid #D94628' : '2px solid var(--teal-400)') : '2px solid transparent',
-            color: activeTab === 'inbox' ? (isLight ? '#D94628' : 'var(--teal-400)') : (isLight ? '#64748b' : 'var(--slate-400)'),
+            borderBottom: activeTab === 'inbox' ? (isLight ? '2px solid #C85A32' : '2px solid var(--teal-400)') : '2px solid transparent',
+            color: activeTab === 'inbox' ? (isLight ? '#C85A32' : 'var(--teal-400)') : (isLight ? '#64748b' : 'var(--slate-400)'),
             fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px'
           }}
@@ -547,7 +547,7 @@ export default function NotificationsFeed({ onClose, isModal = false }) {
               fontSize: '0.62rem', 
               padding: '1px 5px', 
               borderRadius: '99px', 
-              background: isLight ? '#D94628' : 'rgba(235, 87, 56,0.25)', 
+              background: isLight ? '#C85A32' : 'rgba(235, 87, 56,0.25)', 
               color: '#ffffff',
               fontWeight: 800
             }}>
@@ -583,8 +583,8 @@ export default function NotificationsFeed({ onClose, isModal = false }) {
           onClick={() => setActiveTab('history')}
           style={{
             flex: 1, padding: '10px 8px', background: 'transparent', border: 'none',
-            borderBottom: activeTab === 'history' ? (isLight ? '2px solid #D94628' : '2px solid var(--teal-400)') : '2px solid transparent',
-            color: activeTab === 'history' ? (isLight ? '#D94628' : 'var(--teal-400)') : (isLight ? '#64748b' : 'var(--slate-400)'),
+            borderBottom: activeTab === 'history' ? (isLight ? '2px solid #C85A32' : '2px solid var(--teal-400)') : '2px solid transparent',
+            color: activeTab === 'history' ? (isLight ? '#C85A32' : 'var(--teal-400)') : (isLight ? '#64748b' : 'var(--slate-400)'),
             fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer'
           }}
         >
@@ -599,19 +599,19 @@ export default function NotificationsFeed({ onClose, isModal = false }) {
             {activeTab === 'alerts' ? (
               <>
                 <Zap size={34} color="#f59e0b" style={{ opacity: 0.35, marginBottom: '10px' }} />
-                <p style={{ margin: '0 0 4px', fontSize: '0.92rem', fontWeight: 700, color: isLight ? '#1B1B1B' : 'var(--slate-300)' }}>No active alerts</p>
+                <p style={{ margin: '0 0 4px', fontSize: '0.92rem', fontWeight: 700, color: isLight ? '#1C1915' : 'var(--slate-300)' }}>No active alerts</p>
                 <p style={{ margin: 0, fontSize: '0.78rem', color: isLight ? '#64748b' : 'var(--slate-500)' }}>Announcements, urgent notices, and leadership alerts appear here.</p>
               </>
             ) : activeTab === 'inbox' ? (
               <>
-                <Bell size={34} style={{ opacity: 0.25, marginBottom: '10px', color: isLight ? '#D94628' : 'inherit' }} />
-                <p style={{ margin: '0 0 4px', fontSize: '0.92rem', fontWeight: 700, color: isLight ? '#1B1B1B' : 'var(--slate-300)' }}>You're all caught up!</p>
+                <Bell size={34} style={{ opacity: 0.25, marginBottom: '10px', color: isLight ? '#C85A32' : 'inherit' }} />
+                <p style={{ margin: '0 0 4px', fontSize: '0.92rem', fontWeight: 700, color: isLight ? '#1C1915' : 'var(--slate-300)' }}>You're all caught up!</p>
                 <p style={{ margin: 0, fontSize: '0.78rem', color: isLight ? '#64748b' : 'var(--slate-500)' }}>New event RSVPs, reminders, and community updates appear here.</p>
               </>
             ) : (
               <>
                 <Bell size={34} style={{ opacity: 0.2, marginBottom: '10px' }} />
-                <p style={{ margin: '0 0 4px', fontSize: '0.92rem', fontWeight: 700, color: isLight ? '#1B1B1B' : 'var(--slate-300)' }}>No history available</p>
+                <p style={{ margin: '0 0 4px', fontSize: '0.92rem', fontWeight: 700, color: isLight ? '#1C1915' : 'var(--slate-300)' }}>No history available</p>
                 <p style={{ margin: 0, fontSize: '0.78rem', color: isLight ? '#64748b' : 'var(--slate-500)' }}>Previously read notifications older than 30 days appear here.</p>
               </>
             )}

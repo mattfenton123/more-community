@@ -381,9 +381,9 @@ export default function CommunityRegionPicker({
           className="interactive-press"
           style={{
             padding: '0 14px', borderRadius: '12px',
-            background: 'rgba(255,255,255,0.06)',
+            background: 'var(--surface-card)',
             color: isLocating ? 'var(--teal-400)' : 'var(--slate-300)',
-            border: '1px solid rgba(255,255,255,0.1)',
+            border: '1px solid var(--hairline-border-strong)',
             cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center'
           }}
         >
@@ -452,8 +452,8 @@ export default function CommunityRegionPicker({
             style={{
               padding: '6px 11px',
               borderRadius: '20px',
-              background: 'rgba(255,255,255,0.04)',
-              border: '1px solid rgba(255,255,255,0.08)',
+              background: 'var(--surface-card)',
+              border: '1px solid var(--hairline-border-strong)',
               color: 'var(--slate-300)',
               fontSize: '0.75rem',
               whiteSpace: 'nowrap',
@@ -470,8 +470,8 @@ export default function CommunityRegionPicker({
 
       {/* Coverage Radius Selector */}
       <div style={{
-        background: 'rgba(255,255,255,0.02)',
-        border: '1px solid rgba(255,255,255,0.08)',
+        background: 'var(--surface-card)',
+        border: '1px solid var(--hairline-border-strong)',
         borderRadius: '12px',
         padding: '12px 14px'
       }}>
@@ -493,8 +493,8 @@ export default function CommunityRegionPicker({
               style={{
                 padding: '8px 6px',
                 borderRadius: '8px',
-                border: radiusKm === opt.km ? '1.5px solid var(--teal-400)' : '1px solid rgba(255,255,255,0.1)',
-                background: radiusKm === opt.km ? 'rgba(235, 87, 56, 0.18)' : 'rgba(255,255,255,0.03)',
+                border: radiusKm === opt.km ? '1.5px solid var(--teal-400)' : '1px solid var(--hairline-border-strong)',
+                background: radiusKm === opt.km ? 'rgba(235, 87, 56, 0.18)' : 'var(--surface-card)',
                 color: radiusKm === opt.km ? 'var(--white)' : 'var(--slate-300)',
                 fontSize: '0.75rem',
                 fontWeight: radiusKm === opt.km ? 700 : 500,
@@ -511,8 +511,8 @@ export default function CommunityRegionPicker({
       {/* Interactive Google Map with Circle Radius */}
       <div style={{
         borderRadius: '14px', overflow: 'hidden',
-        border: '1px solid rgba(255,255,255,0.12)',
-        background: '#121212', zIndex: 0,
+        border: '1px solid var(--hairline-border-strong)',
+        background: 'var(--surface-elevated)', zIndex: 0,
         boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
         position: 'relative'
       }}>
@@ -583,9 +583,9 @@ export default function CommunityRegionPicker({
 
         {/* Map Footer status */}
         <div style={{ 
-          background: '#1B1B1B', padding: '10px 14px', fontSize: '0.8rem', 
+          background: 'var(--surface-card)', padding: '10px 14px', fontSize: '0.8rem', 
           color: 'var(--slate-300)', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          borderTop: '1px solid rgba(255,255,255,0.08)'
+          borderTop: '1px solid var(--hairline-border)'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', overflow: 'hidden' }}>
             <Check size={15} color="#F27257" style={{ flexShrink: 0 }} />

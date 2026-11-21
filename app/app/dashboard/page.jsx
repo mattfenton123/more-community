@@ -150,7 +150,7 @@ function CommunitySwitcher({ currentCommunity, communities, activeId, onSelect, 
         style={{
           width: '100%',
           background: '#1B1B1B',
-          color: '#f8fafc',
+          color: 'var(--ink-primary)',
           border: isOpen ? '1px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.18)',
           padding: isMobile ? '6px 10px' : '8px 12px',
           borderRadius: '8px',
@@ -174,7 +174,7 @@ function CommunitySwitcher({ currentCommunity, communities, activeId, onSelect, 
               style={{ width: isMobile ? '18px' : '22px', height: isMobile ? '18px' : '22px', borderRadius: '4px', objectFit: 'cover', flexShrink: 0 }}
             />
           ) : (
-            <div style={{ width: isMobile ? '18px' : '22px', height: isMobile ? '18px' : '22px', borderRadius: '4px', background: 'var(--teal-600)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', fontWeight: 700, flexShrink: 0 }}>
+            <div style={{ width: isMobile ? '18px' : '22px', height: isMobile ? '18px' : '22px', borderRadius: '4px', background: 'var(--teal-600)', color: 'var(--ink-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', fontWeight: 700, flexShrink: 0 }}>
               {currentCommunity.name?.charAt(0) || 'C'}
             </div>
           )}
@@ -219,7 +219,7 @@ function CommunitySwitcher({ currentCommunity, communities, activeId, onSelect, 
                   background: 'rgba(255,255,255,0.06)',
                   border: '1px solid rgba(255,255,255,0.12)',
                   borderRadius: '8px',
-                  color: '#fff',
+                  color: 'var(--ink-primary)',
                   fontSize: '0.82rem',
                   outline: 'none'
                 }}
@@ -278,7 +278,7 @@ function CommunitySwitcher({ currentCommunity, communities, activeId, onSelect, 
                       {c.cover_image || c.image ? (
                         <img src={c.cover_image || c.image} alt="" style={{ width: '24px', height: '24px', borderRadius: '6px', objectFit: 'cover', flexShrink: 0 }} />
                       ) : (
-                        <div style={{ width: '24px', height: '24px', borderRadius: '6px', background: 'rgba(255,255,255,0.1)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, flexShrink: 0 }}>
+                        <div style={{ width: '24px', height: '24px', borderRadius: '6px', background: 'rgba(255,255,255,0.1)', color: 'var(--ink-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, flexShrink: 0 }}>
                           {c.name?.charAt(0) || 'C'}
                         </div>
                       )}
@@ -1826,7 +1826,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   onClick={toggleSpeechRecognition}
                   style={{
                     background: '#ef4444',
-                    color: '#ffffff',
+                    color: 'var(--ink-primary)',
                     border: 'none',
                     borderRadius: '6px',
                     padding: '4px 12px',
@@ -1918,7 +1918,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                     borderRadius: '10px',
                     background: 'linear-gradient(135deg, #8b5cf6, #d946ef)',
                     border: 'none',
-                    color: '#ffffff',
+                    color: 'var(--ink-primary)',
                     fontWeight: 600,
                     fontSize: '0.9rem',
                     cursor: isGenerating ? 'wait' : 'pointer',
@@ -2091,7 +2091,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   onClick={handleToggleDictateDescription}
                   style={{
                     background: '#ef4444',
-                    color: '#ffffff',
+                    color: 'var(--ink-primary)',
                     border: 'none',
                     borderRadius: '5px',
                     padding: '3px 10px',
@@ -2607,7 +2607,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 }}
               />
               {community?.whatsapp_group && !eventForm.whatsappGroup && (
-                <div style={{ marginTop: '8px', fontSize: '0.74rem', color: '#94a3b8' }}>
+                <div style={{ marginTop: '8px', fontSize: '0.74rem', color: 'var(--ink-muted)' }}>
                   Default: Will use community WhatsApp group <span style={{ color: '#4ade80', fontWeight: 600 }}>({community.whatsapp_group})</span>
                 </div>
               )}
@@ -2844,7 +2844,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                     padding: '16px'
                   }}>
                     <div>
-                      <h3 style={{ margin: 0, color: 'white', fontSize: '1.2rem', fontFamily: 'var(--font-heading)' }}>{community.name}</h3>
+                      <h3 style={{ margin: 0, color: 'var(--ink-primary)', fontSize: '1.2rem', fontFamily: 'var(--font-heading)' }}>{community.name}</h3>
                       <span style={{ fontSize: '0.75rem', color: 'var(--teal-300)', fontWeight: 500 }}>Public Community Microsite</span>
                     </div>
                     <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
@@ -2901,7 +2901,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                           background: 'rgba(27, 27, 27,0.85)', 
                           backdropFilter: 'blur(8px)',
                           border: '1px solid rgba(255,255,255,0.2)', 
-                          color: 'white',
+                          color: 'var(--ink-primary)',
                           padding: '8px 12px',
                           borderRadius: '8px',
                           fontSize: '0.75rem',
@@ -3034,7 +3034,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
               {/* Stats Grid 2x3  -  clickable for drill-down */}
               <div style={{ padding: '0 20px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: leaderDrillDown ? '0' : '24px' }}>
                 {[
-                  { key: 'members',   value: stats.totalMembers || 0,                                                                    label: 'Total Members',     icon: Users,     color: 'white' },
+                  { key: 'members',   value: stats.totalMembers || 0,                                                                    label: 'Total Members',     icon: Users,     color: 'var(--ink-primary)' },
                   { key: 'active',    value: stats.activeMembers || 0,                                                                   label: 'Active Members',    icon: Activity,  color: '#22c55e', accent: '#22c55e' },
                   { key: 'revenue',   value: `£${stats.totalRevenue || 0}`,                                                          label: 'Total Revenue',     icon: DollarSign,color: '#f59e0b', accent: '#f59e0b' },
                   { key: 'events',    value: stats.eventsThisMonth || 0,                                                                 label: 'Events This Month', icon: Calendar,  color: 'var(--teal-400)' },
@@ -3080,7 +3080,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                       </div>
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginBottom: '16px' }}>
                         {[
-                          { label: 'Total',    value: stats.totalMembers || 0,                                             color: 'white' },
+                          { label: 'Total',    value: stats.totalMembers || 0,                                             color: 'var(--ink-primary)' },
                           { label: 'Active',   value: stats.activeMembers || 0,                                            color: '#22c55e' },
                           { label: 'Inactive', value: (stats.totalMembers || 0) - (stats.activeMembers || 0),              color: '#6b7280' },
                         ].map(r => (
@@ -4298,7 +4298,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                                 fontSize: '0.8rem', 
                                 padding: '7px 16px', 
                                 borderRadius: '8px', 
-                                color: '#fff', 
+                                color: 'var(--ink-primary)', 
                                 background: 'linear-gradient(135deg, #D94628 0%, #B83D22 100%)',
                                 border: '1px solid #EB5738',
                                 fontWeight: 500
@@ -4347,7 +4347,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <Crown size={18} color="#f59e0b" />
-                    <h3 style={{ margin: 0, fontSize: '1.05rem', fontFamily: 'var(--font-heading)', color: '#fff' }}>Community Subscription</h3>
+                    <h3 style={{ margin: 0, fontSize: '1.05rem', fontFamily: 'var(--font-heading)', color: 'var(--ink-primary)' }}>Community Subscription</h3>
                     <button
                       type="button"
                       onClick={() => setShowSubscriptionInfo(true)}
@@ -4409,7 +4409,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.85rem' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--slate-300)' }}>
                         <span>Member Monthly Dues:</span>
-                        <span style={{ fontWeight: 600, color: '#fff' }}>£{Number(subscriptionPrice).toFixed(2)} / mo</span>
+                        <span style={{ fontWeight: 600, color: 'var(--ink-primary)' }}>£{Number(subscriptionPrice).toFixed(2)} / mo</span>
                       </div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', color: '#34d399' }}>
                         <span>Your Club Fund (95% standard / 100% Pro):</span>
@@ -4520,7 +4520,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                     {/* Modal Header */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                       <div>
-                        <h3 style={{ margin: 0, fontSize: '1.15rem', color: '#fff', fontFamily: 'var(--font-heading)' }}>
+                        <h3 style={{ margin: 0, fontSize: '1.15rem', color: 'var(--ink-primary)', fontFamily: 'var(--font-heading)' }}>
                           Community Subscription Breakdown
                         </h3>
                         <p style={{ fontSize: '0.82rem', color: 'var(--slate-400)', margin: '4px 0 0' }}>
@@ -4533,7 +4533,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                         style={{
                           width: '32px', height: '32px', borderRadius: '50%',
                           background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)',
-                          color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          color: 'var(--ink-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center',
                           cursor: 'pointer'
                         }}
                       >
@@ -4546,7 +4546,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                       {/* 1. Member Fee */}
                       <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '12px', padding: '14px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                          <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#fff' }}>1. Member Monthly Dues</div>
+                          <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--ink-primary)' }}>1. Member Monthly Dues</div>
                           <div style={{ fontSize: '1rem', fontWeight: 800, color: '#38bdf8' }}>£{Number(subscriptionPrice || 20).toFixed(2)}/mo</div>
                         </div>
                         <p style={{ fontSize: '0.8rem', color: 'var(--slate-300)', margin: 0, lineHeight: 1.45 }}>
@@ -4570,7 +4570,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                       {/* 3. More Platform & Card Processing */}
                       <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '12px', padding: '14px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                          <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#fff' }}>3. More Platform & Payment Processing (5% standard / 0% Pro)</div>
+                          <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--ink-primary)' }}>3. More Platform & Payment Processing (5% standard / 0% Pro)</div>
                           <div style={{ fontSize: '0.95rem', fontWeight: 800, color: '#a78bfa' }}>
                             £{(Number(subscriptionPrice || 20) * 0.05).toFixed(2)}/mo
                           </div>
@@ -5483,7 +5483,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                     {pendingCollaborationsCount > 0 && (
                       <span style={{
                         background: '#ef4444',
-                        color: 'white',
+                        color: 'var(--ink-primary)',
                         fontSize: '0.68rem',
                         fontWeight: 800,
                         padding: '2px 7px',
@@ -5579,7 +5579,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                     {pendingChapterApplications.length > 0 && (
                       <span style={{
                         background: '#ef4444',
-                        color: 'white',
+                        color: 'var(--ink-primary)',
                         fontSize: '0.68rem',
                         fontWeight: 800,
                         padding: '2px 7px',
@@ -5804,7 +5804,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
             display: 'flex',
             flexDirection: 'column',
             borderRadius: '20px',
-            background: '#0b1120',
+            background: 'var(--surface-card)',
             border: '1px solid rgba(255,255,255,0.12)',
             boxShadow: '0 25px 60px rgba(0,0,0,0.7)',
             overflow: 'hidden'
@@ -6835,7 +6835,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
           >
             {/* Header */}
             <div style={{ padding: '18px 22px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h2 style={{ margin: 0, fontSize: '1.2rem', fontFamily: 'Outfit, sans-serif', color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <h2 style={{ margin: 0, fontSize: '1.2rem', fontFamily: 'Outfit, sans-serif', color: 'var(--ink-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Globe color="#F27257" size={20} /> Third-Party Discovery
               </h2>
               <button 
@@ -6844,7 +6844,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 style={{ 
                   background: 'rgba(255,255,255,0.06)', 
                   border: '1px solid rgba(255,255,255,0.1)', 
-                  color: '#94a3b8', 
+                  color: 'var(--ink-muted)', 
                   cursor: 'pointer', 
                   borderRadius: '50%', 
                   width: '32px', 
@@ -6860,7 +6860,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
             
             {/* Scrollable Body */}
             <div style={{ padding: '20px 22px', flex: 1, overflowY: 'auto' }}>
-              <p style={{ color: '#94a3b8', fontSize: '0.88rem', margin: '0 0 16px 0', lineHeight: 1.5 }}>
+              <p style={{ color: 'var(--ink-muted)', fontSize: '0.88rem', margin: '0 0 16px 0', lineHeight: 1.5 }}>
                 Search for premium experiences from our partners to offer your community members.
               </p>
               
@@ -6869,7 +6869,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 <select 
                   value={discoveryProvider} 
                   onChange={e => setDiscoveryProvider(e.target.value)}
-                  style={{ flex: '1 1 140px', minWidth: '130px', padding: '12px 14px', background: '#1B1B1B', border: '1px solid #334155', color: '#fff', borderRadius: '12px', fontSize: '0.9rem' }}
+                  style={{ flex: '1 1 140px', minWidth: '130px', padding: '12px 14px', background: '#1B1B1B', border: '1px solid #334155', color: 'var(--ink-primary)', borderRadius: '12px', fontSize: '0.9rem' }}
                 >
                   <option value="viator">Viator Partner</option>
                   <option value="google">Google Places</option>
@@ -6880,7 +6880,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   value={discoverySearchTerm} 
                   onChange={e => setDiscoverySearchTerm(e.target.value)} 
                   onKeyDown={e => e.key === 'Enter' && handleSimulateApiSearch()}
-                  style={{ flex: '2 1 200px', minWidth: '180px', padding: '12px 16px', background: '#1B1B1B', border: '1px solid #334155', color: '#fff', borderRadius: '12px', fontSize: '0.9rem' }} 
+                  style={{ flex: '2 1 200px', minWidth: '180px', padding: '12px 16px', background: '#1B1B1B', border: '1px solid #334155', color: 'var(--ink-primary)', borderRadius: '12px', fontSize: '0.9rem' }} 
                 />
                 <button 
                   onClick={handleSimulateApiSearch}
@@ -6894,7 +6894,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
               </div>
 
               {isDiscovering && (
-                <div style={{ textAlign: 'center', padding: '40px 0', color: '#94a3b8' }}>
+                <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--ink-muted)' }}>
                   <div className="spinner" style={{ width: '32px', height: '32px', border: '3px solid rgba(255,255,255,0.1)', borderTopColor: '#F27257', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 16px' }}></div>
                   Querying {discoveryProvider === 'viator' ? 'Viator Partner API' : 'Google Places API'}...
                 </div>
@@ -6902,19 +6902,19 @@ export default function LeaderDashboard({ initialCommunityId }) {
 
               {!isDiscovering && discoveryResults && (
                 <div>
-                  <h3 style={{ fontSize: '1rem', color: '#fff', marginBottom: '16px' }}>Results ({discoveryResults.length})</h3>
+                  <h3 style={{ fontSize: '1rem', color: 'var(--ink-primary)', marginBottom: '16px' }}>Results ({discoveryResults.length})</h3>
                   <div style={{ display: 'grid', gap: '14px' }}>
                     {discoveryResults.map(exp => (
                       <div key={exp.id} style={{ display: 'flex', flexWrap: 'wrap', gap: '14px', padding: '14px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px', alignItems: 'center' }}>
                         <img src={exp.image} alt={exp.title} style={{ width: '90px', height: '90px', objectFit: 'cover', borderRadius: '10px', flexShrink: 0 }} />
                         <div style={{ flex: '1 1 240px', minWidth: 0 }}>
                           <div style={{ fontSize: '0.72rem', color: '#F27257', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px' }}>{exp.category} • {exp.source}</div>
-                          <h4 style={{ color: '#fff', margin: '0 0 4px 0', fontSize: '0.95rem', lineHeight: 1.3 }}>{exp.title}</h4>
-                          <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginBottom: '8px', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{exp.description}</div>
-                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', fontSize: '0.78rem', color: '#94a3b8' }}>
+                          <h4 style={{ color: 'var(--ink-primary)', margin: '0 0 4px 0', fontSize: '0.95rem', lineHeight: 1.3 }}>{exp.title}</h4>
+                          <div style={{ fontSize: '0.8rem', color: 'var(--ink-muted)', marginBottom: '8px', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{exp.description}</div>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', fontSize: '0.78rem', color: 'var(--ink-muted)' }}>
                             <span>{exp.duration}</span>
                             <span>⭐ {exp.rating}</span>
-                            <span style={{ color: '#fff', fontWeight: 600 }}>£{exp.basePrice} base</span>
+                            <span style={{ color: 'var(--ink-primary)', fontWeight: 600 }}>£{exp.basePrice} base</span>
                           </div>
                         </div>
                         <div style={{ flexShrink: 0, width: '100%', maxWidth: '160px', display: 'flex', justifyContent: 'flex-end' }}>
@@ -7014,7 +7014,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                         <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--teal-400)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                           Transparent Financial Breakdown
                         </span>
-                        <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#fff', margin: '4px 0 0', fontFamily: 'var(--font-heading)' }}>
+                        <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--ink-primary)', margin: '4px 0 0', fontFamily: 'var(--font-heading)' }}>
                           How Your Markup Works
                         </h3>
                         <p style={{ fontSize: '0.82rem', color: 'var(--slate-400)', margin: '4px 0 0' }}>
@@ -7027,7 +7027,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                         style={{
                           width: '32px', height: '32px', borderRadius: '50%',
                           background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)',
-                          color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          color: 'var(--ink-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center',
                           cursor: 'pointer'
                         }}
                       >
@@ -7054,7 +7054,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                               <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '12px', padding: '14px' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                                  <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#fff' }}>1. Tour Ticket (~£{supplierBase}.00 on {prov})</div>
+                                  <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--ink-primary)' }}>1. Tour Ticket (~£{supplierBase}.00 on {prov})</div>
                                   <div style={{ fontSize: '0.92rem', fontWeight: 700, color: '#38bdf8' }}>Paid Directly to {prov}</div>
                                 </div>
                                 <p style={{ fontSize: '0.8rem', color: 'var(--slate-300)', margin: 0, lineHeight: 1.45 }}>
@@ -7112,7 +7112,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                             {/* 1. Supplier Base */}
                             <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '12px', padding: '14px' }}>
                               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                                <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#fff' }}>1. Supplier Wholesale Rate</div>
+                                <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--ink-primary)' }}>1. Supplier Wholesale Rate</div>
                                 <div style={{ fontSize: '1rem', fontWeight: 800, color: '#38bdf8' }}>£{supplierBase}.00</div>
                               </div>
                               <p style={{ fontSize: '0.8rem', color: 'var(--slate-300)', margin: 0, lineHeight: 1.45 }}>
@@ -7163,7 +7163,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                                 <span>Your Community Fund (+{markupPct}%):</span>
                                 <span style={{ fontWeight: 700 }}>+£{leaderProfit}.00</span>
                               </div>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '6px', fontWeight: 800, color: '#fff', fontSize: '0.95rem' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '6px', fontWeight: 800, color: 'var(--ink-primary)', fontSize: '0.95rem' }}>
                                 <span>Member Ticket Price:</span>
                                 <span>£{memberFinalPrice}.00</span>
                               </div>

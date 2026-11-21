@@ -246,10 +246,10 @@ export default function RecurringSchedulePicker({
           display: 'grid',
           gridTemplateColumns: 'repeat(3, 1fr)',
           gap: '6px',
-          background: 'rgba(255,255,255,0.04)',
+          background: 'var(--surface-card)',
           padding: '4px',
           borderRadius: '12px',
-          border: '1px solid rgba(255,255,255,0.08)'
+          border: '1px solid var(--hairline-border)'
         }}>
           <button
             type="button"
@@ -356,7 +356,7 @@ export default function RecurringSchedulePicker({
       {/* Duration / End Time (Optional - Approximate or Exact) */}
       <div style={{
         background: 'rgba(255,255,255,0.025)',
-        border: '1px solid rgba(255,255,255,0.08)',
+        border: '1px solid var(--hairline-border)',
         borderRadius: '12px',
         padding: '12px 14px',
         display: 'flex',
@@ -367,7 +367,7 @@ export default function RecurringSchedulePicker({
           <label className="form-label" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.82rem' }}>
             <Clock size={14} color="var(--teal-400)" /> Duration / Finish Time <span style={{ color: 'var(--slate-400)', fontWeight: 400, fontSize: '0.75rem' }}>(Optional)</span>
           </label>
-          <div style={{ display: 'flex', gap: '4px', background: 'rgba(0,0,0,0.25)', padding: '3px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.06)' }}>
+          <div style={{ display: 'flex', gap: '4px', background: 'var(--surface-elevated)', padding: '3px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.06)' }}>
             {[
               { id: 'none', label: 'Start Only' },
               { id: 'approx', label: 'Approx Duration' },
@@ -416,7 +416,7 @@ export default function RecurringSchedulePicker({
                       fontSize: '0.76rem',
                       fontWeight: active ? 700 : 500,
                       border: active ? '1px solid var(--teal-400)' : '1px solid rgba(255,255,255,0.1)',
-                      background: active ? 'rgba(235, 87, 56,0.18)' : 'rgba(255,255,255,0.03)',
+                      background: active ? 'rgba(235, 87, 56,0.18)' : 'var(--surface-card)',
                       color: active ? 'var(--teal-300)' : 'var(--slate-300)',
                       cursor: 'pointer'
                     }}
@@ -629,7 +629,7 @@ export default function RecurringSchedulePicker({
                       fontSize: '0.78rem',
                       fontWeight: 600,
                       border: count === num ? '1px solid var(--teal-400)' : '1px solid rgba(255,255,255,0.08)',
-                      background: count === num ? 'var(--teal-500)' : 'rgba(255,255,255,0.03)',
+                      background: count === num ? 'var(--teal-500)' : 'var(--surface-card)',
                       color: count === num ? '#ffffff' : 'var(--slate-300)',
                       cursor: 'pointer'
                     }}
@@ -705,21 +705,21 @@ export default function RecurringSchedulePicker({
             <button
               type="button"
               onClick={() => handleAddPresetRelativeDate(7)}
-              style={{ padding: '4px 8px', borderRadius: '6px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--slate-300)', fontSize: '0.72rem', cursor: 'pointer' }}
+              style={{ padding: '4px 8px', borderRadius: '6px', background: 'var(--surface-card)', border: '1px solid var(--hairline-border-strong)', color: 'var(--slate-300)', fontSize: '0.72rem', cursor: 'pointer' }}
             >
               +1 Week
             </button>
             <button
               type="button"
               onClick={() => handleAddPresetRelativeDate(14)}
-              style={{ padding: '4px 8px', borderRadius: '6px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--slate-300)', fontSize: '0.72rem', cursor: 'pointer' }}
+              style={{ padding: '4px 8px', borderRadius: '6px', background: 'var(--surface-card)', border: '1px solid var(--hairline-border-strong)', color: 'var(--slate-300)', fontSize: '0.72rem', cursor: 'pointer' }}
             >
               +2 Weeks
             </button>
             <button
               type="button"
               onClick={() => handleAddPresetRelativeDate(28)}
-              style={{ padding: '4px 8px', borderRadius: '6px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--slate-300)', fontSize: '0.72rem', cursor: 'pointer' }}
+              style={{ padding: '4px 8px', borderRadius: '6px', background: 'var(--surface-card)', border: '1px solid var(--hairline-border-strong)', color: 'var(--slate-300)', fontSize: '0.72rem', cursor: 'pointer' }}
             >
               +4 Weeks
             </button>
@@ -733,7 +733,7 @@ export default function RecurringSchedulePicker({
       {scheduleMode !== 'single' && resolvedDates.length > 0 && (
         <div style={{
           background: 'rgba(27, 27, 27,0.6)',
-          border: '1px solid rgba(255,255,255,0.08)',
+          border: '1px solid var(--hairline-border)',
           borderRadius: '14px',
           padding: '14px',
           display: 'flex',
@@ -771,8 +771,8 @@ export default function RecurringSchedulePicker({
                   display: 'flex',
                   alignItems: 'center',
                   gap: '6px',
-                  background: 'rgba(255,255,255,0.05)',
-                  border: '1px solid rgba(255,255,255,0.1)',
+                  background: 'var(--surface-card)',
+                  border: '1px solid var(--hairline-border-strong)',
                   borderRadius: '8px',
                   padding: '5px 10px',
                   fontSize: '0.75rem',

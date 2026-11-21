@@ -75,7 +75,7 @@ export default function CreateIdeaModal({ isOpen, onClose, communityId: initialC
     <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
       <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(5px)' }} onClick={onClose} />
       
-      <div style={{ position: 'relative', width: '100%', maxWidth: '520px', background: 'var(--slate-900)', borderTopLeftRadius: '24px', borderTopRightRadius: '24px', padding: '24px 24px 80px 24px', maxHeight: '90dvh', overflowY: 'auto', border: '1px solid rgba(255,255,255,0.1)', borderBottom: 'none', animation: 'slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)' }}>
+      <div style={{ position: 'relative', width: '100%', maxWidth: '520px', background: 'var(--slate-900)', borderTopLeftRadius: '24px', borderTopRightRadius: '24px', padding: '24px 24px 80px 24px', maxHeight: '90dvh', overflowY: 'auto', border: '1px solid var(--hairline-border-strong)', borderBottom: 'none', animation: 'slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)' }}>
         <button onClick={onClose} className="interactive-press" style={{ position: 'absolute', top: '24px', right: '24px', background: 'rgba(255,255,255,0.1)', border: 'none', color: 'var(--white)', width: '32px', height: '32px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
           <X size={18} />
         </button>
@@ -101,7 +101,7 @@ export default function CreateIdeaModal({ isOpen, onClose, communityId: initialC
                     width: '100%',
                     padding: '14px 14px 14px 44px',
                     borderRadius: '12px',
-                    background: 'rgba(255,255,255,0.04)',
+                    background: 'var(--surface-card)',
                     border: '1px solid rgba(255,255,255,0.12)',
                     color: 'var(--white)',
                     fontSize: '0.95rem',
@@ -110,7 +110,7 @@ export default function CreateIdeaModal({ isOpen, onClose, communityId: initialC
                   }}
                 >
                   {(joinedCommunities.length > 0 ? joinedCommunities : (communities || [])).map(c => (
-                    <option key={c.id} value={c.id} style={{ background: '#1B1B1B', color: 'white' }}>
+                    <option key={c.id} value={c.id}>
                       {c.name}
                     </option>
                   ))}
@@ -126,7 +126,7 @@ export default function CreateIdeaModal({ isOpen, onClose, communityId: initialC
               value={title}
               onChange={e => setTitle(e.target.value)}
               placeholder="e.g. Pottery & Coffee Morning or Sunset Social"
-              style={{ width: '100%', padding: '14px', borderRadius: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--white)', fontSize: '0.95rem' }}
+              style={{ width: '100%', padding: '14px', borderRadius: '12px', background: 'var(--surface-card)', border: '1px solid var(--hairline-border-strong)', color: 'var(--white)', fontSize: '0.95rem' }}
             />
           </div>
 
@@ -138,7 +138,7 @@ export default function CreateIdeaModal({ isOpen, onClose, communityId: initialC
                 value={location}
                 onChange={e => setLocation(e.target.value)}
                 placeholder="e.g. Dunorlan Park Cafe"
-                style={{ width: '100%', padding: '14px 14px 14px 44px', borderRadius: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--white)', fontSize: '0.95rem' }}
+                style={{ width: '100%', padding: '14px 14px 14px 44px', borderRadius: '12px', background: 'var(--surface-card)', border: '1px solid var(--hairline-border-strong)', color: 'var(--white)', fontSize: '0.95rem' }}
               />
             </div>
           </div>
@@ -150,7 +150,7 @@ export default function CreateIdeaModal({ isOpen, onClose, communityId: initialC
               value={description}
               onChange={e => setDescription(e.target.value)}
               placeholder="Tell other members what you have in mind, suggested days/times, and why it'd be fun..."
-              style={{ width: '100%', minHeight: '110px', padding: '14px', borderRadius: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--white)', fontSize: '0.95rem', resize: 'none' }}
+              style={{ width: '100%', minHeight: '110px', padding: '14px', borderRadius: '12px', background: 'var(--surface-card)', border: '1px solid var(--hairline-border-strong)', color: 'var(--white)', fontSize: '0.95rem', resize: 'none' }}
             />
           </div>
 

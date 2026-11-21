@@ -72,7 +72,7 @@ export default function ExperiencesCatalog({ onPitchExperience }) {
                 background: 'rgba(27, 27, 27, 0.85)', backdropFilter: 'blur(6px)', 
                 padding: '4px 8px', borderRadius: '8px', 
                 display: 'flex', alignItems: 'center', gap: '4px', 
-                fontSize: '0.75rem', color: '#fff', fontWeight: 700,
+                fontSize: '0.75rem', color: 'var(--ink-primary)', fontWeight: 700,
                 border: '1px solid rgba(255,255,255,0.1)'
               }}>
                 <Star size={12} fill="#f59e0b" color="#f59e0b" /> {exp.rating || '4.8'}
@@ -242,7 +242,7 @@ export default function ExperiencesCatalog({ onPitchExperience }) {
                   borderRadius: '50%',
                   background: 'rgba(27, 27, 27, 0.8)',
                   border: '1px solid rgba(255,255,255,0.2)',
-                  color: '#fff',
+                  color: 'var(--ink-primary)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -271,7 +271,7 @@ export default function ExperiencesCatalog({ onPitchExperience }) {
                 background: 'rgba(27, 27, 27, 0.9)', backdropFilter: 'blur(8px)',
                 border: '1px solid rgba(255,255,255,0.1)',
                 padding: '4px 10px', borderRadius: '99px',
-                fontSize: '0.74rem', color: '#fff', fontWeight: 700,
+                fontSize: '0.74rem', color: 'var(--ink-primary)', fontWeight: 700,
                 display: 'flex', alignItems: 'center', gap: '4px'
               }}>
                 <Star size={13} fill="#f59e0b" color="#f59e0b" /> {selectedExp.rating || '4.8'}
@@ -284,7 +284,7 @@ export default function ExperiencesCatalog({ onPitchExperience }) {
                 <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#F27257', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                   {selectedExp.category || 'Local Experience'}
                 </span>
-                <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#fff', margin: '4px 0 0', lineHeight: 1.3, fontFamily: 'var(--font-heading)' }}>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--ink-primary)', margin: '4px 0 0', lineHeight: 1.3, fontFamily: 'var(--font-heading)' }}>
                   {selectedExp.title}
                 </h3>
               </div>
@@ -301,13 +301,13 @@ export default function ExperiencesCatalog({ onPitchExperience }) {
               }}>
                 <div>
                   <div style={{ fontSize: '0.68rem', color: 'var(--slate-400)', textTransform: 'uppercase', fontWeight: 600 }}>Location</div>
-                  <div style={{ fontSize: '0.84rem', color: '#fff', fontWeight: 600, marginTop: '2px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <div style={{ fontSize: '0.84rem', color: 'var(--ink-primary)', fontWeight: 600, marginTop: '2px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                     <MapPin size={13} color="#F27257" /> {selectedExp.location || 'Tunbridge Wells'}
                   </div>
                 </div>
                 <div>
                   <div style={{ fontSize: '0.68rem', color: 'var(--slate-400)', textTransform: 'uppercase', fontWeight: 600 }}>Duration</div>
-                  <div style={{ fontSize: '0.84rem', color: '#fff', fontWeight: 600, marginTop: '2px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <div style={{ fontSize: '0.84rem', color: 'var(--ink-primary)', fontWeight: 600, marginTop: '2px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                     <Clock size={13} color="#F27257" /> {selectedExp.duration || '1-2 hours'}
                   </div>
                 </div>

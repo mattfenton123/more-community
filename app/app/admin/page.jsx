@@ -780,7 +780,7 @@ const ADMIN_EMAILS = [
                   <span style={{ fontSize: '0.74rem', fontWeight: 700, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                     Leader Perspective Preview
                   </span>
-                  <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#fff', margin: '4px 0 0', fontFamily: 'var(--font-heading)' }}>
+                  <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--ink-primary)', margin: '4px 0 0', fontFamily: 'var(--font-heading)' }}>
                     Leading More Shades of Golden
                   </h2>
                   <p style={{ fontSize: '0.84rem', color: 'var(--slate-300)', margin: '4px 0 0' }}>
@@ -803,7 +803,7 @@ const ADMIN_EMAILS = [
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px' }}>
                 <div style={{ background: 'rgba(255,255,255,0.04)', padding: '14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
                   <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', textTransform: 'uppercase' }}>Active Members</div>
-                  <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#fff', marginTop: '2px' }}>248</div>
+                  <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--ink-primary)', marginTop: '2px' }}>248</div>
                   <div style={{ fontSize: '0.7rem', color: '#34d399', marginTop: '4px' }}>+12 this week</div>
                 </div>
                 <div style={{ background: 'rgba(255,255,255,0.04)', padding: '14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
@@ -839,7 +839,7 @@ const ADMIN_EMAILS = [
                   <span style={{ fontSize: '0.74rem', fontWeight: 700, color: '#34d399', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                     Community Member Perspective Preview
                   </span>
-                  <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#fff', margin: '4px 0 0', fontFamily: 'var(--font-heading)' }}>
+                  <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--ink-primary)', margin: '4px 0 0', fontFamily: 'var(--font-heading)' }}>
                     Attendee & Discover Experience
                   </h2>
                   <p style={{ fontSize: '0.84rem', color: 'var(--slate-300)', margin: '4px 0 0' }}>
@@ -863,7 +863,7 @@ const ADMIN_EMAILS = [
                       navigate.push('/discover');
                     }}
                     className="btn btn-outline interactive-press"
-                    style={{ padding: '10px 18px', borderRadius: '12px', fontSize: '0.88rem', fontWeight: 700, border: '1px solid rgba(255,255,255,0.2)', color: 'white', display: 'flex', alignItems: 'center', gap: '6px' }}
+                    style={{ padding: '10px 18px', borderRadius: '12px', fontSize: '0.88rem', fontWeight: 700, border: '1px solid rgba(255,255,255,0.2)', color: 'var(--ink-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}
                   >
                     <Globe size={15} color="var(--teal-400)" /> Browse Discover (/discover) →
                   </button>
@@ -874,7 +874,7 @@ const ADMIN_EMAILS = [
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
                 <div style={{ background: 'rgba(255,255,255,0.03)', padding: '16px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.06)' }}>
                   <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#34d399', marginBottom: '8px' }}>✓ Your Active Event Ticket Pass</div>
-                  <div style={{ fontWeight: 700, color: '#fff', fontSize: '0.98rem' }}>Saturday Morning Ridge Walk & Coffee</div>
+                  <div style={{ fontWeight: 700, color: 'var(--ink-primary)', fontSize: '0.98rem' }}>Saturday Morning Ridge Walk & Coffee</div>
                   <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)', marginTop: '4px' }}>Tomorrow at 09:30 • Dunorlan Park</div>
                   <div style={{ marginTop: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span style={{ background: 'rgba(34,197,94,0.15)', color: '#4ade80', fontSize: '0.72rem', padding: '2px 8px', borderRadius: '99px', fontWeight: 700 }}>Confirmed RSVP</span>
@@ -884,7 +884,7 @@ const ADMIN_EMAILS = [
 
                 <div style={{ background: 'rgba(255,255,255,0.03)', padding: '16px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.06)' }}>
                   <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#fbbf24', marginBottom: '8px' }}>★ Unlocked Member Perks in Tunbridge Wells</div>
-                  <div style={{ fontWeight: 700, color: '#fff', fontSize: '0.95rem' }}>15% off at The Pantiles Coffee Roastery</div>
+                  <div style={{ fontWeight: 700, color: 'var(--ink-primary)', fontSize: '0.95rem' }}>15% off at The Pantiles Coffee Roastery</div>
                   <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)', marginTop: '4px' }}>Exclusive discount on meetup mornings for group members</div>
                   <div style={{ marginTop: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span style={{ background: 'rgba(245,158,11,0.15)', color: '#fbbf24', fontSize: '0.72rem', padding: '2px 8px', borderRadius: '99px', fontWeight: 700 }}>Show Pass in Shop</span>
@@ -908,7 +908,7 @@ const ADMIN_EMAILS = [
                   <span style={{ fontSize: '0.74rem', fontWeight: 700, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                     Local Business Sponsor Perspective Preview
                   </span>
-                  <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#fff', margin: '4px 0 0', fontFamily: 'var(--font-heading)' }}>
+                  <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--ink-primary)', margin: '4px 0 0', fontFamily: 'var(--font-heading)' }}>
                     The Pantiles Coffee Roastery
                   </h2>
                   <p style={{ fontSize: '0.84rem', color: 'var(--slate-300)', margin: '4px 0 0' }}>
@@ -931,7 +931,7 @@ const ADMIN_EMAILS = [
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px', marginBottom: '18px' }}>
                 <div style={{ background: 'rgba(255,255,255,0.04)', padding: '14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
                   <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', textTransform: 'uppercase' }}>Community Impressions</div>
-                  <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#fff', marginTop: '2px' }}>186</div>
+                  <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--ink-primary)', marginTop: '2px' }}>186</div>
                   <div style={{ fontSize: '0.7rem', color: 'var(--slate-400)', marginTop: '4px' }}>Seen in group feed & header</div>
                 </div>
                 <div style={{ background: 'rgba(255,255,255,0.04)', padding: '14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
@@ -967,7 +967,7 @@ const ADMIN_EMAILS = [
                   <span style={{ fontSize: '0.74rem', fontWeight: 700, color: '#4FA88E', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                     Experience Host / Specialist Perspective Preview
                   </span>
-                  <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#fff', margin: '4px 0 0', fontFamily: 'var(--font-heading)' }}>
+                  <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--ink-primary)', margin: '4px 0 0', fontFamily: 'var(--font-heading)' }}>
                     Peak & Trail Navigation Skills
                   </h2>
                   <p style={{ fontSize: '0.84rem', color: 'var(--slate-300)', margin: '4px 0 0' }}>

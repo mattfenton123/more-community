@@ -146,7 +146,7 @@ export default function ExperienceCheckout() {
               RESERVATION CONFIRMED
             </span>
 
-            <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.45rem', fontWeight: 800, margin: '12px 0 6px', color: '#fff' }}>
+            <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.45rem', fontWeight: 800, margin: '12px 0 6px', color: 'var(--ink-primary)' }}>
               {isAffiliate ? 'Group Host Pass Reserved!' : "You're Booked In!"}
             </h2>
             <p style={{ color: 'var(--slate-300)', fontSize: '0.9rem', margin: '0 0 20px', lineHeight: 1.5 }}>
@@ -164,7 +164,7 @@ export default function ExperienceCheckout() {
                 </div>
                 <div style={{ textAlign: 'right' }}>
                   <div style={{ fontSize: '0.7rem', color: 'var(--slate-400)', textTransform: 'uppercase', fontWeight: 700 }}>Total Paid</div>
-                  <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#fff' }}>£{totalPrice}</div>
+                  <div style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--ink-primary)' }}>£{totalPrice}</div>
                 </div>
               </div>
 
@@ -172,7 +172,7 @@ export default function ExperienceCheckout() {
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
                   <Calendar size={16} color="var(--teal-400)" style={{ flexShrink: 0, marginTop: '2px' }} />
                   <div>
-                    <div style={{ fontWeight: 600, color: '#fff' }}>{formattedBookingDate}</div>
+                    <div style={{ fontWeight: 600, color: 'var(--ink-primary)' }}>{formattedBookingDate}</div>
                     <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>Time: {selectedTime} ({exp.duration || '2.5 hours'})</div>
                   </div>
                 </div>
@@ -180,7 +180,7 @@ export default function ExperienceCheckout() {
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
                   <MapPin size={16} color="#38bdf8" style={{ flexShrink: 0, marginTop: '2px' }} />
                   <div>
-                    <div style={{ fontWeight: 600, color: '#fff' }}>{venueLocation}</div>
+                    <div style={{ fontWeight: 600, color: 'var(--ink-primary)' }}>{venueLocation}</div>
                     <a href={mapsUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.75rem', color: 'var(--teal-400)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '3px', marginTop: '2px' }}>
                       Get Directions on Google Maps <ExternalLink size={10} />
                     </a>
@@ -214,7 +214,7 @@ export default function ExperienceCheckout() {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="btn btn-outline interactive-press"
-                style={{ width: '100%', padding: '13px', borderRadius: '12px', fontSize: '0.9rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: '#fff', textDecoration: 'none' }}
+                style={{ width: '100%', padding: '13px', borderRadius: '12px', fontSize: '0.9rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: 'var(--ink-primary)', textDecoration: 'none' }}
               >
                 <MapPin size={16} /> Open Venue Location in Maps
               </a>
@@ -251,7 +251,7 @@ export default function ExperienceCheckout() {
             </div>
 
             <div style={{ padding: '18px 20px' }}>
-              <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.3rem', fontWeight: 800, margin: '0 0 6px', color: '#fff', lineHeight: 1.3 }}>
+              <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.3rem', fontWeight: 800, margin: '0 0 6px', color: 'var(--ink-primary)', lineHeight: 1.3 }}>
                 {exp.title}
               </h2>
               <div style={{ fontSize: '0.85rem', color: 'var(--slate-400)', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
@@ -268,7 +268,7 @@ export default function ExperienceCheckout() {
           <div style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '18px', padding: '20px', marginBottom: '18px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
               <Calendar size={18} color="var(--teal-400)" />
-              <h3 style={{ margin: 0, fontSize: '1.05rem', fontFamily: 'var(--font-heading)', color: '#fff' }}>
+              <h3 style={{ margin: 0, fontSize: '1.05rem', fontFamily: 'var(--font-heading)', color: 'var(--ink-primary)' }}>
                 1. Choose Date & Session Time
               </h3>
             </div>
@@ -318,7 +318,7 @@ export default function ExperienceCheckout() {
                     borderRadius: '8px',
                     background: 'var(--slate-900)',
                     border: '1px solid var(--slate-700)',
-                    color: '#fff',
+                    color: 'var(--ink-primary)',
                     fontSize: '0.85rem'
                   }}
                 />
@@ -364,13 +364,13 @@ export default function ExperienceCheckout() {
           <div style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '18px', padding: '20px', marginBottom: '18px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
               <MapPin size={18} color="#38bdf8" />
-              <h3 style={{ margin: 0, fontSize: '1.05rem', fontFamily: 'var(--font-heading)', color: '#fff' }}>
+              <h3 style={{ margin: 0, fontSize: '1.05rem', fontFamily: 'var(--font-heading)', color: 'var(--ink-primary)' }}>
                 2. Venue Location & Directions
               </h3>
             </div>
 
             <div style={{ background: 'var(--slate-900)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '14px', marginBottom: '12px' }}>
-              <div style={{ fontWeight: 700, color: '#fff', fontSize: '0.95rem', marginBottom: '4px' }}>
+              <div style={{ fontWeight: 700, color: 'var(--ink-primary)', fontSize: '0.95rem', marginBottom: '4px' }}>
                 {venueLocation}
               </div>
               <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)', lineHeight: 1.45 }}>
@@ -407,7 +407,7 @@ export default function ExperienceCheckout() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Users size={18} color="#f59e0b" />
                 <div>
-                  <h3 style={{ margin: 0, fontSize: '1.05rem', fontFamily: 'var(--font-heading)', color: '#fff' }}>
+                  <h3 style={{ margin: 0, fontSize: '1.05rem', fontFamily: 'var(--font-heading)', color: 'var(--ink-primary)' }}>
                     3. Number of Guests
                   </h3>
                   <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>Includes full entry and reservation</div>
@@ -419,7 +419,7 @@ export default function ExperienceCheckout() {
                   type="button"
                   onClick={() => setGuestCount(Math.max(1, guestCount - 1))}
                   className="interactive-press"
-                  style={{ background: 'none', border: 'none', color: '#fff', fontSize: '1.2rem', cursor: 'pointer', padding: '2px 8px' }}
+                  style={{ background: 'none', border: 'none', color: 'var(--ink-primary)', fontSize: '1.2rem', cursor: 'pointer', padding: '2px 8px' }}
                 >
                   -
                 </button>
@@ -430,7 +430,7 @@ export default function ExperienceCheckout() {
                   type="button"
                   onClick={() => setGuestCount(Math.min(8, guestCount + 1))}
                   className="interactive-press"
-                  style={{ background: 'none', border: 'none', color: '#fff', fontSize: '1.2rem', cursor: 'pointer', padding: '2px 8px' }}
+                  style={{ background: 'none', border: 'none', color: 'var(--ink-primary)', fontSize: '1.2rem', cursor: 'pointer', padding: '2px 8px' }}
                 >
                   +
                 </button>
@@ -440,7 +440,7 @@ export default function ExperienceCheckout() {
 
           {/* ── STEP 4: ORDER SUMMARY & PAYMENT ── */}
           <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '20px', padding: '20px', marginBottom: '24px' }}>
-            <h3 style={{ fontSize: '1rem', fontWeight: 700, margin: '0 0 14px', color: '#fff' }}>
+            <h3 style={{ fontSize: '1rem', fontWeight: 700, margin: '0 0 14px', color: 'var(--ink-primary)' }}>
               Order & Price Summary
             </h3>
 
@@ -460,7 +460,7 @@ export default function ExperienceCheckout() {
                 <span style={{ color: 'var(--teal-400)' }}>Included (£0.00)</span>
               </div>
               <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '10px', marginTop: '4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontWeight: 700, color: '#fff', fontSize: '1.05rem' }}>Total Due Now:</span>
+                <span style={{ fontWeight: 700, color: 'var(--ink-primary)', fontSize: '1.05rem' }}>Total Due Now:</span>
                 <span style={{ fontFamily: 'var(--font-heading)', fontSize: '1.5rem', fontWeight: 800, color: 'var(--teal-400)' }}>
                   £{totalPrice}
                 </span>
@@ -472,7 +472,7 @@ export default function ExperienceCheckout() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(235, 87, 56,0.08)', border: '1px solid rgba(235, 87, 56,0.3)', borderRadius: '12px', padding: '12px 14px' }}>
                 <CreditCard size={22} color="var(--teal-400)" />
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 700, fontSize: '0.9rem', color: '#fff' }}>Apple Pay / Google Pay / Card</div>
+                  <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--ink-primary)' }}>Apple Pay / Google Pay / Card</div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>Instant 1-tap checkout via Stripe Secure Escrow</div>
                 </div>
                 <div style={{ width: '18px', height: '18px', borderRadius: '50%', background: 'var(--teal-500)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

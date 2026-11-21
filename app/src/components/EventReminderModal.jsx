@@ -54,7 +54,7 @@ export default function EventReminderModal({
     <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
       <div className="glass-panel" style={{ width: '100%', maxWidth: '500px', borderRadius: '24px', border: '1px solid rgba(56,189,248,0.25)', overflow: 'hidden', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7)' }}>
         {/* Header */}
-        <div style={{ padding: '20px 24px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(56,189,248,0.04)' }}>
+        <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--hairline-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(56,189,248,0.04)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(56,189,248,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#38bdf8' }}>
               <Bell size={20} />
@@ -76,7 +76,7 @@ export default function EventReminderModal({
         {/* Content */}
         <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '18px' }}>
           {/* Event card pill */}
-          <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '14px', padding: '14px 16px' }}>
+          <div style={{ background: 'var(--surface-card)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '14px', padding: '14px 16px' }}>
             <div style={{ fontWeight: 600, color: 'var(--white)', fontSize: '0.95rem', marginBottom: '6px' }}>
               {event.title}
             </div>
@@ -163,7 +163,7 @@ export default function EventReminderModal({
         </div>
 
         {/* Footer Buttons */}
-        <div style={{ padding: '16px 24px', borderTop: '1px solid rgba(255,255,255,0.08)', display: 'flex', justifyContent: 'flex-end', gap: '10px', background: 'rgba(255,255,255,0.02)' }}>
+        <div style={{ padding: '16px 24px', borderTop: '1px solid var(--hairline-border)', display: 'flex', justifyContent: 'flex-end', gap: '10px', background: 'rgba(255,255,255,0.02)' }}>
           <button 
             onClick={onClose}
             className="btn btn-outline interactive-press"

@@ -93,7 +93,7 @@ export default function PayoutBankModal({ isOpen, onClose, community, onBankSave
       position: 'fixed',
       inset: 0,
       zIndex: 100000,
-      background: 'rgba(5, 10, 20, 0.88)',
+      background: 'rgba(18, 18, 18, 0.72)',
       backdropFilter: 'blur(12px)',
       display: 'flex',
       alignItems: 'center',
@@ -128,7 +128,7 @@ export default function PayoutBankModal({ isOpen, onClose, community, onBankSave
               <Building2 size={22} />
             </div>
             <div>
-              <h3 style={{ margin: 0, fontSize: '1.25rem', color: '#fff', fontFamily: 'var(--font-heading)' }}>
+              <h3 style={{ margin: 0, fontSize: '1.25rem', color: 'var(--ink-primary)', fontFamily: 'var(--font-heading)' }}>
                 Set Up Payout Bank
               </h3>
               <p style={{ margin: '2px 0 0 0', fontSize: '0.8rem', color: 'var(--slate-400)' }}>
@@ -142,7 +142,7 @@ export default function PayoutBankModal({ isOpen, onClose, community, onBankSave
             className="interactive-press"
             style={{
               background: 'rgba(255, 255, 255, 0.05)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
+              border: '1px solid var(--hairline-border-strong)',
               borderRadius: '10px',
               width: '34px',
               height: '34px',
@@ -225,8 +225,8 @@ export default function PayoutBankModal({ isOpen, onClose, community, onBankSave
                 padding: '11px 12px',
                 borderRadius: '10px',
                 background: 'var(--slate-800)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                color: '#fff',
+                border: '1px solid var(--hairline-border-strong)',
+                color: 'var(--ink-primary)',
                 fontSize: '0.9rem'
               }}
             >
@@ -250,8 +250,8 @@ export default function PayoutBankModal({ isOpen, onClose, community, onBankSave
                 padding: '11px 12px',
                 borderRadius: '10px',
                 background: 'rgba(255, 255, 255, 0.04)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                color: '#fff',
+                border: '1px solid var(--hairline-border-strong)',
+                color: 'var(--ink-primary)',
                 fontSize: '0.9rem'
               }}
             />
@@ -273,8 +273,8 @@ export default function PayoutBankModal({ isOpen, onClose, community, onBankSave
                   padding: '11px 12px',
                   borderRadius: '10px',
                   background: 'rgba(255, 255, 255, 0.04)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  color: '#fff',
+                  border: '1px solid var(--hairline-border-strong)',
+                  color: 'var(--ink-primary)',
                   fontSize: '0.95rem',
                   fontFamily: 'monospace',
                   letterSpacing: '1px'
@@ -295,8 +295,8 @@ export default function PayoutBankModal({ isOpen, onClose, community, onBankSave
                   padding: '11px 12px',
                   borderRadius: '10px',
                   background: 'rgba(255, 255, 255, 0.04)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  color: '#fff',
+                  border: '1px solid var(--hairline-border-strong)',
+                  color: 'var(--ink-primary)',
                   fontSize: '0.95rem',
                   fontFamily: 'monospace',
                   letterSpacing: '1px'
