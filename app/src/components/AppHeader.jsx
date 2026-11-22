@@ -1,16 +1,19 @@
 "use client";
 import { useRouter as useNavigate, usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { Activity, Compass, Calendar, Sparkles, MessageCircle, Shield, Crown, ChevronLeft, Bell, Sun, Moon, Monitor, X } from 'lucide-react';
+import { Activity, Compass, Calendar, Sparkles, MessageCircle, Shield, Crown, ChevronLeft, Bell, Sun, Moon, Monitor, X, QrCode } from 'lucide-react';
 import { useChat } from '../context/ChatContext';
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import NotificationsFeed from './NotificationsFeed';
+import ConnectQRModal from './ConnectQRModal';
 import { useAppContext } from '../context/AppContext';
 import { resolveUserAvatar } from '../lib/avatar';
+import { getProfilePath } from '../lib/profileLinks';
 
 export default function AppHeader({ title, subtitle, rightElement, showBack = false, onBack, avatar, onAvatarClick }) {
   const [showNotificationsModal, setShowNotificationsModal] = useState(false);
+  const [showConnectQR, setShowConnectQR] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
@@ -33,7 +36,7 @@ export default function AppHeader({ title, subtitle, rightElement, showBack = fa
   };
   const navigate = useNavigate();
   const currentPath = usePathname();
-  const { user, notifications, theme, setTheme } = useAppContext();
+  const { user, users = [], notifications, theme, setTheme } = useAppContext();
   const chatCtx = useChat() || {};
   const directMessages = Array.isArray(chatCtx.directMessages) ? chatCtx.directMessages : [];
   const chatReadReceipts = Array.isArray(chatCtx.chatReadReceipts) ? chatCtx.chatReadReceipts : [];
@@ -160,10 +163,21 @@ export default function AppHeader({ title, subtitle, rightElement, showBack = fa
           </div>
         )}
       </div>
+      {user?.id && (
+        <div
+          className="interactive-press"
+          onClick={() => setShowConnectQR(true)}
+          style={{ position: 'relative', cursor: 'pointer', padding: '4px', flexShrink: 0 }}
+          title="Meetup Connect QR"
+          aria-label="Meetup Connect QR"
+        >
+          <QrCode size={19} color={theme === 'light' ? '#4A433B' : 'var(--slate-300)'} />
+        </div>
+      )}
       {user?.id ? (
         <div 
           className="interactive-press" 
-          onClick={() => navigate.push(`/profile/${user.id}`)}
+          onClick={() => navigate.push(getProfilePath(user, users))}
           style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
           title="Profile"
         >
@@ -311,6 +325,10 @@ export default function AppHeader({ title, subtitle, rightElement, showBack = fa
             <NotificationsFeed onClose={() => setShowNotificationsModal(false)} isModal={true} />
           </div>
         </div>,
+        document.body
+      )}
+      {isMounted && showConnectQR && createPortal(
+        <ConnectQRModal isOpen={showConnectQR} onClose={() => setShowConnectQR(false)} />,
         document.body
       )}
     </div>

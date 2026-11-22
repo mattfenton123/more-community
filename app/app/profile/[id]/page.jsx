@@ -36,6 +36,7 @@ import { isCommunityPubliclyListed } from '../../../src/lib/communityVisibility'
 import { getCommunityLocation } from '../../../src/lib/location';
 import { parseEventDateTime } from '../../../src/lib/calendar';
 import { resolveUserAvatar } from '../../../src/lib/avatar';
+import { findUserByParam } from '../../../src/lib/profileLinks';
 
 
 const BANNER_PRESETS = [
@@ -117,11 +118,10 @@ export default function UserProfile() {
   const { signOut } = useAuth();
   const { toast } = useToast();
 
-  const targetId = id || currentUser?.id;
   const profileUser = useMemo(() => {
-    if (!targetId) return null;
-    return (users || []).find((u) => u.id === targetId) || (targetId === currentUser?.id ? currentUser : null);
-  }, [users, targetId, currentUser]);
+    return findUserByParam(users, id, currentUser);
+  }, [users, id, currentUser]);
+  const targetId = profileUser?.id || id || currentUser?.id;
 
   const isOwnProfile = Boolean(targetId && currentUser?.id && targetId === currentUser.id);
   const isLeader = Boolean((currentUser?.ledCommunities?.length || 0) > 0 || currentUser?.leaderOf);
