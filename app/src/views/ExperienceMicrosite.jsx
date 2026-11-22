@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter as useNavigate } from 'next/navigation';
-import { MapPin, Clock, Users, ArrowLeft, Share2, Star, Sparkles, Calendar, Check, ExternalLink, Loader2, Vote, MessageCircle } from 'lucide-react';
+import { MapPin, Clock, Users, ArrowLeft, Share2, Star, Sparkles, Calendar, Check, X, ShieldCheck, Info, Ticket, ExternalLink, Loader2, Vote, MessageCircle } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { useToast } from '../components/Toast';
 import HostExperienceModal from '../components/HostExperienceModal';
@@ -20,23 +20,43 @@ export default function ExperienceMicrosite() {
   const [createdEvent, setCreatedEvent] = useState(null);
   const [singleExp, setSingleExp] = useState(null);
   const [isLoadingSingle, setIsLoadingSingle] = useState(false);
+  const [isLoadingFullDetails, setIsLoadingFullDetails] = useState(false);
+  const [activeHeroImage, setActiveHeroImage] = useState(null);
 
-  const experience = experiences?.find(e => e.id === id || e.productCode === id) || singleExp;
+  const baseExperience = experiences?.find(e => e.id === id || e.productCode === id) || null;
+  const experience = singleExp
+    ? { ...(baseExperience || {}), ...singleExp, location: baseExperience?.location || singleExp.location }
+    : baseExperience;
 
   useEffect(() => {
-    if (!experience && id) {
-      setIsLoadingSingle(true);
-      fetch(`/api/experiences/discover?code=${id}&provider=viator`)
-        .then(r => r.json())
-        .then(data => {
-          if (data.status === 'success' && data.data) {
-            setSingleExp(data.data);
-          }
-        })
-        .catch(console.error)
-        .finally(() => setIsLoadingSingle(false));
-    }
-  }, [id, experience]);
+    const productCode = baseExperience?.productCode || id;
+    const shouldFetchViator =
+      Boolean(productCode) &&
+      (!baseExperience || (isAffiliateExperience(baseExperience) && !singleExp?.fullDetailsLoaded));
+
+    if (!shouldFetchViator) return;
+
+    let cancelled = false;
+    if (!baseExperience) setIsLoadingSingle(true);
+    else setIsLoadingFullDetails(true);
+
+    fetch(`/api/experiences/discover?code=${encodeURIComponent(productCode)}&provider=viator`)
+      .then(r => r.json())
+      .then(data => {
+        if (!cancelled && data.status === 'success' && data.data) {
+          setSingleExp(data.data);
+        }
+      })
+      .catch(console.error)
+      .finally(() => {
+        if (!cancelled) {
+          setIsLoadingSingle(false);
+          setIsLoadingFullDetails(false);
+        }
+      });
+
+    return () => { cancelled = true; };
+  }, [id, baseExperience?.id, baseExperience?.productCode, singleExp?.fullDetailsLoaded]);
 
   if (isLoadingSingle) {
     return (
@@ -146,7 +166,7 @@ export default function ExperienceMicrosite() {
     <div style={{ minHeight: '100dvh', background: 'var(--slate-950)', color: 'var(--white)', paddingBottom: '120px' }}>
       {/* Hero Section */}
       <div style={{ position: 'relative', height: '350px' }}>
-        <img src={experience.image} alt={experience.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        <img src={activeHeroImage || experience.image} alt={experience.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '100px', background: 'linear-gradient(to bottom, rgba(0,0,0,0.6), transparent)' }} />
         <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '150px', background: 'linear-gradient(to top, var(--slate-950), transparent)' }} />
         
@@ -212,20 +232,189 @@ export default function ExperienceMicrosite() {
           </p>
         </div>
 
-        {/* Inclusions if present */}
-        {experience.inclusions && experience.inclusions.length > 0 && (
-          <div style={{ padding: '20px', background: 'rgba(255,255,255,0.02)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', marginBottom: '24px' }}>
-            <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--white)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-              What&apos;s Included
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {experience.inclusions.map((inc, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', color: 'var(--slate-300)' }}>
-                  <Check size={14} color="var(--teal-400)" style={{ flexShrink: 0 }} />
-                  <span>{inc.otherDescription || inc.typeDescription || inc.categoryDescription}</span>
+        {/* Photo Gallery Strip (when Viator returns multiple photos) */}
+        {Array.isArray(experience.gallery) && experience.gallery.length > 1 && (
+          <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '6px', marginBottom: '20px' }}>
+            {experience.gallery.map((g, idx) => {
+              const isSelected = (activeHeroImage || experience.image) === g.url;
+              return (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => setActiveHeroImage(g.url)}
+                  style={{
+                    width: '84px',
+                    height: '60px',
+                    borderRadius: '10px',
+                    overflow: 'hidden',
+                    padding: 0,
+                    border: isSelected ? '2px solid var(--brand-accent)' : '1px solid var(--hairline-border)',
+                    cursor: 'pointer',
+                    flexShrink: 0,
+                    background: 'var(--surface-elevated)',
+                  }}
+                >
+                  <img src={g.url} alt={g.caption || ''} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Loading full Viator details indicator */}
+        {isLoadingFullDetails && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 16px', borderRadius: '12px', background: 'var(--surface-card)', border: '1px solid var(--hairline-border)', marginBottom: '20px', fontSize: '0.82rem', color: 'var(--ink-muted)' }}>
+            <Loader2 size={15} className="animate-spin" color="var(--brand-accent)" />
+            Loading full itinerary, inclusions, meeting point &amp; cancellation details...
+          </div>
+        )}
+
+        {/* Inclusions & Exclusions */}
+        {((experience.inclusions && experience.inclusions.length > 0) || (experience.exclusions && experience.exclusions.length > 0)) && (
+          <div style={{ padding: '20px', background: 'var(--surface-card)', borderRadius: '16px', border: '1px solid var(--hairline-border)', marginBottom: '20px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '18px' }}>
+            {experience.inclusions && experience.inclusions.length > 0 && (
+              <div>
+                <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--ink-primary)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  What&apos;s Included
                 </div>
-              ))}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {experience.inclusions.map((inc, i) => {
+                    const label = typeof inc === 'string' ? inc : (inc.otherDescription || inc.typeDescription || inc.categoryDescription);
+                    if (!label) return null;
+                    return (
+                      <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '0.85rem', color: 'var(--ink-secondary)', lineHeight: 1.45 }}>
+                        <Check size={15} color="#16a34a" style={{ flexShrink: 0, marginTop: '2px' }} />
+                        <span>{label}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+            {experience.exclusions && experience.exclusions.length > 0 && (
+              <div>
+                <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--ink-primary)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  Not Included
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {experience.exclusions.map((exc, i) => {
+                    const label = typeof exc === 'string' ? exc : (exc.otherDescription || exc.typeDescription || exc.categoryDescription);
+                    if (!label) return null;
+                    return (
+                      <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '0.85rem', color: 'var(--ink-muted)', lineHeight: 1.45 }}>
+                        <X size={15} color="#dc2626" style={{ flexShrink: 0, marginTop: '2px' }} />
+                        <span>{label}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Itinerary / What to Expect */}
+        {((experience.itineraryItems && experience.itineraryItems.length > 0) || experience.itinerarySummary) && (
+          <div style={{ padding: '20px', background: 'var(--surface-card)', borderRadius: '16px', border: '1px solid var(--hairline-border)', marginBottom: '20px' }}>
+            <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--ink-primary)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+              What to Expect &amp; Itinerary
             </div>
+            {experience.itinerarySummary && (
+              <p style={{ margin: '0 0 12px', fontSize: '0.88rem', color: 'var(--ink-secondary)', lineHeight: 1.55, whiteSpace: 'pre-line' }}>
+                {experience.itinerarySummary}
+              </p>
+            )}
+            {experience.itineraryItems && experience.itineraryItems.length > 0 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {experience.itineraryItems.map((stop) => (
+                  <div key={stop.step} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                    <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'var(--brand-accent-soft)', color: 'var(--brand-accent)', fontSize: '0.74rem', fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '2px' }}>
+                      {stop.step}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--ink-primary)', marginBottom: '3px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                        <span>{stop.title}</span>
+                        {stop.duration && (
+                          <span style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--ink-muted)' }}>({stop.duration})</span>
+                        )}
+                        {stop.admissionIncluded === 'YES' && (
+                          <span style={{ fontSize: '0.68rem', fontWeight: 700, padding: '2px 7px', borderRadius: '999px', background: 'rgba(22,163,74,0.12)', color: '#16a34a' }}>Admission Included</span>
+                        )}
+                      </div>
+                      {stop.description && (
+                        <p style={{ margin: 0, fontSize: '0.84rem', color: 'var(--ink-secondary)', lineHeight: 1.5 }}>
+                          {stop.description}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Meeting Point, Tickets & Cancellation */}
+        {(experience.logistics?.startLocations?.length > 0 || experience.logistics?.pickupInfo || experience.cancellationPolicy?.description || experience.ticketInfo) && (
+          <div style={{ padding: '20px', background: 'var(--surface-card)', borderRadius: '16px', border: '1px solid var(--hairline-border)', marginBottom: '20px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            {experience.cancellationPolicy?.description && (
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                <ShieldCheck size={18} color={experience.cancellationPolicy.isFreeCancellation ? '#16a34a' : 'var(--brand-accent)'} style={{ flexShrink: 0, marginTop: '2px' }} />
+                <div>
+                  <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--ink-primary)', marginBottom: '2px' }}>
+                    {experience.cancellationPolicy.isFreeCancellation ? 'Free Cancellation' : 'Cancellation Policy'}
+                  </div>
+                  <div style={{ fontSize: '0.84rem', color: 'var(--ink-secondary)', lineHeight: 1.45 }}>
+                    {experience.cancellationPolicy.description}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {(experience.logistics?.startLocations?.length > 0 || experience.logistics?.pickupInfo) && (
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                <MapPin size={18} color="var(--brand-accent)" style={{ flexShrink: 0, marginTop: '2px' }} />
+                <div>
+                  <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--ink-primary)', marginBottom: '2px' }}>
+                    Meeting &amp; Pickup
+                  </div>
+                  {experience.logistics.pickupInfo && (
+                    <div style={{ fontSize: '0.84rem', color: 'var(--ink-secondary)', lineHeight: 1.45, marginBottom: '4px' }}>
+                      {experience.logistics.pickupInfo}
+                    </div>
+                  )}
+                  {experience.logistics.startLocations?.map((loc, idx) => (
+                    <div key={idx} style={{ fontSize: '0.84rem', color: 'var(--ink-secondary)', lineHeight: 1.45 }}>
+                      {loc}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {experience.ticketInfo && (
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                <Ticket size={18} color="var(--brand-accent)" style={{ flexShrink: 0, marginTop: '2px' }} />
+                <div>
+                  <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--ink-primary)', marginBottom: '2px' }}>Tickets</div>
+                  <div style={{ fontSize: '0.84rem', color: 'var(--ink-secondary)', lineHeight: 1.45 }}>{experience.ticketInfo}</div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Good to Know / Additional Info */}
+        {Array.isArray(experience.additionalInfo) && experience.additionalInfo.length > 0 && (
+          <div style={{ padding: '20px', background: 'var(--surface-card)', borderRadius: '16px', border: '1px solid var(--hairline-border)', marginBottom: '24px' }}>
+            <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--ink-primary)', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.04em', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Info size={14} color="var(--brand-accent)" /> Good to Know
+            </div>
+            <ul style={{ margin: 0, paddingLeft: '18px', display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '0.84rem', color: 'var(--ink-secondary)', lineHeight: 1.45 }}>
+              {experience.additionalInfo.slice(0, 8).map((info, i) => (
+                <li key={i}>{info}</li>
+              ))}
+            </ul>
           </div>
         )}
 

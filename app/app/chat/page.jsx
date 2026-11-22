@@ -783,7 +783,7 @@ export default function ChatIndex() {
                       onClick={() => {
                         if (item.type === 'event_qna') {
                           if (markChatRead) markChatRead('event_qna', item.id);
-                          router.push(`${getEventPath(item.event, events)}#discussion`);
+                          router.push(`/chat/event/${encodeURIComponent(item.id)}`);
                         } else {
                           router.push(
                             item.type === 'dm'

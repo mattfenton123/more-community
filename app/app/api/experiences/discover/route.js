@@ -59,15 +59,78 @@ export async function GET(request) {
 
         if (prodRes.ok) {
           const p = await prodRes.json();
-          const image = p.images?.[0]?.variants?.find(v => v.width >= 600 && v.width <= 1000)?.url 
-            || p.images?.[0]?.variants?.[0]?.url 
-            || 'https://images.unsplash.com/photo-1533105079780-92b9be482077?w=800&q=80';
+          const gallery = (p.images || [])
+            .map((img) => {
+              const best =
+                img.variants?.find((v) => v.width >= 720 && v.width <= 1200) ||
+                img.variants?.find((v) => v.width >= 500) ||
+                img.variants?.[0];
+              return best?.url ? { url: best.url, caption: img.caption || '' } : null;
+            })
+            .filter(Boolean)
+            .slice(0, 8);
 
-          const rating = p.reviews?.combinedAverageRating ? Number(p.reviews.combinedAverageRating.toFixed(1)) : 4.8;
+          const image =
+            gallery[0]?.url ||
+            'https://images.unsplash.com/photo-1533105079780-92b9be482077?w=800&q=80';
+
+          const rating = p.reviews?.combinedAverageRating
+            ? Number(p.reviews.combinedAverageRating.toFixed(1))
+            : 4.8;
           const reviewsCount = p.reviews?.totalReviews || 12;
           const supplierBase = p.pricing?.summary?.fromPrice
             ? Math.max(10, Math.round(p.pricing.summary.fromPrice))
             : 35;
+
+          const formatLineItem = (item) =>
+            item?.otherDescription ||
+            item?.description ||
+            item?.typeDescription ||
+            item?.categoryDescription ||
+            '';
+
+          const inclusions = (p.inclusions || []).map(formatLineItem).filter(Boolean);
+          const exclusions = (p.exclusions || []).map(formatLineItem).filter(Boolean);
+          const additionalInfo = (p.additionalInfo || [])
+            .map((a) => a?.description || a?.type || '')
+            .filter(Boolean);
+
+          const itineraryItems = (p.itinerary?.itineraryItems || [])
+            .map((stop, idx) => ({
+              step: idx + 1,
+              title: stop.pointOfInterestLocation?.location?.name || stop.title || `Stop ${idx + 1}`,
+              description: stop.description || '',
+              duration: stop.duration ? formatDuration(stop.duration) : '',
+              admissionIncluded: stop.admissionIncluded || '',
+            }))
+            .filter((s) => s.title || s.description);
+
+          const itinerarySummary =
+            p.itinerary?.unstructuredDescription ||
+            p.itinerary?.activityInfo?.description ||
+            '';
+
+          const startLocations = (p.logistics?.start || [])
+            .map((s) => s.description || s.location?.name || '')
+            .filter(Boolean);
+          const endLocations = (p.logistics?.end || [])
+            .map((s) => s.description || s.location?.name || '')
+            .filter(Boolean);
+          const pickupInfo =
+            p.logistics?.travelerPickup?.additionalInfo ||
+            (p.logistics?.travelerPickup?.pickupOptionType === 'PICKUP_EVERYONE'
+              ? 'Traveler pickup is offered.'
+              : p.logistics?.travelerPickup?.pickupOptionType === 'MEET_EVERYONE'
+                ? 'Meet directly at the starting point.'
+                : '');
+
+          const cancellationDesc = p.cancellationPolicy?.description || '';
+          const isFreeCancellation =
+            p.cancellationPolicy?.type === 'STANDARD' ||
+            /free cancellation|full refund/i.test(cancellationDesc);
+
+          const ticketInfo = p.ticketInfo?.ticketTypeDescription || '';
+          const supplierName = p.supplier?.name || '';
 
           return NextResponse.json({
             status: 'success',
@@ -85,17 +148,36 @@ export async function GET(request) {
               minGroupSize: 6,
               bookingModel: 'affiliate_host_pass',
               promotedBy: 'more-community',
-              provider: 'Viator',
-              duration: formatDuration(p.duration),
-              location: 'South East England',
+              provider: supplierName ? `${supplierName} (via Viator)` : 'Viator',
+              supplierName,
+              duration: formatDuration(p.itinerary?.duration || p.duration),
+              location: startLocations[0]?.slice(0, 60) || 'South East England',
               image,
+              gallery,
               rating,
               reviewsCount,
               spotsLeft: 8,
               productUrl: p.productUrl,
-              inclusions: p.inclusions || [],
-              source: 'Viator'
-            }
+              inclusions,
+              exclusions,
+              itineraryItems,
+              itinerarySummary,
+              logistics: {
+                startLocations,
+                endLocations,
+                pickupInfo,
+                redemptionInfo: p.logistics?.redemption?.specialInstructions || '',
+              },
+              cancellationPolicy: {
+                type: p.cancellationPolicy?.type || '',
+                description: cancellationDesc,
+                isFreeCancellation,
+              },
+              additionalInfo,
+              ticketInfo,
+              fullDetailsLoaded: true,
+              source: 'Viator',
+            },
           });
         }
       }

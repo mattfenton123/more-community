@@ -20,6 +20,8 @@ import ModerationQueue from '../../src/components/admin/ModerationQueue';
 import InvestorAnalytics from '../../src/components/admin/InvestorAnalytics';
 import { resolveUserAvatar } from '../../src/lib/avatar';
 import { isCommunityPendingChapter } from '../../src/lib/communityVisibility';
+import { supabase } from '../../src/lib/supabaseClient';
+import { getAdminUserEmailsAction } from '../../src/lib/actions';
 
 // ─── Shared Components ────────────────────────────────────
 const StatCard = ({ value, label, icon: Icon, color, accent, onClick, description }) => (
@@ -167,6 +169,7 @@ export default function AdminDashboard() {
   const [confirmDeleteUserId, setConfirmDeleteUserId] = useState(null);
   const [deletingUserId, setDeletingUserId] = useState(null);
   const [simulatedCommunityId, setSimulatedCommunityId] = useState(null);
+  const [authEmailMap, setAuthEmailMap] = useState({});
 
   React.useEffect(() => {
     const hasAdminAccess = realUser?.isAdmin || user?.isAdmin;
@@ -175,9 +178,29 @@ export default function AdminDashboard() {
     }
   }, [user, realUser, isLoading, navigate]);
 
+  React.useEffect(() => {
+    const hasAdminAccess = realUser?.isAdmin || user?.isAdmin;
+    if (isLoading || !hasAdminAccess) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.access_token) return;
+        const res = await getAdminUserEmailsAction(session.access_token);
+        if (!cancelled && res?.emails) {
+          setAuthEmailMap(res.emails);
+        }
+      } catch (e) {
+        console.warn('Could not fetch auth user emails:', e);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [user?.isAdmin, realUser?.isAdmin, isLoading]);
+
   
 function extractUserEmail(u) {
   if (!u) return '';
+  if (u.id && authEmailMap[u.id]) return authEmailMap[u.id];
   if (u.email) return u.email;
   const match = (u.bio || '').match(/\[Email:\s*([^\]]+)\]/i);
   if (match) return match[1].trim();
@@ -281,7 +304,7 @@ const ADMIN_EMAILS = [
     if (userFilter === 'suspended') list = list.filter(u => Boolean(u.is_suspended));
     if (searchTerm) list = list.filter(u => u.name?.toLowerCase().includes(searchTerm.toLowerCase()) || u.email?.toLowerCase().includes(searchTerm.toLowerCase()));
     return list;
-  }, [users, communities, communityMemberships, userFilter, searchTerm]);
+  }, [users, communities, communityMemberships, userFilter, searchTerm, authEmailMap]);
 
   const filteredEvents = useMemo(() => {
     let list = events.map(e => {
@@ -448,7 +471,7 @@ const ADMIN_EMAILS = [
     const rows = [];
     const seen = new Set();
     users.forEach(u => {
-      const email = (u.email || '').trim().toLowerCase();
+      const email = extractUserEmail(u).trim().toLowerCase();
       if (!email || seen.has(email)) return;
       seen.add(email);
       rows.push(`"${(u.name || '').replace(/"/g, '""')}","${email}","Member"`);

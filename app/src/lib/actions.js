@@ -2223,3 +2223,35 @@ export async function deleteEventCommentAction(commentId, token) {
   return { deleted: true };
 }
 
+export async function getAdminUserEmailsAction(token) {
+  try {
+    const caller = await verifyUser(token);
+    if (!isAdminUser(caller)) {
+      throw new Error('Forbidden: Platform admin privileges required.');
+    }
+    if (!hasValidServiceKey) {
+      return { emails: {}, error: 'Service role key not configured on server.' };
+    }
+
+    const emails = {};
+    let page = 1;
+    const perPage = 1000;
+    while (page <= 10) {
+      const { data, error } = await supabaseAdmin.auth.admin.listUsers({ page, perPage });
+      if (error) throw new Error(error.message);
+      const batch = data?.users || [];
+      batch.forEach((au) => {
+        if (au?.id && au?.email) {
+          emails[au.id] = au.email;
+        }
+      });
+      if (batch.length < perPage) break;
+      page += 1;
+    }
+
+    return { emails };
+  } catch (err) {
+    return { emails: {}, error: err?.message || 'Failed to load user emails' };
+  }
+}
+

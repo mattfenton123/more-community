@@ -39,6 +39,7 @@ import { resolveUserAvatar } from '../../src/lib/avatar';
 import SpecialistVaultModal from '../../src/components/SpecialistVaultModal';
 import LeaderAICoPilot from '../../src/components/LeaderAICoPilot';
 import EventStudioModal from '../../src/components/EventStudioModal';
+import LeaderEventsCalendar from '../../src/components/LeaderEventsCalendar';
 import { generatePliCertificatePdf, generateRamsPdf } from '../../src/lib/insurance';
 
 function stripInternalEventTags(rawDesc) {
@@ -1776,13 +1777,13 @@ export default function LeaderDashboard({ initialCommunityId }) {
     return true;
   };
 
-  const openEventWizard = (editing = false, event = null) => {
+  const openEventWizard = (editing = false, event = null, prefillDate = null) => {
     setEventStep(0);
     if (editing && event) {
       handleEditEvent(event);
     } else {
       setEditingEventId(null);
-      setEventForm(emptyEventForm);
+      setEventForm(prefillDate ? { ...emptyEventForm, date: prefillDate } : emptyEventForm);
       setImageFile(null);
       setModalType('event');
     }
@@ -3823,9 +3824,10 @@ export default function LeaderDashboard({ initialCommunityId }) {
           {activeTab === 'events' && (
             <div style={{ padding: '0 20px', marginBottom: '24px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', gap: '10px', flexWrap: 'wrap' }}>
-                <div style={{ display: 'inline-flex', background: 'var(--surface-card)', border: '1px solid var(--hairline-border)', borderRadius: '12px', padding: '4px', gap: '3px' }}>
+                <div style={{ display: 'inline-flex', background: 'var(--surface-card)', border: '1px solid var(--hairline-border)', borderRadius: '12px', padding: '4px', gap: '3px', flexWrap: 'wrap' }}>
                   {[
-                    { id: 'my-events', label: 'My Events', icon: Calendar },
+                    { id: 'my-events', label: 'My Events', icon: ListChecks },
+                    { id: 'calendar', label: 'Calendar', icon: Calendar },
                     { id: 'network', label: 'Co-Host Network', icon: Map }
                   ].map(t => (
                     <button
@@ -3847,6 +3849,22 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   <Plus size={16} /> New Event
                 </button>
               </div>
+              {eventsSubTab === 'calendar' && (
+                <LeaderEventsCalendar
+                  community={community}
+                  events={communityEvents}
+                  allEvents={events}
+                  experiences={experiences}
+                  eventRsvps={eventRsvps}
+                  onCreateOnDate={(dateKey) => openEventWizard(false, null, dateKey)}
+                  onEditEvent={(ev) => handleEditEvent(ev)}
+                  onCheckInEvent={(ev) => setRollCallEvent(ev)}
+                  onDuplicateEvent={(ev) => handleDuplicateEvent(ev)}
+                  onOpenEvent={(path) => router.push(path)}
+                  onOpenExperience={(exp) => router.push(`/experiences/${encodeURIComponent(exp.id)}`)}
+                />
+              )}
+
               {eventsSubTab === 'my-events' && (<>
 
               {/* Member Event Proposals Queue (hidden from public until leader approves) */}

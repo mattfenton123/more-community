@@ -150,21 +150,43 @@ export default function EventDiscussion({
             {comments.length}
           </span>
         </h3>
-        {partnerCommunities.length > 0 && (
-          <span
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+          {partnerCommunities.length > 0 && (
+            <span
+              style={{
+                fontSize: '0.72rem',
+                fontWeight: 700,
+                padding: '4px 10px',
+                borderRadius: '99px',
+                background: 'rgba(56, 189, 248, 0.12)',
+                border: '1px solid rgba(56, 189, 248, 0.28)',
+                color: '#7dd3fc',
+              }}
+            >
+              Shared across all co-hosts
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={() => router.push(`/chat/event/${encodeURIComponent(event.id)}`)}
+            className="interactive-press"
             style={{
-              fontSize: '0.72rem',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '6px 12px',
+              borderRadius: '999px',
+              background: 'var(--surface-elevated)',
+              border: '1px solid var(--hairline-border-strong)',
+              color: 'var(--ink-primary)',
+              fontSize: '0.76rem',
               fontWeight: 700,
-              padding: '4px 10px',
-              borderRadius: '99px',
-              background: 'rgba(56, 189, 248, 0.12)',
-              border: '1px solid rgba(56, 189, 248, 0.28)',
-              color: '#7dd3fc',
+              cursor: 'pointer',
             }}
           >
-            Shared across all co-hosts
-          </span>
-        )}
+            <MessageSquare size={13} color="var(--brand-accent)" /> Open in Chat
+          </button>
+        </div>
       </div>
 
       <p style={{ margin: '0 0 16px 0', fontSize: '0.84rem', color: 'var(--slate-400)', lineHeight: 1.45 }}>
