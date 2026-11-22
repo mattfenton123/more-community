@@ -300,7 +300,7 @@ export default function RollCallModal({ event, onClose }) {
                   gap: '4px',
                 }}
               >
-                <UserCheck size={12} /> Roll Call &amp; Walk-In Check-In
+                <UserCheck size={12} /> Attendee Check-In &amp; Walk-Ins
               </span>
               <span
                 style={{

@@ -943,107 +943,182 @@ export default function Discover() {
             boxSizing: 'border-box',
           }}
         >
-          {/* Featured Community Hero */}
+          {/* Featured Community Editorial Split Hero */}
           {showFeatured && (
-            <div
+            <article
               onClick={() =>
                 navigate.push('/community/' + getCommunitySlug(featuredCommunity, communities))
               }
-              className="interactive-press stagger-item"
-              style={{
-                marginBottom: '22px',
-                borderRadius: '20px',
-                overflow: 'hidden',
-                position: 'relative',
-                height: '240px',
-                cursor: 'pointer',
-                border: '1px solid var(--hairline-border)',
-              }}
+              className="featured-community-hero stagger-item"
             >
-              <img
-                src={featuredCommunity.image || featuredCommunity.cover_image || FALLBACK_IMAGES.general}
-                alt={featuredCommunity.name}
-                loading="lazy"
-                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-              />
-              <div
-                style={{
-                  position: 'absolute',
-                  inset: 0,
-                  background:
-                    'linear-gradient(to top, rgba(18,18,18,0.88) 0%, rgba(18,18,18,0.28) 55%, rgba(18,18,18,0.08) 100%)',
-                }}
-              />
-              <div style={{ position: 'absolute', top: '16px', left: '16px' }}>
-                <span
-                  style={{
-                    background: 'var(--brand-accent)',
-                    color: '#FFFFFF',
-                    padding: '5px 12px',
-                    borderRadius: '99px',
-                    fontSize: '0.73rem',
-                    fontWeight: 700,
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '5px',
-                  }}
-                >
-                  <Sparkles size={12} /> Featured Community
-                </span>
-              </div>
-              <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '20px' }}>
-                <h2
-                  style={{
-                    margin: '0 0 6px 0',
-                    fontSize: 'clamp(1.25rem, 2.5vw, 1.55rem)',
-                    fontFamily: 'var(--font-heading)',
-                    color: '#FFFFFF',
-                    lineHeight: 1.2,
-                  }}
-                >
-                  {featuredCommunity.name}
-                </h2>
-                <p
-                  style={{
-                    margin: '0 0 10px 0',
-                    fontSize: '0.86rem',
-                    color: 'rgba(255,255,255,0.88)',
-                    display: '-webkit-box',
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: 'vertical',
-                    overflow: 'hidden',
-                    maxWidth: '680px',
-                    lineHeight: 1.45,
-                  }}
-                >
-                  {featuredCommunity.description}
-                </p>
+              {/* Clean Photo Panel */}
+              <div className="featured-hero-media">
+                <img
+                  src={featuredCommunity.image || featuredCommunity.cover_image || FALLBACK_IMAGES.general}
+                  alt={featuredCommunity.name}
+                  loading="lazy"
+                  className="featured-hero-img"
+                />
                 <div
                   style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '14px',
-                    flexWrap: 'wrap',
-                    fontSize: '0.8rem',
-                    color: 'rgba(255,255,255,0.82)',
-                    fontWeight: 600,
+                    position: 'absolute',
+                    inset: 0,
+                    background:
+                      'linear-gradient(to bottom, rgba(18,18,18,0.22) 0%, transparent 40%, rgba(18,18,18,0.12) 100%)',
+                    pointerEvents: 'none',
                   }}
-                >
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                    <Users size={14} /> {featuredCommunity.memberCount} member
-                    {featuredCommunity.memberCount === 1 ? '' : 's'}
+                />
+                <div style={{ position: 'absolute', top: '14px', left: '14px' }}>
+                  <span
+                    style={{
+                      background: 'var(--brand-accent)',
+                      color: '#FFFFFF',
+                      padding: '5px 12px',
+                      borderRadius: '999px',
+                      fontSize: '0.72rem',
+                      fontWeight: 700,
+                      letterSpacing: '0.02em',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                      boxShadow: '0 4px 14px rgba(0,0,0,0.22)',
+                    }}
+                  >
+                    <Sparkles size={12} /> Featured Community
                   </span>
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                    <MapPin size={14} /> {getCommunityLocation(featuredCommunity)}
-                  </span>
-                  {featuredCommunity.upcomingEvents > 0 && (
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                      <Calendar size={14} /> {featuredCommunity.upcomingEvents} upcoming
-                    </span>
-                  )}
                 </div>
               </div>
-            </div>
+
+              {/* Editorial Content Panel */}
+              <div className="featured-hero-body">
+                <div>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      flexWrap: 'wrap',
+                      marginBottom: '10px',
+                    }}
+                  >
+                    {featuredCommunity.category && (
+                      <span
+                        style={{
+                          fontSize: '0.7rem',
+                          fontWeight: 700,
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.06em',
+                          padding: '3px 9px',
+                          borderRadius: '999px',
+                          background: 'var(--surface-elevated)',
+                          color: 'var(--ink-secondary)',
+                          border: '1px solid var(--hairline-border)',
+                        }}
+                      >
+                        {featuredCommunity.category}
+                      </span>
+                    )}
+                    {featuredCommunity.activityLevel && (
+                      <ActivityBadge level={featuredCommunity.activityLevel} />
+                    )}
+                  </div>
+
+                  <h2
+                    style={{
+                      margin: '0 0 8px 0',
+                      fontSize: 'clamp(1.32rem, 2.4vw, 1.72rem)',
+                      fontFamily: 'var(--font-heading)',
+                      fontWeight: 700,
+                      color: 'var(--ink-primary)',
+                      lineHeight: 1.18,
+                      letterSpacing: '-0.02em',
+                    }}
+                  >
+                    {featuredCommunity.name}
+                  </h2>
+
+                  <p
+                    style={{
+                      margin: '0 0 14px 0',
+                      fontSize: '0.88rem',
+                      color: 'var(--ink-secondary)',
+                      display: '-webkit-box',
+                      WebkitLineClamp: 3,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden',
+                      lineHeight: 1.55,
+                    }}
+                  >
+                    {featuredCommunity.description}
+                  </p>
+
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '14px',
+                      flexWrap: 'wrap',
+                      fontSize: '0.8rem',
+                      color: 'var(--ink-secondary)',
+                      fontWeight: 600,
+                    }}
+                  >
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                      <Users size={14} color="var(--brand-accent)" /> {featuredCommunity.memberCount} member
+                      {featuredCommunity.memberCount === 1 ? '' : 's'}
+                    </span>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                      <MapPin size={14} color="var(--brand-accent)" /> {getCommunityLocation(featuredCommunity)}
+                    </span>
+                    {featuredCommunity.upcomingEvents > 0 && (
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                        <Calendar size={14} color="var(--brand-accent)" /> {featuredCommunity.upcomingEvents} upcoming
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Editorial Footer CTA */}
+                <div
+                  style={{
+                    paddingTop: '14px',
+                    borderTop: '1px solid var(--hairline-border)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: '12px',
+                    flexWrap: 'wrap',
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: '0.78rem',
+                      color: 'var(--ink-muted)',
+                      fontWeight: 600,
+                    }}
+                  >
+                    {featuredCommunity.cost && featuredCommunity.cost !== 'Free'
+                      ? featuredCommunity.cost
+                      : 'Free to join'}
+                  </span>
+                  <span
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                      padding: '8px 16px',
+                      borderRadius: '999px',
+                      background: 'var(--brand-accent)',
+                      color: '#FFFFFF',
+                      fontSize: '0.82rem',
+                      fontWeight: 700,
+                    }}
+                  >
+                    Explore community <ChevronRight size={15} />
+                  </span>
+                </div>
+              </div>
+            </article>
           )}
 
           {/* Compact Experiences Marketplace Strip */}

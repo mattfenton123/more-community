@@ -36,7 +36,7 @@ export const EXPLAINER_CONTENT = {
     steps: [
       'Use AI Co-Pilot or Magic AI Draft to turn a rough sentence into a full event, poll, or broadcast in seconds.',
       'Click "Flyer & Poster" on any event to export a print-ready poster for local cafes and noticeboards.',
-      'On the day, open Roll Call Check-In or the QR Scanner on your phone to check members in with one tap.'
+      'On the day, open Attendee Check-In or the QR Scanner on your phone to check members in with one tap.'
     ],
     tip: 'You can duplicate any past event or set a recurring schedule (weekly, fortnightly, or monthly) in one click.'
   },

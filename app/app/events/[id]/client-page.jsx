@@ -962,7 +962,7 @@ export default function EventClient({ id }) {
                       padding: '11px 18px', borderRadius: '12px', cursor: 'pointer'
                     }}
                   >
-                    <UserCheck size={16} /> Leader Roll Call &amp; Walk-Ins
+                    <UserCheck size={16} /> Attendee Check-In &amp; Walk-Ins
                   </button>
                 )}
 
@@ -1054,7 +1054,7 @@ export default function EventClient({ id }) {
                       color: '#34d399', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer'
                     }}
                   >
-                    <UserCheck size={14} /> Roll Call &amp; Walk-Ins
+                    <UserCheck size={14} /> Check-In &amp; Walk-Ins
                   </button>
                   <button
                     onClick={() => router.push(`/dashboard?community=${event.communityId}&duplicateEvent=${event.id}`)}
@@ -1985,7 +1985,7 @@ export default function EventClient({ id }) {
                       gap: '6px'
                     }}
                   >
-                    <UserCheck size={15} color="#10b981" /> Open Roll Call &amp; Walk-Ins
+                    <UserCheck size={15} color="#10b981" /> Open Check-In &amp; Walk-Ins
                   </button>
                 )}
               </div>
@@ -2177,7 +2177,7 @@ export default function EventClient({ id }) {
                     display: 'flex', alignItems: 'center', gap: '6px',
                   }}
                 >
-                  <UserCheck size={16} /> Roll Call
+                  <UserCheck size={16} /> Check-In
                 </button>
                 <button 
                   onClick={() => setShowScanner(true)}
