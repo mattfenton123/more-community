@@ -4,12 +4,13 @@ import { supabase } from '../lib/supabaseClient';
 import { useAuth } from './AuthContext';
 import { initialExperiences } from '../lib/constants';
 import imageCompression from 'browser-image-compression';
-import { createEventAction, proposeEventAction, createEventsBatchAction, joinCommunityAction, leaveCommunityAction, rsvpToEventAction, updateAttendeeStatusAction, addEventPhotoAction, createCommunityAction, uploadImageAction, updateEventAction, updateCommunityAction, deleteCommunityAction, deleteUserAction, createChannelAction, markNotificationReadAction, markAllNotificationsReadAction, notifyCommunityLeadersAction, updateUserAction, adminVerifyCommunityAction, broadcastNotificationAction, promoteMemberAction, removeMemberAction, subscribeToPushNotificationsAction, ensureLeadersNetworkAction, sendEventReminderAction, createSelfNotificationAction, offerCarpoolAction, reserveCarpoolSeatAction, cancelCarpoolSeatAction, deleteCarpoolOfferAction, createEventCommentAction, deleteEventCommentAction } from '../lib/actions';
+import { createEventAction, proposeEventAction, createEventsBatchAction, joinCommunityAction, leaveCommunityAction, rsvpToEventAction, updateAttendeeStatusAction, addEventPhotoAction, createCommunityAction, uploadImageAction, updateEventAction, updateCommunityAction, deleteCommunityAction, deleteUserAction, createChannelAction, leaveChannelAction, markNotificationReadAction, markAllNotificationsReadAction, notifyCommunityLeadersAction, updateUserAction, adminVerifyCommunityAction, broadcastNotificationAction, promoteMemberAction, removeMemberAction, subscribeToPushNotificationsAction, ensureLeadersNetworkAction, sendEventReminderAction, createSelfNotificationAction, offerCarpoolAction, reserveCarpoolSeatAction, cancelCarpoolSeatAction, deleteCarpoolOfferAction, createEventCommentAction, deleteEventCommentAction } from '../lib/actions';
 import { Capacitor } from '@capacitor/core';
 import { cleanLocationName } from '../lib/location';
 import { resolveUserAvatar, getDefaultAvatar, isPlaceholderAvatar } from '../lib/avatar';
 import { buildCarpoolsByEvent } from '../lib/carpool';
 import { buildEventCommentsByEvent } from '../lib/eventCollaboration';
+import { parseChannel, encodeChannelType } from '../lib/channelMeta';
 
 const PROFILE_META_PREFIX = '__profile_meta:';
 
@@ -628,6 +629,7 @@ export function AppProvider({ children }) {
               if (k === 'pitches') tagSettingsObj.accepts_pitches = v === '1' || v === 'true';
               if (k === 'carpool') tagSettingsObj.allow_carpool = v === '1' || v === 'true';
               if (k === 'guests') tagSettingsObj.allow_guests = v === '1' || v === 'true';
+              if (k === 'member_groups') tagSettingsObj.allow_member_groups = v === '1' || v === 'true';
               if (k === 'parent') tagSettingsObj.parent_community_id = v;
               if (k === 'status') tagSettingsObj.chapter_status = v;
               if (k === 'royalty') tagSettingsObj.chapter_royalty = Number(v);
@@ -661,6 +663,9 @@ export function AppProvider({ children }) {
           const allowGuestsVal = mergedSettings.allow_guests !== undefined
             ? Boolean(mergedSettings.allow_guests)
             : (c.allow_guests !== undefined ? Boolean(c.allow_guests) : true);
+          const allowMemberGroupsVal = mergedSettings.allow_member_groups !== undefined
+            ? Boolean(mergedSettings.allow_member_groups)
+            : (c.allow_member_groups !== undefined ? Boolean(c.allow_member_groups) : true);
 
           return {
             ...c, // pass through ALL columns from Supabase
@@ -672,6 +677,8 @@ export function AppProvider({ children }) {
             allowCarpool: allowCarpoolVal,
             allow_guests: allowGuestsVal,
             allowGuests: allowGuestsVal,
+            allow_member_groups: allowMemberGroupsVal,
+            allowMemberGroups: allowMemberGroupsVal,
             parent_community_id: mergedSettings.parent_community_id || c.parent_community_id || null,
             chapter_status: mergedSettings.chapter_status || (mergedSettings.parent_community_id || c.parent_community_id ? 'pending_approval' : 'approved'),
             chapter_royalty: mergedSettings.chapter_royalty !== undefined ? mergedSettings.chapter_royalty : 5,
@@ -688,7 +695,7 @@ export function AppProvider({ children }) {
         }));
       }
 
-      if (chanRes.data) setChannels(chanRes.data);
+      if (chanRes.data) setChannels(chanRes.data.map(parseChannel).filter(Boolean));
 
       if (evRes.data) {
         setEvents(evRes.data.map(e => ({
@@ -2278,6 +2285,7 @@ export function AppProvider({ children }) {
       accepts_pitches: communityData.accepts_pitches !== undefined ? Boolean(communityData.accepts_pitches) : true,
       allow_carpool: communityData.allow_carpool !== undefined ? Boolean(communityData.allow_carpool) : true,
       allow_guests: communityData.allow_guests !== undefined ? Boolean(communityData.allow_guests) : true,
+      allow_member_groups: communityData.allow_member_groups !== undefined ? Boolean(communityData.allow_member_groups) : true,
       parent_community_id: parentId,
       chapter_status: chapterStatus,
       chapter_royalty: royaltyPercent
@@ -2298,6 +2306,8 @@ export function AppProvider({ children }) {
       allowCarpool: initialSettings.allow_carpool,
       allow_guests: initialSettings.allow_guests,
       allowGuests: initialSettings.allow_guests,
+      allow_member_groups: initialSettings.allow_member_groups,
+      allowMemberGroups: initialSettings.allow_member_groups,
       parent_community_id: parentId,
       chapter_status: chapterStatus,
       chapter_royalty: royaltyPercent,
@@ -2319,7 +2329,7 @@ export function AppProvider({ children }) {
         description: communityData.description,
         tags: [
           ...(Array.isArray(communityData.tags) ? communityData.tags.filter(t => !(typeof t === 'string' && t.startsWith('__cfg:'))) : []),
-          `__cfg:chapters=${initialSettings.allow_chapters ? 1 : 0},pitches=${initialSettings.accepts_pitches ? 1 : 0},carpool=${initialSettings.allow_carpool ? 1 : 0},guests=${initialSettings.allow_guests ? 1 : 0}${parentId ? `,parent=${parentId},status=${chapterStatus},royalty=${royaltyPercent}` : ''}`
+          `__cfg:chapters=${initialSettings.allow_chapters ? 1 : 0},pitches=${initialSettings.accepts_pitches ? 1 : 0},carpool=${initialSettings.allow_carpool ? 1 : 0},guests=${initialSettings.allow_guests ? 1 : 0},member_groups=${initialSettings.allow_member_groups ? 1 : 0}${parentId ? `,parent=${parentId},status=${chapterStatus},royalty=${royaltyPercent}` : ''}`
         ],
         cover_image: communityData.image || communityData.cover_image || null,
         creatorId: user.id,
@@ -2437,8 +2447,16 @@ export function AppProvider({ children }) {
 
   const createChannel = async (communityId, channelName, type = 'text', memberIds = null) => {
     const newId = `ch_${Date.now()}`;
-    const newChannel = { id: newId, community_id: communityId, name: channelName, type, member_ids: memberIds };
-    setChannels(prev => [...prev, newChannel]);
+    const encodedType = encodeChannelType(type, memberIds, user?.id);
+    const optimisticChannel = parseChannel({
+      id: newId,
+      community_id: communityId,
+      name: channelName,
+      type: encodedType,
+      member_ids: memberIds,
+      created_at: new Date().toISOString(),
+    });
+    setChannels(prev => [...prev, optimisticChannel]);
 
     try {
       let token = session?.access_token;
@@ -2446,12 +2464,41 @@ export function AppProvider({ children }) {
         const { data: sessionData } = await supabase.auth.getSession();
         token = sessionData?.session?.access_token;
       }
-      await createChannelAction({ id: newId, communityId, name: channelName, type, memberIds }, token);
-      return newChannel;
+      const createdRow = await createChannelAction({ id: newId, communityId, name: channelName, type, memberIds }, token);
+      const normalized = parseChannel(createdRow || optimisticChannel);
+      setChannels(prev => prev.map(c => (c.id === newId ? normalized : c)));
+      return normalized;
     } catch (err) {
       console.error(err);
       setChannels(prev => prev.filter(c => c.id !== newId));
-      return null;
+      throw err;
+    }
+  };
+
+  const leaveChannel = async (channelId) => {
+    if (!channelId || !user?.id) return false;
+    try {
+      let token = session?.access_token;
+      if (!token) {
+        const { data: sessionData } = await supabase.auth.getSession();
+        token = sessionData?.session?.access_token;
+      }
+      const res = await leaveChannelAction(channelId, token);
+      if (res?.deleted) {
+        setChannels(prev => prev.filter(c => c.id !== channelId));
+      } else if (res) {
+        setChannels(prev =>
+          prev.map(c =>
+            c.id === channelId
+              ? parseChannel({ ...c, type: res.type || c.rawType || c.type, member_ids: res.memberIds })
+              : c
+          )
+        );
+      }
+      return true;
+    } catch (err) {
+      console.error('leaveChannel error:', err);
+      throw err;
     }
   };
 
@@ -2696,7 +2743,9 @@ export function AppProvider({ children }) {
         updates.allow_carpool !== undefined ||
         updates.allowCarpool !== undefined ||
         updates.allow_guests !== undefined ||
-        updates.allowGuests !== undefined;
+        updates.allowGuests !== undefined ||
+        updates.allow_member_groups !== undefined ||
+        updates.allowMemberGroups !== undefined;
 
       const parentId = updates.parent_community_id !== undefined ? updates.parent_community_id : (targetComm.parent_community_id || null);
       const chapterStatus = updates.chapter_status !== undefined ? updates.chapter_status : (targetComm.chapter_status || (parentId ? 'pending_approval' : 'approved'));
@@ -2708,6 +2757,7 @@ export function AppProvider({ children }) {
         accepts_pitches: Boolean(updates.accepts_pitches ?? targetComm.accepts_pitches ?? true),
         allow_carpool: Boolean(updates.allow_carpool ?? updates.allowCarpool ?? targetComm.allow_carpool ?? true),
         allow_guests: Boolean(updates.allow_guests ?? updates.allowGuests ?? targetComm.allow_guests ?? true),
+        allow_member_groups: Boolean(updates.allow_member_groups ?? updates.allowMemberGroups ?? targetComm.allow_member_groups ?? true),
         parent_community_id: parentId,
         chapter_status: chapterStatus,
         chapter_royalty: chapterRoyalty
@@ -2723,7 +2773,7 @@ export function AppProvider({ children }) {
         const baseTags = Array.isArray(updates.tags !== undefined ? updates.tags : targetComm.tags)
           ? (updates.tags !== undefined ? updates.tags : targetComm.tags).filter(t => !(typeof t === 'string' && t.startsWith('__cfg:')))
           : [];
-        const cfgStr = `__cfg:chapters=${nextSettings.allow_chapters ? 1 : 0},pitches=${nextSettings.accepts_pitches ? 1 : 0},carpool=${nextSettings.allow_carpool ? 1 : 0},guests=${nextSettings.allow_guests ? 1 : 0}${parentId ? `,parent=${parentId},status=${chapterStatus},royalty=${chapterRoyalty}` : ''}`;
+        const cfgStr = `__cfg:chapters=${nextSettings.allow_chapters ? 1 : 0},pitches=${nextSettings.accepts_pitches ? 1 : 0},carpool=${nextSettings.allow_carpool ? 1 : 0},guests=${nextSettings.allow_guests ? 1 : 0},member_groups=${nextSettings.allow_member_groups ? 1 : 0}${parentId ? `,parent=${parentId},status=${chapterStatus},royalty=${chapterRoyalty}` : ''}`;
         dbUpdates.tags = [...baseTags, cfgStr];
       }
 
@@ -2743,6 +2793,8 @@ export function AppProvider({ children }) {
       delete dbUpdates.allowCarpool;
       delete dbUpdates.allow_guests;
       delete dbUpdates.allowGuests;
+      delete dbUpdates.allow_member_groups;
+      delete dbUpdates.allowMemberGroups;
       delete dbUpdates.parent_community_id;
       delete dbUpdates.chapter_status;
       delete dbUpdates.chapter_royalty;
@@ -2947,6 +2999,7 @@ export function AppProvider({ children }) {
       addEventPhoto,
       createCommunity,
       createChannel,
+      leaveChannel,
       uploadImage,
       addCommunityHighlight,
       updateUser,

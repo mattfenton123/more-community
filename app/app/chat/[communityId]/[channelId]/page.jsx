@@ -1,5 +1,6 @@
 "use client";
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
+import Link from 'next/link';
 import {
   Send,
   MessageCircle,
@@ -9,10 +10,15 @@ import {
   Smile,
   Megaphone,
   ExternalLink,
+  ChevronLeft,
+  Users,
+  Hash,
+  Lock,
+  LogOut,
 } from 'lucide-react';
-import AppHeader from '../../../../src/components/AppHeader';
 import { useAppContext } from '../../../../src/context/AppContext';
 import { useChat } from '../../../../src/context/ChatContext';
+import { supabase } from '../../../../src/lib/supabaseClient';
 import { useRouter as useNavigate, useParams } from 'next/navigation';
 import { SkeletonChatBubble } from '../../../../src/components/SkeletonCard';
 import { resolveUserAvatar } from '../../../../src/lib/avatar';
@@ -22,6 +28,9 @@ import dynamic from 'next/dynamic';
 import SafeChatText from '../../../../src/components/SafeChatText';
 import LinkSafetyModal from '../../../../src/components/LinkSafetyModal';
 import { checkRateLimit } from '../../../../src/lib/chatSecurity';
+import { parseChannel } from '../../../../src/lib/channelMeta';
+import { getProfilePath } from '../../../../src/lib/profileLinks';
+import { getMetInPersonMap } from '../../../../src/lib/inPersonGraph';
 
 const EmojiPicker = dynamic(() => import('emoji-picker-react'), { ssr: false });
 
@@ -40,6 +49,10 @@ export default function Chat() {
   const [reactionMsgId, setReactionMsgId] = useState(null);
   const [activeThreadId, setActiveThreadId] = useState(null);
   const [selectedLinkAnalysis, setSelectedLinkAnalysis] = useState(null);
+  const [showMembersModal, setShowMembersModal] = useState(false);
+  const [confirmLeaveGroup, setConfirmLeaveGroup] = useState(false);
+  const [isLeavingGroup, setIsLeavingGroup] = useState(false);
+  const [fetchedChannel, setFetchedChannel] = useState(null);
 
   const {
     user,
@@ -48,6 +61,9 @@ export default function Chat() {
     communityMemberships,
     uploadImage,
     channels,
+    leaveChannel,
+    events = [],
+    eventRsvps = {},
     isLoading,
     whatsappSettings,
     theme,
@@ -63,6 +79,11 @@ export default function Chat() {
   } = useChat();
   const { toast } = useToast();
 
+  const markChatReadRef = useRef(markChatRead);
+  useEffect(() => {
+    markChatReadRef.current = markChatRead;
+  }, [markChatRead]);
+
   const isLight = theme === 'light';
   const pickerTheme = isLight ? 'light' : 'dark';
   const isDirectMessage = Boolean(targetUserId);
@@ -75,6 +96,43 @@ export default function Chat() {
             (m.senderId === targetUserId && m.receiverId === user.id)
         )
       : messages.filter((m) => m.communityId === communityId && m.channel === channelId);
+
+  const rawChannelObj = useMemo(() => {
+    const found = (channels || []).find((c) => c.id === channelId);
+    return found || fetchedChannel || null;
+  }, [channels, channelId, fetchedChannel]);
+
+  const currentChannelObj = useMemo(
+    () => (rawChannelObj ? parseChannel(rawChannelObj) : null),
+    [rawChannelObj]
+  );
+
+  const isPrivateGroup = Boolean(currentChannelObj?.isPrivateGroup);
+
+  const metInPersonMap = useMemo(
+    () => getMetInPersonMap(user?.id, events, eventRsvps),
+    [user?.id, events, eventRsvps]
+  );
+
+  // Fetch single channel row if navigated directly (e.g. from notification) before context has it
+  useEffect(() => {
+    if (!channelId || channelId === 'general' || isDirectMessage) return;
+    const alreadyLoaded = (channels || []).some((c) => c.id === channelId);
+    if (alreadyLoaded) return;
+    let cancelled = false;
+    supabase
+      .from('channels')
+      .select('*')
+      .eq('id', channelId)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!cancelled && data) setFetchedChannel(data);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [channelId, channels, isDirectMessage]);
 
   const onEmojiClick = (emojiObject) => {
     if (reactionMsgId) {
@@ -90,31 +148,150 @@ export default function Chat() {
     if (communityId && channelId) {
       loadChannelMessages?.(communityId, channelId);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [communityId, channelId]);
 
   useEffect(() => {
     if (!user?.id) return;
-    if (communityId && channelId) markChatRead(communityId, channelId);
-    if (targetUserId) markChatRead(null, targetUserId);
+    if (communityId && channelId) markChatReadRef.current?.(communityId, channelId);
+    if (targetUserId) markChatReadRef.current?.(null, targetUserId);
   }, [user?.id, communityId, channelId, targetUserId, activeMessages.length]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [activeMessages.length]);
 
-  if (!communityId && !channelId && !targetUserId) {
-    return null;
-  }
-
   const community = isDirectMessage ? null : communities.find((c) => c.id === communityId);
   const targetUser = isDirectMessage ? users.find((u) => u.id === targetUserId) : null;
   const waConfig = communityId ? whatsappSettings?.[communityId] : null;
 
-  const currentChannelObj = channels.find((c) => c.id === channelId);
+  // Build participant roster for "Who's in this group" sheet
+  const roomParticipants = useMemo(() => {
+    if (isDirectMessage) return targetUser ? [targetUser] : [];
+    const userMap = new Map((users || []).map((u) => [u.id, u]));
+
+    if (isPrivateGroup && Array.isArray(currentChannelObj?.memberIds)) {
+      return currentChannelObj.memberIds
+        .map((uid) => userMap.get(uid) || { id: uid, name: 'Community Member' })
+        .sort((a, b) => {
+          if (a.id === user?.id) return -1;
+          if (b.id === user?.id) return 1;
+          return String(a.name || '').localeCompare(String(b.name || ''));
+        });
+    }
+
+    const mems = communityMemberships?.[communityId] || [];
+    const uniqueIds = Array.from(
+      new Set(
+        [
+          community?.leader_id,
+          ...mems.map((m) => m.userId || m.user_id),
+        ].filter(Boolean)
+      )
+    );
+    return uniqueIds
+      .map((uid) => userMap.get(uid) || { id: uid, name: 'Community Member' })
+      .sort((a, b) => {
+        const aLeader = isCommunityChatLeader(a, community || { id: communityId }, mems) ? 1 : 0;
+        const bLeader = isCommunityChatLeader(b, community || { id: communityId }, mems) ? 1 : 0;
+        if (bLeader !== aLeader) return bLeader - aLeader;
+        return String(a.name || '').localeCompare(String(b.name || ''));
+      });
+  }, [isDirectMessage, targetUser, users, isPrivateGroup, currentChannelObj, communityMemberships, communityId, community, user?.id]);
+
+  if (!communityId && !channelId && !targetUserId) {
+    return null;
+  }
+
+  const hasPrivateAccess =
+    !isPrivateGroup ||
+    !Array.isArray(currentChannelObj?.memberIds) ||
+    currentChannelObj.memberIds.length === 0 ||
+    Boolean(user?.id && currentChannelObj.memberIds.includes(user.id)) ||
+    Boolean(user?.isAdmin);
+
+  if (!hasPrivateAccess) {
+    return (
+      <div
+        style={{
+          minHeight: '100dvh',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '12px',
+          padding: '24px',
+          background: 'var(--surface-canvas)',
+          color: 'var(--ink-primary)',
+          textAlign: 'center',
+        }}
+      >
+        <div
+          style={{
+            width: '54px',
+            height: '54px',
+            borderRadius: '50%',
+            background: 'var(--surface-card)',
+            border: '1px solid var(--hairline-border-strong)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'var(--teal-300)',
+          }}
+        >
+          <Lock size={24} />
+        </div>
+        <h2 style={{ margin: 0, fontFamily: 'var(--font-heading)', fontSize: '1.25rem' }}>
+          Private side-group
+        </h2>
+        <p style={{ margin: 0, color: 'var(--ink-secondary)', fontSize: '0.9rem', maxWidth: '320px' }}>
+          Only invited members can view and message in this private group chat.
+        </p>
+        <Link
+          href="/chat"
+          className="btn btn-primary"
+          style={{ padding: '10px 20px', borderRadius: '999px', textDecoration: 'none', color: '#FFFFFF', marginTop: '6px' }}
+        >
+          Back to Messages
+        </Link>
+      </div>
+    );
+  }
+
   const isLeader =
     !isDirectMessage &&
     canManageCommunityChat(user, community || { id: communityId }, communityMemberships[communityId]);
-  const isReadOnly = currentChannelObj?.type === 'announcement' && !isLeader;
+  const isReadOnly = currentChannelObj?.channelType === 'announcement' && !isLeader;
+
+  const rawChannelTitle = isDirectMessage
+    ? targetUser?.name || 'Direct Message'
+    : currentChannelObj?.name || channelId;
+  const headerTitle =
+    !isDirectMessage && !isPrivateGroup && String(rawChannelTitle || '').toLowerCase() === 'general'
+      ? community?.name || 'General Chat'
+      : rawChannelTitle;
+  const headerSubtitle = isDirectMessage
+    ? 'Direct Message'
+    : isPrivateGroup
+      ? `Private group · ${roomParticipants.length} member${roomParticipants.length === 1 ? '' : 's'}${community?.name ? ` · ${community.name}` : ''}`
+      : String(rawChannelTitle || '').toLowerCase() === 'general'
+        ? `Club Chat · ${roomParticipants.length} member${roomParticipants.length === 1 ? '' : 's'}`
+        : `${community?.name || 'Community'} · #${rawChannelTitle}`;
+
+  const handleLeaveSideGroup = async () => {
+    if (!channelId || isLeavingGroup) return;
+    setIsLeavingGroup(true);
+    try {
+      await leaveChannel(channelId);
+      toast.info('Left group', `You left ${headerTitle}`);
+      setShowMembersModal(false);
+      navigate.push('/chat');
+    } catch (err) {
+      toast.error('Could not leave group', err?.message || 'Please try again.');
+    } finally {
+      setIsLeavingGroup(false);
+    }
+  };
 
   const handleSend = async () => {
     if ((!inputText.trim() && imageFiles.length === 0) || isReadOnly) return;
@@ -163,12 +340,132 @@ export default function Chat() {
         background: 'var(--surface-canvas)',
       }}
     >
-      <AppHeader
-        title={isDirectMessage ? targetUser?.name : currentChannelObj?.name || channelId}
-        subtitle={isDirectMessage ? 'Direct Message' : `${community?.name || ''} · Shield Guard Active`}
-        showBack={true}
-        onBack={() => navigate.push('/chat')}
-      />
+      {/* Clean Mobile-First Chat Room Header */}
+      <header
+        style={{
+          flexShrink: 0,
+          background: 'var(--surface-card)',
+          borderBottom: '1px solid var(--hairline-border)',
+          padding: '10px 14px',
+          zIndex: 20,
+        }}
+      >
+        <div
+          style={{
+            width: '100%',
+            maxWidth: '960px',
+            margin: '0 auto',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '10px',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0, flex: 1 }}>
+            <Link
+              href="/chat"
+              aria-label="Back to messages"
+              className="interactive-press"
+              style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '10px',
+                background: 'var(--surface-elevated)',
+                border: '1px solid var(--hairline-border)',
+                color: 'var(--ink-primary)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                textDecoration: 'none',
+                flexShrink: 0,
+              }}
+            >
+              <ChevronLeft size={19} />
+            </Link>
+
+            <div
+              style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '10px',
+                background: isPrivateGroup
+                  ? isLight
+                    ? 'rgba(13, 148, 136, 0.12)'
+                    : 'rgba(20, 184, 166, 0.16)'
+                  : 'var(--brand-accent-soft)',
+                color: isPrivateGroup ? 'var(--teal-300)' : 'var(--brand-accent)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+              }}
+            >
+              {isPrivateGroup ? <Users size={18} /> : <Hash size={18} />}
+            </div>
+
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <div
+                style={{
+                  fontFamily: 'var(--font-heading)',
+                  fontSize: '0.98rem',
+                  fontWeight: 700,
+                  color: 'var(--ink-primary)',
+                  lineHeight: 1.2,
+                  display: '-webkit-box',
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
+                }}
+              >
+                {headerTitle}
+              </div>
+              <div
+                style={{
+                  fontSize: '0.73rem',
+                  fontWeight: 600,
+                  color: isPrivateGroup ? 'var(--teal-300)' : 'var(--ink-muted)',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  marginTop: '1px',
+                }}
+              >
+                {headerSubtitle}
+              </div>
+            </div>
+          </div>
+
+          {!isDirectMessage && (
+            <button
+              type="button"
+              onClick={() => {
+                setConfirmLeaveGroup(false);
+                setShowMembersModal(true);
+              }}
+              aria-label="View group members"
+              className="interactive-press"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '5px',
+                padding: '7px 11px',
+                borderRadius: '999px',
+                background: 'var(--surface-elevated)',
+                border: '1px solid var(--hairline-border-strong)',
+                color: 'var(--ink-primary)',
+                fontSize: '0.76rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+                flexShrink: 0,
+                whiteSpace: 'nowrap',
+              }}
+            >
+              <Users size={14} color={isPrivateGroup ? 'var(--teal-300)' : 'var(--brand-accent)'} />
+              <span>{roomParticipants.length}</span>
+            </button>
+          )}
+        </div>
+      </header>
 
       {/* Centered Editorial Chat Shell */}
       <div
@@ -279,7 +576,9 @@ export default function Chat() {
               >
                 {isDirectMessage
                   ? `This is the start of your direct messages with ${targetUser?.name}.`
-                  : `Welcome to #${currentChannelObj?.name || channelId} in ${community?.name || 'your community'}.`}
+                  : isPrivateGroup
+                    ? `Private side-group "${headerTitle}" · Only the ${roomParticipants.length} members in this group can see messages here.`
+                    : `Welcome to #${currentChannelObj?.name || channelId} in ${community?.name || 'your community'}.`}
               </div>
 
               {isLoading ? (
@@ -390,7 +689,7 @@ export default function Chat() {
                               <img
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  navigate.push(`/profile/${currentAuthorId}`);
+                                  navigate.push(getProfilePath(authorObj, users));
                                 }}
                                 src={resolveUserAvatar(authorObj)}
                                 alt={authorObj.name}
@@ -405,7 +704,7 @@ export default function Chat() {
                               <span
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  navigate.push(`/profile/${currentAuthorId}`);
+                                  navigate.push(getProfilePath(authorObj, users));
                                 }}
                                 style={{
                                   fontSize: '0.75rem',
@@ -1096,6 +1395,264 @@ export default function Chat() {
               <X size={15} />
             </button>
             <EmojiPicker onEmojiClick={onEmojiClick} theme={pickerTheme} width={320} height={420} />
+          </div>
+        </div>
+      )}
+
+      {/* Who's In This Group — Members Sheet */}
+      {showMembersModal && !isDirectMessage && (
+        <div
+          className="modal-overlay"
+          onClick={() => setShowMembersModal(false)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 100000,
+            background: 'rgba(18, 18, 18, 0.7)',
+            backdropFilter: 'blur(6px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '18px',
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: '100%',
+              maxWidth: '420px',
+              maxHeight: '80vh',
+              background: 'var(--surface-card)',
+              border: '1px solid var(--hairline-border-strong)',
+              borderRadius: '20px',
+              padding: '20px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '14px',
+              overflow: 'hidden',
+              boxShadow: '0 24px 60px rgba(0, 0, 0, 0.35)',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+              <div style={{ minWidth: 0 }}>
+                <h2
+                  style={{
+                    margin: 0,
+                    fontFamily: 'var(--font-heading)',
+                    fontSize: '1.1rem',
+                    color: 'var(--ink-primary)',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {isPrivateGroup ? 'Group Members' : `${community?.name || 'Club'} Members`}
+                </h2>
+                <div style={{ fontSize: '0.78rem', color: 'var(--ink-secondary)', marginTop: '2px' }}>
+                  {roomParticipants.length} {roomParticipants.length === 1 ? 'person' : 'people'}
+                  {isPrivateGroup ? ' · Invite-only side-group' : ' · Open club channel'}
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowMembersModal(false)}
+                aria-label="Close members list"
+                className="interactive-press"
+                style={{
+                  width: '34px',
+                  height: '34px',
+                  borderRadius: '50%',
+                  border: '1px solid var(--hairline-border)',
+                  background: 'var(--surface-elevated)',
+                  color: 'var(--ink-primary)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  flexShrink: 0,
+                }}
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <div
+              style={{
+                flex: 1,
+                overflowY: 'auto',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '8px',
+                paddingRight: '2px',
+              }}
+            >
+              {roomParticipants.map((member) => {
+                const isSelf = member.id === user?.id;
+                const isMemberLeader = isCommunityChatLeader(
+                  member,
+                  community || { id: communityId },
+                  communityMemberships[communityId]
+                );
+                const metCount = !isSelf ? metInPersonMap.get(member.id) || 0 : 0;
+
+                return (
+                  <div
+                    key={member.id}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                      padding: '9px 11px',
+                      borderRadius: '12px',
+                      background: 'var(--surface-elevated)',
+                      border: '1px solid var(--hairline-border)',
+                    }}
+                  >
+                    <Link
+                      href={getProfilePath(member, users)}
+                      onClick={() => setShowMembersModal(false)}
+                      style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: 0, textDecoration: 'none' }}
+                    >
+                      <img
+                        src={resolveUserAvatar(member)}
+                        alt={member.name || 'Member'}
+                        style={{
+                          width: '36px',
+                          height: '36px',
+                          borderRadius: '50%',
+                          objectFit: 'cover',
+                          flexShrink: 0,
+                        }}
+                      />
+                      <div style={{ minWidth: 0, flex: 1 }}>
+                        <div
+                          style={{
+                            fontSize: '0.88rem',
+                            fontWeight: 700,
+                            color: 'var(--ink-primary)',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          {member.name || 'Community Member'}
+                          {isSelf ? ' (You)' : ''}
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', marginTop: '1px' }}>
+                          {isMemberLeader && (
+                            <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--brand-accent)' }}>
+                              Leader
+                            </span>
+                          )}
+                          {metCount > 0 && (
+                            <span style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--teal-300)' }}>
+                              ✓ Met in person
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </Link>
+
+                    {!isSelf && (
+                      <Link
+                        href={`/chat/dm/${member.id}`}
+                        onClick={() => setShowMembersModal(false)}
+                        aria-label={`Message ${member.name || 'member'}`}
+                        className="interactive-press"
+                        style={{
+                          padding: '6px 10px',
+                          borderRadius: '999px',
+                          background: 'var(--surface-card)',
+                          border: '1px solid var(--hairline-border-strong)',
+                          color: 'var(--ink-primary)',
+                          fontSize: '0.74rem',
+                          fontWeight: 700,
+                          textDecoration: 'none',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          flexShrink: 0,
+                        }}
+                      >
+                        <MessageCircle size={12} />
+                        <span>DM</span>
+                      </Link>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {isPrivateGroup && user?.id && (
+              <div style={{ borderTop: '1px solid var(--hairline-border)', paddingTop: '12px' }}>
+                {!confirmLeaveGroup ? (
+                  <button
+                    type="button"
+                    onClick={() => setConfirmLeaveGroup(true)}
+                    className="interactive-press"
+                    style={{
+                      width: '100%',
+                      padding: '10px 14px',
+                      borderRadius: '12px',
+                      border: '1px solid rgba(239, 68, 68, 0.35)',
+                      background: 'rgba(239, 68, 68, 0.08)',
+                      color: '#ef4444',
+                      fontSize: '0.84rem',
+                      fontWeight: 700,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '7px',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <LogOut size={15} /> Leave Side-Group
+                  </button>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--ink-secondary)', textAlign: 'center' }}>
+                      Leave &ldquo;{headerTitle}&rdquo;? You&apos;ll need to be re-invited to rejoin.
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                      <button
+                        type="button"
+                        onClick={() => setConfirmLeaveGroup(false)}
+                        style={{
+                          padding: '9px',
+                          borderRadius: '10px',
+                          border: '1px solid var(--hairline-border-strong)',
+                          background: 'var(--surface-elevated)',
+                          color: 'var(--ink-primary)',
+                          fontSize: '0.82rem',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                        }}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        disabled={isLeavingGroup}
+                        onClick={handleLeaveSideGroup}
+                        style={{
+                          padding: '9px',
+                          borderRadius: '10px',
+                          border: 'none',
+                          background: '#ef4444',
+                          color: '#FFFFFF',
+                          fontSize: '0.82rem',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          opacity: isLeavingGroup ? 0.6 : 1,
+                        }}
+                      >
+                        {isLeavingGroup ? 'Leaving...' : 'Confirm Leave'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}

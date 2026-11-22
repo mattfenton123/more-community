@@ -2295,163 +2295,161 @@ export default function EventClient({ id }) {
       {/* Sticky RSVP Footer (Mobile only, hidden on desktop >= 1024px) */}
       <div className="event-mobile-rsvp-footer" style={{ 
         position: 'fixed', bottom: 0, left: 0, right: 0, 
-        padding: '16px 20px', background: 'var(--surface-card)', 
+        padding: '12px 16px', background: 'var(--surface-card)', 
         borderTop: '1px solid var(--hairline-border-strong)', 
         boxShadow: '0 -8px 28px rgba(0,0,0,0.12)',
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         zIndex: 100,
-        paddingBottom: 'max(16px, env(safe-area-inset-bottom))'
+        paddingBottom: 'max(12px, env(safe-area-inset-bottom))'
       }}>
-        <div style={{ maxWidth: '800px', margin: '0 auto', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div>
-            {isEventPast(event) ? (
-              <>
-                <div style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--slate-400)' }}>
-                  Event Ended
-                </div>
-                <div style={{ fontSize: '0.8rem', color: 'var(--slate-500)', fontWeight: 500 }}>
-                  Archived • {event.date}
-                </div>
-              </>
-            ) : (
-              <>
-                <div style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--white)' }}>
-                  {event.ticketPrice > 0 ? `£${event.ticketPrice.toFixed(2)}` : 'Free'}
-                </div>
-                {event.ticketPrice > 0 && (
-                  <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', marginTop: '2px' }}>
-                    {isAffiliateGroupTrip
-                      ? `Host Pass only • Own ~£${supplierEstimate} ticket paid directly to ${tripProvider}`
-                      : 'No extra booking fees • Secure Stripe card checkout'}
+        <div style={{ maxWidth: '800px', margin: '0 auto', width: '100%', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {/* Row 1: Price / Status + Primary Action */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', width: '100%' }}>
+            <div style={{ minWidth: 0, flexShrink: 1 }}>
+              {isEventPast(event) ? (
+                <>
+                  <div style={{ fontSize: '0.92rem', fontWeight: 700, color: 'var(--ink-muted)' }}>
+                    Event Ended
                   </div>
-                )}
-                {spotsLeft !== null && (
-                  <div style={{ fontSize: '0.8rem', color: spotsLeft < 5 ? 'var(--rose-400)' : 'var(--slate-400)', fontWeight: 600 }}>
-                    {spotsLeft === 0 ? 'Sold Out' : `${spotsLeft} spots left`}
+                  <div style={{ fontSize: '0.75rem', color: 'var(--ink-muted)', fontWeight: 500 }}>
+                    Archived • {event.date}
                   </div>
-                )}
-              </>
-            )}
-          </div>
-          <div style={{ display: 'flex', gap: '8px' }}>
-            {isLeader && (
-              <>
-                <button 
-                  onClick={() => setShowRollCallModal(true)}
-                  className="interactive-press"
-                  style={{ 
-                    background: 'rgba(16,185,129,0.16)', 
-                    color: '#34d399', 
-                    border: '1px solid rgba(16,185,129,0.35)',
-                    padding: '12px 14px', borderRadius: '99px', fontSize: '0.9rem', fontWeight: 700, 
-                    cursor: 'pointer',
-                    display: 'flex', alignItems: 'center', gap: '6px',
-                  }}
-                >
-                  <UserCheck size={16} /> Check-In
-                </button>
-                <button 
-                  onClick={() => setShowScanner(true)}
-                  className="interactive-press"
-                  style={{ 
-                    background: 'rgba(255,255,255,0.1)', 
-                    color: 'var(--white)', 
-                    border: '1px solid rgba(255,255,255,0.2)',
-                    padding: '12px 14px', borderRadius: '99px', fontSize: '0.9rem', fontWeight: 700, 
-                    cursor: 'pointer',
-                    display: 'flex', alignItems: 'center', gap: '6px',
-                  }}
-                >
-                  <ScanLine size={16} /> Scan
-                </button>
-              </>
-            )}
-            {isEventPast(event) ? (
-              isWithinCheckInGraceWindow && !isUserCheckedIn ? (
-                <button
-                  onClick={handleLiveCheckIn}
-                  className="interactive-press"
-                  style={{
-                    background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
-                    color: '#052e16',
-                    border: 'none',
-                    padding: '12px 18px', borderRadius: '99px', fontSize: '0.9rem', fontWeight: 800,
-                    display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer'
-                  }}
-                >
-                  👋 Check In
-                </button>
-              ) : isGoing || isUserCheckedIn ? (
-                <button
-                  onClick={() => setShowTicket(event)}
-                  className="interactive-press"
-                  style={{
-                    background: 'rgba(235, 87, 56,0.15)',
-                    color: 'var(--teal-300)',
-                    border: '1px solid rgba(235, 87, 56,0.3)',
-                    padding: '12px 24px', borderRadius: '99px', fontSize: '0.95rem', fontWeight: 700,
-                    display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer'
-                  }}
-                >
-                  <CheckCircle2 size={16} /> View Ticket
-                </button>
+                </>
               ) : (
-                <div
-                  style={{
-                    background: 'rgba(255,255,255,0.05)',
-                    color: 'var(--slate-400)',
-                    border: '1px solid var(--hairline-border-strong)',
-                    padding: '12px 24px', borderRadius: '99px', fontSize: '0.95rem', fontWeight: 600,
-                    display: 'flex', alignItems: 'center', gap: '8px'
-                  }}
-                >
-                  <Archive size={16} /> Archived
-                </div>
-              )
-            ) : (
-              <>
-                {isGoing && (
+                <>
+                  <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--ink-primary)' }}>
+                    {event.ticketPrice > 0 ? `£${event.ticketPrice.toFixed(2)}` : 'Free'}
+                  </div>
+                  {spotsLeft !== null && (
+                    <div style={{ fontSize: '0.74rem', color: spotsLeft < 5 ? '#dc2626' : 'var(--ink-muted)', fontWeight: 600 }}>
+                      {spotsLeft === 0 ? 'Sold Out' : `${spotsLeft} spots left`}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+              {isEventPast(event) ? (
+                isWithinCheckInGraceWindow && !isUserCheckedIn ? (
                   <button
-                    onClick={() => setShowTicket({ ...event, isCashOnArrival: isCashAttendee, ticketType: isCashAttendee ? 'cash_on_arrival' : 'paid' })}
+                    onClick={handleLiveCheckIn}
                     className="interactive-press"
                     style={{
-                      background: 'rgba(235, 87, 56,0.18)',
-                      color: 'var(--teal-300)',
-                      border: '1px solid rgba(235, 87, 56,0.35)',
-                      padding: '12px 18px', borderRadius: '99px', fontSize: '0.95rem', fontWeight: 700,
-                      display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer'
+                      background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+                      color: '#052e16',
+                      border: 'none',
+                      padding: '10px 16px', borderRadius: '99px', fontSize: '0.84rem', fontWeight: 800,
+                      display: 'inline-flex', alignItems: 'center', gap: '5px', cursor: 'pointer', whiteSpace: 'nowrap'
                     }}
                   >
-                    <Ticket size={16} /> View Pass
+                    👋 Check In
                   </button>
-                )}
-                <button  
-                  onClick={!user?.id ? () => setShowGuestRsvpModal(true) : (isGoing || isPendingApproval ? handleRSVP : () => setShowRsvpPromptModal(true))}
-                  disabled={checkoutState === 'processing'}
-                  className="interactive-press"
-                  style={{ 
-                    background: isGoing ? 'var(--surface-elevated)' : isPendingApproval ? 'rgba(245,158,11,0.18)' : 'var(--teal-500)', 
-                    color: isGoing ? 'var(--ink-primary)' : isPendingApproval ? '#b45309' : '#FFFFFF', 
-                    border: isGoing ? '1px solid var(--hairline-border-strong)' : isPendingApproval ? '1px solid rgba(245,158,11,0.35)' : 'none',
-                    padding: '12px 32px', borderRadius: '99px', fontSize: '1rem', fontWeight: 700, 
-                    cursor: (checkoutState === 'processing' || (spotsLeft === 0 && !isGoing && !isPendingApproval && Boolean(user?.id))) ? 'not-allowed' : 'pointer',
-                    opacity: (checkoutState === 'processing' || (spotsLeft === 0 && !isGoing && !isPendingApproval && Boolean(user?.id))) ? 0.7 : 1,
-                    display: 'flex', alignItems: 'center', gap: '8px',
-                    minWidth: '140px', justifyContent: 'center'
-                  }}
-                >
-                  {!user?.id ? (event.ticketPrice > 0 ? 'Sign In to Buy Ticket' : requiresHostApproval ? 'Sign In to Request to Join' : 'Sign In to RSVP') :
-                   checkoutState === 'processing' ? 'Processing...' : 
-                   isGoing ? 'Cancel RSVP' : 
-                   isPendingApproval ? '⏳ Request Pending (Cancel)' :
-                   spotsLeft === 0 ? 'Sold Out' :
-                   !isMember ? (requiresHostApproval ? 'Join & Request' : 'Join Community to ' + (event.ticketPrice > 0 ? (isAffiliateGroupTrip ? 'Get Host Pass' : 'Buy Ticket') : 'RSVP')) :
-                   requiresHostApproval ? 'Request to Join' :
-                   event.ticketPrice > 0 ? (isAffiliateGroupTrip ? 'Get Host Pass' : 'Buy Ticket') : 'RSVP'}
-                </button>
-              </>
-            )}
+                ) : isGoing || isUserCheckedIn ? (
+                  <button
+                    onClick={() => setShowTicket(event)}
+                    className="interactive-press"
+                    style={{
+                      background: 'var(--brand-accent-soft)',
+                      color: 'var(--brand-accent)',
+                      border: '1px solid rgba(235, 87, 56, 0.3)',
+                      padding: '10px 16px', borderRadius: '99px', fontSize: '0.84rem', fontWeight: 700,
+                      display: 'inline-flex', alignItems: 'center', gap: '6px', cursor: 'pointer', whiteSpace: 'nowrap'
+                    }}
+                  >
+                    <CheckCircle2 size={15} /> View Pass
+                  </button>
+                ) : (
+                  <div
+                    style={{
+                      background: 'var(--surface-elevated)',
+                      color: 'var(--ink-muted)',
+                      border: '1px solid var(--hairline-border-strong)',
+                      padding: '9px 14px', borderRadius: '99px', fontSize: '0.82rem', fontWeight: 600,
+                      display: 'inline-flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap'
+                    }}
+                  >
+                    <Archive size={14} /> Archived
+                  </div>
+                )
+              ) : (
+                <>
+                  {isGoing && (
+                    <button
+                      onClick={() => setShowTicket({ ...event, isCashOnArrival: isCashAttendee, ticketType: isCashAttendee ? 'cash_on_arrival' : 'paid' })}
+                      className="interactive-press"
+                      style={{
+                        background: 'var(--brand-accent-soft)',
+                        color: 'var(--brand-accent)',
+                        border: '1px solid rgba(235, 87, 56, 0.35)',
+                        padding: '10px 12px', borderRadius: '99px', fontSize: '0.82rem', fontWeight: 700,
+                        display: 'inline-flex', alignItems: 'center', gap: '5px', cursor: 'pointer', whiteSpace: 'nowrap'
+                      }}
+                    >
+                      <Ticket size={14} /> Pass
+                    </button>
+                  )}
+                  <button  
+                    onClick={!user?.id ? () => setShowGuestRsvpModal(true) : (isGoing || isPendingApproval ? handleRSVP : () => setShowRsvpPromptModal(true))}
+                    disabled={checkoutState === 'processing'}
+                    className="interactive-press"
+                    style={{ 
+                      background: isGoing ? 'var(--surface-elevated)' : isPendingApproval ? 'rgba(245,158,11,0.18)' : 'var(--brand-accent)', 
+                      color: isGoing ? 'var(--ink-primary)' : isPendingApproval ? '#b45309' : '#FFFFFF', 
+                      border: isGoing ? '1px solid var(--hairline-border-strong)' : isPendingApproval ? '1px solid rgba(245,158,11,0.35)' : 'none',
+                      padding: '10px 18px', borderRadius: '99px', fontSize: '0.86rem', fontWeight: 700, 
+                      cursor: (checkoutState === 'processing' || (spotsLeft === 0 && !isGoing && !isPendingApproval && Boolean(user?.id))) ? 'not-allowed' : 'pointer',
+                      opacity: (checkoutState === 'processing' || (spotsLeft === 0 && !isGoing && !isPendingApproval && Boolean(user?.id))) ? 0.7 : 1,
+                      display: 'inline-flex', alignItems: 'center', gap: '6px',
+                      justifyContent: 'center', whiteSpace: 'nowrap'
+                    }}
+                  >
+                    {!user?.id ? (event.ticketPrice > 0 ? 'Sign In & Buy' : 'Sign In to RSVP') :
+                     checkoutState === 'processing' ? 'Processing...' : 
+                     isGoing ? 'Cancel RSVP' : 
+                     isPendingApproval ? '⏳ Pending (Cancel)' :
+                     spotsLeft === 0 ? 'Sold Out' :
+                     !isMember ? (requiresHostApproval ? 'Join & Request' : (event.ticketPrice > 0 ? 'Join & Buy' : 'Join & RSVP')) :
+                     requiresHostApproval ? 'Request to Join' :
+                     event.ticketPrice > 0 ? (isAffiliateGroupTrip ? 'Get Host Pass' : 'Buy Ticket') : 'RSVP'}
+                  </button>
+                </>
+              )}
+            </div>
           </div>
+
+          {/* Row 2: Compact Host Check-In & Scan Bar (Leaders only — always fits cleanly!) */}
+          {isLeader && (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', width: '100%' }}>
+              <button 
+                onClick={() => setShowRollCallModal(true)}
+                className="interactive-press"
+                style={{ 
+                  background: 'rgba(16,185,129,0.14)', 
+                  color: '#15803D', 
+                  border: '1px solid rgba(16,185,129,0.35)',
+                  padding: '8px 12px', borderRadius: '10px', fontSize: '0.8rem', fontWeight: 700, 
+                  cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                }}
+              >
+                <UserCheck size={15} /> Check-In
+              </button>
+              <button 
+                onClick={() => setShowScanner(true)}
+                className="interactive-press"
+                style={{ 
+                  background: 'var(--surface-elevated)', 
+                  color: 'var(--ink-primary)', 
+                  border: '1px solid var(--hairline-border-strong)',
+                  padding: '8px 12px', borderRadius: '10px', fontSize: '0.8rem', fontWeight: 700, 
+                  cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                }}
+              >
+                <ScanLine size={15} /> Scan QR
+              </button>
+            </div>
+          )}
         </div>
       </div>
 

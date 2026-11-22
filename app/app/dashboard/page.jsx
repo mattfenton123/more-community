@@ -6072,6 +6072,45 @@ export default function LeaderDashboard({ initialCommunityId }) {
                 </button>
               </div>
 
+              {/* Member Side-Group Chats Toggle */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px 18px', background: 'rgba(255,255,255,0.025)', border: '1px solid var(--hairline-border)', borderRadius: '14px' }}>
+                <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(13, 148, 136, 0.14)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--teal-300)', flexShrink: 0 }}>
+                  <MessageCircle size={20} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontFamily: 'var(--font-heading)', fontSize: '0.98rem', fontWeight: 600, color: 'var(--ink-primary)', marginBottom: '2px' }}>
+                    Allow Member Side-Group Chats
+                  </div>
+                  <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.82rem', color: 'var(--ink-secondary)' }}>
+                    Let members spin up small private group chats (e.g. carpool, coffee crew) with fellow members
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const currentVal = community.allow_member_groups ?? community.allowMemberGroups ?? true;
+                    const newVal = !currentVal;
+                    updateCommunity(community.id, { allow_member_groups: newVal, allowMemberGroups: newVal });
+                    toast.info(
+                      newVal ? 'Member Side-Groups Enabled' : 'Member Side-Groups Disabled',
+                      newVal
+                        ? 'Members can create private side-group chats in this community'
+                        : 'Only leaders and co-leaders can create new group chats in this community'
+                    );
+                  }}
+                  style={{
+                    width: '46px', height: '26px', borderRadius: '99px', border: (community.allow_member_groups ?? community.allowMemberGroups ?? true) ? 'none' : '1px solid var(--hairline-border-strong)',
+                    background: (community.allow_member_groups ?? community.allowMemberGroups ?? true) ? 'var(--brand-accent)' : 'var(--surface-elevated)',
+                    position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0
+                  }}
+                >
+                  <div style={{
+                    width: '22px', height: '22px', borderRadius: '50%', background: 'white', position: 'absolute', top: '2px',
+                    left: (community.allow_member_groups ?? community.allowMemberGroups ?? true) ? '22px' : '2px', transition: 'left 0.2s'
+                  }}></div>
+                </button>
+              </div>
+
               {/* ─── GROUP 4: DATA & ADVANCED ─── */}
               <div style={{ fontFamily: 'var(--font-heading)', fontSize: '0.78rem', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--teal-300)', marginTop: '8px' }}>
                 Data & Advanced

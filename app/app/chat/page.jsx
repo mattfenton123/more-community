@@ -15,14 +15,23 @@ import {
   X,
   ChevronLeft,
   Calendar,
+  Check,
 } from 'lucide-react';
 import AppHeader from '../../src/components/AppHeader';
 import { FALLBACK_IMAGES } from '../../src/lib/constants';
 import { useToast } from '../../src/components/Toast';
 import { resolveUserAvatar, getDefaultAvatar } from '../../src/lib/avatar';
 import { formatChatTime, getManageableCommunities } from '../../src/lib/chatUtils';
-import { getEventPath } from '../../src/lib/eventLinks';
 import { isEventUpcoming } from '../../src/lib/calendar';
+import { parseChannel } from '../../src/lib/channelMeta';
+import { getMetInPersonMap } from '../../src/lib/inPersonGraph';
+
+const INBOX_TABS = [
+  { id: 'All', label: 'All' },
+  { id: 'Clubs', label: 'Clubs' },
+  { id: 'Events', label: 'Events' },
+  { id: 'People', label: 'People' },
+];
 
 export default function ChatIndex() {
   const {
@@ -49,9 +58,9 @@ export default function ChatIndex() {
   const [inboxSearch, setInboxSearch] = useState('');
   const [remoteSearchHits, setRemoteSearchHits] = useState({ channelHits: [], dmHits: [] });
   const [isSearchingRemote, setIsSearchingRemote] = useState(false);
-  const [inboxTab, setInboxTab] = useState('All'); // 'All' | 'Communities' | 'Direct'
+  const [inboxTab, setInboxTab] = useState('All'); // 'All' | 'Clubs' | 'Events' | 'People'
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [createMode, setCreateMode] = useState('menu'); // 'menu', 'dm', 'group'
+  const [createMode, setCreateMode] = useState('menu'); // 'menu' | 'dm' | 'sidegroup' | 'channel'
   const [newChannelName, setNewChannelName] = useState('');
   const [createChannelCommunityId, setCreateChannelCommunityId] = useState(null);
   const [selectedMembers, setSelectedMembers] = useState([]);
@@ -66,6 +75,27 @@ export default function ChatIndex() {
   const manageableCommunities = useMemo(
     () => getManageableCommunities(communities || [], user, communityMemberships),
     [communities, user, communityMemberships]
+  );
+
+  // Communities where this user is allowed to spin up a private side-group
+  const sideGroupCommunities = useMemo(() => {
+    const map = new Map();
+    manageableCommunities.forEach((c) => {
+      if (c?.id) map.set(c.id, c);
+    });
+    myCommunities.forEach((c) => {
+      if (!c?.id) return;
+      const allowed = c.allow_member_groups !== false && c.allowMemberGroups !== false;
+      if (allowed && !map.has(c.id)) {
+        map.set(c.id, c);
+      }
+    });
+    return Array.from(map.values());
+  }, [myCommunities, manageableCommunities]);
+
+  const metInPersonMap = useMemo(
+    () => getMetInPersonMap(user?.id, events, eventRsvps),
+    [user?.id, events, eventRsvps]
   );
 
   const filteredCommunityName = useMemo(() => {
@@ -140,41 +170,76 @@ export default function ChatIndex() {
     };
   }, [inboxSearch, user?.id, user?.joinedCommunities]);
 
-  // Build unified inbox items
-  const inboxItems = useMemo(() => {
+  // Build unified enriched inbox items BEFORE tab filtering so we can also compute tab unread counts
+  const allEnrichedItems = useMemo(() => {
     if (!user?.id) return [];
 
-    let items = [];
+    const items = [];
+    const seenChannelKeys = new Set();
+    const parsedChannels = (channels || []).map(parseChannel).filter(Boolean);
 
+    // 1. Official club channels for communities the user joined
     myCommunities.forEach((c) => {
-      const communityChannels = (channels || []).filter(
-        (ch) => ch.community_id === c.id || ch.communityId === c.id
+      const commChannels = parsedChannels.filter((ch) => ch.communityId === c.id);
+      const openClubChannels = commChannels.filter(
+        (ch) => !ch.isPrivateGroup && ch.channelType !== 'announcement'
       );
-      if (communityChannels.length === 0) {
-        items.push({ type: 'channel', channelType: 'text', comm: c, name: 'general', id: 'general' });
+
+      if (openClubChannels.length === 0) {
+        const key = `${c.id}::general`;
+        seenChannelKeys.add(key);
+        items.push({
+          type: 'channel',
+          channelType: 'text',
+          isPrivateGroup: false,
+          comm: c,
+          name: 'general',
+          id: 'general',
+        });
       } else {
-        communityChannels.forEach((ch) => {
-          if (
-            ch.member_ids &&
-            ch.member_ids.length > 0 &&
-            !ch.member_ids.includes(user?.id) &&
-            !user?.ledCommunities?.includes(c.id)
-          ) {
-            return;
-          }
-          if (ch.type === 'announcement') return;
+        openClubChannels.forEach((ch) => {
+          const key = `${c.id}::${ch.id}`;
+          if (seenChannelKeys.has(key)) return;
+          seenChannelKeys.add(key);
           items.push({
             type: 'channel',
-            channelType: ch.type || 'text',
+            channelType: ch.channelType || 'text',
+            isPrivateGroup: false,
             comm: c,
             name: ch.name,
             id: ch.id,
-            memberIds: ch.member_ids,
+            created_at: ch.created_at,
           });
         });
       }
     });
 
+    // 2. Private side-groups where this user is explicitly a member
+    parsedChannels.forEach((ch) => {
+      if (!ch.isPrivateGroup) return;
+      const memberIds = Array.isArray(ch.memberIds) ? ch.memberIds : [];
+      if (!memberIds.includes(user.id)) return;
+      const comm = (communities || []).find((c) => c.id === ch.communityId) || {
+        id: ch.communityId,
+        name: 'Community',
+      };
+      const key = `${comm.id}::${ch.id}`;
+      if (seenChannelKeys.has(key)) return;
+      seenChannelKeys.add(key);
+      items.push({
+        type: 'channel',
+        channelType: 'group',
+        isPrivateGroup: true,
+        comm,
+        name: ch.name,
+        id: ch.id,
+        memberIds,
+        creatorId: ch.creatorId,
+        created_at: ch.created_at,
+      });
+    });
+
+    // 3. Direct Messages
     if (directMessages && user) {
       const dmUsers = new Set();
       directMessages.forEach((dm) => {
@@ -194,7 +259,7 @@ export default function ChatIndex() {
       });
     }
 
-    // Event Discussion / Q&A threads for events user leads, is Going to, or commented on
+    // 4. Event Discussion / Q&A threads for events user leads, is Going to, or commented on
     (events || []).forEach((ev) => {
       if (!ev?.id || ev.status === 'cancelled' || ev.status === 'proposed') return;
       const comm = (communities || []).find((c) => c.id === ev.communityId) || null;
@@ -225,7 +290,7 @@ export default function ChatIndex() {
 
     const q = inboxSearch.toLowerCase().trim();
 
-    const enriched = items
+    return items
       .map((item) => {
         let itemMessages = [];
         let latestMsg = null;
@@ -340,20 +405,38 @@ export default function ChatIndex() {
               ? item.event.title
               : item.name;
         const displayTitle =
-          item.type === 'channel' && rawTitle.toLowerCase() === 'general' ? item.comm.name : rawTitle;
-        const displaySubtitle =
+          item.type === 'channel' && !item.isPrivateGroup && rawTitle.toLowerCase() === 'general'
+            ? item.comm.name
+            : rawTitle;
+
+        const metCount = item.type === 'dm' ? metInPersonMap.get(item.id) || 0 : 0;
+
+        let displaySubtitle = null;
+        if (item.type === 'event_qna') {
+          displaySubtitle = `Event Q&A${item.event?.date ? ` · ${item.event.date}` : ''}`;
+        } else if (item.type === 'channel' && item.isPrivateGroup) {
+          const count = item.memberIds?.length || 2;
+          displaySubtitle = `Private group · ${count} members${item.comm?.name ? ` · ${item.comm.name}` : ''}`;
+        } else if (item.type === 'channel') {
+          displaySubtitle =
+            rawTitle.toLowerCase() === 'general' ? 'Club Chat' : `#${rawTitle} · ${item.comm.name}`;
+        } else if (item.type === 'dm' && metCount > 0) {
+          displaySubtitle = `✓ Met in person${metCount > 1 ? ` · ${metCount} meetups` : ''}`;
+        }
+
+        const bucket =
           item.type === 'event_qna'
-            ? `Event Q&A${item.event?.date ? ` · ${item.event.date}` : ''}`
-            : item.type === 'channel'
-              ? rawTitle.toLowerCase() === 'general'
-                ? 'General Chat'
-                : item.comm.name
-              : null;
+            ? 'Events'
+            : item.type === 'dm' || item.isPrivateGroup
+              ? 'People'
+              : 'Clubs';
 
         const previewMsg = matchedMsg || latestMsg;
 
         return {
           ...item,
+          bucket,
+          metCount,
           displayTitle,
           displaySubtitle,
           latestMsg,
@@ -371,21 +454,9 @@ export default function ChatIndex() {
       })
       .filter((item) => {
         if (communityFilterId && item.comm?.id !== communityFilterId) return false;
-        if (inboxTab === 'All' && item.type === 'event_qna' && !item.hasComments && !q) return false;
-        if (inboxTab === 'Communities' && item.type !== 'channel') return false;
-        if (inboxTab === 'Events' && item.type !== 'event_qna') return false;
-        if (inboxTab === 'Direct' && item.type !== 'dm') return false;
-        if (q) {
-          const inTitle = (item.displayTitle || '').toLowerCase().includes(q);
-          const inSub = (item.displaySubtitle || '').toLowerCase().includes(q);
-          const inAnyMsg = Boolean(item.matchedMsg);
-          return inTitle || inSub || inAnyMsg;
-        }
         return true;
       })
       .sort((a, b) => b.sortTime - a.sortTime);
-
-    return enriched;
   }, [
     user,
     myCommunities,
@@ -395,39 +466,156 @@ export default function ChatIndex() {
     messages,
     chatReadReceipts,
     communityFilterId,
-    inboxTab,
     inboxSearch,
     remoteSearchHits,
     events,
     eventRsvps,
     eventComments,
     communities,
+    metInPersonMap,
   ]);
 
-  const sharedCommunityMembers = useMemo(() => {
-    const sharedUserIds = new Set();
+  const tabUnreadCounts = useMemo(() => {
+    const counts = { All: 0, Clubs: 0, Events: 0, People: 0 };
+    allEnrichedItems.forEach((item) => {
+      if (!item.hasUnread) return;
+      if (item.bucket === 'Clubs') counts.Clubs += 1;
+      else if (item.bucket === 'Events') counts.Events += 1;
+      else if (item.bucket === 'People') counts.People += 1;
+      counts.All += 1;
+    });
+    return counts;
+  }, [allEnrichedItems]);
+
+  const inboxItems = useMemo(() => {
+    const q = inboxSearch.toLowerCase().trim();
+    return allEnrichedItems.filter((item) => {
+      if (inboxTab === 'All' && item.type === 'event_qna' && !item.hasComments && !q) return false;
+      if (inboxTab === 'Clubs' && item.bucket !== 'Clubs') return false;
+      if (inboxTab === 'Events' && item.bucket !== 'Events') return false;
+      if (inboxTab === 'People' && item.bucket !== 'People') return false;
+      if (q) {
+        const inTitle = (item.displayTitle || '').toLowerCase().includes(q);
+        const inSub = (item.displaySubtitle || '').toLowerCase().includes(q);
+        const inAnyMsg = Boolean(item.matchedMsg);
+        return inTitle || inSub || inAnyMsg;
+      }
+      return true;
+    });
+  }, [allEnrichedItems, inboxTab, inboxSearch]);
+
+  // Eligible contacts for DMs: shared communities + met in person, sorted with Met in person first
+  const dmCandidates = useMemo(() => {
+    const allowedIds = new Set();
     (user?.joinedCommunities || []).forEach((communityId) => {
       const members = communityMemberships?.[communityId] || [];
-      members.forEach((m) => sharedUserIds.add(m.userId || m.user_id));
+      members.forEach((m) => allowedIds.add(m.userId || m.user_id));
     });
-    return (users || []).filter((u) => u.id !== user?.id && sharedUserIds.has(u.id));
-  }, [user, communityMemberships, users]);
+    metInPersonMap.forEach((_count, uid) => allowedIds.add(uid));
 
-  const handleCreateChannel = async (type = 'text', members = null) => {
+    return (users || [])
+      .filter((u) => u.id && u.id !== user?.id && allowedIds.has(u.id))
+      .sort((a, b) => {
+        const metA = metInPersonMap.get(a.id) || 0;
+        const metB = metInPersonMap.get(b.id) || 0;
+        if (metB !== metA) return metB - metA;
+        return String(a.name || '').localeCompare(String(b.name || ''));
+      });
+  }, [user, communityMemberships, users, metInPersonMap]);
+
+  const activeSideGroupCommunityId =
+    createChannelCommunityId && sideGroupCommunities.some((c) => c.id === createChannelCommunityId)
+      ? createChannelCommunityId
+      : sideGroupCommunities[0]?.id || null;
+
+  const activeOfficialChannelCommunityId =
+    createChannelCommunityId && manageableCommunities.some((c) => c.id === createChannelCommunityId)
+      ? createChannelCommunityId
+      : manageableCommunities[0]?.id || null;
+
+  // Contacts for Private Side-Group: members of selected community + people met in person
+  const sideGroupCandidates = useMemo(() => {
+    const allowedIds = new Set();
+    if (activeSideGroupCommunityId) {
+      const members = communityMemberships?.[activeSideGroupCommunityId] || [];
+      members.forEach((m) => allowedIds.add(m.userId || m.user_id));
+    }
+    metInPersonMap.forEach((_count, uid) => allowedIds.add(uid));
+
+    return (users || [])
+      .filter((u) => u.id && u.id !== user?.id && allowedIds.has(u.id))
+      .sort((a, b) => {
+        const metA = metInPersonMap.get(a.id) || 0;
+        const metB = metInPersonMap.get(b.id) || 0;
+        if (metB !== metA) return metB - metA;
+        return String(a.name || '').localeCompare(String(b.name || ''));
+      });
+  }, [activeSideGroupCommunityId, communityMemberships, users, user?.id, metInPersonMap]);
+
+  const resetModalState = () => {
+    setCreateMode('menu');
+    setNewChannelName('');
+    setSelectedMembers([]);
+    setUserSearchTerm('');
+  };
+
+  const handleCreatePrivateSideGroup = async () => {
     if (!newChannelName.trim() || isCreating) return;
-    const targetCommunity = createChannelCommunityId || manageableCommunities[0]?.id;
-    if (!targetCommunity) {
-      toast.error('Leader access required', 'Only community leaders can create group chats.');
+    if (!activeSideGroupCommunityId) {
+      toast.error('Join a community first', 'You need to belong to a community that allows side-groups.');
+      return;
+    }
+    if (selectedMembers.length === 0) {
+      toast.error('Pick at least one person', 'Select who you want to include in this private side-group.');
       return;
     }
 
     setIsCreating(true);
     try {
-      await createChannel(targetCommunity, newChannelName.trim(), type, members);
-      toast.success('Chat created!', `${newChannelName.trim()} is now live`);
-      setNewChannelName('');
-      setSelectedMembers([]);
+      const memberIds = Array.from(new Set([user?.id, ...selectedMembers].filter(Boolean)));
+      const created = await createChannel(
+        activeSideGroupCommunityId,
+        newChannelName.trim(),
+        'group',
+        memberIds
+      );
+      toast.success('Private group created!', `${newChannelName.trim()} is ready`);
+      resetModalState();
       setShowCreateModal(false);
+      if (created?.id) {
+        router.push(`/chat/${activeSideGroupCommunityId}/${created.id}`);
+      }
+    } catch (err) {
+      toast.error('Could not create group', err?.message || 'Please try again.');
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  const handleCreateOfficialChannel = async () => {
+    if (!newChannelName.trim() || isCreating) return;
+    if (!activeOfficialChannelCommunityId) {
+      toast.error('Leader access required', 'Only community leaders can create official club channels.');
+      return;
+    }
+
+    setIsCreating(true);
+    try {
+      const cleanChannelName = newChannelName.trim().replace(/^#+/, '');
+      const created = await createChannel(
+        activeOfficialChannelCommunityId,
+        cleanChannelName,
+        'text',
+        null
+      );
+      toast.success('Club channel created!', `#${cleanChannelName} is now live for all members`);
+      resetModalState();
+      setShowCreateModal(false);
+      if (created?.id) {
+        router.push(`/chat/${activeOfficialChannelCommunityId}/${created.id}`);
+      }
+    } catch (err) {
+      toast.error('Could not create channel', err?.message || 'Please try again.');
     } finally {
       setIsCreating(false);
     }
@@ -558,8 +746,7 @@ export default function ChatIndex() {
               </h1>
               <button
                 onClick={() => {
-                  setCreateMode('menu');
-                  setUserSearchTerm('');
+                  resetModalState();
                   setShowCreateModal(true);
                 }}
                 className="btn btn-primary interactive-press"
@@ -621,7 +808,7 @@ export default function ChatIndex() {
               </div>
             )}
 
-            {/* Search & Filter Row */}
+            {/* Search & 4-Bucket Filter Tabs */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '16px' }}>
               <div
                 style={{
@@ -670,15 +857,46 @@ export default function ChatIndex() {
               </div>
 
               <div className="segmented-control">
-                {['All', 'Communities', 'Events', 'Direct'].map((tab) => (
-                  <button
-                    key={tab}
-                    onClick={() => setInboxTab(tab)}
-                    className={inboxTab === tab ? 'active' : ''}
-                  >
-                    {tab}
-                  </button>
-                ))}
+                {INBOX_TABS.map((tab) => {
+                  const unreadCount = tabUnreadCounts[tab.id] || 0;
+                  const isActive = inboxTab === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => setInboxTab(tab.id)}
+                      className={isActive ? 'active' : ''}
+                      style={{
+                        padding: '9px 6px',
+                        fontSize: '0.82rem',
+                        gap: '5px',
+                        minWidth: 0,
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      <span>{tab.label}</span>
+                      {unreadCount > 0 && tab.id !== 'All' && (
+                        <span
+                          style={{
+                            minWidth: '17px',
+                            height: '17px',
+                            padding: '0 5px',
+                            borderRadius: '999px',
+                            fontSize: '0.67rem',
+                            fontWeight: 800,
+                            lineHeight: 1,
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            background: isActive ? 'var(--brand-accent)' : 'var(--brand-accent)',
+                            color: '#FFFFFF',
+                          }}
+                        >
+                          {unreadCount > 9 ? '9+' : unreadCount}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -689,7 +907,7 @@ export default function ChatIndex() {
                   background: 'var(--surface-card)',
                   border: '1px dashed var(--hairline-border-strong)',
                   borderRadius: '18px',
-                  padding: '48px 20px',
+                  padding: '44px 20px',
                   textAlign: 'center',
                   color: 'var(--ink-secondary)',
                 }}
@@ -702,7 +920,7 @@ export default function ChatIndex() {
                 <div
                   style={{
                     fontFamily: 'var(--font-heading)',
-                    fontSize: '1.1rem',
+                    fontSize: '1.08rem',
                     fontWeight: 700,
                     color: 'var(--ink-primary)',
                     marginBottom: '6px',
@@ -712,17 +930,27 @@ export default function ChatIndex() {
                     ? 'Searching message history...'
                     : inboxSearch
                       ? 'No matching chats'
-                      : 'No conversations yet'}
+                      : inboxTab === 'Events'
+                        ? 'No active event chats yet'
+                        : inboxTab === 'People'
+                          ? 'No direct or private group chats yet'
+                          : inboxTab === 'Clubs'
+                            ? 'No club channels yet'
+                            : 'No conversations yet'}
                 </div>
-                <p style={{ margin: '0 auto 16px', fontSize: '0.86rem', maxWidth: '320px' }}>
+                <p style={{ margin: '0 auto 16px', fontSize: '0.86rem', maxWidth: '340px' }}>
                   {inboxSearch
                     ? 'Try a different name or keyword.'
-                    : 'Join a community or start a direct message with a fellow member.'}
+                    : inboxTab === 'Events'
+                      ? 'RSVP to an upcoming meetup to join its event chat.'
+                      : inboxTab === 'People'
+                        ? 'Message someone you met or spin up a small private side-group for carpools or coffee.'
+                        : 'Join a community or start a direct message with a fellow member.'}
                 </p>
-                {!inboxSearch && (
+                {!inboxSearch && inboxTab !== 'Events' && (
                   <button
                     onClick={() => {
-                      setCreateMode('menu');
+                      resetModalState();
                       setShowCreateModal(true);
                     }}
                     className="btn btn-primary interactive-press"
@@ -761,15 +989,22 @@ export default function ChatIndex() {
                         ? item.event.image || item.comm?.image || item.comm?.cover_image || FALLBACK_IMAGES.event
                         : getDefaultAvatar(item.displayTitle);
 
-                  if (item.type === 'channel' && rawTitle.toLowerCase() === 'general') {
+                  if (item.type === 'channel' && !item.isPrivateGroup && rawTitle.toLowerCase() === 'general') {
                     avatar = item.comm.image || item.comm.cover_image || FALLBACK_IMAGES.community;
                   }
 
                   let Icon = Hash;
-                  if (item.type === 'dm') Icon = MessageCircle;
-                  else if (item.type === 'event_qna') Icon = Calendar;
-                  else if (item.channelType === 'announcement') Icon = Megaphone;
-                  else if (item.channelType === 'group' || item.memberIds) Icon = Lock;
+                  let badgeColor = 'var(--brand-accent)';
+                  if (item.type === 'dm') {
+                    Icon = MessageCircle;
+                  } else if (item.type === 'event_qna') {
+                    Icon = Calendar;
+                  } else if (item.channelType === 'announcement') {
+                    Icon = Megaphone;
+                  } else if (item.isPrivateGroup) {
+                    Icon = Users;
+                    badgeColor = 'var(--teal-300)';
+                  }
 
                   const shownMsg = item.previewMsg || item.latestMsg;
                   const msgAuthorId = shownMsg?.authorId || shownMsg?.senderId;
@@ -810,7 +1045,7 @@ export default function ChatIndex() {
                     >
                       <div
                         onClick={(e) => {
-                          if (item.type !== 'dm' && item.comm?.id) {
+                          if (item.type !== 'dm' && !item.isPrivateGroup && item.comm?.id) {
                             e.stopPropagation();
                             router.push(`/chat?communityId=${item.comm.id}`);
                           }
@@ -819,12 +1054,21 @@ export default function ChatIndex() {
                           width: '44px',
                           height: '44px',
                           borderRadius: '50%',
-                          background: `var(--surface-elevated) url(${avatar}) center/cover no-repeat`,
+                          background: item.isPrivateGroup
+                            ? isLight
+                              ? 'rgba(13, 148, 136, 0.12)'
+                              : 'rgba(20, 184, 166, 0.18)'
+                            : `var(--surface-elevated) url(${avatar}) center/cover no-repeat`,
                           position: 'relative',
                           flexShrink: 0,
                           border: '1px solid var(--hairline-border)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: 'var(--teal-300)',
                         }}
                       >
+                        {item.isPrivateGroup && <Users size={20} />}
                         <div
                           style={{
                             position: 'absolute',
@@ -839,7 +1083,11 @@ export default function ChatIndex() {
                             border: '2px solid var(--surface-card)',
                           }}
                         >
-                          <Icon size={11} color="var(--brand-accent)" />
+                          {item.isPrivateGroup ? (
+                            <Lock size={10} color={badgeColor} />
+                          ) : (
+                            <Icon size={11} color={badgeColor} />
+                          )}
                         </div>
                       </div>
 
@@ -885,13 +1133,18 @@ export default function ChatIndex() {
                           </div>
                         </div>
 
-                        {/* Row 2: Subtitle / Channel or Event Context */}
+                        {/* Row 2: Subtitle / Context */}
                         {item.displaySubtitle && (
                           <div
                             style={{
                               fontSize: '0.73rem',
                               fontWeight: 600,
-                              color: item.type === 'event_qna' ? 'var(--brand-accent)' : 'var(--ink-muted)',
+                              color:
+                                item.type === 'event_qna'
+                                  ? 'var(--brand-accent)'
+                                  : item.isPrivateGroup || (item.type === 'dm' && item.metCount > 0)
+                                    ? 'var(--teal-300)'
+                                    : 'var(--ink-muted)',
                               whiteSpace: 'nowrap',
                               overflow: 'hidden',
                               textOverflow: 'ellipsis',
@@ -988,7 +1241,7 @@ export default function ChatIndex() {
             style={{
               width: '100%',
               maxWidth: '460px',
-              maxHeight: '82vh',
+              maxHeight: '84vh',
               display: 'flex',
               flexDirection: 'column',
               overflow: 'hidden',
@@ -1005,13 +1258,16 @@ export default function ChatIndex() {
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 gap: '10px',
-                marginBottom: '18px',
+                marginBottom: '16px',
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 {createMode !== 'menu' && (
                   <button
-                    onClick={() => setCreateMode('menu')}
+                    onClick={() => {
+                      setCreateMode('menu');
+                      setUserSearchTerm('');
+                    }}
                     aria-label="Back to chat options"
                     className="interactive-press"
                     style={{
@@ -1033,14 +1289,15 @@ export default function ChatIndex() {
                 <h2
                   style={{
                     fontFamily: 'var(--font-heading)',
-                    fontSize: '1.2rem',
+                    fontSize: '1.18rem',
                     margin: 0,
                     color: 'var(--ink-primary)',
                   }}
                 >
-                  {createMode === 'menu' && 'New Chat'}
-                  {createMode === 'dm' && 'New Direct Message'}
-                  {createMode === 'group' && 'New Group Chat'}
+                  {createMode === 'menu' && 'Start a Chat'}
+                  {createMode === 'dm' && 'Direct Message'}
+                  {createMode === 'sidegroup' && 'Private Side-Group'}
+                  {createMode === 'channel' && 'Official Club Channel'}
                 </h2>
               </div>
               <button
@@ -1064,11 +1321,15 @@ export default function ChatIndex() {
               </button>
             </div>
 
-            {/* Menu Mode */}
+            {/* Menu Mode — 3 Clear, Self-Explanatory Options */}
             {createMode === 'menu' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {/* 1. Direct Message */}
                 <button
-                  onClick={() => setCreateMode('dm')}
+                  onClick={() => {
+                    setUserSearchTerm('');
+                    setCreateMode('dm');
+                  }}
                   className="interactive-press"
                   style={{
                     display: 'flex',
@@ -1085,9 +1346,9 @@ export default function ChatIndex() {
                 >
                   <div
                     style={{
-                      width: '40px',
-                      height: '40px',
-                      borderRadius: '50%',
+                      width: '42px',
+                      height: '42px',
+                      borderRadius: '12px',
                       background: 'var(--brand-accent-soft)',
                       display: 'flex',
                       alignItems: 'center',
@@ -1098,17 +1359,26 @@ export default function ChatIndex() {
                   >
                     <MessageCircle size={19} />
                   </div>
-                  <div>
-                    <div style={{ fontWeight: 700, fontSize: '0.94rem' }}>New Direct Message</div>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--ink-secondary)' }}>
-                      1-on-1 private chat with a fellow member
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontWeight: 700, fontSize: '0.94rem', marginBottom: '2px' }}>
+                      Direct Message
+                    </div>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--ink-secondary)', lineHeight: 1.35 }}>
+                      Private 1-on-1 chat with someone from your communities or meetups
                     </div>
                   </div>
                 </button>
 
-                {manageableCommunities.length > 0 && (
+                {/* 2. Private Side-Group (available to all eligible members!) */}
+                {sideGroupCommunities.length > 0 && (
                   <button
-                    onClick={() => setCreateMode('group')}
+                    onClick={() => {
+                      setNewChannelName('');
+                      setSelectedMembers([]);
+                      setUserSearchTerm('');
+                      setCreateChannelCommunityId(sideGroupCommunities[0]?.id || null);
+                      setCreateMode('sidegroup');
+                    }}
                     className="interactive-press"
                     style={{
                       display: 'flex',
@@ -1125,9 +1395,79 @@ export default function ChatIndex() {
                   >
                     <div
                       style={{
-                        width: '40px',
-                        height: '40px',
-                        borderRadius: '50%',
+                        width: '42px',
+                        height: '42px',
+                        borderRadius: '12px',
+                        background: isLight ? 'rgba(13, 148, 136, 0.12)' : 'rgba(20, 184, 166, 0.16)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'var(--teal-300)',
+                        flexShrink: 0,
+                      }}
+                    >
+                      <Users size={19} />
+                    </div>
+                    <div style={{ minWidth: 0 }}>
+                      <div
+                        style={{
+                          fontWeight: 700,
+                          fontSize: '0.94rem',
+                          marginBottom: '2px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          flexWrap: 'wrap',
+                        }}
+                      >
+                        <span>Private Side-Group</span>
+                        <span
+                          style={{
+                            fontSize: '0.68rem',
+                            fontWeight: 700,
+                            padding: '2px 7px',
+                            borderRadius: '999px',
+                            background: isLight ? 'rgba(13, 148, 136, 0.12)' : 'rgba(20, 184, 166, 0.18)',
+                            color: 'var(--teal-300)',
+                          }}
+                        >
+                          Invite-only
+                        </span>
+                      </div>
+                      <div style={{ fontSize: '0.8rem', color: 'var(--ink-secondary)', lineHeight: 1.35 }}>
+                        Spin up a small private chat for a carpool, coffee crew, or walking buddies
+                      </div>
+                    </div>
+                  </button>
+                )}
+
+                {/* 3. Official Club Channel (Leaders / Co-Leaders / Admins only) */}
+                {manageableCommunities.length > 0 && (
+                  <button
+                    onClick={() => {
+                      setNewChannelName('');
+                      setCreateChannelCommunityId(manageableCommunities[0]?.id || null);
+                      setCreateMode('channel');
+                    }}
+                    className="interactive-press"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '14px',
+                      padding: '14px',
+                      background: 'var(--surface-elevated)',
+                      border: '1px solid var(--hairline-border)',
+                      borderRadius: '14px',
+                      color: 'var(--ink-primary)',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: '42px',
+                        height: '42px',
+                        borderRadius: '12px',
                         background: 'var(--brand-accent-soft)',
                         display: 'flex',
                         alignItems: 'center',
@@ -1136,12 +1476,36 @@ export default function ChatIndex() {
                         flexShrink: 0,
                       }}
                     >
-                      <Users size={19} />
+                      <Hash size={19} />
                     </div>
-                    <div>
-                      <div style={{ fontWeight: 700, fontSize: '0.94rem' }}>New Group Chat</div>
-                      <div style={{ fontSize: '0.8rem', color: 'var(--ink-secondary)' }}>
-                        Create a topic or private channel for your community
+                    <div style={{ minWidth: 0 }}>
+                      <div
+                        style={{
+                          fontWeight: 700,
+                          fontSize: '0.94rem',
+                          marginBottom: '2px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          flexWrap: 'wrap',
+                        }}
+                      >
+                        <span>Official Club Channel</span>
+                        <span
+                          style={{
+                            fontSize: '0.68rem',
+                            fontWeight: 700,
+                            padding: '2px 7px',
+                            borderRadius: '999px',
+                            background: 'var(--brand-accent-soft)',
+                            color: 'var(--brand-accent)',
+                          }}
+                        >
+                          Leader
+                        </span>
+                      </div>
+                      <div style={{ fontSize: '0.8rem', color: 'var(--ink-secondary)', lineHeight: 1.35 }}>
+                        Create an open #topic channel visible to every member in your club
                       </div>
                     </div>
                   </button>
@@ -1154,7 +1518,7 @@ export default function ChatIndex() {
               <>
                 <input
                   type="text"
-                  placeholder="Search members in your communities..."
+                  placeholder="Search people you've met or share a club with..."
                   value={userSearchTerm}
                   onChange={(e) => setUserSearchTerm(e.target.value)}
                   style={{
@@ -1164,8 +1528,8 @@ export default function ChatIndex() {
                     border: '1px solid var(--hairline-border-strong)',
                     borderRadius: '12px',
                     color: 'var(--ink-primary)',
-                    fontSize: '0.92rem',
-                    marginBottom: '14px',
+                    fontSize: '0.9rem',
+                    marginBottom: '12px',
                     outline: 'none',
                     boxSizing: 'border-box',
                   }}
@@ -1179,45 +1543,69 @@ export default function ChatIndex() {
                     gap: '6px',
                   }}
                 >
-                  {sharedCommunityMembers
+                  {dmCandidates
                     .filter(
                       (u) =>
                         !userSearchTerm ||
                         (u.name || '').toLowerCase().includes(userSearchTerm.toLowerCase())
                     )
-                    .slice(0, 25)
-                    .map((u) => (
-                      <div
-                        key={u.id}
-                        onClick={() => {
-                          setShowCreateModal(false);
-                          router.push(`/chat/dm/${u.id}`);
-                        }}
-                        className="interactive-press"
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '12px',
-                          padding: '10px 12px',
-                          background: 'var(--surface-elevated)',
-                          border: '1px solid var(--hairline-border)',
-                          borderRadius: '12px',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        <img
-                          src={resolveUserAvatar(u)}
-                          alt={u.name}
-                          style={{ width: '38px', height: '38px', borderRadius: '50%', objectFit: 'cover' }}
-                        />
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontWeight: 600, color: 'var(--ink-primary)', fontSize: '0.92rem' }}>
-                            {u.name}
+                    .slice(0, 30)
+                    .map((u) => {
+                      const metCount = metInPersonMap.get(u.id) || 0;
+                      return (
+                        <div
+                          key={u.id}
+                          onClick={() => {
+                            setShowCreateModal(false);
+                            router.push(`/chat/dm/${u.id}`);
+                          }}
+                          className="interactive-press"
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '12px',
+                            padding: '10px 12px',
+                            background: 'var(--surface-elevated)',
+                            border: '1px solid var(--hairline-border)',
+                            borderRadius: '12px',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          <img
+                            src={resolveUserAvatar(u)}
+                            alt={u.name}
+                            style={{ width: '38px', height: '38px', borderRadius: '50%', objectFit: 'cover' }}
+                          />
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div
+                              style={{
+                                fontWeight: 600,
+                                color: 'var(--ink-primary)',
+                                fontSize: '0.92rem',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap',
+                              }}
+                            >
+                              {u.name}
+                            </div>
+                            {metCount > 0 && (
+                              <div
+                                style={{
+                                  fontSize: '0.73rem',
+                                  fontWeight: 600,
+                                  color: 'var(--teal-300)',
+                                  marginTop: '1px',
+                                }}
+                              >
+                                ✓ Met in person{metCount > 1 ? ` · ${metCount} meetups` : ''}
+                              </div>
+                            )}
                           </div>
                         </div>
-                      </div>
-                    ))}
-                  {sharedCommunityMembers.length === 0 && (
+                      );
+                    })}
+                  {dmCandidates.length === 0 && (
                     <div
                       style={{
                         textAlign: 'center',
@@ -1226,21 +1614,22 @@ export default function ChatIndex() {
                         fontSize: '0.86rem',
                       }}
                     >
-                      Join a community first to message fellow members.
+                      Join a community or attend a meetup first to message fellow members.
                     </div>
                   )}
                 </div>
               </>
             )}
 
-            {/* Group Mode */}
-            {createMode === 'group' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', flex: 1, minHeight: 0 }}>
+            {/* Private Side-Group Creation Mode (Members + Leaders) */}
+            {createMode === 'sidegroup' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '11px', flex: 1, minHeight: 0 }}>
                 <input
                   type="text"
-                  placeholder="Group Name (e.g. Weekend Carpool)"
+                  placeholder="Group name (e.g. Sunday Carpool, Coffee Crew)"
                   value={newChannelName}
                   onChange={(e) => setNewChannelName(e.target.value)}
+                  maxLength={60}
                   style={{
                     width: '100%',
                     padding: '11px 14px',
@@ -1254,9 +1643,236 @@ export default function ChatIndex() {
                   }}
                 />
 
+                {sideGroupCommunities.length > 1 ? (
+                  <select
+                    value={activeSideGroupCommunityId || ''}
+                    onChange={(e) => {
+                      setCreateChannelCommunityId(e.target.value);
+                    }}
+                    style={{
+                      width: '100%',
+                      padding: '10px 12px',
+                      background: 'var(--surface-elevated)',
+                      color: 'var(--ink-primary)',
+                      border: '1px solid var(--hairline-border-strong)',
+                      borderRadius: '10px',
+                      fontSize: '0.88rem',
+                      colorScheme: isLight ? 'light' : 'dark',
+                    }}
+                  >
+                    {sideGroupCommunities.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        Community: {c.name}
+                      </option>
+                    ))}
+                  </select>
+                ) : sideGroupCommunities[0] ? (
+                  <div style={{ fontSize: '0.78rem', color: 'var(--ink-secondary)', fontWeight: 600 }}>
+                    Inside <span style={{ color: 'var(--teal-300)' }}>{sideGroupCommunities[0].name}</span> · Only invited people can see this chat
+                  </div>
+                ) : null}
+
+                {/* Selected member pills */}
+                {selectedMembers.length > 0 && (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                    {selectedMembers.map((uid) => {
+                      const u = (users || []).find((x) => x.id === uid);
+                      return (
+                        <button
+                          key={uid}
+                          type="button"
+                          onClick={() => setSelectedMembers((prev) => prev.filter((id) => id !== uid))}
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '5px',
+                            padding: '4px 9px',
+                            borderRadius: '999px',
+                            border: '1px solid rgba(20, 184, 166, 0.35)',
+                            background: isLight ? 'rgba(13, 148, 136, 0.10)' : 'rgba(20, 184, 166, 0.16)',
+                            color: 'var(--ink-primary)',
+                            fontSize: '0.75rem',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                          }}
+                        >
+                          <span>{u?.name || 'Member'}</span>
+                          <X size={12} />
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+
+                <input
+                  type="text"
+                  placeholder="Filter people to invite..."
+                  value={userSearchTerm}
+                  onChange={(e) => setUserSearchTerm(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '9px 12px',
+                    background: 'var(--surface-elevated)',
+                    border: '1px solid var(--hairline-border)',
+                    borderRadius: '10px',
+                    color: 'var(--ink-primary)',
+                    fontSize: '0.86rem',
+                    outline: 'none',
+                    boxSizing: 'border-box',
+                  }}
+                />
+
+                <div
+                  style={{
+                    flex: 1,
+                    overflowY: 'auto',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '4px',
+                    minHeight: '110px',
+                    maxHeight: '220px',
+                  }}
+                >
+                  {sideGroupCandidates
+                    .filter(
+                      (u) =>
+                        !userSearchTerm ||
+                        (u.name || '').toLowerCase().includes(userSearchTerm.toLowerCase())
+                    )
+                    .slice(0, 30)
+                    .map((u) => {
+                      const isSelected = selectedMembers.includes(u.id);
+                      const metCount = metInPersonMap.get(u.id) || 0;
+                      return (
+                        <button
+                          key={u.id}
+                          type="button"
+                          onClick={() => {
+                            setSelectedMembers((prev) =>
+                              prev.includes(u.id)
+                                ? prev.filter((id) => id !== u.id)
+                                : prev.length < 24
+                                  ? [...prev, u.id]
+                                  : prev
+                            );
+                          }}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '10px',
+                            padding: '8px 10px',
+                            borderRadius: '10px',
+                            border: isSelected
+                              ? '1px solid var(--teal-300)'
+                              : '1px solid transparent',
+                            background: isSelected
+                              ? isLight
+                                ? 'rgba(13, 148, 136, 0.08)'
+                                : 'rgba(20, 184, 166, 0.14)'
+                              : 'transparent',
+                            cursor: 'pointer',
+                            textAlign: 'left',
+                            width: '100%',
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: '20px',
+                              height: '20px',
+                              borderRadius: '6px',
+                              border: isSelected
+                                ? 'none'
+                                : '1.5px solid var(--hairline-border-strong)',
+                              background: isSelected ? 'var(--teal-300)' : 'transparent',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              color: '#FFFFFF',
+                              flexShrink: 0,
+                            }}
+                          >
+                            {isSelected && <Check size={13} />}
+                          </div>
+                          <img
+                            src={resolveUserAvatar(u)}
+                            alt={u.name}
+                            style={{ width: '30px', height: '30px', borderRadius: '50%', objectFit: 'cover' }}
+                          />
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div
+                              style={{
+                                color: 'var(--ink-primary)',
+                                fontSize: '0.88rem',
+                                fontWeight: 600,
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap',
+                              }}
+                            >
+                              {u.name}
+                            </div>
+                            {metCount > 0 && (
+                              <div style={{ fontSize: '0.71rem', color: 'var(--teal-300)', fontWeight: 600 }}>
+                                ✓ Met in person
+                              </div>
+                            )}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  {sideGroupCandidates.length === 0 && (
+                    <div
+                      style={{
+                        textAlign: 'center',
+                        padding: '20px 10px',
+                        color: 'var(--ink-muted)',
+                        fontSize: '0.84rem',
+                      }}
+                    >
+                      No other members found in this community yet.
+                    </div>
+                  )}
+                </div>
+
+                <button
+                  onClick={handleCreatePrivateSideGroup}
+                  disabled={!newChannelName.trim() || selectedMembers.length === 0 || isCreating}
+                  className="btn btn-primary interactive-press"
+                  style={{
+                    padding: '12px',
+                    borderRadius: '12px',
+                    color: '#FFFFFF',
+                    fontWeight: 700,
+                    opacity: !newChannelName.trim() || selectedMembers.length === 0 || isCreating ? 0.55 : 1,
+                  }}
+                >
+                  {isCreating
+                    ? 'Creating...'
+                    : `Create Private Group (${selectedMembers.length + 1} people)`}
+                </button>
+              </div>
+            )}
+
+            {/* Official Club Channel Mode (Leaders / Co-Leaders / Admins Only) */}
+            {createMode === 'channel' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div
+                  style={{
+                    fontSize: '0.82rem',
+                    color: 'var(--ink-secondary)',
+                    background: 'var(--surface-elevated)',
+                    border: '1px solid var(--hairline-border)',
+                    borderRadius: '12px',
+                    padding: '10px 12px',
+                    lineHeight: 1.4,
+                  }}
+                >
+                  Official club channels appear under the <strong>Clubs</strong> tab and are open to every member of the selected community.
+                </div>
+
                 {manageableCommunities.length > 1 ? (
                   <select
-                    value={createChannelCommunityId || manageableCommunities[0]?.id}
+                    value={activeOfficialChannelCommunityId || ''}
                     onChange={(e) => setCreateChannelCommunityId(e.target.value)}
                     style={{
                       width: '100%',
@@ -1277,61 +1893,42 @@ export default function ChatIndex() {
                   </select>
                 ) : manageableCommunities[0] ? (
                   <div style={{ fontSize: '0.82rem', color: 'var(--teal-300)', fontWeight: 600 }}>
-                    Community: {manageableCommunities[0].name}
+                    Club: {manageableCommunities[0].name}
                   </div>
                 ) : null}
 
-                <div style={{ fontSize: '0.78rem', color: 'var(--ink-muted)', fontWeight: 600 }}>
-                  Select Members (Optional — leave unchecked for open channel)
-                </div>
                 <div
                   style={{
-                    flex: 1,
-                    overflowY: 'auto',
                     display: 'flex',
-                    flexDirection: 'column',
-                    gap: '4px',
-                    minHeight: '100px',
-                    maxHeight: '220px',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '11px 14px',
+                    background: 'var(--surface-elevated)',
+                    border: '1px solid var(--hairline-border-strong)',
+                    borderRadius: '12px',
                   }}
                 >
-                  {sharedCommunityMembers.slice(0, 15).map((u) => (
-                    <label
-                      key={u.id}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '10px',
-                        padding: '7px 8px',
-                        borderRadius: '8px',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={selectedMembers.includes(u.id)}
-                        onChange={(e) => {
-                          if (e.target.checked) setSelectedMembers([...selectedMembers, u.id]);
-                          else setSelectedMembers(selectedMembers.filter((id) => id !== u.id));
-                        }}
-                      />
-                      <img
-                        src={resolveUserAvatar(u)}
-                        alt={u.name}
-                        style={{ width: '26px', height: '26px', borderRadius: '50%', objectFit: 'cover' }}
-                      />
-                      <span style={{ color: 'var(--ink-primary)', fontSize: '0.88rem' }}>{u.name}</span>
-                    </label>
-                  ))}
+                  <Hash size={16} color="var(--brand-accent)" />
+                  <input
+                    type="text"
+                    placeholder="Channel name (e.g. beginners, gear-swap, lifts)"
+                    value={newChannelName}
+                    onChange={(e) => setNewChannelName(e.target.value)}
+                    maxLength={50}
+                    style={{
+                      flex: 1,
+                      background: 'transparent',
+                      border: 'none',
+                      color: 'var(--ink-primary)',
+                      fontSize: '0.92rem',
+                      outline: 'none',
+                      minWidth: 0,
+                    }}
+                  />
                 </div>
 
                 <button
-                  onClick={() =>
-                    handleCreateChannel(
-                      'group',
-                      selectedMembers.length > 0 ? [user?.id, ...selectedMembers] : null
-                    )
-                  }
+                  onClick={handleCreateOfficialChannel}
                   disabled={!newChannelName.trim() || isCreating}
                   className="btn btn-primary interactive-press"
                   style={{
@@ -1342,7 +1939,7 @@ export default function ChatIndex() {
                     opacity: !newChannelName.trim() || isCreating ? 0.55 : 1,
                   }}
                 >
-                  {isCreating ? 'Creating...' : 'Create Group'}
+                  {isCreating ? 'Creating...' : 'Create Club Channel'}
                 </button>
               </div>
             )}

@@ -2,6 +2,7 @@
 
 import webpush from 'web-push';
 import { createClient } from '@supabase/supabase-js';
+import { encodeChannelType, parseChannel, isCommunityMemberGroupsAllowed } from './channelMeta';
 
 if (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
   try {
@@ -1035,38 +1036,134 @@ export async function updateCommunityAction(communityId, updates, token) {
 }
 
 export async function createChannelAction(channelData, token) {
-  await verifyCommunityManager(token, channelData.communityId);
+  const authUser = await verifyUser(token);
+  const communityId = channelData?.communityId;
+  const cleanName = String(channelData?.name || '').trim().slice(0, 60);
+  if (!communityId) throw new Error('Missing community');
+  if (!cleanName) throw new Error('Please enter a chat name');
+
+  const rawMemberIds = Array.isArray(channelData?.memberIds)
+    ? Array.from(new Set(channelData.memberIds.map((id) => String(id || '').trim()).filter(Boolean)))
+    : [];
+  const isPrivateSideGroup = channelData?.type === 'group' && rawMemberIds.length > 0;
+
+  let encodedType = channelData?.type || 'text';
+  let finalMemberIds = null;
+
+  if (isPrivateSideGroup) {
+    // Ensure creator is always part of their own private side-group
+    finalMemberIds = Array.from(new Set([authUser.id, ...rawMemberIds])).slice(0, 25);
+    if (finalMemberIds.length < 2) {
+      throw new Error('Pick at least one other person to start a private side-group.');
+    }
+
+    const isAdmin = isAdminUser(authUser);
+    const role = isAdmin ? 'Admin' : await getCommunityRole(authUser.id, communityId);
+    const isManager = isAdmin || role === 'Leader' || role === 'Co-Leader';
+
+    if (!isManager && !role) {
+      throw new Error('Join this community first to create a side-group chat.');
+    }
+
+    if (!isManager) {
+      const { data: commRow } = await supabaseAdmin
+        .from('communities')
+        .select('tags, external_links')
+        .eq('id', communityId)
+        .maybeSingle();
+
+      if (!isCommunityMemberGroupsAllowed(commRow)) {
+        throw new Error('Member side-groups are currently turned off by this community leader.');
+      }
+    }
+
+    encodedType = encodeChannelType('group', finalMemberIds, authUser.id);
+  } else {
+    // Official open community channels remain Leader / Co-Leader / Admin only
+    await verifyCommunityManager(token, communityId);
+    encodedType = channelData?.type === 'announcement' ? 'announcement' : 'text';
+  }
 
   const insertPayload = {
     id: channelData.id,
-    community_id: channelData.communityId,
-    name: channelData.name,
-    type: channelData.type || 'text',
+    community_id: communityId,
+    name: cleanName,
+    type: encodedType,
   };
-  if (Array.isArray(channelData.memberIds) && channelData.memberIds.length > 0) {
-    insertPayload.member_ids = channelData.memberIds;
-  }
 
-  let payload = { ...insertPayload };
-  for (let attempt = 0; attempt < 3; attempt++) {
-    const { data, error } = await supabaseAdmin
-      .from('channels')
-      .insert(payload)
-      .select()
-      .single();
+  const { data, error } = await supabaseAdmin
+    .from('channels')
+    .insert(insertPayload)
+    .select()
+    .single();
 
-    if (!error) return data;
+  if (error) throw new Error(error.message);
 
-    const colMatch =
-      error.message?.match(/column ["']?(?:channels\.)?([a-zA-Z0-9_]+)["']? does not exist/i) ||
-      error.message?.match(/Could not find the ['"]([a-zA-Z0-9_]+)['"] column/i);
-    if (colMatch && colMatch[1] && payload[colMatch[1]] !== undefined) {
-      delete payload[colMatch[1]];
-      continue;
+  // Best-effort in-app invite notification for other members of a private side-group
+  if (isPrivateSideGroup && Array.isArray(finalMemberIds)) {
+    try {
+      const invitees = finalMemberIds.filter((uid) => uid !== authUser.id);
+      if (invitees.length > 0) {
+        const { data: creatorRow } = await supabaseAdmin
+          .from('users')
+          .select('name')
+          .eq('id', authUser.id)
+          .maybeSingle();
+        const creatorName = creatorRow?.name || 'A member';
+        const rows = invitees.map((uid) => ({
+          user_id: uid,
+          type: 'system',
+          title: `New side-group: ${cleanName}`,
+          message: `${creatorName} started a private group chat with you.`,
+          link: `/chat/${communityId}/${data.id}`,
+          is_read: false,
+        }));
+        await supabaseAdmin.from('notifications').insert(rows);
+      }
+    } catch (notifErr) {
+      console.warn('[createChannelAction] Side-group notification warning:', notifErr?.message || notifErr);
     }
-    throw new Error(error.message);
   }
-  throw new Error('Could not create channel');
+
+  return data;
+}
+
+export async function leaveChannelAction(channelId, token) {
+  const authUser = await verifyUser(token);
+  if (!channelId) throw new Error('Missing channel ID');
+
+  const { data: ch, error: fetchErr } = await supabaseAdmin
+    .from('channels')
+    .select('*')
+    .eq('id', channelId)
+    .maybeSingle();
+
+  if (fetchErr) throw new Error(fetchErr.message);
+  if (!ch) throw new Error('Group chat not found');
+
+  const parsed = parseChannel(ch);
+  if (!parsed?.isPrivateGroup || !Array.isArray(parsed.memberIds)) {
+    throw new Error('You can only leave private side-group chats.');
+  }
+  if (!parsed.memberIds.includes(authUser.id)) {
+    return { deleted: false, memberIds: parsed.memberIds, type: ch.type };
+  }
+
+  const remaining = parsed.memberIds.filter((uid) => uid !== authUser.id);
+  if (remaining.length === 0) {
+    const { error: delErr } = await supabaseAdmin.from('channels').delete().eq('id', channelId);
+    if (delErr) throw new Error(delErr.message);
+    return { deleted: true, memberIds: [], type: null };
+  }
+
+  const nextType = encodeChannelType('group', remaining, parsed.creatorId);
+  const { error: updErr } = await supabaseAdmin
+    .from('channels')
+    .update({ type: nextType })
+    .eq('id', channelId);
+  if (updErr) throw new Error(updErr.message);
+
+  return { deleted: false, memberIds: remaining, type: nextType };
 }
 
 export async function markNotificationReadAction(notificationId, token) {
