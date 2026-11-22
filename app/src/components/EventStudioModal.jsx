@@ -141,6 +141,7 @@ export default function EventStudioModal({
   const [confirmCancelStep, setConfirmCancelStep] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
   const [cropDraft, setCropDraft] = useState(null); // { src, fileName, revokeOnClose }
+  const [localError, setLocalError] = useState('');
 
   // Price & Capacity segmented modes
   const [isPaidMode, setIsPaidMode] = useState(false);
@@ -559,7 +560,7 @@ export default function EventStudioModal({
 
   const modalContent = (
     <div
-      className="event-studio-backdrop"
+      className="event-studio-backdrop modal-overlay"
       onClick={onClose}
       style={{
         position: 'fixed',
@@ -959,6 +960,42 @@ export default function EventStudioModal({
             )}
 
             {/* 2. COVER PHOTO BANNER */}
+            {/* Hidden file input kept OUTSIDE the clickable banner div to prevent click-bubble recursion */}
+            <input
+              id="event-studio-cover-file-input"
+              type="file"
+              accept="image/*,.heic,.heif"
+              ref={fileInputRef}
+              onClick={(e) => e.stopPropagation()}
+              onChange={async (e) => {
+                const f = e.target.files?.[0];
+                if (!f) return;
+                e.target.value = '';
+                let processedFile = f;
+                if (
+                  f.type === 'image/heic' ||
+                  f.type === 'image/heif' ||
+                  f.name.toLowerCase().endsWith('.heic') ||
+                  f.name.toLowerCase().endsWith('.heif')
+                ) {
+                  try {
+                    const heic2any = (await import('heic2any')).default;
+                    const blob = await heic2any({ blob: f, toType: 'image/jpeg', quality: 0.9 });
+                    const jpegBlob = Array.isArray(blob) ? blob[0] : blob;
+                    processedFile = new File(
+                      [jpegBlob],
+                      f.name.replace(/\.[^/.]+$/, '') + '.jpg',
+                      { type: 'image/jpeg' }
+                    );
+                  } catch (err) {
+                    console.warn('HEIC conversion fallback:', err);
+                  }
+                }
+                const objUrl = URL.createObjectURL(processedFile);
+                setCropDraft({ src: objUrl, fileName: processedFile.name, revokeOnClose: true });
+              }}
+              style={{ display: 'none' }}
+            />
             <div
               onClick={() => fileInputRef.current?.click()}
               role="button"
@@ -982,39 +1019,6 @@ export default function EventStudioModal({
                 flexShrink: 0,
               }}
             >
-              <input
-                type="file"
-                accept="image/*,.heic,.heif"
-                ref={fileInputRef}
-                onChange={async (e) => {
-                  const f = e.target.files?.[0];
-                  if (!f) return;
-                  e.target.value = '';
-                  let processedFile = f;
-                  if (
-                    f.type === 'image/heic' ||
-                    f.type === 'image/heif' ||
-                    f.name.toLowerCase().endsWith('.heic') ||
-                    f.name.toLowerCase().endsWith('.heif')
-                  ) {
-                    try {
-                      const heic2any = (await import('heic2any')).default;
-                      const blob = await heic2any({ blob: f, toType: 'image/jpeg', quality: 0.9 });
-                      const jpegBlob = Array.isArray(blob) ? blob[0] : blob;
-                      processedFile = new File(
-                        [jpegBlob],
-                        f.name.replace(/\.[^/.]+$/, '') + '.jpg',
-                        { type: 'image/jpeg' }
-                      );
-                    } catch (err) {
-                      console.warn('HEIC conversion fallback:', err);
-                    }
-                  }
-                  const objUrl = URL.createObjectURL(processedFile);
-                  setCropDraft({ src: objUrl, fileName: processedFile.name, revokeOnClose: true });
-                }}
-                style={{ display: 'none' }}
-              />
               <div
                 style={{
                   position: 'absolute',
@@ -1086,7 +1090,9 @@ export default function EventStudioModal({
                       >
                         <Crop size={12} /> Crop / Move
                       </button>
-                      <span
+                      <label
+                        htmlFor="event-studio-cover-file-input"
+                        onClick={(e) => e.stopPropagation()}
                         style={{
                           padding: '5px 11px',
                           borderRadius: '99px',
@@ -1098,10 +1104,11 @@ export default function EventStudioModal({
                           display: 'inline-flex',
                           alignItems: 'center',
                           gap: '5px',
+                          cursor: 'pointer',
                         }}
                       >
                         <ImageIcon size={13} /> Change Cover
-                      </span>
+                      </label>
                     </div>
                   </>
                 ) : (
@@ -2118,7 +2125,7 @@ export default function EventStudioModal({
         </div>
 
         {/* STICKY FOOTER BAR (ALWAYS 1-TAP PUBLISH / SAVE) */}
-        {saveError && (
+        {(saveError || localError) && (
           <div
             style={{
               padding: '9px 16px',
@@ -2134,7 +2141,7 @@ export default function EventStudioModal({
             }}
           >
             <AlertTriangle size={15} style={{ flexShrink: 0 }} />
-            <span>{saveError}</span>
+            <span>{saveError || localError}</span>
           </div>
         )}
         <div
@@ -2278,11 +2285,17 @@ export default function EventStudioModal({
             type="button"
             disabled={isUploading}
             onClick={() => {
+              setLocalError('');
               if (missingItem) {
+                setLocalError(`Please fill in ${missingItem.label} before saving.`);
                 missingItem.jump?.();
                 return;
               }
-              onSubmit?.();
+              try {
+                onSubmit?.();
+              } catch (err) {
+                setLocalError(err?.message || 'Could not save event.');
+              }
             }}
             className="btn btn-primary interactive-press"
             style={{
@@ -2313,7 +2326,12 @@ export default function EventStudioModal({
           </button>
         </div>
       </div>
+    </div>
+  );
 
+  return (
+    <>
+      {createPortal(modalContent, document.body)}
       {cropDraft && (
         <ImageCropModal
           isOpen={true}
@@ -2333,8 +2351,6 @@ export default function EventStudioModal({
           }}
         />
       )}
-    </div>
+    </>
   );
-
-  return createPortal(modalContent, document.body);
 }

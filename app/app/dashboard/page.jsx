@@ -1300,96 +1300,102 @@ export default function LeaderDashboard({ initialCommunityId }) {
     }
 
     setIsUploading(true);
-    let coverUrl = community?.cover_image || community?.image;
-    if (coverImageFile) {
-      try {
-        coverUrl = await uploadImage(coverImageFile, 'community_covers');
-      } catch (err) {
-        console.error('Failed to upload cover image:', err);
-        toast.error('Image upload failed', 'Could not upload cover image');
-      }
-    }
-
-    let wa = (editForm.whatsapp_group || '').trim();
-    if (wa && !wa.startsWith('http://') && !wa.startsWith('https://')) {
-      wa = `https://${wa}`;
-    }
-    let ig = (editForm.instagram_handle || '').trim();
-    if (ig && !ig.startsWith('@') && !ig.includes('instagram.com')) {
-      ig = `@${ig}`;
-    }
-
-    const currentTags = Array.isArray(editForm.tags) 
-      ? editForm.tags 
-      : (typeof editForm.tags === 'string' ? editForm.tags.split(',') : []);
-    const cleanedTags = currentTags.map(t => t.trim()).filter(Boolean);
-
-    let finalLat = editForm.lat || null;
-    let finalLng = editForm.lng || null;
-    if (!finalLat || !finalLng) {
-      const parsed = parseLocationCoords(editForm.location_name);
-      if (parsed) {
-        finalLat = parsed.lat;
-        finalLng = parsed.lng;
-      } else if (editForm.location_name) {
+    try {
+      let coverUrl = community?.cover_image || community?.image;
+      if (coverImageFile) {
         try {
-          const geo = await geocodeLocation(cleanLocationName(editForm.location_name));
-          if (geo && geo.lat && geo.lng) {
-            finalLat = geo.lat;
-            finalLng = geo.lng;
+          coverUrl = await uploadImage(coverImageFile, 'community_covers');
+        } catch (err) {
+          console.error('Failed to upload cover image:', err);
+          toast.error('Image upload failed', 'Could not upload cover image');
+        }
+      }
+
+      let wa = (editForm.whatsapp_group || '').trim();
+      if (wa && !wa.startsWith('http://') && !wa.startsWith('https://')) {
+        wa = `https://${wa}`;
+      }
+      let ig = (editForm.instagram_handle || '').trim();
+      if (ig && !ig.startsWith('@') && !ig.includes('instagram.com')) {
+        ig = `@${ig}`;
+      }
+
+      const currentTags = Array.isArray(editForm.tags) 
+        ? editForm.tags 
+        : (typeof editForm.tags === 'string' ? editForm.tags.split(',') : []);
+      const cleanedTags = currentTags.map(t => t.trim()).filter(Boolean);
+
+      let finalLat = editForm.lat || null;
+      let finalLng = editForm.lng || null;
+      if (!finalLat || !finalLng) {
+        const parsed = parseLocationCoords(editForm.location_name);
+        if (parsed) {
+          finalLat = parsed.lat;
+          finalLng = parsed.lng;
+        } else if (editForm.location_name) {
+          try {
+            const geo = await Promise.race([
+              geocodeLocation(cleanLocationName(editForm.location_name)),
+              new Promise((resolve) => setTimeout(() => resolve(null), 3000)),
+            ]);
+            if (geo && geo.lat && geo.lng) {
+              finalLat = geo.lat;
+              finalLng = geo.lng;
+            }
+          } catch (e) {}
+        }
+      }
+
+      // Sanitize and validate website link if provided
+      let cleanWebsite = (editForm.website || '').trim();
+      if (cleanWebsite) {
+        if (!/^https?:\/\//i.test(cleanWebsite)) {
+          cleanWebsite = 'https://' + cleanWebsite;
+        }
+        try {
+          const parsedUrl = new URL(cleanWebsite);
+          if (parsedUrl.protocol !== 'https:' && parsedUrl.protocol !== 'http:') {
+            toast.error('Invalid website', 'Please provide a valid website URL starting with https://');
+            return;
           }
-        } catch (e) {}
-      }
-    }
-
-    // Sanitize and validate website link if provided
-    let cleanWebsite = (editForm.website || '').trim();
-    if (cleanWebsite) {
-      if (!/^https?:\/\//i.test(cleanWebsite)) {
-        cleanWebsite = 'https://' + cleanWebsite;
-      }
-      try {
-        const parsedUrl = new URL(cleanWebsite);
-        if (parsedUrl.protocol !== 'https:' && parsedUrl.protocol !== 'http:') {
-          toast.error('Invalid website', 'Please provide a valid website URL starting with https://');
-          setIsUploading(false);
+          const blockedHosts = ['bit.ly', 'tinyurl.com', 't.co', 'is.gd', 'ow.ly', 'cutt.ly', 'rb.gy'];
+          if (blockedHosts.some(h => parsedUrl.hostname.toLowerCase().includes(h))) {
+            toast.error('Direct link required', 'URL shorteners (e.g. bit.ly, tinyurl) are blocked to protect community members from scams.');
+            return;
+          }
+        } catch (e) {
+          toast.error('Invalid website address', 'Please enter a valid domain (e.g. yourcommunity.co.uk)');
           return;
         }
-        const blockedHosts = ['bit.ly', 'tinyurl.com', 't.co', 'is.gd', 'ow.ly', 'cutt.ly', 'rb.gy'];
-        if (blockedHosts.some(h => parsedUrl.hostname.toLowerCase().includes(h))) {
-          toast.error('Direct link required', 'URL shorteners (e.g. bit.ly, tinyurl) are blocked to protect community members from scams.');
-          setIsUploading(false);
-          return;
-        }
-      } catch (e) {
-        toast.error('Invalid website address', 'Please enter a valid domain (e.g. yourcommunity.co.uk)');
-        setIsUploading(false);
-        return;
       }
+
+      await updateCommunity(community.id, {
+        name: editForm.name.trim(),
+        category: editForm.category.trim() || cleanedTags[0] || 'General',
+        description: editForm.description.trim(),
+        tags: cleanedTags,
+        location_name: editForm.location_name.trim(),
+        lat: finalLat,
+        lng: finalLng,
+        cost: editForm.cost.trim() || 'Free',
+        target_audience: editForm.target_audience.trim(),
+        activity_level: editForm.activity_level || 'Active',
+        website: cleanWebsite,
+        whatsapp_group: wa,
+        instagram_handle: ig,
+        cover_image: coverUrl,
+        image: coverUrl
+      });
+
+      setIsEditing(false);
+      setCoverImageFile(null);
+      toast.success('Community updated!', 'Changes to name and details have been saved');
+    } catch (err) {
+      console.error('handleSave community error:', err);
+      toast.error('Save failed', err?.message || 'Could not save community changes.');
+    } finally {
+      setIsUploading(false);
     }
-
-    await updateCommunity(community.id, {
-      name: editForm.name.trim(),
-      category: editForm.category.trim() || cleanedTags[0] || 'General',
-      description: editForm.description.trim(),
-      tags: cleanedTags,
-      location_name: editForm.location_name.trim(),
-      lat: finalLat,
-      lng: finalLng,
-      cost: editForm.cost.trim() || 'Free',
-      target_audience: editForm.target_audience.trim(),
-      activity_level: editForm.activity_level || 'Active',
-      website: cleanWebsite,
-      whatsapp_group: wa,
-      instagram_handle: ig,
-      cover_image: coverUrl,
-      image: coverUrl
-    });
-
-    setIsUploading(false);
-    setIsEditing(false);
-    setCoverImageFile(null);
-    toast.success('Community updated!', 'Changes to name and details have been saved');
   };
 
   const handleDeleteCommunity = async () => {
@@ -6554,20 +6560,39 @@ export default function LeaderDashboard({ initialCommunityId }) {
                     )}
                   </div>
                   <input 
+                    id="edit-club-cover-input"
                     type="file" 
                     ref={coverFileInputRef} 
                     onChange={(e) => handleCoverImageSelect(e, false)} 
                     accept="image/*,.heic,.heif,.jpg,.jpeg,.png,.webp" 
                     style={{ display: 'none' }} 
                   />
-                  <button 
-                    type="button"
-                    onClick={() => coverFileInputRef.current?.click()} 
-                    className="btn btn-outline interactive-press" 
-                    style={{ width: '100%', padding: '10px', borderRadius: '10px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-                  >
-                    <ImageIcon size={16} /> {coverImagePreview ? 'Change Cover Photo' : 'Upload Cover Photo'}
-                  </button>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <label 
+                      htmlFor="edit-club-cover-input"
+                      className="btn btn-outline interactive-press" 
+                      style={{ flex: 1, padding: '10px', borderRadius: '10px', fontSize: '0.84rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px', cursor: 'pointer', boxSizing: 'border-box' }}
+                    >
+                      <ImageIcon size={15} /> {coverImagePreview ? 'Change Cover' : 'Upload Cover'}
+                    </label>
+                    {coverImagePreview && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setCoverCropDraft({
+                            src: coverImagePreview,
+                            fileName: coverImageFile?.name || 'club-cover.jpg',
+                            directSave: false,
+                            revokeOnClose: false,
+                          })
+                        }
+                        className="btn btn-outline interactive-press"
+                        style={{ padding: '10px 14px', borderRadius: '10px', fontSize: '0.84rem', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                      >
+                        <Crop size={15} /> Crop / Move
+                      </button>
+                    )}
+                  </div>
                   <div style={{ fontSize: '0.74rem', color: 'var(--ink-secondary)', marginTop: '6px', textAlign: 'center' }}>Tip: Landscape photos (16:9, e.g. 1920×1080) display sharpest. Avoid small or portrait photos.</div>
                 </div>
 

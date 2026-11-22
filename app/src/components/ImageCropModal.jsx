@@ -26,6 +26,7 @@ export default function ImageCropModal({
   const [isDragging, setIsDragging] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [loadError, setLoadError] = useState('');
+  const [cacheNonce, setCacheNonce] = useState(0);
 
   const frameRef = useRef(null);
   const imgRef = useRef(null);
@@ -42,7 +43,14 @@ export default function ImageCropModal({
     setOffset({ x: 0, y: 0 });
     setLoadError('');
     setIsExporting(false);
+    setCacheNonce(Date.now());
   }, [isOpen, imageSrc]);
+
+  // Cache-bust remote HTTP URLs so browsers fetch fresh CORS headers instead of a non-CORS cached copy
+  const resolvedSrc =
+    imageSrc && /^https?:\/\//i.test(imageSrc)
+      ? `${imageSrc}${imageSrc.includes('?') ? '&' : '?'}_crop=${cacheNonce || 1}`
+      : imageSrc;
 
   // Measure responsive crop frame
   useEffect(() => {
@@ -268,9 +276,9 @@ export default function ImageCropModal({
         >
           <img
             ref={imgRef}
-            src={imageSrc}
+            src={resolvedSrc}
             alt="Crop preview"
-            crossOrigin={imageSrc.startsWith('http') ? 'anonymous' : undefined}
+            crossOrigin={imageSrc && /^https?:\/\//i.test(imageSrc) ? 'anonymous' : undefined}
             draggable={false}
             onLoad={(e) => {
               const nw = e.currentTarget.naturalWidth || 0;
