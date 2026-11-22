@@ -20,6 +20,18 @@ class GlobalErrorBoundary extends Component {
   }
   componentDidCatch(error, errorInfo) {
     console.error('GlobalErrorBoundary caught:', error, errorInfo);
+    const msg = String(error?.message || error || '');
+    if (
+      typeof window !== 'undefined' &&
+      (/Loading chunk [\d\w-]+ failed/i.test(msg) || /ChunkLoadError/i.test(msg))
+    ) {
+      const key = 'more_chunk_reload_ts';
+      const last = Number(sessionStorage.getItem(key) || 0);
+      if (Date.now() - last > 15000) {
+        sessionStorage.setItem(key, String(Date.now()));
+        window.location.reload();
+      }
+    }
   }
   render() {
     if (this.state.hasError) {

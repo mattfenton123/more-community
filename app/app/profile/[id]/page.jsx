@@ -24,8 +24,10 @@ import {
   BarChart2,
   Heart,
   Eye,
+  QrCode,
 } from 'lucide-react';
 import AppHeader from '../../../src/components/AppHeader';
+import ConnectQRModal from '../../../src/components/ConnectQRModal';
 import { useToast } from '../../../src/components/Toast';
 import GamificationPanel, { BadgeRow, useGamification } from '../../../src/components/Gamification';
 import { FALLBACK_IMAGES } from '../../../src/lib/constants';
@@ -145,6 +147,7 @@ export default function UserProfile() {
   const [isUploading, setIsUploading] = useState(false);
   const [activeTab, setActiveTab] = useState('badges');
   const [selectedImageModal, setSelectedImageModal] = useState(null);
+  const [showConnectQR, setShowConnectQR] = useState(false);
   const fileInputRef = useRef(null);
   const bannerInputRef = useRef(null);
 
@@ -433,6 +436,28 @@ export default function UserProfile() {
 
             {isOwnProfile && !isEditing && (
               <>
+                <button
+                  className="interactive-press"
+                  onClick={() => setShowConnectQR(true)}
+                  aria-label="Meetup Connect QR"
+                  title="Meetup Connect QR"
+                  style={{
+                    height: '34px',
+                    padding: '0 11px',
+                    borderRadius: '999px',
+                    background: 'var(--brand-accent-soft)',
+                    border: '1px solid rgba(235, 87, 56, 0.35)',
+                    color: 'var(--brand-accent)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    cursor: 'pointer',
+                    fontSize: '0.78rem',
+                    fontWeight: 700,
+                  }}
+                >
+                  <QrCode size={14} /> QR
+                </button>
                 <button
                   className="interactive-press"
                   onClick={openEditMode}
@@ -1835,6 +1860,10 @@ export default function UserProfile() {
           onEditPhoto={selectedImageModal.onEditPhoto}
           onClose={() => setSelectedImageModal(null)}
         />
+      )}
+
+      {showConnectQR && (
+        <ConnectQRModal isOpen={showConnectQR} onClose={() => setShowConnectQR(false)} />
       )}
     </div>
   );

@@ -163,7 +163,7 @@ export default function AppHeader({ title, subtitle, rightElement, showBack = fa
           </div>
         )}
       </div>
-      {user?.id && (
+      {user?.id && isDesktop && (
         <div
           className="interactive-press"
           onClick={() => setShowConnectQR(true)}

@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useRef, useMemo } from 'react';
+import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import {
   ChevronLeft,
@@ -87,11 +88,16 @@ export default function EventChatPage() {
       .filter(Boolean);
   }, [event?.id, eventRsvps]);
 
+  const lastMarkedKeyRef = useRef('');
+
   useEffect(() => {
-    if (user?.id && event?.id && markChatRead) {
-      markChatRead('event_qna', event.id);
-    }
-  }, [user?.id, event?.id, comments.length, markChatRead]);
+    if (!user?.id || !event?.id || !markChatRead) return;
+    const key = `${user.id}:${event.id}:${comments.length}`;
+    if (lastMarkedKeyRef.current === key) return;
+    lastMarkedKeyRef.current = key;
+    markChatRead('event_qna', event.id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, event?.id, comments.length]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -212,9 +218,8 @@ export default function EventChatPage() {
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0, flex: 1 }}>
-          <button
-            type="button"
-            onClick={() => router.push('/chat')}
+          <Link
+            href="/chat"
             aria-label="Back to chat inbox"
             className="interactive-press"
             style={{
@@ -227,12 +232,13 @@ export default function EventChatPage() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
+              textDecoration: 'none',
               cursor: 'pointer',
               flexShrink: 0,
             }}
           >
             <ChevronLeft size={18} />
-          </button>
+          </Link>
 
           {event.image ? (
             <img
@@ -298,9 +304,8 @@ export default function EventChatPage() {
           </div>
         </div>
 
-        <button
-          type="button"
-          onClick={() => router.push(eventPath)}
+        <Link
+          href={eventPath}
           className="interactive-press"
           style={{
             display: 'inline-flex',
@@ -313,17 +318,18 @@ export default function EventChatPage() {
             color: 'var(--ink-primary)',
             fontSize: '0.78rem',
             fontWeight: 600,
+            textDecoration: 'none',
             cursor: 'pointer',
             flexShrink: 0,
           }}
         >
           View Event <ExternalLink size={13} />
-        </button>
+        </Link>
       </header>
 
       {/* Pinned Compact Event Context Strip */}
-      <div
-        onClick={() => router.push(eventPath)}
+      <Link
+        href={eventPath}
         style={{
           flexShrink: 0,
           padding: '8px 16px',
@@ -335,13 +341,21 @@ export default function EventChatPage() {
           gap: '12px',
           fontSize: '0.76rem',
           color: 'var(--ink-secondary)',
+          textDecoration: 'none',
           cursor: 'pointer',
           flexWrap: 'wrap',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+          <span style={{ fontWeight: 800, color: 'var(--ink-primary)' }}>{event.title}</span>
           {community?.name && (
-            <span style={{ fontWeight: 700, color: 'var(--ink-primary)' }}>{community.name}</span>
+            <span style={{ color: 'var(--ink-muted)', fontWeight: 600 }}>· {community.name}</span>
+          )}
+          {event.date && (
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+              <Calendar size={12} color="var(--brand-accent)" /> {event.date}
+              {event.time ? ` ${event.time}` : ''}
+            </span>
           )}
           {locationLabel && (
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
@@ -353,10 +367,20 @@ export default function EventChatPage() {
           </span>
         </div>
         <span style={{ color: 'var(--brand-accent)', fontWeight: 600 }}>Event details →</span>
-      </div>
+      </Link>
 
-      {/* Live "We're Here" Arrival Beacon Strip */}
+      {/* Live "We're Here" Arrival Beacon Strip (hidden from non-approved users on secret-location events) */}
       {(() => {
+        const requiresApproval = Boolean(
+          event?.requireApproval ||
+            event?.require_approval ||
+            (event?.description && event.description.includes('[Host Approval Required]'))
+        );
+        const canSeeBeacon =
+          !requiresApproval ||
+          canModerate ||
+          Boolean(user?.id && goingUserIds.includes(user.id));
+        if (!canSeeBeacon) return null;
         const beacon = getLatestArrivalBeacon(comments);
         if (!beacon?.message) return null;
         return (

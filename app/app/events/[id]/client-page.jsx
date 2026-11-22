@@ -27,7 +27,8 @@ import EventRecapShareCard from '../../../src/components/EventRecapShareCard';
 import { parseExperienceMeta, stripExperienceMeta, buildAffiliateUrl } from '../../../src/lib/experiencePricing';
 import EventDiscussion from '../../../src/components/EventDiscussion';
 import PostMeetupAfterglow from '../../../src/components/PostMeetupAfterglow';
-import { extractVenuePerk, getLatestArrivalBeacon } from '../../../src/lib/inPersonGraph';
+import ProximityCheckInCard from '../../../src/components/ProximityCheckInCard';
+import { extractVenuePerk, getLatestArrivalBeacon, isCheckedInRsvp } from '../../../src/lib/inPersonGraph';
 import { resolveUserAvatar } from '../../../src/lib/avatar';
 import { getCarpoolHandshakeMessage } from '../../../src/lib/carpool';
 import { isHostOrPartnerMember, shouldAutoJoinPrimaryOnRsvp } from '../../../src/lib/eventCollaboration';
@@ -382,11 +383,18 @@ export default function EventClient({ id }) {
       scannedUserId = payload.userId;
     }
     try {
-      if (typeof checkInMember === 'function') {
-        await checkInMember(event.id, scannedUserId);
-      }
       const member = (users || []).find(u => u.id === scannedUserId);
-      const name = member?.name || 'Member';
+      const name = member?.name || (typeof payload === 'object' ? payload.userName : '') || 'Member';
+      const existing = (eventRsvps?.[event?.id] || []).find(
+        (r) => (r.userId || r.user_id) === scannedUserId
+      );
+      if (isCheckedInRsvp(existing)) {
+        toast.info('Already Checked In ✓', `${name} was already checked in (e.g. via GPS proximity).`);
+        return;
+      }
+      if (typeof checkInMember === 'function') {
+        await checkInMember(event.id, scannedUserId, true);
+      }
       toast.success('Ticket Verified! ✓', `${name} has been checked in.`);
     } catch(e) {
       toast.error('Scan Failed', 'Could not verify ticket.');
@@ -452,9 +460,34 @@ export default function EventClient({ id }) {
     }
   }, [searchParams, event?.id, user?.id]);
 
+  const walkInAutoHandledRef = useRef(false);
+
   useEffect(() => {
-    if (isWalkInQrVisit && event?.id && !user?.id) {
+    if (!isWalkInQrVisit || !event?.id) return;
+    if (!user?.id) {
       setShowGuestRsvpModal(true);
+      return;
+    }
+    if (walkInAutoHandledRef.current) return;
+    walkInAutoHandledRef.current = true;
+
+    const alreadyChecked = Boolean(
+      hasCheckedInLocally ||
+        (eventRsvps?.[event.id] || []).some(
+          (r) => (r.userId || r.user_id) === user.id && isCheckedInRsvp(r)
+        )
+    );
+    if (alreadyChecked) {
+      toast.info("You're already checked in! ✓", "No need to scan again — here's your verified pass.");
+      setShowTicket(event);
+    } else if (typeof checkInMember === 'function') {
+      setHasCheckedInLocally(true);
+      checkInMember(event.id, user.id, true)
+        .then(() => {
+          toast.success('Checked In via QR! ✓', `Welcome to ${event.title}.`);
+          setShowTicket(event);
+        })
+        .catch(() => {});
     }
   }, [isWalkInQrVisit, event?.id, user?.id]);
 
@@ -1780,8 +1813,9 @@ export default function EventClient({ id }) {
           </div>
         )}
 
-        {/* Live "We're Here" Arrival Beacon (when dropped by host) */}
+        {/* Live "We're Here" Arrival Beacon (when dropped by host; shielded on secret-location events until approved) */}
         {(() => {
+          if (!canSeeSecretLocation) return null;
           const beacon = getLatestArrivalBeacon(eventComments?.[event.id] || []);
           if (!beacon?.message) return null;
           return (
@@ -1823,6 +1857,23 @@ export default function EventClient({ id }) {
             </div>
           );
         })()}
+
+        {/* GPS Proximity Check-In + 4-Digit Host Code Card */}
+        <ProximityCheckInCard
+          event={event}
+          user={user}
+          isCheckedIn={isUserCheckedIn}
+          arrivalBeacon={getLatestArrivalBeacon(eventComments?.[event.id] || [])}
+          onVerifiedCheckIn={async (note) => {
+            if (!user?.id || !event?.id) return;
+            setHasCheckedInLocally(true);
+            if (typeof checkInMember === 'function') {
+              await checkInMember(event.id, user.id, true);
+            }
+            toast.success('Checked In! ✓', note || `Welcome to ${event.title}.`);
+          }}
+          onOpenPass={() => setShowTicket(event)}
+        />
 
         {/* Local Venue Perk Banner (unlocks on Check-In) */}
         {(() => {

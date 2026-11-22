@@ -1,4 +1,4 @@
-import { isEventPast } from './calendar';
+import { isEventPast, parseEventDateTime } from './calendar';
 import { resolveUserAvatar } from './avatar';
 
 /**
@@ -159,8 +159,74 @@ export function getLatestArrivalBeacon(comments = [], maxAgeHours = 18) {
   if (beacons.length === 0) return null;
   const latest = beacons[0];
   const raw = String(latest.text || latest.content || '').trim();
+  const body = raw.slice(ARRIVAL_BEACON_PREFIX.length).trim();
+  const gpsMatch = body.match(/\[GPS:\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*\]/i);
+  const coords = gpsMatch
+    ? { lat: parseFloat(gpsMatch[1]), lng: parseFloat(gpsMatch[2]) }
+    : null;
+  const cleanMessage = body.replace(/\s*\[GPS:[^\]]+\]/gi, '').trim();
   return {
     ...latest,
-    message: raw.slice(ARRIVAL_BEACON_PREFIX.length).trim(),
+    message: cleanMessage,
+    coords,
   };
+}
+
+/**
+ * Formats an Arrival Beacon message with optional live GPS coordinates from the host.
+ */
+export function formatArrivalBeaconComment(message, coords = null) {
+  const clean = String(message || '').trim();
+  if (coords && Number.isFinite(coords.lat) && Number.isFinite(coords.lng)) {
+    return `${ARRIVAL_BEACON_PREFIX} ${clean} [GPS:${coords.lat.toFixed(5)},${coords.lng.toFixed(5)}]`;
+  }
+  return `${ARRIVAL_BEACON_PREFIX} ${clean}`;
+}
+
+/**
+ * Haversine distance in meters between two WGS84 lat/lng points.
+ */
+export function haversineDistanceMeters(lat1, lng1, lat2, lng2) {
+  const R = 6371000;
+  const toRad = (deg) => (deg * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+  return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+}
+
+/**
+ * Deterministic 4-digit Table / Trail Check-In Code for an event.
+ * Works offline on both leader and attendee devices with zero DB schema changes.
+ */
+export function getEventCheckInCode(event) {
+  if (!event?.id) return '0000';
+  const seed = `${event.id}|${event.date || ''}|more-checkin-v1`;
+  let hash = 2166136261;
+  for (let i = 0; i < seed.length; i++) {
+    hash ^= seed.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  const num = Math.abs(hash) % 9000 + 1000; // Always 1000-9999
+  return String(num);
+}
+
+/**
+ * Returns true when an event is within its active check-in window
+ * (from 2 hours before start until 5 hours after start, or same calendar day).
+ */
+export function isWithinProximityCheckInWindow(event) {
+  if (!event?.date || event.status === 'cancelled' || event.status === 'proposed') return false;
+  const dt = parseEventDateTime(event.date, event.time);
+  if (!dt || Number.isNaN(dt.getTime())) return false;
+  const now = new Date();
+  const diffHours = (now.getTime() - dt.getTime()) / (1000 * 60 * 60);
+  // Active from 2h before start through 5h after start, or anytime on the same day
+  const sameDay =
+    now.getFullYear() === dt.getFullYear() &&
+    now.getMonth() === dt.getMonth() &&
+    now.getDate() === dt.getDate();
+  return sameDay || (diffHours >= -2 && diffHours <= 5);
 }

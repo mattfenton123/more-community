@@ -32,35 +32,43 @@ export function ChatProvider({ children }) {
   const [chatReadReceipts, setChatReadReceipts] = useState([]);
   const [isChatLoading, setIsChatLoading] = useState(true);
 
+  const authUserId = authUser?.id || '';
+  const isAdminFlag = Boolean(user?.isAdmin);
+  const joinedKey = Array.isArray(user?.joinedCommunities)
+    ? [...user.joinedCommunities].filter(Boolean).sort().join(',')
+    : '';
+
   useEffect(() => {
-    if (!authUser || !user) return;
+    if (!authUserId || !user?.id) return;
+    let cancelled = false;
     
     const fetchChatData = async () => {
-      setIsChatLoading(true);
+      if (messages.length === 0 && directMessages.length === 0) {
+        setIsChatLoading(true);
+      }
       try {
-        const joinedCommunityIds = Array.isArray(user?.joinedCommunities)
-          ? user.joinedCommunities.filter(Boolean)
-          : [];
-        const messagesQuery = !user?.isAdmin && joinedCommunityIds.length > 0
+        const joinedCommunityIds = joinedKey ? joinedKey.split(',') : [];
+        const messagesQuery = !isAdminFlag && joinedCommunityIds.length > 0
           ? supabase
               .from('messages')
               .select('*')
               .in('community_id', joinedCommunityIds)
               .order('created_at', { ascending: false })
-              .limit(500)
+              .limit(300)
           : supabase
               .from('messages')
               .select('*')
               .order('created_at', { ascending: false })
-              .limit(500);
+              .limit(300);
 
         const [msgRes, dmRes, readRes] = await Promise.all([
           messagesQuery,
           supabase.from('direct_messages').select('*')
-            .or(`sender_id.eq.${authUser.id},receiver_id.eq.${authUser.id}`)
+            .or(`sender_id.eq.${authUserId},receiver_id.eq.${authUserId}`)
             .order('created_at', { ascending: true }),
-          supabase.from('chat_read_receipts').select('*').eq('user_id', authUser.id).order('last_read_at', { ascending: false }),
+          supabase.from('chat_read_receipts').select('*').eq('user_id', authUserId).order('last_read_at', { ascending: false }),
         ]);
+        if (cancelled) return;
 
         const msgIds = msgRes.data ? msgRes.data.map(m => m.id) : [];
         const dmIds = dmRes.data ? dmRes.data.map(m => m.id) : [];
@@ -179,13 +187,15 @@ export function ChatProvider({ children }) {
       }).subscribe();
 
     return () => {
+      cancelled = true;
       supabase.removeChannel(subMessages);
       supabase.removeChannel(subDMs);
       supabase.removeChannel(subMsgReactions);
       supabase.removeChannel(subDMReactions);
       supabase.removeChannel(subReads);
     };
-  }, [authUser, user]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authUserId, isAdminFlag, joinedKey]);
 
   const sendMessage = async (communityId, channel, text, image = '', parentId = null) => {
     if (!user.id) return;

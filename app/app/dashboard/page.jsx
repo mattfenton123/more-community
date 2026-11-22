@@ -499,6 +499,8 @@ export default function LeaderDashboard({ initialCommunityId }) {
   const handledDuplicateParamRef = useRef(null);
   const [isUploading, setIsUploading] = useState(false);
   const [cancelConfirmId, setCancelConfirmId] = useState(null);
+  const [memberToRemove, setMemberToRemove] = useState(null);
+  const [isRemovingMember, setIsRemovingMember] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
   const [expandedEventId, setExpandedEventId] = useState(null);
   const [flyerEvent, setFlyerEvent] = useState(null);
@@ -1642,9 +1644,22 @@ export default function LeaderDashboard({ initialCommunityId }) {
     }
   };
 
-  const handleRemove = async (memberUser) => {
-    await removeMember(community.id, memberUser.id);
-    toast.info('Member removed', `${memberUser.name} has been removed from the community`);
+  const handleRemove = (memberUser) => {
+    setMemberToRemove(memberUser);
+  };
+
+  const confirmRemoveMember = async () => {
+    if (!memberToRemove || !community?.id || isRemovingMember) return;
+    setIsRemovingMember(true);
+    try {
+      await removeMember(community.id, memberToRemove.id);
+      toast.info('Member removed', `${memberToRemove.name} has been removed from the community`);
+      setMemberToRemove(null);
+    } catch (err) {
+      toast.error('Could not remove member', err?.message || 'Please try again.');
+    } finally {
+      setIsRemovingMember(false);
+    }
   };
 
 
@@ -7122,6 +7137,104 @@ export default function LeaderDashboard({ initialCommunityId }) {
         </div>
       )}
 
+      {/* Remove Member Confirmation Modal */}
+      {memberToRemove && community && (
+        <div
+          className="modal-overlay"
+          onClick={() => !isRemovingMember && setMemberToRemove(null)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px',
+            zIndex: 10050,
+            background: 'rgba(18, 18, 18, 0.72)',
+            backdropFilter: 'blur(6px)',
+          }}
+        >
+          <div
+            className="modal-content"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: '100%',
+              maxWidth: '420px',
+              borderRadius: '20px',
+              background: 'var(--surface-card)',
+              border: '1px solid rgba(220, 38, 38, 0.35)',
+              padding: '22px',
+              boxShadow: '0 24px 60px rgba(0, 0, 0, 0.45)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '16px',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <img
+                src={resolveUserAvatar(memberToRemove)}
+                alt={memberToRemove.name}
+                style={{
+                  width: '44px',
+                  height: '44px',
+                  borderRadius: '50%',
+                  objectFit: 'cover',
+                  border: '2px solid rgba(220, 38, 38, 0.35)',
+                  flexShrink: 0,
+                }}
+              />
+              <div>
+                <h3
+                  style={{
+                    margin: 0,
+                    fontFamily: 'var(--font-heading)',
+                    fontSize: '1.08rem',
+                    fontWeight: 700,
+                    color: 'var(--ink-primary)',
+                  }}
+                >
+                  Remove {memberToRemove.name}?
+                </h3>
+                <div style={{ fontSize: '0.78rem', color: 'var(--ink-muted)', marginTop: '2px' }}>
+                  from {community.name}
+                </div>
+              </div>
+            </div>
+
+            <p style={{ margin: 0, fontSize: '0.86rem', color: 'var(--ink-secondary)', lineHeight: 1.5 }}>
+              They will lose access to member-only community channels and updates. You can always welcome them back later if they rejoin.
+            </p>
+
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+              <button
+                type="button"
+                disabled={isRemovingMember}
+                onClick={() => setMemberToRemove(null)}
+                className="btn btn-outline interactive-press"
+                style={{ padding: '9px 16px', borderRadius: '10px', fontSize: '0.84rem', fontWeight: 700 }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={isRemovingMember}
+                onClick={confirmRemoveMember}
+                className="btn btn-danger interactive-press"
+                style={{
+                  padding: '9px 16px',
+                  borderRadius: '10px',
+                  fontSize: '0.84rem',
+                  fontWeight: 700,
+                  opacity: isRemovingMember ? 0.65 : 1,
+                }}
+              >
+                {isRemovingMember ? 'Removing...' : 'Yes, Remove Member'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Attendee Check-In & Walk-Ins Modal */}
       {rollCallEvent && (
         <RollCallModal
@@ -7156,8 +7269,18 @@ export default function LeaderDashboard({ initialCommunityId }) {
         <QRScanner 
           onScan={(data) => {
             if (data.eventId && data.userId) {
-              checkInMember(data.eventId, data.userId);
-              toast.success('Checked in!', `${data.userName} has been checked in.`);
+              const existing = (eventRsvps?.[data.eventId] || []).find(
+                (r) => (r.userId || r.user_id) === data.userId
+              );
+              const alreadyIn = Boolean(
+                existing && (existing.checkedIn || existing.checked_in || existing.status === 'checked_in')
+              );
+              if (alreadyIn) {
+                toast.info('Already Checked In ✓', `${data.userName || 'Member'} is already verified — no duplicate check-in needed.`);
+              } else {
+                checkInMember(data.eventId, data.userId, true);
+                toast.success('Checked in!', `${data.userName || 'Member'} has been checked in.`);
+              }
             }
           }} 
           onClose={() => setShowScanner(false)} 

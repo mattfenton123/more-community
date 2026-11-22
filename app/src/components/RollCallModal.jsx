@@ -16,12 +16,18 @@ import {
   QrCode,
   ShieldCheck,
   Banknote,
+  MapPin,
+  Hash,
 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { useToast } from './Toast';
 import { resolveUserAvatar } from '../lib/avatar';
 import { getEventPath, SITE_ORIGIN } from '../lib/eventLinks';
-import { isCommunityFirstTimer, ARRIVAL_BEACON_PREFIX } from '../lib/inPersonGraph';
+import {
+  isCommunityFirstTimer,
+  formatArrivalBeaconComment,
+  getEventCheckInCode,
+} from '../lib/inPersonGraph';
 
 export default function RollCallModal({ event, onClose }) {
   const {
@@ -42,6 +48,7 @@ export default function RollCallModal({ event, onClose }) {
   const [activeMode, setActiveMode] = useState('registered'); // 'registered' | 'walkin'
   const [showBeaconComposer, setShowBeaconComposer] = useState(false);
   const [beaconText, setBeaconText] = useState('');
+  const [attachBeaconGps, setAttachBeaconGps] = useState(true);
   const [isSendingBeacon, setIsSendingBeacon] = useState(false);
   const [showWalkInQR, setShowWalkInQR] = useState(false);
   const [walkInQrUrl, setWalkInQrUrl] = useState('');
@@ -371,6 +378,24 @@ export default function RollCallModal({ event, onClose }) {
               >
                 {event.date} • {event.time}
               </span>
+              <span
+                title="Share this 4-digit table/trail code if GPS is weak indoors"
+                style={{
+                  background: isLight ? '#EFE9DE' : 'rgba(255,255,255,0.08)',
+                  color: isLight ? '#1C1915' : '#FFFFFF',
+                  border: isLight ? '1px solid rgba(28,25,21,0.14)' : '1px solid rgba(255,255,255,0.16)',
+                  padding: '2px 8px',
+                  borderRadius: '999px',
+                  fontSize: '0.7rem',
+                  fontWeight: 800,
+                  letterSpacing: '0.06em',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '3px',
+                }}
+              >
+                <Hash size={11} color="#EB5738" /> Code: {getEventCheckInCode(event)}
+              </span>
               {firstTimerCount > 0 && (
                 <span
                   style={{
@@ -480,13 +505,28 @@ export default function RollCallModal({ event, onClose }) {
                   if (!msg || !event?.id) return;
                   setIsSendingBeacon(true);
                   try {
+                    let liveCoords = null;
+                    if (attachBeaconGps && typeof navigator !== 'undefined' && navigator.geolocation) {
+                      liveCoords = await new Promise((resolve) => {
+                        navigator.geolocation.getCurrentPosition(
+                          (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+                          () => resolve(null),
+                          { enableHighAccuracy: true, timeout: 4500, maximumAge: 30000 }
+                        );
+                      });
+                    }
                     if (typeof addEventComment === 'function') {
-                      await addEventComment(event.id, `${ARRIVAL_BEACON_PREFIX} ${msg}`);
+                      await addEventComment(event.id, formatArrivalBeaconComment(msg, liveCoords));
                     }
                     if (typeof sendEventReminder === 'function') {
                       await sendEventReminder(event.id, `📍 We're Here: ${msg}`);
                     }
-                    toast.success("Arrival Beacon Sent! 📍", "Pinned to the event page and sent to attendees.");
+                    toast.success(
+                      "Arrival Beacon Sent! 📍",
+                      liveCoords
+                        ? "Live GPS anchor + beacon pinned to Event Page and sent to attendees."
+                        : "Pinned to the event page and sent to attendees."
+                    );
                     setBeaconText('');
                     setShowBeaconComposer(false);
                   } catch (err) {
@@ -511,6 +551,16 @@ export default function RollCallModal({ event, onClose }) {
                 <Send size={13} /> {isSendingBeacon ? 'Sending...' : 'Ping Group'}
               </button>
             </div>
+            <label style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.72rem', color: isLight ? '#4A443C' : 'var(--slate-300)', cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={attachBeaconGps}
+                onChange={(e) => setAttachBeaconGps(e.target.checked)}
+                style={{ accentColor: '#EB5738' }}
+              />
+              <MapPin size={12} color="#EB5738" />
+              <span>Attach my live GPS pin (lets members auto-verify proximity check-in right where I&apos;m standing)</span>
+            </label>
           </div>
         )}
 

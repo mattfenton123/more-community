@@ -366,6 +366,31 @@ export default function ConnectQRModal({ isOpen, onClose, initialMode = 'profile
           </div>
         </div>
 
+        {/* Friendly Plain-English Explanation */}
+        <div
+          style={{
+            padding: '10px 13px',
+            borderRadius: '12px',
+            background: 'var(--brand-accent-soft)',
+            border: '1px solid rgba(235, 87, 56, 0.24)',
+            fontSize: '0.76rem',
+            color: 'var(--ink-secondary)',
+            lineHeight: 1.48,
+          }}
+        >
+          {mode === 'community' && activeCommunity ? (
+            <>
+              <strong style={{ color: 'var(--ink-primary)' }}>How to use at meetups:</strong>{' '}
+              Show this code at your walk, coffee, or pub session — anyone who scans it with their phone camera lands straight on <strong>{activeCommunity.name}</strong> to join in one tap.
+            </>
+          ) : (
+            <>
+              <strong style={{ color: 'var(--ink-primary)' }}>How to use at meetups:</strong>{' '}
+              Met someone great in person? Let them scan this with their phone camera to open your More profile, see the clubs you&apos;re in, and stay in touch — no spelling out names or phone numbers.
+            </>
+          )}
+        </div>
+
         {/* Action Buttons */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: '8px' }}>
           <button
