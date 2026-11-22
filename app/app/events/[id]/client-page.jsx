@@ -443,12 +443,20 @@ export default function EventClient({ id }) {
   }, [event, events]);
   const currentSeriesIndex = event ? seriesEvents.findIndex(e => e.id === event.id) : -1;
 
+  const isWalkInQrVisit = searchParams?.get('walkin') === '1';
+
   useEffect(() => {
     if (searchParams?.get('checkout') === 'success' && event?.id && user?.id) {
       setShowRsvpSuccessModal(true);
       toast.success('Ticket Confirmed!', 'Your payment was processed and your ticket is saved.');
     }
   }, [searchParams, event?.id, user?.id]);
+
+  useEffect(() => {
+    if (isWalkInQrVisit && event?.id && !user?.id) {
+      setShowGuestRsvpModal(true);
+    }
+  }, [isWalkInQrVisit, event?.id, user?.id]);
 
   // ALL HOOKS MUST RUN UNCONDITIONALLY AT THE TOP LEVEL BEFORE ANY EARLY RETURNS
   const rsvps = event?.id ? (eventRsvps[event.id] || []) : [];
@@ -3181,6 +3189,8 @@ export default function EventClient({ id }) {
       {showGuestRsvpModal && (
         <GuestRsvpModal
           event={event}
+          community={community}
+          walkInMode={isWalkInQrVisit}
           isOpen={showGuestRsvpModal}
           onClose={() => setShowGuestRsvpModal(false)}
         />

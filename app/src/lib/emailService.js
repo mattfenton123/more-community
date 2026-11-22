@@ -195,3 +195,117 @@ export async function sendTownAlertConfirmationEmail({ to, name, town }) {
     return { success: true, simulated: true };
   }
 }
+
+export async function sendWalkInFollowUpEmail({
+  to,
+  name,
+  event,
+  community,
+  paymentSummary = 'Free',
+  waiverAcceptedAt = null,
+  isAfterglow = false,
+}) {
+  if (!to || !event) return { success: false, error: 'Missing recipient or event' };
+
+  const baseOrigin = process.env.NEXT_PUBLIC_BASE_URL || 'https://www.morecommunity.app';
+  const eventLink = getEventUrl(event, { origin: baseOrigin });
+  const communityName = community?.name || 'More Community';
+  const joinParams = new URLSearchParams({
+    signup: '1',
+    email: to,
+    name: name || '',
+    redirect: `/events/${event.id}#afterglow`,
+  });
+  if (event.community_id || event.communityId || community?.id) {
+    joinParams.set('joinCommunity', event.community_id || event.communityId || community?.id);
+  }
+  const claimUrl = `${baseOrigin}/login?${joinParams.toString()}`;
+
+  const subject = isAfterglow
+    ? `✨ Great meeting you at ${event.title}! See photos & join ${communityName}`
+    : `✓ Checked In: ${event.title} with ${communityName}`;
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${subject}</title>
+</head>
+<body style="margin:0;padding:0;background-color:#090d16;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#f8fafc;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#090d16;padding:32px 16px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" style="max-width:560px;background:#1B1B1B;border-radius:20px;overflow:hidden;border:1px solid rgba(255,255,255,0.08);" cellspacing="0" cellpadding="0">
+          <tr>
+            <td style="padding:24px 28px;background:linear-gradient(135deg,#C85A32 0%,#8F3414 100%);">
+              <div style="font-size:1.35rem;font-weight:800;color:#ffffff;">More Community</div>
+              <div style="font-size:0.78rem;color:#F7F3EC;margin-top:4px;font-weight:700;letter-spacing:0.05em;">
+                ${isAfterglow ? 'POST-MEETUP RECAP & INVITE' : 'WALK-IN CHECK-IN & RECEIPT'}
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:28px;">
+              <h1 style="margin:0 0 10px;font-size:1.35rem;color:#ffffff;font-weight:800;">
+                ${isAfterglow ? `Loved having you there, ${name || 'friend'}!` : `Welcome to ${event.title}, ${name || 'friend'}!`}
+              </h1>
+              <p style="margin:0 0 20px;color:#cbd5e1;font-size:0.94rem;line-height:1.55;">
+                ${
+                  isAfterglow
+                    ? `Thanks for coming along to <strong>${event.title}</strong> with <strong>${communityName}</strong>. Claim your free More profile to see photos from today, connect with people you met, and get invited to the next meetup.`
+                    : `You're officially checked in to <strong>${event.title}</strong> hosted by <strong>${communityName}</strong>.`
+                }
+              </p>
+
+              <table role="presentation" width="100%" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;margin-bottom:22px;" cellspacing="0" cellpadding="14">
+                <tr>
+                  <td style="font-size:0.86rem;color:#e2e8f0;line-height:1.6;">
+                    <div><strong>📅 Event:</strong> ${event.title} (${event.date || ''}${event.time ? ` · ${event.time}` : ''})</div>
+                    <div><strong>💷 Payment:</strong> ${paymentSummary}</div>
+                    ${waiverAcceptedAt ? `<div><strong>🛡️ Safety Waiver:</strong> Confirmed (${new Date(waiverAcceptedAt).toLocaleString('en-GB')})</div>` : ''}
+                  </td>
+                </tr>
+              </table>
+
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom:16px;">
+                <tr>
+                  <td align="center">
+                    <a href="${claimUrl}" target="_blank" style="display:block;background:#EB5738;color:#ffffff;font-weight:800;font-size:0.95rem;text-decoration:none;padding:14px 24px;border-radius:12px;text-align:center;">
+                      Claim Your Profile &amp; Join ${communityName} →
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <div style="text-align:center;">
+                <a href="${eventLink}" target="_blank" style="color:#94a3b8;font-size:0.8rem;text-decoration:underline;">
+                  View event page &amp; meetup photos
+                </a>
+              </div>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+
+  if (resend) {
+    try {
+      const data = await resend.emails.send({
+        from: SENDER_EMAIL,
+        to,
+        subject,
+        html,
+      });
+      return { success: true, data };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  }
+  console.log(`[EmailService: Simulated Mode] Walk-in follow-up email to ${to} for ${event.title}`);
+  return { success: true, simulated: true };
+}

@@ -1,12 +1,12 @@
 "use client";
 import { useState } from 'react';
-import { Check, X, Calendar, MapPin, Users, Mail, User, Share2, ExternalLink, Ticket, ArrowRight, MessageCircle } from 'lucide-react';
+import { Check, X, Calendar, MapPin, Users, Mail, User, Share2, ExternalLink, Ticket, ArrowRight, MessageCircle, ShieldCheck, Banknote } from 'lucide-react';
 import { getGoogleCalendarUrl, generateIcsDataUri } from '../lib/calendarInvite';
 import { useAppContext } from '../context/AppContext';
 import { getEventUrl, SITE_ORIGIN } from '../lib/eventLinks';
 import { formatShareLocation } from '../lib/location';
 
-export default function GuestRsvpModal({ event, isOpen, onClose, onSuccess }) {
+export default function GuestRsvpModal({ event, community = null, isOpen, onClose, onSuccess, walkInMode = false }) {
   const { theme, refreshData } = useAppContext();
   const isLight = theme === 'light';
 
@@ -16,6 +16,8 @@ export default function GuestRsvpModal({ event, isOpen, onClose, onSuccess }) {
   const [guestName, setGuestName] = useState('');
   const [guestEmail, setGuestEmail] = useState('');
   const [answer, setAnswer] = useState('');
+  const [waiverAccepted, setWaiverAccepted] = useState(false);
+  const [walkInPayMethod, setWalkInPayMethod] = useState('cash_pending');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [confirmedData, setConfirmedData] = useState(null);
@@ -24,11 +26,16 @@ export default function GuestRsvpModal({ event, isOpen, onClose, onSuccess }) {
   if (!isOpen || !event) return null;
 
   const rsvpQuestion = event.rsvpQuestion || (event.description?.match(/\[RSVP Question: ([^\]]+)\]/)?.[1] || '');
+  const ticketPrice = Number(event.ticketPrice || event.ticket_price || 0);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!name.trim() || !email.trim()) {
       setError('Please provide your name and email address.');
+      return;
+    }
+    if (walkInMode && !waiverAccepted) {
+      setError('Please confirm the safety & participation waiver to check in.');
       return;
     }
 
@@ -45,7 +52,13 @@ export default function GuestRsvpModal({ event, isOpen, onClose, onSuccess }) {
           email: email.trim(),
           guestName: hasPlusOne ? guestName.trim() : null,
           guestEmail: hasPlusOne ? guestEmail.trim() : null,
-          answer: answer.trim() || null
+          answer: answer.trim() || null,
+          isWalkIn: walkInMode,
+          checkInNow: walkInMode,
+          paymentMethod: walkInMode ? (ticketPrice > 0 ? walkInPayMethod : 'free') : 'free',
+          cashAmount: ticketPrice,
+          waiverAccepted: walkInMode ? waiverAccepted : false,
+          waiverRecordedBy: 'self_qr',
         })
       });
 
@@ -146,7 +159,13 @@ export default function GuestRsvpModal({ event, isOpen, onClose, onSuccess }) {
               <Ticket size={16} />
             </div>
             <span style={{ fontSize: '0.9rem', fontWeight: 800, color: isLight ? '#1C1915' : '#ffffff' }}>
-              {confirmedData ? 'Ticket Confirmed' : 'Reserve Spot & Meeting Point'}
+              {confirmedData
+                ? walkInMode
+                  ? 'Checked In!'
+                  : 'Ticket Confirmed'
+                : walkInMode
+                  ? 'Quick Walk-In Check-In'
+                  : 'Reserve Spot & Meeting Point'}
             </span>
           </div>
           <button 
@@ -179,14 +198,44 @@ export default function GuestRsvpModal({ event, isOpen, onClose, onSuccess }) {
                   <Check size={32} strokeWidth={3} />
                 </div>
                 <h2 style={{ margin: '0 0 4px', fontSize: '1.25rem', color: isLight ? '#1C1915' : '#ffffff' }}>
-                  You're going!
+                  {walkInMode ? "You're Checked In!" : "You're going!"}
                 </h2>
                 <p style={{ margin: 0, fontSize: '0.85rem', color: isLight ? '#6E655A' : 'var(--slate-400)' }}>
-                  A confirmation ticket has been sent to <strong>{confirmedData.attendeeEmail}</strong>.
+                  {walkInMode
+                    ? <>Your check-in, waiver &amp; club invite have been sent to <strong>{confirmedData.attendeeEmail}</strong>.</>
+                    : <>A confirmation ticket has been sent to <strong>{confirmedData.attendeeEmail}</strong>.</>}
                 </p>
-                <div style={{ display: 'inline-block', marginTop: '8px', padding: '3px 10px', borderRadius: '6px', background: isLight ? '#EFE9DE' : 'rgba(255,255,255,0.06)', fontSize: '0.75rem', fontWeight: 700, color: '#C85A32' }}>
-                  {confirmedData.ticketNumber}
+                <div style={{ display: 'flex', justifyContent: 'center', gap: '6px', flexWrap: 'wrap', marginTop: '8px' }}>
+                  <span style={{ padding: '3px 10px', borderRadius: '6px', background: isLight ? '#EFE9DE' : 'rgba(255,255,255,0.06)', fontSize: '0.75rem', fontWeight: 700, color: '#C85A32' }}>
+                    {confirmedData.ticketNumber}
+                  </span>
+                  {confirmedData.waiverAcceptedAt && (
+                    <span style={{ padding: '3px 10px', borderRadius: '6px', background: 'rgba(16,185,129,0.14)', fontSize: '0.73rem', fontWeight: 700, color: '#15803D', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                      <ShieldCheck size={12} /> Safety Waiver Logged
+                    </span>
+                  )}
                 </div>
+                {walkInMode && (
+                  <a
+                    href={`/login?signup=1&email=${encodeURIComponent(confirmedData.attendeeEmail || '')}&name=${encodeURIComponent(confirmedData.attendeeName || '')}${event.communityId ? `&joinCommunity=${encodeURIComponent(event.communityId)}` : ''}`}
+                    className="btn btn-primary interactive-press"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px',
+                      marginTop: '14px',
+                      padding: '10px 18px',
+                      borderRadius: '999px',
+                      color: '#FFFFFF',
+                      fontSize: '0.84rem',
+                      fontWeight: 800,
+                      textDecoration: 'none',
+                    }}
+                  >
+                    Join {community?.name || 'this Community'} on More <ArrowRight size={14} />
+                  </a>
+                )}
               </div>
 
               {/* Meeting Point Box */}
@@ -473,6 +522,77 @@ export default function GuestRsvpModal({ event, isOpen, onClose, onSuccess }) {
                 </div>
               )}
 
+              {/* Walk-In Payment & PLI Safety Waiver */}
+              {walkInMode && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {ticketPrice > 0 && (
+                    <div
+                      style={{
+                        padding: '11px 12px',
+                        borderRadius: '11px',
+                        background: isLight ? '#F7F3EC' : 'rgba(255,255,255,0.04)',
+                        border: isLight ? '1px solid rgba(28, 25, 21, 0.12)' : '1px solid rgba(255,255,255,0.1)',
+                      }}
+                    >
+                      <div style={{ fontSize: '0.74rem', fontWeight: 800, color: isLight ? '#1C1915' : '#FFFFFF', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                        <Banknote size={14} color="#16a34a" /> Walk-In Ticket (£{ticketPrice})
+                      </div>
+                      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                        {[
+                          { id: 'cash_pending', label: `Paying £${ticketPrice} Cash to Host` },
+                          { id: 'free', label: 'Free First Taster / Invited' },
+                        ].map((opt) => (
+                          <button
+                            key={opt.id}
+                            type="button"
+                            onClick={() => setWalkInPayMethod(opt.id)}
+                            style={{
+                              padding: '6px 11px',
+                              borderRadius: '999px',
+                              fontSize: '0.74rem',
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                              background: walkInPayMethod === opt.id ? '#16a34a' : 'transparent',
+                              color: walkInPayMethod === opt.id ? '#FFFFFF' : isLight ? '#4A443C' : 'var(--slate-300)',
+                              border: walkInPayMethod === opt.id ? '1px solid #16a34a' : '1px solid rgba(148,163,184,0.35)',
+                            }}
+                          >
+                            {opt.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <label
+                    style={{
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      gap: '9px',
+                      padding: '11px 12px',
+                      borderRadius: '11px',
+                      background: waiverAccepted ? 'rgba(16, 185, 129, 0.10)' : isLight ? '#FFF7F4' : 'rgba(235, 87, 56, 0.08)',
+                      border: waiverAccepted ? '1px solid rgba(16, 185, 129, 0.35)' : '1px solid rgba(235, 87, 56, 0.28)',
+                      fontSize: '0.76rem',
+                      color: isLight ? '#1C1915' : '#e2e8f0',
+                      cursor: 'pointer',
+                      lineHeight: 1.45,
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={waiverAccepted}
+                      onChange={(e) => setWaiverAccepted(e.target.checked)}
+                      style={{ marginTop: '3px', accentColor: '#16a34a' }}
+                    />
+                    <span>
+                      <strong style={{ color: '#15803D' }}>Safety &amp; Insurance Waiver (Required):</strong>{' '}
+                      I confirm I am fit to participate in this community activity, accept the group&apos;s safety guidelines, and consent to my attendance being logged on the host&apos;s safety register.
+                    </span>
+                  </label>
+                </div>
+              )}
+
               <button
                 type="submit"
                 disabled={isLoading}
@@ -495,7 +615,13 @@ export default function GuestRsvpModal({ event, isOpen, onClose, onSuccess }) {
                   boxShadow: '0 4px 15px rgba(217, 70, 40, 0.4)'
                 }}
               >
-                {isLoading ? 'Reserving...' : 'Confirm Spot & Get Meeting Point →'}
+                {isLoading
+                  ? walkInMode
+                    ? 'Checking In...'
+                    : 'Reserving...'
+                  : walkInMode
+                    ? 'Complete Walk-In Check-In →'
+                    : 'Confirm Spot & Get Meeting Point →'}
               </button>
             </form>
           )}

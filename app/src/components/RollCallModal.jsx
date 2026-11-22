@@ -1,5 +1,6 @@
 "use client";
 import { useState, useMemo, useEffect } from 'react';
+import QRCode from 'qrcode';
 import {
   UserCheck,
   UserPlus,
@@ -12,14 +13,19 @@ import {
   Sparkles,
   Radio,
   Send,
+  QrCode,
+  ShieldCheck,
+  Banknote,
 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { useToast } from './Toast';
 import { resolveUserAvatar } from '../lib/avatar';
+import { getEventPath, SITE_ORIGIN } from '../lib/eventLinks';
 import { isCommunityFirstTimer, ARRIVAL_BEACON_PREFIX } from '../lib/inPersonGraph';
 
 export default function RollCallModal({ event, onClose }) {
   const {
+    user,
     users,
     events,
     eventRsvps,
@@ -28,6 +34,7 @@ export default function RollCallModal({ event, onClose }) {
     flushOfflineCheckinQueue,
     addEventComment,
     sendEventReminder,
+    refreshData,
     theme,
   } = useAppContext();
   const { toast } = useToast();
@@ -36,6 +43,13 @@ export default function RollCallModal({ event, onClose }) {
   const [showBeaconComposer, setShowBeaconComposer] = useState(false);
   const [beaconText, setBeaconText] = useState('');
   const [isSendingBeacon, setIsSendingBeacon] = useState(false);
+  const [showWalkInQR, setShowWalkInQR] = useState(false);
+  const [walkInQrUrl, setWalkInQrUrl] = useState('');
+  const [guestWalkInName, setGuestWalkInName] = useState('');
+  const [guestWalkInEmail, setGuestWalkInEmail] = useState('');
+  const [guestPaymentMethod, setGuestPaymentMethod] = useState('cash_paid');
+  const [guestWaiverConfirmed, setGuestWaiverConfirmed] = useState(true);
+  const [isSubmittingWalkInGuest, setIsSubmittingWalkInGuest] = useState(false);
   const [isOffline, setIsOffline] = useState(
     typeof navigator !== 'undefined' ? !navigator.onLine : false
   );
@@ -121,6 +135,32 @@ export default function RollCallModal({ event, onClose }) {
     () => attendees.filter((a) => a.isFirstTimer).length,
     [attendees]
   );
+
+  const walkInSelfUrl = useMemo(() => {
+    if (!event?.id) return '';
+    const origin =
+      typeof window !== 'undefined' && window.location?.origin
+        ? window.location.origin
+        : SITE_ORIGIN || 'https://www.morecommunity.app';
+    return `${origin}${getEventPath(event, events)}?walkin=1`;
+  }, [event, events]);
+
+  useEffect(() => {
+    if (!showWalkInQR || !walkInSelfUrl) return;
+    let cancelled = false;
+    QRCode.toDataURL(walkInSelfUrl, {
+      width: 240,
+      margin: 2,
+      color: { dark: '#1C1915', light: '#FFFFFF' },
+    })
+      .then((url) => {
+        if (!cancelled) setWalkInQrUrl(url);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [showWalkInQR, walkInSelfUrl]);
 
   // Build Walk-In Roster from pre-loaded community members + all platform users (works 100% offline!)
   const walkInCandidates = useMemo(() => {
@@ -1040,23 +1080,275 @@ export default function RollCallModal({ event, onClose }) {
           ) : (
             /* Walk-In Roster Mode */
             <>
+              {/* Brand-New Guest Walk-In HQ: Self-Scan QR + Leader Quick-Add (Cash & PLI Waiver) */}
               <div
                 style={{
-                  fontSize: '0.76rem',
-                  color: isLight ? '#475569' : 'var(--slate-300)',
-                  background: isLight
-                    ? '#F7F3EC'
-                    : 'rgba(235, 87, 56, 0.08)',
-                  border: '1px solid rgba(235, 87, 56, 0.22)',
-                  padding: '9px 12px',
-                  borderRadius: '10px',
-                  marginBottom: '4px',
+                  background: isLight ? '#FFF9F6' : 'rgba(235, 87, 56, 0.07)',
+                  border: '1px solid rgba(235, 87, 56, 0.28)',
+                  borderRadius: '14px',
+                  padding: '12px 14px',
+                  marginBottom: '8px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '10px',
                 }}
               >
-                💡 <strong>No ticket or zero trail signal?</strong> Tap{' '}
-                <strong>+ Add &amp; Check In</strong> next to anyone who turned
-                up today. Even offline, this saves on your phone and registers +
-                verifies their attendance when you get signal at the pub.
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' }}>
+                  <div>
+                    <div style={{ fontSize: '0.8rem', fontWeight: 800, color: isLight ? '#1C1915' : '#FFFFFF', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <UserPlus size={14} color="#EB5738" /> Brand-New Guest (Not on More Yet)
+                    </div>
+                    <div style={{ fontSize: '0.72rem', color: isLight ? '#6E655A' : 'var(--slate-400)', marginTop: '2px' }}>
+                      Logs attendance, cash &amp; safety waiver for PLI insurance, then emails a 1-tap club invite.
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowWalkInQR((v) => !v)}
+                    className="interactive-press"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                      padding: '6px 11px',
+                      borderRadius: '999px',
+                      background: showWalkInQR ? '#EB5738' : isLight ? '#FFFFFF' : 'rgba(255,255,255,0.08)',
+                      border: '1px solid rgba(235, 87, 56, 0.38)',
+                      color: showWalkInQR ? '#FFFFFF' : isLight ? '#1C1915' : '#FFFFFF',
+                      fontSize: '0.74rem',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <QrCode size={13} /> {showWalkInQR ? 'Hide QR' : 'Show Walk-In QR'}
+                  </button>
+                </div>
+
+                {showWalkInQR && (
+                  <div
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '12px',
+                      borderRadius: '12px',
+                      background: isLight ? '#FFFFFF' : 'rgba(0,0,0,0.28)',
+                      border: '1px solid rgba(235, 87, 56, 0.22)',
+                      textAlign: 'center',
+                    }}
+                  >
+                    <div style={{ fontSize: '0.76rem', fontWeight: 700, color: isLight ? '#1C1915' : '#FFFFFF' }}>
+                      Let the guest scan with their camera to self check-in &amp; sign the safety waiver:
+                    </div>
+                    <div style={{ background: '#FFFFFF', padding: '10px', borderRadius: '12px' }}>
+                      {walkInQrUrl ? (
+                        <img src={walkInQrUrl} alt="Walk-In Self Check-In QR" style={{ width: '170px', height: '170px', display: 'block' }} />
+                      ) : (
+                        <div style={{ width: '170px', height: '170px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', color: '#6E655A' }}>
+                          Loading QR...
+                        </div>
+                      )}
+                    </div>
+                    <div style={{ fontSize: '0.68rem', color: isLight ? '#6E655A' : 'var(--slate-400)' }}>
+                      No app download needed · Auto-checks them into this list
+                    </div>
+                  </div>
+                )}
+
+                {/* Quick-Add Form for Leader */}
+                <form
+                  onSubmit={async (e) => {
+                    e.preventDefault();
+                    const cleanN = guestWalkInName.trim();
+                    const cleanE = guestWalkInEmail.trim().toLowerCase();
+                    if (!cleanN || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanE)) {
+                      toast.error('Details needed', 'Please enter the guest’s name and a valid email address.');
+                      return;
+                    }
+                    if (!guestWaiverConfirmed) {
+                      toast.error('Waiver required', 'Confirm the guest acknowledged the safety waiver for PLI compliance.');
+                      return;
+                    }
+                    const ticketPrice = Number(event?.ticketPrice || event?.ticket_price || 0);
+                    const resolvedPayment = ticketPrice > 0 ? guestPaymentMethod : 'free';
+
+                    if (isOffline) {
+                      try {
+                        const key = 'more_offline_walkin_guest_queue';
+                        const existing = JSON.parse(localStorage.getItem(key) || '[]');
+                        existing.push({
+                          eventId: event.id,
+                          name: cleanN,
+                          email: cleanE,
+                          isWalkIn: true,
+                          checkInNow: true,
+                          paymentMethod: resolvedPayment,
+                          cashAmount: ticketPrice,
+                          waiverAccepted: true,
+                          waiverRecordedBy: user?.id || 'leader',
+                          queuedAt: new Date().toISOString(),
+                        });
+                        localStorage.setItem(key, JSON.stringify(existing));
+                        toast.info('Saved Offline 📶', `${cleanN} queued as walk-in — sync once back in signal.`);
+                        setGuestWalkInName('');
+                        setGuestWalkInEmail('');
+                      } catch {
+                        toast.error('Offline save failed', 'Please retry when back online.');
+                      }
+                      return;
+                    }
+
+                    setIsSubmittingWalkInGuest(true);
+                    try {
+                      const res = await fetch('/api/events/guest-rsvp', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          eventId: event.id,
+                          name: cleanN,
+                          email: cleanE,
+                          isWalkIn: true,
+                          checkInNow: true,
+                          paymentMethod: resolvedPayment,
+                          cashAmount: ticketPrice,
+                          waiverAccepted: true,
+                          waiverRecordedBy: user?.id || 'leader',
+                        }),
+                      });
+                      const data = await res.json().catch(() => ({}));
+                      if (!res.ok || data.error) {
+                        throw new Error(data.error || 'Could not check in walk-in guest.');
+                      }
+                      if (typeof refreshData === 'function') await refreshData();
+                      toast.success(
+                        'Walk-In Checked In! ✓',
+                        `${cleanN} added (${data.paymentSummary || 'Free'}) & sent a club invite email.`
+                      );
+                      setGuestWalkInName('');
+                      setGuestWalkInEmail('');
+                      setActiveMode('registered');
+                    } catch (err) {
+                      toast.error('Walk-In Error', err?.message || 'Could not register guest.');
+                    } finally {
+                      setIsSubmittingWalkInGuest(false);
+                    }
+                  }}
+                  style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}
+                >
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '8px' }}>
+                    <input
+                      type="text"
+                      placeholder="Guest full name *"
+                      value={guestWalkInName}
+                      onChange={(e) => setGuestWalkInName(e.target.value)}
+                      style={{
+                        padding: '8px 11px',
+                        borderRadius: '9px',
+                        border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255,255,255,0.14)',
+                        background: isLight ? '#FFFFFF' : 'rgba(0,0,0,0.28)',
+                        color: isLight ? '#1C1915' : '#FFFFFF',
+                        fontSize: '0.82rem',
+                        outline: 'none',
+                      }}
+                    />
+                    <input
+                      type="email"
+                      placeholder="Guest email (for receipt & club invite) *"
+                      value={guestWalkInEmail}
+                      onChange={(e) => setGuestWalkInEmail(e.target.value)}
+                      style={{
+                        padding: '8px 11px',
+                        borderRadius: '9px',
+                        border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255,255,255,0.14)',
+                        background: isLight ? '#FFFFFF' : 'rgba(0,0,0,0.28)',
+                        color: isLight ? '#1C1915' : '#FFFFFF',
+                        fontSize: '0.82rem',
+                        outline: 'none',
+                      }}
+                    />
+                  </div>
+
+                  {Number(event?.ticketPrice || event?.ticket_price || 0) > 0 && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                      <span style={{ fontSize: '0.73rem', fontWeight: 700, color: isLight ? '#475569' : 'var(--slate-300)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                        <Banknote size={13} color="#16a34a" /> Payment:
+                      </span>
+                      {[
+                        { id: 'cash_paid', label: `£${Number(event.ticketPrice || event.ticket_price)} Cash Received` },
+                        { id: 'free', label: 'Free / Comp' },
+                      ].map((opt) => (
+                        <button
+                          key={opt.id}
+                          type="button"
+                          onClick={() => setGuestPaymentMethod(opt.id)}
+                          style={{
+                            padding: '4px 10px',
+                            borderRadius: '999px',
+                            fontSize: '0.72rem',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            background: guestPaymentMethod === opt.id ? '#16a34a' : 'transparent',
+                            color: guestPaymentMethod === opt.id ? '#FFFFFF' : isLight ? '#475569' : 'var(--slate-300)',
+                            border: guestPaymentMethod === opt.id ? '1px solid #16a34a' : '1px solid rgba(148,163,184,0.35)',
+                          }}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  <label style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '0.74rem', color: isLight ? '#334155' : 'var(--slate-300)', cursor: 'pointer', lineHeight: 1.4 }}>
+                    <input
+                      type="checkbox"
+                      checked={guestWaiverConfirmed}
+                      onChange={(e) => setGuestWaiverConfirmed(e.target.checked)}
+                      style={{ marginTop: '2px', accentColor: '#16a34a' }}
+                    />
+                    <span>
+                      <strong style={{ color: '#16a34a' }}>
+                        <ShieldCheck size={12} style={{ display: 'inline', verticalAlign: '-2px', marginRight: '3px' }} />
+                        Safety Waiver Confirmed:
+                      </strong>{' '}
+                      Guest acknowledged safety guidelines &amp; participation waiver (timestamped for PLI insurance register).
+                    </span>
+                  </label>
+
+                  <button
+                    type="submit"
+                    disabled={isSubmittingWalkInGuest}
+                    className="btn btn-primary interactive-press"
+                    style={{
+                      padding: '9px 14px',
+                      borderRadius: '10px',
+                      fontSize: '0.8rem',
+                      fontWeight: 800,
+                      color: '#FFFFFF',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px',
+                      opacity: isSubmittingWalkInGuest ? 0.65 : 1,
+                    }}
+                  >
+                    <UserPlus size={14} />
+                    {isSubmittingWalkInGuest ? 'Checking In...' : 'Add Walk-In, Check In & Email Club Invite'}
+                  </button>
+                </form>
+              </div>
+
+              <div
+                style={{
+                  fontSize: '0.74rem',
+                  color: isLight ? '#475569' : 'var(--slate-400)',
+                  padding: '4px 2px',
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.04em',
+                }}
+              >
+                Or check in an existing More member (works offline):
               </div>
               {filteredWalkIns.length === 0 ? (
                 <div

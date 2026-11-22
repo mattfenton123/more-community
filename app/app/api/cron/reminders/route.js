@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import { parseEventDateTime } from '../../../../src/lib/calendar';
 import { cleanLocationName } from '../../../../src/lib/location';
 import { sendPushNotificationAction } from '../../../../src/lib/actions';
+import { sendWalkInFollowUpEmail } from '../../../../src/lib/emailService';
 
 export const dynamic = 'force-dynamic';
 
@@ -116,6 +117,31 @@ export async function GET(req) {
             body: reminderMessage,
             url: targetLink
           }).catch(e => console.error('Push error:', e));
+
+          // For walk-in / guest attendees in the afterglow window, also email a 1-tap "Claim Profile & Join Community" invite
+          if (reminderType === 'afterglow_3h' && String(attendee.user_id).startsWith('guest_')) {
+            try {
+              const [{ data: guestUser }, { data: comm }] = await Promise.all([
+                supabase.from('users').select('name, bio').eq('id', attendee.user_id).maybeSingle(),
+                event.community_id
+                  ? supabase.from('communities').select('id, name').eq('id', event.community_id).maybeSingle()
+                  : Promise.resolve({ data: null }),
+              ]);
+              const emailMatch = (guestUser?.bio || '').match(/\[Email:\s*([^\]]+)\]/i);
+              const guestEmail = emailMatch?.[1]?.trim();
+              if (guestEmail) {
+                await sendWalkInFollowUpEmail({
+                  to: guestEmail,
+                  name: guestUser?.name || 'friend',
+                  event,
+                  community: comm,
+                  isAfterglow: true,
+                });
+              }
+            } catch (walkInEmailErr) {
+              console.error('Walk-in afterglow email error:', walkInEmailErr);
+            }
+          }
         }
       }
 

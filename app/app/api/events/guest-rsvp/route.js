@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { sendTicketConfirmationEmail } from '../../../../src/lib/emailService';
+import { sendTicketConfirmationEmail, sendWalkInFollowUpEmail } from '../../../../src/lib/emailService';
 import { formatShareLocation } from '../../../../src/lib/location';
 import { getDefaultAvatar } from '../../../../src/lib/avatar';
 
@@ -31,7 +31,20 @@ function getDbClient() {
 export async function POST(request) {
   try {
     const body = await request.json();
-    const { eventId, name, email, guestName, guestEmail, answer } = body || {};
+    const {
+      eventId,
+      name,
+      email,
+      guestName,
+      guestEmail,
+      answer,
+      isWalkIn = false,
+      checkInNow = false,
+      paymentMethod = 'free', // 'free' | 'cash_paid' | 'cash_pending' | 'card'
+      cashAmount = 0,
+      waiverAccepted = false,
+      waiverRecordedBy = 'self_qr',
+    } = body || {};
 
     if (!eventId || !name || !email) {
       return NextResponse.json({ error: 'Event, name, and email are required.' }, { status: 400 });
@@ -48,7 +61,7 @@ export async function POST(request) {
     // 1. Fetch Event details
     const { data: event, error: eventErr } = await db
       .from('events')
-      .select('*, communities(name, image)')
+      .select('*, communities(id, name, image)')
       .eq('id', eventId)
       .maybeSingle();
 
@@ -56,9 +69,22 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Event not found.' }, { status: 404 });
     }
 
+    const waiverAcceptedAt = waiverAccepted ? new Date().toISOString() : null;
+    const isCashPayment = paymentMethod === 'cash_paid' || paymentMethod === 'cash_pending';
+    const numericCash = Number(cashAmount) || Number(event.ticket_price) || 0;
+    const paymentSummary =
+      paymentMethod === 'cash_paid'
+        ? `Cash Paid (£${numericCash})`
+        : paymentMethod === 'cash_pending'
+          ? `Cash Due at Door (£${numericCash})`
+          : 'Free / Complimentary';
+
     // 2. Create guest profile in public.users
     const guestId = `guest_${crypto.randomUUID()}`;
-    const bioString = `[Email: ${cleanEmail}] [Source: guest_rsvp] [Event: ${eventId}]${answer ? ` [Answer: ${String(answer).trim()}]` : ''}`;
+    const sourceTag = isWalkIn ? 'walk_in' : 'guest_rsvp';
+    const paymentTag = isWalkIn ? ` [Payment: ${paymentMethod}${isCashPayment ? `:£${numericCash}` : ''}]` : '';
+    const waiverTag = waiverAcceptedAt ? ` [Waiver: ${waiverAcceptedAt} by ${waiverRecordedBy}]` : '';
+    const bioString = `[Email: ${cleanEmail}] [Source: ${sourceTag}] [Event: ${eventId}]${paymentTag}${waiverTag}${answer ? ` [Answer: ${String(answer).trim()}]` : ''}`;
 
     const userPayload = {
       id: guestId,
@@ -67,7 +93,12 @@ export async function POST(request) {
       bio: bioString,
       joined: `Joined ${new Date().toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })}`,
       avatar: getDefaultAvatar(cleanName),
-      interests: [`email:${cleanEmail}`, 'guest', 'opt_in:true'],
+      interests: [
+        `email:${cleanEmail}`,
+        isWalkIn ? 'walk_in' : 'guest',
+        ...(waiverAcceptedAt ? ['waiver_signed'] : []),
+        'opt_in:true',
+      ],
       onboarded: true,
       location: formatShareLocation(event.location, '').split(',')[0].trim()
     };
@@ -78,13 +109,25 @@ export async function POST(request) {
     }
 
     // 3. Insert RSVP into public.event_rsvps (with column fallback if older schema lacks metadata cols)
+    const shouldCheckIn = Boolean(checkInNow || isWalkIn);
+    const resolvedTicketType = isCashPayment ? 'cash_on_arrival' : 'free';
+    const rsvpAnswerNote = [
+      answer ? String(answer).trim() : '',
+      isWalkIn && paymentMethod === 'cash_paid' ? `Cash Paid (£${numericCash})` : '',
+      isWalkIn && paymentMethod === 'cash_pending' ? `Cash Pending (£${numericCash})` : '',
+      waiverAcceptedAt ? 'Waiver Confirmed' : '',
+    ]
+      .filter(Boolean)
+      .join(' · ');
+
     const rsvpPayload = {
       event_id: eventId,
       user_id: guestId,
       status: 'going',
-      ticket_type: 'free',
+      checked_in: shouldCheckIn,
+      ticket_type: resolvedTicketType,
       ...(guestName ? { guest_name: String(guestName).trim() } : {}),
-      ...(answer ? { answer: String(answer).trim() } : {}),
+      ...(rsvpAnswerNote ? { answer: rsvpAnswerNote } : {}),
     };
 
     let { error: rsvpErr } = await db.from('event_rsvps').insert(rsvpPayload);
@@ -93,8 +136,17 @@ export async function POST(request) {
         event_id: eventId,
         user_id: guestId,
         status: 'going',
+        checked_in: shouldCheckIn,
       });
       rsvpErr = retry.error;
+      if (rsvpErr) {
+        const retryMinimal = await db.from('event_rsvps').insert({
+          event_id: eventId,
+          user_id: guestId,
+          status: 'going',
+        });
+        rsvpErr = retryMinimal.error;
+      }
     }
     if (rsvpErr) {
       console.error('[GuestRSVP] Error creating RSVP record:', rsvpErr.message);
@@ -134,21 +186,33 @@ export async function POST(request) {
       }
     }
 
-    // 5. Send Email Ticket to Main Attendee (non-blocking if mail service unavailable)
+    // 5. Send Email Ticket or Walk-In Receipt + Club Invite (non-blocking if mail service unavailable)
     try {
-      await sendTicketConfirmationEmail({
-        to: cleanEmail,
-        name: cleanName,
-        event,
-        community: event.communities,
-        isGuest: true,
-        plusOne: plusOneData
-      });
+      if (isWalkIn) {
+        await sendWalkInFollowUpEmail({
+          to: cleanEmail,
+          name: cleanName,
+          event,
+          community: event.communities,
+          paymentSummary,
+          waiverAcceptedAt,
+          isAfterglow: false,
+        });
+      } else {
+        await sendTicketConfirmationEmail({
+          to: cleanEmail,
+          name: cleanName,
+          event,
+          community: event.communities,
+          isGuest: true,
+          plusOne: plusOneData
+        });
+      }
     } catch (emailErr) {
       console.error('[GuestRSVP] Confirmation email error:', emailErr?.message || emailErr);
     }
 
-    const ticketNumber = `TKT-${guestId.slice(-6).toUpperCase()}`;
+    const ticketNumber = `${isWalkIn ? 'WLK' : 'TKT'}-${guestId.slice(-6).toUpperCase()}`;
 
     return NextResponse.json({
       success: true,
@@ -156,6 +220,10 @@ export async function POST(request) {
       ticketNumber,
       attendeeName: cleanName,
       attendeeEmail: cleanEmail,
+      isWalkIn: Boolean(isWalkIn),
+      checkedIn: shouldCheckIn,
+      paymentSummary,
+      waiverAcceptedAt,
       event: {
         id: event.id,
         title: event.title,
