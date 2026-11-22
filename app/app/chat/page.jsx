@@ -816,8 +816,8 @@ export default function ChatIndex() {
                           }
                         }}
                         style={{
-                          width: '50px',
-                          height: '50px',
+                          width: '44px',
+                          height: '44px',
                           borderRadius: '50%',
                           background: `var(--surface-elevated) url(${avatar}) center/cover no-repeat`,
                           position: 'relative',
@@ -844,69 +844,63 @@ export default function ChatIndex() {
                       </div>
 
                       <div style={{ flex: 1, minWidth: 0 }}>
+                        {/* Row 1: Full-width Chat Name + Timestamp */}
                         <div
                           style={{
                             display: 'flex',
                             justifyContent: 'space-between',
-                            alignItems: 'baseline',
+                            alignItems: 'flex-start',
                             gap: '8px',
-                            marginBottom: '3px',
+                            marginBottom: '2px',
                           }}
                         >
                           <div
                             style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '8px',
+                              fontFamily: 'var(--font-heading)',
+                              fontWeight: item.hasUnread ? 700 : 600,
+                              fontSize: '0.96rem',
+                              lineHeight: 1.25,
+                              color: 'var(--ink-primary)',
+                              display: '-webkit-box',
+                              WebkitLineClamp: 2,
+                              WebkitBoxOrient: 'vertical',
+                              overflow: 'hidden',
                               minWidth: 0,
+                              flex: 1,
                             }}
                           >
-                            <div
-                              style={{
-                                fontFamily: 'var(--font-heading)',
-                                fontWeight: item.hasUnread ? 700 : 600,
-                                fontSize: '0.98rem',
-                                color: 'var(--ink-primary)',
-                                whiteSpace: 'nowrap',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                              }}
-                            >
-                              {item.displayTitle}
-                            </div>
-                            {item.displaySubtitle && (
-                              <span
-                                style={{
-                                  fontSize: '0.7rem',
-                                  fontWeight: 600,
-                                  color: 'var(--ink-muted)',
-                                  background: 'var(--surface-elevated)',
-                                  border: '1px solid var(--hairline-border)',
-                                  padding: '1px 7px',
-                                  borderRadius: '99px',
-                                  whiteSpace: 'nowrap',
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis',
-                                  maxWidth: '140px',
-                                  flexShrink: 0,
-                                }}
-                              >
-                                {item.displaySubtitle}
-                              </span>
-                            )}
+                            {item.displayTitle}
                           </div>
                           <div
                             style={{
-                              fontSize: '0.73rem',
+                              fontSize: '0.72rem',
                               color: item.hasUnread ? 'var(--teal-300)' : 'var(--ink-muted)',
                               fontWeight: item.hasUnread ? 700 : 500,
                               whiteSpace: 'nowrap',
                               flexShrink: 0,
+                              paddingTop: '2px',
                             }}
                           >
                             {formatChatTime(shownMsg)}
                           </div>
                         </div>
+
+                        {/* Row 2: Subtitle / Channel or Event Context */}
+                        {item.displaySubtitle && (
+                          <div
+                            style={{
+                              fontSize: '0.73rem',
+                              fontWeight: 600,
+                              color: item.type === 'event_qna' ? 'var(--brand-accent)' : 'var(--ink-muted)',
+                              whiteSpace: 'nowrap',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              marginBottom: '3px',
+                            }}
+                          >
+                            {item.displaySubtitle}
+                          </div>
+                        )}
 
                         <div
                           style={{

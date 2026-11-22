@@ -276,25 +276,28 @@ export default function EventChatPage() {
               style={{
                 fontFamily: 'var(--font-heading)',
                 fontWeight: 700,
-                fontSize: '0.98rem',
+                fontSize: '0.94rem',
+                lineHeight: 1.2,
                 color: 'var(--ink-primary)',
-                whiteSpace: 'nowrap',
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical',
                 overflow: 'hidden',
-                textOverflow: 'ellipsis',
               }}
             >
               {event.title}
             </div>
             <div
               style={{
-                fontSize: '0.75rem',
+                fontSize: '0.73rem',
                 color: 'var(--ink-muted)',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '6px',
+                gap: '5px',
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
+                marginTop: '2px',
               }}
             >
               <span>Event Q&amp;A</span>
@@ -310,20 +313,21 @@ export default function EventChatPage() {
           style={{
             display: 'inline-flex',
             alignItems: 'center',
-            gap: '5px',
-            padding: '7px 12px',
+            gap: '4px',
+            padding: '6px 10px',
             borderRadius: '999px',
             background: 'var(--surface-elevated)',
             border: '1px solid var(--hairline-border-strong)',
             color: 'var(--ink-primary)',
-            fontSize: '0.78rem',
-            fontWeight: 600,
+            fontSize: '0.74rem',
+            fontWeight: 700,
             textDecoration: 'none',
             cursor: 'pointer',
             flexShrink: 0,
+            whiteSpace: 'nowrap',
           }}
         >
-          View Event <ExternalLink size={13} />
+          Event <ExternalLink size={12} />
         </Link>
       </header>
 
