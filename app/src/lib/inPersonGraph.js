@@ -214,19 +214,16 @@ export function getEventCheckInCode(event) {
 }
 
 /**
- * Returns true when an event is within its active check-in window
- * (from 2 hours before start until 5 hours after start, or same calendar day).
+ * Returns true when an event is within its active GPS proximity check-in window
+ * (from 90 minutes before start until 5 hours after start, or whenever the host
+ * has posted an active live "We're Here" arrival beacon).
  */
-export function isWithinProximityCheckInWindow(event) {
+export function isWithinProximityCheckInWindow(event, hasLiveBeacon = false) {
   if (!event?.date || event.status === 'cancelled' || event.status === 'proposed') return false;
   const dt = parseEventDateTime(event.date, event.time);
   if (!dt || Number.isNaN(dt.getTime())) return false;
   const now = new Date();
   const diffHours = (now.getTime() - dt.getTime()) / (1000 * 60 * 60);
-  // Active from 2h before start through 5h after start, or anytime on the same day
-  const sameDay =
-    now.getFullYear() === dt.getFullYear() &&
-    now.getMonth() === dt.getMonth() &&
-    now.getDate() === dt.getDate();
-  return sameDay || (diffHours >= -2 && diffHours <= 5);
+  if (hasLiveBeacon && diffHours >= -6 && diffHours <= 8) return true;
+  return diffHours >= -1.5 && diffHours <= 5;
 }

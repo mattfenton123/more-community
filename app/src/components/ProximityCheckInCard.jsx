@@ -25,13 +25,14 @@ export default function ProximityCheckInCard({
   user,
   isCheckedIn,
   arrivalBeacon = null,
+  allowLateGraceCode = false,
   onVerifiedCheckIn,
   onOpenPass,
 }) {
   const [status, setStatus] = useState('idle'); // 'idle' | 'locating' | 'too_far' | 'gps_error' | 'code_error'
   const [statusMsg, setStatusMsg] = useState('');
   const [verifiedNote, setVerifiedNote] = useState('');
-  const [showCodeInput, setShowCodeInput] = useState(false);
+  const [showCodeInput, setShowCodeInput] = useState(Boolean(allowLateGraceCode));
   const [codeValue, setCodeValue] = useState('');
 
   const eventCoords = useMemo(() => {
@@ -44,17 +45,23 @@ export default function ProximityCheckInCard({
     return known ? { lat: known.lat, lng: known.lng } : null;
   }, [event]);
 
-  const inWindow = useMemo(() => isWithinProximityCheckInWindow(event), [event]);
+  const inWindow = useMemo(
+    () => isWithinProximityCheckInWindow(event, Boolean(arrivalBeacon)),
+    [event, arrivalBeacon]
+  );
   const expectedCode = useMemo(() => getEventCheckInCode(event), [event]);
   const venuePerk = useMemo(() => extractVenuePerk(event?.description), [event?.description]);
 
   if (!event?.id || !user?.id) return null;
-  if (!inWindow && !isCheckedIn) return null;
+  if (!inWindow && !allowLateGraceCode && !isCheckedIn) return null;
+
+  const isLateCodeOnly = !inWindow && Boolean(allowLateGraceCode);
 
   // Already checked in — crystal clear green state so members know they don't need to re-scan QR
   if (isCheckedIn) {
     return (
       <div
+        id="proximity-checkin-card"
         style={{
           marginBottom: '20px',
           padding: '14px 16px',
@@ -200,6 +207,7 @@ export default function ProximityCheckInCard({
 
   return (
     <div
+      id="proximity-checkin-card"
       style={{
         marginBottom: '20px',
         padding: '16px',
@@ -230,44 +238,48 @@ export default function ProximityCheckInCard({
           </div>
           <div>
             <div style={{ fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--brand-accent)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <ShieldCheck size={12} /> Proximity Check-In Active
+              <ShieldCheck size={12} /> {isLateCodeOnly ? 'Late Check-In · Host Code Required' : 'Proximity Check-In Active'}
             </div>
             <div style={{ fontSize: '0.92rem', fontWeight: 700, color: 'var(--ink-primary)' }}>
-              Arrived at the meetup? Check in instantly
+              {isLateCodeOnly ? 'Missed check-in on the trail? Verify with host code' : 'Arrived at the meetup? Check in instantly'}
             </div>
             <div style={{ fontSize: '0.76rem', color: 'var(--ink-muted)', marginTop: '1px' }}>
-              Verifies you&apos;re within {PROXIMITY_RADIUS_METERS}m of {arrivalBeacon?.coords ? "the host's live pin" : 'the venue'} — no queue needed.
+              {isLateCodeOnly
+                ? 'Ask your host for the 4-digit check-in code to verify your attendance.'
+                : `Verifies you're within ${PROXIMITY_RADIUS_METERS}m of ${arrivalBeacon?.coords ? "the host's live pin" : 'the venue'} — no queue needed.`}
             </div>
           </div>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-          <button
-            type="button"
-            disabled={status === 'locating'}
-            onClick={handleGpsCheckIn}
-            className="btn btn-primary interactive-press"
-            style={{
-              padding: '9px 15px',
-              borderRadius: '999px',
-              fontSize: '0.8rem',
-              fontWeight: 800,
-              color: '#FFFFFF',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-            }}
-          >
-            {status === 'locating' ? (
-              <>
-                <Loader2 size={14} className="animate-spin" /> Checking GPS...
-              </>
-            ) : (
-              <>
-                <MapPin size={14} /> I&apos;m Here — Check In
-              </>
-            )}
-          </button>
+          {!isLateCodeOnly && (
+            <button
+              type="button"
+              disabled={status === 'locating'}
+              onClick={handleGpsCheckIn}
+              className="btn btn-primary interactive-press"
+              style={{
+                padding: '9px 15px',
+                borderRadius: '999px',
+                fontSize: '0.8rem',
+                fontWeight: 800,
+                color: '#FFFFFF',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+              }}
+            >
+              {status === 'locating' ? (
+                <>
+                  <Loader2 size={14} className="animate-spin" /> Checking GPS...
+                </>
+              ) : (
+                <>
+                  <MapPin size={14} /> I&apos;m Here — Check In
+                </>
+              )}
+            </button>
+          )}
 
           <button
             type="button"

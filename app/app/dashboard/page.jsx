@@ -5400,7 +5400,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                       Branding &amp; Guidelines
                     </span>
                     <span style={{ fontSize: '0.7rem', fontWeight: 700, padding: '2px 8px', borderRadius: '999px', background: 'var(--surface-elevated)', border: '1px solid var(--hairline-border)', color: 'var(--ink-secondary)' }}>
-                      {(communityGuidelines?.length || 0) > 0 ? `${communityGuidelines.length} rules set` : 'No rules yet'}
+                      {(guidelinesDraft?.length || community?.guidelines?.length || 0) > 0 ? `${guidelinesDraft?.length || community?.guidelines?.length} rules set` : 'No rules yet'}
                     </span>
                   </div>
                   {openSettingsGroup === 'branding' ? <ChevronUp size={16} color="var(--ink-muted)" /> : <ChevronDown size={16} color="var(--ink-muted)" />}

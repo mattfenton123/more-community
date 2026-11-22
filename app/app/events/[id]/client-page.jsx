@@ -733,23 +733,23 @@ export default function EventClient({ id }) {
   );
   const canAccessEventPhotos = Boolean(user?.id && (isGoing || isUserCheckedIn || isLeader));
 
-  const handleLiveCheckIn = async () => {
+  const handleLiveCheckIn = () => {
     if (!user?.id) {
       router.push(`/login?redirect=/events/${id}`);
       return;
     }
-    try {
-      setHasCheckedInLocally(true);
-      if (!isMember && event?.communityId) {
-        try {
-          await joinCommunity(event.communityId);
-        } catch {}
-      }
-      await checkInMember(event.id, user.id, true);
-      toast.success("You're Registered & Checked In! 🎉", "Your attendance is recorded and counts toward your Verified Local standing.");
-    } catch (err) {
-      console.error('Check-in error:', err);
-      toast.error('Check-in Failed', 'Could not record your arrival. Please try again.');
+    const cardEl = typeof document !== 'undefined' ? document.getElementById('proximity-checkin-card') : null;
+    if (cardEl) {
+      cardEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      toast.info(
+        'Verify Your Arrival',
+        'Tap "I’m Here — Check In" within 250m of the meeting point, or enter the host’s 4-digit code.'
+      );
+    } else {
+      toast.info(
+        'Check-In Opens Soon',
+        'GPS self check-in unlocks 90 minutes before start when you’re within 250m of the meeting point (or ask your host to check you in).'
+      );
     }
   };
 
@@ -1864,9 +1864,15 @@ export default function EventClient({ id }) {
           user={user}
           isCheckedIn={isUserCheckedIn}
           arrivalBeacon={getLatestArrivalBeacon(eventComments?.[event.id] || [])}
+          allowLateGraceCode={Boolean(isEventPast(event) && isWithinCheckInGraceWindow)}
           onVerifiedCheckIn={async (note) => {
             if (!user?.id || !event?.id) return;
             setHasCheckedInLocally(true);
+            if (!isMember && event?.communityId) {
+              try {
+                await joinCommunity(event.communityId);
+              } catch {}
+            }
             if (typeof checkInMember === 'function') {
               await checkInMember(event.id, user.id, true);
             }
