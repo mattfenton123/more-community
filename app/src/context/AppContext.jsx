@@ -823,49 +823,47 @@ export function AppProvider({ children }) {
 
 
 
-      // Batch 2: Auth-dependent queries (run in parallel with each other)
+      // Unblock UI immediately once core tables (users, communities, events, RSVPs, comments) are loaded!
+      setIsLoading(false);
+
+      // Batch 2: Auth-dependent queries (non-blocking background hydration)
       if (authUser?.id) {
-        const [notifRes, readRes] = await Promise.all([
+        Promise.all([
           supabase
             .from('notifications')
             .select('*')
             .eq('user_id', authUser.id)
             .order('created_at', { ascending: false }),
           supabase
-            .from('direct_messages')
-            .select('*')
-            .or(`sender_id.eq.${authUser.id},receiver_id.eq.${authUser.id}`)
-            .order('created_at', { ascending: true }),
-          supabase
             .from('chat_read_receipts')
             .select('*')
             .eq('user_id', authUser.id),
-        ]);
-
-        if (!notifRes.error && notifRes.data) {
-          setNotifications(notifRes.data);
-        }
-
-        if (!readRes.error && readRes.data) {
-          setChatReadReceipts(readRes.data);
-        }
+        ])
+          .then(([notifRes, readRes]) => {
+            if (!notifRes.error && notifRes.data) {
+              setNotifications(notifRes.data);
+            }
+            if (!readRes.error && readRes.data) {
+              setChatReadReceipts(readRes.data);
+            }
+          })
+          .catch((err) => console.warn('Background auth batch error:', err));
       }
 
-      // Fetch live Viator experiences (with fallback to curated defaults)
-      try {
-        const expRes = await fetch('/api/experiences/discover?q=Tunbridge%20Wells');
-        const expJson = await expRes.json();
-        if (expJson.status === 'success' && expJson.data && expJson.data.length > 0) {
-          setExperiences(expJson.data);
-        } else {
+      // Fetch live Viator experiences in the background (never block chat/dashboard/event page loads!)
+      fetch('/api/experiences/discover?q=Tunbridge%20Wells')
+        .then((expRes) => expRes.json())
+        .then((expJson) => {
+          if (expJson.status === 'success' && expJson.data && expJson.data.length > 0) {
+            setExperiences(expJson.data);
+          } else {
+            setExperiences(initialExperiences);
+          }
+        })
+        .catch((err) => {
+          console.warn('Viator fetch fallback:', err);
           setExperiences(initialExperiences);
-        }
-      } catch (err) {
-        console.warn('Viator fetch fallback:', err);
-        setExperiences(initialExperiences);
-      }
-
-      setIsLoading(false);
+        });
     };
 
     fetchAllDataRef.current = fetchAllData;
