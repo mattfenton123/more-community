@@ -1865,6 +1865,45 @@ export default function EventStudioModal({
                     </div>
                   </div>
 
+                  {/* Local Venue Perk (Unlocks on Check-In) */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '7px' }}>
+                    <label style={{ fontSize: '0.74rem', fontWeight: 800, color: 'var(--ink-primary)', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                      <Sparkles size={14} color="#16a34a" /> Local Venue Perk (Unlocks on Check-In — Optional)
+                    </label>
+                    <input
+                      type="text"
+                      value={eventForm?.venuePerk || ''}
+                      onChange={(e) => setEventForm((prev) => ({ ...prev, venuePerk: e.target.value }))}
+                      placeholder="e.g. 10% off coffee at The Roastery — show Checked-In pass"
+                      style={fieldStyle}
+                    />
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
+                      {[
+                        '10% off coffee & pastries',
+                        'Reserved group table at the venue',
+                        'Free welcome drink on arrival',
+                      ].map((perk) => (
+                        <button
+                          key={perk}
+                          type="button"
+                          onClick={() => setEventForm((prev) => ({ ...prev, venuePerk: perk }))}
+                          style={{
+                            padding: '4px 9px',
+                            borderRadius: '99px',
+                            background: 'var(--surface-card)',
+                            border: '1px solid var(--hairline-border)',
+                            color: 'var(--ink-secondary)',
+                            fontSize: '0.7rem',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                          }}
+                        >
+                          + {perk}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
                   {/* Co-Host with Partner Communities */}
                   {partnerClubs.length > 0 && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '7px' }}>

@@ -37,6 +37,7 @@ import { getCommunityLocation } from '../../../src/lib/location';
 import { parseEventDateTime } from '../../../src/lib/calendar';
 import { resolveUserAvatar } from '../../../src/lib/avatar';
 import { findUserByParam } from '../../../src/lib/profileLinks';
+import { getSharedMeetups, getVerifiedCheckInCount } from '../../../src/lib/inPersonGraph';
 
 
 const BANNER_PRESETS = [
@@ -173,6 +174,16 @@ export default function UserProfile() {
     });
     return count;
   }, [eventRsvps, targetId]);
+
+  const sharedMeetups = useMemo(
+    () => (isOwnProfile ? [] : getSharedMeetups(currentUser?.id, targetId, events, eventRsvps)),
+    [isOwnProfile, currentUser?.id, targetId, events, eventRsvps]
+  );
+
+  const verifiedCheckIns = useMemo(
+    () => getVerifiedCheckInCount(targetId, eventRsvps),
+    [targetId, eventRsvps]
+  );
 
   const sharesCommunityWithTarget = useMemo(() => {
     if (isOwnProfile || !currentUser?.id || !targetId) return false;
@@ -1038,6 +1049,38 @@ export default function UserProfile() {
                     </div>
                   )}
 
+                  {/* Met in Person Real-World Social Graph Banner */}
+                  {!isOwnProfile && sharedMeetups.length > 0 && (
+                    <div
+                      style={{
+                        margin: '4px auto 12px',
+                        padding: '9px 14px',
+                        borderRadius: '12px',
+                        background: 'rgba(16, 185, 129, 0.10)',
+                        border: '1px solid rgba(16, 185, 129, 0.28)',
+                        color: 'var(--ink-primary)',
+                        fontSize: '0.8rem',
+                        display: 'inline-flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: '3px',
+                        maxWidth: '460px',
+                      }}
+                    >
+                      <span style={{ fontWeight: 700, color: '#15803D', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                        <Users size={13} /> You and {firstName} have met in person ({sharedMeetups.length}{' '}
+                        {sharedMeetups.length === 1 ? 'meetup' : 'meetups'} together)
+                      </span>
+                      <span style={{ fontSize: '0.73rem', color: 'var(--ink-secondary)' }}>
+                        {sharedMeetups
+                          .slice(0, 2)
+                          .map((ev) => ev.title)
+                          .join(' · ')}
+                        {sharedMeetups.length > 2 ? ` +${sharedMeetups.length - 2} more` : ''}
+                      </span>
+                    </div>
+                  )}
+
                   {/* Trust, Location & Activity Pills */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '10px' }}>
                     {profileUser.location && (
@@ -1080,6 +1123,25 @@ export default function UserProfile() {
                         </span>
                       )}
                     </span>
+                    {verifiedCheckIns > 0 && (
+                      <span
+                        style={{
+                          fontSize: '0.74rem',
+                          fontWeight: 700,
+                          color: '#15803D',
+                          background: 'rgba(21, 128, 61, 0.12)',
+                          padding: '4px 10px',
+                          borderRadius: '99px',
+                          border: '1px solid rgba(21, 128, 61, 0.28)',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                        }}
+                        title={`${verifiedCheckIns} verified in-person check-in${verifiedCheckIns === 1 ? '' : 's'}`}
+                      >
+                        <Check size={12} strokeWidth={2.75} /> Verified Attendee
+                      </span>
+                    )}
                     {streak > 0 && (
                       <span
                         style={{

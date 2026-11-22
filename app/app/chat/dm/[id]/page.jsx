@@ -9,6 +9,9 @@ import {
   Plus,
   Smile,
   Shield,
+  Users,
+  Check,
+  Lock,
 } from 'lucide-react';
 import { useAppContext } from '../../../../src/context/AppContext';
 import { useChat } from '../../../../src/context/ChatContext';
@@ -19,6 +22,8 @@ import LinkSafetyModal from '../../../../src/components/LinkSafetyModal';
 import ChatTrustModal from '../../../../src/components/ChatTrustModal';
 import { calculateUserTrustLevel, checkRateLimit } from '../../../../src/lib/chatSecurity';
 import { resolveUserAvatar } from '../../../../src/lib/avatar';
+import { getProfilePath } from '../../../../src/lib/profileLinks';
+import { getSharedMeetups, getVerifiedCheckInCount } from '../../../../src/lib/inPersonGraph';
 import { useToast } from '../../../../src/components/Toast';
 
 const EmojiPicker = dynamic(() => import('emoji-picker-react'), { ssr: false });
@@ -66,6 +71,17 @@ export default function DirectMessage() {
         .flat()
         .filter(Boolean);
   const trustLevel = calculateUserTrustLevel(targetUser, communityMemberships, events, flatEventRsvps);
+  const sharedMeetups = getSharedMeetups(user?.id, targetUserId, events, eventRsvps);
+  const targetVerifiedCheckIns = getVerifiedCheckInCount(targetUserId, eventRsvps);
+  const sharesCommunity = Boolean(
+    user?.id &&
+      Object.values(communityMemberships || {}).some((mems) => {
+        if (!Array.isArray(mems)) return false;
+        const hasMe = mems.some((m) => (m.userId || m.user_id) === user.id);
+        const hasTarget = mems.some((m) => (m.userId || m.user_id) === targetUserId);
+        return hasMe && hasTarget;
+      })
+  );
 
   const activeMessages = (directMessages || [])
     .filter(
@@ -76,6 +92,19 @@ export default function DirectMessage() {
     .sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0));
 
   const mainMessages = activeMessages.filter((m) => !m.parentId);
+  const isViewerLeaderOrAdmin = Boolean(
+    user?.isAdmin || (user?.ledCommunities?.length || 0) > 0 || user?.leaderOf
+  );
+  const isTargetLeaderOrAdmin = Boolean(
+    targetUser?.is_admin || targetUser?.isAdmin || targetUser?.role === 'Leader'
+  );
+  const canDirectMessage = Boolean(
+    activeMessages.length > 0 ||
+      sharedMeetups.length > 0 ||
+      sharesCommunity ||
+      isViewerLeaderOrAdmin ||
+      isTargetLeaderOrAdmin
+  );
 
   useEffect(() => {
     if (user?.id && targetUserId) markChatRead(null, targetUserId);
@@ -86,6 +115,13 @@ export default function DirectMessage() {
   }, [mainMessages.length]);
 
   const handleSend = async () => {
+    if (!canDirectMessage) {
+      toast.info(
+        'Anti-Spam Protection',
+        'Join a shared community or attend a meetup together to unlock direct messaging.'
+      );
+      return;
+    }
     if (!inputText.trim() && !imageFile) return;
     const rateCheck = checkRateLimit(user?.id);
     if (!rateCheck.allowed) {
@@ -210,7 +246,7 @@ export default function DirectMessage() {
           <img
             src={resolveUserAvatar(targetUser)}
             alt={targetUser.name}
-            onClick={() => router.push(`/profile/${targetUserId}`)}
+            onClick={() => router.push(getProfilePath(targetUser, users))}
             style={{
               width: '38px',
               height: '38px',
@@ -224,7 +260,7 @@ export default function DirectMessage() {
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
               <div
-                onClick={() => router.push(`/profile/${targetUserId}`)}
+                onClick={() => router.push(getProfilePath(targetUser, users))}
                 style={{
                   fontFamily: 'var(--font-heading)',
                   fontWeight: 700,
@@ -238,6 +274,25 @@ export default function DirectMessage() {
               >
                 {targetUser.name}
               </div>
+              {targetVerifiedCheckIns > 0 && (
+                <span
+                  style={{
+                    fontSize: '0.64rem',
+                    fontWeight: 700,
+                    padding: '2px 7px',
+                    borderRadius: '99px',
+                    background: 'rgba(21, 128, 61, 0.12)',
+                    color: '#15803D',
+                    border: '1px solid rgba(21, 128, 61, 0.28)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '3px',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  <Check size={10} strokeWidth={3} /> Verified Attendee
+                </span>
+              )}
               {trustLevel?.badge && (
                 <span
                   style={{
@@ -291,6 +346,54 @@ export default function DirectMessage() {
             <span>Safety</span>
           </button>
         </div>
+
+        {/* Met in Person Trust Strip */}
+        {sharedMeetups.length > 0 && (
+          <div
+            style={{
+              background: 'rgba(16, 185, 129, 0.10)',
+              borderBottom: '1px solid rgba(16, 185, 129, 0.25)',
+              padding: '8px 18px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              fontSize: '0.76rem',
+              color: 'var(--ink-primary)',
+            }}
+          >
+            <Users size={14} color="#15803D" style={{ flexShrink: 0 }} />
+            <span>
+              <strong style={{ color: '#15803D' }}>
+                Met in person ({sharedMeetups.length} {sharedMeetups.length === 1 ? 'meetup' : 'meetups'} together):
+              </strong>{' '}
+              {sharedMeetups
+                .slice(0, 2)
+                .map((ev) => ev.title)
+                .join(' · ')}
+            </span>
+          </div>
+        )}
+
+        {/* Anti-Spam DM Guard Banner (when no shared community or meetup) */}
+        {!canDirectMessage && (
+          <div
+            style={{
+              background: 'rgba(217, 119, 6, 0.10)',
+              borderBottom: '1px solid rgba(217, 119, 6, 0.28)',
+              padding: '10px 18px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              fontSize: '0.78rem',
+              color: 'var(--ink-primary)',
+            }}
+          >
+            <Lock size={14} color="#D97706" style={{ flexShrink: 0 }} />
+            <span>
+              <strong>High-Trust Messaging:</strong> To keep More free of cold spam, direct messages unlock once you share a community or attend a meetup together.
+            </span>
+          </div>
+        )}
 
         {/* Shield Harbor Safety Notice */}
         <div
@@ -779,6 +882,7 @@ export default function DirectMessage() {
               <input
                 type="text"
                 value={inputText}
+                disabled={!canDirectMessage}
                 onChange={(e) => setInputText(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey) {
@@ -786,7 +890,11 @@ export default function DirectMessage() {
                     handleSend();
                   }
                 }}
-                placeholder={`Message ${targetUser.name}...`}
+                placeholder={
+                  canDirectMessage
+                    ? `Message ${targetUser.name}...`
+                    : 'Join a shared community or meetup to message...'
+                }
                 style={{
                   flex: 1,
                   padding: '10px 16px',

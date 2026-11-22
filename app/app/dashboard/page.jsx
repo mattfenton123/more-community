@@ -1,7 +1,7 @@
 "use client";
 import { supabase } from '../../src/lib/supabaseClient';
 import { useState, useRef, useMemo, useEffect } from 'react';
-import { AlertCircle, Copy, Printer, ExternalLink, HelpCircle, Users, Calendar, Camera, MessageCircle, TrendingUp, Search, Plus, MapPin, Image as ImageIcon, CreditCard, ChevronRight, ChevronLeft, Download, Activity, Globe, Heart, Crown, Info, X, Map, Zap, Mail, Trash2, UserCheck, Ban, ChevronDown, ChevronUp, Settings, Megaphone, QrCode, BarChart3, Ticket, ScanLine, UserPlus, DollarSign, Clock, Edit3, Check, CheckCircle2, Eye, EyeOff, Shield, Star, Sparkles, BookOpen, ListChecks, Bell, Archive, Mic, MicOff, Wand2, Lightbulb, Car, Share2 } from 'lucide-react';
+import { AlertCircle, Banknote, Copy, Printer, ExternalLink, HelpCircle, Users, Calendar, Camera, MessageCircle, MessageSquare, TrendingUp, Search, Plus, MapPin, Image as ImageIcon, CreditCard, ChevronRight, ChevronLeft, Download, Activity, Globe, Heart, Crown, Info, X, Map, Zap, Mail, Trash2, UserCheck, Ban, ChevronDown, ChevronUp, Settings, Megaphone, QrCode, BarChart3, Ticket, ScanLine, UserPlus, DollarSign, Clock, Edit3, Check, CheckCircle2, Eye, EyeOff, Shield, Star, Sparkles, BookOpen, ListChecks, Bell, Archive, Mic, MicOff, Wand2, Lightbulb, Car, Share2 } from 'lucide-react';
 import AppHeader from '../../src/components/AppHeader';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { isEventUpcoming, isEventPast, parseEventDateTime } from '../../src/lib/calendar';
@@ -47,6 +47,7 @@ function stripInternalEventTags(rawDesc) {
     .replace(/\s*\[Host Approval Required\]/g, '')
     .replace(/\s*\[RSVP Question: [^\]]+\]/g, '')
     .replace(/\s*\[WhatsApp: [^\]]+\]/g, '')
+    .replace(/\s*\[Venue Perk: [^\]]+\]/g, '')
     .replace(/\s*\[Carpool: disabled\]/g, '')
     .replace(/\s*\[Guests: disabled\]/g, '')
     .replace(/\s*\[ProposedByUid:[^\]]+\]/g, '')
@@ -1392,10 +1393,15 @@ export default function LeaderDashboard({ initialCommunityId }) {
       }
       
       const finalImage = imageUrl || eventForm.image || community?.cover_image || community?.image || null;
+      const cleanDesc = stripInternalEventTags(eventForm.description);
+      const descWithPerk = eventForm.venuePerk?.trim()
+        ? `${cleanDesc}${cleanDesc ? '\n' : ''}[Venue Perk: ${eventForm.venuePerk.trim()}]`
+        : cleanDesc;
 
       if (dates.length === 1) {
         await createEvent(community.id, {
           ...eventForm,
+          description: descWithPerk,
           location: resolvedLocation,
           date: dates[0],
           maxCapacity: eventForm.maxCapacity ? parseInt(eventForm.maxCapacity, 10) : null,
@@ -1413,6 +1419,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
       } else {
         const eventsList = dates.map(d => ({
           ...eventForm,
+          description: descWithPerk,
           location: resolvedLocation,
           date: d,
           maxCapacity: eventForm.maxCapacity ? parseInt(eventForm.maxCapacity, 10) : null,
@@ -1478,6 +1485,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
       requireApproval: Boolean(event.requireApproval || event.require_approval || (event.description && event.description.includes('[Host Approval Required]'))),
       rsvpQuestion: event.rsvpQuestion || (event.description?.match(/\[RSVP Question: ([^\]]+)\]/)?.[1] || ''),
       whatsappGroup: event.whatsappGroup || (event.description?.match(/\[WhatsApp: ([^\]]+)\]/)?.[1] || '') || '',
+      venuePerk: event.venuePerk || (event.description?.match(/\[Venue Perk:\s*([^\]]+)\]/i)?.[1] || ''),
       image: event.image || '',
       scheduleMode: 'single',
       resolvedDates: nextDate ? [nextDate] : [],
@@ -1536,6 +1544,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
       requireApproval: Boolean(event.requireApproval || event.require_approval || (event.description && event.description.includes('[Host Approval Required]'))),
       rsvpQuestion: event.rsvpQuestion || (event.description?.match(/\[RSVP Question: ([^\]]+)\]/)?.[1] || ''),
       whatsappGroup: event.whatsappGroup || (event.description?.match(/\[WhatsApp: ([^\]]+)\]/)?.[1] || '') || '',
+      venuePerk: event.venuePerk || (event.description?.match(/\[Venue Perk:\s*([^\]]+)\]/i)?.[1] || ''),
       image: event.image || '',
       scheduleMode: 'single',
       resolvedDates: event.date ? [event.date] : [],
@@ -1576,8 +1585,12 @@ export default function LeaderDashboard({ initialCommunityId }) {
         if (geo?.lat && geo?.lng) resolvedLocation = encodeLocationWithCoords(cleanAddr, geo.lat, geo.lng);
       }
     }
+    const cleanEditDesc = stripInternalEventTags(eventForm.description);
+    const editDescWithPerk = eventForm.venuePerk?.trim()
+      ? `${cleanEditDesc}${cleanEditDesc ? '\n' : ''}[Venue Perk: ${eventForm.venuePerk.trim()}]`
+      : cleanEditDesc;
     const updates = {
-      title: eventForm.title, description: eventForm.description,
+      title: eventForm.title, description: editDescWithPerk,
       date: eventForm.date, time: eventForm.time, location: resolvedLocation,
       maxCapacity: eventForm.maxCapacity ? parseInt(eventForm.maxCapacity, 10) : null,
       ticketPrice: eventForm.ticketPrice ? parseFloat(eventForm.ticketPrice) : 0,
@@ -4269,6 +4282,21 @@ export default function LeaderDashboard({ initialCommunityId }) {
                             )}
                             
                             {/* Expandable Attendee List */}
+                            {isExpanded && attendees.length === 0 && (
+                              <div style={{ borderTop: '1px solid var(--hairline-border)', padding: '12px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap' }}>
+                                <span style={{ fontSize: '0.8rem', color: 'var(--ink-muted)' }}>
+                                  No RSVPs yet — share your event or register walk-ins in Check-In.
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => setRollCallEvent(event)}
+                                  className="btn btn-outline interactive-press"
+                                  style={{ padding: '5px 11px', fontSize: '0.74rem', color: '#15803D', borderColor: 'rgba(21,128,61,0.35)', fontWeight: 700 }}
+                                >
+                                  <UserPlus size={12} style={{ marginRight: '4px' }} /> Add Walk-In
+                                </button>
+                              </div>
+                            )}
                             {isExpanded && attendees.length > 0 && (
                               <div style={{ borderTop: '1px solid var(--hairline-border)', padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                                 <div style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--slate-500)', textTransform: 'uppercase', marginBottom: '4px' }}>Attendees ({attendees.length})</div>
@@ -7092,6 +7120,14 @@ export default function LeaderDashboard({ initialCommunityId }) {
 
           </div>
         </div>
+      )}
+
+      {/* Attendee Check-In & Walk-Ins Modal */}
+      {rollCallEvent && (
+        <RollCallModal
+          event={rollCallEvent}
+          onClose={() => setRollCallEvent(null)}
+        />
       )}
 
       {/* Event Flyer Generator Modal */}

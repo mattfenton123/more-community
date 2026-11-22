@@ -33,6 +33,7 @@ import {
 import { cleanLocationName, getCommunityLocation } from '../../src/lib/location';
 import { getEventPath } from '../../src/lib/eventLinks';
 import { isCommunityPubliclyListed } from '../../src/lib/communityVisibility';
+import { getMetInPersonMap, getFamiliarFacesGoing } from '../../src/lib/inPersonGraph';
 
 function stripEmojiAndNormalize(str) {
   return String(str || '')
@@ -88,6 +89,7 @@ export default function EventsHub() {
     events,
     communities,
     user,
+    users = [],
     eventRsvps,
     proposeEvent,
     isLoading,
@@ -572,6 +574,11 @@ export default function EventsHub() {
 
   const isCustomDateActive = !['all', 'today', 'this_week', 'this_weekend'].includes(dateFilter);
 
+  const metInPersonMap = useMemo(
+    () => getMetInPersonMap(user?.id, events, eventRsvps),
+    [user?.id, events, eventRsvps]
+  );
+
   const renderEventCard = (event, isPast = false) => {
     const community = (communities || []).find((c) => c.id === event.communityId);
     const eventImage = event.image || community?.image || community?.cover_image;
@@ -582,6 +589,9 @@ export default function EventsHub() {
     const leaf = formatCalendarLeaf(event.date, event.time);
     const displayDate = formatReadableDate(event.date, event.time);
     const displayLoc = cleanLocationName(event.location) || getCommunityLocation(community || {}) || 'Local Venue';
+    const familiarFaces = !isArchived
+      ? getFamiliarFacesGoing(user?.id, event.id, events, eventRsvps, users, metInPersonMap)
+      : [];
 
     const sponsorAssignment = (sponsorshipAssignments || []).find(
       (a) => a.target_id === event.communityId && a.target_type === 'community'
@@ -820,6 +830,55 @@ export default function EventsHub() {
                 </>
               )}
             </div>
+
+            {familiarFaces.length > 0 && (
+              <div
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '7px',
+                  marginTop: '4px',
+                  padding: '4px 9px 4px 5px',
+                  borderRadius: '999px',
+                  background: 'rgba(16, 185, 129, 0.11)',
+                  border: '1px solid rgba(16, 185, 129, 0.28)',
+                  width: 'fit-content',
+                  maxWidth: '100%',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  {familiarFaces.slice(0, 3).map((f, idx) => (
+                    <img
+                      key={f.id}
+                      src={f.avatar}
+                      alt={f.name}
+                      style={{
+                        width: '18px',
+                        height: '18px',
+                        borderRadius: '50%',
+                        objectFit: 'cover',
+                        border: '1.5px solid var(--surface-card)',
+                        marginLeft: idx === 0 ? 0 : '-6px',
+                      }}
+                    />
+                  ))}
+                </div>
+                <span
+                  style={{
+                    fontSize: '0.7rem',
+                    fontWeight: 700,
+                    color: '#15803D',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}
+                >
+                  {familiarFaces.length === 1
+                    ? `${familiarFaces[0].name.split(' ')[0]} (met in person) is going`
+                    : `${familiarFaces[0].name.split(' ')[0]} & ${familiarFaces.length - 1} other${familiarFaces.length - 1 === 1 ? '' : 's'} you've met are going`}
+                </span>
+              </div>
+            )}
 
             <div
               style={{

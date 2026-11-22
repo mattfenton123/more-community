@@ -48,10 +48,11 @@ export async function GET(req) {
       const diffHours = (eventTime - now) / (1000 * 60 * 60);
       const cleanLoc = cleanLocationName(event.location);
 
-      // Determine reminder tier (24h or 2h)
+      // Determine reminder tier (24h, 2h, or post-meetup afterglow 2.5–7h after start)
       let reminderType = null;
       let reminderTitle = '';
       let reminderMessage = '';
+      let targetLink = `/events/${event.id}`;
 
       if (diffHours > 0 && diffHours <= 2.5) {
         reminderType = 'reminder_2h';
@@ -61,6 +62,11 @@ export async function GET(req) {
         reminderType = 'reminder_24h';
         reminderTitle = `⏰ Tomorrow: ${event.title}`;
         reminderMessage = `Reminder: ${event.title} is taking place tomorrow at ${event.time || '10:00'}${cleanLoc ? ' at ' + cleanLoc : ''}. Check your digital pass in the app!`;
+      } else if (diffHours <= -2.5 && diffHours >= -7) {
+        reminderType = 'afterglow_3h';
+        reminderTitle = `✨ How was ${event.title}?`;
+        reminderMessage = `See who you met at ${event.title}, drop your photos into the shared album, and grab your spot for the next meetup!`;
+        targetLink = `/events/${event.id}#afterglow`;
       }
 
       if (!reminderType) continue;
@@ -74,14 +80,21 @@ export async function GET(req) {
       const attendees = (rsvps || []).filter(r => r.status === 'going' || r.status === 'checked_in' || !r.status);
       if (attendees.length === 0) continue;
 
+      const dedupePattern =
+        reminderType === 'reminder_2h'
+          ? '%Starting Soon%'
+          : reminderType === 'afterglow_3h'
+            ? '%How was%'
+            : '%Tomorrow%';
+
       for (const attendee of attendees) {
         // Prevent duplicate reminders for the same tier
         const { data: existing } = await supabase
           .from('notifications')
           .select('id')
           .eq('user_id', attendee.user_id)
-          .eq('link', `/events/${event.id}`)
-          .ilike('title', reminderType === 'reminder_2h' ? '%Starting Soon%' : '%Tomorrow%')
+          .ilike('link', `/events/${event.id}%`)
+          .ilike('title', dedupePattern)
           .limit(1);
 
         if (existing && existing.length > 0) continue;
@@ -92,7 +105,7 @@ export async function GET(req) {
           type: 'reminder',
           title: reminderTitle,
           message: reminderMessage,
-          link: `/events/${event.id}`,
+          link: targetLink,
           is_read: false
         });
 
@@ -101,7 +114,7 @@ export async function GET(req) {
           sendPushNotificationAction(attendee.user_id, {
             title: reminderTitle,
             body: reminderMessage,
-            url: `/events/${event.id}`
+            url: targetLink
           }).catch(e => console.error('Push error:', e));
         }
       }

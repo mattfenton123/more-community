@@ -9,23 +9,33 @@ import {
   Users,
   RefreshCw,
   WifiOff,
+  Sparkles,
+  Radio,
+  Send,
 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { useToast } from './Toast';
 import { resolveUserAvatar } from '../lib/avatar';
+import { isCommunityFirstTimer, ARRIVAL_BEACON_PREFIX } from '../lib/inPersonGraph';
 
 export default function RollCallModal({ event, onClose }) {
   const {
     users,
+    events,
     eventRsvps,
     communityMemberships,
     checkInMember,
     flushOfflineCheckinQueue,
+    addEventComment,
+    sendEventReminder,
     theme,
   } = useAppContext();
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeMode, setActiveMode] = useState('registered'); // 'registered' | 'walkin'
+  const [showBeaconComposer, setShowBeaconComposer] = useState(false);
+  const [beaconText, setBeaconText] = useState('');
+  const [isSendingBeacon, setIsSendingBeacon] = useState(false);
   const [isOffline, setIsOffline] = useState(
     typeof navigator !== 'undefined' ? !navigator.onLine : false
   );
@@ -82,15 +92,21 @@ export default function RollCallModal({ event, onClose }) {
     [rawAttendees]
   );
 
-  // Enrich pre-registered attendees with user object
+  // Enrich pre-registered attendees with user object + First-Timer detection
   const attendees = useMemo(() => {
     return rawAttendees
       .map((rsvp) => {
         const u = (users || []).find((x) => x.id === rsvp.userId);
+        const isFirstTimer = Boolean(
+          event?.communityId &&
+            rsvp.userId &&
+            isCommunityFirstTimer(rsvp.userId, event.communityId, event.id, events, eventRsvps)
+        );
         return {
           ...rsvp,
-          name: u?.name || 'Community Member',
-          avatar: resolveUserAvatar(u),
+          name: u?.name || rsvp.guestName || 'Community Member',
+          avatar: resolveUserAvatar(u || { name: rsvp.guestName || 'Community Member' }),
+          isFirstTimer,
         };
       })
       .sort((a, b) => {
@@ -99,13 +115,18 @@ export default function RollCallModal({ event, onClose }) {
         }
         return a.checkedIn ? 1 : -1;
       });
-  }, [rawAttendees, users]);
+  }, [rawAttendees, users, event?.communityId, event?.id, events, eventRsvps]);
+
+  const firstTimerCount = useMemo(
+    () => attendees.filter((a) => a.isFirstTimer).length,
+    [attendees]
+  );
 
   // Build Walk-In Roster from pre-loaded community members + all platform users (works 100% offline!)
   const walkInCandidates = useMemo(() => {
     const commIds = [
-      event.communityId,
-      ...(Array.isArray(event.collabCommunityIds)
+      event?.communityId,
+      ...(Array.isArray(event?.collabCommunityIds)
         ? event.collabCommunityIds
         : []),
     ].filter(Boolean);
@@ -310,6 +331,24 @@ export default function RollCallModal({ event, onClose }) {
               >
                 {event.date} • {event.time}
               </span>
+              {firstTimerCount > 0 && (
+                <span
+                  style={{
+                    background: 'rgba(217, 119, 6, 0.14)',
+                    color: '#D97706',
+                    border: '1px solid rgba(217, 119, 6, 0.30)',
+                    padding: '2px 8px',
+                    borderRadius: '999px',
+                    fontSize: '0.7rem',
+                    fontWeight: 800,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                  }}
+                >
+                  <Sparkles size={11} /> {firstTimerCount} First-Timer{firstTimerCount === 1 ? '' : 's'}
+                </span>
+              )}
             </div>
             <h2
               style={{
@@ -322,20 +361,118 @@ export default function RollCallModal({ event, onClose }) {
               {event.title}
             </h2>
           </div>
-          <button
-            onClick={onClose}
-            className="interactive-press"
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <button
+              type="button"
+              onClick={() => setShowBeaconComposer((v) => !v)}
+              className="interactive-press"
+              title="Drop a live 'We're Here' arrival beacon to everyone Going"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '5px',
+                padding: '6px 10px',
+                borderRadius: '999px',
+                border: '1px solid rgba(235, 87, 56, 0.38)',
+                background: showBeaconComposer ? '#EB5738' : 'rgba(235, 87, 56, 0.12)',
+                color: showBeaconComposer ? '#FFFFFF' : '#EB5738',
+                fontSize: '0.74rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              <Radio size={13} /> We&apos;re Here
+            </button>
+            <button
+              onClick={onClose}
+              className="interactive-press"
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: isLight ? '#64748b' : 'var(--slate-400)',
+                cursor: 'pointer',
+                padding: '4px',
+              }}
+            >
+              <X size={20} />
+            </button>
+          </div>
+        </div>
+
+        {/* 1-Tap "We're Here" Arrival Beacon Bar */}
+        {showBeaconComposer && (
+          <div
             style={{
-              background: 'transparent',
-              border: 'none',
-              color: isLight ? '#64748b' : 'var(--slate-400)',
-              cursor: 'pointer',
-              padding: '4px',
+              padding: '12px 18px',
+              background: isLight ? '#FFF7F4' : 'rgba(235, 87, 56, 0.08)',
+              borderBottom: '1px solid rgba(235, 87, 56, 0.22)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '8px',
             }}
           >
-            <X size={20} />
-          </button>
-        </div>
+            <div style={{ fontSize: '0.76rem', fontWeight: 700, color: '#EB5738', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Radio size={13} /> Drop &ldquo;We&apos;re Here&rdquo; Arrival Beacon (pins on Event Page + pings Going attendees)
+            </div>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <input
+                type="text"
+                value={beaconText}
+                onChange={(e) => setBeaconText(e.target.value)}
+                placeholder="e.g. Back garden table by the oak tree — wearing a red jacket!"
+                style={{
+                  flex: 1,
+                  padding: '8px 12px',
+                  borderRadius: '10px',
+                  border: '1px solid rgba(235, 87, 56, 0.32)',
+                  background: isLight ? '#FFFFFF' : 'rgba(0,0,0,0.28)',
+                  color: isLight ? '#1C1915' : '#FFFFFF',
+                  fontSize: '0.82rem',
+                  outline: 'none',
+                }}
+              />
+              <button
+                type="button"
+                disabled={isSendingBeacon || !beaconText.trim()}
+                onClick={async () => {
+                  const msg = beaconText.trim();
+                  if (!msg || !event?.id) return;
+                  setIsSendingBeacon(true);
+                  try {
+                    if (typeof addEventComment === 'function') {
+                      await addEventComment(event.id, `${ARRIVAL_BEACON_PREFIX} ${msg}`);
+                    }
+                    if (typeof sendEventReminder === 'function') {
+                      await sendEventReminder(event.id, `📍 We're Here: ${msg}`);
+                    }
+                    toast.success("Arrival Beacon Sent! 📍", "Pinned to the event page and sent to attendees.");
+                    setBeaconText('');
+                    setShowBeaconComposer(false);
+                  } catch (err) {
+                    toast.error('Could not send beacon', err?.message || 'Please try again.');
+                  } finally {
+                    setIsSendingBeacon(false);
+                  }
+                }}
+                className="btn btn-primary interactive-press"
+                style={{
+                  padding: '8px 14px',
+                  borderRadius: '10px',
+                  fontSize: '0.78rem',
+                  fontWeight: 700,
+                  color: '#FFFFFF',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  opacity: isSendingBeacon || !beaconText.trim() ? 0.55 : 1,
+                }}
+              >
+                <Send size={13} /> {isSendingBeacon ? 'Sending...' : 'Ping Group'}
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Zero-Signal / Offline Queue Banner */}
         {(isOffline || queuedCount > 0) && (
@@ -704,6 +841,23 @@ export default function RollCallModal({ event, onClose }) {
                           >
                             {att.name}
                           </span>
+                          {att.isFirstTimer && (
+                            <span
+                              title="First-time attendee in this community — give them a warm welcome!"
+                              style={{
+                                fontSize: '0.66rem',
+                                padding: '1px 7px',
+                                borderRadius: '999px',
+                                background: 'rgba(217, 119, 6, 0.16)',
+                                border: '1px solid rgba(217, 119, 6, 0.34)',
+                                color: '#D97706',
+                                fontWeight: 800,
+                                flexShrink: 0,
+                              }}
+                            >
+                              ✦ First-Timer
+                            </span>
+                          )}
                           {att.guestName && (
                             <span
                               style={{

@@ -3,8 +3,16 @@ import { X, Calendar, MapPin, Clock, Ticket, WifiOff, CheckCircle2, Navigation, 
 import QRCode from 'qrcode';
 import InfoExplainer from './InfoExplainer';
 import { cleanLocationName, formatShareLocation, parseLocationCoords } from '../lib/location';
+import { useAppContext } from '../context/AppContext';
+import { extractVenuePerk, isCheckedInRsvp } from '../lib/inPersonGraph';
 
-export default function DigitalTicket({ event, community, user, onClose }) {
+export default function DigitalTicket({ event, community, user, onClose, isCheckedIn: isCheckedInProp }) {
+  const { eventRsvps } = useAppContext() || {};
+  const myRsvp = (event?.id && user?.id ? eventRsvps?.[event.id] || [] : []).find(
+    (r) => (r.userId || r.user_id) === user.id
+  );
+  const isCheckedIn = Boolean(isCheckedInProp || isCheckedInRsvp(myRsvp));
+  const venuePerk = extractVenuePerk(event?.description);
   const canvasRef = useRef(null);
   const [isOffline, setIsOffline] = useState(typeof navigator !== 'undefined' ? !navigator.onLine : false);
   const [copiedCoords, setCopiedCoords] = useState(false);
@@ -198,8 +206,9 @@ export default function DigitalTicket({ event, community, user, onClose }) {
         {/* Ticket Header */}
         <div style={{ padding: '20px 24px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--teal-400)', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '4px' }}>
-              <Ticket size={14} /> Official Event Pass
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: isCheckedIn ? '#34d399' : 'var(--teal-400)', fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '4px' }}>
+              {isCheckedIn ? <ShieldCheck size={14} /> : <Ticket size={14} />}
+              {isCheckedIn ? 'Verified Checked-In Pass' : 'Official Event Pass'}
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               {community?.image && (
@@ -229,6 +238,41 @@ export default function DigitalTicket({ event, community, user, onClose }) {
             <X size={16} />
           </button>
         </div>
+
+        {/* Verified Check-In & Local Venue Perk Banner */}
+        {(isCheckedIn || venuePerk) && (
+          <div style={{ padding: '0 24px 12px' }}>
+            <div
+              style={{
+                padding: '11px 14px',
+                borderRadius: '14px',
+                background: isCheckedIn
+                  ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.22) 0%, rgba(5, 150, 105, 0.12) 100%)'
+                  : 'rgba(245, 158, 11, 0.12)',
+                border: isCheckedIn
+                  ? '1px solid rgba(52, 211, 153, 0.48)'
+                  : '1px dashed rgba(251, 191, 36, 0.42)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '4px',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: isCheckedIn ? '#34d399' : '#fbbf24' }}>
+                <Sparkles size={13} />
+                {isCheckedIn ? 'Checked In · Verified Attendee' : 'Venue Perk — Unlocks on Check-In'}
+              </div>
+              {venuePerk ? (
+                <div style={{ fontSize: '0.84rem', fontWeight: 700, color: '#FFFFFF', lineHeight: 1.35 }}>
+                  {venuePerk}
+                </div>
+              ) : (
+                <div style={{ fontSize: '0.78rem', color: '#d1fae5', lineHeight: 1.35 }}>
+                  Show this live verified pass to your host or venue partner.
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Co-Host Badge if joint event */}
         {event.collabCommunityIds && event.collabCommunityIds.length > 0 && (

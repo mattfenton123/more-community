@@ -11,7 +11,9 @@ import {
   ExternalLink,
   CheckCircle2,
   MessageSquare,
+  Radio,
 } from 'lucide-react';
+import { getLatestArrivalBeacon } from '../../../../src/lib/inPersonGraph';
 import { useAppContext } from '../../../../src/context/AppContext';
 import { useChat } from '../../../../src/context/ChatContext';
 import { useToast } from '../../../../src/components/Toast';
@@ -352,6 +354,32 @@ export default function EventChatPage() {
         </div>
         <span style={{ color: 'var(--brand-accent)', fontWeight: 600 }}>Event details →</span>
       </div>
+
+      {/* Live "We're Here" Arrival Beacon Strip */}
+      {(() => {
+        const beacon = getLatestArrivalBeacon(comments);
+        if (!beacon?.message) return null;
+        return (
+          <div
+            style={{
+              flexShrink: 0,
+              padding: '9px 16px',
+              background: 'var(--brand-accent-soft)',
+              borderBottom: '1px solid rgba(235, 87, 56, 0.30)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              fontSize: '0.8rem',
+              color: 'var(--ink-primary)',
+            }}
+          >
+            <Radio size={14} color="var(--brand-accent)" style={{ flexShrink: 0 }} />
+            <span>
+              <strong style={{ color: 'var(--brand-accent)' }}>We&apos;re Here:</strong> {beacon.message}
+            </span>
+          </div>
+        );
+      })()}
 
       {/* Scrollable Messages Area */}
       <main

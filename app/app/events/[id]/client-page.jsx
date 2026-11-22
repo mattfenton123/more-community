@@ -2,7 +2,7 @@
 import { supabase } from '../../../src/lib/supabaseClient';
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ChevronLeft, Share2, Car, MapPin, Calendar, Clock, Users, CheckCircle2, Info, List, Activity, Check, Map, Ticket, DollarSign, Copy, ExternalLink, Navigation, Video, AlertTriangle, Image as ImageIcon, ScanLine, Archive, Repeat, MessageCircle, Banknote, CreditCard, Lock, ChevronRight, X, UserCheck, Shield, ChevronDown, Camera, HelpCircle, MessageSquare, Compass, Trees, WifiOff } from 'lucide-react';
+import { ChevronLeft, Share2, Car, MapPin, Calendar, Clock, Users, CheckCircle2, Info, List, Activity, Check, Map, Ticket, DollarSign, Copy, ExternalLink, Navigation, Video, AlertTriangle, Image as ImageIcon, ScanLine, Archive, Repeat, MessageCircle, Banknote, CreditCard, Lock, ChevronRight, X, UserCheck, Shield, ChevronDown, Camera, HelpCircle, MessageSquare, Compass, Trees, WifiOff, Radio, Sparkles } from 'lucide-react';
 import { useAppContext } from '../../../src/context/AppContext';
 import { useToast } from '../../../src/components/Toast';
 import DigitalTicket from '../../../src/components/DigitalTicket';
@@ -26,6 +26,8 @@ import ShareOptions from '../../../src/components/ShareOptions';
 import EventRecapShareCard from '../../../src/components/EventRecapShareCard';
 import { parseExperienceMeta, stripExperienceMeta, buildAffiliateUrl } from '../../../src/lib/experiencePricing';
 import EventDiscussion from '../../../src/components/EventDiscussion';
+import PostMeetupAfterglow from '../../../src/components/PostMeetupAfterglow';
+import { extractVenuePerk, getLatestArrivalBeacon } from '../../../src/lib/inPersonGraph';
 import { resolveUserAvatar } from '../../../src/lib/avatar';
 import { getCarpoolHandshakeMessage } from '../../../src/lib/carpool';
 import { isHostOrPartnerMember, shouldAutoJoinPrimaryOnRsvp } from '../../../src/lib/eventCollaboration';
@@ -309,7 +311,7 @@ function EventLocationMap({ location, event, isLocationShielded = false }) {
 
 export default function EventClient({ id }) {
   const router = useRouter();
-  const { events, communities, user, users, eventRsvps, rsvpToEvent, updateAttendeeStatus, addEventPhoto, updateEvent, joinCommunity, checkInMember, carpools, reserveCarpoolSeat } = useAppContext();
+  const { events, communities, user, users, eventRsvps, eventComments = {}, rsvpToEvent, updateAttendeeStatus, addEventPhoto, updateEvent, joinCommunity, checkInMember, carpools, reserveCarpoolSeat } = useAppContext();
   const { toast } = useToast();
   const [event, setEvent] = useState(null);
   const [community, setCommunity] = useState(null);
@@ -516,7 +518,11 @@ export default function EventClient({ id }) {
         eventId: event.id,
       })
     : '';
-  const cleanDescription = stripExperienceMeta((event?.description || '').replace(/\[Host Approval Required\]/g, ''));
+  const cleanDescription = stripExperienceMeta(
+    (event?.description || '')
+      .replace(/\[Host Approval Required\]/g, '')
+      .replace(/\s*\[Venue Perk:\s*[^\]]+\]/gi, '')
+  );
   const canSeeSecretLocation = !requiresHostApproval || isGoing || isLeader;
   const pendingAttendees = (rsvps || []).filter(r => r.status === 'pending_approval');
 
@@ -1764,6 +1770,112 @@ export default function EventClient({ id }) {
               </button>
             </div>
           </div>
+        )}
+
+        {/* Live "We're Here" Arrival Beacon (when dropped by host) */}
+        {(() => {
+          const beacon = getLatestArrivalBeacon(eventComments?.[event.id] || []);
+          if (!beacon?.message) return null;
+          return (
+            <div
+              style={{
+                marginBottom: '20px',
+                padding: '14px 16px',
+                borderRadius: '16px',
+                background: 'linear-gradient(135deg, rgba(235, 87, 56, 0.14) 0%, rgba(235, 87, 56, 0.06) 100%)',
+                border: '1.5px solid rgba(235, 87, 56, 0.42)',
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: '12px',
+              }}
+            >
+              <div
+                style={{
+                  width: '34px',
+                  height: '34px',
+                  borderRadius: '10px',
+                  background: 'var(--brand-accent)',
+                  color: '#FFFFFF',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                }}
+              >
+                <Radio size={17} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--brand-accent)', marginBottom: '2px' }}>
+                  Live Arrival Beacon · Host Is Here
+                </div>
+                <div style={{ fontSize: '0.92rem', fontWeight: 700, color: 'var(--ink-primary)', lineHeight: 1.4 }}>
+                  {beacon.message}
+                </div>
+              </div>
+            </div>
+          );
+        })()}
+
+        {/* Local Venue Perk Banner (unlocks on Check-In) */}
+        {(() => {
+          const perk = extractVenuePerk(event.description);
+          if (!perk) return null;
+          const isCheckedIn = Boolean(isUserCheckedIn);
+          return (
+            <div
+              style={{
+                marginBottom: '20px',
+                padding: '14px 16px',
+                borderRadius: '16px',
+                background: isCheckedIn ? 'rgba(16, 185, 129, 0.12)' : 'var(--surface-card)',
+                border: isCheckedIn ? '1.5px solid rgba(16, 185, 129, 0.42)' : '1px dashed rgba(217, 119, 6, 0.42)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '12px',
+                flexWrap: 'wrap',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: '200px' }}>
+                <Sparkles size={18} color={isCheckedIn ? '#15803D' : '#D97706'} style={{ flexShrink: 0 }} />
+                <div>
+                  <div style={{ fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: isCheckedIn ? '#15803D' : '#D97706' }}>
+                    {isCheckedIn ? 'Unlocked · Show Checked-In Pass at Venue' : 'Local Venue Perk · Unlocks on Check-In'}
+                  </div>
+                  <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--ink-primary)', marginTop: '2px' }}>
+                    {perk}
+                  </div>
+                </div>
+              </div>
+              {isCheckedIn && (
+                <button
+                  type="button"
+                  onClick={() => setShowTicket(event)}
+                  className="btn btn-primary interactive-press"
+                  style={{ padding: '7px 14px', borderRadius: '999px', fontSize: '0.78rem', fontWeight: 700, color: '#FFFFFF' }}
+                >
+                  Show Pass
+                </button>
+              )}
+            </div>
+          );
+        })()}
+
+        {/* Post-Meetup Afterglow: Who You Met + Photo Drop + Next Meetup Momentum */}
+        {isEventPast(event) && (
+          <PostMeetupAfterglow
+            event={event}
+            community={community}
+            events={events}
+            users={users}
+            eventRsvps={eventRsvps}
+            currentUser={user}
+            onUploadPhoto={
+              canAccessEventPhotos
+                ? () => photoInputRef.current?.click()
+                : undefined
+            }
+          />
         )}
 
         {/* Shared Event Discussion & Q&A across host + co-host communities */}
