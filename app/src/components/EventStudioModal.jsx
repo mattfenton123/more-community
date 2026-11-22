@@ -32,11 +32,13 @@ import {
   AlertTriangle,
   Loader2,
   Lightbulb,
+  Crop,
 } from 'lucide-react';
 import RecurringSchedulePicker from './RecurringSchedulePicker';
 import { cleanLocationName } from '../lib/location';
 
 const LocationPicker = dynamic(() => import('./LocationPicker'), { ssr: false });
+const ImageCropModal = dynamic(() => import('./ImageCropModal'), { ssr: false });
 
 function formatDateLocal(d) {
   const yr = d.getFullYear();
@@ -137,6 +139,7 @@ export default function EventStudioModal({
   const [showMoreOptions, setShowMoreOptions] = useState(false);
   const [confirmCancelStep, setConfirmCancelStep] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
+  const [cropDraft, setCropDraft] = useState(null); // { src, fileName, revokeOnClose }
 
   // Price & Capacity segmented modes
   const [isPaidMode, setIsPaidMode] = useState(false);
@@ -980,11 +983,34 @@ export default function EventStudioModal({
             >
               <input
                 type="file"
-                accept="image/*"
+                accept="image/*,.heic,.heif"
                 ref={fileInputRef}
-                onChange={(e) => {
+                onChange={async (e) => {
                   const f = e.target.files?.[0];
-                  if (f) setImageFile(f);
+                  if (!f) return;
+                  e.target.value = '';
+                  let processedFile = f;
+                  if (
+                    f.type === 'image/heic' ||
+                    f.type === 'image/heif' ||
+                    f.name.toLowerCase().endsWith('.heic') ||
+                    f.name.toLowerCase().endsWith('.heif')
+                  ) {
+                    try {
+                      const heic2any = (await import('heic2any')).default;
+                      const blob = await heic2any({ blob: f, toType: 'image/jpeg', quality: 0.9 });
+                      const jpegBlob = Array.isArray(blob) ? blob[0] : blob;
+                      processedFile = new File(
+                        [jpegBlob],
+                        f.name.replace(/\.[^/.]+$/, '') + '.jpg',
+                        { type: 'image/jpeg' }
+                      );
+                    } catch (err) {
+                      console.warn('HEIC conversion fallback:', err);
+                    }
+                  }
+                  const objUrl = URL.createObjectURL(processedFile);
+                  setCropDraft({ src: objUrl, fileName: processedFile.name, revokeOnClose: true });
                 }}
                 style={{ display: 'none' }}
               />
@@ -1011,7 +1037,7 @@ export default function EventStudioModal({
                         ? 'Using club cover photo'
                         : 'Current event cover'}
                     </span>
-                    <div style={{ display: 'flex', gap: '6px' }}>
+                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
                       {imageFile && (
                         <button
                           type="button"
@@ -1033,6 +1059,32 @@ export default function EventStudioModal({
                           Reset
                         </button>
                       )}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setCropDraft({
+                            src: coverPreviewUrl,
+                            fileName: imageFile?.name || 'event-cover.jpg',
+                            revokeOnClose: false,
+                          });
+                        }}
+                        style={{
+                          padding: '5px 10px',
+                          borderRadius: '99px',
+                          background: 'rgba(15, 23, 42, 0.82)',
+                          border: '1px solid rgba(255,255,255,0.24)',
+                          color: '#ffffff',
+                          fontSize: '0.72rem',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                        }}
+                      >
+                        <Crop size={12} /> Crop / Move
+                      </button>
                       <span
                         style={{
                           padding: '5px 11px',
@@ -2204,20 +2256,27 @@ export default function EventStudioModal({
           {/* Primary Publish / Save CTA */}
           <button
             type="button"
-            disabled={isUploading || Boolean(missingItem)}
-            onClick={onSubmit}
+            disabled={isUploading}
+            onClick={() => {
+              if (missingItem) {
+                missingItem.jump?.();
+                return;
+              }
+              onSubmit?.();
+            }}
             className="btn btn-primary interactive-press"
             style={{
               padding: '12px 22px',
               borderRadius: '12px',
               fontSize: '0.88rem',
               fontWeight: 800,
+              color: '#FFFFFF',
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
               gap: '7px',
-              opacity: isUploading || Boolean(missingItem) ? 0.48 : 1,
-              cursor: isUploading || Boolean(missingItem) ? 'not-allowed' : 'pointer',
+              opacity: isUploading ? 0.55 : missingItem ? 0.82 : 1,
+              cursor: isUploading ? 'not-allowed' : 'pointer',
               minWidth: '170px',
             }}
           >
@@ -2234,6 +2293,26 @@ export default function EventStudioModal({
           </button>
         </div>
       </div>
+
+      {cropDraft && (
+        <ImageCropModal
+          isOpen={true}
+          imageSrc={cropDraft.src}
+          fileName={cropDraft.fileName}
+          aspectRatio={16 / 9}
+          title="Crop & Position Event Cover"
+          subtitle="Drag to reposition your photo inside the 16:9 event card frame"
+          onCancel={() => {
+            if (cropDraft.revokeOnClose) URL.revokeObjectURL(cropDraft.src);
+            setCropDraft(null);
+          }}
+          onConfirm={(croppedFile) => {
+            if (cropDraft.revokeOnClose) URL.revokeObjectURL(cropDraft.src);
+            setCropDraft(null);
+            setImageFile(croppedFile);
+          }}
+        />
+      )}
     </div>
   );
 

@@ -913,11 +913,12 @@ export async function updateEventAction(eventId, updates, token) {
     dbUpdates.description = String(baseDesc || '').replace(/\s*\[ProposedByUid:[^\]]+\]/g, '').trim();
   }
   
-  const { data, error } = await db.from('events').update(dbUpdates).eq('id', eventId).select().single();
+  const { data, error } = await db.from('events').update(dbUpdates).eq('id', eventId).select().maybeSingle();
   if (error) {
     console.error('Event update failed:', error);
     throw new Error(error.message);
   }
+  const savedEvent = data || { id: eventId, ...dbUpdates };
 
   // Notify proposing member when their event proposal is approved & published
   if (isPublishingProposal && proposerMatch?.[1] && proposerMatch[1] !== user?.id) {
@@ -926,8 +927,8 @@ export async function updateEventAction(eventId, updates, token) {
         user_id: proposerMatch[1],
         type: 'event_proposal_approved',
         title: '🎉 Your Event Idea Was Published!',
-        message: `Your proposed event "${data.title}" has been approved and added to the community calendar.`,
-        link: `/events/${data.id}`,
+        message: `Your proposed event "${savedEvent.title}" has been approved and added to the community calendar.`,
+        link: `/events/${savedEvent.id}`,
         is_read: false,
       });
     } catch (e) {
@@ -935,7 +936,7 @@ export async function updateEventAction(eventId, updates, token) {
     }
   }
 
-  return data;
+  return savedEvent;
 }
 
 const ADMIN_ONLY_COMMUNITY_FIELDS = ['verified', 'is_banned', 'is_flagged', 'flag_reason'];

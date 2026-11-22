@@ -1,7 +1,7 @@
 "use client";
 import { supabase } from '../../src/lib/supabaseClient';
 import { useState, useRef, useMemo, useEffect } from 'react';
-import { AlertCircle, Banknote, Copy, Printer, ExternalLink, HelpCircle, Users, Calendar, Camera, MessageCircle, MessageSquare, TrendingUp, Search, Plus, MapPin, Image as ImageIcon, CreditCard, ChevronRight, ChevronLeft, Download, Activity, Globe, Heart, Crown, Info, X, Map, Zap, Mail, Trash2, UserCheck, Ban, ChevronDown, ChevronUp, Settings, Megaphone, QrCode, BarChart3, Ticket, ScanLine, UserPlus, DollarSign, Clock, Edit3, Check, CheckCircle2, Eye, EyeOff, Shield, Star, Sparkles, BookOpen, ListChecks, Bell, Archive, Mic, MicOff, Wand2, Lightbulb, Car, Share2 } from 'lucide-react';
+import { AlertCircle, Banknote, Copy, Crop, Printer, ExternalLink, HelpCircle, Users, Calendar, Camera, MessageCircle, MessageSquare, TrendingUp, Search, Plus, MapPin, Image as ImageIcon, CreditCard, ChevronRight, ChevronLeft, Download, Activity, Globe, Heart, Crown, Info, X, Map, Zap, Mail, Trash2, UserCheck, Ban, ChevronDown, ChevronUp, Settings, Megaphone, QrCode, BarChart3, Ticket, ScanLine, UserPlus, DollarSign, Clock, Edit3, Check, CheckCircle2, Eye, EyeOff, Shield, Star, Sparkles, BookOpen, ListChecks, Bell, Archive, Mic, MicOff, Wand2, Lightbulb, Car, Share2 } from 'lucide-react';
 import AppHeader from '../../src/components/AppHeader';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { isEventUpcoming, isEventPast, parseEventDateTime } from '../../src/lib/calendar';
@@ -36,6 +36,7 @@ const LeaderAICoPilot = dynamic(() => import('../../src/components/LeaderAICoPil
 const EventStudioModal = dynamic(() => import('../../src/components/EventStudioModal'), { ssr: false });
 const LeaderEventsCalendar = dynamic(() => import('../../src/components/LeaderEventsCalendar'), { ssr: false });
 const ConnectQRModal = dynamic(() => import('../../src/components/ConnectQRModal'), { ssr: false });
+const ImageCropModal = dynamic(() => import('../../src/components/ImageCropModal'), { ssr: false });
 
 import { cleanLocationName, parseLocationCoords, encodeLocationWithCoords, geocodeLocation, normalizeCoords } from '../../src/lib/location';
 import { formatEventDate } from '../../src/lib/recurrence';
@@ -382,6 +383,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
   const [showSubscriptionInfo, setShowSubscriptionInfo] = useState(false);
   const [showShieldModal, setShowShieldModal] = useState(false);
   const [showClubQRModal, setShowClubQRModal] = useState(false);
+  const [coverCropDraft, setCoverCropDraft] = useState(null); // { src, fileName, directSave, revokeOnClose }
   const [openSettingsGroup, setOpenSettingsGroup] = useState('branding'); // 'branding' | 'messaging' | 'access' | 'advanced' | null
   const [specialistModalState, setSpecialistModalState] = useState({ isOpen: false, mode: 'inspect', specialist: null });
   const [eventsSubTab, setEventsSubTab] = useState(() => (searchParams?.get('tab') === 'network' ? 'network' : searchParams?.get('tab') === 'experiences' ? 'trips' : 'my-events')); // 'my-events' | 'calendar' | 'network' | 'trips'
@@ -1165,28 +1167,43 @@ export default function LeaderDashboard({ initialCommunityId }) {
 
   // ─── Handlers ─────────────────────────────────────────────
   const handleCoverImageSelect = async (e, directSave = false) => {
-    const file = e.target.files[0];
+    const file = e.target.files?.[0];
     if (!file) return;
+    e.target.value = '';
 
     let processedFile = file;
     if (file.type === 'image/heic' || file.type === 'image/heif' || file.name.toLowerCase().endsWith('.heic') || file.name.toLowerCase().endsWith('.heif')) {
       try {
         const heic2any = (await import('heic2any')).default;
-        const blob = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.85 });
+        const blob = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.9 });
         const jpegBlob = Array.isArray(blob) ? blob[0] : blob;
-        processedFile = new File([jpegBlob], file.name.replace(/\.[^/.]+$/, "") + ".jpeg", { type: 'image/jpeg' });
+        processedFile = new File([jpegBlob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", { type: 'image/jpeg' });
       } catch (err) {
         console.warn("HEIC conversion fallback:", err);
       }
     }
 
-    if (directSave && community) {
+    const objUrl = URL.createObjectURL(processedFile);
+    setCoverCropDraft({
+      src: objUrl,
+      fileName: processedFile.name || 'club-cover.jpg',
+      directSave: Boolean(directSave),
+      revokeOnClose: true,
+    });
+  };
+
+  const handleConfirmCoverCrop = async (croppedFile, previewDataUrl) => {
+    const draft = coverCropDraft;
+    if (draft?.revokeOnClose && draft?.src) URL.revokeObjectURL(draft.src);
+    setCoverCropDraft(null);
+
+    if (draft?.directSave && community) {
       setIsUploading(true);
       try {
-        const url = await uploadImage(processedFile, 'community_covers');
+        const url = await uploadImage(croppedFile, 'community_covers');
         await updateCommunity(community.id, { cover_image: url, image: url });
         setCoverImagePreview(url);
-        toast.success('Cover image updated!', 'Your community cover is now live');
+        toast.success('Cover image updated!', 'Your cropped community cover is now live');
       } catch (err) {
         console.error(err);
         toast.error('Upload failed', 'Could not upload cover image');
@@ -1196,10 +1213,8 @@ export default function LeaderDashboard({ initialCommunityId }) {
       return;
     }
 
-    setCoverImageFile(processedFile);
-    const reader = new FileReader();
-    reader.onloadend = () => setCoverImagePreview(reader.result);
-    reader.readAsDataURL(processedFile);
+    setCoverImageFile(croppedFile);
+    setCoverImagePreview(previewDataUrl);
   };
 
   const handleEditClick = () => {
@@ -1622,67 +1637,98 @@ export default function LeaderDashboard({ initialCommunityId }) {
   };
 
   const handleSaveEvent = async () => {
-    if (!eventForm.title || !eventForm.date || !eventForm.time || !eventForm.location) return;
+    if (!editingEventId) {
+      toast.error('Could not save', 'No event selected for editing.');
+      return;
+    }
+    if (!eventForm.title?.trim() || !eventForm.date || !eventForm.time?.trim() || !eventForm.location?.trim()) {
+      toast.error('Missing required fields', 'Please fill in Title, Date, Time, and Meeting Point.');
+      return;
+    }
     if (parseFloat(eventForm.ticketPrice) > 0 && !stripeConnected && !eventForm.allowCash) {
       toast.error('Payout Account or Cash Option Required', 'Connect your UK payout bank account or tick "Allow Pay in Cash at Venue" to publish a paid event.');
       return;
     }
+
     setIsUploading(true);
-    let imageUrl;
-    if (imageFile) {
-      try { imageUrl = await uploadImage(imageFile, 'events'); } catch (e) {
-        toast.error('Upload failed', 'Could not upload event image');
-      }
-    }
-    let resolvedLocation = eventForm.location;
-    if (resolvedLocation && !parseLocationCoords(resolvedLocation)) {
-      const cleanAddr = cleanLocationName(resolvedLocation);
-      try {
-        const searchRes = await fetch(`/api/places/search?q=${encodeURIComponent(cleanAddr)}&limit=1`);
-        const searchJson = searchRes.ok ? await searchRes.json() : null;
-        const first = searchJson?.results?.[0];
-        if (first?.lat != null && first?.lon != null) {
-          resolvedLocation = encodeLocationWithCoords(cleanAddr, first.lat, first.lon);
-        } else {
-          const geo = await geocodeLocation(cleanAddr);
-          if (geo?.lat && geo?.lng) resolvedLocation = encodeLocationWithCoords(cleanAddr, geo.lat, geo.lng);
+    try {
+      let imageUrl;
+      if (imageFile) {
+        try {
+          imageUrl = await uploadImage(imageFile, 'events');
+        } catch (e) {
+          console.error('Event image upload failed:', e);
+          toast.error('Upload failed', 'Could not upload event image — saving other changes.');
         }
-      } catch {
-        const geo = await geocodeLocation(cleanAddr);
-        if (geo?.lat && geo?.lng) resolvedLocation = encodeLocationWithCoords(cleanAddr, geo.lat, geo.lng);
       }
+
+      let resolvedLocation = eventForm.location.trim();
+      if (resolvedLocation && !parseLocationCoords(resolvedLocation)) {
+        const cleanAddr = cleanLocationName(resolvedLocation);
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 3000);
+          const searchRes = await fetch(`/api/places/search?q=${encodeURIComponent(cleanAddr)}&limit=1`, {
+            signal: controller.signal,
+          });
+          clearTimeout(timeoutId);
+          const searchJson = searchRes.ok ? await searchRes.json() : null;
+          const first = searchJson?.results?.[0];
+          if (first?.lat != null && first?.lon != null) {
+            resolvedLocation = encodeLocationWithCoords(cleanAddr, first.lat, first.lon);
+          }
+        } catch {
+          // Non-blocking: save the text location even if geocode times out
+        }
+      }
+
+      const cleanEditDesc = stripInternalEventTags(eventForm.description);
+      const editDescWithPerk = eventForm.venuePerk?.trim()
+        ? `${cleanEditDesc}${cleanEditDesc ? '\n' : ''}[Venue Perk: ${eventForm.venuePerk.trim()}]`
+        : cleanEditDesc;
+
+      const updates = {
+        title: eventForm.title.trim(),
+        description: editDescWithPerk,
+        date: eventForm.date,
+        time: eventForm.time.trim(),
+        location: resolvedLocation,
+        maxCapacity: eventForm.maxCapacity ? parseInt(eventForm.maxCapacity, 10) : null,
+        ticketPrice: eventForm.ticketPrice ? parseFloat(eventForm.ticketPrice) : 0,
+        allowCash: Boolean(eventForm.allowCash),
+        allowGuests: eventForm.allowGuests !== false,
+        allowCarpool: eventForm.allowCarpool !== false,
+        requireApproval: Boolean(eventForm.requireApproval),
+        rsvpQuestion: eventForm.rsvpQuestion?.trim() || '',
+        collabCommunityIds: eventForm.collabCommunityIds || [],
+        whatsappGroup: eventForm.whatsappGroup?.trim() || '',
+        autoReminders: eventForm.autoReminders,
+        autoFeedback: eventForm.autoFeedback
+      };
+      if (imageUrl) updates.image = imageUrl;
+
+      const editedExisting = events.find((e) => e.id === editingEventId);
+      if (editedExisting?.status === 'proposed') {
+        updates.status = 'published';
+      }
+
+      const saved = await updateEvent(editingEventId, updates);
+      if (!saved) {
+        toast.error('Save failed', 'Could not save your changes to the server. Please try again.');
+        return;
+      }
+
+      setModalType(null);
+      setEditingEventId(null);
+      setEventForm(emptyEventForm);
+      setImageFile(null);
+      toast.success('Event updated!', `${eventForm.title.trim()} has been saved`);
+    } catch (err) {
+      console.error('handleSaveEvent error:', err);
+      toast.error('Save failed', err?.message || 'Could not save event changes. Please try again.');
+    } finally {
+      setIsUploading(false);
     }
-    const cleanEditDesc = stripInternalEventTags(eventForm.description);
-    const editDescWithPerk = eventForm.venuePerk?.trim()
-      ? `${cleanEditDesc}${cleanEditDesc ? '\n' : ''}[Venue Perk: ${eventForm.venuePerk.trim()}]`
-      : cleanEditDesc;
-    const updates = {
-      title: eventForm.title, description: editDescWithPerk,
-      date: eventForm.date, time: eventForm.time, location: resolvedLocation,
-      maxCapacity: eventForm.maxCapacity ? parseInt(eventForm.maxCapacity, 10) : null,
-      ticketPrice: eventForm.ticketPrice ? parseFloat(eventForm.ticketPrice) : 0,
-      allowCash: Boolean(eventForm.allowCash),
-      allowGuests: eventForm.allowGuests !== false,
-      allowCarpool: eventForm.allowCarpool !== false,
-      requireApproval: Boolean(eventForm.requireApproval),
-      rsvpQuestion: eventForm.rsvpQuestion?.trim() || '',
-      collabCommunityIds: eventForm.collabCommunityIds || [],
-      whatsappGroup: eventForm.whatsappGroup?.trim() || '',
-      autoReminders: eventForm.autoReminders,
-      autoFeedback: eventForm.autoFeedback
-    };
-    if (imageUrl) updates.image = imageUrl;
-    const editedExisting = events.find((e) => e.id === editingEventId);
-    if (editedExisting?.status === 'proposed') {
-      updates.status = 'published';
-    }
-    await updateEvent(editingEventId, updates);
-    setIsUploading(false);
-    setModalType(null);
-    setEditingEventId(null);
-    setEventForm(emptyEventForm);
-    setImageFile(null);
-    toast.success('Event updated!', `${eventForm.title} has been saved`);
   };
 
   const handleCancelEvent = async (eventId) => {
@@ -3001,7 +3047,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
                     </div>
                   )}
 
-                  {/* Subtle top-right camera button to update cover without crowding bottom row */}
+                  {/* Subtle top-right cover controls (Crop/Reposition + Upload new) */}
                   <input 
                     type="file" 
                     ref={bannerFileInputRef} 
@@ -3009,34 +3055,64 @@ export default function LeaderDashboard({ initialCommunityId }) {
                     accept="image/*,.heic,.heif,.jpg,.jpeg,.png,.webp" 
                     style={{ display: 'none' }} 
                   />
-                  <button
-                    type="button"
-                    onClick={() => bannerFileInputRef.current?.click()}
-                    disabled={isUploading}
-                    title="Update cover photo"
-                    aria-label="Update cover photo"
-                    className="interactive-press"
-                    style={{
-                      position: 'absolute',
-                      top: '10px',
-                      right: '10px',
-                      zIndex: 2,
-                      background: 'rgba(20, 18, 15, 0.72)',
-                      backdropFilter: 'blur(8px)',
-                      border: '1px solid rgba(255, 255, 255, 0.24)',
-                      color: '#FFFFFF',
-                      padding: '6px 10px',
-                      borderRadius: '999px',
-                      fontSize: '0.72rem',
-                      fontWeight: 600,
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '5px',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    <Camera size={13} /> {isUploading ? 'Updating...' : 'Cover'}
-                  </button>
+                  <div style={{ position: 'absolute', top: '10px', right: '10px', zIndex: 2, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    {(community.cover_image || community.image) && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setCoverCropDraft({
+                            src: community.cover_image || community.image,
+                            fileName: 'club-cover.jpg',
+                            directSave: true,
+                            revokeOnClose: false,
+                          })
+                        }
+                        disabled={isUploading}
+                        title="Crop or reposition current cover photo"
+                        className="interactive-press"
+                        style={{
+                          background: 'rgba(20, 18, 15, 0.72)',
+                          backdropFilter: 'blur(8px)',
+                          border: '1px solid rgba(255, 255, 255, 0.24)',
+                          color: '#FFFFFF',
+                          padding: '6px 10px',
+                          borderRadius: '999px',
+                          fontSize: '0.72rem',
+                          fontWeight: 600,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '5px',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        <Crop size={12} /> Position
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => bannerFileInputRef.current?.click()}
+                      disabled={isUploading}
+                      title="Upload new cover photo"
+                      aria-label="Update cover photo"
+                      className="interactive-press"
+                      style={{
+                        background: 'rgba(20, 18, 15, 0.72)',
+                        backdropFilter: 'blur(8px)',
+                        border: '1px solid rgba(255, 255, 255, 0.24)',
+                        color: '#FFFFFF',
+                        padding: '6px 10px',
+                        borderRadius: '999px',
+                        fontSize: '0.72rem',
+                        fontWeight: 600,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '5px',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <Camera size={13} /> {isUploading ? 'Updating...' : 'Cover'}
+                    </button>
+                  </div>
 
                   <div style={{ 
                     position: 'absolute', 
@@ -7812,6 +7888,22 @@ export default function LeaderDashboard({ initialCommunityId }) {
                   </div>
                 </div>
               )}
+
+      {coverCropDraft && (
+        <ImageCropModal
+          isOpen={true}
+          imageSrc={coverCropDraft.src}
+          fileName={coverCropDraft.fileName}
+          aspectRatio={2 / 1}
+          title="Crop & Position Community Cover"
+          subtitle="Drag to reposition your photo inside the wide club cover banner"
+          onCancel={() => {
+            if (coverCropDraft.revokeOnClose && coverCropDraft.src) URL.revokeObjectURL(coverCropDraft.src);
+            setCoverCropDraft(null);
+          }}
+          onConfirm={handleConfirmCoverCrop}
+        />
+      )}
 
       {showClubQRModal && (
         <ConnectQRModal
