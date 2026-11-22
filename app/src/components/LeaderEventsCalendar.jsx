@@ -16,6 +16,7 @@ import {
   Users,
   Sparkles,
   Share2,
+  X,
 } from 'lucide-react';
 import { parseEventDateTime } from '../lib/calendar';
 import { cleanLocationName } from '../lib/location';
@@ -97,7 +98,8 @@ export default function LeaderEventsCalendar({
 
   const [viewYear, setViewYear] = useState(today.getFullYear());
   const [viewMonth, setViewMonth] = useState(today.getMonth());
-  const [selectedItem, setSelectedItem] = useState(null);
+  const [selectedDayKey, setSelectedDayKey] = useState(null);
+  const [selectedItemUid, setSelectedItemUid] = useState(null);
   const [activeFilters, setActiveFilters] = useState({
     event: true,
     cohost: true,
@@ -577,7 +579,7 @@ export default function LeaderEventsCalendar({
             );
           })}
           <span style={{ fontSize: '0.72rem', color: 'var(--ink-muted)', marginLeft: 'auto' }}>
-            Click any date&apos;s + to add an event
+            Tap any date to view or add events
           </span>
         </div>
       </div>
@@ -604,12 +606,12 @@ export default function LeaderEventsCalendar({
             <div
               key={day}
               style={{
-                padding: '9px 6px',
+                padding: '9px 4px',
                 textAlign: 'center',
-                fontSize: '0.72rem',
+                fontSize: '0.7rem',
                 fontWeight: 700,
                 textTransform: 'uppercase',
-                letterSpacing: '0.05em',
+                letterSpacing: '0.04em',
                 color: 'var(--ink-muted)',
               }}
             >
@@ -629,13 +631,21 @@ export default function LeaderEventsCalendar({
             const dayItems = filteredByDate[cell.dateKey] || [];
             const isLastRow = idx >= monthCells.length - 7;
             const isLastCol = (idx + 1) % 7 === 0;
+            const hasEvents = dayItems.length > 0;
 
             return (
               <div
                 key={cell.dateKey}
+                onClick={() => {
+                  if (hasEvents) {
+                    setSelectedDayKey(cell.dateKey);
+                    setSelectedItemUid(dayItems[0]?.uid || null);
+                  } else if (onCreateOnDate) {
+                    onCreateOnDate(cell.dateKey);
+                  }
+                }}
+                className="leader-cal-cell"
                 style={{
-                  minHeight: '96px',
-                  padding: '6px',
                   borderRight: isLastCol ? 'none' : '1px solid var(--hairline-border)',
                   borderBottom: isLastRow ? 'none' : '1px solid var(--hairline-border)',
                   background: cell.isToday
@@ -648,6 +658,7 @@ export default function LeaderEventsCalendar({
                   flexDirection: 'column',
                   gap: '4px',
                   minWidth: 0,
+                  cursor: hasEvents || onCreateOnDate ? 'pointer' : 'default',
                 }}
               >
                 <div
@@ -655,13 +666,13 @@ export default function LeaderEventsCalendar({
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    gap: '4px',
+                    gap: '2px',
                   }}
                 >
                   <span
                     style={{
                       fontSize: '0.74rem',
-                      fontWeight: cell.isToday ? 800 : 600,
+                      fontWeight: cell.isToday || hasEvents ? 800 : 600,
                       width: '22px',
                       height: '22px',
                       borderRadius: '50%',
@@ -669,7 +680,7 @@ export default function LeaderEventsCalendar({
                       alignItems: 'center',
                       justifyContent: 'center',
                       background: cell.isToday ? 'var(--brand-accent)' : 'transparent',
-                      color: cell.isToday ? '#FFFFFF' : 'var(--ink-secondary)',
+                      color: cell.isToday ? '#FFFFFF' : hasEvents ? 'var(--ink-primary)' : 'var(--ink-secondary)',
                     }}
                   >
                     {cell.dayNumber}
@@ -677,7 +688,11 @@ export default function LeaderEventsCalendar({
                   {onCreateOnDate && (
                     <button
                       type="button"
-                      onClick={() => onCreateOnDate(cell.dateKey)}
+                      className="leader-cal-add-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onCreateOnDate(cell.dateKey);
+                      }}
                       title={`Create event on ${cell.dateKey}`}
                       style={{
                         width: '20px',
@@ -698,24 +713,53 @@ export default function LeaderEventsCalendar({
                   )}
                 </div>
 
-                {/* Colour-Coded Event Pills */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', minWidth: 0 }}>
+                {/* Mobile Compact Colour-Coded Dots (no single-letter truncation!) */}
+                {hasEvents && (
+                  <div className="leader-cal-mobile-dots">
+                    {dayItems.slice(0, 4).map((item) => {
+                      const meta = CATEGORY_META[item.kind] || CATEGORY_META.event;
+                      return (
+                        <span
+                          key={item.uid}
+                          style={{
+                            width: '7px',
+                            height: '7px',
+                            borderRadius: '50%',
+                            background: meta.color,
+                            flexShrink: 0,
+                          }}
+                        />
+                      );
+                    })}
+                    {dayItems.length > 4 && (
+                      <span style={{ fontSize: '0.6rem', fontWeight: 800, color: 'var(--ink-muted)' }}>
+                        +{dayItems.length - 4}
+                      </span>
+                    )}
+                  </div>
+                )}
+
+                {/* Desktop Readable Colour-Coded Event Pills */}
+                <div className="leader-cal-desktop-pills">
                   {dayItems.slice(0, 3).map((item) => {
                     const meta = CATEGORY_META[item.kind] || CATEGORY_META.event;
-                    const isSelected = selectedItem?.uid === item.uid;
                     return (
                       <button
                         key={item.uid}
                         type="button"
-                        onClick={() => setSelectedItem(item)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedDayKey(cell.dateKey);
+                          setSelectedItemUid(item.uid);
+                        }}
                         style={{
                           width: '100%',
                           textAlign: 'left',
                           padding: '3px 6px',
                           borderRadius: '6px',
-                          background: isSelected ? meta.color : meta.bg,
+                          background: meta.bg,
                           border: `1px solid ${meta.border}`,
-                          color: isSelected ? '#FFFFFF' : meta.color,
+                          color: meta.color,
                           fontSize: '0.7rem',
                           fontWeight: 700,
                           lineHeight: 1.25,
@@ -751,170 +795,344 @@ export default function LeaderEventsCalendar({
         </div>
       </div>
 
-      {/* Selected Event / Experience Quick-Action Inspector */}
-      {selectedItem && (
-        <div
-          style={{
-            background: 'var(--surface-card)',
-            border: `1.5px solid ${(CATEGORY_META[selectedItem.kind] || CATEGORY_META.event).border}`,
-            borderRadius: '16px',
-            padding: '16px 18px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: '14px',
-            flexWrap: 'wrap',
-          }}
-        >
-          <div style={{ minWidth: 0, flex: '1 1 240px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px', flexWrap: 'wrap' }}>
-              <span
-                style={{
-                  fontSize: '0.68rem',
-                  fontWeight: 700,
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.04em',
-                  padding: '3px 9px',
-                  borderRadius: '999px',
-                  background: (CATEGORY_META[selectedItem.kind] || CATEGORY_META.event).bg,
-                  color: (CATEGORY_META[selectedItem.kind] || CATEGORY_META.event).color,
-                }}
-              >
-                {(CATEGORY_META[selectedItem.kind] || CATEGORY_META.event).label}
-              </span>
-              <span style={{ fontSize: '0.76rem', color: 'var(--ink-muted)', fontWeight: 600 }}>
-                {selectedItem.dateKey}
-                {selectedItem.time ? ` · ${selectedItem.time}` : ''}
-              </span>
-            </div>
-            <div
-              style={{
-                fontFamily: 'var(--font-heading)',
-                fontWeight: 700,
-                fontSize: '1.05rem',
-                color: 'var(--ink-primary)',
-                marginBottom: '6px',
-              }}
-            >
-              {selectedItem.title}
-            </div>
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                flexWrap: 'wrap',
-                fontSize: '0.78rem',
-                color: 'var(--ink-secondary)',
-              }}
-            >
-              {selectedItem.location && (
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                  <MapPin size={13} color="var(--brand-accent)" /> {selectedItem.location}
-                </span>
-              )}
-              {!selectedItem.isExperience && (
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                  <Users size={13} color="var(--brand-accent)" /> {selectedItem.rsvpCount} going
-                </span>
-              )}
-            </div>
-          </div>
+      {/* Day / Event Details Modal */}
+      {selectedDayKey && (() => {
+        const modalItems = filteredByDate[selectedDayKey] || [];
+        const modalDateObj = new Date(`${selectedDayKey}T00:00:00`);
+        const modalDateLabel = !Number.isNaN(modalDateObj.getTime())
+          ? modalDateObj.toLocaleDateString('en-GB', {
+              weekday: 'long',
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric',
+            })
+          : selectedDayKey;
+        const closeModal = () => {
+          setSelectedDayKey(null);
+          setSelectedItemUid(null);
+        };
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-            {selectedItem.isExperience ? (
-              <button
-                type="button"
-                onClick={() => onOpenExperience?.(selectedItem.raw)}
-                className="btn btn-primary interactive-press"
-                style={{
-                  padding: '8px 14px',
-                  borderRadius: '10px',
-                  fontSize: '0.8rem',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                }}
-              >
-                <Sparkles size={14} /> View Experience
-              </button>
-            ) : (
-              <>
-                {onEditEvent && (
-                  <button
-                    type="button"
-                    onClick={() => onEditEvent(selectedItem.raw)}
-                    className="btn btn-primary interactive-press"
-                    style={{
-                      padding: '8px 14px',
-                      borderRadius: '10px',
-                      fontSize: '0.8rem',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '5px',
-                    }}
-                  >
-                    <Edit3 size={13} /> Edit
-                  </button>
-                )}
-                {onCheckInEvent && (
-                  <button
-                    type="button"
-                    onClick={() => onCheckInEvent(selectedItem.raw)}
-                    className="btn btn-outline interactive-press"
-                    style={{
-                      padding: '8px 13px',
-                      borderRadius: '10px',
-                      fontSize: '0.8rem',
-                      color: '#15803D',
-                      borderColor: 'rgba(21,128,61,0.35)',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '5px',
-                    }}
-                  >
-                    <UserCheck size={13} /> Check-In
-                  </button>
-                )}
-                {onDuplicateEvent && (
-                  <button
-                    type="button"
-                    onClick={() => onDuplicateEvent(selectedItem.raw)}
-                    className="btn btn-outline interactive-press"
-                    style={{
-                      padding: '8px 13px',
-                      borderRadius: '10px',
-                      fontSize: '0.8rem',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '5px',
-                    }}
-                  >
-                    <Copy size={13} /> Duplicate
-                  </button>
-                )}
-                {onOpenEvent && (
-                  <button
-                    type="button"
-                    onClick={() => onOpenEvent(getEventPath(selectedItem.raw, allEvents))}
-                    className="btn btn-outline interactive-press"
-                    style={{
-                      padding: '8px 13px',
-                      borderRadius: '10px',
-                      fontSize: '0.8rem',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '5px',
-                    }}
-                  >
-                    <ExternalLink size={13} /> Open Page
-                  </button>
-                )}
-              </>
-            )}
+        return (
+          <div
+            className="modal-overlay"
+            onClick={closeModal}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              zIndex: 100000,
+              background: 'rgba(18, 18, 18, 0.72)',
+              backdropFilter: 'blur(6px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '18px',
+            }}
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                width: '100%',
+                maxWidth: '480px',
+                maxHeight: '84vh',
+                background: 'var(--surface-card)',
+                border: '1px solid var(--hairline-border-strong)',
+                borderRadius: '20px',
+                padding: '20px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '14px',
+                overflow: 'hidden',
+                boxShadow: '0 24px 60px rgba(0, 0, 0, 0.35)',
+              }}
+            >
+              {/* Modal Header */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--brand-accent)' }}>
+                    {modalItems.length} {modalItems.length === 1 ? 'Event' : 'Events'} Scheduled
+                  </div>
+                  <h3 style={{ margin: '2px 0 0', fontFamily: 'var(--font-heading)', fontSize: '1.12rem', fontWeight: 700, color: 'var(--ink-primary)' }}>
+                    {modalDateLabel}
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={closeModal}
+                  aria-label="Close calendar event details"
+                  className="interactive-press"
+                  style={{
+                    width: '34px',
+                    height: '34px',
+                    borderRadius: '50%',
+                    border: '1px solid var(--hairline-border)',
+                    background: 'var(--surface-elevated)',
+                    color: 'var(--ink-primary)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    flexShrink: 0,
+                  }}
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              {/* Scrollable List of Events on Selected Date */}
+              <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '12px', paddingRight: '2px' }}>
+                {modalItems.map((item) => {
+                  const meta = CATEGORY_META[item.kind] || CATEGORY_META.event;
+                  const isHighlighted = selectedItemUid === item.uid && modalItems.length > 1;
+                  return (
+                    <div
+                      key={item.uid}
+                      style={{
+                        background: 'var(--surface-elevated)',
+                        border: isHighlighted ? `1.5px solid ${meta.color}` : `1px solid ${meta.border}`,
+                        borderRadius: '14px',
+                        padding: '14px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '10px',
+                      }}
+                    >
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px', flexWrap: 'wrap' }}>
+                          <span
+                            style={{
+                              fontSize: '0.68rem',
+                              fontWeight: 700,
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.04em',
+                              padding: '3px 9px',
+                              borderRadius: '999px',
+                              background: meta.bg,
+                              color: meta.color,
+                            }}
+                          >
+                            {meta.label}
+                          </span>
+                          {item.time && (
+                            <span style={{ fontSize: '0.78rem', color: 'var(--ink-secondary)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                              <Clock size={12} /> {item.time}
+                            </span>
+                          )}
+                        </div>
+                        <div
+                          style={{
+                            fontFamily: 'var(--font-heading)',
+                            fontWeight: 700,
+                            fontSize: '1.04rem',
+                            color: 'var(--ink-primary)',
+                            marginBottom: '6px',
+                            lineHeight: 1.3,
+                          }}
+                        >
+                          {item.title}
+                        </div>
+                        <div
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '12px',
+                            flexWrap: 'wrap',
+                            fontSize: '0.78rem',
+                            color: 'var(--ink-secondary)',
+                          }}
+                        >
+                          {item.location && (
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                              <MapPin size={13} color="var(--brand-accent)" /> {item.location}
+                            </span>
+                          )}
+                          {!item.isExperience && (
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                              <Users size={13} color="var(--brand-accent)" /> {item.rsvpCount} going
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', borderTop: '1px solid var(--hairline-border)', paddingTop: '10px' }}>
+                        {item.isExperience ? (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              closeModal();
+                              onOpenExperience?.(item.raw);
+                            }}
+                            className="btn btn-primary interactive-press"
+                            style={{
+                              padding: '8px 14px',
+                              borderRadius: '10px',
+                              fontSize: '0.8rem',
+                              color: '#FFFFFF',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                            }}
+                          >
+                            <Sparkles size={14} /> View Experience
+                          </button>
+                        ) : (
+                          <>
+                            {onEditEvent && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  closeModal();
+                                  onEditEvent(item.raw);
+                                }}
+                                className="btn btn-primary interactive-press"
+                                style={{
+                                  padding: '8px 13px',
+                                  borderRadius: '10px',
+                                  fontSize: '0.78rem',
+                                  color: '#FFFFFF',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '5px',
+                                }}
+                              >
+                                <Edit3 size={13} /> Edit
+                              </button>
+                            )}
+                            {onCheckInEvent && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  closeModal();
+                                  onCheckInEvent(item.raw);
+                                }}
+                                className="btn btn-outline interactive-press"
+                                style={{
+                                  padding: '8px 12px',
+                                  borderRadius: '10px',
+                                  fontSize: '0.78rem',
+                                  color: '#15803D',
+                                  borderColor: 'rgba(21,128,61,0.35)',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '5px',
+                                }}
+                              >
+                                <UserCheck size={13} /> Check-In
+                              </button>
+                            )}
+                            {onOpenEvent && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  closeModal();
+                                  onOpenEvent(getEventPath(item.raw, allEvents));
+                                }}
+                                className="btn btn-outline interactive-press"
+                                style={{
+                                  padding: '8px 12px',
+                                  borderRadius: '10px',
+                                  fontSize: '0.78rem',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '5px',
+                                }}
+                              >
+                                <ExternalLink size={13} /> Open Page
+                              </button>
+                            )}
+                            {onDuplicateEvent && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  closeModal();
+                                  onDuplicateEvent(item.raw);
+                                }}
+                                className="btn btn-outline interactive-press"
+                                style={{
+                                  padding: '8px 12px',
+                                  borderRadius: '10px',
+                                  fontSize: '0.78rem',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '5px',
+                                }}
+                              >
+                                <Copy size={13} /> Duplicate
+                              </button>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {onCreateOnDate && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const targetDate = selectedDayKey;
+                    closeModal();
+                    onCreateOnDate(targetDate);
+                  }}
+                  className="btn btn-outline interactive-press"
+                  style={{
+                    width: '100%',
+                    padding: '10px 14px',
+                    borderRadius: '12px',
+                    fontSize: '0.82rem',
+                    fontWeight: 700,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px',
+                  }}
+                >
+                  <Plus size={14} /> Add Another Event on This Date
+                </button>
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
+
+      <style jsx>{`
+        .leader-cal-cell {
+          min-height: 60px;
+          padding: 5px 4px;
+        }
+        .leader-cal-add-btn {
+          display: none !important;
+        }
+        .leader-cal-mobile-dots {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          gap: 3px;
+          padding: 2px 2px 0;
+        }
+        .leader-cal-desktop-pills {
+          display: none;
+        }
+        @media (min-width: 640px) {
+          .leader-cal-cell {
+            min-height: 96px;
+            padding: 6px;
+          }
+          .leader-cal-add-btn {
+            display: inline-flex !important;
+          }
+          .leader-cal-mobile-dots {
+            display: none;
+          }
+          .leader-cal-desktop-pills {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            min-width: 0;
+          }
+        }
+      `}</style>
     </div>
   );
 }

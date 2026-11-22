@@ -279,9 +279,9 @@ ${postText}
   ].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%', minWidth: 0, maxWidth: '100%', boxSizing: 'border-box' }}>
       {/* Social Hub Header / Tabs */}
-      <div style={{ display: 'flex', gap: '6px', marginBottom: '20px', background: 'var(--surface-card)', border: '1px solid var(--hairline-border)', padding: '5px', borderRadius: '14px' }}>
+      <div style={{ display: 'flex', gap: '6px', marginBottom: '16px', background: 'var(--surface-card)', border: '1px solid var(--hairline-border)', padding: '5px', borderRadius: '14px', width: '100%', boxSizing: 'border-box' }}>
         {[
           { key: 'composer', label: 'Broadcast Composer' },
           { key: 'calendar', label: 'Broadcast History' }
@@ -291,11 +291,11 @@ ${postText}
             onClick={() => setActiveTab(tab.key)}
             className="interactive-press"
             style={{
-              flex: 1, padding: '10px 0', borderRadius: '10px', border: 'none',
+              flex: 1, minWidth: 0, padding: '10px 6px', borderRadius: '10px', border: 'none',
               background: activeTab === tab.key ? 'var(--brand-accent)' : 'transparent',
               color: activeTab === tab.key ? '#FFFFFF' : 'var(--ink-secondary)',
-              fontWeight: 700, fontSize: '0.86rem', cursor: 'pointer',
-              transition: 'all 0.2s'
+              fontWeight: 700, fontSize: '0.84rem', cursor: 'pointer',
+              transition: 'all 0.2s', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
             }}
           >
             {tab.label}
@@ -304,45 +304,48 @@ ${postText}
       </div>
 
       {activeTab === 'composer' && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '24px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: '18px', width: '100%', minWidth: 0 }}>
           {/* Main Composer Area */}
-          <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '24px', padding: '24px' }}>
+          <div style={{ background: 'var(--surface-card)', border: '1px solid var(--hairline-border)', borderRadius: '20px', padding: '16px', width: '100%', minWidth: 0, boxSizing: 'border-box', overflow: 'hidden' }}>
             
             {/* Header with Title and Dynamic Audience Badge */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
-              <div>
-                <h3 style={{ margin: 0, color: 'var(--white)', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.25rem', fontFamily: 'var(--font-heading)' }}>
-                  <Share2 size={20} color="var(--teal-400)" /> Community Broadcaster
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
+              <div style={{ minWidth: 0, flex: '1 1 200px' }}>
+                <h3 style={{ margin: 0, color: 'var(--ink-primary)', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.15rem', fontFamily: 'var(--font-heading)' }}>
+                  <Share2 size={19} color="var(--brand-accent)" style={{ flexShrink: 0 }} /> Community Broadcaster
                 </h3>
-                <p style={{ margin: '4px 0 0 0', fontSize: '0.82rem', color: 'var(--slate-400)' }}>
+                <p style={{ margin: '4px 0 0 0', fontSize: '0.8rem', color: 'var(--ink-secondary)', lineHeight: 1.4 }}>
                   Send targeted announcements to your whole community, event attendees, or selected members.
                 </p>
               </div>
               <div style={{ 
-                background: 'rgba(235, 87, 56, 0.12)', 
-                border: '1px solid rgba(235, 87, 56, 0.25)', 
-                padding: '6px 14px', borderRadius: '99px',
-                fontSize: '0.78rem', color: '#F27257', fontWeight: 600,
-                display: 'flex', alignItems: 'center', gap: '6px'
+                background: 'var(--brand-accent-soft)', 
+                border: '1px solid rgba(235, 87, 56, 0.28)', 
+                padding: '5px 12px', borderRadius: '99px',
+                fontSize: '0.75rem', color: 'var(--brand-accent)', fontWeight: 700,
+                display: 'inline-flex', alignItems: 'center', gap: '6px', maxWidth: '100%'
               }}>
-                <Users size={14} /> {audienceSummary.label}
+                <Users size={13} style={{ flexShrink: 0 }} />
+                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{audienceSummary.label}</span>
               </div>
             </div>
 
             {/* AUDIENCE SELECTOR SECTION */}
             <div style={{ 
-              background: 'rgba(255,255,255,0.02)', 
-              border: '1px solid rgba(255,255,255,0.06)', 
-              borderRadius: '16px', 
-              padding: '16px', 
-              marginBottom: '20px' 
+              background: 'var(--surface-elevated)', 
+              border: '1px solid var(--hairline-border)', 
+              borderRadius: '14px', 
+              padding: '14px', 
+              marginBottom: '16px',
+              minWidth: 0,
+              boxSizing: 'border-box'
             }}>
-              <div style={{ fontSize: '0.78rem', color: 'var(--slate-400)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.04em', marginBottom: '10px' }}>
+              <div style={{ fontSize: '0.74rem', color: 'var(--ink-muted)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.04em', marginBottom: '10px' }}>
                 Broadcast Audience:
               </div>
 
               {/* 3 Audience Pills */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '10px', marginBottom: '14px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 160px), 1fr))', gap: '8px', marginBottom: '12px' }}>
                 {[
                   {
                     key: 'all',
@@ -372,36 +375,39 @@ ${postText}
                       onClick={() => setAudienceType(opt.key)}
                       className="interactive-press"
                       style={{
-                        padding: '12px 14px',
+                        padding: '11px 12px',
                         borderRadius: '12px',
                         textAlign: 'left',
                         cursor: 'pointer',
-                        border: `1.5px solid ${isSelected ? 'var(--teal-400)' : 'rgba(255,255,255,0.08)'}`,
-                        background: isSelected ? 'rgba(235, 87, 56, 0.12)' : 'rgba(255,255,255,0.03)',
+                        border: `1.5px solid ${isSelected ? 'var(--brand-accent)' : 'var(--hairline-border-strong)'}`,
+                        background: isSelected ? 'var(--brand-accent-soft)' : 'var(--surface-card)',
                         transition: 'all 0.2s',
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '10px'
+                        gap: '10px',
+                        minWidth: 0,
+                        width: '100%',
+                        boxSizing: 'border-box'
                       }}
                     >
                       <div style={{
                         width: '32px',
                         height: '32px',
                         borderRadius: '8px',
-                        background: isSelected ? 'var(--teal-500)' : 'rgba(255,255,255,0.06)',
+                        background: isSelected ? 'var(--brand-accent)' : 'var(--surface-elevated)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        color: isSelected ? '#fff' : 'var(--slate-400)',
+                        color: isSelected ? '#FFFFFF' : 'var(--ink-muted)',
                         flexShrink: 0
                       }}>
                         <Icon size={16} />
                       </div>
                       <div style={{ minWidth: 0, flex: 1 }}>
-                        <div style={{ color: isSelected ? '#fff' : 'var(--slate-200)', fontWeight: 700, fontSize: '0.88rem' }}>
+                        <div style={{ color: 'var(--ink-primary)', fontWeight: 700, fontSize: '0.86rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                           {opt.title}
                         </div>
-                        <div style={{ color: isSelected ? 'var(--teal-300)' : 'var(--slate-400)', fontSize: '0.72rem', marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        <div style={{ color: isSelected ? 'var(--brand-accent)' : 'var(--ink-secondary)', fontSize: '0.72rem', marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                           {opt.desc}
                         </div>
                       </div>
@@ -427,12 +433,14 @@ ${postText}
                         onChange={e => setSelectedEventId(e.target.value)}
                         style={{
                           width: '100%',
+                          maxWidth: '100%',
+                          boxSizing: 'border-box',
                           padding: '10px 14px',
                           borderRadius: '10px',
-                          background: 'var(--slate-900)',
-                          border: '1px solid var(--slate-700)',
-                          color: 'var(--white)',
-                          fontSize: '0.9rem',
+                          background: 'var(--surface-card)',
+                          border: '1px solid var(--hairline-border-strong)',
+                          color: 'var(--ink-primary)',
+                          fontSize: '0.88rem',
                           fontWeight: 600
                         }}
                       >
@@ -471,12 +479,14 @@ ${postText}
                         onChange={e => setMemberSearchQuery(e.target.value)}
                         style={{
                           width: '100%',
+                          maxWidth: '100%',
+                          boxSizing: 'border-box',
                           padding: '6px 10px 6px 30px',
                           borderRadius: '8px',
-                          background: 'var(--slate-900)',
-                          border: '1px solid var(--slate-700)',
+                          background: 'var(--surface-card)',
+                          border: '1px solid var(--hairline-border-strong)',
                           color: 'var(--ink-primary)',
-                          fontSize: '0.8rem'
+                          fontSize: '0.82rem'
                         }}
                       />
                     </div>
@@ -581,11 +591,11 @@ ${postText}
             </div>
 
             {/* Quick 1-Tap Starter Templates */}
-            <div style={{ marginBottom: '16px' }}>
-              <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.04em', marginBottom: '8px' }}>
+            <div style={{ marginBottom: '16px', minWidth: 0, maxWidth: '100%' }}>
+              <div style={{ fontSize: '0.74rem', color: 'var(--ink-muted)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.04em', marginBottom: '8px' }}>
                 Quick 1-Tap Message Starters:
               </div>
-              <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px', WebkitOverflowScrolling: 'touch' }}>
+              <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px', WebkitOverflowScrolling: 'touch', maxWidth: '100%' }}>
                 {ANNOUNCEMENT_TEMPLATES.map((tmpl, idx) => (
                   <button
                     key={idx}
@@ -595,14 +605,15 @@ ${postText}
                     style={{
                       padding: '6px 12px',
                       borderRadius: '8px',
-                      background: 'rgba(255,255,255,0.04)',
-                      border: '1px solid rgba(255,255,255,0.09)',
-                      color: 'var(--slate-200)',
+                      background: 'var(--surface-elevated)',
+                      border: '1px solid var(--hairline-border-strong)',
+                      color: 'var(--ink-primary)',
                       fontSize: '0.78rem',
                       fontWeight: 600,
                       cursor: 'pointer',
                       whiteSpace: 'nowrap',
-                      display: 'flex',
+                      flexShrink: 0,
+                      display: 'inline-flex',
                       alignItems: 'center',
                       gap: '4px'
                     }}
@@ -614,8 +625,8 @@ ${postText}
             </div>
             
             {/* Active Channels Selection */}
-            <div style={{ marginBottom: '18px' }}>
-              <div style={{ fontSize: '0.82rem', color: 'var(--slate-400)', marginBottom: '8px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+            <div style={{ marginBottom: '16px' }}>
+              <div style={{ fontSize: '0.74rem', color: 'var(--ink-muted)', marginBottom: '8px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                 ACTIVE CHANNELS:
               </div>
               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
@@ -635,20 +646,20 @@ ${postText}
             </div>
 
             {/* Text Area */}
-            <div style={{ position: 'relative', marginBottom: '16px' }}>
+            <div style={{ position: 'relative', marginBottom: '16px', width: '100%' }}>
               <textarea 
                 value={postText}
                 onChange={e => setPostText(e.target.value)}
                 placeholder="What's happening in your community? (Updates, meetup reminders, venue notices, welcome greetings...)"
                 style={{
-                  width: '100%', minHeight: '130px', background: 'var(--slate-900)', border: '1px solid var(--slate-700)',
-                  borderRadius: '16px', padding: '16px', color: 'var(--white)', fontSize: '1rem', resize: 'vertical',
-                  fontFamily: 'inherit', transition: 'border-color 0.2s', lineHeight: 1.5
+                  width: '100%', maxWidth: '100%', boxSizing: 'border-box', minHeight: '130px', background: 'var(--surface-elevated)', border: '1px solid var(--hairline-border-strong)',
+                  borderRadius: '14px', padding: '14px 14px 32px', color: 'var(--ink-primary)', fontSize: '0.96rem', resize: 'vertical',
+                  fontFamily: 'inherit', transition: 'border-color 0.2s', lineHeight: 1.5, outline: 'none'
                 }}
-                onFocus={e => e.target.style.borderColor = 'var(--teal-400)'}
-                onBlur={e => e.target.style.borderColor = 'var(--slate-700)'}
+                onFocus={e => e.target.style.borderColor = 'var(--brand-accent)'}
+                onBlur={e => e.target.style.borderColor = 'var(--hairline-border-strong)'}
               />
-              <div style={{ position: 'absolute', bottom: '14px', right: '16px', fontSize: '0.75rem', color: postText.length > 280 ? '#f87171' : 'var(--slate-500)' }}>
+              <div style={{ position: 'absolute', bottom: '12px', right: '14px', fontSize: '0.74rem', color: postText.length > 280 ? '#f87171' : 'var(--ink-muted)' }}>
                 {postText.length} characters
               </div>
             </div>
@@ -696,9 +707,9 @@ ${postText}
                   onClick={() => fileInputRef.current?.click()}
                   disabled={isUploading}
                   className="interactive-press"
-                  style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--white)', padding: '10px 14px', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '0.85rem' }}
+                  style={{ background: 'var(--surface-elevated)', border: '1px solid var(--hairline-border-strong)', color: 'var(--ink-primary)', padding: '9px 12px', borderRadius: '10px', display: 'inline-flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '0.82rem', fontWeight: 600 }}
                 >
-                  <ImageIcon size={16} /> {isUploading ? 'Uploading...' : 'Add Photo'}
+                  <ImageIcon size={15} /> {isUploading ? 'Uploading...' : 'Photo'}
                 </button>
 
                 <button 
@@ -709,20 +720,20 @@ ${postText}
                   style={{ 
                     background: 'rgba(37, 211, 102, 0.12)', 
                     border: '1px solid rgba(37, 211, 102, 0.3)', 
-                    color: '#25D366', 
-                    padding: '10px 14px', 
+                    color: '#16a34a', 
+                    padding: '9px 12px', 
                     borderRadius: '10px', 
-                    display: 'flex', 
+                    display: 'inline-flex', 
                     alignItems: 'center', 
                     gap: '6px', 
                     cursor: postText.trim() ? 'pointer' : 'not-allowed', 
-                    fontSize: '0.85rem',
-                    fontWeight: 600,
+                    fontSize: '0.82rem',
+                    fontWeight: 700,
                     opacity: postText.trim() ? 1 : 0.5 
                   }}
                   title="Open WhatsApp with this broadcast pre-filled"
                 >
-                  <MessageCircle size={16} /> Share to WhatsApp
+                  <MessageCircle size={15} /> WhatsApp
                 </button>
 
                 <button 
@@ -730,7 +741,7 @@ ${postText}
                   onClick={handleCopyFormatted}
                   disabled={!postText.trim()}
                   className="interactive-press"
-                  style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: 'var(--slate-300)', padding: '10px 12px', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '5px', cursor: postText.trim() ? 'pointer' : 'not-allowed', fontSize: '0.82rem', opacity: postText.trim() ? 1 : 0.5 }}
+                  style={{ background: 'var(--surface-elevated)', border: '1px solid var(--hairline-border-strong)', color: 'var(--ink-secondary)', padding: '9px 12px', borderRadius: '10px', display: 'inline-flex', alignItems: 'center', gap: '5px', cursor: postText.trim() ? 'pointer' : 'not-allowed', fontSize: '0.82rem', fontWeight: 600, opacity: postText.trim() ? 1 : 0.5 }}
                   title="Copy formatted text to clipboard"
                 >
                   <Copy size={14} /> Copy
@@ -741,16 +752,16 @@ ${postText}
                 onClick={handlePost}
                 disabled={isPosting || isUploading || (!postText.trim() && !postMedia)}
                 className="btn btn-primary interactive-press"
-                style={{ padding: '11px 28px', borderRadius: '99px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.95rem', fontWeight: 700, opacity: (isPosting || isUploading || (!postText.trim() && !postMedia)) ? 0.5 : 1 }}
+                style={{ flex: '1 1 180px', justifyContent: 'center', padding: '11px 20px', borderRadius: '99px', display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', fontWeight: 700, color: '#FFFFFF', opacity: (isPosting || isUploading || (!postText.trim() && !postMedia)) ? 0.5 : 1 }}
               >
-                {isPosting ? <span className="spinner" style={{ width: '16px', height: '16px', borderTopColor: 'white' }}></span> : <Send size={16} />}
+                {isPosting ? <span className="spinner" style={{ width: '16px', height: '16px', borderTopColor: 'white' }}></span> : <Send size={15} />}
                 {isPosting ? 'Broadcasting...' : 'Publish Broadcast'}
               </button>
             </div>
           </div>
           
           {/* Multi-Channel Live Preview Card */}
-          <div style={{ background: 'var(--slate-900)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '24px', padding: '22px' }}>
+          <div style={{ background: 'var(--surface-card)', border: '1px solid var(--hairline-border)', borderRadius: '20px', padding: '16px', width: '100%', minWidth: 0, boxSizing: 'border-box', overflow: 'hidden' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
               <div style={{ fontSize: '0.82rem', color: 'var(--slate-400)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                 <Activity size={15} color="var(--teal-400)" /> Live Output Preview:
