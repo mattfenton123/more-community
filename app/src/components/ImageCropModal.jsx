@@ -185,7 +185,7 @@ export default function ImageCropModal({
       style={{
         position: 'fixed',
         inset: 0,
-        zIndex: 200000,
+        zIndex: 250000,
         background: 'rgba(12, 12, 14, 0.82)',
         backdropFilter: 'blur(8px)',
         display: 'flex',

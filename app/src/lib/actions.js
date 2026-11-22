@@ -913,12 +913,33 @@ export async function updateEventAction(eventId, updates, token) {
     dbUpdates.description = String(baseDesc || '').replace(/\s*\[ProposedByUid:[^\]]+\]/g, '').trim();
   }
   
-  const { data, error } = await db.from('events').update(dbUpdates).eq('id', eventId).select().maybeSingle();
-  if (error) {
+  let payload = { ...dbUpdates };
+  let savedEvent = null;
+  for (let attempt = 0; attempt < 5; attempt++) {
+    if (Object.keys(payload).length === 0) {
+      savedEvent = { id: eventId, ...dbUpdates };
+      break;
+    }
+    const { data, error } = await db.from('events').update(payload).eq('id', eventId).select().maybeSingle();
+    if (!error) {
+      if (!data && !hasValidServiceKey) {
+        throw new Error('Could not update event (database permission check returned 0 rows). Please sign out and back in or contact support.');
+      }
+      savedEvent = data || { id: eventId, ...dbUpdates };
+      break;
+    }
+    const colMatch =
+      error.message?.match(/column ["']?(?:events\.)?([a-zA-Z0-9_]+)["']? does not exist/i) ||
+      error.message?.match(/Could not find the ['"]([a-zA-Z0-9_]+)['"] column/i);
+    if (colMatch && colMatch[1] && payload[colMatch[1]] !== undefined) {
+      console.warn(`[updateEventAction] Stripping unmigrated column "${colMatch[1]}" and retrying...`);
+      delete payload[colMatch[1]];
+      continue;
+    }
     console.error('Event update failed:', error);
     throw new Error(error.message);
   }
-  const savedEvent = data || { id: eventId, ...dbUpdates };
+  if (!savedEvent) savedEvent = { id: eventId, ...dbUpdates };
 
   // Notify proposing member when their event proposal is approved & published
   if (isPublishingProposal && proposerMatch?.[1] && proposerMatch[1] !== user?.id) {

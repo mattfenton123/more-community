@@ -1743,14 +1743,11 @@ export function AppProvider({ children }) {
   }, []);
 
   const getActiveToken = async () => {
-    let token = session?.access_token;
-    if (!token) {
-      try {
-        const { data } = await supabase.auth.getSession();
-        token = data?.session?.access_token;
-      } catch (e) {}
-    }
-    return token;
+    try {
+      const { data } = await supabase.auth.getSession();
+      if (data?.session?.access_token) return data.session.access_token;
+    } catch (e) {}
+    return session?.access_token || null;
   };
 
   const offerCarpool = async (eventId, offerData) => {
@@ -2182,7 +2179,7 @@ export function AppProvider({ children }) {
     } catch (err) { console.error(err); }
   };
 
-  const updateEvent = async (eventId, updates) => {
+  const updateEvent = async (eventId, updates, { throwOnError = false } = {}) => {
     let finalUpdates = { ...updates };
     if (updates.requireApproval !== undefined) {
       const existing = events.find(e => e.id === eventId);
@@ -2243,16 +2240,18 @@ export function AppProvider({ children }) {
     setEvents(prev => prev.map(e => e.id === eventId ? { ...e, ...finalUpdates } : e));
     
     try {
-      let token = session?.access_token;
-      if (!token) {
+      let token = null;
+      try {
         const { data: sessionData } = await supabase.auth.getSession();
-        token = sessionData?.session?.access_token;
-      }
+        token = sessionData?.session?.access_token || null;
+      } catch (e) {}
+      if (!token) token = session?.access_token;
       await updateEventAction(eventId, finalUpdates, token);
       return true;
     } catch (err) {
-      console.error(err);
+      console.error('updateEvent error:', err);
       setEvents(prevEvents);
+      if (throwOnError) throw err;
       return false;
     }
   };

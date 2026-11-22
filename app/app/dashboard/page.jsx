@@ -384,6 +384,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
   const [showShieldModal, setShowShieldModal] = useState(false);
   const [showClubQRModal, setShowClubQRModal] = useState(false);
   const [coverCropDraft, setCoverCropDraft] = useState(null); // { src, fileName, directSave, revokeOnClose }
+  const [eventSaveError, setEventSaveError] = useState('');
   const [openSettingsGroup, setOpenSettingsGroup] = useState('branding'); // 'branding' | 'messaging' | 'access' | 'advanced' | null
   const [specialistModalState, setSpecialistModalState] = useState({ isOpen: false, mode: 'inspect', specialist: null });
   const [eventsSubTab, setEventsSubTab] = useState(() => (searchParams?.get('tab') === 'network' ? 'network' : searchParams?.get('tab') === 'experiences' ? 'trips' : 'my-events')); // 'my-events' | 'calendar' | 'network' | 'trips'
@@ -1633,20 +1634,28 @@ export default function LeaderDashboard({ initialCommunityId }) {
       recurrenceSummary: 'Single event'
     });
     setImageFile(null);
+    setEventSaveError('');
     setModalType('edit-event');
   };
 
   const handleSaveEvent = async () => {
+    setEventSaveError('');
     if (!editingEventId) {
-      toast.error('Could not save', 'No event selected for editing.');
+      const msg = 'No event selected for editing.';
+      setEventSaveError(msg);
+      toast.error('Could not save', msg);
       return;
     }
     if (!eventForm.title?.trim() || !eventForm.date || !eventForm.time?.trim() || !eventForm.location?.trim()) {
-      toast.error('Missing required fields', 'Please fill in Title, Date, Time, and Meeting Point.');
+      const msg = 'Please fill in Title, Date, Time, and Meeting Point.';
+      setEventSaveError(msg);
+      toast.error('Missing required fields', msg);
       return;
     }
     if (parseFloat(eventForm.ticketPrice) > 0 && !stripeConnected && !eventForm.allowCash) {
-      toast.error('Payout Account or Cash Option Required', 'Connect your UK payout bank account or tick "Allow Pay in Cash at Venue" to publish a paid event.');
+      const msg = 'Connect your UK payout bank account or tick "Allow Pay in Cash at Venue" to save a paid event.';
+      setEventSaveError(msg);
+      toast.error('Payout Account or Cash Option Required', msg);
       return;
     }
 
@@ -1658,7 +1667,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
           imageUrl = await uploadImage(imageFile, 'events');
         } catch (e) {
           console.error('Event image upload failed:', e);
-          toast.error('Upload failed', 'Could not upload event image — saving other changes.');
+          toast.error('Upload failed', e?.message || 'Could not upload event image — saving other changes.');
         }
       }
 
@@ -1712,12 +1721,9 @@ export default function LeaderDashboard({ initialCommunityId }) {
         updates.status = 'published';
       }
 
-      const saved = await updateEvent(editingEventId, updates);
-      if (!saved) {
-        toast.error('Save failed', 'Could not save your changes to the server. Please try again.');
-        return;
-      }
+      await updateEvent(editingEventId, updates, { throwOnError: true });
 
+      setEventSaveError('');
       setModalType(null);
       setEditingEventId(null);
       setEventForm(emptyEventForm);
@@ -1725,7 +1731,9 @@ export default function LeaderDashboard({ initialCommunityId }) {
       toast.success('Event updated!', `${eventForm.title.trim()} has been saved`);
     } catch (err) {
       console.error('handleSaveEvent error:', err);
-      toast.error('Save failed', err?.message || 'Could not save event changes. Please try again.');
+      const errMsg = err?.message || 'Could not save event changes. Please try again.';
+      setEventSaveError(errMsg);
+      toast.error('Save failed', errMsg);
     } finally {
       setIsUploading(false);
     }
@@ -6357,6 +6365,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
           imageFile={imageFile}
           setImageFile={setImageFile}
           isUploading={isUploading}
+          saveError={eventSaveError}
           stripeConnected={stripeConnected}
           onOpenPayoutModal={handleConnectStripe}
           onSubmit={() => {
@@ -6364,6 +6373,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
             else handleCreateEvent();
           }}
           onClose={() => {
+            setEventSaveError('');
             setModalType(null);
             setEditingEventId(null);
           }}

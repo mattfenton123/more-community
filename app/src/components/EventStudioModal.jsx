@@ -112,6 +112,7 @@ export default function EventStudioModal({
   imageFile,
   setImageFile,
   isUploading = false,
+  saveError = '',
   stripeConnected = false,
   onOpenPayoutModal,
   onSubmit,
@@ -563,7 +564,7 @@ export default function EventStudioModal({
       style={{
         position: 'fixed',
         inset: 0,
-        zIndex: 2147482000,
+        zIndex: 100000,
         background: 'rgba(10, 12, 18, 0.76)',
         backdropFilter: 'blur(10px)',
         WebkitBackdropFilter: 'blur(10px)',
@@ -2117,6 +2118,25 @@ export default function EventStudioModal({
         </div>
 
         {/* STICKY FOOTER BAR (ALWAYS 1-TAP PUBLISH / SAVE) */}
+        {saveError && (
+          <div
+            style={{
+              padding: '9px 16px',
+              background: 'rgba(239, 68, 68, 0.14)',
+              borderTop: '1px solid rgba(239, 68, 68, 0.35)',
+              color: '#ef4444',
+              fontSize: '0.8rem',
+              fontWeight: 700,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '7px',
+              flexShrink: 0,
+            }}
+          >
+            <AlertTriangle size={15} style={{ flexShrink: 0 }} />
+            <span>{saveError}</span>
+          </div>
+        )}
         <div
           className="event-studio-footer"
           style={{
