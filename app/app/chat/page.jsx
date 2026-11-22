@@ -640,7 +640,7 @@ export default function ChatIndex() {
         flexDirection: 'column',
         minHeight: '100dvh',
         background: 'var(--surface-canvas)',
-        paddingBottom: '96px',
+        paddingBottom: 'calc(116px + env(safe-area-inset-bottom, 0px))',
       }}
     >
       <AppHeader title="Chats" />

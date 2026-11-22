@@ -1857,12 +1857,12 @@ button:disabled, [role="button"][aria-disabled="true"] {
 }
 
 /* Chat UI */
-.app-content:has(.view-chat) {
+.app-content:has(.chat-room-shell) {
   padding-bottom: 0 !important;
   overflow: hidden !important;
 }
-.view-chat {
-  padding-bottom: 80px;
+.view-chat:not(.chat-room-shell) {
+  padding-bottom: calc(112px + env(safe-area-inset-bottom, 0px));
 }
 .chat-room-shell {
   height: calc(100dvh - 70px);

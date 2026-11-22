@@ -978,7 +978,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
     const thisYear = now.getFullYear();
 
     // Track repeat attendees (2+ attended/checked-in events in this community)
-    const attendanceCountByUser = new Map();
+    const attendanceCountByUser = {};
     
     communityEvents.forEach(event => {
       const price = Number(event.ticketPrice || 0);
@@ -994,7 +994,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
         const uid = r.userId || r.user_id;
         const attended = Boolean(r.checkedIn || r.checked_in || r.status === 'checked_in' || past);
         if (uid && attended) {
-          attendanceCountByUser.set(uid, (attendanceCountByUser.get(uid) || 0) + 1);
+          attendanceCountByUser[uid] = (attendanceCountByUser[uid] || 0) + 1;
         }
 
         const isWalkInCash =
@@ -1026,7 +1026,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
       }
     });
 
-    const repeatAttendeesList = Array.from(attendanceCountByUser.entries())
+    const repeatAttendeesList = Object.entries(attendanceCountByUser)
       .filter(([, count]) => count >= 2)
       .sort((a, b) => b[1] - a[1])
       .map(([userId, count]) => ({ userId, count }));
