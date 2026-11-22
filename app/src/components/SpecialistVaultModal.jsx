@@ -4,8 +4,6 @@ import { Shield, CheckCircle2, Award, FileText, Calendar, Clock, MapPin, User, M
 import { saveSpecialistApplication } from '../lib/specialists';
 
 export default function SpecialistVaultModal({ isOpen, onClose, specialist, mode = 'inspect', onProposalSubmitted }) {
-  if (!isOpen) return null;
-
   // Form State for 'apply' mode
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
@@ -35,6 +33,8 @@ export default function SpecialistVaultModal({ isOpen, onClose, specialist, mode
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+
+  if (!isOpen) return null;
 
   const handleApplySubmit = (e) => {
     e.preventDefault();

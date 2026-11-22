@@ -514,113 +514,202 @@ export default function LeaderAICoPilot({
   const [mobileView, setMobileView] = useState('chat'); // 'chat' | 'output'
   const [hasUnreadOutput, setHasUnreadOutput] = useState(false);
 
-  // Voice Input (Web Speech API) state
+  // Studio-Grade Voice Input (MediaRecorder -> Gemini 2.5 Flash /api/ai/transcribe)
   const [speechSupported, setSpeechSupported] = useState(false);
   const [isListening, setIsListening] = useState(false);
-  const [voiceStatusText, setVoiceStatusText] = useState('');
-  const recognitionRef = useRef(null);
+  const [isTranscribing, setIsTranscribing] = useState(false);
+  const [recordingSeconds, setRecordingSeconds] = useState(0);
+  const mediaRecorderRef = useRef(null);
+  const mediaStreamRef = useRef(null);
+  const audioChunksRef = useRef([]);
+  const recordingTimerRef = useRef(null);
+  const autoSendAfterTranscribeRef = useRef(false);
   const voiceBaseTextRef = useRef('');
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-      setSpeechSupported(Boolean(SR));
+      const canRecord = Boolean(
+        navigator?.mediaDevices?.getUserMedia && typeof window.MediaRecorder !== 'undefined'
+      );
+      setSpeechSupported(canRecord);
     }
     return () => {
+      if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
       try {
-        recognitionRef.current?.stop();
+        if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+          mediaRecorderRef.current.onstop = null;
+          mediaRecorderRef.current.stop();
+        }
       } catch {}
-      recognitionRef.current = null;
+      try {
+        mediaStreamRef.current?.getTracks()?.forEach((t) => t.stop());
+      } catch {}
     };
   }, []);
 
-  const stopListening = () => {
+  const cleanupRecordingStream = () => {
+    if (recordingTimerRef.current) {
+      clearInterval(recordingTimerRef.current);
+      recordingTimerRef.current = null;
+    }
     try {
-      recognitionRef.current?.stop();
+      mediaStreamRef.current?.getTracks()?.forEach((t) => t.stop());
     } catch {}
-    recognitionRef.current = null;
+    mediaStreamRef.current = null;
+    mediaRecorderRef.current = null;
     setIsListening(false);
-    setVoiceStatusText('');
+    setRecordingSeconds(0);
   };
 
-  const toggleListening = () => {
+  const stopListening = (autoSend = false) => {
+    autoSendAfterTranscribeRef.current = Boolean(autoSend);
+    const rec = mediaRecorderRef.current;
+    if (rec && rec.state !== 'inactive') {
+      try {
+        rec.stop();
+      } catch {
+        cleanupRecordingStream();
+      }
+    } else {
+      cleanupRecordingStream();
+    }
+  };
+
+  const cancelListening = () => {
+    autoSendAfterTranscribeRef.current = false;
+    const rec = mediaRecorderRef.current;
+    if (rec && rec.state !== 'inactive') {
+      try {
+        rec.onstop = null;
+        rec.stop();
+      } catch {}
+    }
+    audioChunksRef.current = [];
+    cleanupRecordingStream();
+  };
+
+  const toggleListening = async () => {
+    if (isTranscribing) return;
     if (isListening) {
-      stopListening();
+      stopListening(false);
       return;
     }
-    if (typeof window === 'undefined') return;
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) {
+    if (typeof window === 'undefined' || !navigator?.mediaDevices?.getUserMedia || typeof window.MediaRecorder === 'undefined') {
       toast.info(
-        'Voice input unavailable here',
-        'Try Chrome, Safari, or Edge — or use the microphone on your phone keyboard.'
+        'Microphone unavailable here',
+        'Try Chrome, Safari, or Edge over HTTPS — or use your phone keyboard microphone.'
       );
       return;
     }
     try {
-      const recognition = new SpeechRecognition();
-      recognition.lang = 'en-GB';
-      recognition.continuous = true;
-      recognition.interimResults = true;
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaStreamRef.current = stream;
+      audioChunksRef.current = [];
       voiceBaseTextRef.current = inputValue.trim();
+      autoSendAfterTranscribeRef.current = false;
 
-      recognition.onstart = () => {
-        setIsListening(true);
-        setVoiceStatusText('Listening... speak naturally');
+      // Pick best cross-browser MIME (iOS Safari uses audio/mp4, Chrome/Android uses audio/webm)
+      const mimeCandidates = [
+        'audio/webm;codecs=opus',
+        'audio/webm',
+        'audio/mp4',
+        'audio/ogg;codecs=opus',
+      ];
+      const chosenMime = mimeCandidates.find((m) => {
+        try {
+          return typeof MediaRecorder.isTypeSupported === 'function' && MediaRecorder.isTypeSupported(m);
+        } catch {
+          return false;
+        }
+      });
+
+      const recorder = chosenMime
+        ? new MediaRecorder(stream, { mimeType: chosenMime })
+        : new MediaRecorder(stream);
+
+      recorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) {
+          audioChunksRef.current.push(e.data);
+        }
       };
 
-      recognition.onresult = (event) => {
-        let finalSeg = '';
-        let interimSeg = '';
-        for (let i = 0; i < event.results.length; i++) {
-          const piece = event.results[i]?.[0]?.transcript || '';
-          if (event.results[i].isFinal) {
-            finalSeg += piece;
-          } else {
-            interimSeg += piece;
+      recorder.onstop = async () => {
+        const shouldAutoSend = autoSendAfterTranscribeRef.current;
+        const chunks = [...audioChunksRef.current];
+        const mimeType = recorder.mimeType || chosenMime || 'audio/webm';
+        audioChunksRef.current = [];
+        cleanupRecordingStream();
+
+        if (chunks.length === 0) {
+          toast.info('Nothing recorded', 'Tap the microphone and speak clearly for at least 1 second.');
+          return;
+        }
+
+        const blob = new Blob(chunks, { type: mimeType });
+        if (blob.size < 400) {
+          toast.info('Recording too short', 'Hold on a moment longer while speaking, then tap Stop.');
+          return;
+        }
+
+        setIsTranscribing(true);
+        try {
+          const ext = mimeType.includes('mp4') ? 'm4a' : mimeType.includes('ogg') ? 'ogg' : 'webm';
+          const fd = new FormData();
+          fd.append('audio', blob, `voice.${ext}`);
+          fd.append('context', `${community?.name || ''} in ${communityLoc}`);
+
+          const res = await fetch('/api/ai/transcribe', {
+            method: 'POST',
+            body: fd,
+          });
+          const data = await res.json();
+          if (!res.ok) {
+            throw new Error(data?.error || 'Could not transcribe voice note.');
           }
-        }
-        const spoken = `${finalSeg}${interimSeg}`.trim();
-        const combined = voiceBaseTextRef.current
-          ? `${voiceBaseTextRef.current} ${spoken}`.trim()
-          : spoken;
-        setInputValue(combined);
-        if (interimSeg.trim()) {
-          setVoiceStatusText('Hearing you...');
-        } else if (finalSeg.trim()) {
-          setVoiceStatusText('Listening... tap Mic to stop or Send to submit');
+
+          const transcript = String(data?.text || '').trim();
+          if (!transcript) {
+            toast.info('No speech detected', 'Try speaking a bit closer to your microphone.');
+            return;
+          }
+
+          const combined = voiceBaseTextRef.current
+            ? `${voiceBaseTextRef.current} ${transcript}`.trim()
+            : transcript;
+
+          if (shouldAutoSend) {
+            setInputValue('');
+            handleSendMessage(combined);
+          } else {
+            setInputValue(combined);
+          }
+        } catch (err) {
+          toast.error('Voice transcription failed', err?.message || 'Please try again or type your message.');
+        } finally {
+          setIsTranscribing(false);
         }
       };
 
-      recognition.onerror = (event) => {
-        const code = event?.error || '';
-        if (code === 'not-allowed' || code === 'service-not-allowed') {
-          toast.error(
-            'Microphone access blocked',
-            'Allow microphone permission in your browser settings to talk to More AI.'
-          );
-        } else if (code === 'audio-capture') {
-          toast.error('No microphone detected', 'Please check your microphone connection and try again.');
-        } else if (code && code !== 'no-speech' && code !== 'aborted') {
-          toast.info('Voice paused', 'Could not hear clearly — tap the microphone to try again.');
-        }
-        recognitionRef.current = null;
-        setIsListening(false);
-        setVoiceStatusText('');
-      };
-
-      recognition.onend = () => {
-        recognitionRef.current = null;
-        setIsListening(false);
-        setVoiceStatusText('');
-      };
-
-      recognitionRef.current = recognition;
-      recognition.start();
+      mediaRecorderRef.current = recorder;
+      recorder.start(250);
+      setIsListening(true);
+      setRecordingSeconds(0);
+      recordingTimerRef.current = setInterval(() => {
+        setRecordingSeconds((s) => s + 1);
+      }, 1000);
     } catch (err) {
-      toast.error('Could not start microphone', err?.message || 'Please check browser permissions.');
-      setIsListening(false);
-      setVoiceStatusText('');
+      cleanupRecordingStream();
+      const name = err?.name || '';
+      if (name === 'NotAllowedError' || name === 'PermissionDeniedError') {
+        toast.error(
+          'Microphone permission blocked',
+          'Allow microphone access in your browser settings to talk to More AI.'
+        );
+      } else if (name === 'NotFoundError' || name === 'DevicesNotFoundError') {
+        toast.error('No microphone found', 'Connect a microphone and try again.');
+      } else {
+        toast.error('Could not start recording', err?.message || 'Please check browser permissions.');
+      }
     }
   };
 
@@ -831,7 +920,9 @@ export default function LeaderAICoPilot({
       setMessages((prev) => [...prev, assistantMsg]);
       if (normalizedCard) {
         setSelectedOutputMsgId(newMsgId);
-        setHasUnreadOutput(true);
+        // Auto-open Output & Launch tab on mobile so leaders never have to ask twice
+        setMobileView('output');
+        setHasUnreadOutput(false);
       }
     } catch (err) {
       setMessages((prev) => [
@@ -852,6 +943,19 @@ export default function LeaderAICoPilot({
     } finally {
       setIsThinking(false);
     }
+  };
+
+  const appendSystemConfirmation = (replyText, suggestedReplies = []) => {
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: `ai-done-${Date.now()}`,
+        role: 'assistant',
+        reply: replyText,
+        actionCard: null,
+        suggestedReplies,
+      },
+    ]);
   };
 
   const handlePublishSingleEvent = async (msgId, ev, idx) => {
@@ -878,6 +982,10 @@ export default function LeaderAICoPilot({
       });
       setPublishedEventsMap((prev) => ({ ...prev, [key]: created?.id || true }));
       toast.success('Event Launched Live! 🚀', `"${ev.title}" is now on your Community Calendar & /events.`);
+      appendSystemConfirmation(
+        `✅ **Event Launched Live!** **"${ev.title.trim()}"** (${ev.date} at ${ev.time || '10:00'}) is now live on your **${community.name} Calendar** and \`/events\`.`,
+        ['Draft a WhatsApp invite for this event', 'Create a poll for members', 'Generate a UK RAMS risk assessment']
+      );
     } catch (err) {
       toast.error('Could not launch event', err?.message || 'Please try again.');
     }
@@ -936,6 +1044,10 @@ export default function LeaderAICoPilot({
         payloads.length === 1 ? 'Event Launched Live! 🚀' : 'Schedule Launched Live! 🚀',
         `Published ${unpub.length} event${unpub.length === 1 ? '' : 's'} to ${community.name} Calendar & /events.`
       );
+      appendSystemConfirmation(
+        `✅ **${unpub.length === 1 ? 'Event' : `${unpub.length} Events`} Launched Live!** Published to your **${community.name} Calendar** and \`/events\`.`,
+        ['Draft a WhatsApp announcement for members', 'Create a poll for our community', 'Generate a UK RAMS risk assessment']
+      );
     } catch (err) {
       toast.error('Launch error', err?.message || 'Could not publish events.');
     } finally {
@@ -963,6 +1075,10 @@ export default function LeaderAICoPilot({
         'Announcement Published! 📣',
         `Posted to ${community.name} Feed & notified all members.`
       );
+      appendSystemConfirmation(
+        `✅ **Announcement Published Live!** Posted to your **${community.name} Feed** and notified all members.`,
+        ['Create a poll for members', 'Plan our next 4 weeks of meetups', 'Audit our community health']
+      );
     } catch (err) {
       toast.error('Broadcast Error', err?.message || 'Could not publish announcement.');
     } finally {
@@ -985,6 +1101,10 @@ export default function LeaderAICoPilot({
       toast.success(
         'Poll Launched Live! 📊',
         `Live on ${community.name} Overview & Feed tabs — members notified!`
+      );
+      appendSystemConfirmation(
+        `✅ **Poll Launched Live!** **"${cleanQ}"** is now live on your **${community.name} Page (Overview & Feed)** and all members have been notified to vote.`,
+        ['Draft a WhatsApp message to share this poll', 'Launch a new meetup', 'Audit our community health']
       );
     } catch (err) {
       toast.error('Poll Launch Error', err?.message || 'Could not launch community poll.');
@@ -1055,6 +1175,10 @@ export default function LeaderAICoPilot({
       await updateCommunity(community.id, payload);
       setAppliedProfileMap((prev) => ({ ...prev, [msgId]: true }));
       toast.success('Club Settings & Rules Saved Live! ✨', 'Your changes are now live on your Community Page.');
+      appendSystemConfirmation(
+        `✅ **Club Settings & Rules Saved Live!** Your public **${community.name} Page** has been updated immediately.`,
+        ['Add another club rule', 'Draft a welcome announcement for newcomers', 'Launch a new meetup']
+      );
     } catch (err) {
       toast.error('Update Failed', err?.message || 'Could not update community settings.');
     } finally {
@@ -1079,6 +1203,10 @@ export default function LeaderAICoPilot({
         if (ok !== false) {
           setAppliedEventUpdateMap((prev) => ({ ...prev, [msgId]: { id: evData.eventId, action: 'cancel' } }));
           toast.success('Event Cancelled', `"${evData.title || evData.originalTitle}" has been marked cancelled.`);
+          appendSystemConfirmation(
+            `✅ **Event Cancelled:** **"${evData.title || evData.originalTitle}"** has been marked cancelled across your Club Calendar and \`/events\`.`,
+            ['Draft a cancellation announcement for members', 'Create a replacement meetup', 'Audit our community health']
+          );
         } else {
           toast.error('Could not cancel event', 'Please try again from Dashboard → Events.');
         }
@@ -1103,6 +1231,10 @@ export default function LeaderAICoPilot({
         if (ok !== false) {
           setAppliedEventUpdateMap((prev) => ({ ...prev, [msgId]: { id: evData.eventId, action: 'update' } }));
           toast.success('Event Updated Live! ✅', `"${evData.title}" changes are now live on Calendar & /events.`);
+          appendSystemConfirmation(
+            `✅ **Event Updated Live!** Your changes to **"${evData.title.trim()}"** are now live on your Community Calendar and \`/events\`.`,
+            ['Send a reminder to attendees about the update', 'Draft a WhatsApp update', 'Audit our community health']
+          );
         } else {
           toast.error('Event Update Failed', 'Could not save event changes. Please try again.');
         }
@@ -1124,6 +1256,12 @@ export default function LeaderAICoPilot({
       toast.success(
         count > 0 ? `Reminder Sent to ${count} Attendee${count === 1 ? '' : 's'}! 🔔` : 'Reminder Processed',
         count > 0 ? 'In-app & push notifications delivered.' : 'No registered attendees to notify yet.'
+      );
+      appendSystemConfirmation(
+        count > 0
+          ? `✅ **Reminder Sent!** Delivered to **${count} registered attendee${count === 1 ? '' : 's'}** of **${reminderData.eventTitle || 'your event'}**.`
+          : `✅ **Reminder Checked:** No registered attendees are signed up for **${reminderData.eventTitle || 'this event'}** yet.`,
+        ['Draft a WhatsApp reminder to boost RSVPs', 'Create a poll for members', 'Audit our community health']
       );
     } catch (err) {
       toast.error('Reminder Failed', err?.message || 'Could not send event reminder.');
@@ -1149,6 +1287,10 @@ export default function LeaderAICoPilot({
       if (created) {
         setCreatedChannelMap((prev) => ({ ...prev, [msgId]: created }));
         toast.success(`#${cleanName} Channel Created! 💬`, `Live now inside ${community.name} Community Chat.`);
+        appendSystemConfirmation(
+          `✅ **Channel Created Live!** **#${cleanName}** (${chanData.channelType === 'announcement' ? 'Announcements Only' : 'Open Member Discussion'}) is now live inside your **${community.name} Community Chat** (\`/chat\`).`,
+          [`Draft a welcome message for #${cleanName}`, 'Create another chat channel', 'Launch a poll for members']
+        );
       } else {
         toast.error('Channel Creation Failed', 'Could not create chat channel. Please try again.');
       }
@@ -1709,7 +1851,7 @@ export default function LeaderAICoPilot({
                     },
                     {
                       label: '# New Chat Channel',
-                      prompt: `Create a new community chat channel for ${community?.name || 'our members'}.`,
+                      prompt: `Create a new community chat channel for ${community?.name || 'our members'} right now with a smart suggested name I can edit in the Launchpad.`,
                     },
                     {
                       label: '🛡️ UK RAMS',
@@ -1891,52 +2033,104 @@ export default function LeaderAICoPilot({
                   <div ref={chatEndRef} />
                 </div>
 
-                {/* Live Voice Listening Status Banner */}
-                {isListening && (
+                {/* Live Voice Recording / Transcribing Banner */}
+                {(isListening || isTranscribing) && (
                   <div
                     style={{
-                      padding: '7px 14px',
-                      background: 'rgba(239, 68, 68, 0.12)',
-                      borderTop: '1px solid rgba(239, 68, 68, 0.3)',
+                      padding: '8px 14px',
+                      background: isTranscribing
+                        ? 'rgba(139, 92, 246, 0.12)'
+                        : 'rgba(239, 68, 68, 0.12)',
+                      borderTop: isTranscribing
+                        ? '1px solid rgba(139, 92, 246, 0.3)'
+                        : '1px solid rgba(239, 68, 68, 0.3)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-between',
                       gap: '8px',
                       fontSize: '0.76rem',
                       fontWeight: 700,
-                      color: '#ef4444',
+                      color: isTranscribing ? '#8b5cf6' : '#ef4444',
                       flexShrink: 0,
+                      flexWrap: 'wrap',
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span
-                        style={{
-                          width: '9px',
-                          height: '9px',
-                          borderRadius: '50%',
-                          background: '#ef4444',
-                          display: 'inline-block',
-                          animation: 'copilotPulse 1.1s ease-in-out infinite',
-                        }}
-                      />
-                      <span>{voiceStatusText || 'Listening... speak naturally'}</span>
+                      {isTranscribing ? (
+                        <>
+                          <Loader2 size={14} className="spin" />
+                          <span>Transcribing with Gemini AI...</span>
+                        </>
+                      ) : (
+                        <>
+                          <span
+                            style={{
+                              width: '9px',
+                              height: '9px',
+                              borderRadius: '50%',
+                              background: '#ef4444',
+                              display: 'inline-block',
+                              animation: 'copilotPulse 1.1s ease-in-out infinite',
+                            }}
+                          />
+                          <span>
+                            Recording {Math.floor(recordingSeconds / 60)}:{String(recordingSeconds % 60).padStart(2, '0')} — speak naturally
+                          </span>
+                        </>
+                      )}
                     </div>
-                    <button
-                      type="button"
-                      onClick={stopListening}
-                      style={{
-                        background: 'rgba(239, 68, 68, 0.16)',
-                        border: '1px solid rgba(239, 68, 68, 0.35)',
-                        color: '#ef4444',
-                        borderRadius: '99px',
-                        padding: '2px 9px',
-                        fontSize: '0.7rem',
-                        fontWeight: 800,
-                        cursor: 'pointer',
-                      }}
-                    >
-                      Stop
-                    </button>
+                    {isListening && !isTranscribing && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <button
+                          type="button"
+                          onClick={cancelListening}
+                          style={{
+                            background: 'transparent',
+                            border: '1px solid rgba(239, 68, 68, 0.35)',
+                            color: '#ef4444',
+                            borderRadius: '99px',
+                            padding: '3px 9px',
+                            fontSize: '0.7rem',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                          }}
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => stopListening(false)}
+                          style={{
+                            background: 'rgba(239, 68, 68, 0.18)',
+                            border: '1px solid rgba(239, 68, 68, 0.45)',
+                            color: '#ef4444',
+                            borderRadius: '99px',
+                            padding: '3px 10px',
+                            fontSize: '0.7rem',
+                            fontWeight: 800,
+                            cursor: 'pointer',
+                          }}
+                        >
+                          Stop &amp; Review
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => stopListening(true)}
+                          style={{
+                            background: '#ef4444',
+                            border: 'none',
+                            color: '#ffffff',
+                            borderRadius: '99px',
+                            padding: '3px 11px',
+                            fontSize: '0.7rem',
+                            fontWeight: 800,
+                            cursor: 'pointer',
+                          }}
+                        >
+                          Send Now →
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -1945,7 +2139,11 @@ export default function LeaderAICoPilot({
                   className="copilot-portal-composer"
                   onSubmit={(e) => {
                     e.preventDefault();
-                    handleSendMessage();
+                    if (isListening) {
+                      stopListening(true);
+                    } else {
+                      handleSendMessage();
+                    }
                   }}
                   style={{
                     borderTop: '1px solid var(--hairline-border)',
@@ -1959,10 +2157,10 @@ export default function LeaderAICoPilot({
                   <button
                     type="button"
                     onClick={toggleListening}
-                    disabled={isThinking}
+                    disabled={isThinking || isTranscribing}
                     className="interactive-press"
-                    title={isListening ? 'Stop voice input' : 'Talk to More AI with microphone'}
-                    aria-label={isListening ? 'Stop voice input' : 'Talk to More AI with microphone'}
+                    title={isListening ? 'Stop & transcribe' : 'Record voice message for More AI'}
+                    aria-label={isListening ? 'Stop & transcribe' : 'Record voice message for More AI'}
                     style={{
                       width: '40px',
                       height: '40px',
@@ -1981,12 +2179,12 @@ export default function LeaderAICoPilot({
                       display: 'inline-flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      cursor: isThinking ? 'not-allowed' : 'pointer',
+                      cursor: isThinking || isTranscribing ? 'not-allowed' : 'pointer',
                       flexShrink: 0,
                       animation: isListening ? 'copilotPulse 1.4s ease-in-out infinite' : 'none',
                     }}
                   >
-                    {isListening ? <MicOff size={17} /> : <Mic size={17} />}
+                    {isTranscribing ? <Loader2 size={16} className="spin" /> : isListening ? <MicOff size={17} /> : <Mic size={17} />}
                   </button>
                   <textarea
                     rows={1}
@@ -3675,24 +3873,46 @@ export default function LeaderAICoPilot({
 
                         return (
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                            <div
-                              style={{
-                                padding: '10px 13px',
-                                borderRadius: '12px',
-                                background: 'rgba(16, 185, 129, 0.1)',
-                                border: '1px solid rgba(16, 185, 129, 0.3)',
-                                fontSize: '0.78rem',
-                                color: 'var(--ink-primary)',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '8px',
-                              }}
-                            >
-                              <Hash size={15} color="#10b981" style={{ flexShrink: 0 }} />
-                              <span>
-                                <strong>Where this goes:</strong> Creates <strong>#{previewSlug || 'new-channel'}</strong> live inside your <strong>{community?.name} Community Chat</strong> (<code>/chat</code>).
-                              </span>
-                            </div>
+                            {isCreated ? (
+                              <div
+                                style={{
+                                  padding: '12px 14px',
+                                  borderRadius: '12px',
+                                  background: 'rgba(16, 185, 129, 0.16)',
+                                  border: '1.5px solid rgba(16, 185, 129, 0.5)',
+                                  fontSize: '0.82rem',
+                                  fontWeight: 700,
+                                  color: '#10b981',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '8px',
+                                }}
+                              >
+                                <CheckCircle2 size={16} style={{ flexShrink: 0 }} />
+                                <span>
+                                  <strong>#{createdCh.name || previewSlug}</strong> is now live in your <strong>{community?.name} Community Chat</strong>!
+                                </span>
+                              </div>
+                            ) : (
+                              <div
+                                style={{
+                                  padding: '10px 13px',
+                                  borderRadius: '12px',
+                                  background: 'rgba(16, 185, 129, 0.1)',
+                                  border: '1px solid rgba(16, 185, 129, 0.3)',
+                                  fontSize: '0.78rem',
+                                  color: 'var(--ink-primary)',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '8px',
+                                }}
+                              >
+                                <Hash size={15} color="#10b981" style={{ flexShrink: 0 }} />
+                                <span>
+                                  <strong>Where this goes:</strong> Creates <strong>#{previewSlug || 'new-channel'}</strong> live inside your <strong>{community?.name} Community Chat</strong> (<code>/chat</code>).
+                                </span>
+                              </div>
+                            )}
 
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', flexWrap: 'wrap', paddingBottom: '10px', borderBottom: '1px solid var(--hairline-border)' }}>
                               <h3 style={{ margin: 0, fontSize: '1.08rem', fontFamily: 'var(--font-heading)', color: 'var(--ink-primary)' }}>

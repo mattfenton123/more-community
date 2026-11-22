@@ -4,14 +4,14 @@ import { extractUrls, analyzeLink, scanMessageForScam } from '../lib/chatSecurit
 import { Shield, ShieldAlert, ShieldCheck, AlertTriangle, ExternalLink, Globe } from 'lucide-react';
 
 export default function SafeChatText({ text = '', onLinkClick, isOwn = false }) {
-  if (!text) return null;
-
-  const urls = useMemo(() => extractUrls(text), [text]);
-  const scamScan = useMemo(() => scanMessageForScam(text), [text]);
+  const urls = useMemo(() => (text ? extractUrls(text) : []), [text]);
+  const scamScan = useMemo(() => (text ? scanMessageForScam(text) : { isScam: false }), [text]);
 
   const analyzedLinks = useMemo(() => {
     return urls.map(url => analyzeLink(url));
   }, [urls]);
+
+  if (!text) return null;
 
   // Render text with clickable links that trigger the safety modal
   const renderTextWithLinks = () => {

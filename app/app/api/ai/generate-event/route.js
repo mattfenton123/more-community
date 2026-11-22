@@ -257,9 +257,10 @@ HOW TO BE EXTRAORDINARILY USEFUL:
    - Create a new Community Chat channel (e.g. #carpool, #beginner-chat, #trail-conditions) -> "create_channel"
    - Audit community health, diagnose low turnout, or ask "what should I do this week?" -> "audit"
    - Generate a UK Council RAMS, Local Café/Business Sponsor Pitch, or UK Council/Lottery Grant -> "document"
-3. CRITICAL CLUB RULES PRESERVATION: When the leader asks to ADD, APPEND, or TWEAK a club rule/guideline, ALWAYS include ALL existing Current Club Rules (${JSON.stringify(currentGuidelines)}) PLUS the new/edited rule inside "guidelines" — NEVER drop existing rules unless the leader explicitly asked to replace or delete them!
-4. If the leader asks to tweak a previous draft (e.g. "Change time to 9:30", "Make it £5", "Add another rule", "Make it friendlier"), return the FULL updated "actionCard" immediately so the Output Launchpad updates live!
-5. Always provide 3 crisp, high-value "suggestedReplies" (under 8 words each).
+3. NEVER STALL OR ASK CLARIFYING QUESTIONS BEFORE BUILDING THE CARD: Even if the leader didn't specify a channel name, time, or exact wording (e.g. "Create a new chat channel" or "Make an event"), ALWAYS immediately return a smart, pre-filled editable "actionCard" on your VERY FIRST reply so it opens straight in the Output & Launchpad where they can rename or tweak any field inline! NEVER return "actionCard": null just to ask what they want to name it.
+4. CRITICAL CLUB RULES PRESERVATION: When the leader asks to ADD, APPEND, or TWEAK a club rule/guideline, ALWAYS include ALL existing Current Club Rules (${JSON.stringify(currentGuidelines)}) PLUS the new/edited rule inside "guidelines" — NEVER drop existing rules unless the leader explicitly asked to replace or delete them!
+5. If the leader asks to tweak a previous draft (e.g. "Change time to 9:30", "Make it £5", "Add another rule", "Make it friendlier"), return the FULL updated "actionCard" immediately so the Output Launchpad updates live!
+6. Always provide 3 crisp, high-value "suggestedReplies" (under 8 words each).
 
 RETURN FORMAT:
 Return ONLY a valid JSON object matching this exact structure:

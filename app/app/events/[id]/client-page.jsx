@@ -672,14 +672,14 @@ export default function EventClient({ id }) {
 
   const isLive = Boolean(event && (isEventToday(event) || searchParams?.get('live') === 'true'));
   // 36-hour post-start grace window so attendees who had zero signal on the trail can register & check in once they reach the pub or home
-  const isWithinCheckInGraceWindow = useMemo(() => {
+  const isWithinCheckInGraceWindow = (() => {
     if (!event) return false;
     if (isEventToday(event)) return true;
     const startDt = parseEventDateTime(event.date, event.time);
     if (!startDt) return false;
     const elapsedMs = Date.now() - startDt.getTime();
     return elapsedMs >= 0 && elapsedMs <= 36 * 60 * 60 * 1000;
-  }, [event]);
+  })();
   const isUserCheckedIn = Boolean(
     hasCheckedInLocally || 
     (event && user?.id && (rsvps || []).some(r => r.userId === user.id && (r.checkedIn || r.checked_in || r.status === 'checked_in')))

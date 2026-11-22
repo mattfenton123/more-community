@@ -74,9 +74,7 @@ export default function RollCallModal({ event, onClose }) {
     };
   }, [onClose, flushOfflineCheckinQueue, toast]);
 
-  if (!event) return null;
-
-  const rawAttendees = (eventRsvps?.[event.id] || []).filter(
+  const rawAttendees = (event?.id ? (eventRsvps?.[event.id] || []) : []).filter(
     (r) => r.status !== 'declined'
   );
   const registeredUserIds = useMemo(
@@ -160,6 +158,8 @@ export default function RollCallModal({ event, onClose }) {
   const checkedInCount = attendees.filter((a) => a.checkedIn).length;
   const percentCheckedIn =
     totalCount > 0 ? Math.round((checkedInCount / totalCount) * 100) : 0;
+
+  if (!event) return null;
 
   const handleToggleCheckIn = async (userId, currentStatus, name) => {
     try {

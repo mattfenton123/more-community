@@ -1035,20 +1035,38 @@ export async function updateCommunityAction(communityId, updates, token) {
 }
 
 export async function createChannelAction(channelData, token) {
-  const { user, isAdmin } = await verifyCommunityManager(token, channelData.communityId);
-  const db = getSupabaseClient(token);
-  await ensureRlsManagerMembership(db, user?.id, channelData.communityId, isAdmin);
-  
-  const { data, error } = await db.from('channels').insert({
+  await verifyCommunityManager(token, channelData.communityId);
+
+  const insertPayload = {
     id: channelData.id,
     community_id: channelData.communityId,
     name: channelData.name,
     type: channelData.type || 'text',
-    member_ids: channelData.memberIds || null
-  }).select().single();
-  
-  if (error) throw new Error(error.message);
-  return data;
+  };
+  if (Array.isArray(channelData.memberIds) && channelData.memberIds.length > 0) {
+    insertPayload.member_ids = channelData.memberIds;
+  }
+
+  let payload = { ...insertPayload };
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const { data, error } = await supabaseAdmin
+      .from('channels')
+      .insert(payload)
+      .select()
+      .single();
+
+    if (!error) return data;
+
+    const colMatch =
+      error.message?.match(/column ["']?(?:channels\.)?([a-zA-Z0-9_]+)["']? does not exist/i) ||
+      error.message?.match(/Could not find the ['"]([a-zA-Z0-9_]+)['"] column/i);
+    if (colMatch && colMatch[1] && payload[colMatch[1]] !== undefined) {
+      delete payload[colMatch[1]];
+      continue;
+    }
+    throw new Error(error.message);
+  }
+  throw new Error('Could not create channel');
 }
 
 export async function markNotificationReadAction(notificationId, token) {

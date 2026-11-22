@@ -159,9 +159,9 @@ function CommunitySwitcher({ currentCommunity, communities, activeId, onSelect, 
         className="interactive-press"
         style={{
           width: '100%',
-          background: '#1B1B1B',
+          background: 'var(--surface-card)',
           color: 'var(--ink-primary)',
-          border: isOpen ? '1px solid var(--teal-500)' : '1px solid rgba(255,255,255,0.18)',
+          border: isOpen ? '1px solid var(--brand-accent)' : '1px solid var(--hairline-border-strong)',
           padding: isMobile ? '6px 10px' : '8px 12px',
           borderRadius: '8px',
           fontSize: isMobile ? '0.85rem' : '0.95rem',
@@ -172,7 +172,7 @@ function CommunitySwitcher({ currentCommunity, communities, activeId, onSelect, 
           gap: '8px',
           cursor: 'pointer',
           textAlign: 'left',
-          boxShadow: isOpen ? '0 0 0 2px rgba(235, 87, 56,0.2)' : 'none',
+          boxShadow: isOpen ? '0 0 0 2px var(--brand-accent-soft)' : 'none',
           transition: 'all 0.15s ease'
         }}
       >
@@ -184,7 +184,7 @@ function CommunitySwitcher({ currentCommunity, communities, activeId, onSelect, 
               style={{ width: isMobile ? '18px' : '22px', height: isMobile ? '18px' : '22px', borderRadius: '4px', objectFit: 'cover', flexShrink: 0 }}
             />
           ) : (
-            <div style={{ width: isMobile ? '18px' : '22px', height: isMobile ? '18px' : '22px', borderRadius: '4px', background: 'var(--teal-600)', color: 'var(--ink-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', fontWeight: 700, flexShrink: 0 }}>
+            <div style={{ width: isMobile ? '18px' : '22px', height: isMobile ? '18px' : '22px', borderRadius: '4px', background: 'var(--brand-accent)', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', fontWeight: 700, flexShrink: 0 }}>
               {currentCommunity.name?.charAt(0) || 'C'}
             </div>
           )}
@@ -192,7 +192,7 @@ function CommunitySwitcher({ currentCommunity, communities, activeId, onSelect, 
             {currentCommunity.name}
           </span>
         </div>
-        <ChevronDown size={14} color="var(--slate-400)" style={{ transform: isOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s', flexShrink: 0 }} />
+        <ChevronDown size={14} color="var(--ink-muted)" style={{ transform: isOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s', flexShrink: 0 }} />
       </button>
 
       {isOpen && (
@@ -204,19 +204,20 @@ function CommunitySwitcher({ currentCommunity, communities, activeId, onSelect, 
             width: isMobile ? '280px' : '100%',
             minWidth: '240px',
             maxWidth: '340px',
-            background: '#1B1B1B',
-            border: '1px solid rgba(255,255,255,0.18)',
+            background: 'var(--surface-card)',
+            color: 'var(--ink-primary)',
+            border: '1px solid var(--hairline-border-strong)',
             borderRadius: '12px',
-            boxShadow: '0 12px 32px rgba(0,0,0,0.65)',
+            boxShadow: '0 12px 32px rgba(0,0,0,0.28)',
             zIndex: 1000,
             overflow: 'hidden',
             backdropFilter: 'blur(16px)'
           }}
         >
           {/* Sticky Search Header */}
-          <div style={{ padding: '8px 10px', borderBottom: '1px solid var(--hairline-border)', background: 'rgba(255,255,255,0.02)' }}>
+          <div style={{ padding: '8px 10px', borderBottom: '1px solid var(--hairline-border)', background: 'var(--surface-elevated)' }}>
             <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-              <Search size={14} color="var(--slate-400)" style={{ position: 'absolute', left: '10px' }} />
+              <Search size={14} color="var(--ink-muted)" style={{ position: 'absolute', left: '10px' }} />
               <input
                 type="text"
                 autoFocus
@@ -226,8 +227,8 @@ function CommunitySwitcher({ currentCommunity, communities, activeId, onSelect, 
                 style={{
                   width: '100%',
                   padding: '7px 26px 7px 30px',
-                  background: 'rgba(255,255,255,0.06)',
-                  border: '1px solid rgba(255,255,255,0.12)',
+                  background: 'var(--surface-card)',
+                  border: '1px solid var(--hairline-border-strong)',
                   borderRadius: '8px',
                   color: 'var(--ink-primary)',
                   fontSize: '0.82rem',
@@ -238,13 +239,13 @@ function CommunitySwitcher({ currentCommunity, communities, activeId, onSelect, 
                 <button
                   type="button"
                   onClick={() => setQuery('')}
-                  style={{ position: 'absolute', right: '8px', background: 'none', border: 'none', color: 'var(--slate-400)', cursor: 'pointer', padding: 0 }}
+                  style={{ position: 'absolute', right: '8px', background: 'none', border: 'none', color: 'var(--ink-muted)', cursor: 'pointer', padding: 0 }}
                 >
                   <X size={13} />
                 </button>
               )}
             </div>
-            <div style={{ fontSize: '0.68rem', color: 'var(--slate-400)', marginTop: '4px', paddingLeft: '2px' }}>
+            <div style={{ fontSize: '0.68rem', color: 'var(--ink-muted)', marginTop: '4px', paddingLeft: '2px' }}>
               {filtered.length} {filtered.length === 1 ? 'community' : 'communities'} found
             </div>
           </div>
@@ -252,7 +253,7 @@ function CommunitySwitcher({ currentCommunity, communities, activeId, onSelect, 
           {/* Scrollable Filtered List */}
           <div style={{ maxHeight: '240px', overflowY: 'auto', padding: '4px' }}>
             {filtered.length === 0 ? (
-              <div style={{ padding: '16px', textAlign: 'center', fontSize: '0.8rem', color: 'var(--slate-400)' }}>
+              <div style={{ padding: '16px', textAlign: 'center', fontSize: '0.8rem', color: 'var(--ink-muted)' }}>
                 No communities matching "{query}"
               </div>
             ) : (
@@ -273,22 +274,22 @@ function CommunitySwitcher({ currentCommunity, communities, activeId, onSelect, 
                       justifyContent: 'space-between',
                       padding: '8px 10px',
                       borderRadius: '8px',
-                      background: isSelected ? 'rgba(235, 87, 56,0.12)' : 'transparent',
-                      border: isSelected ? '1px solid rgba(235, 87, 56,0.3)' : '1px solid transparent',
-                      color: isSelected ? 'var(--teal-300)' : '#f8fafc',
+                      background: isSelected ? 'var(--brand-accent-soft)' : 'transparent',
+                      border: isSelected ? '1px solid var(--brand-accent)' : '1px solid transparent',
+                      color: isSelected ? 'var(--brand-accent)' : 'var(--ink-primary)',
                       cursor: 'pointer',
                       textAlign: 'left',
                       marginBottom: '2px',
                       transition: 'background 0.15s'
                     }}
-                    onMouseEnter={e => !isSelected && (e.currentTarget.style.background = 'rgba(255,255,255,0.05)')}
+                    onMouseEnter={e => !isSelected && (e.currentTarget.style.background = 'var(--surface-elevated)')}
                     onMouseLeave={e => !isSelected && (e.currentTarget.style.background = 'transparent')}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: 1 }}>
                       {c.cover_image || c.image ? (
                         <img src={c.cover_image || c.image} alt="" style={{ width: '24px', height: '24px', borderRadius: '6px', objectFit: 'cover', flexShrink: 0 }} />
                       ) : (
-                        <div style={{ width: '24px', height: '24px', borderRadius: '6px', background: 'rgba(255,255,255,0.1)', color: 'var(--ink-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, flexShrink: 0 }}>
+                        <div style={{ width: '24px', height: '24px', borderRadius: '6px', background: 'var(--surface-elevated)', color: 'var(--ink-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, flexShrink: 0 }}>
                           {c.name?.charAt(0) || 'C'}
                         </div>
                       )}
@@ -297,13 +298,13 @@ function CommunitySwitcher({ currentCommunity, communities, activeId, onSelect, 
                           {c.name}
                         </div>
                         {cleanLocationName(c.location_name) && (
-                          <div style={{ fontSize: '0.7rem', color: 'var(--slate-400)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          <div style={{ fontSize: '0.7rem', color: 'var(--ink-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                             {cleanLocationName(c.location_name)}
                           </div>
                         )}
                       </div>
                     </div>
-                    {isSelected && <Check size={15} color="var(--teal-400)" style={{ flexShrink: 0, marginLeft: '6px' }} />}
+                    {isSelected && <Check size={15} color="var(--brand-accent)" style={{ flexShrink: 0, marginLeft: '6px' }} />}
                   </button>
                 );
               })
@@ -327,9 +328,9 @@ function CommunitySwitcher({ currentCommunity, communities, activeId, onSelect, 
                   gap: '6px',
                   padding: '7px',
                   borderRadius: '6px',
-                  background: 'rgba(235, 87, 56,0.1)',
-                  border: '1px dashed rgba(235, 87, 56,0.3)',
-                  color: 'var(--teal-300)',
+                  background: 'var(--brand-accent-soft)',
+                  border: '1px dashed var(--brand-accent)',
+                  color: 'var(--brand-accent)',
                   fontSize: '0.78rem',
                   fontWeight: 600,
                   cursor: 'pointer'

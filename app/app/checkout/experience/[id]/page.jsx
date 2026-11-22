@@ -33,6 +33,46 @@ export default function ExperienceCheckout() {
   const [checkoutState, setCheckoutState] = useState('idle'); // idle, processing, success
   const [bookingRef, setBookingRef] = useState('');
 
+  // Resolve sensible venue location/address if imported from Google Places or generic
+  const venueLocation = useMemo(() => {
+    if (!exp) return '';
+    if (exp.location && !exp.location.toLowerCase().includes('south east')) {
+      return exp.location;
+    }
+    if (exp.title?.toLowerCase().includes('hotel du vin')) {
+      return 'Hotel Du Vin & Bistro, Crescent Road, Tunbridge Wells, TN1 2LY';
+    }
+    if (exp.title?.toLowerCase().includes('axe throwing')) {
+      return 'UK Axe Throwing Centre, Eridge Park, Tunbridge Wells, TN3 9JT';
+    }
+    return exp.location || 'Tunbridge Wells & High Weald Area';
+  }, [exp]);
+
+  // Quick preset dates
+  const quickDates = useMemo(() => {
+    const list = [];
+    for (let i = 1; i <= 4; i++) {
+      const d = new Date();
+      d.setDate(d.getDate() + i * 2);
+      list.push({
+        iso: d.toISOString().split('T')[0],
+        dayName: d.toLocaleDateString('en-GB', { weekday: 'short' }),
+        formatted: d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
+      });
+    }
+    return list;
+  }, []);
+
+  const formattedBookingDate = useMemo(() => {
+    if (!selectedDate) return 'Selected Date';
+    const parts = selectedDate.split('-');
+    if (parts.length === 3) {
+      const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+      return d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    }
+    return selectedDate;
+  }, [selectedDate]);
+
   if (!exp) {
     return (
       <div style={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'var(--slate-950)', color: 'var(--white)', padding: '20px', textAlign: 'center' }}>
@@ -60,36 +100,7 @@ export default function ExperienceCheckout() {
     ? buildAffiliateUrl(exp.productUrl, { communityId: community?.id || exp.communityId, leaderId: user?.id, experienceId: exp.id })
     : null;
 
-  // Resolve sensible venue location/address if imported from Google Places or generic
-  const venueLocation = useMemo(() => {
-    if (exp.location && !exp.location.toLowerCase().includes('south east')) {
-      return exp.location;
-    }
-    if (exp.title.toLowerCase().includes('hotel du vin')) {
-      return 'Hotel Du Vin & Bistro, Crescent Road, Tunbridge Wells, TN1 2LY';
-    }
-    if (exp.title.toLowerCase().includes('axe throwing')) {
-      return 'UK Axe Throwing Centre, Eridge Park, Tunbridge Wells, TN3 9JT';
-    }
-    return exp.location || 'Tunbridge Wells & High Weald Area';
-  }, [exp.location, exp.title]);
-
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(venueLocation)}`;
-
-  // Quick preset dates
-  const quickDates = useMemo(() => {
-    const list = [];
-    for (let i = 1; i <= 4; i++) {
-      const d = new Date();
-      d.setDate(d.getDate() + i * 2);
-      list.push({
-        iso: d.toISOString().split('T')[0],
-        dayName: d.toLocaleDateString('en-GB', { weekday: 'short' }),
-        formatted: d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
-      });
-    }
-    return list;
-  }, []);
 
   const timeSlots = [
     { time: '11:00', label: '11:00 AM (Morning)' },
@@ -108,16 +119,6 @@ export default function ExperienceCheckout() {
       toast.success('Booking Confirmed!', `Reference: ${randomCode}`);
     }, 1200);
   };
-
-  const formattedBookingDate = useMemo(() => {
-    if (!selectedDate) return 'Selected Date';
-    const parts = selectedDate.split('-');
-    if (parts.length === 3) {
-      const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
-      return d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-    }
-    return selectedDate;
-  }, [selectedDate]);
 
   return (
     <div style={{ minHeight: '100dvh', background: 'var(--slate-950)', color: 'var(--white)', paddingBottom: '60px' }}>
