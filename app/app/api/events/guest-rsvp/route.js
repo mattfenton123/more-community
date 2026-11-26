@@ -79,26 +79,27 @@ export async function POST(request) {
           ? `Cash Due at Door (£${numericCash})`
           : 'Free / Complimentary';
 
-    // 2. Create guest profile in public.users
+    // 2. Create guest profile in public.users (store internal tracking inside __profile_meta so it never leaks into public bio/interests)
     const guestId = `guest_${crypto.randomUUID()}`;
     const sourceTag = isWalkIn ? 'walk_in' : 'guest_rsvp';
-    const paymentTag = isWalkIn ? ` [Payment: ${paymentMethod}${isCashPayment ? `:£${numericCash}` : ''}]` : '';
-    const waiverTag = waiverAcceptedAt ? ` [Waiver: ${waiverAcceptedAt} by ${waiverRecordedBy}]` : '';
-    const bioString = `[Email: ${cleanEmail}] [Source: ${sourceTag}] [Event: ${eventId}]${paymentTag}${waiverTag}${answer ? ` [Answer: ${String(answer).trim()}]` : ''}`;
+    const guestMeta = {
+      guest_email: cleanEmail,
+      source: sourceTag,
+      event_id: eventId,
+      opt_in: true,
+      ...(isWalkIn ? { payment_method: paymentMethod, cash_amount: isCashPayment ? numericCash : 0 } : {}),
+      ...(waiverAcceptedAt ? { waiver_accepted_at: waiverAcceptedAt, waiver_recorded_by: waiverRecordedBy } : {}),
+      ...(answer ? { answer: String(answer).trim() } : {}),
+    };
 
     const userPayload = {
       id: guestId,
       name: cleanName,
       role: 'Guest',
-      bio: bioString,
+      bio: '',
       joined: `Joined ${new Date().toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })}`,
       avatar: getDefaultAvatar(cleanName),
-      interests: [
-        `email:${cleanEmail}`,
-        isWalkIn ? 'walk_in' : 'guest',
-        ...(waiverAcceptedAt ? ['waiver_signed'] : []),
-        'opt_in:true',
-      ],
+      interests: [`__profile_meta:${JSON.stringify(guestMeta)}`],
       onboarded: true,
       location: formatShareLocation(event.location, '').split(',')[0].trim()
     };
@@ -162,14 +163,21 @@ export async function POST(request) {
 
       if (plusOneData.email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(plusOneData.email)) {
         const plusOneId = `guest_${crypto.randomUUID()}`;
+        const plusOneMeta = {
+          guest_email: plusOneData.email,
+          source: 'plus_one_guest',
+          invited_by: cleanEmail,
+          event_id: eventId,
+          opt_in: true,
+        };
         await db.from('users').insert({
           id: plusOneId,
           name: plusOneData.name,
           role: 'Guest',
-          bio: `[Email: ${plusOneData.email}] [Source: plus_one_guest] [InvitedBy: ${cleanEmail}] [Event: ${eventId}]`,
+          bio: '',
           joined: `Joined ${new Date().toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })}`,
           avatar: getDefaultAvatar(plusOneData.name),
-          interests: [`email:${plusOneData.email}`, 'plus_one', 'opt_in:true']
+          interests: [`__profile_meta:${JSON.stringify(plusOneMeta)}`]
         });
 
         try {

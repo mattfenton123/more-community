@@ -30,6 +30,7 @@ import PostMeetupAfterglow from '../../../src/components/PostMeetupAfterglow';
 import ProximityCheckInCard from '../../../src/components/ProximityCheckInCard';
 import { extractVenuePerk, getLatestArrivalBeacon, isCheckedInRsvp } from '../../../src/lib/inPersonGraph';
 import { resolveUserAvatar } from '../../../src/lib/avatar';
+import { sanitizeUserBio } from '../../../src/lib/profileSanitize';
 import { getCarpoolHandshakeMessage } from '../../../src/lib/carpool';
 import { isHostOrPartnerMember, shouldAutoJoinPrimaryOnRsvp } from '../../../src/lib/eventCollaboration';
 
@@ -3069,7 +3070,12 @@ export default function EventClient({ id }) {
                             &ldquo;{att.answer}&rdquo;
                           </div>
                         )}
-                        {u?.bio && !att.answer && <div style={{ fontSize: '0.78rem', color: 'var(--slate-400)', maxWidth: '240px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{u.bio}</div>}
+                        {(() => {
+                          const cleanBio = sanitizeUserBio(u?.bio);
+                          return cleanBio && !att.answer ? (
+                            <div style={{ fontSize: '0.78rem', color: 'var(--slate-400)', maxWidth: '240px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{cleanBio}</div>
+                          ) : null;
+                        })()}
                       </div>
                     </div>
                   </div>

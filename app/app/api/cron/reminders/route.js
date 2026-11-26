@@ -4,6 +4,7 @@ import { parseEventDateTime } from '../../../../src/lib/calendar';
 import { cleanLocationName } from '../../../../src/lib/location';
 import { sendPushNotificationAction } from '../../../../src/lib/actions';
 import { sendWalkInFollowUpEmail } from '../../../../src/lib/emailService';
+import { extractInternalEmail } from '../../../../src/lib/profileSanitize';
 
 export const dynamic = 'force-dynamic';
 
@@ -122,13 +123,12 @@ export async function GET(req) {
           if (reminderType === 'afterglow_3h' && String(attendee.user_id).startsWith('guest_')) {
             try {
               const [{ data: guestUser }, { data: comm }] = await Promise.all([
-                supabase.from('users').select('name, bio').eq('id', attendee.user_id).maybeSingle(),
+                supabase.from('users').select('name, bio, interests').eq('id', attendee.user_id).maybeSingle(),
                 event.community_id
                   ? supabase.from('communities').select('id, name').eq('id', event.community_id).maybeSingle()
                   : Promise.resolve({ data: null }),
               ]);
-              const emailMatch = (guestUser?.bio || '').match(/\[Email:\s*([^\]]+)\]/i);
-              const guestEmail = emailMatch?.[1]?.trim();
+              const guestEmail = extractInternalEmail(guestUser);
               if (guestEmail) {
                 await sendWalkInFollowUpEmail({
                   to: guestEmail,

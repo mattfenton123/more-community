@@ -39,6 +39,7 @@ import { getCommunityLocation } from '../../../src/lib/location';
 import { parseEventDateTime } from '../../../src/lib/calendar';
 import { resolveUserAvatar } from '../../../src/lib/avatar';
 import { findUserByParam } from '../../../src/lib/profileLinks';
+import { sanitizeUserBio, sanitizeUserInterests, formatMemberSince } from '../../../src/lib/profileSanitize';
 import { getSharedMeetups, getVerifiedCheckInCount } from '../../../src/lib/inPersonGraph';
 
 
@@ -230,13 +231,14 @@ export default function UserProfile() {
     const initialHeadline =
       profileUser.headline ||
       (profileUser.role && profileUser.role !== 'Member' && profileUser.role !== 'Leader' ? profileUser.role : '');
+    const cleanBio = sanitizeUserBio(profileUser.bio);
     setEditForm({
       name: profileUser.name || '',
       headline: initialHeadline,
       location: profileUser.location || '',
-      bio: profileUser.bio === 'New here.' ? '' : (profileUser.bio || ''),
+      bio: cleanBio === 'New here.' ? '' : cleanBio,
       vibes: Array.isArray(profileUser.vibes) ? profileUser.vibes : [],
-      interests: Array.isArray(profileUser.interests) ? profileUser.interests : [],
+      interests: sanitizeUserInterests(profileUser.interests),
       instagram: profileUser.instagram || '',
       website: profileUser.website || '',
       banner: profileUser.banner || FALLBACK_IMAGES.general,
@@ -1197,30 +1199,29 @@ export default function UserProfile() {
                       marginBottom: '10px',
                     }}
                   >
-                    <Calendar size={12} /> Member since{' '}
-                    {profileUser.joined && !isNaN(new Date(profileUser.joined).getTime())
-                      ? new Date(profileUser.joined).toLocaleDateString('en-GB', {
-                          month: 'long',
-                          year: 'numeric',
-                        })
-                      : 'June 2025'}
+                    <Calendar size={12} /> Member since {formatMemberSince(profileUser.joined)}
                   </div>
 
-                  <p
-                    style={{
-                      margin: '0 0 12px 0',
-                      color: 'var(--ink-secondary)',
-                      fontSize: '0.92rem',
-                      lineHeight: 1.55,
-                      maxWidth: '500px',
-                    }}
-                  >
-                    {profileUser.bio && profileUser.bio !== 'New here.'
-                      ? profileUser.bio
-                      : isOwnProfile
-                      ? 'Tap Edit to add a short bio, your local town, and your meetup preferences.'
-                      : 'No bio yet.'}
-                  </p>
+                  {(() => {
+                    const displayBio = sanitizeUserBio(profileUser.bio);
+                    return (
+                      <p
+                        style={{
+                          margin: '0 0 12px 0',
+                          color: 'var(--ink-secondary)',
+                          fontSize: '0.92rem',
+                          lineHeight: 1.55,
+                          maxWidth: '500px',
+                        }}
+                      >
+                        {displayBio && displayBio !== 'New here.'
+                          ? displayBio
+                          : isOwnProfile
+                          ? 'Tap Edit to add a short bio, your local town, and your meetup preferences.'
+                          : 'No bio yet.'}
+                      </p>
+                    );
+                  })()}
 
                   {/* Meetup Vibe Chips */}
                   {Array.isArray(profileUser.vibes) && profileUser.vibes.length > 0 && (
@@ -1255,34 +1256,38 @@ export default function UserProfile() {
 
                   <BadgeRow userId={targetId} maxShow={6} />
 
-                  {profileUser.interests && profileUser.interests.length > 0 && (
-                    <div
-                      style={{
-                        display: 'flex',
-                        flexWrap: 'wrap',
-                        gap: '6px',
-                        justifyContent: 'center',
-                        marginTop: '12px',
-                      }}
-                    >
-                      {profileUser.interests.map((interest) => (
-                        <span
-                          key={interest}
-                          style={{
-                            fontSize: '0.74rem',
-                            fontWeight: 600,
-                            background: 'var(--brand-accent-soft)',
-                            color: 'var(--teal-300)',
-                            padding: '4px 10px',
-                            borderRadius: '99px',
-                            border: '1px solid rgba(235, 87, 56, 0.26)',
-                          }}
-                        >
-                          {interest}
-                        </span>
-                      ))}
-                    </div>
-                  )}
+                  {(() => {
+                    const displayInterests = sanitizeUserInterests(profileUser.interests);
+                    if (displayInterests.length === 0) return null;
+                    return (
+                      <div
+                        style={{
+                          display: 'flex',
+                          flexWrap: 'wrap',
+                          gap: '6px',
+                          justifyContent: 'center',
+                          marginTop: '12px',
+                        }}
+                      >
+                        {displayInterests.map((interest) => (
+                          <span
+                            key={interest}
+                            style={{
+                              fontSize: '0.74rem',
+                              fontWeight: 600,
+                              background: 'var(--brand-accent-soft)',
+                              color: 'var(--teal-300)',
+                              padding: '4px 10px',
+                              borderRadius: '99px',
+                              border: '1px solid rgba(235, 87, 56, 0.26)',
+                            }}
+                          >
+                            {interest}
+                          </span>
+                        ))}
+                      </div>
+                    );
+                  })()}
 
                   {/* Social Links if provided */}
                   {(profileUser.instagram || profileUser.website) && (

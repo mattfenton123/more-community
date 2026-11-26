@@ -26,7 +26,12 @@ import AppHeader from '../../src/components/AppHeader';
 import TownAlertCard from '../../src/components/TownAlertCard';
 import SwipeDiscovery from '../../src/components/SwipeDiscovery';
 import { isEventUpcoming, parseEventDateTime } from '../../src/lib/calendar';
-import { getCommunityLocation } from '../../src/lib/location';
+import {
+  getCommunityLocation,
+  getCommunitySearchText,
+  getLocationSearchRank,
+  stripUkPostcode,
+} from '../../src/lib/location';
 import { getCommunitySlug } from '../../src/lib/communityLinks';
 import { isCommunityPubliclyListed } from '../../src/lib/communityVisibility';
 import { getEventPath } from '../../src/lib/eventLinks';
@@ -90,9 +95,11 @@ const COUNTY_OR_COUNTRY_SUFFIXES = new Set([
 ]);
 
 function normalizeTownLabel(raw) {
-  const cleaned = String(raw || '')
-    .replace(/\s*&\s*other locations.*$/i, '')
-    .replace(/\s*\(.*?\)\s*/g, ' ')
+  const cleaned = stripUkPostcode(
+    String(raw || '')
+      .replace(/\s*&\s*other locations.*$/i, '')
+      .replace(/\s*\(.*?\)\s*/g, ' ')
+  )
     .replace(/\s+/g, ' ')
     .trim();
 
@@ -357,34 +364,60 @@ export default function Discover() {
       });
     }
 
-    // Search query
+    // Search query (supports direct text match + surrounding area expansion, e.g. Kent & Sussex)
+    const searchRankById = new Map();
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
-      list = list.filter(
-        (c) =>
+      list = list.filter((c) => {
+        const directMatch =
           c.name?.toLowerCase().includes(q) ||
           c.description?.toLowerCase().includes(q) ||
           c.tags?.some((t) => stripEmojiAndNormalize(t).includes(q)) ||
           getCommunityLocation(c).toLowerCase().includes(q) ||
-          (c.location_name && c.location_name.toLowerCase().includes(q))
-      );
+          (c.location_name && c.location_name.toLowerCase().includes(q));
+
+        if (directMatch) {
+          searchRankById.set(c.id, 2);
+          return true;
+        }
+
+        const locationCorpus = `${getCommunityLocation(c)} ${getCommunitySearchText(c)}`;
+        const rank = getLocationSearchRank(locationCorpus, q);
+        if (rank > 0) {
+          searchRankById.set(c.id, rank);
+          return true;
+        }
+        return false;
+      });
     }
+
+    const compareWithSearchRank = (baseCompare) => (a, b) => {
+      if (searchRankById.size > 0) {
+        const rankDiff = (searchRankById.get(b.id) || 0) - (searchRankById.get(a.id) || 0);
+        if (rankDiff !== 0) return rankDiff;
+      }
+      return baseCompare(a, b);
+    };
 
     // Preserve recommendation score order for "For You" unless user changes sort away from default
     if (activePill === 'For You' && sortBy === 'trending') {
-      return list;
+      return searchRankById.size > 0
+        ? [...list].sort(compareWithSearchRank(() => 0))
+        : list;
     }
 
     if (sortBy === 'trending') {
-      list = [...list].sort((a, b) => b.activityScore - a.activityScore);
+      list = [...list].sort(compareWithSearchRank((a, b) => b.activityScore - a.activityScore));
     } else if (sortBy === 'newest') {
-      list = [...list].sort((a, b) => {
-        const tA = new Date(a.createdAt || a.created_at || 0).getTime() || 0;
-        const tB = new Date(b.createdAt || b.created_at || 0).getTime() || 0;
-        return tB - tA;
-      });
+      list = [...list].sort(
+        compareWithSearchRank((a, b) => {
+          const tA = new Date(a.createdAt || a.created_at || 0).getTime() || 0;
+          const tB = new Date(b.createdAt || b.created_at || 0).getTime() || 0;
+          return tB - tA;
+        })
+      );
     } else if (sortBy === 'active') {
-      list = [...list].sort((a, b) => b.memberCount - a.memberCount);
+      list = [...list].sort(compareWithSearchRank((a, b) => b.memberCount - a.memberCount));
     }
 
     return list;

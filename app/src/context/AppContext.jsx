@@ -11,6 +11,7 @@ import { resolveUserAvatar, getDefaultAvatar, isPlaceholderAvatar } from '../lib
 import { buildCarpoolsByEvent } from '../lib/carpool';
 import { buildEventCommentsByEvent } from '../lib/eventCollaboration';
 import { parseChannel, encodeChannelType } from '../lib/channelMeta';
+import { sanitizeUserBio, sanitizeUserInterests, extractInternalEmail } from '../lib/profileSanitize';
 
 const PROFILE_META_PREFIX = '__profile_meta:';
 
@@ -18,7 +19,6 @@ function unpackUserWithProfileMeta(u) {
   if (!u) return u;
   const rawInterests = Array.isArray(u.interests) ? u.interests : [];
   let meta = {};
-  const cleanInterests = [];
 
   rawInterests.forEach(item => {
     if (typeof item === 'string' && item.startsWith(PROFILE_META_PREFIX)) {
@@ -26,10 +26,12 @@ function unpackUserWithProfileMeta(u) {
         const parsed = JSON.parse(item.slice(PROFILE_META_PREFIX.length));
         if (parsed && typeof parsed === 'object') meta = { ...meta, ...parsed };
       } catch (e) {}
-    } else if (typeof item === 'string' && item.trim()) {
-      cleanInterests.push(item.trim());
     }
   });
+
+  const cleanInterests = sanitizeUserInterests(rawInterests);
+  const cleanBio = sanitizeUserBio(u.bio);
+  const internalEmail = extractInternalEmail(u);
 
   if (typeof window !== 'undefined' && u.id) {
     try {
@@ -45,7 +47,9 @@ function unpackUserWithProfileMeta(u) {
 
   return {
     ...u,
+    bio: cleanBio,
     interests: cleanInterests,
+    _guestEmail: internalEmail || undefined,
     headline: u.headline ?? meta.headline ?? '',
     location: u.location ?? meta.location ?? '',
     banner: u.banner || meta.banner || '',

@@ -295,6 +295,13 @@ export const REGIONAL_KNOWN_LOCATIONS = [
     lat: 51.0620,
     lng: 0.3400,
     aliases: ['wadhurst']
+  },
+  {
+    name: 'Etchingham, East Sussex',
+    area: 'East Sussex',
+    lat: 51.0080,
+    lng: 0.4400,
+    aliases: ['etchingham', 'etchingham east sussex', 'etchingham station']
   }
 ];
 
@@ -357,6 +364,19 @@ export function normalizeCoords(coords) {
     if (!Number.isNaN(lat) && !Number.isNaN(lng)) return [lat, lng];
   }
   return null;
+}
+
+export function stripUkPostcode(str) {
+  if (!str || typeof str !== 'string') return '';
+  return str
+    // Full UK postcodes (e.g. TN19 7AG, TN197AG, BN1 1AA, SW1A 1AA)
+    .replace(/\b[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}\b/gi, '')
+    // Standalone or trailing outward UK postcode prefixes (e.g. TN19, BN21, ME14)
+    .replace(/(?:^|[\s,])(?:TN|BN|ME|CT|RH|DA|BR|CR|GU|KT|PO|SM|SE|SW|NW|EC|WC)\d{1,2}[A-Z]?(?=$|[\s,])/gi, ' ')
+    .replace(/\s*,\s*,\s*/g, ', ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/^,\s*|\s*,\s*$/g, '');
 }
 
 export function cleanLocationName(locationStr) {
@@ -565,6 +585,54 @@ export async function geocodeLocation(query, options = {}) {
 }
 
 /**
+ * Comprehensive Kent & Sussex town, village, landmark & county vocabulary
+ * so typing ANY location in Kent or Sussex surfaces surrounding Kent & Sussex results.
+ */
+export const KENT_AND_SUSSEX_TERMS = [
+  // Counties & regions
+  'kent', 'sussex', 'east sussex', 'west sussex', 'kent & east sussex', 'kent and east sussex',
+  'kent & sussex', 'kent and sussex', 'high weald', 'weald', 'south east',
+  // East Sussex towns & villages
+  'heathfield', 'etchingham', 'st leonards', 'st leonards-on-sea', 'st leonards on sea',
+  'hastings', 'eastbourne', 'brighton', 'hove', 'brighton & hove', 'lewes', 'rye', 'battle',
+  'crowborough', 'uckfield', 'bexhill', 'bexhill-on-sea', 'wadhurst', 'mayfield', 'burwash',
+  'robertsbridge', 'ticehurst', 'hurst green', 'flimwell', 'forest row', 'hartfield', 'buxted',
+  'hailsham', 'polegate', 'seaford', 'newhaven', 'peacehaven', 'herstmonceux', 'ninfield',
+  'sedlescombe', 'winchelsea', 'camber', 'ashdown forest', 'cuckoo trail', 'pevensey',
+  'ringmer', 'alfriston', 'frant', 'groombridge', 'eridge', 'rotherfield', 'cross in hand',
+  'horam', 'hellingly', 'punnetts town', 'broad oak', 'stones cross',
+  // Kent towns & villages
+  'tunbridge wells', 'royal tunbridge wells', 'tonbridge', 'sevenoaks', 'bewl water', 'bewl',
+  'lamberhurst', 'bedgebury', 'goudhurst', 'cranbrook', 'hawkhurst', 'tenterden', 'paddock wood',
+  'pembury', 'southborough', 'rusthall', 'penshurst', 'edenbridge', 'westerham', 'maidstone',
+  'canterbury', 'ashford', 'folkestone', 'dover', 'dartford', 'deal', 'ramsgate', 'margate',
+  'broadstairs', 'whitstable', 'herne bay', 'faversham', 'sittingbourne', 'chatham', 'rochester',
+  'gillingham', 'gravesend', 'medway', 'hythe', 'sandwich', 'cranbrook', 'staplehurst',
+  'marden', 'headcorn', 'yalding', 'hadlow', 'hildenborough', 'speldhurst', 'langton green',
+  'brenchley', 'matfield', 'horsmonden', 'kilndown', 'benenden', 'rolvenden', 'sissinghurst',
+  'scotney', 'pantiles', 'dunorlan', 'calverley', 'high rocks', 'broadwater warren',
+  // West Sussex towns & villages
+  'east grinstead', 'haywards heath', 'burgess hill', 'crawley', 'horsham', 'worthing',
+  'chichester', 'arundel', 'bognor', 'bognor regis', 'littlehampton', 'shoreham', 'shoreham-by-sea',
+  'steyning', 'petworth', 'midhurst', 'billingshurst', 'pulborough', 'hassocks', 'hurstpierpoint',
+  'cuckfield', 'lindfield', 'turners hill', 'copthorne', 'gatwick'
+];
+
+const KENT_SUSSEX_POSTCODE_RE = /^(?:tn|bn|me|ct|rh|da)\d{1,2}(?:\s*\d[a-z]{2})?$/i;
+
+const SURROUNDING_AREA_CATCHMENTS = {
+  kent_sussex: KENT_AND_SUSSEX_TERMS,
+  surrey: [
+    'surrey', 'guildford', 'reigate', 'redhill', 'dorking', 'oxted', 'caterham', 'epsom',
+    'farnham', 'woking', 'leatherhead', 'godalming', 'haslemere', 'banstead', 'weybridge'
+  ],
+  london: [
+    'london', 'greater london', 'south london', 'east london', 'west london', 'north london',
+    'central london', 'croydon', 'bromley', 'greenwich', 'richmond', 'wimbledon', 'clapham'
+  ]
+};
+
+/**
  * Regional hierarchy mapping for UK county & broad region searches.
  * Enables sponsors (e.g., law firms, clinics, regional brands) to search
  * broad catchments like 'Kent', 'East Sussex', or 'South East' and match all
@@ -572,37 +640,105 @@ export async function geocodeLocation(query, options = {}) {
  */
 export const UK_REGIONAL_CATCHMENTS = {
   'south east': [
-    'kent', 'east sussex', 'west sussex', 'sussex', 'surrey', 'london',
-    'tunbridge wells', 'heathfield', 'bewl water', 'st leonards', 'hastings',
-    'tonbridge', 'sevenoaks', 'brighton', 'lewes', 'cuckoo trail', 'bedgebury',
-    'high weald', 'lamberhurst', 'wadhurst', 'crowborough', 'regional'
+    ...KENT_AND_SUSSEX_TERMS,
+    ...SURROUNDING_AREA_CATCHMENTS.surrey,
+    ...SURROUNDING_AREA_CATCHMENTS.london,
+    'regional'
   ],
   'se': [
-    'kent', 'east sussex', 'west sussex', 'sussex', 'tunbridge wells',
-    'heathfield', 'bewl water', 'st leonards', 'hastings', 'tonbridge'
+    ...KENT_AND_SUSSEX_TERMS
   ],
-  'kent': [
-    'tunbridge wells', 'tonbridge', 'sevenoaks', 'bewl water', 'lamberhurst',
-    'bedgebury', 'goudhurst', 'maidstone', 'canterbury', 'ashford', 'folkestone',
-    'dover', 'dartford', 'kent & east sussex', 'high weald', 'royal tunbridge wells'
-  ],
-  'east sussex': [
-    'heathfield', 'st leonards', 'st leonards-on-sea', 'hastings', 'eastbourne',
-    'lewes', 'rye', 'battle', 'crowborough', 'uckfield', 'cuckoo trail',
-    'bexhill', 'high weald', 'kent & east sussex'
-  ],
-  'sussex': [
-    'heathfield', 'st leonards', 'st leonards-on-sea', 'hastings', 'eastbourne',
-    'lewes', 'rye', 'battle', 'crowborough', 'uckfield', 'cuckoo trail',
-    'bexhill', 'crawley', 'horsham', 'worthing', 'chichester'
-  ],
-  'west sussex': [
-    'crawley', 'horsham', 'worthing', 'chichester', 'haywards heath', 'burgess hill'
-  ],
-  'london': [
-    'london', 'greater london', 'south london', 'capital'
-  ]
+  'kent and sussex': KENT_AND_SUSSEX_TERMS,
+  'kent & sussex': KENT_AND_SUSSEX_TERMS,
+  'kent': KENT_AND_SUSSEX_TERMS,
+  'east sussex': KENT_AND_SUSSEX_TERMS,
+  'sussex': KENT_AND_SUSSEX_TERMS,
+  'west sussex': KENT_AND_SUSSEX_TERMS,
+  'surrey': SURROUNDING_AREA_CATCHMENTS.surrey,
+  'london': SURROUNDING_AREA_CATCHMENTS.london
 };
+
+/**
+ * Detects whether a free-text search query refers to a geographic location
+ * (town, village, county, region, or UK postcode) and returns its surrounding area terms.
+ */
+export function detectSurroundingArea(query) {
+  if (!query || typeof query !== 'string') return null;
+  const raw = query.trim().toLowerCase();
+  if (raw.length < 2) return null;
+
+  // Strip trailing ", uk" / ", england" and normalize "&" / "and"
+  const q = raw
+    .replace(/,\s*(uk|united kingdom|england)\s*$/i, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  if (!q) return null;
+
+  // 1. Kent & Sussex postcode check (e.g. "TN19", "TN19 7AG", "BN1", "ME14")
+  if (KENT_SUSSEX_POSTCODE_RE.test(q)) {
+    return { area: 'kent_sussex', terms: KENT_AND_SUSSEX_TERMS };
+  }
+
+  // 2. Check known area catchments (exact match or whole-word match inside query, e.g. "etchingham, east sussex" or "walks in kent")
+  const checkTerms = (terms) =>
+    terms.some((term) => {
+      if (q === term) return true;
+      if (term.length >= 4 && q.includes(term)) {
+        const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        return new RegExp(`(?:^|[\\s,&/-])${escaped}(?:$|[\\s,&/-])`, 'i').test(q);
+      }
+      return false;
+    });
+
+  if (checkTerms(KENT_AND_SUSSEX_TERMS)) {
+    return { area: 'kent_sussex', terms: KENT_AND_SUSSEX_TERMS };
+  }
+
+  if (checkTerms(SURROUNDING_AREA_CATCHMENTS.surrey)) {
+    return { area: 'surrey', terms: [...SURROUNDING_AREA_CATCHMENTS.surrey, ...KENT_AND_SUSSEX_TERMS] };
+  }
+
+  if (checkTerms(SURROUNDING_AREA_CATCHMENTS.london)) {
+    return { area: 'london', terms: SURROUNDING_AREA_CATCHMENTS.london };
+  }
+
+  // 3. Also check REGIONAL_KNOWN_LOCATIONS names/aliases (all are in Kent & Sussex)
+  const known = findKnownLocation(q);
+  if (known) {
+    return { area: 'kent_sussex', terms: KENT_AND_SUSSEX_TERMS };
+  }
+
+  return null;
+}
+
+/**
+ * Returns a match score for a searchable item against a query:
+ * - 2: Direct text/location match
+ * - 1: Surrounding area match (e.g. user typed "Kent", "Sussex", "Etchingham", "TN19", etc.
+ *      and the item is anywhere in Kent & Sussex)
+ * - 0: No match
+ */
+export function getLocationSearchRank(itemSearchText, query) {
+  if (!query || !query.trim()) return 2;
+  const q = query.trim().toLowerCase();
+  const corpus = String(itemSearchText || '').toLowerCase();
+
+  if (corpus.includes(q)) return 2;
+
+  const areaMatch = detectSurroundingArea(q);
+  if (areaMatch) {
+    if (areaMatch.terms.some((term) => corpus.includes(term))) {
+      return 1;
+    }
+    // Also match Kent & Sussex postcodes inside item corpus (e.g. "TN19 7AG")
+    if (areaMatch.area === 'kent_sussex' && /\b(?:tn|bn|me|ct|rh|da)\d{1,2}\b/i.test(corpus)) {
+      return 1;
+    }
+  }
+
+  return 0;
+}
 
 /**
  * Returns comprehensive searchable location and regional keywords for a community.

@@ -41,14 +41,21 @@ export async function POST(request) {
     const subId = `sub_${crypto.randomUUID()}`;
     const db = getDbClient();
 
+    const subscriberMeta = {
+      guest_email: cleanEmail,
+      source,
+      town: town || 'general',
+      opt_in: true,
+    };
+
     const { error: userErr } = await db.from('users').insert({
       id: subId,
       name: subscriberName,
       role: 'Subscriber',
-      bio: `[Email: ${cleanEmail}] [Source: ${source}] [Town: ${town}]`,
+      bio: '',
       joined: `Joined ${new Date().toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })}`,
       avatar: getDefaultAvatar(subscriberName),
-      interests: [`email:${cleanEmail}`, 'subscriber', 'opt_in:true', `town:${town || 'general'}`],
+      interests: [`__profile_meta:${JSON.stringify(subscriberMeta)}`],
       location: town || ''
     });
 

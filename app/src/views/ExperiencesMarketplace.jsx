@@ -5,6 +5,7 @@ import { useRouter as useNavigate } from 'next/navigation';
 import { useAppContext } from '../context/AppContext';
 import { useToast } from '../components/Toast';
 import { isAffiliateExperience } from '../lib/experiencePricing';
+import { getLocationSearchRank } from '../lib/location';
 
 export default function ExperiencesMarketplace() {
   const [activePill, setActivePill] = useState('All');
@@ -41,13 +42,26 @@ export default function ExperiencesMarketplace() {
       list = list.filter(e => e.category === activePill);
     }
     if (searchQuery.trim() && !isSearchingViator) {
-      const q = searchQuery.toLowerCase();
-      const matched = list.filter(e =>
-        e.title?.toLowerCase().includes(q) ||
-        e.description?.toLowerCase().includes(q) ||
-        e.location?.toLowerCase().includes(q)
-      );
-      if (matched.length > 0) return matched;
+      const q = searchQuery.toLowerCase().trim();
+      const ranked = [];
+      for (const e of list) {
+        const directMatch =
+          e.title?.toLowerCase().includes(q) ||
+          e.description?.toLowerCase().includes(q) ||
+          e.location?.toLowerCase().includes(q);
+        if (directMatch) {
+          ranked.push({ item: e, rank: 2 });
+          continue;
+        }
+        const rank = getLocationSearchRank(`${e.location || ''} ${e.title || ''}`, q);
+        if (rank > 0) {
+          ranked.push({ item: e, rank });
+        }
+      }
+      if (ranked.length > 0) {
+        ranked.sort((a, b) => b.rank - a.rank);
+        return ranked.map((r) => r.item);
+      }
     }
     return list;
   }, [experiences, activePill, searchQuery, isSearchingViator]);

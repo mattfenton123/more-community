@@ -30,7 +30,12 @@ import {
   isEventToday,
   parseEventDateTime,
 } from '../../src/lib/calendar';
-import { cleanLocationName, getCommunityLocation } from '../../src/lib/location';
+import {
+  cleanLocationName,
+  getCommunityLocation,
+  getCommunitySearchText,
+  getLocationSearchRank,
+} from '../../src/lib/location';
 import { getEventPath } from '../../src/lib/eventLinks';
 import { isCommunityPubliclyListed } from '../../src/lib/communityVisibility';
 import { getMetInPersonMap, getFamiliarFacesGoing } from '../../src/lib/inPersonGraph';
@@ -342,15 +347,36 @@ export default function EventsHub() {
 
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
-      result = result.filter((e) => {
+      const ranked = [];
+      for (const e of result) {
         const community = (communities || []).find((c) => c.id === e.communityId);
-        return (
+        const directMatch =
           e.title?.toLowerCase().includes(q) ||
           cleanLocationName(e.location).toLowerCase().includes(q) ||
           e.description?.toLowerCase().includes(q) ||
-          community?.name?.toLowerCase().includes(q)
-        );
-      });
+          community?.name?.toLowerCase().includes(q) ||
+          (community && getCommunityLocation(community).toLowerCase().includes(q));
+
+        if (directMatch) {
+          ranked.push({ item: e, rank: 2 });
+          continue;
+        }
+
+        const locationCorpus = [
+          cleanLocationName(e.location),
+          e.location,
+          community ? getCommunityLocation(community) : '',
+          community ? getCommunitySearchText(community) : '',
+        ]
+          .filter(Boolean)
+          .join(' ');
+        const rank = getLocationSearchRank(locationCorpus, q);
+        if (rank > 0) {
+          ranked.push({ item: e, rank });
+        }
+      }
+      ranked.sort((a, b) => b.rank - a.rank);
+      result = ranked.map((r) => r.item);
     }
 
     if (dateFilter !== 'all') {

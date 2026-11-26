@@ -202,6 +202,7 @@ function extractUserEmail(u) {
   if (!u) return '';
   if (u.id && authEmailMap[u.id]) return authEmailMap[u.id];
   if (u.email) return u.email;
+  if (u._guestEmail) return u._guestEmail;
   const match = (u.bio || '').match(/\[Email:\s*([^\]]+)\]/i);
   if (match) return match[1].trim();
   const intMatch = (u.interests || []).find(i => typeof i === 'string' && i.startsWith('email:'));
