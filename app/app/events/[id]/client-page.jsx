@@ -458,14 +458,14 @@ export default function EventClient({ id }) {
       .sort((a, b) => new Date(a.date) - new Date(b.date));
 
     // Deduplicate by date so the series switcher never displays duplicate dates
-    const byDate = new Map();
+    const byDate = Object.create(null);
     for (const item of sorted) {
       const key = item.date || item.id;
-      if (!byDate.has(key) || item.id === event.id) {
-        byDate.set(key, item);
+      if (!byDate[key] || item.id === event.id) {
+        byDate[key] = item;
       }
     }
-    return Array.from(byDate.values());
+    return Object.values(byDate);
   }, [event, events]);
   const currentSeriesIndex = event ? seriesEvents.findIndex(e => e.id === event.id) : -1;
 
