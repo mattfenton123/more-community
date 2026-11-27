@@ -396,10 +396,30 @@ export async function createEventAction(eventData, token) {
     }
   }
 
+  const cleanTitle = String(eventData.title).trim();
+
+  // Prevent duplicate active events with the same title on the same date for the same community
+  if (eventData.communityId && eventData.date && cleanTitle) {
+    const { data: existingOnDate } = await db
+      .from('events')
+      .select('id, title, status')
+      .eq('community_id', eventData.communityId)
+      .eq('date', eventData.date)
+      .neq('status', 'cancelled');
+
+    const normalizedTitle = cleanTitle.toLowerCase();
+    const hasDuplicate = (existingOnDate || []).some(
+      (e) => String(e.title || '').trim().toLowerCase() === normalizedTitle
+    );
+    if (hasDuplicate) {
+      throw new Error(`"${cleanTitle}" is already scheduled for this community on ${eventData.date}.`);
+    }
+  }
+
   const payload = {
     id: eventData.id || crypto.randomUUID(),
     community_id: eventData.communityId,
-    title: String(eventData.title).trim(),
+    title: cleanTitle,
     date: eventData.date,
     time: eventData.time,
     location: String(eventData.location).trim(),
@@ -551,26 +571,56 @@ export async function createEventsBatchAction(eventsData, token) {
     }
   }
 
-  const payloads = eventsData.map(eventData => {
+  // Deduplicate within the incoming batch itself by (date, normalized title)
+  const seenBatchKeys = new Set();
+  const uniqueBatch = [];
+  for (const eventData of eventsData) {
     if (!eventData.title || !eventData.date || !eventData.time || !eventData.location) {
       throw new Error("Invalid event data: title, date, time, and location are required.");
     }
-    return {
-      id: eventData.id || crypto.randomUUID(),
-      community_id: communityId,
-      title: String(eventData.title).trim(),
-      date: eventData.date,
-      time: eventData.time,
-      location: String(eventData.location).trim(),
-      image: eventData.image || null,
-      attendees: eventData.attendees || 0,
-      description: eventData.description || '',
-      status: eventData.status || 'published',
-      max_capacity: eventData.maxCapacity ? parseInt(eventData.maxCapacity, 10) : null,
-      ticket_price: eventData.ticketPrice != null ? Math.max(0, Number(eventData.ticketPrice)) : (eventData.ticket_price != null ? Math.max(0, Number(eventData.ticket_price)) : 0),
-      cohost_community_ids: Array.isArray(eventData.collabCommunityIds) ? eventData.collabCommunityIds : (Array.isArray(eventData.cohost_community_ids) ? eventData.cohost_community_ids : [])
-    };
-  });
+    const cleanTitle = String(eventData.title).trim();
+    const key = `${eventData.date}::${cleanTitle.toLowerCase()}`;
+    if (seenBatchKeys.has(key)) continue;
+    seenBatchKeys.add(key);
+    uniqueBatch.push({ ...eventData, title: cleanTitle });
+  }
+
+  // Filter out any dates that already have an active event with the same title for this community
+  const batchDates = Array.from(new Set(uniqueBatch.map((e) => e.date)));
+  const { data: existingEvents } = await db
+    .from('events')
+    .select('id, date, title, status')
+    .eq('community_id', communityId)
+    .in('date', batchDates)
+    .neq('status', 'cancelled');
+
+  const existingKeys = new Set(
+    (existingEvents || []).map((e) => `${e.date}::${String(e.title || '').trim().toLowerCase()}`)
+  );
+
+  const nonDuplicateBatch = uniqueBatch.filter(
+    (e) => !existingKeys.has(`${e.date}::${e.title.toLowerCase()}`)
+  );
+
+  if (nonDuplicateBatch.length === 0) {
+    throw new Error("All selected dates already have this event scheduled for this community.");
+  }
+
+  const payloads = nonDuplicateBatch.map(eventData => ({
+    id: eventData.id || crypto.randomUUID(),
+    community_id: communityId,
+    title: eventData.title,
+    date: eventData.date,
+    time: eventData.time,
+    location: String(eventData.location).trim(),
+    image: eventData.image || null,
+    attendees: eventData.attendees || 0,
+    description: eventData.description || '',
+    status: eventData.status || 'published',
+    max_capacity: eventData.maxCapacity ? parseInt(eventData.maxCapacity, 10) : null,
+    ticket_price: eventData.ticketPrice != null ? Math.max(0, Number(eventData.ticketPrice)) : (eventData.ticket_price != null ? Math.max(0, Number(eventData.ticket_price)) : 0),
+    cohost_community_ids: Array.isArray(eventData.collabCommunityIds) ? eventData.collabCommunityIds : (Array.isArray(eventData.cohost_community_ids) ? eventData.cohost_community_ids : [])
+  }));
 
   const { data, error } = await db.from('events').insert(payloads).select();
 

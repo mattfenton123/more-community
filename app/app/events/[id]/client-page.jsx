@@ -446,9 +446,26 @@ export default function EventClient({ id }) {
 
   const seriesEvents = useMemo(() => {
     if (!event || !events) return [];
-    return events
-      .filter(e => e.communityId === event.communityId && e.title?.trim().toLowerCase() === event.title?.trim().toLowerCase())
+    const targetTitle = event.title?.trim().toLowerCase();
+    const sorted = events
+      .filter(
+        (e) =>
+          e.communityId === event.communityId &&
+          e.title?.trim().toLowerCase() === targetTitle &&
+          e.status !== 'cancelled' &&
+          e.status !== 'proposed'
+      )
       .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    // Deduplicate by date so the series switcher never displays duplicate dates
+    const byDate = new Map();
+    for (const item of sorted) {
+      const key = item.date || item.id;
+      if (!byDate.has(key) || item.id === event.id) {
+        byDate.set(key, item);
+      }
+    }
+    return Array.from(byDate.values());
   }, [event, events]);
   const currentSeriesIndex = event ? seriesEvents.findIndex(e => e.id === event.id) : -1;
 

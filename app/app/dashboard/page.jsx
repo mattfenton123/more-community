@@ -1199,7 +1199,8 @@ export default function LeaderDashboard({ initialCommunityId }) {
     setCoverCropDraft(null);
 
     if (draft?.directSave && community) {
-      setIsUploading(true);
+      if (isUploading) return;
+    setIsUploading(true);
       try {
         const url = await uploadImage(croppedFile, 'community_covers');
         await updateCommunity(community.id, { cover_image: url, image: url });
@@ -1299,6 +1300,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
       return;
     }
 
+    if (isUploading) return;
     setIsUploading(true);
     try {
       let coverUrl = community?.cover_image || community?.image;
@@ -1454,6 +1456,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
       if (!proceed) return;
     }
 
+    if (isUploading) return;
     setIsUploading(true);
     let imageUrl = '';
     
@@ -1522,8 +1525,15 @@ export default function LeaderDashboard({ initialCommunityId }) {
             whatsappGroup: eventForm.whatsappGroup?.trim() || '',
           image: finalImage
         }));
-        await createEventsBatch(community.id, eventsList);
-        toast.success(`${dates.length} events created!`, `${eventForm.title} recurring schedule published`);
+        const created = await createEventsBatch(community.id, eventsList);
+        const createdCount = Array.isArray(created) ? created.length : dates.length;
+        const skippedCount = dates.length - createdCount;
+        toast.success(
+          `${createdCount} event${createdCount === 1 ? '' : 's'} created!`,
+          skippedCount > 0
+            ? `${eventForm.title} published (${skippedCount} duplicate date${skippedCount === 1 ? '' : 's'} skipped)`
+            : `${eventForm.title} recurring schedule published`
+        );
       }
       
       setModalType(null);
@@ -1665,6 +1675,7 @@ export default function LeaderDashboard({ initialCommunityId }) {
       return;
     }
 
+    if (isUploading) return;
     setIsUploading(true);
     try {
       let imageUrl;
